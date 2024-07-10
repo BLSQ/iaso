@@ -11,6 +11,7 @@ type OrgUnitDetail = {
     id: number;
     name: string;
     org_unit_type: number | null;
+    sub_unit_types: Array<number>;
 };
 
 export type Planning = {

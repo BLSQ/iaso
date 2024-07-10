@@ -9,10 +9,10 @@ import { makeUrlWithParams } from '../../../../libs/utils';
 
 import { OrgUnit, PaginatedOrgUnits } from '../../../orgUnits/types/orgUnit';
 
-import { BaseLocation, Locations } from '../../types/locations';
 import { Profile } from '../../../../utils/usersUtils';
-import { DropdownTeamsOptions } from '../../types/team';
 import { AssignmentsApi } from '../../types/assigment';
+import { BaseLocation, Locations } from '../../types/locations';
+import { DropdownTeamsOptions } from '../../types/team';
 
 import { getOrgUnitAssignation } from '../../utils';
 
@@ -187,6 +187,9 @@ export const useGetOrgUnits = ({
 
     const select = useCallback(
         (orgUnits: OrgUnit[]) => {
+            console.log('orgUnitParentIds', orgUnitParentIds);
+            console.log('orgUnits', orgUnits);
+            console.log('baseOrgunitType', baseOrgunitType);
             if (baseOrgunitType && orgUnitParentIds) {
                 return mapLocation({
                     orgUnits,

@@ -1,26 +1,26 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import serializers, filters
+from rest_framework import filters, serializers
 from rest_framework.decorators import action
 from rest_framework.fields import Field
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from hat.audit.audit_mixin import AuditMixin
-from iaso.permissions import ReadOnly
 
+from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import Modification
+from hat.menupermissions import models as permission
 from iaso.api.common import (
-    ModelViewSet,
+    DateTimestampField,
     DeletionFilterBackend,
+    ModelViewSet,
     ReadOnlyOrHasPermission,
     TimestampField,
-    DateTimestampField,
 )
-from iaso.models import Project, OrgUnit, Form, OrgUnitType
-from iaso.models.microplanning import Team, TeamType, Planning, Assignment
+from iaso.models import Form, OrgUnit, OrgUnitType, Project
+from iaso.models.microplanning import Assignment, Planning, Team, TeamType
 from iaso.models.org_unit import OrgUnitQuerySet
-from hat.menupermissions import models as permission
+from iaso.permissions import ReadOnly
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
@@ -50,9 +50,14 @@ class AuditTeamSerializer(serializers.ModelSerializer):
 
 
 class NestedOrgUnitSerializer(serializers.ModelSerializer):
+    sub_unit_types = serializers.SerializerMethodField()
+
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "org_unit_type"]
+        fields = ["id", "name", "org_unit_type", "sub_unit_types"]
+
+    def get_sub_unit_types(self, obj):
+        return list(obj.org_unit_type.sub_unit_types.values_list("id", flat=True))
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -529,9 +534,9 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
         for out in OrgUnitType.objects.filter(projects__account=user.iaso_profile.account):
             out_set = set(out.form_set.values_list("id", flat=True))
             intersection = out_set.intersection(planning_form_set)
-            forms_per_ou_type[
-                out.id
-            ] = intersection  # intersection of the two sets: the forms of the orgunit types and the forms of the planning
+            forms_per_ou_type[out.id] = (
+                intersection  # intersection of the two sets: the forms of the orgunit types and the forms of the planning
+            )
 
         for a in planning.assignment_set.filter(deleted_at__isnull=True).filter(user=user).prefetch_related("org_unit"):
             # TODO: investigate type error on next line

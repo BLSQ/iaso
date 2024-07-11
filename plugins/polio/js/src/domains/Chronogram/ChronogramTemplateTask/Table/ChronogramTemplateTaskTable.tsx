@@ -37,7 +37,7 @@ export const ChronogramTemplateTaskTable: FunctionComponent<Props> = ({
             count={data?.count ?? 0}
             params={params}
             extraProps={{ loading: isFetching }}
-            columnSelectorEnabled
+            columnSelectorEnabled={false}
             columnSelectorButtonType="button"
         />
     );

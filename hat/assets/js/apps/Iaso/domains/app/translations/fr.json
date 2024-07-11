@@ -593,6 +593,7 @@
     "iaso.label.orgUnit": "Unités d'org.",
     "iaso.label.orgUnitList": "Liste d'unité d'organisation",
     "iaso.label.orgUnitParent": "Parent {index}",
+    "iaso.label.orgUnitSingle": "Unité d'org.",
     "iaso.label.orgUnitsLocations": "Emplacements des unités d'org",
     "iaso.label.orgUnitsType": "Type d'unités d'org.",
     "iaso.label.orgUnitsTypes": "Types d'unités d'org.",

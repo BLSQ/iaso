@@ -593,6 +593,7 @@
     "iaso.label.orgUnit": "Org units",
     "iaso.label.orgUnitList": "Org units list",
     "iaso.label.orgUnitParent": "Parent {index}",
+    "iaso.label.orgUnitSingle": "Org unit",
     "iaso.label.orgUnitsLocations": "Org unit locations",
     "iaso.label.orgUnitsType": "Org unit type",
     "iaso.label.orgUnitsTypes": "Org unit types",

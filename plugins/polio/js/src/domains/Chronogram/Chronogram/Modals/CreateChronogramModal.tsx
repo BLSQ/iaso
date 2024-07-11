@@ -88,7 +88,7 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
                     confirmMessage={MESSAGES.save}
                     allowConfirm={allowConfirm}
                     cancelMessage={MESSAGES.cancel}
-                    maxWidth="md"
+                    maxWidth="xs"
                 >
                     <Box mb={2}>
                         <Divider />

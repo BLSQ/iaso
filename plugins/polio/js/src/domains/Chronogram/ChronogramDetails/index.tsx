@@ -40,40 +40,38 @@ export const ChronogramDetails: FunctionComponent = () => {
 
     return (
         <>
+            <TopBar
+                title={formatMessage(MESSAGES.chronogramDetailsTitle, {
+                    campaignName: data?.campaign_obr_name,
+                    round_number: data?.round_number,
+                    round_start_date: data?.round_start_date,
+                })}
+                displayBackButton={true}
+                goBack={() => goBack()}
+            />
             {isFetching && isFetchingMetaData && <LoadingSpinner />}
             {!isFetching && !isFetchingMetaData && (
-                <>
-                    <TopBar
-                        title={formatMessage(MESSAGES.chronogramDetailsTitle, {
-                            campaignName: data?.campaign_obr_name,
-                            round_number: data?.round_number,
-                            round_start_date: data?.round_start_date,
-                        })}
-                        displayBackButton={true}
-                        goBack={() => goBack()}
+                <Box className={classes.containerFullHeightNoTabPadded}>
+                    <Grid container justifyContent="flex-end">
+                        <Box>
+                            <CreateChronogramTaskModal
+                                iconProps={{
+                                    message: MESSAGES.modalAddTitle,
+                                }}
+                                chronogram={data as Chronogram}
+                                chronogramTaskMetaData={
+                                    chronogramTaskMetaData as ChronogramTaskMetaData
+                                }
+                            />
+                        </Box>
+                    </Grid>
+                    <ChronogramDetailsTable
+                        params={paramsNew}
+                        chronogramTaskMetaData={
+                            chronogramTaskMetaData as ChronogramTaskMetaData
+                        }
                     />
-                    <Box className={classes.containerFullHeightNoTabPadded}>
-                        <Grid container justifyContent="flex-end">
-                            <Box>
-                                <CreateChronogramTaskModal
-                                    iconProps={{
-                                        message: MESSAGES.modalAddTitle,
-                                    }}
-                                    chronogram={data as Chronogram}
-                                    chronogramTaskMetaData={
-                                        chronogramTaskMetaData as ChronogramTaskMetaData
-                                    }
-                                />
-                            </Box>
-                        </Grid>
-                        <ChronogramDetailsTable
-                            params={paramsNew}
-                            chronogramTaskMetaData={
-                                chronogramTaskMetaData as ChronogramTaskMetaData
-                            }
-                        />
-                    </Box>
-                </>
+                </Box>
             )}
         </>
     );

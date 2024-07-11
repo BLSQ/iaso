@@ -36,7 +36,7 @@ import { Placeholder } from '../../../../../../hat/assets/js/apps/Iaso/domains/r
 /* STILL USING REGISTRY COMPONENTS */
 /* eslint-enable sort-imports */
 
-import { config } from '../../constants/registry';
+import { useGetRegistryConfig } from '../../hooks/useGetRegistryConfig';
 
 const styles: SxStyles = {
     breadCrumbContainer: {
@@ -84,18 +84,22 @@ export const Registry: FunctionComponent = () => {
     const redirectToReplace = useRedirectToReplace();
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
+    const { data: config } = useGetRegistryConfig('google_registry');
+
     const { data: selectedChildren, isFetching: isFetchingSelectedChildren } =
-        useGetOrgUnit(selectedChildrenId);
+        useGetOrgUnit(config?.app_id, selectedChildrenId);
     const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =
         useGetOrgUnitListChildren(
             orgUnitId,
             params,
             orgUnit?.org_unit_type?.sub_unit_types,
+            config?.app_id,
         );
     const { data: orgUnitMapChildren, isFetching: isFetchingMapChildren } =
         useGetOrgUnitsMapChildren(
             orgUnitId,
             orgUnit?.org_unit_type?.sub_unit_types,
+            config?.app_id,
         );
 
     const subOrgUnitTypes: OrgunitTypeRegistry[] = useMemo(() => {
@@ -148,6 +152,11 @@ export const Registry: FunctionComponent = () => {
         },
         [params, redirectToReplace],
     );
+
+    if (!config) {
+        return null;
+    }
+
     return (
         <Box
             sx={{
@@ -166,8 +175,8 @@ export const Registry: FunctionComponent = () => {
                                 initialSelection={orgUnit}
                                 defaultOpen={!orgUnitId}
                                 useIcon
-                                version={config.version}
-                                source={config.source}
+                                version={config.source_version}
+                                source={config.data_source}
                             />
                         </Box>
                         <Box display="inline-block" ml={1} mr={2}>
@@ -209,6 +218,7 @@ export const Registry: FunctionComponent = () => {
                         >
                             {orgUnit && (
                                 <SelectedOrgUnit
+                                    registrySlug={config.slug}
                                     orgUnit={
                                         selectedChildrenId
                                             ? selectedChildren
@@ -230,6 +240,7 @@ export const Registry: FunctionComponent = () => {
                 isLoading={isFetching}
                 subOrgUnitTypes={subOrgUnitTypes}
                 params={params}
+                appId={config.app_id}
             />
             {!orgUnitId && <Placeholder />}
         </Box>

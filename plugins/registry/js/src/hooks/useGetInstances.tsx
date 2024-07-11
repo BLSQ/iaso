@@ -15,8 +15,6 @@ import { makeUrlWithParams } from '../../../../../hat/assets/js/apps/Iaso/libs/u
 import { OrgUnitStatus } from '../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { RegistryParams } from '../types';
 
-import { config } from '../constants/registry';
-
 export const defaultSorted = [{ id: 'org_unit__name', desc: false }];
 
 type ApiParams = {
@@ -39,6 +37,7 @@ type InstanceApi = {
 
 export const useGetInstanceApi = (
     params: RegistryParams,
+    registrySlug: string,
     orgUnitTypeId?: number,
     orgUnitStatus?: OrgUnitStatus,
 ): InstanceApi => {
@@ -61,7 +60,7 @@ export const useGetInstanceApi = (
         orgUnitParentId: orgUnitId,
         org_unit_status: orgUnitStatus,
         planning_ids: planningIds,
-        registry_slug: config.registry_slug,
+        registry_slug: registrySlug,
     };
     const url = makeUrlWithParams(
         '/api/public/registry/instances/',
@@ -75,10 +74,12 @@ export const useGetInstanceApi = (
 
 export const useGetInstances = (
     params: RegistryParams,
+    registrySlug: string,
     orgUnitTypeId?: number,
 ): UseQueryResult<PaginatedInstances, Error> => {
     const { apiParams, url } = useGetInstanceApi(
         params,
+        registrySlug,
         orgUnitTypeId,
         'VALID',
     );
@@ -94,6 +95,7 @@ export const useGetInstances = (
 };
 
 export const useGetOrgUnitInstances = (
+    registrySlug: string,
     orgUnitId?: number,
     onlyReference = false,
 ): UseQueryResult<Instance[], Error> => {
@@ -101,7 +103,7 @@ export const useGetOrgUnitInstances = (
         orgUnitId,
         showDeleted: false,
         onlyReference,
-        registry_slug: config.registry_slug,
+        registry_slug: registrySlug,
     };
     const url = makeUrlWithParams('/api/public/registry/instances/', apiParams);
     return useSnackQuery({

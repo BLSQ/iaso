@@ -21,6 +21,7 @@ type Props = {
     orgUnit?: OrgUnit;
     params: RegistryParams;
     isFetching: boolean;
+    registrySlug: string;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -39,11 +40,15 @@ const useStyles = makeStyles(theme => ({
 export const SelectedOrgUnit: FunctionComponent<Props> = ({
     orgUnit,
     params,
+    registrySlug,
     isFetching: isFetchingOrgUnit,
 }) => {
     const classes: Record<string, string> = useStyles();
 
-    const { data: instances, isFetching } = useGetOrgUnitInstances(orgUnit?.id);
+    const { data: instances, isFetching } = useGetOrgUnitInstances(
+        registrySlug,
+        orgUnit?.id,
+    );
     const currentInstanceId = useMemo(() => {
         return (
             params.submissionId ||

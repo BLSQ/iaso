@@ -11,11 +11,17 @@ export const useGetForm = (
     formId: number | undefined,
     enabled: boolean,
     fields?: string | undefined,
+    appId?: string,
 ): UseQueryResult<Form, Error> => {
     const queryKey: any[] = ['form', formId];
     let url = `/api/forms/${formId}`;
     if (fields) {
-        url += `/?fields=${fields}&app_id=com.poliooutbreaks.app`;
+        url += `/?fields=${fields}`;
+        if (appId) {
+            url += `&app_id=${appId}`;
+        }
+    } else if (appId) {
+        url += `/?app_id=${appId}`;
     }
     return useSnackQuery({
         queryKey,

@@ -9,15 +9,15 @@ import { OrgunitTypes } from '../../../../../hat/assets/js/apps/Iaso/domains/org
 import { makeUrlWithParams } from '../../../../../hat/assets/js/apps/Iaso/libs/utils';
 import { RegistryParams } from '../types';
 
-import { config } from '../constants/registry';
-
 export const useGetOrgUnit = (
+    appId?: string,
     orgUnitId?: string,
 ): UseQueryResult<OrgUnit, Error> => {
     const queryKey: any[] = ['orgUnit', orgUnitId];
     return useSnackQuery({
         queryKey,
-        queryFn: () => getRequest(`/api/orgunits/${orgUnitId}/?app_id=${config.app_id}`),
+        queryFn: () =>
+            getRequest(`/api/orgunits/${orgUnitId}/?app_id=${appId}`),
         options: {
             retry: false,
             enabled: Boolean(orgUnitId),
@@ -43,6 +43,7 @@ export const useGetOrgUnitListChildren = (
     orgUnitParentId: string,
     params: RegistryParams,
     orgUnitTypes?: OrgunitTypes,
+    appId?: string,
 ): UseQueryResult<OrgUnitListChildren, Error> => {
     const order = getOrder(params.orgUnitListOrder);
     const apiParams: Record<string, any> = {
@@ -52,7 +53,7 @@ export const useGetOrgUnitListChildren = (
         limit: params.orgUnitListPageSize || '10',
         order,
         page: params.orgUnitListPage || '1',
-        app_id: config.app_id,
+        app_id: appId,
     };
     if (orgUnitTypes && orgUnitTypes.length > 0) {
         apiParams.orgUnitTypeId = orgUnitTypes
@@ -89,13 +90,14 @@ type Result = {
 export const useGetOrgUnitsMapChildren = (
     orgUnitParentId: string,
     orgUnitTypes?: OrgunitTypes,
+    appId?: string,
 ): UseQueryResult<OrgUnit[], Error> => {
     const params: Record<string, any> = {
         validation_status: 'VALID',
         orgUnitParentId,
         withShapes: true,
         onlyDirectChildren: true,
-        app_id: config.app_id,
+        app_id: appId,
     };
     if (orgUnitTypes && orgUnitTypes.length > 0) {
         params.orgUnitTypeId = orgUnitTypes

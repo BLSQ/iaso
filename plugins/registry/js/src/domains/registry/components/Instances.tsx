@@ -25,6 +25,7 @@ type Props = {
     isLoading: boolean;
     subOrgUnitTypes: OrgunitTypeRegistry[];
     params: RegistryParams;
+    appId: string;
 };
 
 const baseUrl = baseUrls.registry;
@@ -32,6 +33,7 @@ export const Instances: FunctionComponent<Props> = ({
     isLoading,
     subOrgUnitTypes,
     params,
+    appId,
 }) => {
     const redirectToReplace = useRedirectToReplace();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
@@ -75,10 +77,16 @@ export const Instances: FunctionComponent<Props> = ({
         [params, redirectToReplace],
     );
 
-    const { data: orgunitTypeDetail } = useGetOrgUnitType(currentType?.id);
-    const { data: formsList, isFetching: isFetchingForms } = useGetForms({
-        orgUnitTypeIds: currentType?.id,
-    });
+    const { data: orgunitTypeDetail } = useGetOrgUnitType(
+        currentType?.id,
+        appId,
+    );
+    const { data: formsList, isFetching: isFetchingForms } = useGetForms(
+        appId,
+        {
+            orgUnitTypeIds: currentType?.id,
+        },
+    );
     const currentForm: Form | undefined = useMemo(() => {
         return formsList?.find(f => `${f.value}` === formIds)?.original;
     }, [formIds, formsList]);
@@ -159,6 +167,7 @@ export const Instances: FunctionComponent<Props> = ({
                                         instanceMetasFields={
                                             INSTANCE_METAS_FIELDS
                                         }
+                                        appId={appId}
                                     />
                                 )}
                             </Grid>

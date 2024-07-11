@@ -127,8 +127,42 @@ class InstanceSerializer(serializers.ModelSerializer):
         return representation
 
 
+class PublicRegistryConfigSerializer(serializers.ModelSerializer):
+    root_orgunit = serializers.PrimaryKeyRelatedField(read_only=True)
+    data_source = serializers.PrimaryKeyRelatedField(read_only=True)
+    source_version = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = PublicRegistryConfig
+        fields = ["host", "slug", "whitelist", "account", "root_orgunit", "data_source", "source_version", "app_id"]
+
+
 class PublicRegistryViewSet(ViewSet):
     permission_classes = []
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "registry_slug",
+                openapi.IN_QUERY,
+                description="Slug of the public registry configuration",
+                type=openapi.TYPE_STRING,
+                required=True,
+            ),
+        ]
+    )
+    @action(detail=False, methods=["GET"], url_path="config", url_name="config")
+    def config(self, request: Request) -> JsonResponse:
+        registry_slug = request.query_params.get("registry_slug", None)
+        if not registry_slug:
+            return JsonResponse({"error": "registry_slug parameter is required"}, status=400)
+
+        public_registry_config = PublicRegistryConfig.objects.filter(slug=registry_slug).first()
+        if not public_registry_config:
+            return JsonResponse({"error": "Public registry configuration not found for this slug"}, status=404)
+
+        serializer = PublicRegistryConfigSerializer(public_registry_config)
+        return JsonResponse(serializer.data)
 
     @swagger_auto_schema(
         manual_parameters=[

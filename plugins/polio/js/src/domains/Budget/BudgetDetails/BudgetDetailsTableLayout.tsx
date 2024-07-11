@@ -5,7 +5,7 @@ import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/
 import { BudgetDetailsFilters } from './BudgetDetailsFilters';
 import { BudgetStep } from '../types';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { GraphTitle } from '../../LQAS-IM/shared/GraphTitle';
+import { GraphTitle } from '../../LQAS-IM/shared/charts/GraphTitle';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../../../constants/messages';
 
@@ -33,46 +33,44 @@ export const BudgetDetailsTableLayout: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <>
-            <Paper elevation={2}>
-                <Box pt={2} pb={budgetDetails?.results.length === 0 ? 1 : 0}>
-                    <Box px={2}>
-                        <GraphTitle
-                            text={formatMessage(MESSAGES.steps)}
-                            displayTrigger
-                        />
-                    </Box>
-                    <Box mt={2} mb={1}>
-                        <Divider />
-                    </Box>
-                    <Box px={2} pb={2}>
-                        <BudgetDetailsFilters
-                            params={params}
-                            stepsList={stepsList}
-                            showHidden={showHidden}
-                            setShowHidden={setShowHidden}
-                        />
-                    </Box>
-                    <Divider />
-                    {/* @ts-ignore */}
-                    <TableWithDeepLink
-                        countOnTop={false}
-                        data={budgetDetails?.results ?? []}
-                        count={budgetDetails?.count}
-                        pages={budgetDetails?.pages}
-                        params={params}
-                        columns={columns}
-                        baseUrl={baseUrls.budgetDetails}
-                        marginTop={false}
-                        extraProps={{
-                            loading: isFetching,
-                            columns,
-                        }}
-                        resetPageToOne={resetPageToOne}
-                        elevation={0}
+        <Paper elevation={2}>
+            <Box pt={2} pb={budgetDetails?.results.length === 0 ? 1 : 0}>
+                <Box px={2}>
+                    <GraphTitle
+                        text={formatMessage(MESSAGES.steps)}
+                        displayTrigger
                     />
                 </Box>
-            </Paper>
-        </>
+                <Box mt={2} mb={1}>
+                    <Divider />
+                </Box>
+                <Box px={2} pb={2}>
+                    <BudgetDetailsFilters
+                        params={params}
+                        stepsList={stepsList}
+                        showHidden={showHidden}
+                        setShowHidden={setShowHidden}
+                    />
+                </Box>
+                <Divider />
+                {/* @ts-ignore */}
+                <TableWithDeepLink
+                    countOnTop={false}
+                    data={budgetDetails?.results ?? []}
+                    count={budgetDetails?.count}
+                    pages={budgetDetails?.pages}
+                    params={params}
+                    columns={columns}
+                    baseUrl={baseUrls.budgetDetails}
+                    marginTop={false}
+                    extraProps={{
+                        loading: isFetching,
+                        columns,
+                    }}
+                    resetPageToOne={resetPageToOne}
+                    elevation={0}
+                />
+            </Box>
+        </Paper>
     );
 };

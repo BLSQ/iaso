@@ -108,7 +108,10 @@ export const InstanceTitle: FunctionComponent<Props> = ({
             </Grid>
             {currentInstance && (
                 <DisplayIfUserHasPerm
-                    permissions={[Permissions.REGISTRY_WRITE]}
+                    permissions={[
+                        Permissions.SUBMISSIONS_UPDATE,
+                        Permissions.SUBMISSIONS,
+                    ]}
                 >
                     <Grid
                         xs={4}
@@ -131,13 +134,20 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                                     tooltipMessage={MESSAGES.editOnEnketo}
                                 />
                             </DisplayIfUserHasPerm>
-                            <LinkToInstance
-                                instanceId={`${currentInstance.id}`}
-                                useIcon
-                                color="secondary"
-                                iconSize="small"
-                                size="small"
-                            />
+                            <DisplayIfUserHasPerm
+                                permissions={[
+                                    Permissions.SUBMISSIONS_UPDATE,
+                                    Permissions.SUBMISSIONS,
+                                ]}
+                            >
+                                <LinkToInstance
+                                    instanceId={`${currentInstance.id}`}
+                                    useIcon
+                                    color="secondary"
+                                    iconSize="small"
+                                    size="small"
+                                />
+                            </DisplayIfUserHasPerm>
                         </Box>
                     </Grid>
                 </DisplayIfUserHasPerm>

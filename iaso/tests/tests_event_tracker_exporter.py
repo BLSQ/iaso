@@ -227,7 +227,7 @@ class DataValueExporterTests(TestCase):
         instance = Instance()
         instance.export_id = "EVENT_DHIS2_UID"
 
-        instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
+        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
         instance.org_unit = self.org_unit
         instance.json = json
         instance.json["version"] = self.form_version.version_id
@@ -240,7 +240,7 @@ class DataValueExporterTests(TestCase):
         instance.save()
         # force to past creation date
         # looks the first save don't take it
-        instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
+        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
         instance.save()
         return instance
 

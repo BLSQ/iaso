@@ -423,6 +423,7 @@
     "iaso.polio.label.INITIAL_DATA": "Initial data",
     "iaso.polio.label.inScope": "No data found",
     "iaso.polio.label.internal": "Internal",
+    "iaso.polio.label.invalidData": "Invalid data",
     "iaso.polio.label.is_test": "Test campaign/On hold status",
     "iaso.polio.label.keyName": "Key",
     "iaso.polio.label.label": "Label",

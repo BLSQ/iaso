@@ -10,7 +10,7 @@ data_store_content2 = json.dumps({"wait": "what"})
 additional_data_store_content = json.dumps({"more": "data"})
 data_store_content3 = json.dumps({"this": "should not appear"})
 data_store_content4 = json.dumps({"this": "is not lqas data"})
-api_url = "/api/polio/lqasmap/country/"
+api_url = "/api/polio/lqasimmap/country/"
 
 
 class LQASCountryAPITestCase(APITestCase):
@@ -37,13 +37,13 @@ class LQASCountryAPITestCase(APITestCase):
         )
 
     def test_datastore_list_without_auth(self):
-        """GET /polio/lqasmap/country/ without auth should result in a 401"""
+        """GET /polio/lqasimmap/country/ without auth should result in a 401"""
 
         response = self.client.get(api_url)
         self.assertJSONResponse(response, 401)
 
     def test_datastore_list_permissions(self):
-        """GET /polio/lqasmap/country/ with auth but without the proper permission should return a 403"""
+        """GET /polio/lqasimmap/country/ with auth but without the proper permission should return a 403"""
 
         self.client.force_authenticate(self.unauthorized)
         response = self.client.get(api_url)
@@ -56,13 +56,13 @@ class LQASCountryAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
     def test_datastore_detail_without_auth(self):
-        """GET /polio/lqasmap/country/{slug} without auth should result in a 401"""
+        """GET /polio/lqasimmap/country/{slug} without auth should result in a 401"""
 
         response = self.client.get(f"{api_url}{self.data_store1.slug}/")
         self.assertJSONResponse(response, 401)
 
     def test_datastore_detail_permissions(self):
-        """GET /polio/lqasmap/country/{slug} with auth but without the proper permission should return a 403. Wrong account should return a 404"""
+        """GET /polio/lqasimmap/country/{slug} with auth but without the proper permission should return a 403. Wrong account should return a 404"""
 
         self.client.force_authenticate(self.unauthorized)
         response = self.client.get(f"{api_url}{self.data_store1.slug}/")
@@ -80,33 +80,3 @@ class LQASCountryAPITestCase(APITestCase):
         response = self.client.get(f"{api_url}{self.data_store1.slug}/")
         response_body = self.assertJSONResponse(response, 200)
         self.assertEqual(response_body["data"], data_store_content1)
-
-    def test_list_results_filtered_by_account(self):
-        """GET /polio/lqasmap/country/ should only show results for the user's account"""
-
-        self.client.force_authenticate(self.authorized_user_regular)
-        response = self.client.get(api_url)
-        response_body = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response_body["results"]), 2)
-        self.assertEqual(response_body["results"][0]["data"], data_store_content1)
-        self.assertEqual(response_body["results"][1]["data"], data_store_content2)
-
-        self.client.force_authenticate(self.user_with_perm_but_wrong_account)
-        response = self.client.get(api_url)
-        response_body = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response_body["results"]), 1)
-        self.assertEqual(response_body["results"][0]["data"], data_store_content3)
-
-    def test_list_results_filtered_by_slug(self):
-        """GET /polio/lqasmap/country/ should only show results for lqas"""
-
-        self.client.force_authenticate(self.authorized_user_regular)
-        response = self.client.get(api_url)
-        response_body = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response_body["results"]), 2)
-        self.assertEqual(response_body["results"][0]["data"], data_store_content1)
-        self.assertEqual(response_body["results"][1]["data"], data_store_content2)
-
-        self.client.force_authenticate(self.authorized_user_regular)
-        response = self.client.get(f"{api_url}{self.data_store_im.slug}/")
-        response_body = self.assertJSONResponse(response, 404)

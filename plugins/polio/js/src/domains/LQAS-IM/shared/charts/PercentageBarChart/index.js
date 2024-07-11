@@ -15,7 +15,7 @@ import {
     FAIL_COLOR,
     OK_COLOR,
     WARNING_COLOR,
-} from '../../../../styles/constants';
+} from '../../../../../styles/constants';
 import { determineColor, customLabel } from './utils';
 import { BAR_HEIGHT } from './constants';
 

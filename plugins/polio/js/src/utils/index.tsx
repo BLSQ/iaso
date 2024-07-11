@@ -10,7 +10,7 @@ type Data = {
     [key: string]: any;
 };
 
-type LegendItem = {
+export type LegendItem = {
     label: string;
     value: string;
     color?: string;
@@ -106,12 +106,12 @@ export const findScopeIds = (
     obrName: string | undefined,
     campaigns: Campaign[],
     currentRound: number,
-): string[] => {
-    let scopeIds = obrName
+): number[] => {
+    const filteredCampaigns = obrName
         ? campaigns.filter(campaign => campaign.obr_name === obrName)
         : campaigns;
 
-    scopeIds = scopeIds
+    const scopeIds = filteredCampaigns
         .map(campaign => {
             if (!campaign.separate_scopes_per_round) {
                 return campaign.scopes

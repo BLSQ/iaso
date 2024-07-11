@@ -3,14 +3,14 @@ import React, { FunctionComponent } from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
-import { ConvertedLqasImData } from '../../../constants/types';
-import MESSAGES from '../../../constants/messages';
+import { ConvertedLqasImData } from '../../../../constants/types';
+import MESSAGES from '../../../../constants/messages';
 import {
     accessArrayRound,
     convertStatToPercent,
     totalCaregivers,
     totalCaregiversInformed,
-} from './LqasIm';
+} from '../../shared/LqasIm';
 
 type Props = {
     campaign?: string;

@@ -4,8 +4,8 @@ import { Tooltip, Box } from '@mui/material';
 import LocationDisabledIcon from '@mui/icons-material/LocationDisabled';
 
 import { useSafeIntl } from 'bluesquare-components';
-import ShapeSvg from '../../../../../../../../../hat/assets/js/apps/Iaso/components/svg/ShapeSvgComponent';
-import { Shape } from '../../../../../constants/types';
+import ShapeSvg from '../../../../../../../hat/assets/js/apps/Iaso/components/svg/ShapeSvgComponent';
+import { Shape } from '../../../constants/types';
 
 const MESSAGES = defineMessages({
     withShape: {

@@ -561,6 +561,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.onlyDirectChildren',
         defaultMessage: 'Only Direct children',
     },
+    default: {
+        id: 'iaso.datasources.options.label.default',
+        defaultMessage: 'default',
+    },
 });
 
 export default MESSAGES;

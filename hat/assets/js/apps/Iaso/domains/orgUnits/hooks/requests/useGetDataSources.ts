@@ -21,7 +21,7 @@ const getDataSources = (
 export const useGetDataSources = (
     filterEmptyVersions = false,
 ): UseQueryResult<DropdownOptionsWithOriginal<DataSource>[], Error> => {
-    const queryKey: any[] = ['sources'];
+    const queryKey: any[] = ['sources', filterEmptyVersions];
     // @ts-ignore
     return useSnackQuery({
         queryKey,

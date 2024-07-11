@@ -150,6 +150,9 @@ class ChronogramCreateSerializer(serializers.Serializer):
     round = serializers.PrimaryKeyRelatedField(queryset=Round.objects.all())
 
     def validate_round(self, round: Round) -> Round:
+        if not round.started_at:
+            raise serializers.ValidationError(f"Round ID {round.id} doesn't have a `started_at` value.")
+
         if Chronogram.objects.filter(round=round).exists():
             raise serializers.ValidationError("A chronogram with this round already exists.")
 

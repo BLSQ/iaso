@@ -241,9 +241,21 @@ class ChronogramCreateSerializerTestCase(TestCase):
         self.assertEqual(3, chronogram.tasks.count())
 
     def test_validate_round_unauthorized(self):
+        self.round.started_at = None
+        self.round.save()
         request = APIRequestFactory().get("/")
         request.user = self.user
-        round = Round.objects.create(number=666)
+        data = {
+            "round": self.round.id,
+        }
+        serializer = ChronogramCreateSerializer(data=data, context={"request": request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(f"Round ID {self.round.id} doesn't have a `started_at` value.", serializer.errors["round"][0])
+
+    def test_validate_round_without_started_at(self):
+        request = APIRequestFactory().get("/")
+        request.user = self.user
+        round = Round.objects.create(number=666, started_at=TODAY)
         data = {
             "round": round.id,
         }

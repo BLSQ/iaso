@@ -128,6 +128,8 @@ class InstanceSerializer(serializers.ModelSerializer):
 
 
 class PublicRegistryViewSet(ViewSet):
+    permission_classes = []
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
@@ -173,10 +175,14 @@ class PublicRegistryViewSet(ViewSet):
         whitelisted_fields = public_registry_config.whitelist.get("fields", [])
 
         # Fetch instances and only include whitelisted fields
+        org_unit_type_id = request.query_params.get("orgUnitTypeId", None)
+        form_ids = request.query_params.get("form_ids", None)
+        org_unit_parent_id = request.query_params.get("orgUnitParentId", None)
+        org_unit_status = request.query_params.get("org_unit_status", None)
+
         filters = {
             "show_deleted": None,
             "only_reference": None,
-            # "org_unit_id": root_orgunit.id
         }
         orders = ["-created_at"]
 
@@ -187,6 +193,20 @@ class PublicRegistryViewSet(ViewSet):
         instances = instances.prefetch_related("form")
         instances = instances.prefetch_related("created_by")
         instances = instances.for_filters(**filters)
+
+        # Apply additional filter separately
+        if org_unit_type_id:
+            instances = instances.filter(org_unit__org_unit_type__pk=org_unit_type_id)
+
+        if form_ids:
+            instances = instances.filter(form_id__in=form_ids.split(","))
+
+        if org_unit_parent_id:
+            instances = instances.filter(org_unit__parent_id=org_unit_parent_id)
+
+        if org_unit_status:
+            instances = instances.filter(org_unit__validation_status=org_unit_status)
+
         instances = instances.order_by(*orders)
 
         paginator = Paginator()

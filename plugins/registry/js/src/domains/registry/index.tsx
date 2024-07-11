@@ -36,6 +36,8 @@ import { Placeholder } from '../../../../../../hat/assets/js/apps/Iaso/domains/r
 /* STILL USING REGISTRY COMPONENTS */
 /* eslint-enable sort-imports */
 
+import { config } from '../../constants/registry';
+
 const styles: SxStyles = {
     breadCrumbContainer: {
         '& nav': {
@@ -69,12 +71,6 @@ const styles: SxStyles = {
             'inset 0px 2px 4px -1px rgba(0,0,0,0.2),inset 0px 4px 5px 0px rgba(0,0,0,0.14),inset 0px 1px 10px 0px rgba(0,0,0,0.12)',
     },
 };
-
-const config = {
-    version: 40,
-    source: 31,
-};
-
 const baseUrl = baseUrls.registry;
 
 export const Registry: FunctionComponent = () => {

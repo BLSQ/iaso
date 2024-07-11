@@ -15,6 +15,8 @@ import { makeUrlWithParams } from '../../../../../hat/assets/js/apps/Iaso/libs/u
 import { OrgUnitStatus } from '../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { RegistryParams } from '../types';
 
+import { config } from '../constants/registry';
+
 export const defaultSorted = [{ id: 'org_unit__name', desc: false }];
 
 type ApiParams = {
@@ -27,6 +29,7 @@ type ApiParams = {
     orgUnitParentId: string;
     org_unit_status?: OrgUnitStatus;
     planning_ids?: string;
+    registry_slug: string;
 };
 
 type InstanceApi = {
@@ -58,9 +61,10 @@ export const useGetInstanceApi = (
         orgUnitParentId: orgUnitId,
         org_unit_status: orgUnitStatus,
         planning_ids: planningIds,
+        registry_slug: config.registry_slug,
     };
     const url = makeUrlWithParams(
-        '/api/instances/',
+        '/api/public/registry/instances/',
         apiParams as Record<string, any>,
     );
     return {
@@ -97,8 +101,9 @@ export const useGetOrgUnitInstances = (
         orgUnitId,
         showDeleted: false,
         onlyReference,
+        registry_slug: config.registry_slug,
     };
-    const url = makeUrlWithParams('/api/instances/', apiParams);
+    const url = makeUrlWithParams('/api/public/registry/instances/', apiParams);
     return useSnackQuery({
         queryKey: ['registry-org-unit-instances', apiParams],
         queryFn: () => getRequest(url),

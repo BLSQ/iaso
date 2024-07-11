@@ -6,6 +6,7 @@ import { getRequest } from '../../../../../libs/Api';
 import { Form, PossibleField } from '../../../../forms/types/forms';
 import { usePossibleFields } from '../../../../forms/hooks/useGetPossibleFields';
 
+
 export const useGetForm = (
     formId: number | undefined,
     enabled: boolean,
@@ -14,7 +15,7 @@ export const useGetForm = (
     const queryKey: any[] = ['form', formId];
     let url = `/api/forms/${formId}`;
     if (fields) {
-        url += `/?fields=${fields}`;
+        url += `/?fields=${fields}&app_id=com.poliooutbreaks.app`;
     }
     return useSnackQuery({
         queryKey,

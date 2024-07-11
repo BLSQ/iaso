@@ -5,6 +5,8 @@ import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { makeUrlWithParams } from '../../../../../hat/assets/js/apps/Iaso/libs/utils';
 
+import { config } from '../constants/registry';
+
 export type DropdownOptions<T> = {
     label: string;
     value: T;
@@ -23,6 +25,7 @@ export const useGetForms = (
     ];
     const params: Record<string, any> = {
         fields: fields.join(','),
+        app_id: config.app_id,
         ...apiParams,
     };
     const url = makeUrlWithParams('/api/forms/', params);

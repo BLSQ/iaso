@@ -59,6 +59,51 @@ class FormsVersionAPITestCase(APITestCase):
 
         cls.project.save()
 
+    def test_form_version_to_questions_by_path(self):
+        self.client.force_authenticate(self.yoda)
+        with open("iaso/tests/fixtures/odk_valid_multi_select.xlsx", "rb") as xls_file:
+            response = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_1.id, "xls_file": xls_file},
+                format="multipart",
+                headers={"accept": "application/json"},
+            )
+            print(response.json())
+
+        questions_by_path = self.form_1.form_versions.first().questions_by_path()
+        questions_by_name = self.form_1.form_versions.first().questions_by_name()
+        print("questions_by_name", [x for x in questions_by_name.keys()])
+        self.assertEquals(
+            [x for x in questions_by_name.keys()],
+            [
+                "demo_integer",
+                "demo_text",
+                "source_elec",
+                "demo_note",
+                "demo_select_one",
+                "demo_calculate",
+                "instanceID",
+            ],
+        )
+
+        print("questions_by_path", [x for x in questions_by_path.keys()])
+        self.assertEquals(
+            [x for x in questions_by_path.keys()],
+            [
+                "signalitic/demo_integer",
+                "signalitic/demo_text",
+                "source_elec",
+                "demo_note",
+                "demo_select_one",
+                "demo_calculate",
+                "meta/instanceID",
+            ],
+        )
+
+        import pdb
+
+        pdb.set_trace()
+
     def test_form_versions_list(self):
         """GET /formversions/: allowed"""
 

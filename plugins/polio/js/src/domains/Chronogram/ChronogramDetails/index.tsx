@@ -15,6 +15,7 @@ import { ChronogramDetailsTable } from './Table/ChronogramDetailsTable';
 import { ChronogramTaskMetaData } from '../types';
 import { ChronogramTasksParams } from './types';
 import { CreateChronogramTaskModal } from './Modals/ChronogramTaskCreateEditModal';
+import { defaultParams } from '../constants';
 import { useGetChronogram } from './api/useGetChronogram';
 import { useOptionChronogramTask } from '../api/useOptionChronogramTask';
 
@@ -27,12 +28,7 @@ export const ChronogramDetails: FunctionComponent = () => {
     const { data: chronogramTaskMetaData, isFetching: isFetchingMetaData } =
         useOptionChronogramTask();
 
-    const paramsNew: ChronogramTasksParams = {
-        ...params,
-        pageSize: params.pageSize || '20',
-        order: params.order || 'id',
-        page: params.page || '1',
-    };
+    const paramsNew: ChronogramTasksParams = { ...defaultParams, ...params };
 
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();

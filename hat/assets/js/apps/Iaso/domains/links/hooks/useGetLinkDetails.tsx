@@ -5,7 +5,7 @@ const apiUrl = '/api/links';
 
 export const useGetLinkDetails = (linkId: number) => {
     return useSnackQuery({
-        queryKey: ['linkDetails', linkId],
+        queryKey: ['links', linkId],
         queryFn: () => getRequest(`${apiUrl}/${linkId}`),
         options: {
             keepPreviousData: true,

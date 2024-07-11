@@ -72,8 +72,6 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dropdownsData?.rounds, formik.values.campaign]);
 
-    const titleMessage = formatMessage(MESSAGES.createChronogramTitle);
-
     return (
         <FormikProvider value={formik}>
             {isFetchingDropdownData && <LoadingSpinner />}
@@ -84,7 +82,7 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
                     onClose={() => null}
                     id="create-chronnogram"
                     dataTestId="create-chronnogram"
-                    titleMessage={titleMessage}
+                    titleMessage={formatMessage(MESSAGES.createChronogramTitle)}
                     onConfirm={() => formik.handleSubmit()}
                     onCancel={() => null}
                     confirmMessage={MESSAGES.save}

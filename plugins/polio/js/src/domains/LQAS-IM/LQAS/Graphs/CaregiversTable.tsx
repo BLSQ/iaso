@@ -7,20 +7,20 @@ import React, {
 } from 'react';
 import { Box } from '@mui/material';
 import { useSafeIntl, Table } from 'bluesquare-components';
-import MESSAGES from '../../../constants/messages';
+import MESSAGES from '../../../../constants/messages';
 import {
     ConvertedLqasImData,
     LqasImDistrictDataWithNameAndRegion,
-} from '../../../constants/types';
-import { makeDataForTable } from '../LQAS/utils';
+} from '../../../../constants/types';
+import { makeDataForTable } from '../utils';
 import {
     sortbyDistrictNameAsc,
     sortbyDistrictNameDesc,
     sortbyRegionNameAsc,
     sortbyRegionNameDesc,
-} from './tableUtils';
+} from '../../shared/tableUtils';
 import { CaregiversTableHeader } from './CaregiversTableHeader';
-import { floatToPercentString } from '../../../utils';
+import { floatToPercentString } from '../../../../utils';
 import { CaregiverInfoSource } from './CaregiverInfoSource';
 
 type Props = {

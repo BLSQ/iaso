@@ -66,7 +66,10 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
             <Paper className={classes.paper}>
                 <OrgUnitTitle orgUnit={orgUnit} params={params} />
                 <Divider />
-                {instances && instances?.length === 0 && <EmptyInstances />}
+                {((!instances && !isFetching) ||
+                    (instances && instances?.length === 0)) && (
+                    <EmptyInstances />
+                )}
                 {instances && instances?.length > 0 && (
                     <InstanceTitle
                         currentInstance={currentInstance}

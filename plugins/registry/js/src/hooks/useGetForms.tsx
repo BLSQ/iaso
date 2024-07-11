@@ -30,7 +30,7 @@ export const useGetForms = (
     };
     const url = makeUrlWithParams('/api/forms/', params);
     return useSnackQuery({
-        queryKey: ['forms', apiParams],
+        queryKey: ['forms', url],
         queryFn: () => getRequest(url),
         options: {
             staleTime: 1000 * 60 * 15, // in MS

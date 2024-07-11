@@ -3,8 +3,8 @@ import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
-import MESSAGES from '../../../constants/messages';
-import { floatToPercentString } from '../../../utils';
+import MESSAGES from '../../../../constants/messages';
+import { floatToPercentString } from '../../../../utils';
 
 type CareGiverStats = {
     ratio: number;

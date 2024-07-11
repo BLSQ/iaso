@@ -1,4 +1,3 @@
-import { Box } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { useTheme } from '@mui/styles';
 import L from 'leaflet';
@@ -44,52 +43,48 @@ export const OrgUnitLocation: FunctionComponent<Props> = ({
     const color = selectedChildrenId
         ? theme.palette.primary.main
         : selectedOrgUnitColor;
-    return (
-        <Box>
-            {isOrgUnitActive && (
-                <>
-                    {orgUnit.geo_json && (
-                        <Pane name="orgunit-shape" style={{ zIndex: 400 }}>
-                            <GeoJSON
-                                key={`orgunit-shape-${orgUnit.id}`}
-                                data={orgUnit.geo_json}
-                                onEachFeature={handleFeatureEvents(orgUnit)}
-                                style={() => ({
-                                    color,
-                                })}
-                            >
-                                <MapToolTip
-                                    permanent={showTooltip}
-                                    pane="popupPane"
-                                    label={orgUnit.name}
-                                />
-                            </GeoJSON>
-                        </Pane>
-                    )}
-                    {orgUnit.latitude && orgUnit.longitude && (
-                        <CircleMarkerComponent
-                            item={{
-                                latitude: orgUnit.latitude,
-                                longitude: orgUnit.longitude,
-                            }}
-                            markerProps={() => ({
-                                ...circleColorMarkerOptions(color),
-                                key: `markers-${orgUnit.id}-${showTooltip}`,
-                            })}
-                            popupProps={() => ({
-                                orgUnit,
-                            })}
-                            onClick={handleSingleClick}
-                            tooltipProps={() => ({
-                                permanent: showTooltip,
-                                pane: 'popupPane',
-                                label: orgUnit.name,
-                            })}
-                            TooltipComponent={MapToolTip}
+    return isOrgUnitActive ? (
+        <>
+            {orgUnit.geo_json && (
+                <Pane name="orgunit-shape" style={{ zIndex: 400 }}>
+                    <GeoJSON
+                        key={`orgunit-shape-${orgUnit.id}`}
+                        data={orgUnit.geo_json}
+                        onEachFeature={handleFeatureEvents(orgUnit)}
+                        style={() => ({
+                            color,
+                        })}
+                    >
+                        <MapToolTip
+                            permanent={showTooltip}
+                            pane="popupPane"
+                            label={orgUnit.name}
                         />
-                    )}
-                </>
+                    </GeoJSON>
+                </Pane>
             )}
-        </Box>
-    );
+            {orgUnit.latitude && orgUnit.longitude && (
+                <CircleMarkerComponent
+                    item={{
+                        latitude: orgUnit.latitude,
+                        longitude: orgUnit.longitude,
+                    }}
+                    markerProps={() => ({
+                        ...circleColorMarkerOptions(color),
+                        key: `markers-${orgUnit.id}-${showTooltip}`,
+                    })}
+                    popupProps={() => ({
+                        orgUnit,
+                    })}
+                    onClick={handleSingleClick}
+                    tooltipProps={() => ({
+                        permanent: showTooltip,
+                        pane: 'popupPane',
+                        label: orgUnit.name,
+                    })}
+                    TooltipComponent={MapToolTip}
+                />
+            )}
+        </>
+    ) : null;
 };

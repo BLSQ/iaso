@@ -69,7 +69,7 @@ def dump_attributes(obj):
 class DataValueExporterTests(TestCase):
     def build_instance(self, form):
         instance = Instance()
-        instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
+        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
         instance.org_unit = self.org_unit
         if form == self.form:
             instance.period = "201801"
@@ -84,7 +84,7 @@ class DataValueExporterTests(TestCase):
         instance.save()
         # force to past creation date
         # looks the first save don't take it
-        instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
+        instance.source_created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
         instance.save()
         return instance
 

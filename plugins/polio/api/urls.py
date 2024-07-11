@@ -20,7 +20,7 @@ from plugins.polio.api.dashboards.supply_chain import (
 from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
 from plugins.polio.api.lqas_im.countries_with_lqas_im import CountriesWithLqasIMConfigViewSet
 from plugins.polio.api.lqas_im.im_stats import IMStatsViewSet
-from plugins.polio.api.lqas_im.lqas_country import LQASCountryViewset
+from plugins.polio.api.lqas_im.lqas_im_country import LQASIMCountryViewset
 from plugins.polio.api.lqas_im.lqasim_global_map import LQASIMGlobalMapViewSet
 from plugins.polio.api.lqas_im.lqasim_zoom_in_map import LQASIMZoominMapBackgroundViewSet, LQASIMZoominMapViewSet
 from plugins.polio.api.notifications.views import NotificationViewSet
@@ -62,7 +62,7 @@ router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basena
 router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")
 router.register(r"polio/datelogs", RoundDateHistoryEntryViewset, basename="datelogs")
 router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, basename="lqasimcountries")
-router.register(r"polio/lqasmap/country", LQASCountryViewset, basename="lqascountry")
+router.register(r"polio/lqasimmap/country", LQASIMCountryViewset, basename="lqasimcountry")
 router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
 router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")

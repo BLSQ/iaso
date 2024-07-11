@@ -95,6 +95,7 @@ export const MapComponent = ({
             </Pane>
             <PaneWithPattern
                 name={`MainLayer-${name}`}
+                key={name}
                 patterns={shapePatterns}
                 patternIds={shapePatternIds}
             >

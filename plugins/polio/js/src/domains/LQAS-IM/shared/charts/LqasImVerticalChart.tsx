@@ -11,12 +11,12 @@ import {
     LabelList,
 } from 'recharts';
 import { blue } from '@mui/material/colors';
-import { BarChartData } from '../../../constants/types';
+import { BarChartData } from '../../../../constants/types';
 import { BAR_HEIGHT } from './PercentageBarChart/constants';
 import { CustomTick } from './CustomTick';
 import { customLabelHorizontal } from './PercentageBarChart/utils';
 import { NoData } from './NoData';
-import { verticalChartTooltipFormatter } from './LqasIm';
+import { verticalChartTooltipFormatter } from '../LqasIm';
 
 type Props = {
     // eslint-disable-next-line react/require-default-props

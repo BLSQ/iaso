@@ -32,21 +32,19 @@ export type OrgUnitListChildren = Pagination & {
     orgunits: OrgUnit[];
 };
 
+const getOrder = (orgUnitListOrder?: string): string => {
+    if (!orgUnitListOrder) return '-name';
+    if (orgUnitListOrder === 'location') return 'location,simplified_geom';
+    if (orgUnitListOrder === '-location') return '-location,-simplified_geom';
+    return orgUnitListOrder;
+};
+
 export const useGetOrgUnitListChildren = (
     orgUnitParentId: string,
     params: RegistryParams,
     orgUnitTypes?: OrgunitTypes,
 ): UseQueryResult<OrgUnitListChildren, Error> => {
-    let order = '-name';
-    if (params.orgUnitListOrder) {
-        if (params.orgUnitListOrder === 'location') {
-            order = 'location,simplified_geom';
-        } else if (params.orgUnitListOrder === '-location') {
-            order = '-location,-simplified_geom';
-        } else {
-            order = params.orgUnitListOrder;
-        }
-    }
+    const order = getOrder(params.orgUnitListOrder);
     const apiParams: Record<string, any> = {
         validation_status: 'VALID',
         orgUnitParentId,

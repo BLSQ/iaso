@@ -30,11 +30,14 @@ import { useGetGroups } from '../hooks/requests/useGetGroups';
 import { useGetOrgUnit } from './TreeView/requests';
 
 import { InputWithInfos } from '../../../components/InputWithInfos';
+import { DropdownOptionsWithOriginal } from '../../../types/utils';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
-import MESSAGES from '../messages';
-import { Search } from '../types/search';
+import { useGetVersionLabel } from '../hooks/useGetVersionLabel';
 import { useInstancesOptions } from '../hooks/utils/useInstancesOptions';
+import MESSAGES from '../messages';
+import { DataSource } from '../types/dataSources';
+import { Search } from '../types/search';
 
 type Props = {
     searches: [Search];
@@ -52,15 +55,16 @@ type Props = {
     setHasLocationLimitError: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-const retrieveSourceFromVersionId = (versionId, dataSources) => {
-    const idAsNumber = parseInt(versionId, 10);
-    const result = dataSources.find(
-        src =>
-            src.original.versions.filter(
-                srcVersion => srcVersion.id === idAsNumber,
-            ).length > 0,
+const retrieveSourceFromVersionId = (
+    versionId: string | number,
+    dataSources: DropdownOptionsWithOriginal<DataSource>[],
+): number | undefined => {
+    const idAsNumber =
+        typeof versionId === 'string' ? parseInt(versionId, 10) : versionId;
+    const result = dataSources.find(dataSource =>
+        dataSource.original.versions.some(version => version.id === idAsNumber),
     );
-    return result?.id;
+    return result?.original.id;
 };
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -83,14 +87,17 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const currentUser = useCurrentUser();
-
-    const [dataSourceId, setDataSourceId] = useState<number | undefined>();
+    const [dataSourceId, setDataSourceId] = useState<number | undefined>(
+        currentSearch?.source ? parseInt(currentSearch?.source, 10) : undefined,
+    );
     const [projectId, setProjectId] = useState<number | undefined>(
         currentSearch?.project,
     );
-    const [sourceVersionId, setSourceVersionId] = useState<
-        number | undefined
-    >();
+    const [sourceVersionId, setSourceVersionId] = useState<number | undefined>(
+        currentSearch?.version
+            ? parseInt(currentSearch?.version, 10)
+            : undefined,
+    );
     const [initialOrgUnitId, setInitialOrgUnitId] = useState<
         string | undefined
     >(currentSearch?.levels);
@@ -104,7 +111,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     }, [currentSearch?.levels]);
 
     const { data: dataSources, isFetching: isFetchingDataSources } =
-        useGetDataSources();
+        useGetDataSources(true);
+
+    const getVersionLabel = useGetVersionLabel(dataSources);
     const { data: projects, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
     const { data: groups, isFetching: isFetchingGroups } = useGetGroups({
@@ -173,7 +182,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         if (
             dataSources &&
             !dataSourceId &&
-            !sourceVersionId &&
             filters?.version &&
             !filters?.group
         ) {
@@ -208,7 +216,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Set the version to the dataSources default version when changing source
+    // Set the version to the dataSources default version when changing source, or the first version if no default is set
     useEffect(() => {
         if (dataSourceId) {
             const dataSource = dataSources?.find(
@@ -221,7 +229,10 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 )
             ) {
                 const selectedVersion =
-                    dataSource?.original?.default_version?.id;
+                    dataSource.original?.default_version?.id ||
+                    dataSource.original?.versions[
+                        dataSource.original.versions.length - 1
+                    ]?.id;
                 setSourceVersionId(selectedVersion);
             }
         }
@@ -239,11 +250,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 .filter(src => src.original?.id === dataSourceId)[0]
                 ?.original?.versions.sort((a, b) => a.number - b.number)
                 .map(version => ({
-                    label: version.number.toString(),
+                    label: getVersionLabel(version.id),
                     value: version.id.toString(),
                 })) ?? []
         );
-    }, [dataSourceId, dataSources]);
+    }, [dataSourceId, dataSources, getVersionLabel]);
 
     return (
         <Grid container spacing={2}>

@@ -37,8 +37,8 @@ import MESSAGES from '../../../../constants/messages';
 import { TablePlaceHolder } from '../../../Campaigns/Scope/Scopes/TablePlaceHolder';
 import { TableText } from '../../../Campaigns/Scope/Scopes/TableText';
 import { IN_SCOPE } from '../../shared/constants';
-import { HasLocationIcon } from '../LqasAfroOverview/ListView/HasLocationIcon';
-import { findRegionShape } from '../utils';
+import { HasLocationIcon } from '../../shared/HasLocationIcon';
+import { findRegionShape } from '../../shared/utils';
 
 type SortFocus =
     | 'DISTRICT'
@@ -74,6 +74,7 @@ const useTableStyle = makeStyles(theme => {
         [LQAS_VERY_POOR]: { color: FAIL_COLOR },
         [LQAS_MODERATE]: { color: MODERATE_COLOR },
         [LQAS_POOR]: { color: POOR_COLOR },
+        [LQAS_VERY_POOR]: { color: FAIL_COLOR },
     };
 });
 

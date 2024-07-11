@@ -11,6 +11,7 @@ from django.core.files import File
 from django.http import StreamingHttpResponse, HttpResponse
 from django.test import TestCase as BaseTestCase
 from django.urls import clear_url_caches
+from django.utils import timezone
 
 from hat.menupermissions.models import CustomPermissionSupport
 from hat.api_import.models import APIImport
@@ -59,7 +60,20 @@ class IasoTestCaseMixin:
         instance_file_mock = mock.MagicMock(spec=File)
         instance_file_mock.name = "test.xml"
 
-        return m.Instance.objects.create(form=form, period=period, org_unit=org_unit, file=instance_file_mock, **kwargs)
+        # Sane defaults, if the source timestamps are not given, set them to the
+        # db timestamps.
+        if "source_created_at" not in kwargs:
+            kwargs["source_created_at"] = timezone.now()
+        if "source_updated_at" not in kwargs:
+            kwargs["source_updated_at"] = kwargs["source_created_at"] or timezone.now()
+
+        return m.Instance.objects.create(
+            form=form,
+            period=period,
+            org_unit=org_unit,
+            file=instance_file_mock,
+            **kwargs,
+        )
 
     @staticmethod
     def create_file_mock(**kwargs):

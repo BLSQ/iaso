@@ -37,37 +37,33 @@ export const ChronogramTemplateTask: FunctionComponent = () => {
 
     return (
         <>
+            <TopBar
+                title={formatMessage(MESSAGES.chronogramTemplateTaskTitle)}
+                displayBackButton={true}
+                goBack={() => goBack()}
+            />
             {isFetchingMetaData && <LoadingSpinner />}
             {!isFetchingMetaData && (
-                <>
-                    <TopBar
-                        title={formatMessage(
-                            MESSAGES.chronogramTemplateTaskTitle,
-                        )}
-                        displayBackButton={true}
-                        goBack={() => goBack()}
+                <Box className={classes.containerFullHeightNoTabPadded}>
+                    <Grid container justifyContent="flex-end">
+                        <Box>
+                            <CreateChronogramTemplateTaskModal
+                                iconProps={{
+                                    message: MESSAGES.modalAddTitle,
+                                }}
+                                chronogramTaskMetaData={
+                                    chronogramTaskMetaData as ChronogramTaskMetaData
+                                }
+                            />
+                        </Box>
+                    </Grid>
+                    <ChronogramTemplateTaskTable
+                        params={paramsNew}
+                        chronogramTaskMetaData={
+                            chronogramTaskMetaData as ChronogramTaskMetaData
+                        }
                     />
-                    <Box className={classes.containerFullHeightNoTabPadded}>
-                        <Grid container justifyContent="flex-end">
-                            <Box>
-                                <CreateChronogramTemplateTaskModal
-                                    iconProps={{
-                                        message: MESSAGES.modalAddTitle,
-                                    }}
-                                    chronogramTaskMetaData={
-                                        chronogramTaskMetaData as ChronogramTaskMetaData
-                                    }
-                                />
-                            </Box>
-                        </Grid>
-                        <ChronogramTemplateTaskTable
-                            params={paramsNew}
-                            chronogramTaskMetaData={
-                                chronogramTaskMetaData as ChronogramTaskMetaData
-                            }
-                        />
-                    </Box>
-                </>
+                </Box>
             )}
         </>
     );

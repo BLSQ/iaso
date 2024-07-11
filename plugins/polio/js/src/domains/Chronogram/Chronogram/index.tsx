@@ -33,23 +33,21 @@ export const Chronogram: FunctionComponent = () => {
 
     return (
         <>
+            <TopBar
+                title={formatMessage(MESSAGES.chronogramTitle)}
+                displayBackButton={false}
+            />
             {isFetchingMetaData && <LoadingSpinner />}
             {!isFetchingMetaData && (
-                <>
-                    <TopBar
-                        title={formatMessage(MESSAGES.chronogramTitle)}
-                        displayBackButton={false}
+                <Box className={classes.containerFullHeightNoTabPadded}>
+                    <ChronogramFilters params={paramsNew} />
+                    <ChronogramTable
+                        params={paramsNew}
+                        chronogramTaskMetaData={
+                            chronogramTaskMetaData as ChronogramTaskMetaData
+                        }
                     />
-                    <Box className={classes.containerFullHeightNoTabPadded}>
-                        <ChronogramFilters params={paramsNew} />
-                        <ChronogramTable
-                            params={paramsNew}
-                            chronogramTaskMetaData={
-                                chronogramTaskMetaData as ChronogramTaskMetaData
-                            }
-                        />
-                    </Box>
-                </>
+                </Box>
             )}
         </>
     );

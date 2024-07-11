@@ -82,6 +82,7 @@ class FormsVersionAPITestCase(APITestCase):
                 "demo_note",
                 "demo_select_one",
                 "demo_calculate",
+                "other_source_elec",
                 "instanceID",
             ],
         )
@@ -96,13 +97,10 @@ class FormsVersionAPITestCase(APITestCase):
                 "demo_note",
                 "demo_select_one",
                 "demo_calculate",
+                "propriete_fonciere/other_source_elec",
                 "meta/instanceID",
             ],
         )
-
-        import pdb
-
-        pdb.set_trace()
 
     def test_form_versions_list(self):
         """GET /formversions/: allowed"""

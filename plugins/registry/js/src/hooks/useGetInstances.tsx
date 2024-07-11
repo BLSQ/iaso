@@ -124,7 +124,7 @@ export const useGetInstance = (
 ): UseQueryResult<Instance, Error> => {
     return useSnackQuery({
         queryKey: ['instance', instanceId],
-        queryFn: () => getRequest(`/api/instances/${instanceId}/`),
+        queryFn: () => getRequest(`/api/public/registry/instances/${instanceId}/`),
         options: {
             enabled: Boolean(instanceId),
             retry: false,

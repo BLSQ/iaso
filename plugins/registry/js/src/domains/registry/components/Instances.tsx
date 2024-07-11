@@ -26,6 +26,7 @@ type Props = {
     subOrgUnitTypes: OrgunitTypeRegistry[];
     params: RegistryParams;
     appId: string;
+    registrySlug: string,
 };
 
 const baseUrl = baseUrls.registry;
@@ -34,6 +35,7 @@ export const Instances: FunctionComponent<Props> = ({
     subOrgUnitTypes,
     params,
     appId,
+    registrySlug,
 }) => {
     const redirectToReplace = useRedirectToReplace();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
@@ -52,6 +54,7 @@ export const Instances: FunctionComponent<Props> = ({
 
     const { data, isFetching: isFetchingList } = useGetInstances(
         params,
+        registrySlug,
         currentType?.id,
     );
 

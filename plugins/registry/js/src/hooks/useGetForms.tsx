@@ -34,6 +34,7 @@ export const useGetForms = (
         options: {
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
+            enabled: Boolean(appId),
             select: data =>
                 data?.forms?.map(t => ({
                     label: t.name,

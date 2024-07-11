@@ -10,8 +10,8 @@ import { makeUrlWithParams } from '../../../../../hat/assets/js/apps/Iaso/libs/u
 import { RegistryParams } from '../types';
 
 export const useGetOrgUnit = (
-    appId?: string,
     orgUnitId?: string,
+    appId?: string,
 ): UseQueryResult<OrgUnit, Error> => {
     const queryKey: any[] = ['orgUnit', orgUnitId];
     return useSnackQuery({
@@ -20,7 +20,7 @@ export const useGetOrgUnit = (
             getRequest(`/api/orgunits/${orgUnitId}/?app_id=${appId}`),
         options: {
             retry: false,
-            enabled: Boolean(orgUnitId),
+            enabled: Boolean(orgUnitId) && Boolean(appId),
             keepPreviousData: Boolean(orgUnitId),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
@@ -67,7 +67,7 @@ export const useGetOrgUnitListChildren = (
         queryFn: () => getRequest(url),
         options: {
             keepPreviousData: true,
-            enabled: Boolean(orgUnitParentId && orgUnitTypes),
+            enabled: Boolean(orgUnitParentId && orgUnitTypes && appId),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select: data => {
@@ -111,7 +111,7 @@ export const useGetOrgUnitsMapChildren = (
         options: {
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
-            enabled: Boolean(orgUnitParentId && orgUnitTypes),
+            enabled: Boolean(orgUnitParentId && orgUnitTypes && appId),
             select: (data: Result): OrgUnit[] => data?.orgUnits || [],
         },
     });

@@ -73,6 +73,8 @@ const styles: SxStyles = {
 };
 const baseUrl = baseUrls.registry;
 
+const registrySlug = 'google_registry';
+
 export const Registry: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as unknown as RegistryParams;
     const { orgUnitId, orgUnitChildrenId, fullScreen } = params;
@@ -83,11 +85,11 @@ export const Registry: FunctionComponent = () => {
     const redirectTo = useRedirectTo();
     const redirectToReplace = useRedirectToReplace();
 
-    const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
-    const { data: config } = useGetRegistryConfig('google_registry');
+    const { data: config } = useGetRegistryConfig(registrySlug);
 
+    const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId, config?.app_id);
     const { data: selectedChildren, isFetching: isFetchingSelectedChildren } =
-        useGetOrgUnit(config?.app_id, selectedChildrenId);
+        useGetOrgUnit(selectedChildrenId, config?.app_id);
     const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =
         useGetOrgUnitListChildren(
             orgUnitId,
@@ -152,7 +154,6 @@ export const Registry: FunctionComponent = () => {
         },
         [params, redirectToReplace],
     );
-
     if (!config) {
         return null;
     }
@@ -241,6 +242,7 @@ export const Registry: FunctionComponent = () => {
                 subOrgUnitTypes={subOrgUnitTypes}
                 params={params}
                 appId={config.app_id}
+                registrySlug={registrySlug}
             />
             {!orgUnitId && <Placeholder />}
         </Box>

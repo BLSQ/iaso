@@ -20,7 +20,7 @@ export const useGetOrgUnitType = (
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             retry: false,
-            enabled: Boolean(orgUnitTypeId),
+            enabled: Boolean(orgUnitTypeId && appId),
         },
     });
 };

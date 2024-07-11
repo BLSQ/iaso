@@ -245,6 +245,7 @@ class PlanningSerializer(serializers.ModelSerializer):
             "org_unit_details",
             "forms",
             "project",
+            "project_details",
             "description",
             "published_at",
             "started_at",
@@ -254,6 +255,7 @@ class PlanningSerializer(serializers.ModelSerializer):
 
     team_details = NestedTeamSerializer(source="team", read_only=True)
     org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
+    project_details = NestedProjectSerializer(source="project", read_only=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -331,7 +333,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         PlanningSearchFilterBackend,
         DeletionFilterBackend,
     ]
-    ordering_fields = ["id", "name", "started_at", "ended_at"]
+    ordering_fields = ["id", "name", "started_at", "ended_at", "project__name", "org_unit__name"]
     filterset_fields = {
         "name": ["icontains"],
         "started_at": ["gte", "lte"],

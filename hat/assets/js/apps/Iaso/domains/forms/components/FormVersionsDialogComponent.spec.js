@@ -1,18 +1,18 @@
-import React from 'react';
-import { act } from 'react-dom/test-utils';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import React from 'react';
+import { act } from 'react-dom/test-utils';
 
-import { expect } from 'chai';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import FormVersionsDialog from './FormVersionsDialogComponent';
-import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { renderWithStore } from '../../../../../test/utils/redux';
+import { expect } from 'chai';
 import { withQueryClientProvider } from '../../../../../test/utils';
-import formVersionFixture from '../fixtures/formVersions.json';
+import { renderWithStore } from '../../../../../test/utils/redux';
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
+import formVersionFixture from '../fixtures/formVersions.json';
 import MESSAGES from '../messages';
+import FormVersionsDialog from './FormVersionsDialogComponent';
 
 let connectedWrapper;
 
@@ -36,8 +36,8 @@ const awaitUseEffect = async wrapper => {
 
 const getConnectedWrapper = () =>
     mount(
-        renderWithStore(
-            withQueryClientProvider(
+        withQueryClientProvider(
+            renderWithStore(
                 <LocalizationProvider
                     dateAdapter={AdapterMoment}
                     adapterLocale="en"
@@ -58,12 +58,12 @@ const getConnectedWrapper = () =>
                         periodType={PERIOD_TYPE_DAY}
                     />
                 </LocalizationProvider>,
-            ),
-            {
-                forms: {
-                    current: undefined,
+                {
+                    forms: {
+                        current: undefined,
+                    },
                 },
-            },
+            ),
         ),
     );
 
@@ -71,8 +71,8 @@ describe('FormVersionsDialog connected component', () => {
     describe('with a new form version', () => {
         before(() => {
             connectedWrapper = mount(
-                renderWithStore(
-                    withQueryClientProvider(
+                withQueryClientProvider(
+                    renderWithStore(
                         <FormVersionsDialog
                             formId={formId}
                             titleMessage={MESSAGES.createFormVersion}
@@ -87,12 +87,12 @@ describe('FormVersionsDialog connected component', () => {
                                 />
                             )}
                         />,
-                    ),
-                    {
-                        forms: {
-                            current: undefined,
+                        {
+                            forms: {
+                                current: undefined,
+                            },
                         },
-                    },
+                    ),
                 ),
             );
             inputComponent = connectedWrapper.find('#open-dialog').at(0);

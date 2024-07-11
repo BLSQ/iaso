@@ -3,8 +3,8 @@
 import moment from 'moment';
 import formsList from '../../fixtures/forms/list.json';
 import orgUnit from '../../fixtures/orgunits/details.json';
-import { testPermission } from '../../support/testPermission';
 import { testPagination } from '../../support/testPagination';
+import { testPermission } from '../../support/testPermission';
 import { testTablerender } from '../../support/testTableRender';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');

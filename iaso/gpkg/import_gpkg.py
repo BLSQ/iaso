@@ -116,7 +116,7 @@ def create_or_update_orgunit(
         geom = convert_to_geography(geometry["type"], geometry["coordinates"])
         if isinstance(geom, Point):
             orgunit.location = geom
-        else:
+        elif geom is not None:
             orgunit.geom = geom
             orgunit.simplified_geom = simplify_geom(geom)
 

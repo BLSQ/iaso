@@ -21,7 +21,7 @@ class DeviceSerializer(serializers.ModelSerializer):
     def get_synched_at(obj: Device):
         # updated_at field is better compared to created_at
         instance = Instance.objects.filter(device__id=obj.id).order_by("-updated_at").first()
-        return instance.created_at.timestamp() if instance else None
+        return instance.source_created_at.timestamp() if instance and instance.source_created_at else None
 
     @staticmethod
     def get_last_owner(obj: Device):

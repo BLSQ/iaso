@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
-import { useSelector } from 'react-redux';
+import { LangOptions } from 'bluesquare-components';
+import { useQueryClient } from 'react-query';
 import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';
 import { Project } from '../domains/projects/types/project';
 
@@ -72,7 +73,7 @@ export type User = {
         id: string;
     }[];
     projects?: Project[];
-    language?: string;
+    language?: LangOptions;
     user_id: number;
     dhis2_id?: string;
 };
@@ -92,18 +93,15 @@ export const getDisplayName = (
 
 export default getDisplayName;
 
-type Users = {
-    current: User;
-};
-type State = {
-    users: Users;
+export const useCurrentUser = (): User => {
+    const queryClient = useQueryClient();
+    const currentUser = queryClient.getQueryData<User>('currentUser');
+    return currentUser as User;
 };
 
-// Replace with react query when we can
-export const useCurrentUser = (): User => {
-    // noinspection UnnecessaryLocalVariableJS
-    const currentUser = useSelector((state: State) => state.users.current);
-    return currentUser;
+export const useIsLoggedIn = (): boolean => {
+    const currentUser: User = useCurrentUser();
+    return Boolean(currentUser);
 };
 
 export const useHasNoAccount = (): boolean => {

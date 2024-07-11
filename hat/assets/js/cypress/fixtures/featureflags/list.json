@@ -27,7 +27,7 @@
         {
             "id": 2,
             "code": "GPS_TRACKING",
-            "name": "gps tracking",
+            "name": "GPS Tracking",
             "description": "",
             "created_at": 1590486410.557356,
             "updated_at": 1590486410.557379

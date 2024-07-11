@@ -420,8 +420,8 @@ class EntityViewSet(ModelViewSet):
                 col = 0
                 data = [
                     i.form.name,
-                    i.created_at.strftime(EXPORTS_DATETIME_FORMAT),
-                    i.updated_at.strftime(EXPORTS_DATETIME_FORMAT),
+                    i.source_created_at.strftime(EXPORTS_DATETIME_FORMAT) if i.source_created_at else None,
+                    i.source_updated_at.strftime(EXPORTS_DATETIME_FORMAT) if i.source_updated_at else None,
                     i.org_unit.name,
                     i.created_by.username,
                     "",
@@ -449,8 +449,8 @@ class EntityViewSet(ModelViewSet):
             for i in instances:
                 data_list = [
                     i.form.name,
-                    i.created_at.strftime(EXPORTS_DATETIME_FORMAT),
-                    i.updated_at.strftime(EXPORTS_DATETIME_FORMAT),
+                    i.source_created_at.strftime(EXPORTS_DATETIME_FORMAT) if i.source_created_at else None,
+                    i.source_updated_at.strftime(EXPORTS_DATETIME_FORMAT) if i.source_updated_at else None,
                     i.org_unit.name,
                     i.created_by.username,
                     "",

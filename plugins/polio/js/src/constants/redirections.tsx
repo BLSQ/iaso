@@ -3,7 +3,7 @@ import { baseUrls } from './urls';
 
 export const redirections: Redirection[] = [
     {
-        path: baseUrls.embeddedCalendar,
-        to: `${baseUrls.embeddedCalendar}/`, // Doesn't do anything
+        path: '/polio/im/ihh/*',
+        to: `/${baseUrls.imHH}/`,
     },
 ];

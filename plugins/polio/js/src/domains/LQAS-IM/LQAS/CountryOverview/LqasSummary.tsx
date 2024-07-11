@@ -54,7 +54,8 @@ export const LqasSummary: FunctionComponent<Props> = ({
             : '--';
         const caregiversRatio =
             data && campaign && data[campaign]
-                ? makeCaregiversRatio(accessArrayRound(data[campaign], round))
+                ? // TODO exclude over and undersampled
+                  makeCaregiversRatio(accessArrayRound(data[campaign], round))
                 : '';
 
         return {
@@ -68,6 +69,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
     const ratePassedColor = getRatePassedColors(summary.ratePassed, classes);
 
     return (
+        // eslint-disable-next-line react/jsx-no-useless-fragment
         <>
             {data && campaign && data[campaign] && (
                 <Box pt={2} pb={2}>

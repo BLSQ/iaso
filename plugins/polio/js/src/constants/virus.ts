@@ -32,6 +32,10 @@ const polioViruses = [
         value: 'WPV1',
         label: 'WPV1',
     },
+    {
+        value: 'PV1 & cVDPV2',
+        label: 'cVDPV1 & cVDPV2',
+    },
 ];
 
 export type PolioVaccine = {

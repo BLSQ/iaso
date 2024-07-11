@@ -7,7 +7,7 @@ import { testPermission } from '../../support/testPermission';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/accountId/1/orgUnitId/${orgUnit.id}/levels/[1,2]`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/accountId/1/orgUnitId/${orgUnit.id}/levels/[1,2]/tab/infos`;
 
 const newSourceIndex = 2;
 
@@ -81,7 +81,7 @@ const testReadableInfos = ou => {
     }
 };
 
-const mockCalls = (isSaved = false) => {
+const mockCalls = () => {
     cy.intercept('GET', '/api/profiles/**', {
         fixture: 'profiles/list.json',
     }).as('profiles');
@@ -91,6 +91,12 @@ const mockCalls = (isSaved = false) => {
     cy.intercept('GET', `/api/profiles/`, {
         fixture: `profiles/list.json`,
     }).as('profilesList');
+    cy.intercept('GET', `/api/orgunits/${orgUnit.id}/`, {
+        fixture: `orgunits/details.json`,
+    }).as('getOuDetail');
+    cy.intercept('GET', `/api/orgunits/1/`, {
+        fixture: `orgunits/parent.json`,
+    }).as('getOuDetail');
     cy.intercept('GET', `/api/algorithms/`, {
         fixture: `algorithms/list.json`,
     }).as('algos');
@@ -140,11 +146,6 @@ const mockCalls = (isSaved = false) => {
             fixture: `comments/list.json`,
         },
     ).as('comments');
-    if (!isSaved) {
-        cy.intercept('GET', `/api/orgunits/${orgUnit.id}`, {
-            fixture: 'orgunits/details.json',
-        }).as('getOuDetail');
-    }
     cy.intercept(
         'GET',
         `/api/orgunits/?&parent_id=${orgUnit.id}&limit=10&order=name&validation_status=all`,
@@ -179,6 +180,14 @@ const mockCalls = (isSaved = false) => {
             ],
         },
     ).as('OUsearch');
+
+    cy.intercept(
+        'GET',
+        `/api/orgunits/?&orgUnitParentId=${orgUnit.id}&orgUnitTypeId=11&withShapes=true&validation_status=all`,
+        {
+            fixture: 'orgunits/empty.json',
+        },
+    );
 };
 
 describe('infos tab', () => {
@@ -252,9 +261,7 @@ describe('infos tab', () => {
         });
     });
     it('should create new org unit', () => {
-        cy.intercept('GET', '/api/orgunits/**/*', {
-            fixture: 'orgunits/list.json',
-        });
+        mockCalls();
         cy.visit(`${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/0`);
 
         cy.intercept(
@@ -279,7 +286,6 @@ describe('infos tab', () => {
         cy.fillTextField('#input-text-source_ref', orgUnit.source_ref);
         cy.fillArrayInputField('aliases', orgUnit.aliases);
         cy.fillTreeView('#ou-tree-input', 0, false);
-        mockCalls();
         cy.get('#save-ou').click();
         cy.wait('@saveOu').then(() => {
             cy.wrap(interceptFlag).should('eq', true);

@@ -37,6 +37,7 @@ VIRUSES = [
     ("PV3", _("PV3")),
     ("cVDPV2", _("cVDPV2")),
     ("WPV1", _("WPV1")),
+    ("PV1 & cVDPV2", _("PV1 & cVDPV2")),
 ]
 
 VACCINES = [
@@ -509,7 +510,7 @@ class Campaign(SoftDeletableModel):
         verbose_name=_("PV2 Notification"),
     )
 
-    virus = models.CharField(max_length=6, choices=VIRUSES, null=True, blank=True)
+    virus = models.CharField(max_length=12, choices=VIRUSES, null=True, blank=True)
 
     # Detection.
     detection_status = models.CharField(default="PENDING", max_length=10, choices=STATUS)

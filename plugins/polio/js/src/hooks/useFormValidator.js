@@ -220,7 +220,7 @@ yup.addMethod(
 
             let errorMessage;
 
-            if (ageMax <= value) {
+            if (ageMax && ageMax <= value) {
                 errorMessage = formatMessage(
                     MESSAGES.ageMinGreaterOrEqualToAgeMin,
                 );
@@ -245,10 +245,34 @@ yup.addMethod(
 
             let errorMessage;
 
-            if (ageMin >= value) {
+            if (ageMin && ageMin >= value) {
                 errorMessage = formatMessage(
                     MESSAGES.ageMaxSmallerOrEqualToAgeMin,
                 );
+            }
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
+
+yup.addMethod(
+    yup.string,
+    'isAgeTypeSelected',
+    function isAgeTypeSelected(formatMessage) {
+        return this.test('isAgeTypeSelected', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const ageMin = parent.age_min;
+            const ageMax = parent.age_max;
+            const hasAgeMin = Boolean(ageMin) || ageMin === 0;
+            let errorMessage;
+            if (!value && (hasAgeMin || Boolean(ageMax))) {
+                errorMessage = formatMessage(MESSAGES.pleaseSelectAgeType);
             }
             if (errorMessage) {
                 return createError({
@@ -278,7 +302,11 @@ const useRoundShape = () => {
             .nullable()
             .required(formatMessage(MESSAGES.fieldRequired))
             .isValidRoundEndDate(formatMessage),
-        age_type: yup.string().oneOf(AGE_TYPES).nullable(),
+        age_type: yup
+            .string()
+            .oneOf([...AGE_TYPES, null])
+            .isAgeTypeSelected(formatMessage)
+            .nullable(),
         age_min: yup
             .number()
             .integer(formatMessage(MESSAGES.positiveInteger))

@@ -11,9 +11,11 @@ import {
     string,
     number,
     bool,
+    array,
 } from 'prop-types';
 
 import { CustomZoomControl } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl.tsx';
+import { PaneWithPattern } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/PaneWithPattern/PaneWithPattern.tsx';
 
 const findBackgroundShape = (shape, backgroundShapes) => {
     return backgroundShapes.filter(
@@ -36,6 +38,8 @@ export const MapComponent = ({
     fitToBounds,
     makePopup,
     fitBoundsToBackground,
+    shapePatterns,
+    shapePatternIds,
 }) => {
     // When there is no data, bounds is undefined, so default center and zoom is used,
     // when the data get there, bounds change and the effect focus on it via the deps
@@ -89,7 +93,12 @@ export const MapComponent = ({
                         />
                     ))}
             </Pane>
-            <Pane name={`MainLayer-${name}`}>
+            <PaneWithPattern
+                name={`MainLayer-${name}`}
+                key={name}
+                patterns={shapePatterns}
+                patternIds={shapePatternIds}
+            >
                 {mainLayer?.length > 0 &&
                     mainLayer.map(shape => (
                         <GeoJSON
@@ -119,7 +128,7 @@ export const MapComponent = ({
                             </Tooltip>
                         </GeoJSON>
                     ))}
-            </Pane>
+            </PaneWithPattern>
         </MapContainer>
     );
 };
@@ -136,6 +145,8 @@ MapComponent.propTypes = {
     fitToBounds: bool,
     makePopup: func,
     fitBoundsToBackground: bool,
+    shapePatterns: array,
+    shapePatternIds: array,
 };
 
 MapComponent.defaultProps = {
@@ -149,4 +160,6 @@ MapComponent.defaultProps = {
     tooltipLabels: { main: 'District', background: 'Region' },
     makePopup: () => null,
     fitBoundsToBackground: false,
+    shapePatterns: [],
+    shapePatternIds: [],
 };

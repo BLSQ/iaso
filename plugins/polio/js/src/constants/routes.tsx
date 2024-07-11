@@ -95,14 +95,14 @@ export const imGlobalPath: RoutePath = {
     permissions: [POLIO, POLIO_ADMIN],
 };
 export const imIhhPath: RoutePath = {
-    baseUrl: baseUrls.imIhh,
-    routerUrl: `${baseUrls.imIhh}/*`,
+    baseUrl: baseUrls.imHH,
+    routerUrl: `${baseUrls.imHH}/*`,
     element: <ImStats />,
     permissions: [POLIO, POLIO_ADMIN],
 };
 export const imOhhPath: RoutePath = {
-    baseUrl: baseUrls.imOhh,
-    routerUrl: `${baseUrls.imOhh}/*`,
+    baseUrl: baseUrls.imOHH,
+    routerUrl: `${baseUrls.imOHH}/*`,
     element: <ImStats />,
     permissions: [POLIO, POLIO_ADMIN],
 };

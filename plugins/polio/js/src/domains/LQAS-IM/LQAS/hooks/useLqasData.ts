@@ -7,7 +7,6 @@ import { useRfaTitle } from '../../shared/hooks/useRfaTitle';
 
 import { formatForRfaChart, formatForNfmChart } from '../../shared/LqasIm';
 import { LqasImData } from '../../../../constants/types';
-import { useGetCampaigns } from '../../../Campaigns/hooks/api/useGetCampaigns';
 import { useDebugData } from '../../shared/hooks/useDebugData';
 
 type UseLQASDataParams = {
@@ -19,18 +18,10 @@ type UseLQASDataParams = {
 
 export const useLqasData = ({
     campaign,
-    country,
     selectedRounds = [1, 2],
     LQASData,
 }: UseLQASDataParams): Record<string, unknown> => {
     const convertedData = useConvertedLqasImData(LQASData);
-
-    // TODO move out of this hook
-    const { data: campaigns = [], isFetching: campaignsFetching } =
-        useGetCampaigns({
-            countries: [country],
-            enabled: Boolean(country),
-        });
 
     const debugData = useDebugData(LQASData, campaign);
 
@@ -116,8 +107,6 @@ export const useLqasData = ({
     );
     return {
         convertedData,
-        campaigns,
-        campaignsFetching,
         debugData,
         hasScope,
         chartData,

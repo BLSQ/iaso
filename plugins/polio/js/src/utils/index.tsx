@@ -10,10 +10,11 @@ type Data = {
     [key: string]: any;
 };
 
-type LegendItem = {
+export type LegendItem = {
     label: string;
     value: string;
-    color: string;
+    color?: string;
+    background?: string;
 };
 
 export const findDataForShape = ({
@@ -105,12 +106,12 @@ export const findScopeIds = (
     obrName: string | undefined,
     campaigns: Campaign[],
     currentRound: number,
-): string[] => {
-    let scopeIds = obrName
+): number[] => {
+    const filteredCampaigns = obrName
         ? campaigns.filter(campaign => campaign.obr_name === obrName)
         : campaigns;
 
-    scopeIds = scopeIds
+    const scopeIds = filteredCampaigns
         .map(campaign => {
             if (!campaign.separate_scopes_per_round) {
                 return campaign.scopes
@@ -137,11 +138,13 @@ export const makeLegendItem = ({
     label,
     value,
     color,
+    background,
 }: LegendItem): LegendItem => {
     return {
         label: `${label}: ${value}`,
         value: `${label}: ${value}`,
         color,
+        background,
     };
 };
 

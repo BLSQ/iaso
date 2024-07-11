@@ -27,7 +27,7 @@ export const useGetAlgorithmRuns = ({
     const apiParams = useApiParams(tableParams, tableDefaults);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['algos'],
+        queryKey: ['algos', queryString],
         queryFn: () => getAlgos(queryString),
         options: {
             keepPreviousData: true,

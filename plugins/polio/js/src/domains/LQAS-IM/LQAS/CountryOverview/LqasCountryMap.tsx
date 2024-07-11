@@ -1,24 +1,19 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@mui/material';
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-import { defaultShapeStyle } from '../../../../utils/index';
-import { LQASIMType } from '../../shared/types/types';
-import { ScopeAndDNFDisclaimer } from '../../shared/ScopeAndDNFDisclaimer';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 import { makeLqasMapLegendItems } from '../utils';
+import { LqasImCountryMap } from '../../shared/Map/LqasImCountryMap';
 import { lqasDistrictColors } from '../constants';
-import { makePopup } from '../../shared/LqasImPopUp';
-import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer';
-import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend';
-import { MapComponent } from '../../../Campaigns/MapComponent/MapComponent';
+import { Side } from '../../../../constants/types';
 
-const getBackgroundLayerStyle = () => defaultShapeStyle;
+const getMainLayerStyles = shape => {
+    return lqasDistrictColors[shape.status];
+};
 
 type Props = {
     round: number;
     campaigns?: any[];
     selectedCampaign?: string;
-    type: LQASIMType;
     countryId?: number;
     data?: any;
     isFetchingGeoJson?: boolean;
@@ -27,11 +22,12 @@ type Props = {
     disclaimerData?: Record<string, unknown> | null | undefined;
     regionShapes: any;
     isFetchingRegions: boolean;
+    side: Side;
 };
 
 export const LqasCountryMap: FunctionComponent<Props> = ({
-    type,
     round,
+    side,
     selectedCampaign,
     countryId = undefined,
     campaigns = [],
@@ -53,60 +49,25 @@ export const LqasCountryMap: FunctionComponent<Props> = ({
         );
     }, [data, selectedCampaign, round, formatMessage]);
 
-    const getMainLayerStyles = shape => {
-        return lqasDistrictColors[shape.status];
-    };
-
     const title = formatMessage(MESSAGES.lqasResults);
 
     return (
-        <>
-            <Box position="relative">
-                <MapLegendContainer>
-                    <MapLegend
-                        title={title}
-                        legendItems={legendItems}
-                        width="lg"
-                    />
-                </MapLegendContainer>
-                {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
-                {(isFetching || isFetchingGeoJson || isFetchingRegions) && (
-                    <LoadingSpinner fixed={false} absolute />
-                )}
-                <MapComponent
-                    key={countryId}
-                    name={`LQASIMMap${round}-${type}-${countryId}`}
-                    backgroundLayer={regionShapes}
-                    mainLayer={mainLayer}
-                    onSelectShape={() => null}
-                    getMainLayerStyle={getMainLayerStyles}
-                    getBackgroundLayerStyle={getBackgroundLayerStyle}
-                    tooltipLabels={{
-                        main: 'District',
-                        background: 'Region',
-                    }}
-                    makePopup={makePopup(data, round, selectedCampaign)}
-                    fitBoundsToBackground
-                    fitToBounds
-                    height={600}
-                />
-                {selectedCampaign && (
-                    <ScopeAndDNFDisclaimer
-                        campaign={selectedCampaign}
-                        data={
-                            disclaimerData as Record<
-                                string,
-                                {
-                                    hasScope: boolean;
-                                    districtsNotFound: string[];
-                                }
-                            >
-                        }
-                        campaigns={campaigns}
-                        round={round}
-                    />
-                )}
-            </Box>
-        </>
+        <LqasImCountryMap
+            key={`${countryId}-${side}`}
+            name={`LQASIMMap${round}-LQAS-${countryId}-${side}`}
+            regionShapes={regionShapes}
+            mainLayer={mainLayer}
+            round={round}
+            isFetchingRegions={isFetchingRegions}
+            title={title}
+            selectedCampaign={selectedCampaign}
+            legendItems={legendItems}
+            campaigns={campaigns}
+            data={data}
+            isFetching={isFetching}
+            isFetchingGeoJson={isFetchingGeoJson}
+            disclaimerData={disclaimerData}
+            getMainLayerStyles={getMainLayerStyles}
+        />
     );
 };

@@ -13,6 +13,9 @@ export const useApiParams = (
         if (!params.order && defaults?.order) {
             formattedParams.order = defaults.order;
         }
+        if (params.tab) {
+            delete formattedParams.tab;
+        }
         if (params.pageSize) {
             formattedParams.limit = params.pageSize;
             delete formattedParams.pageSize;

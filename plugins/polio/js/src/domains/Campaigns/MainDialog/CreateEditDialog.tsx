@@ -101,6 +101,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
             handleSubmit(values, helpers);
         },
     });
+
     const handleSubmit = useCallback(
         (values, helpers) => {
             saveCampaign(convertEmptyStringToNull(values), {

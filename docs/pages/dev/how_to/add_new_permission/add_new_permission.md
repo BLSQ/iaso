@@ -23,14 +23,19 @@
 
 ## 4. Make and run migration
 
-`docker-compose run --rm iaso manage makemigration && docker-compose run --rm iaso manage migrate`
+`docker-compose run --rm iaso manage makemigrations && docker-compose run --rm iaso manage migrate`
 
-## 5. Add translations in the front-end
 
-- Add a translation for the permission, and its tooltip in `permissionMessages.ts`
+## 5. Add the permission in the front-end
+- Go to `/hat/assets/js/apps/Iaso/utils/permissions.ts`. Add and export a constant with the permission key, in a similar way as what was done for the backend in step 1.
+- When using the permission in the front-end: import the constant, don't write the key in a string.
+
+## 6. Add translations in the front-end
+
+- Add a translation for the permission, and its tooltip in `permissionMessages.ts`. The tooltip key should have the format: `<permission name>_tooltip` to enable the component to recognize and translate it.
 - Add corresponding translations in `en.json` and `fr.json`
 
-## 6. Add translation for new module (if applicable)
+## 7. Add translation for new module (if applicable)
 
 - Go to `/hat/assets/js/apps/Iaso/domains/modules/messages.ts`
 - Add translation for the new module. The translation key should follow the pattern: `iaso.module.<module.codename.toLowerCase()>' 

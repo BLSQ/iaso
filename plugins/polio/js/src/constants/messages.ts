@@ -818,6 +818,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.verypoor',
         defaultMessage: 'Very poor',
     },
+    '3lqasverypoor': {
+        id: 'iaso.polio.label.verypoor',
+        defaultMessage: 'Very poor',
+    },
     '3lqasmoderate': {
         id: 'iaso.polio.label.moderate',
         defaultMessage: 'Moderate',
@@ -826,9 +830,21 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.poor',
         defaultMessage: 'Poor',
     },
+    '3lqasoversampled': {
+        id: 'iaso.polio.label.oversampled',
+        defaultMessage: 'Oversampled',
+    },
+    '3lqasundersampled': {
+        id: 'iaso.polio.label.undersampled',
+        defaultMessage: 'Undersampled',
+    },
     inScope: {
         id: 'iaso.polio.label.inScope',
         defaultMessage: 'No data found',
+    },
+    noValidData: {
+        id: 'iaso.polio.label.noValidData',
+        defaultMessage: 'No valid data',
     },
     districtsNotFound: {
         id: 'iaso.polio.label.districtsNotFound',
@@ -861,6 +877,10 @@ const MESSAGES = defineMessages({
     '3imFail': {
         id: 'iaso.polio.label.imFail',
         defaultMessage: '<90%',
+    },
+    '4imError': {
+        id: 'iaso.polio.label.invalidData',
+        defaultMessage: 'Invalid data',
     },
     imResults: {
         id: 'iaso.polio.label.imResults',
@@ -2445,6 +2465,10 @@ const MESSAGES = defineMessages({
     ageMaxSmallerOrEqualToAgeMin: {
         defaultMessage: 'Age max should be greater than age min',
         id: 'iaso.polio.label.ageMaxSmallerOrEqualToAgeMin',
+    },
+    pleaseSelectAgeType: {
+        defaultMessage: 'Please select an age unit',
+        id: 'iaso.polio.label.pleaseSelectAgeType',
     },
     other: {
         defaultMessage: 'Other',

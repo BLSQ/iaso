@@ -16,12 +16,13 @@ import { PluginsContext } from '../../../utils';
 import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
 import { HomeOnline } from '../../home/HomeOnline';
-import { useGetAndStoreCurrentUser } from '../../home/hooks/useGetAndStoreCurrentUser';
 import ProtectedRoute from '../../users/components/ProtectedRoute';
+import { useGetCurrentUser } from '../../users/hooks/useGetCurrentUser';
 import { Plugins } from '../types';
 
 type Result = {
     routes: ReactElement | null;
+    nonDashboardRoutes: ReactElement | null;
     isLoadingRoutes: boolean;
 };
 
@@ -69,6 +70,7 @@ const useHomeOnlineRoute = (userHomePage?: string): RouteCustom[] => {
         },
     ];
 };
+
 export const useHomeOfflineRoute = (): RouteCustom[] => {
     const HomeComponent = useHomeOfflineComponent();
     if (!HomeComponent) {
@@ -136,13 +138,14 @@ const useGetProtectedRoutes = (
 };
 
 const useCurrentRoute = (routes: RouteCustom[]): RouteCustom | undefined => {
-    return useMemo(
-        () =>
-            routes.find(route =>
-                window.location.pathname.includes(`/${route.baseUrl}/`),
-            ),
-        [routes],
-    );
+    return useMemo(() => {
+        return routes.find(route => {
+            return (
+                window.location.pathname.includes(`/${route.baseUrl}/`) ||
+                window.location.pathname.endsWith(`/${route.baseUrl}`)
+            );
+        });
+    }, [routes]);
 };
 
 const setupRoutes: RouteCustom[] = [setupAccountPath, page404];
@@ -175,35 +178,56 @@ export const useRoutes = (userHomePage?: string): Result => {
     const hasNoAccount = useHasNoAccount();
     const { pluginRoutes, pluginRedirections } = usePluginsRouteConfigs();
     const routesConfigs = useGetRoutesConfigs({ userHomePage, pluginRoutes });
-
     const protectedRoutes = useGetProtectedRoutes(routesConfigs, hasNoAccount);
     const currentRoute = useCurrentRoute(routesConfigs);
 
-    const { isFetching: isFetchingCurrentUser } = useGetAndStoreCurrentUser(
+    const { isFetching: isFetchingCurrentUser } = useGetCurrentUser(
         !currentRoute?.allowAnonymous ||
             currentRoute?.baseUrl === baseUrls.home,
+        false,
     );
     const redirections = useRedirections({
         hasNoAccount,
         isFetchingCurrentUser,
         pluginRedirections,
         userHomePage,
+        allowAnonymous: Boolean(currentRoute?.allowAnonymous),
     });
-
-    // routes should only change if currentUser has changed
+    // routes should protectedRoutes change if currentUser has changed
     const routes: ReactElement | null = useMemo(
         () =>
             isFetchingCurrentUser ? null : (
-                <Routes>{[...protectedRoutes, ...redirections]}</Routes>
+                <Routes>
+                    {[
+                        ...protectedRoutes.filter(
+                            route => route.props.useDashboard !== false,
+                        ),
+                        ...redirections,
+                    ]}
+                </Routes>
             ),
         [isFetchingCurrentUser, protectedRoutes, redirections],
     );
-
+    const nonDashboardRoutes: ReactElement | null = useMemo(
+        () =>
+            isFetchingCurrentUser ? null : (
+                <Routes>
+                    {[
+                        ...protectedRoutes.filter(
+                            route => !route.props.useDashboard,
+                        ),
+                        ...redirections,
+                    ]}
+                </Routes>
+            ),
+        [isFetchingCurrentUser, protectedRoutes, redirections],
+    );
     return useMemo(
         () => ({
             routes,
+            nonDashboardRoutes,
             isLoadingRoutes: isFetchingCurrentUser,
         }),
-        [routes, isFetchingCurrentUser],
+        [routes, isFetchingCurrentUser, nonDashboardRoutes],
     );
 };

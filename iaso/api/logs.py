@@ -24,7 +24,9 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
         return ous.filter(id=obj.id).exists()
     if isinstance(obj, Instance):
         instances = Instance.objects.filter_for_user(user)
-        return user.has_perm(permission.SUBMISSIONS) and instances.filter(id=obj.id).exists()
+        return (
+            user.has_perm(permission.SUBMISSIONS) or user.has_perm(permission.SUBMISSIONS_UPDATE)
+        ) and instances.filter(id=obj.id).exists()
     if isinstance(obj, Form):
         forms = Form.objects.filter_for_user_and_app_id(user)
         return forms.filter(id=obj.id).exists()

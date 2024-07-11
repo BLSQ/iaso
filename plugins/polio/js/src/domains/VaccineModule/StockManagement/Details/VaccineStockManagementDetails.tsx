@@ -62,6 +62,7 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
         redirectTo(baseUrls.stockVariation, {
             ...params,
             id: params.id,
+            tab: 'forma',
         });
     }, [params, redirectTo]);
 

@@ -159,6 +159,12 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
         return getRootData(value, key, statusSettings);
     }, [source, version, statusSettings]);
 
+    const getChildrenWithSource = useCallback(
+        async id => {
+            return getChildrenData(id, statusSettings, version, source);
+        },
+        [source, version, statusSettings],
+    );
     const searchOrgUnitsWithSource = useCallback(
         async (value, count) => {
             return searchOrgUnits({
@@ -281,9 +287,7 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
                 {isFetchingOrgUnit && <LoadingSpinner absolute />}
                 <Box mt={1}>
                     <TreeViewWithSearch
-                        getChildrenData={id =>
-                            getChildrenData(id, statusSettings)
-                        }
+                        getChildrenData={getChildrenWithSource}
                         getRootData={getRootDataWithSource}
                         // eslint-disable-next-line react/no-unstable-nested-components
                         label={(orgUnit: OrgUnit) => (

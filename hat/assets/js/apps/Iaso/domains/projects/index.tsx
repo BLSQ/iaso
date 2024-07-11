@@ -1,21 +1,21 @@
-import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    commonStyles,
-    Table,
     LoadingSpinner,
-    useSafeIntl,
+    Table,
     UrlParams,
+    commonStyles,
     useRedirectTo,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import TopBar from '../../components/nav/TopBarComponent';
-import { CreateProjectDialog } from './components/CreateEditProjectDialog';
-import { useGetProjectsPaginated, useSave } from './hooks/requests';
-import { columns, baseUrl } from './config';
-import MESSAGES from './messages';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { CreateProjectDialog } from './components/CreateEditProjectDialog';
+import { baseUrl, columns } from './config';
+import { useGetProjectsPaginated, useSave } from './hooks/requests';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -52,7 +52,9 @@ export const Projects: FunctionComponent = () => {
                     <CreateProjectDialog
                         saveProject={saveProject}
                         dialogType="create"
-                        iconProps={{}}
+                        iconProps={{
+                            dataTestId: 'add-project-button',
+                        }}
                     />
                 </Grid>
                 {/* @ts-ignore */}

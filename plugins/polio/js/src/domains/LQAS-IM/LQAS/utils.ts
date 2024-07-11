@@ -18,24 +18,24 @@ import {
     accessDictRound,
     convertStatToPercent,
 } from '../shared/LqasIm';
-import { LQAS_FAIL, LQAS_PASS, LQAS_POOR, LQAS_MODERATE } from './constants';
+import {
+    LQAS_PASS,
+    LQAS_POOR,
+    LQAS_MODERATE,
+    LQAS_OVERSAMPLED,
+    LQAS_UNDERSAMPLED,
+    LQAS_VERY_POOR,
+} from './constants';
+import { HASHED_BACKGROUND, IN_SCOPE } from '../shared/constants';
 
+/** @deprecated
+ *
+ * The API returns the LQAS district status directly.
+ * This method is only used to avoid breaking a map component shared with IM
+ */
 export const determineStatusForDistrict = district => {
     if (!district) return null;
-    const { total_child_fmd: marked, total_child_checked: checked } = district;
-
-    if (checked === 60) {
-        if (marked > 56) {
-            return LQAS_PASS;
-        }
-        if (marked >= 52) {
-            return LQAS_MODERATE;
-        }
-        if (marked >= 40) {
-            return LQAS_POOR;
-        }
-    }
-    return LQAS_FAIL;
+    return district.status;
 };
 
 export const getLqasStatsForRound = (
@@ -44,10 +44,13 @@ export const getLqasStatsForRound = (
     round: number,
 ): (
     | '1lqasOK'
-    | '3lqasFail'
     | '3lqaspoor'
     | '3lqasmoderate'
     | '2lqasDisqualified'
+    | '3lqasundersampled'
+    | '3lqasoversampled'
+    | '3lqasverypoor'
+    | 'inScope'
     | null
 )[][] => {
     if (!campaign || !lqasData[campaign]) return [[], [], [], []];
@@ -58,13 +61,20 @@ export const getLqasStatsForRound = (
         }),
     );
     const allStatuses = totalEvaluated.map(district => {
-        return determineStatusForDistrict(district);
+        return district.status;
     });
     const passed = allStatuses.filter(status => status === LQAS_PASS);
-    const failed = allStatuses.filter(status => status === LQAS_FAIL);
+    const failed = allStatuses.filter(status => status === LQAS_VERY_POOR);
     const moderate = allStatuses.filter(status => status === LQAS_MODERATE);
     const poor = allStatuses.filter(status => status === LQAS_POOR);
-    return [passed, moderate, poor, failed];
+    const oversampled = allStatuses.filter(
+        status => status === LQAS_OVERSAMPLED,
+    );
+    const undersampled = allStatuses.filter(
+        status => status === LQAS_UNDERSAMPLED,
+    );
+    const inScope = allStatuses.filter(status => status === IN_SCOPE);
+    return [passed, moderate, poor, failed, oversampled, undersampled, inScope];
 };
 
 export const makeLqasMapLegendItems =
@@ -76,33 +86,39 @@ export const makeLqasMapLegendItems =
     ): {
         label: string;
         value: string;
-        color: any;
+        color?: string;
+        background?: string;
     }[] => {
-        const [passed, moderate, poor, failed] = getLqasStatsForRound(
-            lqasData,
-            campaign,
-            round,
-        );
-
+        const [passed, moderate, poor, failed, oversampled, undersampled] =
+            getLqasStatsForRound(lqasData, campaign, round);
+        const noValidDataCount =
+            oversampled && undersampled
+                ? (oversampled?.length ?? 0) + (undersampled.length ?? 0)
+                : '';
         const passedLegendItem = makeLegendItem({
             label: formatMessage(MESSAGES.passing),
-            value: passed?.length,
+            value: passed ? `${passed.length}` : '',
             color: OK_COLOR,
         });
         const failedLegendItem = makeLegendItem({
             label: formatMessage(MESSAGES.verypoor),
-            value: failed?.length,
+            value: failed ? `${failed.length}` : '',
             color: FAIL_COLOR,
         });
         const moderateLegendItem = makeLegendItem({
             label: formatMessage(MESSAGES.moderate),
-            value: moderate?.length,
+            value: moderate ? `${moderate.length}` : '',
             color: MODERATE_COLOR,
         });
         const poorLegendItem = makeLegendItem({
             label: formatMessage(MESSAGES.poor),
-            value: poor?.length,
+            value: poor ? `${poor.length}` : '',
             color: POOR_COLOR,
+        });
+        const noValidDataLegendItem = makeLegendItem({
+            label: formatMessage(MESSAGES.noValidData),
+            value: `${noValidDataCount}`,
+            background: HASHED_BACKGROUND,
         });
 
         return [
@@ -110,6 +126,7 @@ export const makeLqasMapLegendItems =
             moderateLegendItem,
             poorLegendItem,
             failedLegendItem,
+            noValidDataLegendItem,
         ];
     };
 
@@ -117,7 +134,7 @@ export const getLqasStatsWithStatus = ({ data, campaign, round }) => {
     if (!data[campaign]) return [];
     return [...accessArrayRound(data[campaign], round)].map(district => ({
         ...district,
-        status: determineStatusForDistrict(district),
+        status: district.status,
     }));
 };
 
@@ -208,10 +225,4 @@ export const makeCaregiversRatio = (
         { childrenChecked: 0, caregiversInformed: 0 },
     );
     return convertStatToPercent(caregiversInformed, childrenChecked);
-};
-
-export const findRegionShape = (shape, regionShapes) => {
-    return regionShapes.filter(
-        regionShape => regionShape.id === shape.parent_id,
-    )[0]?.name;
 };

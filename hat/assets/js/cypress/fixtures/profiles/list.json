@@ -1,13 +1,16 @@
 {
     "count": 26,
-    "profiles": [
-        {
+    "profiles": [{
             "id": 2,
             "first_name": "Bruce",
             "user_name": "oneFistPunch",
             "last_name": "Lee",
             "email": "",
-            "projects": [{"id": 1, "app_id": "app_id_2", "name": "Test2.35.3"}],
+            "projects": [{
+                "id": 1,
+                "app_id": "app_id_2",
+                "name": "Test2.35.3"
+            }],
             "account": {
                 "name": "RDC",
                 "id": 1,
@@ -21,16 +24,14 @@
                         "url": "",
                         "created_at": 1570547349.403788,
                         "updated_at": 1620406206.140532,
-                        "versions": [
-                            {
-                                "number": 1,
-                                "description": null,
-                                "id": 3,
-                                "created_at": 1571141555.136647,
-                                "updated_at": 1571141555.136676,
-                                "org_units_count": 27573
-                            }
-                        ]
+                        "versions": [{
+                            "number": 1,
+                            "description": null,
+                            "id": 3,
+                            "created_at": 1571141555.136647,
+                            "updated_at": 1571141555.136676,
+                            "org_units_count": 27573
+                        }]
                     },
                     "number": 1,
                     "description": null,
@@ -71,16 +72,14 @@
                         "url": "",
                         "created_at": 1570547349.403788,
                         "updated_at": 1620406206.140532,
-                        "versions": [
-                            {
-                                "number": 1,
-                                "description": null,
-                                "id": 3,
-                                "created_at": 1571141555.136647,
-                                "updated_at": 1571141555.136676,
-                                "org_units_count": 27573
-                            }
-                        ]
+                        "versions": [{
+                            "number": 1,
+                            "description": null,
+                            "id": 3,
+                            "created_at": 1571141555.136647,
+                            "updated_at": 1571141555.136676,
+                            "org_units_count": 27573
+                        }]
                     },
                     "number": 1,
                     "description": null,
@@ -97,19 +96,17 @@
             "permissions": [],
             "user_permissions": [],
             "is_superuser": false,
-            "org_units": [
-                {
-                    "name": "République Démocratique du Congo",
-                    "id": 126083,
-                    "parent_id": null,
-                    "validation_status": "VALID",
-                    "parent_name": null,
-                    "source": "reference",
-                    "source_ref": "ymGeqzoPhN3",
-                    "parent": null,
-                    "org_unit_type_name": "Inconnu"
-                }
-            ],
+            "org_units": [{
+                "name": "République Démocratique du Congo",
+                "id": 126083,
+                "parent_id": null,
+                "validation_status": "VALID",
+                "parent_name": null,
+                "source": "reference",
+                "source_ref": "ymGeqzoPhN3",
+                "parent": null,
+                "org_unit_type_name": "Inconnu"
+            }],
             "language": "en",
             "dhis2_id": "2",
             "user_id": 69
@@ -133,16 +130,14 @@
                         "url": "",
                         "created_at": 1570547349.403788,
                         "updated_at": 1620406206.140532,
-                        "versions": [
-                            {
-                                "number": 1,
-                                "description": null,
-                                "id": 3,
-                                "created_at": 1571141555.136647,
-                                "updated_at": 1571141555.136676,
-                                "org_units_count": 27573
-                            }
-                        ]
+                        "versions": [{
+                            "number": 1,
+                            "description": null,
+                            "id": 3,
+                            "created_at": 1571141555.136647,
+                            "updated_at": 1571141555.136676,
+                            "org_units_count": 27573
+                        }]
                     },
                     "number": 1,
                     "description": null,
@@ -158,21 +153,18 @@
             },
             "user_permissions": ["iaso_forms"],
             "permissions": ["iaso_forms"],
-            "user_permissions": ["iaso_forms"],
             "is_superuser": false,
-            "org_units": [
-                {
-                    "name": "République Démocratique du Congo",
-                    "id": 126083,
-                    "parent_id": null,
-                    "validation_status": "VALID",
-                    "parent_name": null,
-                    "source": "reference",
-                    "source_ref": "ymGeqzoPhN3",
-                    "parent": null,
-                    "org_unit_type_name": "Inconnu"
-                }
-            ],
+            "org_units": [{
+                "name": "République Démocratique du Congo",
+                "id": 126083,
+                "parent_id": null,
+                "validation_status": "VALID",
+                "parent_name": null,
+                "source": "reference",
+                "source_ref": "ymGeqzoPhN3",
+                "parent": null,
+                "org_unit_type_name": "Inconnu"
+            }],
             "language": "en",
             "dhis2_id": "3",
             "user_id": 69

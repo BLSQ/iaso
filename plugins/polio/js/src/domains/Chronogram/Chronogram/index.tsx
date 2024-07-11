@@ -12,18 +12,14 @@ import { ChronogramFilters } from './Filters/ChronogramFilters';
 import { ChronogramParams } from './types';
 import { ChronogramTable } from './Table/ChronogramTable';
 import { ChronogramTaskMetaData } from '../types';
+import { defaultParams } from '../constants';
 import { useOptionChronogramTask } from '../api/useOptionChronogramTask';
 import { useStyles } from '../../../styles/theme';
 
 export const Chronogram: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.chronogram) as ChronogramParams;
 
-    const paramsNew: ChronogramParams = {
-        ...params,
-        pageSize: params.pageSize || '20',
-        order: params.order || 'id',
-        page: params.page || '1',
-    };
+    const paramsNew: ChronogramParams = { ...defaultParams, ...params };
 
     const { data: chronogramTaskMetaData, isFetching: isFetchingMetaData } =
         useOptionChronogramTask();

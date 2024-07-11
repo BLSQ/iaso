@@ -10,10 +10,12 @@ import { useStyles } from '../../../styles/theme';
 import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from './messages';
+import { ChronogramParams } from '../Chronogram/types';
 import { ChronogramTaskMetaData } from '../types';
 import { ChronogramTemplateTaskParams } from './types';
 import { ChronogramTemplateTaskTable } from './Table/ChronogramTemplateTaskTable';
 import { CreateChronogramTemplateTaskModal } from './Modals/ChronogramTemplateTaskCreateEditModal';
+import { defaultParams } from '../constants';
 import { useOptionChronogramTask } from '../api/useOptionChronogramTask';
 
 export const ChronogramTemplateTask: FunctionComponent = () => {
@@ -21,12 +23,7 @@ export const ChronogramTemplateTask: FunctionComponent = () => {
         baseUrls.chronogramTemplateTask,
     ) as ChronogramTemplateTaskParams;
 
-    const paramsNew: ChronogramTemplateTaskParams = {
-        ...params,
-        pageSize: params.pageSize || '20',
-        order: params.order || 'id',
-        page: params.page || '1',
-    };
+    const paramsNew: ChronogramParams = { ...defaultParams, ...params };
 
     const { data: chronogramTaskMetaData, isFetching: isFetchingMetaData } =
         useOptionChronogramTask();

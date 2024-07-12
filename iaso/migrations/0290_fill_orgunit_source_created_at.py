@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         ),
         # Avoid the migration failing because of old incoherent data.
         migrations.RunSQL(
-            sql="ALTER TABLE iaso_orgunit DISABLE TRIGGER ALL;",
+            sql="ALTER TABLE iaso_orgunit DISABLE TRIGGER iaso_org_units_same_source_version_constraint;",
             reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.RunSQL(
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
             reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.RunSQL(
-            sql="ALTER TABLE iaso_orgunit ENABLE TRIGGER ALL;",
+            sql="ALTER TABLE iaso_orgunit ENABLE TRIGGER iaso_org_units_same_source_version_constraint;",
             reverse_sql=migrations.RunSQL.noop,
         ),
     ]

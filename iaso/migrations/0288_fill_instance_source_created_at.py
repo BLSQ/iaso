@@ -16,17 +16,8 @@ class Migration(migrations.Migration):
             sql="SET work_mem = '1GB';",
             reverse_sql=migrations.RunSQL.noop,
         ),
-        # Avoid the migration failing because of old incoherent data.
-        migrations.RunSQL(
-            sql="ALTER TABLE iaso_instance DISABLE TRIGGER ALL;",
-            reverse_sql=migrations.RunSQL.noop,
-        ),
         migrations.RunSQL(
             sql="UPDATE iaso_instance SET source_created_at = created_at;",
-            reverse_sql=migrations.RunSQL.noop,
-        ),
-        migrations.RunSQL(
-            sql="ALTER TABLE iaso_instance ENABLE TRIGGER ALL;",
             reverse_sql=migrations.RunSQL.noop,
         ),
     ]

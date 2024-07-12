@@ -1,9 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { AddButton, commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    AddButton,
+    commonStyles,
+    useSafeIntl,
+    ErrorBoundary,
+} from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import TopBar from '../../components/nav/TopBarComponent';
-import { ErrorBoundary } from './components/ErrorBoundary';
 import { useDefaultSourceVersion } from './utils';
 import { DataSourceDialogComponent } from './components/DataSourceDialogComponent';
 import { baseUrls } from '../../constants/urls';

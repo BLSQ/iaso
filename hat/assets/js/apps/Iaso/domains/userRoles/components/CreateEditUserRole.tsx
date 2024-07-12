@@ -60,7 +60,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                 setOpen(false);
                 setInfoOpen(true);
             }
-            queryClient.invalidateQueries(['user_roles_dropdown']);
+            queryClient.invalidateQueries(['userRoles']);
         },
     });
     const schema = useUserRoleValidation(apiErrors, payload);

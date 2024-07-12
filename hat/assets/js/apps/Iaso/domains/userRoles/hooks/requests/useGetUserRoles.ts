@@ -36,10 +36,13 @@ export const useGetUserRoles = (
 ): UseQueryResult<UserRolesList, Error> => {
     const { select } = options as Record<string, any>;
     return useSnackQuery({
-        queryKey: ['userRolesList', options],
+        queryKey: ['userRoles', options],
         queryFn: () => getUserRoles(options),
         snackErrorMsg: undefined,
         options: {
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
             select,
         },
     });
@@ -50,7 +53,7 @@ export const useGetUserRolesDropDown = (): UseQueryResult<
     Error
 > => {
     return useSnackQuery({
-        queryKey: ['user_roles_dropdown'],
+        queryKey: ['userRoles'],
         queryFn: () => getRequest('/api/userroles/'),
         snackErrorMsg: MESSAGES.userRolesDropDownError,
         options: {

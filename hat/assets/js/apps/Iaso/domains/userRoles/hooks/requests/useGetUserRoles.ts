@@ -10,6 +10,7 @@ import {
     UserRole,
 } from '../../types/userRoles';
 import { DropdownOptions } from '../../../../types/utils';
+import MESSAGES from '../../messages';
 
 type UserRolesList = Pagination & {
     results: UserRole[];
@@ -29,9 +30,7 @@ const getUserRoles = async (
     const url = makeUrlWithParams('/api/userroles', params);
     return getRequest(url) as Promise<UserRolesList>;
 };
-type UserRolesOptions = {
-    results: UserRole[];
-};
+
 export const useGetUserRoles = (
     options: UserRoleParams | UserRolesFilterParams,
 ): UseQueryResult<UserRolesList, Error> => {
@@ -46,23 +45,28 @@ export const useGetUserRoles = (
     });
 };
 
-const getUserRolesOptions = async (): Promise<UserRolesOptions> => {
-    const url = makeUrlWithParams('/api/userroles', { order: 'group__name' });
-    return getRequest(url) as Promise<UserRolesOptions>;
-};
-export const useGetUserRolesOptions = (): UseQueryResult<
-    DropdownOptions<string>[],
+export const useGetUserRolesDropDown = (): UseQueryResult<
+    DropdownOptions<number>[],
     Error
 > => {
     return useSnackQuery({
-        queryKey: ['userRolesListOptions'],
-        queryFn: () => getUserRolesOptions(),
+        queryKey: ['user_roles_dropdown'],
+        queryFn: () => getRequest('/api/userroles/'),
+        snackErrorMsg: MESSAGES.userRolesDropDownError,
         options: {
-            select: data =>
-                data?.results.map(role => ({
-                    value: `${role.id}`,
-                    label: role.name,
-                })) || [],
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+            select: data => {
+                return (
+                    data?.results?.map((userRole: UserRole) => {
+                        return {
+                            value: userRole.id,
+                            label: userRole.name,
+                            original: userRole,
+                        };
+                    }) ?? []
+                );
+            },
         },
     });
 };

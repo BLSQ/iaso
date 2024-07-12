@@ -1293,7 +1293,7 @@
     "iaso.userRoles.dialogInfoMessage": "Please refresh your page before adding users to this new created user role",
     "iaso.userRoles.dialogInfoTitle": "Warning on the new created user role",
     "iaso.userRoles.edit": "Edit user role",
-    "iaso.userRoles.infoButton": "Yes",
+    "iaso.userRoles.infoButton": "Got it!",
     "iaso.userRoles.title": "User roles",
     "iaso.userRoles.userRolePermissions": "User role permissions",
     "iaso.users.addLocations": "Add location(s)",

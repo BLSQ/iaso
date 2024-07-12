@@ -82,6 +82,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.userRoles.infoButton',
         defaultMessage: 'Yes',
     },
+    userRolesDropDownError: {
+        defaultMessage: 'An error occurred while fetching user roles',
+        id: 'iaso.snackBar.fetchUserRoles',
+    },
 });
 
 export default MESSAGES;

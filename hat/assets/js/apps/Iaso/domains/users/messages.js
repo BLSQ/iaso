@@ -138,10 +138,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while fetching permissions list',
         id: 'iaso.snackBar.fetchPermissions',
     },
-    userRolesDropDownError: {
-        defaultMessage: 'An error occurred while fetching user roles',
-        id: 'iaso.snackBar.fetchUserRoles',
-    },
+
     homePage: {
         defaultMessage: 'Home page',
         id: 'iaso.users.label.homePage',

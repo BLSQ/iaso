@@ -38,12 +38,12 @@ import { Profile } from '../../teams/types/profile';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { useGetUserRolesOptions } from '../../userRoles/hooks/requests/useGetUserRoles';
 import { userHasPermission } from '../utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { TeamType } from '../../teams/constants';
+import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
 
 type Props = {
     open: boolean;
@@ -123,7 +123,7 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
         useGetProjectsDropdownOptions();
 
     const { data: userRoles, isFetching: isFetchingUserRoles } =
-        useGetUserRolesOptions();
+        useGetUserRolesDropDown();
 
     const { data: teams, isFetching: isFetchingTeams } = useGetTeamsDropdown({
         type: TeamType.TEAM_OF_USERS,

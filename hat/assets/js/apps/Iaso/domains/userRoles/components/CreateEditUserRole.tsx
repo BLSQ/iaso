@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import {
     AddButton,
@@ -7,6 +7,7 @@ import {
     makeFullModal,
 } from 'bluesquare-components';
 import { isEqual } from 'lodash';
+import { useQueryClient } from 'react-query';
 import {
     SaveUserRoleQuery,
     useSaveUserRole,
@@ -45,6 +46,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
     const [open, setOpen] = useState<boolean>(isOpen);
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveUserRole } = useSaveUserRole(dialogType);
+    const queryClient = useQueryClient();
     const {
         apiErrors,
         payload,
@@ -52,7 +54,13 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
     } = useApiErrorValidation<Partial<SaveUserRoleQuery>, any>({
         mutationFn: saveUserRole,
         onSuccess: () => {
-            dialogType !== 'create' ? closeDialog() : setOpen(false);
+            if (dialogType !== 'create') {
+                closeDialog();
+            } else {
+                setOpen(false);
+                setInfoOpen(true);
+            }
+            queryClient.invalidateQueries(['user_roles_dropdown']);
         },
     });
     const schema = useUserRoleValidation(apiErrors, payload);
@@ -102,11 +110,6 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         setFieldValue('permissions', newPermissions);
     };
 
-    useEffect(() => {
-        if (!open) {
-            setInfoOpen(true);
-        }
-    }, [closeDialog, open]);
     return (
         <>
             {dialogType === 'create' && (

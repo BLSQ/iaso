@@ -14,7 +14,7 @@ import { getRequest } from '../../../libs/Api';
 import { useUserPermissionColumns } from '../config';
 import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
 import { Permission } from '../../userRoles/types/userRoles';
-import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown';
+import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
 import { userHasPermission } from '../utils';
 import * as Permissions from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';

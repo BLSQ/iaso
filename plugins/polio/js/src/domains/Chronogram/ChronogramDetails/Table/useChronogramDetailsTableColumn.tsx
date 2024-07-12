@@ -44,16 +44,14 @@ export const useChronogramDetailsTableColumn = (
             },
             {
                 Header: formatMessage(MESSAGES.labelDelayInDays),
-                id: 'delay_in_days',
+                id: 'annotated_delay_in_days',
                 accessor: 'delay_in_days',
-                sortable: false,
             },
             {
                 Header: formatMessage(MESSAGES.labelDeadlineDate),
-                id: 'deadline_date',
+                id: 'annotated_deadline_date',
                 accessor: 'deadline_date',
                 Cell: DateCell,
-                sortable: false,
             },
             {
                 Header: formatMessage(MESSAGES.labelUserInCharge),

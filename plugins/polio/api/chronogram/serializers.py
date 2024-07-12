@@ -16,7 +16,8 @@ class UserNestedSerializer(serializers.ModelSerializer):
 class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
     created_by = UserNestedSerializer(read_only=True)
     updated_by = UserNestedSerializer(read_only=True)
-    delay_in_days = serializers.IntegerField(read_only=True)
+    deadline_date = serializers.DateField(read_only=True, source="annotated_deadline_date")
+    delay_in_days = serializers.IntegerField(read_only=True, source="annotated_delay_in_days")
 
     class Meta:
         model = ChronogramTask

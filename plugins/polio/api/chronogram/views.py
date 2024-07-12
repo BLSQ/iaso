@@ -1,6 +1,6 @@
 import django_filters
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Prefetch
 
 from rest_framework import filters, status
 from rest_framework import viewsets
@@ -43,6 +43,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
             Chronogram.objects.valid()
             .filter(round_id__in=rounds_ids)
             .select_related("round__campaign", "created_by", "updated_by")
+            .prefetch_related(Prefetch("tasks", queryset=ChronogramTask.objects.valid()))
             .prefetch_related("tasks__user_in_charge", "tasks__created_by", "tasks__updated_by")
             .order_by("created_at")
         )

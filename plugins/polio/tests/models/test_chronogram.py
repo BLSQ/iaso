@@ -84,17 +84,20 @@ class ChronogramTaskTestCase(TestCase):
 
         self.assertEqual(self.round.started_at.strftime("%d-%m-%Y"), "14-06-2024")
 
-        self.assertEqual(self.chronogram_task_1.deadline_date.strftime("%d-%m-%Y"), "25-05-2024")
+        task_1 = ChronogramTask.objects.get(pk=self.chronogram_task_1.pk)
+        self.assertEqual(task_1.annotated_deadline_date.strftime("%d-%m-%Y"), "25-05-2024")
         # Should've been finished 30 days ago.
-        self.assertEqual(self.chronogram_task_1.delay_in_days, -30)
+        self.assertEqual(task_1.annotated_delay_in_days, -30)
 
-        self.assertEqual(self.chronogram_task_2.deadline_date.strftime("%d-%m-%Y"), "14-06-2024")
+        task_2 = ChronogramTask.objects.get(pk=self.chronogram_task_2.pk)
+        self.assertEqual(task_2.annotated_deadline_date.strftime("%d-%m-%Y"), "14-06-2024")
         # Should've been finished 10 days ago.
-        self.assertEqual(self.chronogram_task_2.delay_in_days, -10)
+        self.assertEqual(task_2.annotated_delay_in_days, -10)
 
-        self.assertEqual(self.chronogram_task_3.deadline_date.strftime("%d-%m-%Y"), "28-06-2024")
+        task_3 = ChronogramTask.objects.get(pk=self.chronogram_task_3.pk)
+        self.assertEqual(task_3.annotated_deadline_date.strftime("%d-%m-%Y"), "28-06-2024")
         # Still 4 days to go.
-        self.assertEqual(self.chronogram_task_3.delay_in_days, 4)
+        self.assertEqual(task_3.annotated_delay_in_days, 4)
 
     def test_chronogram_is_on_time(self):
         self.assertFalse(self.chronogram.is_on_time)

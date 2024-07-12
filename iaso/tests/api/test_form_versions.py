@@ -72,7 +72,6 @@ class FormsVersionAPITestCase(APITestCase):
 
         questions_by_path = self.form_1.form_versions.first().questions_by_path()
         questions_by_name = self.form_1.form_versions.first().questions_by_name()
-        print("questions_by_name", [x for x in questions_by_name.keys()])
         self.assertEquals(
             [x for x in questions_by_name.keys()],
             [
@@ -87,7 +86,6 @@ class FormsVersionAPITestCase(APITestCase):
             ],
         )
 
-        print("questions_by_path", [x for x in questions_by_path.keys()])
         self.assertEquals(
             [x for x in questions_by_path.keys()],
             [
@@ -170,7 +168,8 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertEqual(created_version.version_id, "2020022401")
         self.assertIsInstance(created_version.file, File)
         self.assertGreater(created_version.file.size, 100)
-        self.assertEqual(created_version.file.name, "forms/new_land_speeder_concept_2020022401.xml")
+        # the file can be with a suffix in case of collision
+        self.assertRegex(created_version.file.name, r"forms/new_land_speeder_concept_2020022401(.*).xml")
         self.assertIsInstance(created_version.xls_file, File)
         self.assertGreater(created_version.xls_file.size, 100)
         self.assertEqual(created_version.xls_file.name, "forms/new_land_speeder_concept_2020022401.xls")

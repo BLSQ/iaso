@@ -73,8 +73,6 @@ const DataSources: FunctionComponent = () => {
                         data={data?.sources ?? []}
                         count={data?.count ?? 0}
                         pages={data?.pages ?? 0}
-                        // The TS type should accept a function as accessor
-                        // @ts-ignore
                         columns={columns}
                         defaultSorted={[{ id: defaultOrder, desc: false }]}
                         extraProps={{

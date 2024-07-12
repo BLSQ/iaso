@@ -62,7 +62,6 @@ export const Duplicates: FunctionComponent = () => {
                 />
                 <DuplicatesFilters params={params} />
                 <Box className={classes.table}>
-                    {/* @ts-ignore */}
                     <TableWithDeepLink
                         marginTop={false}
                         data={results}

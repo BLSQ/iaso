@@ -1,11 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 
-import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
-    commonStyles,
-} from 'bluesquare-components';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 
 import {
     Dialog,

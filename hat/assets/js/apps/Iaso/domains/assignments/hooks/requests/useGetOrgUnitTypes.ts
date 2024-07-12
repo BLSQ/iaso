@@ -16,7 +16,6 @@ export const useGetOrgUnitTypes = (): UseQueryResult<
     Error
 > => {
     const queryKey: any[] = ['orgunittypes'];
-    // @ts-ignore
     return useSnackQuery(queryKey, () => getOrgunitTypes(), undefined, {
         select: data => {
             if (!data) return [];

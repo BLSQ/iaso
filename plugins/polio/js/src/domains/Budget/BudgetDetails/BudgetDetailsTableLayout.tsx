@@ -53,7 +53,6 @@ export const BudgetDetailsTableLayout: FunctionComponent<Props> = ({
                     />
                 </Box>
                 <Divider />
-                {/* @ts-ignore */}
                 <TableWithDeepLink
                     countOnTop={false}
                     data={budgetDetails?.results ?? []}

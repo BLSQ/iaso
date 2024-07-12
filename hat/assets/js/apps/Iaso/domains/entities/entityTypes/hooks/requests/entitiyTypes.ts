@@ -48,16 +48,13 @@ export const useGetTypesPaginated = (
         newParams.search = params.search;
     }
 
-    // @ts-ignore
     const searchParams = new URLSearchParams(newParams);
-    // @ts-ignore
     return useSnackQuery(['entitytypes', newParams], () =>
         getRequest(`/api/entitytypes/?${searchParams.toString()}`),
     );
 };
 
 export const useGetTypes = (): UseQueryResult<Array<EntityType>, Error> => {
-    // @ts-ignore
     return useSnackQuery({
         queryKey: ['entitytypes'],
         queryFn: () => getRequest('/api/entitytypes/'),
@@ -70,7 +67,6 @@ export const useGetTypes = (): UseQueryResult<Array<EntityType>, Error> => {
 export const useGetType = (
     typeId: string,
 ): UseQueryResult<EntityType, Error> => {
-    // @ts-ignore
     return useSnackQuery({
         queryKey: ['entitytype', typeId],
         queryFn: () => getRequest(`/api/entitytypes/${typeId}`),

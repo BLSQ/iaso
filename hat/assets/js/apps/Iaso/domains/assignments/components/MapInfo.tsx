@@ -1,8 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Tooltip, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';

@@ -20,7 +20,6 @@ export const useGetTeams = (
     projectId?: number,
 ): UseQueryResult<DropdownOptions<string>[], Error> => {
     const queryKey: any[] = ['teams', projectId];
-    // @ts-ignore
     return useSnackQuery({
         queryKey,
         queryFn: () => getTeams(),

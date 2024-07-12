@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { TableRow, TableCell, Box } from '@mui/material';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 
 import { FilteredDistricts } from './types';
 import MESSAGES from '../../../../constants/messages';

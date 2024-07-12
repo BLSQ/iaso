@@ -1,5 +1,4 @@
 import { push, replace } from 'react-router-redux';
-// @ts-ignore
 import { createUrl } from 'bluesquare-components';
 
 export const redirectTo =

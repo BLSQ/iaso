@@ -7,7 +7,6 @@ import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/c
 
 export const useVaccineStockManagementDetailsColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    // @ts-ignore
     return useMemo(() => {
         const columns = [
             {

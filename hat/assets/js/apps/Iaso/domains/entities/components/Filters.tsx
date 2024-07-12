@@ -18,7 +18,10 @@ import {
 
 // @ts-ignore
 import DatesRange from 'Iaso/components/filters/DatesRange';
+// @ts-ignore
 import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
+// @ts-ignore
+import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction.tsx';
 import InputComponent from '../../../components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
@@ -42,7 +45,6 @@ import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
 } from '../../../utils/featureFlags';
-import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

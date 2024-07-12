@@ -69,11 +69,7 @@ export const SimpleTableWithDeepLink: FunctionComponent<Props> = ({
             columnSelectorEnabled={columnSelectorEnabled}
             columnSelectorButtonDisabled={columnSelectorButtonDisabled}
             columnSelectorButtonType={columnSelectorButtonType}
-            // typing is wrong in Table
-            // @ts-ignore
             rowProps={rowProps}
-            // typing is wrong in Table
-            // @ts-ignore
             cellProps={cellProps}
         />
     );

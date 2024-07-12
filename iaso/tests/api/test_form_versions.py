@@ -4,6 +4,7 @@ from unittest import mock
 
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 
 from iaso import models as m
@@ -68,7 +69,6 @@ class FormsVersionAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-            print(response.json())
 
         questions_by_path = self.form_1.form_versions.first().questions_by_path()
         questions_by_name = self.form_1.form_versions.first().questions_by_name()
@@ -98,6 +98,50 @@ class FormsVersionAPITestCase(APITestCase):
                 "propriete_fonciere/other_source_elec",
                 "meta/instanceID",
             ],
+        )
+
+    def test_form_submission_xml_to_json(self):
+        self.jedi_council_coruscant = m.OrgUnit.objects.create(
+            name="Coruscant Jedi Council", org_unit_type=self.sith_council
+        )
+        self.client.force_authenticate(self.yoda)
+        with open("iaso/tests/fixtures/odk_valid_multi_select.xlsx", "rb") as xls_file:
+            response = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_1.id, "xls_file": xls_file},
+                format="multipart",
+                headers={"accept": "application/json"},
+            )
+
+        version_id = response.json()["version_id"]
+
+        file_content = " ".join(
+            [
+                '<?xml version=\'1.0\' ?><data id="carte_sanitaire" version="'
+                + version_id
+                + '" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">',
+                "<meta><instanceID>uuid:3c185364-e5dc-4912-98b2-e9aeb23049f5</instanceID></meta>",
+                "<source_elec>B</source_elec>"
+                "<propriete_fonciere><other_source_elec>AA</other_source_elec></propriete_fonciere>",
+                "</data>",
+            ]
+        )
+        instance = m.Instance.objects.create(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_coruscant,
+            file=SimpleUploadedFile("test_file.xml", file_content.encode("utf-8")),
+        )
+
+        json_instance = instance.get_and_save_json_of_xml()
+        self.assertEquals(
+            {
+                "_version": version_id,
+                "instanceID": "uuid:3c185364-e5dc-4912-98b2-e9aeb23049f5",
+                "other_source_elec": "AA",
+                "source_elec": "B",
+            },
+            json_instance,
         )
 
     def test_form_versions_list(self):

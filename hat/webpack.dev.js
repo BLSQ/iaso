@@ -3,6 +3,9 @@ require('dotenv').config();
 const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
+// import { ModuleFederationPlugin } from '@module-federation/enhanced/webpack';
+const { ModuleFederationPlugin } = require("webpack").container;
+
 // Switch here for French. This is set to 'en' in dev to not get react-intl warnings
 // remember to switch in webpack.prod.js and
 // django settings as well
@@ -62,7 +65,7 @@ const oldBrowsersConfig = [
             path.resolve(__dirname, '../node_modules/react-leaflet'),
             path.resolve(__dirname, '../node_modules/@react-leaflet'),
             path.resolve(__dirname, '../node_modules/@dnd-kit'),
-            path.resolve(__dirname, '../plugins'),
+            // path.resolve(__dirname, '../plugins'),
             path.resolve(__dirname, 'assets'),
         ],
         use: [
@@ -205,6 +208,29 @@ module.exports = {
         new webpack.WatchIgnorePlugin({
             paths: [/\.d\.ts$/],
         }),
+        new ModuleFederationPlugin({
+            name: 'IasoMain',
+            library: { type: 'var', name: 'IasoMain' },
+            filename: 'remoteEntry.js',
+            exposes: {
+                // './userUtils': './assets/js/apps/Iaso/domains/users/utils',
+                './BeneficiarySvg': './assets/js/apps/Iaso/components/svg/Beneficiary',
+                // './SidebarMenuComponent': './assets/js/apps/Iaso/domains/app/components/SidebarMenuComponent',
+            },
+            // shared: ['react', 'react-dom'],
+            shared: {
+                react: {
+                    singleton: true, // there should be only one version of react
+                    requiredVersion: "^17.0.2",
+                    eager: true,
+                },
+                // 'react-dom': {
+                //     singleton: true, // there should be only one version of react-dom
+                //     requiredVersion: "^17.0.2",
+                //     // eager: true,
+                // },
+            },
+        }),
     ],
 
     module: {
@@ -308,6 +334,8 @@ module.exports = {
                     '../../bluesquare-components/src/',
                 ),
             }),
+            react: path.resolve(__dirname, '../node_modules/react'),
+            'react-dom': path.resolve(__dirname, '../node_modules/react-dom'),
         },
         fallback: {
             fs: false,

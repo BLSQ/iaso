@@ -6,6 +6,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { InstancesPerFormGraph } from '../../components/instancesGraph';
 import MESSAGES from './messages';
 import { InstancesTotalGraph } from '../../components/instancesTotalGraph';
+import BeneficiarySvg from '../../components/svg/Beneficiary';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -24,6 +25,7 @@ const FormsStats = () => {
             <TopBar title={formatMessage(MESSAGES.statsTitle)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container>
+                    <BeneficiarySvg />
                     <Grid xs={6} item className={classes.card}>
                         <InstancesTotalGraph />
                     </Grid>

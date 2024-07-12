@@ -108,6 +108,7 @@ const SidebarMenu = ({
     intl,
     activeLocale,
 }) => {
+    console.log("rendering SidebarMenu ")
     const onClick = url => {
         toggleSidebar();
         if (url) {

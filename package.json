@@ -54,6 +54,7 @@
         "@date-io/moment": "1.x",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
+        "@module-federation/enhanced": "^0.2.6",
         "@mui/icons-material": "^5.14.15",
         "@mui/lab": "^5.0.0-alpha.150",
         "@mui/material": "^5.14.15",

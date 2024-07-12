@@ -1,10 +1,20 @@
-import datetime
-
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import ExpressionWrapper, F, DateField, Value, IntegerField, Case, When
-from django.db.models.functions import ExtractDay
-from django.utils.functional import cached_property
+from django.db.models import (
+    BooleanField,
+    Case,
+    Count,
+    DateField,
+    ExpressionWrapper,
+    F,
+    IntegerField,
+    OuterRef,
+    Q,
+    Subquery,
+    Value,
+    When,
+)
+from django.db.models.functions import ExtractDay, Coalesce
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 
@@ -24,6 +34,28 @@ class ChronogramQuerySet(models.QuerySet):
         return self.filter(deleted_at__isnull=True)  # Hide soft deleted items.
 
 
+class ChronogramManager(models.Manager):
+    def get_queryset(self):
+        num_tasks_delayed = Subquery(
+            ChronogramTask.objects.valid()
+            .filter(chronogram=OuterRef("pk"), annotated_delay_in_days__lt=0)
+            .values("chronogram")
+            .annotate(count=Count("id"))
+            .values("count"),
+            output_field=IntegerField(),
+        )
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                annotated_num_task_delayed=Coalesce(num_tasks_delayed, 0),
+            )
+            .annotate(
+                annotated_is_on_time=ExpressionWrapper(Q(annotated_num_task_delayed=0), output_field=BooleanField())
+            )
+        )
+
+
 class Chronogram(SoftDeletableModel):
     """
     A chronogram can be thought as a to-do list.
@@ -39,21 +71,13 @@ class Chronogram(SoftDeletableModel):
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="updated_chronograms"
     )
 
-    objects = models.Manager.from_queryset(ChronogramQuerySet)()
+    objects = ChronogramManager.from_queryset(ChronogramQuerySet)()
 
     class Meta:
         verbose_name = _("Chronogram")
 
     def __str__(self) -> str:
         return f"{self.id} - {self.round.campaign.obr_name} - Round {self.round.number}"
-
-    @property
-    def num_task_delayed(self) -> int:
-        return len([t for t in self.tasks.all() if t.annotated_delay_in_days < 0])
-
-    @property
-    def is_on_time(self) -> bool:
-        return self.num_task_delayed == 0
 
     @property
     def percentage_of_completion(self) -> dict:

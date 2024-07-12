@@ -1290,7 +1290,7 @@
     "iaso.user.label.uploadSuccess": "Utilisateurs créés à partir du CSV",
     "iaso.userRoles.create": "Créer un rôle d'utilisateur",
     "iaso.userRoles.delete": "Etes-vous sûr(e) de vouloir effacer ce role d'utilisateur?",
-    "iaso.userRoles.dialogInfoMessage": "Veuillez rafraîchir votre page avant d'ajouter de nouveaux utilisateurs à ce nouveau rôle d'utilisateur créé",
+    "iaso.userRoles.dialogInfoMessage": "Veuillez rafraîchir votre page avant d'ajouter de nouveaux utilisateurs à ce nouveau rôle d'utilisateur",
     "iaso.userRoles.dialogInfoTitle": "Avertissement sur le nouveau rôle utilisateur créé",
     "iaso.userRoles.edit": "Editer un rôle d'utilisateur",
     "iaso.userRoles.infoButton": "Compris!",

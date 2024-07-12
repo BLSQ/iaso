@@ -169,6 +169,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertIsInstance(created_version.file, File)
         self.assertGreater(created_version.file.size, 100)
         # the file can be with a suffix in case of collision
+        # another test create a version with the same file, the db is resetted but not the filesystem
         self.assertRegex(created_version.file.name, r"forms/new_land_speeder_concept_2020022401(.*).xml")
         self.assertIsInstance(created_version.xls_file, File)
         self.assertGreater(created_version.xls_file.size, 100)

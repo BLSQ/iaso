@@ -100,7 +100,8 @@ class ChronogramTaskTestCase(TestCase):
         self.assertEqual(task_3.annotated_delay_in_days, 4)
 
     def test_chronogram_is_on_time(self):
-        self.assertFalse(self.chronogram.is_on_time)
+        chronogram = Chronogram.objects.get(pk=self.chronogram.pk)
+        self.assertFalse(chronogram.annotated_is_on_time)
 
         self.chronogram_task_1.start_offset_in_days = 10
         self.chronogram_task_1.save()
@@ -108,10 +109,13 @@ class ChronogramTaskTestCase(TestCase):
         self.chronogram_task_2.save()
         self.chronogram_task_3.start_offset_in_days = 20
         self.chronogram_task_3.save()
-        self.assertTrue(self.chronogram.is_on_time)
+
+        chronogram = Chronogram.objects.get(pk=self.chronogram.pk)
+        self.assertTrue(chronogram.annotated_is_on_time)
 
     def test_chronogram_num_task_delayed(self):
-        self.assertEqual(self.chronogram.num_task_delayed, 2)
+        chronogram = Chronogram.objects.get(pk=self.chronogram.pk)
+        self.assertEqual(chronogram.annotated_num_task_delayed, 2)
 
         self.chronogram_task_1.start_offset_in_days = 10
         self.chronogram_task_1.save()
@@ -119,7 +123,9 @@ class ChronogramTaskTestCase(TestCase):
         self.chronogram_task_2.save()
         self.chronogram_task_3.start_offset_in_days = 20
         self.chronogram_task_3.save()
-        self.assertEqual(self.chronogram.num_task_delayed, 0)
+
+        chronogram = Chronogram.objects.get(pk=self.chronogram.pk)
+        self.assertEqual(chronogram.annotated_num_task_delayed, 0)
 
     def test_percentage_of_completion(self):
         for i in range(3):

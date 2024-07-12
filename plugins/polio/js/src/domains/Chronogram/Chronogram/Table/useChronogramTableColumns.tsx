@@ -38,13 +38,12 @@ export const useChronogramTableColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.labelIsOnTime),
-                id: 'is_on_time',
+                id: 'annotated_is_on_time',
                 accessor: 'is_on_time',
                 Cell: settings =>
                     settings.row.original.is_on_time
                         ? formatMessage(MESSAGES.yes)
                         : formatMessage(MESSAGES.no),
-                sortable: false,
             },
             {
                 Header: formatMessage(MESSAGES.labelPercentageOfCompletion),
@@ -60,9 +59,8 @@ export const useChronogramTableColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.labelNumTaskDelayed),
-                id: 'num_task_delayed',
+                id: 'annotated_num_task_delayed',
                 accessor: 'num_task_delayed',
-                sortable: false,
             },
             {
                 Header: formatMessage(MESSAGES.actions),

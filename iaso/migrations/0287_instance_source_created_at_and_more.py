@@ -4,8 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    atomic = False
-
     dependencies = [
         ("iaso", "0286_entitytype_prevent_add_if_duplicate_found"),
     ]
@@ -25,21 +23,5 @@ class Migration(migrations.Migration):
             model_name="orgunit",
             name="source_created_at",
             field=models.DateTimeField(blank=True, help_text="Creation time on the client device", null=True),
-        ),
-        migrations.RunSQL(
-            sql="SET work_mem = '1GB';",
-            reverse_sql=migrations.RunSQL.noop,
-        ),
-        migrations.RunSQL(
-            sql="UPDATE iaso_instance SET source_created_at = created_at WHERE source_created_at IS NULL;",
-            reverse_sql=migrations.RunSQL.noop,
-        ),
-        migrations.RunSQL(
-            sql="UPDATE iaso_instance SET source_updated_at = updated_at WHERE source_updated_at IS NULL;",
-            reverse_sql=migrations.RunSQL.noop,
-        ),
-        migrations.RunSQL(
-            sql="UPDATE iaso_orgunit SET source_created_at = created_at WHERE source_created_at IS NULL;",
-            reverse_sql=migrations.RunSQL.noop,
         ),
     ]

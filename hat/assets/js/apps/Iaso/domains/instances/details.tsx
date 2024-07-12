@@ -94,7 +94,6 @@ const InstanceDetails: FunctionComponent = () => {
     // in the future. add this info directly in the instance api to not make another call;
     const { data: instanceLogsDetails } = useGetInstanceLogs(instanceId);
     const showHistoryLink = (instanceLogsDetails?.list?.length || 0) > 1;
-
     return (
         <section className={classes.relativeContainer}>
             <TopBar

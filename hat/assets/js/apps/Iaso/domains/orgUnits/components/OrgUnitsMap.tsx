@@ -16,7 +16,7 @@ import {
 } from 'bluesquare-components';
 
 // COMPONENTS
-import InnerDrawer from '../../../components/nav/InnerDrawer';
+
 import OrgUnitPopupComponent from './OrgUnitPopupComponent';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
@@ -49,6 +49,7 @@ import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer'
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import { MapToggleCluster } from '../../../components/maps/tools/MapToggleCluster';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
+import { InnerDrawer } from '../../../components/nav/InnerDrawer/Index';
 
 type OrgUnitWithSearchIndex = Omit<OrgUnit, 'search_index'> & {
     search_index: number;

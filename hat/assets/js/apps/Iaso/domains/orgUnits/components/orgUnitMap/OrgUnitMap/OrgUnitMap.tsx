@@ -23,7 +23,6 @@ import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
 import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
 import OrgUnitTypeFilterComponent from '../../../../forms/components/OrgUnitTypeFilterComponent';
 import SourcesFilterComponent from '../../SourcesFilterComponent';
-import InnerDrawer from '../../../../../components/nav/InnerDrawer';
 import { MapLegend } from '../../../../../components/maps/MapLegend';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 import setDrawMessages from '../../../../../utils/map/drawMapMessages';
@@ -49,6 +48,7 @@ import tiles from '../../../../../constants/mapTiles';
 import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
 import * as Permission from '../../../../../utils/permissions';
 import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
+import { InnerDrawer } from '../../../../../components/nav/InnerDrawer/Index';
 
 export const zoom = 5;
 export const padding = [75, 75];

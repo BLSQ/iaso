@@ -335,9 +335,6 @@ class ChronogramTaskAdminInline(admin.StackedInline):
         "created_at",
         "created_by",
         "deleted_at",
-        "delay_in_days",
-        "round_start_date",
-        "deadline_date",
         "updated_at",
         "updated_by",
     )

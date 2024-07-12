@@ -83,7 +83,6 @@ class ChronogramTaskViewSetTestCase(APITestCase):
         self.assertEqual(chronogram_task.description, "Baz")
         self.assertEqual(chronogram_task.start_offset_in_days, 0)
         self.assertEqual(chronogram_task.user_in_charge, self.user)
-        self.assertEqual(chronogram_task.delay_in_days, 0)
         self.assertEqual(chronogram_task.comment, "Comment")
         self.assertEqual(chronogram_task.created_by, self.user)
         self.assertEqual(chronogram_task.created_at, TODAY)

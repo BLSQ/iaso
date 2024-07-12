@@ -2,6 +2,8 @@ import datetime
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import ExpressionWrapper, F, DateField, Value, IntegerField, Case, When
+from django.db.models.functions import ExtractDay
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
@@ -47,7 +49,7 @@ class Chronogram(SoftDeletableModel):
 
     @property
     def num_task_delayed(self) -> int:
-        return len([t for t in self.tasks.all() if t.delay_in_days < 0])
+        return len([t for t in self.tasks.all() if t.annotated_delay_in_days < 0])
 
     @property
     def is_on_time(self) -> bool:
@@ -76,6 +78,29 @@ class Chronogram(SoftDeletableModel):
 class ChronogramTaskQuerySet(models.QuerySet):
     def valid(self):
         return self.filter(deleted_at__isnull=True)  # Hide soft deleted items.
+
+
+class ChronogramTaskManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("chronogram__round")
+            .annotate(
+                annotated_deadline_date=ExpressionWrapper(
+                    F("chronogram__round__started_at") + F("start_offset_in_days"), output_field=DateField()
+                ),
+                # A negative delay in days means that the task is delayed.
+                annotated_delay_in_days=Case(
+                    When(status=self.model.Status.DONE, then=Value(0)),
+                    default=ExpressionWrapper(
+                        ExtractDay(F("annotated_deadline_date") - Value(timezone.now().date())),
+                        output_field=IntegerField(),
+                    ),
+                    output_field=IntegerField(),
+                ),
+            )
+        )
 
 
 class ChronogramTask(SoftDeletableModel):
@@ -107,30 +132,13 @@ class ChronogramTask(SoftDeletableModel):
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="updated_chronogram_tasks"
     )
 
-    objects = models.Manager.from_queryset(ChronogramTaskQuerySet)()
+    objects = ChronogramTaskManager.from_queryset(ChronogramTaskQuerySet)()
 
     class Meta:
         verbose_name = _("Chronogram Task")
 
     def __str__(self) -> str:
         return f"{self.id} - {self.status}"
-
-    @cached_property
-    def round_start_date(self) -> datetime.date:
-        return self.chronogram.round.started_at
-
-    @property
-    def deadline_date(self) -> datetime.date:
-        return self.round_start_date + datetime.timedelta(days=self.start_offset_in_days)
-
-    @property
-    def delay_in_days(self) -> int:
-        """
-        A negative delay in days means that the task is delayed.
-        """
-        if self.status != self.Status.DONE:
-            return (self.deadline_date - timezone.now().date()).days
-        return 0
 
 
 class ChronogramTemplateQuerySet(models.QuerySet):

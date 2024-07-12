@@ -53,7 +53,8 @@ class ChronogramTaskSerializerTestCase(TestCase):
         )
 
     def test_serialize_chronogram_task(self):
-        serializer = ChronogramTaskSerializer(self.chronogram_task)
+        task = ChronogramTask.objects.get(pk=self.chronogram_task.pk)
+        serializer = ChronogramTaskSerializer(task)
         self.assertEqual(
             serializer.data,
             {
@@ -63,7 +64,7 @@ class ChronogramTaskSerializerTestCase(TestCase):
                 "get_period_display": "Before",
                 "description": "Assurer la commande des marqueurs",
                 "start_offset_in_days": 0,
-                "deadline_date": datetime.date(2024, 6, 27),
+                "deadline_date": "2024-06-27",
                 "status": "PENDING",
                 "get_status_display": "Pending",
                 "user_in_charge": {"id": self.user.id, "username": "test", "full_name": "John Doe"},
@@ -98,7 +99,6 @@ class ChronogramTaskSerializerTestCase(TestCase):
         self.assertEqual(chronogram_task.start_offset_in_days, 0)
         self.assertEqual(chronogram_task.status, "IN_PROGRESS")
         self.assertEqual(chronogram_task.user_in_charge, self.user)
-        self.assertEqual(chronogram_task.delay_in_days, 0)
         self.assertEqual(chronogram_task.comment, "Comment")
         self.assertEqual(chronogram_task.created_by, self.user)
         self.assertEqual(chronogram_task.created_at, TODAY)

@@ -36,12 +36,12 @@ export const useSaveUserRole = (type: 'create' | 'edit'): UseMutationResult => {
     const ignoreErrorCodes = [400];
     const editUserRole = useSnackMutation({
         mutationFn: (data: Partial<SaveUserRoleQuery>) => putUserRole(data),
-        invalidateQueryKey: ['userRolesList'],
+        invalidateQueryKey: ['userRoles'],
         ignoreErrorCodes,
     });
     const createUserRole = useSnackMutation({
         mutationFn: (data: SaveUserRoleQuery) => postUserRole(data),
-        invalidateQueryKey: ['userRolesList'],
+        invalidateQueryKey: ['userRoles'],
         ignoreErrorCodes,
     });
 

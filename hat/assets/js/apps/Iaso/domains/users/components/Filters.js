@@ -11,11 +11,11 @@ import {
 } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { stringToBoolean } from '../../../utils/dataManipulation.ts';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
 import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes.ts';
-import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
-import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown.ts';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
+import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles.ts';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams.ts';
 
@@ -121,137 +121,135 @@ const Filters = ({ baseUrl, params }) => {
     }, [baseUrl, filters, filtersUpdated, params, redirectTo]);
 
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="search"
-                        onChange={handleChange}
-                        value={filters.search}
-                        type="search"
-                        label={MESSAGES.search}
-                        onEnterPressed={handleSearch}
-                        onErrorChange={setTextSearchError}
-                        blockForbiddenChars
-                    />
-                    <InputComponent
-                        keyValue="userRoles"
-                        onChange={handleChange}
-                        value={filters.userRoles}
-                        type="select"
-                        multi
-                        options={userRoles ?? []}
-                        label={MESSAGES.userRoles}
-                        loading={isFetchingUserRoles}
-                        onEnterPressed={handleSearchUserRoles}
-                    />
-                    <InputComponent
-                        keyValue="teamsIds"
-                        onChange={handleChange}
-                        value={filters.teamsIds}
-                        type="select"
-                        options={teamsDropdown}
-                        label={MESSAGES.teams}
-                        loading={isFetchingTeams}
-                        onEnterPressed={handleSearchPerms}
-                        clearable
-                        multi
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="permissions"
-                        onChange={handleChange}
-                        value={filters.permissions}
-                        type="select"
-                        multi
-                        options={dropdown ?? []}
-                        label={MESSAGES.permissions}
-                        loading={isFetching}
-                        onEnterPressed={handleSearchPerms}
-                    />
-                    <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
-                        <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
-                            titleMessage={MESSAGES.location}
-                            onConfirm={orgUnit =>
-                                handleChange(
-                                    'location',
-                                    orgUnit ? orgUnit.id : undefined,
-                                )
-                            }
-                            initialSelection={initialOrgUnit}
-                        />
-                    </Box>
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="orgUnitTypes"
-                        onChange={handleChange}
-                        value={filters.orgUnitTypes}
-                        type="select"
-                        options={orgUnitTypeDropdown}
-                        label={MESSAGES.orgUnitTypesDropdown}
-                        loading={isFetchingOuTypes}
-                        onEnterPressed={handleSearchPerms}
-                        clearable
-                    />
-                    <InputComponent
-                        keyValue="ouChildren"
-                        type="checkbox"
-                        checked={ouChildren}
-                        onChange={(key, value) => {
-                            handleChange('ouChildren', !ouChildren);
-                            setOuChildren(value);
-                        }}
-                        disabled={!initialOrgUnit}
-                        value={ouChildren}
-                        label={MESSAGES.ouChildrenCheckbox}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="projectsIds"
-                        onChange={handleChange}
-                        value={filters.projectsIds}
-                        type="select"
-                        options={allProjects}
-                        label={MESSAGES.projects}
-                        loading={isFetchingProjects}
-                        onEnterPressed={handleSearchPerms}
-                        clearable
-                        multi
-                    />
-                    <InputComponent
-                        keyValue="ouParent"
-                        type="checkbox"
-                        checked={ouParent}
-                        onChange={(key, value) => {
-                            handleChange('ouParent', value);
-                            setOuParent(value);
-                        }}
-                        disabled={!initialOrgUnit}
-                        value={ouParent}
-                        label={MESSAGES.ouParentCheckbox}
-                    />
-                </Grid>
-                <Grid container item xs={12} md={12} justifyContent="flex-end">
-                    <Box mt={2}>
-                        <Button
-                            data-test="search-button"
-                            disabled={textSearchError || !filtersUpdated}
-                            variant="contained"
-                            className={classes.button}
-                            color="primary"
-                            onClick={() => handleSearch()}
-                        >
-                            <SearchIcon className={classes.buttonIcon} />
-                            {formatMessage(MESSAGES.search)}
-                        </Button>
-                    </Box>
-                </Grid>
+        <Grid container spacing={2}>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    keyValue="search"
+                    onChange={handleChange}
+                    value={filters.search}
+                    type="search"
+                    label={MESSAGES.search}
+                    onEnterPressed={handleSearch}
+                    onErrorChange={setTextSearchError}
+                    blockForbiddenChars
+                />
+                <InputComponent
+                    keyValue="userRoles"
+                    onChange={handleChange}
+                    value={filters.userRoles}
+                    type="select"
+                    multi
+                    options={userRoles ?? []}
+                    label={MESSAGES.userRoles}
+                    loading={isFetchingUserRoles}
+                    onEnterPressed={handleSearchUserRoles}
+                />
+                <InputComponent
+                    keyValue="teamsIds"
+                    onChange={handleChange}
+                    value={filters.teamsIds}
+                    type="select"
+                    options={teamsDropdown}
+                    label={MESSAGES.teams}
+                    loading={isFetchingTeams}
+                    onEnterPressed={handleSearchPerms}
+                    clearable
+                    multi
+                />
             </Grid>
-        </>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    keyValue="permissions"
+                    onChange={handleChange}
+                    value={filters.permissions}
+                    type="select"
+                    multi
+                    options={dropdown ?? []}
+                    label={MESSAGES.permissions}
+                    loading={isFetching}
+                    onEnterPressed={handleSearchPerms}
+                />
+                <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
+                    <OrgUnitTreeviewModal
+                        toggleOnLabelClick={false}
+                        titleMessage={MESSAGES.location}
+                        onConfirm={orgUnit =>
+                            handleChange(
+                                'location',
+                                orgUnit ? orgUnit.id : undefined,
+                            )
+                        }
+                        initialSelection={initialOrgUnit}
+                    />
+                </Box>
+            </Grid>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    keyValue="orgUnitTypes"
+                    onChange={handleChange}
+                    value={filters.orgUnitTypes}
+                    type="select"
+                    options={orgUnitTypeDropdown}
+                    label={MESSAGES.orgUnitTypesDropdown}
+                    loading={isFetchingOuTypes}
+                    onEnterPressed={handleSearchPerms}
+                    clearable
+                />
+                <InputComponent
+                    keyValue="ouChildren"
+                    type="checkbox"
+                    checked={ouChildren}
+                    onChange={(key, value) => {
+                        handleChange('ouChildren', !ouChildren);
+                        setOuChildren(value);
+                    }}
+                    disabled={!initialOrgUnit}
+                    value={ouChildren}
+                    label={MESSAGES.ouChildrenCheckbox}
+                />
+            </Grid>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    keyValue="projectsIds"
+                    onChange={handleChange}
+                    value={filters.projectsIds}
+                    type="select"
+                    options={allProjects}
+                    label={MESSAGES.projects}
+                    loading={isFetchingProjects}
+                    onEnterPressed={handleSearchPerms}
+                    clearable
+                    multi
+                />
+                <InputComponent
+                    keyValue="ouParent"
+                    type="checkbox"
+                    checked={ouParent}
+                    onChange={(key, value) => {
+                        handleChange('ouParent', value);
+                        setOuParent(value);
+                    }}
+                    disabled={!initialOrgUnit}
+                    value={ouParent}
+                    label={MESSAGES.ouParentCheckbox}
+                />
+            </Grid>
+            <Grid container item xs={12} md={12} justifyContent="flex-end">
+                <Box mt={2}>
+                    <Button
+                        data-test="search-button"
+                        disabled={textSearchError || !filtersUpdated}
+                        variant="contained"
+                        className={classes.button}
+                        color="primary"
+                        onClick={() => handleSearch()}
+                    >
+                        <SearchIcon className={classes.buttonIcon} />
+                        {formatMessage(MESSAGES.search)}
+                    </Button>
+                </Box>
+            </Grid>
+        </Grid>
     );
 };
 

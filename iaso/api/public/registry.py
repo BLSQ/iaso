@@ -164,6 +164,47 @@ class PublicRegistryViewSet(ViewSet):
         serializer = PublicRegistryConfigSerializer(public_registry_config)
         return JsonResponse(serializer.data)
 
+    # http://127.0.0.1:8000/api/public/registry/instances/7/
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "instance_id",
+                openapi.IN_PATH,
+                description="ID of the instance",
+                type=openapi.TYPE_INTEGER,
+                required=True,
+            ),
+        ]
+    )
+    @action(detail=False, methods=["GET"], url_path="instances/(?P<instance_id>[^/.]+)", url_name="instance_detail")
+    def instance_detail(self, request: Request, instance_id: int) -> JsonResponse:
+        try:
+            instance = Instance.objects.get(pk=instance_id)
+        except Instance.DoesNotExist:
+            return JsonResponse({"error": "Instance not found"}, status=404)
+
+        # Get the registry_slug parameter from the request
+        registry_slug = request.query_params.get("registry_slug", None)
+
+        # Determine the public registry configuration based on the registry_slug or current URL
+        public_registry_config = None
+        if registry_slug:
+            public_registry_config = PublicRegistryConfig.objects.filter(slug=registry_slug).first()
+        else:
+            current_host = request.get_host()  # Example: http://127.0.0.1:8000/
+            public_registry_config = PublicRegistryConfig.objects.filter(host=current_host).first()
+
+        if not public_registry_config:
+            return JsonResponse({"error": "Public registry configuration not found for this URL or slug"}, status=404)
+
+        # Get the whitelisted fields from the configuration
+        whitelisted_fields = public_registry_config.whitelist.get("fields", [])
+
+        # Serialize the instance with only whitelisted fields
+        instance_data = InstanceSerializer(instance, many=False, whitelisted_fields=whitelisted_fields).data
+
+        return JsonResponse(instance_data)
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(

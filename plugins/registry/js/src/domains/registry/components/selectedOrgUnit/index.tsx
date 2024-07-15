@@ -58,7 +58,7 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
     }, [params.submissionId, orgUnit, instances]);
 
     const { data: currentInstance, isFetching: isFetchingCurrentInstance } =
-        useGetInstance(currentInstanceId, false);
+        useGetInstance(currentInstanceId, registrySlug, false);
 
     if (!orgUnit) {
         return null;

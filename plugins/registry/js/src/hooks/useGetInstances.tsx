@@ -120,11 +120,15 @@ export const useGetOrgUnitInstances = (
 
 export const useGetInstance = (
     instanceId: number | string | undefined,
+    registrySlug: string,
     keepPreviousData = true,
 ): UseQueryResult<Instance, Error> => {
     return useSnackQuery({
         queryKey: ['instance', instanceId],
-        queryFn: () => getRequest(`/api/public/registry/instances/${instanceId}/`),
+        queryFn: () =>
+            getRequest(
+                `/api/public/registry/instances/${instanceId}/?registry_slug=${registrySlug}`,
+            ),
         options: {
             enabled: Boolean(instanceId),
             retry: false,

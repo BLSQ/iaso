@@ -178,6 +178,7 @@ export const Registry: FunctionComponent = () => {
                                 useIcon
                                 version={config.source_version}
                                 source={config.data_source}
+                                appId={config.app_id}
                             />
                         </Box>
                         <Box display="inline-block" ml={1} mr={2}>

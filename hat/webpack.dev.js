@@ -223,11 +223,11 @@ module.exports = {
                     requiredVersion: "^17.0.2",
                     eager: true,
                 },
-                // 'react-dom': {
-                //     singleton: true, // there should be only one version of react-dom
-                //     requiredVersion: "^17.0.2",
-                //     // eager: true,
-                // },
+                'react-dom': {
+                    singleton: true, // there should be only one version of react-dom
+                    requiredVersion: "^17.0.2",
+                    eager: true,
+                },
             },
         }),
     ],

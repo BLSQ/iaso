@@ -16,7 +16,8 @@ class UserNestedSerializer(serializers.ModelSerializer):
 class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
     created_by = UserNestedSerializer(read_only=True)
     updated_by = UserNestedSerializer(read_only=True)
-    delay_in_days = serializers.IntegerField(read_only=True)
+    deadline_date = serializers.DateField(read_only=True, source="annotated_deadline_date")
+    delay_in_days = serializers.IntegerField(read_only=True, source="annotated_delay_in_days")
 
     class Meta:
         model = ChronogramTask
@@ -71,9 +72,9 @@ class ChronogramSerializer(DynamicFieldsModelSerializer, serializers.ModelSerial
     campaign_obr_name = serializers.CharField(source="round.campaign.obr_name")
     round_number = serializers.CharField(source="round.number")
     round_start_date = serializers.CharField(source="round.started_at")
-    is_on_time = serializers.BooleanField(read_only=True)
+    is_on_time = serializers.BooleanField(read_only=True, source="annotated_is_on_time")
     percentage_of_completion = serializers.DictField(read_only=True)
-    num_task_delayed = serializers.IntegerField(read_only=True)
+    num_task_delayed = serializers.IntegerField(read_only=True, source="annotated_num_task_delayed")
     tasks = ChronogramTaskSerializer(many=True, read_only=True)
     created_by = UserNestedSerializer(read_only=True)
     updated_by = UserNestedSerializer(read_only=True)

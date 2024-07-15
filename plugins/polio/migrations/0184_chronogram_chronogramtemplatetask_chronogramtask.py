@@ -7,9 +7,9 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0286_entitytype_prevent_add_if_duplicate_found"),
+        ("iaso", "0291_instance_iaso_instan_created_04174a_idx_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("polio", "0181_merge_20240625_0724"),
+        ("polio", "0183_alter_campaign_virus"),
     ]
 
     operations = [

@@ -3,8 +3,7 @@ require('dotenv').config();
 const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
-// import { ModuleFederationPlugin } from '@module-federation/enhanced/webpack';
-const { ModuleFederationPlugin } = require("webpack").container;
+const { ModuleFederationPlugin } = require('@module-federation/enhanced/webpack');
 
 // Switch here for French. This is set to 'en' in dev to not get react-intl warnings
 // remember to switch in webpack.prod.js and

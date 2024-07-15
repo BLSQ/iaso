@@ -69,6 +69,23 @@ const MESSAGES = defineMessages({
         id: 'iaso.userRoles.userRolePermissions',
         defaultMessage: 'User role permissions',
     },
+    userRoleDialogInfoTitle: {
+        id: 'iaso.userRoles.dialogInfoTitle',
+        defaultMessage: 'Warning on the new created user role',
+    },
+    userRoleDialogInfoMessage: {
+        id: 'iaso.userRoles.dialogInfoMessage',
+        defaultMessage:
+            'Please refresh your page before adding users to this new created user role',
+    },
+    userRoleInfoButton: {
+        id: 'iaso.userRoles.infoButton',
+        defaultMessage: 'Yes',
+    },
+    userRolesDropDownError: {
+        defaultMessage: 'An error occurred while fetching user roles',
+        id: 'iaso.snackBar.fetchUserRoles',
+    },
 });
 
 export default MESSAGES;

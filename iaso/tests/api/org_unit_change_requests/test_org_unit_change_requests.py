@@ -330,8 +330,8 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         """
         It tests the CSV export for the org change requests list.
         """
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
 
         self.client.force_authenticate(self.user)
 

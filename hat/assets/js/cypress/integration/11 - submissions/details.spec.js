@@ -24,9 +24,14 @@ describe('Instance details', () => {
         cy.intercept('GET', '/api/profiles/me/**', superUser);
         cy.intercept(
             'GET',
-            '/api/logs/?objectId=1007&order=-created_at&contentType=iaso.form',
+            '/api/logs/?objectId=1007&order=-created_at&contentType=iaso.instance',
             submissionLogs,
         ).as('getLogs');
+        cy.intercept(
+            'GET',
+            '/api/forms/?fields=org_unit_type_ids,period_type',
+            { org_unit_type_ids: [], period_type: 'YEAR' },
+        );
     });
     testPermission(baseUrl);
     describe.skip('Top Bar', () => {
@@ -44,6 +49,8 @@ describe('Instance details', () => {
     describe('Component layout', () => {
         it('positions grid components correctly', async () => {
             cy.visit(baseUrl);
+            cy.wait('@getSubmission');
+            cy.wait('@getLogs');
             cy.getAndAssert('#infos', 'infos');
             cy.getAndAssert('#location', 'location');
             cy.getAndAssert('#export-requests', 'export-requests');

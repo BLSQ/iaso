@@ -29,6 +29,7 @@ export type PlanningApi = {
     ended_at?: string;
     org_unit_details: OrgUnitDetails;
     form?: [number];
+    project_details: { name: string; id: number };
 };
 
 type Planning = PlanningApi & {

@@ -159,8 +159,35 @@ class UserRoleAPITestCase(APITestCase):
             "Not found.",
         )
 
-    def test_delete_permissions_modification(self):
+    def test_delete_user_role(self):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.delete(f"/api/userroles/{self.userRole.id}/")
         r = self.assertJSONResponse(response, 204)
+
+    def test_delete_user_role_and_remove_users_in_it(self):
+        self.client.force_authenticate(self.yoda)
+        group_1 = Group.objects.create(name="Group 1")
+        group_2 = Group.objects.create(name="Group 2")
+
+        group_1.permissions.add(self.permission)
+        group_2.permissions.add(self.permission)
+
+        userRole_1 = m.UserRole.objects.create(group=group_1, account=self.star_wars)
+        userRole_2 = m.UserRole.objects.create(group=group_2, account=self.star_wars)
+
+        self.yoda.iaso_profile.user_roles.add(userRole_1)
+        self.yoda.iaso_profile.user_roles.add(userRole_2)
+        self.assertEqual(
+            list(self.yoda.iaso_profile.user_roles.all()),
+            list(m.UserRole.objects.filter(id__in=[userRole_2.id, userRole_1.id])),
+        )
+        response = self.client.delete(f"/api/userroles/{userRole_1.id}/")
+        r = self.assertJSONResponse(response, 204)
+
+        self.assertEqual(
+            list(self.yoda.iaso_profile.user_roles.all()),
+            list(m.UserRole.objects.filter(id__in=[userRole_2.id])),
+        )
+
+        self.assertFalse(Group.objects.filter(id=group_1.id).exists())

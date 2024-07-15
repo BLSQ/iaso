@@ -1,100 +1,54 @@
 /* eslint-disable react/no-array-index-key */
-import React, { useState, useCallback, useMemo } from 'react';
-import {
-    useSafeIntl,
-    commonStyles,
-    useSkipEffectOnMount,
-    useRedirectToReplace,
-} from 'bluesquare-components';
+import React from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { Grid, Box, Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { useLocation } from 'react-router-dom';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm.tsx';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject.tsx';
-import { DistrictsNotFound } from '../shared/DistrictsNotFound.tsx';
+import { DistrictsNotFound } from '../shared/DebugInfo/DistrictsNotFound.tsx';
 import { Filters } from '../shared/Filters.tsx';
-import { GraphTitle } from '../shared/GraphTitle.tsx';
-import { LqasImHorizontalChart } from '../shared/LqasImHorizontalChart.tsx';
-import { DatesIgnored } from '../shared/DatesIgnored.tsx';
+import { GraphTitle } from '../shared/charts/GraphTitle.tsx';
+
+import { LqasImHorizontalChart } from '../shared/charts/LqasImHorizontalChart.tsx';
+import { DatesIgnored } from '../shared/DebugInfo/DatesIgnored.tsx';
 import { HorizontalDivider } from '../../../components/HorizontalDivider.tsx';
-import { LqasImVerticalChart } from '../shared/LqasImVerticalChart.tsx';
-import { MapContainer } from '../shared/MapContainer.tsx';
+import { LqasImVerticalChart } from '../shared/charts/LqasImVerticalChart.tsx';
+import { Sides } from '../../../constants/types.ts';
+import { ImOverviewContainer } from './CountryOverview/ImOverviewContainer.tsx';
 import { useImData } from './hooks/useImData.ts';
-import MESSAGES from '../../../constants/messages';
-import { BadRoundNumbers } from '../shared/BadRoundNumber.tsx';
-import { makeDropdownOptions } from '../shared/LqasIm.tsx';
-import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { defaultRounds, paperElevation } from '../shared/constants.ts';
-import { baseUrls } from '../../../constants/urls.ts';
-
-const styles = theme => ({
-    ...commonStyles(theme),
-    filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
-});
-
-const useStyles = makeStyles(styles);
-
-const useImType = () => {
-    const { pathname } = useLocation();
-    if (pathname.includes(baseUrls.imGlobal)) {
-        return { url: baseUrls.imGlobal, type: 'imGlobal' };
-    }
-    if (pathname.includes(baseUrls.imIhh)) {
-        return { url: baseUrls.imIhh, type: 'imIHH' };
-    }
-    if (pathname.includes(baseUrls.imOhh)) {
-        return { url: baseUrls.imOhh, type: 'imOHH' };
-    }
-    throw new Error(`Invalid pathname: ${pathname}`);
-};
+import MESSAGES from '../../../constants/messages.ts';
+import { BadRoundNumbers } from '../shared/DebugInfo/BadRoundNumber.tsx';
+import { paperElevation } from '../shared/constants.ts';
+import { useSelectedRounds } from '../shared/hooks/useSelectedRounds.tsx';
+import { useGetCampaigns } from '../../Campaigns/hooks/api/useGetCampaigns.ts';
+import { useImType } from './hooks/useImType.ts';
+import { useStyles } from '../shared/hooks/useStyles.ts';
 
 export const ImStats = () => {
     const { url: baseUrl, type: imType } = useImType();
     const params = useParamsObject(baseUrl);
-    const { campaign, country, rounds } = params;
+    const { campaign, country } = params;
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const redirectToReplace = useRedirectToReplace();
 
-    const [selectedRounds, setSelectedRounds] = useState(
-        rounds ? commaSeparatedIdsToArray(rounds) : defaultRounds,
-    );
+    const { data: campaigns = [], isFetching: campaignsFetching } =
+        useGetCampaigns({
+            countries: country,
+            enabled: Boolean(country),
+        });
+
+    const { onRoundChange, selectedRounds, dropDownOptions } =
+        useSelectedRounds({ baseUrl, campaigns, params });
+
     const {
         imData,
         isFetching,
         convertedData,
-        campaigns,
-        campaignsFetching,
         debugData,
         hasScope,
         chartData,
     } = useImData(campaign, country, imType, selectedRounds);
 
-    const dropDownOptions = useMemo(() => {
-        return makeDropdownOptions(imData.stats, campaign, selectedRounds);
-    }, [imData, campaign, selectedRounds]);
-
-    const onRoundChange = useCallback(
-        index => value => {
-            const updatedSelection = [...selectedRounds];
-            updatedSelection[index] = value;
-            setSelectedRounds(updatedSelection);
-            redirectToReplace(baseUrl, {
-                ...params,
-                rounds: updatedSelection.join(','),
-            });
-        },
-        [baseUrl, params, redirectToReplace, selectedRounds],
-    );
-
-    const divider = (
-        <HorizontalDivider mt={6} mb={4} ml={-4} mr={-4} displayTrigger />
-    );
-
-    useSkipEffectOnMount(() => {
-        setSelectedRounds(defaultRounds);
-    }, [campaign, country]);
     return (
         <>
             <TopBar
@@ -110,27 +64,58 @@ export const ImStats = () => {
                     params={params}
                 />
                 <Grid container spacing={2} direction="row">
-                    {selectedRounds.map((rnd, index) => (
-                        <Grid item xs={6} key={`IM-map-round ${rnd}_${index}`}>
-                            <MapContainer
-                                round={parseInt(rnd, 10)}
-                                campaign={campaign}
-                                campaigns={campaigns}
-                                country={country}
-                                data={convertedData}
-                                isFetching={isFetching || campaignsFetching}
-                                debugData={debugData}
-                                paperElevation={paperElevation}
-                                type={imType}
-                                onRoundChange={onRoundChange(index)}
-                                options={dropDownOptions}
-                            />
-                        </Grid>
-                    ))}
+                    <Grid
+                        item
+                        xs={6}
+                        key={`IM-map-round round_${selectedRounds[0]}_${0}`}
+                    >
+                        <ImOverviewContainer
+                            round={parseInt(selectedRounds[0], 10)}
+                            campaign={campaign}
+                            campaigns={campaigns}
+                            country={country}
+                            data={convertedData}
+                            isFetching={isFetching || campaignsFetching}
+                            debugData={debugData}
+                            paperElevation={paperElevation}
+                            type={imType}
+                            params={params}
+                            onRoundChange={onRoundChange(0)}
+                            side={Sides.left}
+                            options={dropDownOptions}
+                        />
+                    </Grid>
+                    <Grid
+                        item
+                        xs={6}
+                        key={`IM-map-round round_${selectedRounds[1]}_${1}`}
+                    >
+                        <ImOverviewContainer
+                            round={parseInt(selectedRounds[1], 10)}
+                            campaign={campaign}
+                            campaigns={campaigns}
+                            country={country}
+                            data={convertedData}
+                            isFetching={isFetching || campaignsFetching}
+                            debugData={debugData}
+                            paperElevation={paperElevation}
+                            type={imType}
+                            params={params}
+                            side={Sides.right}
+                            onRoundChange={onRoundChange(1)}
+                            options={dropDownOptions}
+                        />
+                    </Grid>
                 </Grid>
                 {campaign && !isFetching && (
                     <>
-                        {divider}
+                        <HorizontalDivider
+                            mt={6}
+                            mb={4}
+                            ml={-4}
+                            mr={-4}
+                            displayTrigger
+                        />
                         <Grid container spacing={2} direction="row">
                             <Grid item xs={12}>
                                 <GraphTitle
@@ -159,7 +144,13 @@ export const ImStats = () => {
                         </Grid>
                         {imType === 'imIHH' && (
                             <>
-                                {divider}
+                                <HorizontalDivider
+                                    mt={6}
+                                    mb={4}
+                                    ml={-4}
+                                    mr={-4}
+                                    displayTrigger
+                                />
                                 <Grid container spacing={2} direction="row">
                                     <Grid item xs={12}>
                                         <GraphTitle

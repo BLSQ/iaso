@@ -24,7 +24,7 @@ export const LQAS_BASE_URL = 'polio/lqas/lqas';
 export const LQAS_AFRO_MAP_URL = 'polio/lqas/lqas-map';
 export const IM_GLOBAL = 'polio/im/global';
 export const IM_OHH = 'polio/im/ohh';
-export const IM_IHH = 'polio/im/ihh';
+export const IM_HH = 'polio/im/hh';
 export const GROUPED_CAMPAIGNS = 'polio/groupedcampaigns';
 export const BUDGET = 'polio/budget';
 export const BUDGET_DETAILS = 'polio/budget/details';
@@ -113,15 +113,15 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     },
     imGlobal: {
         url: IM_GLOBAL,
-        params: ['campaign', 'country', 'rounds'],
+        params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
-    imIhh: {
-        url: IM_IHH,
-        params: ['campaign', 'country', 'rounds'],
+    imHH: {
+        url: IM_HH,
+        params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
-    imOhh: {
+    imOHH: {
         url: IM_OHH,
-        params: ['campaign', 'country', 'rounds'],
+        params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
     budget: {
         url: BUDGET,
@@ -242,8 +242,8 @@ export type PolioBaseUrls = {
     lqasCountry: string;
     lqasAfro: string;
     imGlobal: string;
-    imIhh: string;
-    imOhh: string;
+    imHH: string;
+    imOHH: string;
     budget: string;
     budgetDetails: string;
     nopv2Auth: string;

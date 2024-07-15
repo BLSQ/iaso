@@ -49,6 +49,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Version',
         id: 'iaso.label.version',
     },
+    default: {
+        id: 'iaso.datasources.options.label.default',
+        defaultMessage: 'default',
+    },
 });
 
 export { MESSAGES };

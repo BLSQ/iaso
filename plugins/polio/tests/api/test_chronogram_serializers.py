@@ -53,17 +53,20 @@ class ChronogramTaskSerializerTestCase(TestCase):
         )
 
     def test_serialize_chronogram_task(self):
-        serializer = ChronogramTaskSerializer(self.chronogram_task)
+        task = ChronogramTask.objects.get(pk=self.chronogram_task.pk)
+        serializer = ChronogramTaskSerializer(task)
         self.assertEqual(
             serializer.data,
             {
                 "id": self.chronogram_task.pk,
                 "chronogram": self.chronogram.pk,
                 "period": "BEFORE",
+                "get_period_display": "Before",
                 "description": "Assurer la commande des marqueurs",
                 "start_offset_in_days": 0,
-                "deadline_date": datetime.date(2024, 6, 27),
+                "deadline_date": "2024-06-27",
                 "status": "PENDING",
+                "get_status_display": "Pending",
                 "user_in_charge": {"id": self.user.id, "username": "test", "full_name": "John Doe"},
                 "delay_in_days": 0,
                 "comment": "Comment",
@@ -96,7 +99,6 @@ class ChronogramTaskSerializerTestCase(TestCase):
         self.assertEqual(chronogram_task.start_offset_in_days, 0)
         self.assertEqual(chronogram_task.status, "IN_PROGRESS")
         self.assertEqual(chronogram_task.user_in_charge, self.user)
-        self.assertEqual(chronogram_task.delay_in_days, 0)
         self.assertEqual(chronogram_task.comment, "Comment")
         self.assertEqual(chronogram_task.created_by, self.user)
         self.assertEqual(chronogram_task.created_at, TODAY)
@@ -137,6 +139,7 @@ class ChronogramTemplateTaskSerializerTestCase(TestCase):
                 "id": self.chronogram_template_task.pk,
                 "account": self.account.pk,
                 "period": "BEFORE",
+                "get_period_display": "Before",
                 "description": "Assurer la commande des marqueurs",
                 "start_offset_in_days": 0,
                 "created_at": "2024-06-27T14:00:00Z",
@@ -155,7 +158,6 @@ class ChronogramTemplateTaskSerializerTestCase(TestCase):
 
     def test_deserialize_chronogram_template_task(self):
         data = {
-            "account": self.account.pk,
             "period": Period.BEFORE,
             "description": "Bar",
             "start_offset_in_days": 10,
@@ -163,7 +165,7 @@ class ChronogramTemplateTaskSerializerTestCase(TestCase):
         serializer = ChronogramTemplateTaskSerializer(data=data)
         self.assertTrue(serializer.is_valid())
 
-        chronogram_template_task = serializer.save(created_by=self.user)
+        chronogram_template_task = serializer.save(created_by=self.user, account=self.account)
 
         self.assertEqual(chronogram_template_task.account, self.account)
         self.assertEqual(chronogram_template_task.period, "BEFORE")
@@ -239,9 +241,21 @@ class ChronogramCreateSerializerTestCase(TestCase):
         self.assertEqual(3, chronogram.tasks.count())
 
     def test_validate_round_unauthorized(self):
+        self.round.started_at = None
+        self.round.save()
         request = APIRequestFactory().get("/")
         request.user = self.user
-        round = Round.objects.create(number=666)
+        data = {
+            "round": self.round.id,
+        }
+        serializer = ChronogramCreateSerializer(data=data, context={"request": request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(f"Round ID {self.round.id} doesn't have a `started_at` value.", serializer.errors["round"][0])
+
+    def test_validate_round_without_started_at(self):
+        request = APIRequestFactory().get("/")
+        request.user = self.user
+        round = Round.objects.create(number=666, started_at=TODAY)
         data = {
             "round": round.id,
         }

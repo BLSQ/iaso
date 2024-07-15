@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 
 from iaso.models import OrgUnit
 
-from plugins.polio.models import Chronogram, Campaign
+from plugins.polio.models import Campaign, Chronogram, ChronogramTask
 
 
 def countries(request) -> QuerySet[OrgUnit]:
@@ -19,23 +19,15 @@ class ChronogramFilter(django_filters.rest_framework.FilterSet):
     country = django_filters.ModelMultipleChoiceFilter(
         field_name="round__campaign__country", queryset=countries, label=_("Country")
     )
-    on_time = django_filters.BooleanFilter(field_name="is_on_time", method="filter_on_time")
+    on_time = django_filters.BooleanFilter(field_name="annotated_is_on_time")
     search = django_filters.CharFilter(field_name="round__campaign__obr_name", lookup_expr="icontains")
 
     class Meta:
         model = Chronogram
         fields = ["search", "country"]
 
-    def filter_on_time(self, queryset: QuerySet, name: str, value: bool) -> QuerySet:
-        """
-        Filter by @property.
-        Filtering on `on_time` will generate a N+1 but I haven't found an easy
-        way to do this with `annotate()` yet…
-        """
-        if value is True:
-            pks = [chronogram.pk for chronogram in queryset if chronogram.is_on_time]
-            return queryset.filter(pk__in=pks)
-        if value is False:
-            pks = [chronogram.pk for chronogram in queryset if not chronogram.is_on_time]
-            return queryset.filter(pk__in=pks)
-        return queryset
+
+class ChronogramTaskFilter(django_filters.rest_framework.FilterSet):
+    class Meta:
+        model = ChronogramTask
+        fields = ["chronogram_id"]

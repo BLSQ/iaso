@@ -1,0 +1,89 @@
+import React, { useMemo } from 'react';
+import { Box } from '@mui/material';
+
+import { Column, useSafeIntl } from 'bluesquare-components';
+
+import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+
+import MESSAGES from '../messages';
+import { ChronogramTaskMetaData } from '../../types';
+import { DeleteChronogramTask } from '../Modals/ChronogramTaskDeleteModal';
+import { EditChronogramTaskModal } from '../Modals/ChronogramTaskCreateEditModal';
+
+export const useChronogramDetailsTableColumn = (
+    chronogramTaskMetaData: ChronogramTaskMetaData,
+): Column[] => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(() => {
+        return [
+            {
+                Header: formatMessage(MESSAGES.labelId),
+                id: 'id',
+                accessor: 'id',
+            },
+            {
+                Header: formatMessage(MESSAGES.labelPeriod),
+                id: 'period',
+                accessor: 'get_period_display',
+            },
+            {
+                Header: formatMessage(MESSAGES.labelDescription),
+                id: 'description',
+                accessor: 'description',
+                sortable: false,
+            },
+            {
+                Header: formatMessage(MESSAGES.labelStartOffsetInDays),
+                id: 'start_offset_in_days',
+                accessor: 'start_offset_in_days',
+            },
+            {
+                Header: formatMessage(MESSAGES.labelStatus),
+                id: 'status',
+                accessor: 'get_status_display',
+            },
+            {
+                Header: formatMessage(MESSAGES.labelDelayInDays),
+                id: 'annotated_delay_in_days',
+                accessor: 'delay_in_days',
+            },
+            {
+                Header: formatMessage(MESSAGES.labelDeadlineDate),
+                id: 'annotated_deadline_date',
+                accessor: 'deadline_date',
+                Cell: DateCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.labelUserInCharge),
+                id: 'user_in_charge',
+                accessor: 'user_in_charge.full_name',
+                sortable: false,
+            },
+            {
+                Header: formatMessage(MESSAGES.labelComment),
+                id: 'comment',
+                accessor: 'comment',
+                sortable: false,
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <Box display="inline-flex">
+                            {/* @ts-ignore */}
+                            <EditChronogramTaskModal
+                                chronogramTaskMetaData={chronogramTaskMetaData}
+                                chronogramTask={settings.row.original}
+                            />
+                            {/* @ts-ignore */}
+                            <DeleteChronogramTask
+                                chronogramTask={settings.row.original}
+                            />
+                        </Box>
+                    );
+                },
+            },
+        ];
+    }, [formatMessage]);
+};

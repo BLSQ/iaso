@@ -16,7 +16,8 @@ class UserNestedSerializer(serializers.ModelSerializer):
 class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
     created_by = UserNestedSerializer(read_only=True)
     updated_by = UserNestedSerializer(read_only=True)
-    delay_in_days = serializers.IntegerField(read_only=True)
+    deadline_date = serializers.DateField(read_only=True, source="annotated_deadline_date")
+    delay_in_days = serializers.IntegerField(read_only=True, source="annotated_delay_in_days")
 
     class Meta:
         model = ChronogramTask
@@ -24,10 +25,12 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "id",
             "chronogram",
             "period",
+            "get_period_display",
             "description",
             "start_offset_in_days",
             "deadline_date",
             "status",
+            "get_status_display",
             "user_in_charge",
             "delay_in_days",
             "comment",
@@ -40,10 +43,12 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "id",
             "chronogram",
             "period",
+            "get_period_display",
             "description",
             "start_offset_in_days",
             "deadline_date",
             "status",
+            "get_status_display",
             "user_in_charge",
             "delay_in_days",
             "comment",
@@ -53,6 +58,8 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "deadline_date": {"read_only": True},
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
+            "get_period_display": {"read_only": True},
+            "get_status_display": {"read_only": True},
         }
 
     def to_representation(self, instance):
@@ -65,9 +72,9 @@ class ChronogramSerializer(DynamicFieldsModelSerializer, serializers.ModelSerial
     campaign_obr_name = serializers.CharField(source="round.campaign.obr_name")
     round_number = serializers.CharField(source="round.number")
     round_start_date = serializers.CharField(source="round.started_at")
-    is_on_time = serializers.BooleanField(read_only=True)
+    is_on_time = serializers.BooleanField(read_only=True, source="annotated_is_on_time")
     percentage_of_completion = serializers.DictField(read_only=True)
-    num_task_delayed = serializers.IntegerField(read_only=True)
+    num_task_delayed = serializers.IntegerField(read_only=True, source="annotated_num_task_delayed")
     tasks = ChronogramTaskSerializer(many=True, read_only=True)
     created_by = UserNestedSerializer(read_only=True)
     updated_by = UserNestedSerializer(read_only=True)
@@ -110,6 +117,7 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
             "id",
             "account",
             "period",
+            "get_period_display",
             "description",
             "start_offset_in_days",
             "created_at",
@@ -121,12 +129,15 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
             "id",
             "account",
             "period",
+            "get_period_display",
             "description",
             "start_offset_in_days",
         ]
         extra_kwargs = {
+            "account": {"read_only": True},
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
+            "get_period_display": {"read_only": True},
         }
 
     def to_representation(self, instance):
@@ -140,6 +151,9 @@ class ChronogramCreateSerializer(serializers.Serializer):
     round = serializers.PrimaryKeyRelatedField(queryset=Round.objects.all())
 
     def validate_round(self, round: Round) -> Round:
+        if not round.started_at:
+            raise serializers.ValidationError(f"Round ID {round.id} doesn't have a `started_at` value.")
+
         if Chronogram.objects.filter(round=round).exists():
             raise serializers.ValidationError("A chronogram with this round already exists.")
 

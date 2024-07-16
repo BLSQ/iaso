@@ -8,7 +8,6 @@ import React, {
     useState,
 } from 'react';
 import { useDebounce } from 'use-debounce';
-// @ts-ignore
 import { useSkipEffectOnMount } from 'bluesquare-components';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 

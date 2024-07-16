@@ -154,7 +154,6 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
                         />
                     </Box>
                     <Box className={classes.tableStyle}>
-                        {/* @ts-ignore */}
                         <Table
                             columns={columns}
                             data={permissionsData}

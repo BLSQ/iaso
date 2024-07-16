@@ -103,7 +103,6 @@ export const useGetPlanningsOptions = (
     formIds?: string,
 ): UseQueryResult<DropdownOptions<number>[], Error> => {
     const queryKey: any[] = ['planningsList', formIds];
-    // @ts-ignore
     return useSnackQuery({
         queryKey,
         queryFn: () => getPlanningsOptions(formIds),

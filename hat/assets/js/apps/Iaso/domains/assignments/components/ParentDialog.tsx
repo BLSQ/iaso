@@ -140,35 +140,32 @@ export const ParentDialog: FunctionComponent<Props> = ({
             data-test=""
         >
             {childrenOrgunits && (
-                <>
-                    <DialogTitle>
-                        {mode === 'ASSIGN' &&
-                            formatMessage(MESSAGES.parentDialogTitle, {
-                                assignmentCount: orgUnitsToUpdate.length,
-                                parentOrgUnitName: getTeamUserName(
-                                    selectedItem,
-                                    currentTeam,
-                                    profiles,
-                                    teams,
-                                ),
-                            })}
-                        {mode === 'UNASSIGN' &&
-                            formatMessage(MESSAGES.parentDialogTitleUnsassign, {
-                                assignmentCount: orgUnitsToUpdate.length,
-                                parentOrgUnitName: getTeamUserName(
-                                    selectedItem,
-                                    currentTeam,
-                                    profiles,
-                                    teams,
-                                ),
-                            })}
-                    </DialogTitle>
-                </>
+                <DialogTitle>
+                    {mode === 'ASSIGN' &&
+                        formatMessage(MESSAGES.parentDialogTitle, {
+                            assignmentCount: orgUnitsToUpdate.length,
+                            parentOrgUnitName: getTeamUserName(
+                                selectedItem,
+                                currentTeam,
+                                profiles,
+                                teams,
+                            ),
+                        })}
+                    {mode === 'UNASSIGN' &&
+                        formatMessage(MESSAGES.parentDialogTitleUnsassign, {
+                            assignmentCount: orgUnitsToUpdate.length,
+                            parentOrgUnitName: getTeamUserName(
+                                selectedItem,
+                                currentTeam,
+                                profiles,
+                                teams,
+                            ),
+                        })}
+                </DialogTitle>
             )}
             <DialogContent className={classes.content}>
                 <Box sx={getStickyTableHeadStyles('70vh')}>
                     <Divider />
-                    {/* @ts-ignore */}
                     <Table
                         elevation={0}
                         data={childrenOrgunits?.orgUnits || []}

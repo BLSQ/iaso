@@ -1,5 +1,4 @@
 import React, { FunctionComponent, ReactElement } from 'react';
-// @ts-ignore
 import { Box } from '@mui/material';
 
 type Props = {

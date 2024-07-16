@@ -24,7 +24,6 @@ export const useGetAssignments = (
     currentTeam?: Team,
 ): UseQueryResult<AssignmentsResult, Error> => {
     const queryKey: any[] = ['assignmentsList'];
-    // @ts-ignore
     return useSnackQuery(queryKey, () => getAssignments(options), undefined, {
         enabled: Boolean(options.planning),
         select: data => {

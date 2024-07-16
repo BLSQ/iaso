@@ -235,7 +235,6 @@ export const Instances: FunctionComponent<Props> = ({
                                 </Box>
                             </Grid>
                         </Grid>
-                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
                             baseUrl={baseUrls.registry}

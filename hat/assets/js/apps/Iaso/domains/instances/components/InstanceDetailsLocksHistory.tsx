@@ -9,7 +9,6 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
-// @ts-ignore
 import {
     IconButton as IconButtonComponent,
     LoadingSpinner,
@@ -38,7 +37,6 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
         MESSAGES.lockSuccess,
     );
     const hasLocks = (currentInstance?.instance_locks?.length ?? 0) > 0;
-    // @ts-ignore
     return (
         <WidgetPaper
             id="export-requests"

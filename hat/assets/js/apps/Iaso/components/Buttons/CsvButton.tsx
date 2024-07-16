@@ -2,7 +2,6 @@
 import React, { FunctionComponent } from 'react';
 import { Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-// @ts-ignore
 import { CsvSvg } from 'bluesquare-components';
 
 type Props = {

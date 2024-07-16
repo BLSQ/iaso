@@ -2,7 +2,6 @@ import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 import React, { FunctionComponent, useMemo } from 'react';
-// @ts-ignore
 import { useSafeIntl, IconButton } from 'bluesquare-components';
 import AddIcon from '@mui/icons-material/Add';
 import classNames from 'classnames';

@@ -2,7 +2,6 @@ import { Box } from '@mui/material';
 import React, { FunctionComponent } from 'react';
 
 import {
-    // @ts-ignore => all files of utils are exported by default
     formatThousand,
     Table,
     useSafeIntl,

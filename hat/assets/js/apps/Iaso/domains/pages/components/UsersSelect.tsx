@@ -1,7 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { FormikProps, FieldInputProps } from 'formik';
-// @ts-ignore
 import { Select } from 'bluesquare-components';
 import { Chip } from '@mui/material';
 
@@ -65,7 +64,7 @@ export const UsersSelect: FunctionComponent<Props> = ({
             clearable={false}
             multi
             value={value?.filter(userId =>
-                Boolean(profilesList.find(profile => profile.value===userId))
+                Boolean(profilesList.find(profile => profile.value === userId)),
             )}
             options={profilesList}
             onChange={handleChange}

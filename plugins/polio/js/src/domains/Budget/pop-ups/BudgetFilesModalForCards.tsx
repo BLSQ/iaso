@@ -10,7 +10,6 @@ import {
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
 import { makeFileLinks, makeLinks } from '../utils';
@@ -47,55 +46,53 @@ export const BudgetFilesModalForCards: FunctionComponent<Props> = ({
         setOpen(false);
     }, [setOpen]);
     return (
-        <>
-            <Dialog
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-            >
-                <DialogTitle id="alert-dialog-title">
-                    {formatMessage(MESSAGES.attachments)}
-                    <Divider />
-                </DialogTitle>
-                {/* setting the minWith on the DilaogContent as it won't work on Dialog */}
-                <DialogContent className={classes.minModalWidth}>
-                    <Box>
-                        {makeFileLinks(files)}
-                        {makeLinks(links)}
-                        {note && (
-                            <>
-                                {(files?.length > 0 ||
-                                    (links?.length ?? []) > 0) && (
-                                    <Box mt={4}>
-                                        <Divider />
-                                    </Box>
-                                )}
-                                <Box mb={2} mt={2}>
-                                    <Typography style={{ fontWeight: 'bold' }}>
-                                        {formatMessage(MESSAGES.notes)}
-                                    </Typography>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+        >
+            <DialogTitle id="alert-dialog-title">
+                {formatMessage(MESSAGES.attachments)}
+                <Divider />
+            </DialogTitle>
+            {/* setting the minWith on the DilaogContent as it won't work on Dialog */}
+            <DialogContent className={classes.minModalWidth}>
+                <Box>
+                    {makeFileLinks(files)}
+                    {makeLinks(links)}
+                    {note && (
+                        <>
+                            {(files?.length > 0 ||
+                                (links?.length ?? []) > 0) && (
+                                <Box mt={4}>
+                                    <Divider />
                                 </Box>
-                                <Typography
-                                    variant="body2"
-                                    style={{
-                                        whiteSpace: 'pre-line',
-                                        // @ts-ignore
-                                        wordWrap: 'anywhere',
-                                    }}
-                                >
-                                    {note}
+                            )}
+                            <Box mb={2} mt={2}>
+                                <Typography style={{ fontWeight: 'bold' }}>
+                                    {formatMessage(MESSAGES.notes)}
                                 </Typography>
-                            </>
-                        )}
-                    </Box>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose} color="primary">
-                        {formatMessage(MESSAGES.close)}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </>
+                            </Box>
+                            <Typography
+                                variant="body2"
+                                style={{
+                                    whiteSpace: 'pre-line',
+                                    // @ts-ignore
+                                    wordWrap: 'anywhere',
+                                }}
+                            >
+                                {note}
+                            </Typography>
+                        </>
+                    )}
+                </Box>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleClose} color="primary">
+                    {formatMessage(MESSAGES.close)}
+                </Button>
+            </DialogActions>
+        </Dialog>
     );
 };

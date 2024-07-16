@@ -44,7 +44,6 @@ export const Workflows: FunctionComponent = () => {
                         }}
                     />
                 </Box>
-                {/* @ts-ignore */}
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.workflow_versions ?? []}

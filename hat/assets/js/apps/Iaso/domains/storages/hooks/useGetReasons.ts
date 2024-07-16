@@ -1,4 +1,3 @@
-// @ts-ignore
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import { DropdownOptions } from '../../../types/utils';
 

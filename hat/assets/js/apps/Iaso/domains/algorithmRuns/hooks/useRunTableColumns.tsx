@@ -18,8 +18,6 @@ import { useDeleteRun } from './api/useDeleteRun';
 export const useRunsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: deleteRun } = useDeleteRun();
-    // ignoring because of problem with typing of 'accessor'
-    // @ts-ignore
     return useMemo(
         () => [
             {

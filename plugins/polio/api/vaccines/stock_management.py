@@ -84,6 +84,201 @@ class VaccineStockCalculator:
             return 0
         return sum(report.unusable_vials_destroyed or 0 for report in self.destruction_reports)
 
+    def get_total_of_usable_vials(self):
+        results = self.get_list_of_usable_vials()
+
+        total_vials_in = 0
+        total_doses_in = 0
+
+        for result in results:
+            if result["vials_in"]:
+                total_vials_in += result["vials_in"]
+            if result["doses_in"]:
+                total_doses_in += result["doses_in"]
+            if result["vials_out"]:
+                total_vials_in -= result["vials_out"]
+            if result["doses_out"]:
+                total_doses_in -= result["doses_out"]
+
+        return total_vials_in, total_doses_in
+
+    def get_total_of_unusable_vials(self):
+        results = self.get_list_of_unusable_vials()
+
+        total_vials_in = 0
+        total_doses_in = 0
+
+        for result in results:
+            if result["vials_in"]:
+                total_vials_in += result["vials_in"]
+            if result["doses_in"]:
+                total_doses_in += result["doses_in"]
+            if result["vials_out"]:
+                total_vials_in -= result["vials_out"]
+            if result["doses_out"]:
+                total_doses_in -= result["doses_out"]
+
+        return total_vials_in, total_doses_in
+
+    def get_list_of_usable_vials(self):
+        # First find the corresponding VaccineRequestForms
+        vrfs = VaccineRequestForm.objects.filter(
+            campaign__country=self.vaccine_stock.country, vaccine_type=self.vaccine_stock.vaccine
+        )
+        if not vrfs.exists():
+            arrival_reports = []
+        else:
+            # Then find the corresponding VaccineArrivalReports
+            arrival_reports = VaccineArrivalReport.objects.filter(request_form__in=vrfs)
+            if not arrival_reports.exists():
+                arrival_reports = []
+
+        incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
+            "date_of_incident_report"
+        )
+        stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock).order_by("report_date")
+
+        results = []
+
+        for report in arrival_reports:
+            results.append(
+                {
+                    "date": report.arrival_report_date,
+                    "action": "PO #" + report.po_number if report.po_number else "Stock Arrival",
+                    "vials_in": report.vials_received or 0,
+                    "doses_in": report.doses_received or 0,
+                    "vials_out": None,
+                    "doses_out": None,
+                    "type": MovementTypeEnum.VACCINE_ARRIVAL_REPORT.value,
+                }
+            )
+
+        for report in incident_reports:
+            if (
+                report.usable_vials > 0
+                and report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
+            ):
+                results.append(
+                    {
+                        "date": report.date_of_incident_report,
+                        "action": report.stock_correction,
+                        "vials_in": report.usable_vials or 0,
+                        "doses_in": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                        "vials_out": None,
+                        "doses_out": None,
+                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    }
+                )
+            if report.unusable_vials > 0 and (
+                report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.LOSSES
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.RETURN
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.STEALING
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
+            ):
+                results.append(
+                    {
+                        "date": report.date_of_incident_report,
+                        "action": report.stock_correction,
+                        "vials_in": None,
+                        "doses_in": None,
+                        "vials_out": report.unusable_vials or 0,
+                        "doses_out": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    }
+                )
+
+        for movement in stock_movements:
+            if movement.usable_vials_used > 0:
+                results.append(
+                    {
+                        "date": movement.report_date,
+                        "action": "Form A - Vials Used",
+                        "vials_in": None,
+                        "doses_in": None,
+                        "vials_out": movement.usable_vials_used or 0,
+                        "doses_out": (movement.usable_vials_used or 0) * self.get_doses_per_vial(),
+                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                    }
+                )
+
+            if movement.missing_vials > 0:
+                results.append(
+                    {
+                        "date": movement.report_date,
+                        "action": "Form A - Missing Vials",
+                        "vials_in": None,
+                        "doses_in": None,
+                        "vials_out": movement.missing_vials or 0,
+                        "doses_out": (movement.missing_vials or 0) * self.get_doses_per_vial(),
+                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                    }
+                )
+        return results
+
+    def get_list_of_unusable_vials(self):
+        # Get all OutgoingStockMovements and IncidentReports for the VaccineStock
+        outgoing_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock)
+        incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock)
+        destruction_reports = DestructionReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
+            "destruction_report_date"
+        )
+
+        # Prepare the results list
+        results = []
+
+        # Add unusable vials from OutgoingStockMovements/FORMA
+        for movement in outgoing_movements:
+            if movement.usable_vials_used > 0:
+                results.append(
+                    {
+                        "date": movement.report_date,
+                        "action": "Form A - Vials Used",
+                        "vials_out": None,
+                        "doses_out": None,
+                        "vials_in": movement.usable_vials_used or 0,
+                        "doses_in": (movement.usable_vials_used or 0) * self.get_doses_per_vial(),
+                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                    }
+                )
+
+        for report in destruction_reports:
+            results.append(
+                {
+                    "date": report.destruction_report_date,
+                    "action": (f"{report.action}" if len(report.action) > 0 else f"Destruction report"),
+                    "vials_in": None,
+                    "doses_in": None,
+                    "vials_out": report.unusable_vials_destroyed or 0,
+                    "doses_out": (report.unusable_vials_destroyed or 0) * self.get_doses_per_vial(),
+                    "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
+                }
+            )
+
+        # Add unusable vials from IncidentReports
+        for report in incident_reports:
+            if report.unusable_vials > 0 and (
+                report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
+            ):
+                results.append(
+                    {
+                        "date": report.date_of_incident_report,
+                        "action": report.get_stock_correction_display(),  # for every field FOO that has choices set, the object will have a get_FOO_display() method
+                        "vials_in": report.unusable_vials or 0,
+                        "doses_in": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                        "vials_out": None,
+                        "doses_out": None,
+                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    }
+                )
+        return results
+
 
 class VaccineStockListSerializer(serializers.ListSerializer):
     @staticmethod
@@ -365,14 +560,17 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calculator = VaccineStockCalculator(vaccine_stock)
 
+        total_usable_vials, total_usable_doses = calculator.get_total_of_usable_vials()
+        total_unusable_vials, total_unusable_doses = calculator.get_total_of_unusable_vials()
+
         summary_data = {
             "country_id": vaccine_stock.country.id,
             "country_name": vaccine_stock.country.name,
             "vaccine_type": vaccine_stock.vaccine,
-            "total_usable_vials": calculator.get_stock_of_usable_vials(),
-            "total_unusable_vials": calculator.get_stock_of_unusable_vials(),
-            "total_usable_doses": calculator.get_stock_of_usable_vials() * calculator.get_doses_per_vial(),
-            "total_unusable_doses": calculator.get_stock_of_unusable_vials() * calculator.get_doses_per_vial(),
+            "total_usable_vials": total_usable_vials,
+            "total_unusable_vials": total_unusable_vials,
+            "total_usable_doses": total_usable_doses,
+            "total_unusable_doses": total_unusable_doses,
         }
 
         return Response(summary_data, status=status.HTTP_200_OK)
@@ -394,103 +592,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
             return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
 
         calc = VaccineStockCalculator(vaccine_stock)
-
-        # First find the corresponding VaccineRequestForms
-        vrfs = VaccineRequestForm.objects.filter(
-            campaign__country=vaccine_stock.country, vaccine_type=vaccine_stock.vaccine
-        )
-        if not vrfs.exists():
-            arrival_reports = []
-        else:
-            # Then find the corresponding VaccineArrivalReports
-            arrival_reports = VaccineArrivalReport.objects.filter(request_form__in=vrfs)
-            if not arrival_reports.exists():
-                arrival_reports = []
-
-        incident_reports = IncidentReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
-            "date_of_incident_report"
-        )
-        stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock).order_by("report_date")
-
-        results = []
-
-        for report in arrival_reports:
-            results.append(
-                {
-                    "date": report.arrival_report_date,
-                    "action": "PO #" + report.po_number if report.po_number else "Stock Arrival",
-                    "vials_in": report.vials_received or 0,
-                    "doses_in": report.doses_received or 0,
-                    "vials_out": None,
-                    "doses_out": None,
-                    "type": MovementTypeEnum.VACCINE_ARRIVAL_REPORT.value,
-                }
-            )
-
-        for report in incident_reports:
-            if (
-                report.usable_vials > 0
-                and report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
-            ):
-                results.append(
-                    {
-                        "date": report.date_of_incident_report,
-                        "action": report.stock_correction,
-                        "vials_in": report.usable_vials or 0,
-                        "doses_in": (report.usable_vials or 0) * calc.get_doses_per_vial(),
-                        "vials_out": None,
-                        "doses_out": None,
-                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
-                    }
-                )
-            if report.unusable_vials > 0 and (
-                report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.LOSSES
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.RETURN
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.STEALING
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
-            ):
-                results.append(
-                    {
-                        "date": report.date_of_incident_report,
-                        "action": report.stock_correction,
-                        "vials_in": None,
-                        "doses_in": None,
-                        "vials_out": report.unusable_vials or 0,
-                        "doses_out": (report.unusable_vials or 0) * calc.get_doses_per_vial(),
-                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
-                    }
-                )
-
-        for movement in stock_movements:
-            if movement.usable_vials_used > 0:
-                results.append(
-                    {
-                        "date": movement.report_date,
-                        "action": "Form A - Vials Used",
-                        "vials_in": None,
-                        "doses_in": None,
-                        "vials_out": movement.usable_vials_used or 0,
-                        "doses_out": (movement.usable_vials_used or 0) * calc.get_doses_per_vial(),
-                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
-                    }
-                )
-
-            if movement.missing_vials > 0:
-                results.append(
-                    {
-                        "date": movement.report_date,
-                        "action": "Form A - Missing Vials",
-                        "vials_in": None,
-                        "doses_in": None,
-                        "vials_out": movement.missing_vials or 0,
-                        "doses_out": (movement.missing_vials or 0) * calc.get_doses_per_vial(),
-                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
-                    }
-                )
+        results = calc.get_list_of_usable_vials()
 
         paginator = Paginator()
         page = paginator.paginate_queryset(sorted(results, key=lambda x: x["date"]), request)
@@ -516,64 +618,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
             return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
 
         calc = VaccineStockCalculator(vaccine_stock)
-
-        # Get all OutgoingStockMovements and IncidentReports for the VaccineStock
-        outgoing_movements = OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock)
-        incident_reports = IncidentReport.objects.filter(vaccine_stock=vaccine_stock)
-        destruction_reports = DestructionReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
-            "destruction_report_date"
-        )
-
-        # Prepare the results list
-        results = []
-
-        # Add unusable vials from OutgoingStockMovements/FORMA
-        for movement in outgoing_movements:
-            if movement.usable_vials_used > 0:
-                results.append(
-                    {
-                        "date": movement.report_date,
-                        "action": "Form A - Vials Used",
-                        "vials_out": None,
-                        "doses_out": None,
-                        "vials_in": movement.usable_vials_used or 0,
-                        "doses_in": (movement.usable_vials_used or 0) * calc.get_doses_per_vial(),
-                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
-                    }
-                )
-
-        for report in destruction_reports:
-            results.append(
-                {
-                    "date": report.destruction_report_date,
-                    "action": (f"{report.action}" if len(report.action) > 0 else f"Destruction report"),
-                    "vials_in": None,
-                    "doses_in": None,
-                    "vials_out": report.unusable_vials_destroyed or 0,
-                    "doses_out": (report.unusable_vials_destroyed or 0) * calc.get_doses_per_vial(),
-                    "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
-                }
-            )
-
-        # Add unusable vials from IncidentReports
-        for report in incident_reports:
-            if report.unusable_vials > 0 and (
-                report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
-            ):
-                results.append(
-                    {
-                        "date": report.date_of_incident_report,
-                        "action": report.get_stock_correction_display(),  # for every field FOO that has choices set, the object will have a get_FOO_display() method
-                        "vials_in": report.unusable_vials or 0,
-                        "doses_in": (report.unusable_vials or 0) * calc.get_doses_per_vial(),
-                        "vials_out": None,
-                        "doses_out": None,
-                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
-                    }
-                )
+        results = calc.get_list_of_unusable_vials()
 
         paginator = Paginator()
         page = paginator.paginate_queryset(sorted(results, key=lambda x: x["date"]), request)

@@ -34,18 +34,20 @@ import { useMenuItems, RDC_USER_MANUAL } from '../../../constants/menu.tsx';
 import MESSAGES from './messages';
 
 import { getDefaultSourceVersion } from '../../dataSources/utils';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
+// import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { baseUrls } from '../../../constants/urls';
 
+console.log("starting SidebarMenu file")
+
 const styles = theme => ({
-    ...commonStyles(theme),
+    // ...commonStyles(theme),
     toolbar: {
-        ...theme.mixins.toolbar,
+        // ...theme.mixins.toolbar,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        paddingLeft: theme.spacing(3),
-        paddingRight: theme.spacing(3),
+        // paddingLeft: theme.spacing(3),
+        // paddingRight: theme.spacing(3),
         height: 90,
     },
     menuButton: {
@@ -59,13 +61,13 @@ const styles = theme => ({
     },
     user: {
         marginTop: 'auto',
-        marginBottom: theme.spacing(3),
-        marginLeft: theme.spacing(3),
-        marginRight: theme.spacing(3),
+        // marginBottom: theme.spacing(3),
+        // marginLeft: theme.spacing(3),
+        // marginRight: theme.spacing(3),
     },
-    userName: {
-        margin: theme.spacing(1),
-    },
+    // userName: {
+    //     margin: theme.spacing(1),
+    // },
     userManual: {
         cursor: 'pointer',
     },
@@ -77,7 +79,7 @@ const styles = theme => ({
         fontFamily: '"DINAlternate-Bold", "DIN Alternate", sans-serif',
         fontWeight: '700',
         fontSize: 23,
-        marginLeft: theme.spacing(2),
+        // marginLeft: theme.spacing(2),
     },
     homeLink: {
         textDecoration: 'none !important',
@@ -115,9 +117,9 @@ const SidebarMenu = ({
             window.open(url);
         }
     };
-    const currentUser = useCurrentUser();
+    // const currentUser = useCurrentUser();
 
-    const defaultSourceVersion = getDefaultSourceVersion(currentUser);
+    // const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     const menuItems = useMenuItems();
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
@@ -158,11 +160,11 @@ const SidebarMenu = ({
                         color="textSecondary"
                         className={classes.userName}
                     >
-                        {currentUser.user_name}
+                        {/* {currentUser.user_name} */}
                     </Typography>
                 )}
 
-                {currentUser.account && isMobileLayout && (
+                {/* {currentUser.account && isMobileLayout && (
                     <Typography
                         variant="body2"
                         color="textSecondary"
@@ -191,8 +193,8 @@ const SidebarMenu = ({
                             <span>{currentUser.account.name}</span>
                         )}
                     </Typography>
-                )}
-                <Tooltip
+                )} */}
+                {/* <Tooltip
                     classes={{ popper: classes.popperFixed }}
                     placement="bottom-start"
                     title={intl.formatMessage(MESSAGES.viewUserManual)}
@@ -214,7 +216,7 @@ const SidebarMenu = ({
                             {intl.formatMessage(MESSAGES.userManual)}
                         </a>
                     </Typography>
-                </Tooltip>
+                </Tooltip> */}
                 <Button
                     size="small"
                     color="inherit"
@@ -235,12 +237,12 @@ SidebarMenu.propTypes = {
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    activeLocale: PropTypes.object.isRequired,
+    // activeLocale: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     isOpen: state.sidebar.isOpen,
-    activeLocale: state.app.locale,
+    // activeLocale: state.app.locale,
 });
 
 const MapDispatchToProps = dispatch => ({

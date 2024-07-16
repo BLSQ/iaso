@@ -17,6 +17,9 @@
         // From context processor
         const THEME = {{ theme|safe }};
         console.log("window.iasoApp", window.iasoApp);
+        console.log("PLUGINS_ENABLED:", PLUGINS_ENABLED);
+        console.log("THEME:", THEME);
+        console.log("USER_HOME_PAGE:", USER_HOME_PAGE);
         window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME, USER_HOME_PAGE);
       </script>
     {% endblock %}

@@ -4,6 +4,7 @@ const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
 const { ModuleFederationPlugin } = require('@module-federation/enhanced/webpack');
+const deps = require('../package.json').dependencies;
 
 // Switch here for French. This is set to 'en' in dev to not get react-intl warnings
 // remember to switch in webpack.prod.js and
@@ -17,6 +18,7 @@ const WEBPACK_HOST = process.env.WEBPACK_HOST || 'localhost';
 const WEBPACK_PORT = process.env.WEBPACK_PORT || '3000';
 const WEBPACK_PROTOCOL = process.env.WEBPACK_PROTOCOL || 'http';
 const WEBPACK_URL = `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`;
+
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
@@ -213,21 +215,78 @@ module.exports = {
             filename: 'remoteEntry.js',
             exposes: {
                 // './userUtils': './assets/js/apps/Iaso/domains/users/utils',
+                './userActions': './assets/js/apps/Iaso/domains/users/actions',
                 './BeneficiarySvg': './assets/js/apps/Iaso/components/svg/Beneficiary',
-                // './SidebarMenuComponent': './assets/js/apps/Iaso/domains/app/components/SidebarMenuComponent',
+                './SidebarMenuComponent': './assets/js/apps/Iaso/domains/app/components/SidebarMenuComponent',
             },
             // shared: ['react', 'react-dom'],
             shared: {
+                // ...deps,
                 react: {
                     singleton: true, // there should be only one version of react
-                    requiredVersion: "^17.0.2",
+                    requiredVersion: deps.react,
                     eager: true,
                 },
                 'react-dom': {
                     singleton: true, // there should be only one version of react-dom
-                    requiredVersion: "^17.0.2",
+                    requiredVersion: deps['react-dom'],
                     eager: true,
                 },
+                'react-redux': {
+                    singleton: true,
+                    requiredVersion: deps['react-redux'],
+                    eager: true,
+                },
+                'react-intl': {
+                    singleton: true,
+                    requiredVersion: deps['react-intl'],
+                    eager: true,
+                },
+                'react-query': {
+                    singleton: true,
+                    requiredVersion: deps['react-query'],
+                    eager: true,
+                },
+                '@mui/icons-material': {
+                    requiredVersion: deps['@mui/icons-material'],
+                    eager: true,
+                    singleton: true,
+                },
+                '@mui/lab': {
+                    requiredVersion: deps['@mui/lab'],
+                    eager: true,
+                    singleton: true,
+                },
+                '@mui/material': {
+                    requiredVersion: deps['@mui/material'],
+                    eager: true,
+                    singleton: true,
+                },
+                // '@mui/styles': {
+                //     requiredVersion: deps['@mui/styles'],
+                //     eager: true,
+                //     singleton: true,
+                // },
+                // '@mui/types': {
+                //     requiredVersion: deps['@mui/types'],
+                //     eager: true,
+                //     singleton: true,
+                // },
+                // '@mui/x-date-pickers': {
+                //     requiredVersion: deps['@mui/x-date-pickers'],
+                //     eager: true,
+                //     singleton: true,
+                // },
+                "@emotion/react": {
+                    requiredVersion: deps['@emotion/react'],
+                    eager: true,
+                    singleton: true,
+                },
+                "@emotion/styled": {
+                    requiredVersion: deps['@emotion/styled'],
+                    eager: true,
+                    singleton: true,
+                }
             },
         }),
     ],

@@ -10,6 +10,17 @@ export const useVaccineStockManagementDetailsColumns = (): Column[] => {
     return useMemo(() => {
         const columns = [
             {
+                Header: formatMessage(MESSAGES.date),
+                accessor: 'date',
+                id: 'date',
+                Cell: DateCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.action),
+                accessor: 'action',
+                id: 'action',
+            },
+            {
                 Header: formatMessage(MESSAGES.vials_in),
                 accessor: 'vials_in',
                 Cell: settings => {
@@ -55,17 +66,6 @@ export const useVaccineStockManagementDetailsColumns = (): Column[] => {
 
                     return <NumberCell value={doses_out} />;
                 },
-            },
-            {
-                Header: formatMessage(MESSAGES.date),
-                accessor: 'date',
-                id: 'date',
-                Cell: DateCell,
-            },
-            {
-                Header: formatMessage(MESSAGES.action),
-                accessor: 'action',
-                id: 'action',
             },
         ];
         return columns;

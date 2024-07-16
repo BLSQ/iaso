@@ -27,7 +27,7 @@ class ChronogramPagination(Paginator):
 class ChronogramViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = ChronogramFilter
-    http_method_names = ["get", "options", "head", "post", "trace"]
+    http_method_names = ["delete", "get", "options", "head", "post", "trace"]
     pagination_class = ChronogramPagination
     permission_classes = [HasChronogramPermission]
 
@@ -57,6 +57,16 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         serializer.save(created_by=self.request.user)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_destroy(self, instance):
+        """
+        Perform soft delete.
+        """
+        instance.delete()
+        # Looping and calling `delete()` on each instance is the only way to perform
+        # a soft-delete in the current implementation.
+        for task in instance.tasks.all():
+            task.delete()
 
     @action(detail=False, methods=["GET"])
     def available_rounds_for_create(self, request):

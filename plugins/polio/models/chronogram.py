@@ -61,7 +61,7 @@ class Chronogram(SoftDeletableModel):
     A chronogram can be thought as a to-do list.
     """
 
-    round = models.OneToOneField(Round, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name="chronograms")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     created_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="created_chronograms"

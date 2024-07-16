@@ -8,6 +8,7 @@ import { baseUrls } from '../../../../constants/urls';
 
 import MESSAGES from '../messages';
 import { ChronogramTaskMetaData } from '../../types';
+import { DeleteChronogram } from '../Modals/DeleteChronogramModal';
 
 export const useChronogramTableColumns = (
     chronogramTaskMetaData: ChronogramTaskMetaData,
@@ -67,12 +68,18 @@ export const useChronogramTableColumns = (
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <IconButton
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.details}
-                            size="small"
-                            url={`/${baseUrls.chronogramDetails}/chronogram_id/${settings.row.original.id}`}
-                        />
+                        <>
+                            <IconButton
+                                icon="remove-red-eye"
+                                tooltipMessage={MESSAGES.details}
+                                size="small"
+                                url={`/${baseUrls.chronogramDetails}/chronogram_id/${settings.row.original.id}`}
+                            />
+                            {/* @ts-ignore */}
+                            <DeleteChronogram
+                                chronogram={settings.row.original}
+                            />
+                        </>
                     );
                 },
             },

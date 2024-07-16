@@ -105,6 +105,8 @@
     "iaso.polio.chronogram.label.status": "Statut",
     "iaso.polio.chronogram.link_to_chronogram_template_task": "Modifier une tâche par défaut",
     "iaso.polio.chronogram.message.create_success": "Chronogramme créé avec succès",
+    "iaso.polio.chronogram.modal.delete.confirm": "Voulez-vous vraiment supprimer ce chronogramme du round {round_number} de {campaignName} ?",
+    "iaso.polio.chronogram.modal.delete.title": "Supprimer un chronogramme",
     "iaso.polio.chronogram.modal.write.cancel": "Annuler",
     "iaso.polio.chronogram.modal.write.confirm": "Confirmer",
     "iaso.polio.chronogram.template_task_title": "Tâches par défaut des chronogrammes",

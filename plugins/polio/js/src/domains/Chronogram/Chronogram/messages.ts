@@ -89,6 +89,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.chronogram.message.create_success',
         defaultMessage: 'Chronogram successfully created',
     },
+    modalDeleteConfirm: {
+        id: 'iaso.polio.chronogram.modal.delete.confirm',
+        defaultMessage: `Do you really want to delete the chronogram for round {round_number} of {campaignName}?`,
+    },
+    modalDeleteTitle: {
+        id: 'iaso.polio.chronogram.modal.delete.title',
+        defaultMessage: 'Delete Chronogram',
+    },
     createChronogramTitle: {
         id: 'iaso.polio.chronogram.title.create_chronogram',
         defaultMessage: 'Create a new chronogram',

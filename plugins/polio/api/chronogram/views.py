@@ -1,6 +1,7 @@
 import django_filters
 
 from django.db.models import QuerySet, Prefetch
+from django.utils import timezone
 
 from rest_framework import filters, status
 from rest_framework import viewsets
@@ -63,10 +64,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         Perform soft delete.
         """
         instance.delete()
-        # Looping and calling `delete()` on each instance is the only way to perform
-        # a soft-delete in the current implementation.
-        for task in instance.tasks.all():
-            task.delete()
+        instance.tasks.update(deleted_at=timezone.now())  # Bulk soft delete of related tasks.
 
     @action(detail=False, methods=["GET"])
     def available_rounds_for_create(self, request):

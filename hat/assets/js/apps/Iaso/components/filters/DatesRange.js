@@ -106,6 +106,7 @@ const DatesRange = ({
         }
     }, [dateTo]);
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
+    return <></>;
     return (
         <Grid container spacing={useCurrentBreakPointSpacing(xs, sm, md, lg)}>
             <Grid item xs={xs} sm={sm} md={md} lg={lg}>

@@ -186,7 +186,9 @@ module.exports = {
         host: '0.0.0.0',
         port: 3000,
     },
-
+    optimization: {
+        chunkIds: 'named',
+    },
     plugins: [
         new webpack.NormalModuleReplacementPlugin(
             /^__intl\/messages\/en$/,
@@ -214,7 +216,8 @@ module.exports = {
             library: { type: 'var', name: 'IasoMain' },
             filename: 'remoteEntry.js',
             exposes: {
-                // './userUtils': './assets/js/apps/Iaso/domains/users/utils',
+                './domainUserUtils': './assets/js/apps/Iaso/domains/users/utils',
+                './userUtils': './assets/js/apps/Iaso/utils/usersUtils',
                 './userActions': './assets/js/apps/Iaso/domains/users/actions',
                 './BeneficiarySvg': './assets/js/apps/Iaso/components/svg/Beneficiary',
                 './SidebarMenuComponent': './assets/js/apps/Iaso/domains/app/components/SidebarMenuComponent',
@@ -250,23 +253,23 @@ module.exports = {
                 '@mui/icons-material': {
                     requiredVersion: deps['@mui/icons-material'],
                     eager: true,
-                    singleton: true,
+                    // singleton: true,
                 },
                 '@mui/lab': {
                     requiredVersion: deps['@mui/lab'],
                     eager: true,
-                    singleton: true,
+                    // singleton: true,
                 },
                 '@mui/material': {
                     requiredVersion: deps['@mui/material'],
                     eager: true,
+                    // singleton: true,
+                },
+                '@mui/styles': {
+                    requiredVersion: deps['@mui/styles'],
+                    eager: true,
                     singleton: true,
                 },
-                // '@mui/styles': {
-                //     requiredVersion: deps['@mui/styles'],
-                //     eager: true,
-                //     singleton: true,
-                // },
                 // '@mui/types': {
                 //     requiredVersion: deps['@mui/types'],
                 //     eager: true,
@@ -280,12 +283,12 @@ module.exports = {
                 "@emotion/react": {
                     requiredVersion: deps['@emotion/react'],
                     eager: true,
-                    singleton: true,
+                    // singleton: true,
                 },
                 "@emotion/styled": {
                     requiredVersion: deps['@emotion/styled'],
                     eager: true,
-                    singleton: true,
+                    // singleton: true,
                 }
             },
         }),

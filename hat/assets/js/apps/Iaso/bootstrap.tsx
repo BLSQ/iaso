@@ -1,10 +1,12 @@
 import React from 'react';
+console.log("React import called")
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from 'bluesquare-components';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import '@mui/styles';
 
 import './libs/polyfills';
 

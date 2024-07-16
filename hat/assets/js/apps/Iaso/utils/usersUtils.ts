@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { useSelector } from 'react-redux';
+// import { useQueryClient } from 'react-query';
 import { Project } from '../domains/projects/types/project';
 
 export type Profile = {
@@ -100,9 +101,18 @@ type State = {
 // Replace with react query when we can
 export const useCurrentUser = (): User => {
     // noinspection UnnecessaryLocalVariableJS
-    const currentUser = useSelector((state: State) => state.users.current);
+    const currentUser = useSelector((state: State) => {
+        console.log("state", state);
+        return state.users.current;
+    });
     return currentUser;
 };
+
+// export const useCurrentUser = (): User => {
+//     const queryClient = useQueryClient();
+//     const currentUser = queryClient.getQueryData<User>('currentUser');
+//     return currentUser as User;
+// };
 
 export const useHasNoAccount = (): boolean => {
     const currentUser = useCurrentUser();

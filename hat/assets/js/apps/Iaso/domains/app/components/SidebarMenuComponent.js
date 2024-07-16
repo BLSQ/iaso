@@ -27,27 +27,27 @@ import { SIDEBAR_WIDTH } from '../../../constants/uiConstants.ts';
 
 import MenuItem from './MenuItemComponent';
 import { Logo } from './Logo.tsx';
-import LanguageSwitch from './LanguageSwitchComponent';
+// import LanguageSwitch from './LanguageSwitchComponent';
 
 import { useMenuItems, RDC_USER_MANUAL } from '../../../constants/menu.tsx';
 
 import MESSAGES from './messages';
 
 import { getDefaultSourceVersion } from '../../dataSources/utils';
-// import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { baseUrls } from '../../../constants/urls';
 
 console.log("starting SidebarMenu file")
 
 const styles = theme => ({
-    // ...commonStyles(theme),
+    ...commonStyles(theme),
     toolbar: {
-        // ...theme.mixins.toolbar,
+        ...theme.mixins.toolbar,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        // paddingLeft: theme.spacing(3),
-        // paddingRight: theme.spacing(3),
+        paddingLeft: theme.spacing(3),
+        paddingRight: theme.spacing(3),
         height: 90,
     },
     menuButton: {
@@ -61,13 +61,13 @@ const styles = theme => ({
     },
     user: {
         marginTop: 'auto',
-        // marginBottom: theme.spacing(3),
-        // marginLeft: theme.spacing(3),
-        // marginRight: theme.spacing(3),
+        marginBottom: theme.spacing(3),
+        marginLeft: theme.spacing(3),
+        marginRight: theme.spacing(3),
     },
-    // userName: {
-    //     margin: theme.spacing(1),
-    // },
+    userName: {
+        margin: theme.spacing(1),
+    },
     userManual: {
         cursor: 'pointer',
     },
@@ -79,7 +79,7 @@ const styles = theme => ({
         fontFamily: '"DINAlternate-Bold", "DIN Alternate", sans-serif',
         fontWeight: '700',
         fontSize: 23,
-        // marginLeft: theme.spacing(2),
+        marginLeft: theme.spacing(2),
     },
     homeLink: {
         textDecoration: 'none !important',
@@ -117,9 +117,10 @@ const SidebarMenu = ({
             window.open(url);
         }
     };
-    // const currentUser = useCurrentUser();
+    const currentUser = useCurrentUser();
+    console.log('SidebarMenuComponent currentUser', currentUser);
 
-    // const defaultSourceVersion = getDefaultSourceVersion(currentUser);
+    const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     const menuItems = useMenuItems();
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
@@ -153,7 +154,7 @@ const SidebarMenu = ({
                 ))}
             </List>
             <Box className={classes.user}>
-                <LanguageSwitch />
+                {/* <LanguageSwitch /> */}
                 {isMobileLayout && (
                     <Typography
                         variant="body2"

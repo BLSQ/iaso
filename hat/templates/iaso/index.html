@@ -20,7 +20,18 @@
         console.log("PLUGINS_ENABLED:", PLUGINS_ENABLED);
         console.log("THEME:", THEME);
         console.log("USER_HOME_PAGE:", USER_HOME_PAGE);
-        window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME, USER_HOME_PAGE);
+
+        function startApp() {
+          console.log("Calling function startApp!")
+          window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME, USER_HOME_PAGE);
+        }
+
+        if (window.iasoApp) {
+          startApp();
+        } else {
+          console.log("addEventListener iasoAppLoaded");
+          window.addEventListener('iasoAppLoaded', startApp);
+        }
       </script>
     {% endblock %}
   </section>

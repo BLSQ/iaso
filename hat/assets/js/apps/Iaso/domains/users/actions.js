@@ -28,14 +28,16 @@ export const setIsFetching = fetching => ({
 });
 
 const apiKey = 'profiles';
-export const fetchCurrentUser = () => dispatch =>
-    retrieveAction(
+export const fetchCurrentUser = () => dispatch => {
+    console.log("Iaso fetchCurrentUser")
+    return retrieveAction(
         dispatch,
         `${apiKey}`,
         'me',
         setCurrentUser,
         'fetchCurrentUser',
     );
+}
 
 export const fetchUsersProfiles = params => dispatch =>
     fetchAction(

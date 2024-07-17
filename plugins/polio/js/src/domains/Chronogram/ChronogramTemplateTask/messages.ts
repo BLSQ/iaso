@@ -33,6 +33,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.chronogram.label.start_offset_in_days',
         defaultMessage: 'Chrono',
     },
+    labelStartOffsetInDaysTooltip: {
+        id: 'iaso.polio.chronogram.label.start_offset_in_days_tooltip',
+        defaultMessage:
+            'Enter as an integer the number of days the task is expected to be completed in regards to Round start date. For tasks to be handled before the round starts, add a minus sign before the integer. E.g. "-7"',
+    },
     modalAddTitle: {
         id: 'iaso.polio.chronogram.template_task.modal.add_title',
         defaultMessage: 'Add Default Chronogram Task',

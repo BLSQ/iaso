@@ -139,7 +139,6 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.labelComment)}
                         name="comment"
                         component={TextInput}
-                        required
                     />
                 </Box>
             </ConfirmCancelModal>

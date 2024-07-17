@@ -43,7 +43,7 @@ const MESSAGES = defineMessages({
     },
     labelStartOffsetInDays: {
         id: 'iaso.polio.chronogram.label.label_start_offset_in_days',
-        defaultMessage: 'Start',
+        defaultMessage: 'Chrono',
     },
     labelStatus: {
         id: 'iaso.polio.chronogram.label.status',

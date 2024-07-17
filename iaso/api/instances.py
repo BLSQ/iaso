@@ -444,14 +444,19 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response({"res": "ok"})
 
     def retrieve(self, request, pk=None):
-        self.get_queryset().prefetch_related(
-            "instance_locks",
-            "instance_locks__top_org_unit",
-            "instance_locks__user",
-            "org_unit__reference_instances",
-            "org_unit__org_unit_type__reference_forms",
+        queryset = (
+            self.get_queryset()
+            .prefetch_related(
+                "instancelock_set",
+                "instancelock_set__top_org_unit",
+                "instancelock_set__locked_by",
+                "instancelock_set__unlocked_by",
+                "org_unit__reference_instances",
+                "org_unit__org_unit_type__reference_forms",
+            )
+            .with_status()
         )
-        instance: Instance = get_object_or_404(self.get_queryset(), pk=pk)
+        instance: Instance = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, instance)
         all_instance_locks = instance.instancelock_set.all()
 

@@ -56,7 +56,9 @@ class IasoTestCaseMixin:
         return user
 
     @staticmethod
-    def create_form_instance(*, form: m.Form = None, period: str = None, org_unit: m.OrgUnit = None, **kwargs):
+    def create_form_instance(
+        *, project: m.Project, form: m.Form = None, period: str = None, org_unit: m.OrgUnit = None, **kwargs
+    ):
         instance_file_mock = mock.MagicMock(spec=File)
         instance_file_mock.name = "test.xml"
 
@@ -72,6 +74,7 @@ class IasoTestCaseMixin:
             period=period,
             org_unit=org_unit,
             file=instance_file_mock,
+            project=project,
             **kwargs,
         )
 

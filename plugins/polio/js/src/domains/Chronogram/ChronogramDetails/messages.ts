@@ -22,15 +22,15 @@ const MESSAGES = defineMessages({
         defaultMessage: 'ID',
     },
     labelComment: {
-        id: 'iaso.polio.chronogram.label.label_comment',
+        id: 'iaso.polio.chronogram.label.comment',
         defaultMessage: 'Comment',
     },
     labelDeadlineDate: {
-        id: 'iaso.polio.chronogram.label.label_deadline_date',
+        id: 'iaso.polio.chronogram.label.deadline_date',
         defaultMessage: 'Deadline',
     },
     labelDelayInDays: {
-        id: 'iaso.polio.chronogram.label.label_delay_in_days',
+        id: 'iaso.polio.chronogram.label.delay_in_days',
         defaultMessage: 'Delay',
     },
     labelDescription: {
@@ -42,7 +42,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Period',
     },
     labelStartOffsetInDays: {
-        id: 'iaso.polio.chronogram.label.label_start_offset_in_days',
+        id: 'iaso.polio.chronogram.label.start_offset_in_days',
         defaultMessage: 'Chrono',
     },
     labelStartOffsetInDaysTooltip: {
@@ -55,7 +55,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Status',
     },
     labelUserInCharge: {
-        id: 'iaso.polio.chronogram.label.label_user_in_charge',
+        id: 'iaso.polio.chronogram.label.user_in_charge',
         defaultMessage: 'Responsible',
     },
     modalDeleteConfirm: {

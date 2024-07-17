@@ -131,7 +131,6 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         component={SingleSelect}
                         options={profilesDropdown}
                         isLoading={isFetchingProfiles}
-                        required
                     />
                 </Box>
                 <Box mb={2}>

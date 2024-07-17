@@ -22,9 +22,7 @@ export const useChronogramTaskSchema = () => {
             .string()
             .trim()
             .required(formatMessage(MESSAGES.validationFieldRequired)),
-        user_in_charge: yup
-            .number()
-            .required(formatMessage(MESSAGES.validationFieldRequired)),
+        user_in_charge: yup.number(),
         comment: yup.string().trim(),
     });
 };

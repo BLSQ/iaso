@@ -17,6 +17,7 @@ export const useChronogramTaskSchema = () => {
             .required(formatMessage(MESSAGES.validationFieldRequired)),
         start_offset_in_days: yup
             .number()
+            .integer()
             .required(formatMessage(MESSAGES.validationFieldRequired)),
         status: yup
             .string()

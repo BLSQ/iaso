@@ -279,14 +279,19 @@ class OrgUnitModelDbTestCase(TestCase):
         with connection.cursor() as cursor:
             # Get PostGIS version
             cursor.execute("SELECT PostGIS_Full_Version();")
-            postgis_version = cursor.fetchone()[0]
+            postgis_version_raw = cursor.fetchone()[0]
 
             # Get PostgreSQL version
             cursor.execute("SELECT version();")
             postgres_version = cursor.fetchone()[0]
 
+            postgis_version = postgis_version_raw.split("[EXTENSION]")[0]
+            if "3.4.2" not in postgis_version:
+                cursor.execute("SELECT PostGIS_Extensions_Upgrade();")
+
             print(f"*** postgres version = {postgres_version} ***")
             print(f"*** postgis version = {postgis_version} ***")
+            print(f"*** postgis version raw = {postgis_version_raw} ***")
             print(f"*** orgunit location = {ou.location} ***")
 
         # DB return an empty 2D point, and not POINT Z EMPTY which is 3D

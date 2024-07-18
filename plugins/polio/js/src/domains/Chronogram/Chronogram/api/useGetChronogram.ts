@@ -10,7 +10,7 @@ const getChronogram = async (
     params: Partial<ChronogramParams>,
 ): Promise<ChronogramApiResponse> => {
     const queryString = new URLSearchParams(params).toString();
-    return getRequest(`${apiBaseUrl}?${queryString}`);
+    return getRequest(`${apiBaseUrl}?${queryString}&fields=:all`);
 };
 
 export const useGetChronogram = (

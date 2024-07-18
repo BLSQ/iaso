@@ -3,7 +3,10 @@ import React from 'react';
 import { useMemo } from 'react';
 import { IconButton, Column, useSafeIntl } from 'bluesquare-components';
 
-import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import {
+    DateCell,
+    DateTimeCellRfc,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { baseUrls } from '../../../../constants/urls';
 
 import MESSAGES from '../messages';
@@ -62,6 +65,12 @@ export const useChronogramTableColumns = (
                 Header: formatMessage(MESSAGES.labelNumTaskDelayed),
                 id: 'annotated_num_task_delayed',
                 accessor: 'num_task_delayed',
+            },
+            {
+                Header: formatMessage(MESSAGES.updatedAt),
+                id: 'updated_at',
+                accessor: 'updated_at',
+                Cell: DateTimeCellRfc,
             },
             {
                 Header: formatMessage(MESSAGES.actions),

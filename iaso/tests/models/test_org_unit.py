@@ -286,9 +286,9 @@ class OrgUnitModelDbTestCase(TestCase):
             postgres_version = cursor.fetchone()[0]
 
             postgis_version = postgis_version_raw.split("[EXTENSION]")[0]
-            if "3.4.2" not in postgis_version:
-                cursor.execute("SELECT PostGIS_Extensions_Upgrade();")
-                cursor.execute("ALTER EXTENSION postgis UPDATE TO '3.4.2';")
+            # if "3.4.2" not in postgis_version:
+            #     cursor.execute("SELECT PostGIS_Extensions_Upgrade();")
+            #     cursor.execute("ALTER EXTENSION postgis UPDATE TO '3.4.2';")
 
             print(f"*** postgis version = {postgis_version} ***")
             print(f"*** postgis version raw = {postgis_version_raw} ***")
@@ -297,6 +297,7 @@ class OrgUnitModelDbTestCase(TestCase):
 
         # DB return an empty 2D point, and not POINT Z EMPTY which is 3D
         ous = m.OrgUnit.objects.filter(id=ou.id).extra(select={"raw_location": "ST_AsEWKT(location)"})
+
         self.assertIsNone(ous.first().raw_location)
 
         ou.refresh_from_db()

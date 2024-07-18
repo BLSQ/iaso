@@ -12,6 +12,7 @@ import {
 
 import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
 import { useGetProfilesDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetProfilesDropdown';
 
 import MESSAGES from '../messages';
@@ -108,12 +109,20 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                     />
                 </Box>
                 <Box mb={2}>
-                    <Field
-                        label={formatMessage(MESSAGES.labelStartOffsetInDays)}
-                        name="start_offset_in_days"
-                        component={NumberInput}
-                        required
-                    />
+                    <InputWithInfos
+                        infos={formatMessage(
+                            MESSAGES.labelStartOffsetInDaysTooltip,
+                        )}
+                    >
+                        <Field
+                            label={formatMessage(
+                                MESSAGES.labelStartOffsetInDays,
+                            )}
+                            name="start_offset_in_days"
+                            component={NumberInput}
+                            required
+                        />
+                    </InputWithInfos>
                 </Box>
                 <Box mb={2}>
                     <Field
@@ -131,7 +140,6 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         component={SingleSelect}
                         options={profilesDropdown}
                         isLoading={isFetchingProfiles}
-                        required
                     />
                 </Box>
                 <Box mb={2}>

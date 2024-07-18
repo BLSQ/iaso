@@ -133,7 +133,7 @@ class ChronogramTask(SoftDeletableModel):
     """
 
     class Status(models.TextChoices):
-        PENDING = "PENDING", _("Pending")
+        PENDING = "PENDING", _("Not started")
         IN_PROGRESS = "IN_PROGRESS", _("In progress")
         DONE = "DONE", _("Done")
         NA = "N/A", _("N/A")

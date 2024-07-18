@@ -22,15 +22,15 @@ const MESSAGES = defineMessages({
         defaultMessage: 'ID',
     },
     labelComment: {
-        id: 'iaso.polio.chronogram.label.label_comment',
+        id: 'iaso.polio.chronogram.label.comment',
         defaultMessage: 'Comment',
     },
     labelDeadlineDate: {
-        id: 'iaso.polio.chronogram.label.label_deadline_date',
+        id: 'iaso.polio.chronogram.label.deadline_date',
         defaultMessage: 'Deadline',
     },
     labelDelayInDays: {
-        id: 'iaso.polio.chronogram.label.label_delay_in_days',
+        id: 'iaso.polio.chronogram.label.delay_in_days',
         defaultMessage: 'Delay',
     },
     labelDescription: {
@@ -42,15 +42,20 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Period',
     },
     labelStartOffsetInDays: {
-        id: 'iaso.polio.chronogram.label.label_start_offset_in_days',
-        defaultMessage: 'Start',
+        id: 'iaso.polio.chronogram.label.start_offset_in_days',
+        defaultMessage: 'Chrono',
+    },
+    labelStartOffsetInDaysTooltip: {
+        id: 'iaso.polio.chronogram.label.start_offset_in_days_tooltip',
+        defaultMessage:
+            'Enter as an integer the number of days the task is expected to be completed in regards to Round start date. For tasks to be handled before the round starts, add a minus sign before the integer. E.g. "-7"',
     },
     labelStatus: {
         id: 'iaso.polio.chronogram.label.status',
         defaultMessage: 'Status',
     },
     labelUserInCharge: {
-        id: 'iaso.polio.chronogram.label.label_user_in_charge',
+        id: 'iaso.polio.chronogram.label.user_in_charge',
         defaultMessage: 'Responsible',
     },
     modalDeleteConfirm: {

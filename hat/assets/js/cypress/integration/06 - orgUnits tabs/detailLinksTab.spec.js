@@ -50,7 +50,7 @@ const newFilters = {
     },
     linksParamsValidatorId: {
         value: [0],
-        urlValue: '2',
+        urlValue: '5', // using user_id, not profile id
         selector: '#linksParamsValidatorId',
         type: 'multi',
     },

@@ -25,8 +25,6 @@ export const useCampaignsTableColumns = ({
 }: Args): Column[] => {
     const { formatMessage } = useSafeIntl();
 
-    // type Column need to be updated so accessor can also be FunctionComponent
-    // @ts-ignore
     return useMemo(() => {
         const cols = [
             {

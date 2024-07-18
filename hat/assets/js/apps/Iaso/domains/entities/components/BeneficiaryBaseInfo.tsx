@@ -1,7 +1,5 @@
-/* eslint-disable react/require-default-props */
 import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent } from 'react';
-// @ts-ignore
 import { commonStyles, IconButton, useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
@@ -47,14 +45,13 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
                 {widgetContents}
             </WidgetPaper>
         );
-    } else {
-        return (
-            <WidgetPaper
-                className={classes.infoPaper}
-                title={formatMessage(MESSAGES.beneficiaryInfo)}
-            >
-                {widgetContents}
-            </WidgetPaper>
-        );
     }
+    return (
+        <WidgetPaper
+            className={classes.infoPaper}
+            title={formatMessage(MESSAGES.beneficiaryInfo)}
+        >
+            {widgetContents}
+        </WidgetPaper>
+    );
 };

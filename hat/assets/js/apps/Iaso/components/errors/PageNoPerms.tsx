@@ -9,7 +9,6 @@ import TopBar from '../nav/TopBarComponent';
 
 import MESSAGES from './messages';
 
-// @ts-ignore
 const useStyles = makeStyles(() => ({
     icon: {
         fontWeight: 'lighter',

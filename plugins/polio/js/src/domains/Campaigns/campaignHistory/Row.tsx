@@ -1,8 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import {
-    // @ts-ignore
-    commonStyles,
-} from 'bluesquare-components';
+import { commonStyles } from 'bluesquare-components';
 
 import { TableRow, TableCell, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';

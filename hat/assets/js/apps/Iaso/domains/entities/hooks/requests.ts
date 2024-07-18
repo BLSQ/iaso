@@ -98,7 +98,6 @@ export const useGetBeneficiariesPaginated = (
     params: Params,
 ): UseQueryResult<PaginatedBeneficiaries, Error> => {
     const { url, apiParams } = useGetBeneficiariesApiParams(params);
-    // @ts-ignore
     return useSnackQuery({
         queryKey: ['beneficiaries', apiParams],
         queryFn: () => getRequest(url),
@@ -114,7 +113,6 @@ export const useGetBeneficiariesLocations = (
     displayedLocation: DisplayedLocation,
 ): UseQueryResult<Array<Location>, Error> => {
     const { url, apiParams } = useGetBeneficiariesApiParams(params, true);
-    // @ts-ignore
     return useSnackQuery({
         queryKey: ['beneficiariesLocations', apiParams],
         queryFn: () => getRequest(url),
@@ -157,7 +155,7 @@ export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
                             label: type.name,
                             value: type.id,
                             original: type,
-                        } || []),
+                        }) || [],
                 ),
         },
     });

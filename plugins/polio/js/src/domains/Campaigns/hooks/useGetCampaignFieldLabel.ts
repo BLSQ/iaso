@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-// @ts-ignore
 
 import { useSafeIntl } from 'bluesquare-components';
 

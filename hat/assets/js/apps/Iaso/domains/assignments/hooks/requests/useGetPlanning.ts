@@ -7,11 +7,11 @@ const getPlanning = (planningId: string): Promise<Planning> => {
     return getRequest(`/api/microplanning/plannings/${planningId}`);
 };
 export const useGetPlanning = (
-    planningId: string | undefined,
+    planningId: string,
 ): UseQueryResult<Planning, Error> => {
     const queryKey: any[] = ['teams', planningId];
-    // @ts-ignore
     return useSnackQuery(queryKey, () => getPlanning(planningId), undefined, {
         retry: false,
+        enabled: Boolean(planningId),
     });
 };

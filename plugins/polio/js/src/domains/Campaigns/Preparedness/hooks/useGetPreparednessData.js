@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
 // @ts-ignore
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { postRequest, getRequest } from 'Iaso/libs/Api';
+// @ts-ignore
+import { postRequest, getRequest } from 'Iaso/libs/Api.ts';
 
 export const useGetPreparednessData = (campaignId, roundKey) => {
     const url = `/api/polio/campaigns/${campaignId}/preparedness?round=${roundKey}`;

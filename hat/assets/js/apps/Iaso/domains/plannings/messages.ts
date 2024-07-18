@@ -157,6 +157,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.teamSelectHelperText',
         defaultMessage: 'You must select a project before selecting a team',
     },
+    orgUnit: {
+        id: 'iaso.label.orgUnitSingle',
+        defaultMessage: 'Org unit',
+    },
 });
 
 export default MESSAGES;

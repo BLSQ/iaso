@@ -24,7 +24,7 @@ import {
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import { baseUrls } from '../../../constants/urls.ts';
-import MESSAGES from '../messages';
+import MESSAGES from '../messages.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -71,9 +71,7 @@ const OrgUnitPopupComponent = ({
     );
     const activeOrgUnit = currentOrgUnit || reduxCurrentOrgUnit;
     const confirmDialog = () => {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         replaceLocation(activeOrgUnit);
-        popup.current.leafletElement.options.leaflet.map.closePopup();
     };
     let groups = null;
     if (activeOrgUnit && activeOrgUnit.groups.length > 0) {

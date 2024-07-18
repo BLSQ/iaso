@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
-// @ts-ignore
 import { getSort } from 'bluesquare-components';
 
 import { getRequest } from '../../../libs/Api';

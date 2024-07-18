@@ -29,6 +29,7 @@ export type PlanningApi = {
     ended_at?: string;
     org_unit_details: OrgUnitDetails;
     form?: [number];
+    project_details: { name: string; id: number };
 };
 
 type Planning = PlanningApi & {
@@ -102,7 +103,6 @@ export const useGetPlanningsOptions = (
     formIds?: string,
 ): UseQueryResult<DropdownOptions<number>[], Error> => {
     const queryKey: any[] = ['planningsList', formIds];
-    // @ts-ignore
     return useSnackQuery({
         queryKey,
         queryFn: () => getPlanningsOptions(formIds),

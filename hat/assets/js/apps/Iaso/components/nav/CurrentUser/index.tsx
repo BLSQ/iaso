@@ -3,7 +3,6 @@ import React, { FunctionComponent, useState } from 'react';
 import { Popover, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classnames from 'classnames';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { getDefaultSourceVersion } from '../../../domains/dataSources/utils';
 import { User } from '../../../utils/usersUtils';

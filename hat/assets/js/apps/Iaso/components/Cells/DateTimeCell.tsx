@@ -1,5 +1,4 @@
 import {
-    // @ts-ignore
     displayDateFromTimestamp,
     textPlaceholder,
 } from 'bluesquare-components';

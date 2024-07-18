@@ -64,7 +64,6 @@ export const LotsPayments: FunctionComponent = () => {
                     marginTop={false}
                     data={data}
                     defaultSorted={[{ id: 'created_at', desc: true }]}
-                    // @ts-ignore
                     rowProps={getRowProps}
                     columns={columns}
                     baseUrl={baseUrl}

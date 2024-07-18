@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { TableCell, TableRow } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../forms/messages';
 import { LinkValue } from './LinkValue';

@@ -1,10 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Paper, Box } from '@mui/material';
 
-import {
-    // @ts-ignore
-    Table,
-} from 'bluesquare-components';
+import { Table } from 'bluesquare-components';
 
 import { AssignmentsApi } from '../types/assigment';
 import { Team, DropdownTeamsOptions, SubTeam, User } from '../types/team';
@@ -57,7 +54,6 @@ export const Sidebar: FunctionComponent<Props> = ({
     return (
         <Paper>
             <Box sx={getStickyTableHeadStyles('70vh')}>
-                {/* @ts-ignore */}
                 <Table
                     data={data}
                     elevation={0}

@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-// @ts-ignore
 import { useSafeIntl, LoadingSpinner, Table } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
@@ -125,7 +124,6 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     return (
         <Box className={classes.container}>
             {isLoading && <LoadingSpinner />}
-            {/* @ts-ignore */}
             <Table
                 columns={columns}
                 data={permissions}

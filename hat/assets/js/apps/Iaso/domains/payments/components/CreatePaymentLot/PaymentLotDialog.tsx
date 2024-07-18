@@ -171,7 +171,6 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
             </Grid>
             <Box sx={styles.table}>
                 <Divider />
-                {/* @ts-ignore */}
                 <Table
                     countOnTop={false}
                     elevation={0}

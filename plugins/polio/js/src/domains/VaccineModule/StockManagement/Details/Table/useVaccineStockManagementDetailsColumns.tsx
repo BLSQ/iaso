@@ -7,9 +7,19 @@ import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/c
 
 export const useVaccineStockManagementDetailsColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    // @ts-ignore
     return useMemo(() => {
         const columns = [
+            {
+                Header: formatMessage(MESSAGES.date),
+                accessor: 'date',
+                id: 'date',
+                Cell: DateCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.action),
+                accessor: 'action',
+                id: 'action',
+            },
             {
                 Header: formatMessage(MESSAGES.vials_in),
                 accessor: 'vials_in',
@@ -56,17 +66,6 @@ export const useVaccineStockManagementDetailsColumns = (): Column[] => {
 
                     return <NumberCell value={doses_out} />;
                 },
-            },
-            {
-                Header: formatMessage(MESSAGES.date),
-                accessor: 'date',
-                id: 'date',
-                Cell: DateCell,
-            },
-            {
-                Header: formatMessage(MESSAGES.action),
-                accessor: 'action',
-                id: 'action',
             },
         ];
         return columns;

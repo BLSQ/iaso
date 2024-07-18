@@ -66,7 +66,7 @@ class ChronogramTaskSerializerTestCase(TestCase):
                 "start_offset_in_days": 0,
                 "deadline_date": "2024-06-27",
                 "status": "PENDING",
-                "get_status_display": "Pending",
+                "get_status_display": "Not started",
                 "user_in_charge": {"id": self.user.id, "username": "test", "full_name": "John Doe"},
                 "delay_in_days": 0,
                 "comment": "Comment",

@@ -326,10 +326,18 @@ class ChronogramViewSetTestCase(APITestCase):
         response = self.client.put(f"/api/polio/chronograms/{self.chronogram.pk}/", data={}, format="json")
         self.assertEqual(response.status_code, 405)
 
-    def test_delete_should_be_forbidden(self):
+    def test_soft_delete_ok(self):
         self.client.force_authenticate(self.user)
         response = self.client.delete(f"/api/polio/chronograms/{self.chronogram.pk}/", format="json")
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.status_code, 204)
+
+        self.chronogram.refresh_from_db()
+        self.assertEqual(self.chronogram.deleted_at, TODAY)  # Soft deleted.
+
+        tasks = self.chronogram.tasks.all()
+        self.assertTrue(tasks.count() > 0)
+        for task in tasks:
+            self.assertEqual(task.deleted_at, TODAY)  # Soft deleted.
 
     def test_available_rounds_for_create(self):
         self.client.force_login(self.user)

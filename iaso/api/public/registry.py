@@ -109,15 +109,15 @@ class InstanceSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
 
         # Apply whitelisted fields filtering
-        if "file_content" in representation:
+        if "file_content" in representation and representation["file_content"] is not None:
             representation["file_content"] = {
                 key: value for key, value in representation["file_content"].items() if key in self.whitelisted_fields
             }
 
-        if "form_descriptor" in representation:
+        if "form_descriptor" in representation and representation["form_descriptor"] is not None:
             form_descriptor = representation["form_descriptor"]
 
-            if "_xpath" in form_descriptor:
+            if "_xpath" in form_descriptor and form_descriptor["_xpath"] is not None:
                 form_descriptor["_xpath"] = {
                     key: value for key, value in form_descriptor["_xpath"].items() if key in self.whitelisted_fields
                 }
@@ -292,5 +292,5 @@ class PublicRegistryViewSet(ViewSet):
             )
 
         return JsonResponse(
-            {"results": InstanceSerializer(instances, many=True, whitelisted_fields=whitelisted_fields).data}
+            {"instances": InstanceSerializer(instances, many=True, whitelisted_fields=whitelisted_fields).data}
         )

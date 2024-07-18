@@ -73,7 +73,8 @@ const styles: SxStyles = {
 };
 const baseUrl = baseUrls.registry;
 
-const registrySlug = 'google_registry';
+// This is hardcoded for now, but should be given through URL params
+const registrySlug = 'default_registry';
 
 export const Registry: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as unknown as RegistryParams;

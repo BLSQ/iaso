@@ -10,7 +10,7 @@ const getChronogramTasks = async (
     params: Partial<ChronogramTasksParams>,
 ): Promise<ChronogramTaskApiResponse> => {
     const queryString = new URLSearchParams(params).toString();
-    return getRequest(`${apiBaseUrl}/tasks/?${queryString}`);
+    return getRequest(`${apiBaseUrl}/tasks/?${queryString}&fields=:all`);
 };
 
 export const useGetChronogramTasks = (

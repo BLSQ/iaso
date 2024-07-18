@@ -25,6 +25,7 @@ class AppSerializer(ProjectSerializer):
             "feature_flags",
             "needs_authentication",
             "min_version",
+            "redirection_url",
             "created_at",
             "updated_at",
         ]

@@ -21,13 +21,14 @@ export const ChronogramDetailsTable: FunctionComponent<Props> = ({
     const apiParams: ChronogramTasksParams = {
         ...params,
         limit: params.pageSize || '20',
-        order: params.order || 'id',
+        order: params.order || 'start_offset_in_days',
         page: params.page || '1',
     };
     const { data, isFetching } = useGetChronogramTasks(apiParams);
     const columns = useChronogramDetailsTableColumn(chronogramTaskMetaData);
     return (
         <TableWithDeepLink
+            defaultSorted={[{ id: 'start_offset_in_days', desc: false }]}
             baseUrl={baseUrls.chronogramDetails}
             data={data?.results ?? []}
             pages={data?.pages ?? 1}

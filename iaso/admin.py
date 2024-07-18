@@ -68,7 +68,6 @@ from .models import (
 )
 from .models.data_store import JsonDataStore
 from .models.microplanning import Team, Planning, Assignment
-from .models.registry import PublicRegistryConfig
 from .utils.gis import convert_2d_point_to_3d
 
 
@@ -821,12 +820,6 @@ class DataSourceAdmin(admin.ModelAdmin):
             "widget": forms.CheckboxSelectMultiple,
         }
     }
-
-
-@admin.register(PublicRegistryConfig)
-class PublicRegistryConfigAdmin(admin.ModelAdmin):
-    raw_id_fields = ("root_orgunit",)
-    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 admin.site.register(Account)

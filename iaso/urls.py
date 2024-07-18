@@ -83,7 +83,7 @@ from .api.periods import PeriodsViewSet
 from .api.permissions import PermissionsViewSet
 from .api.profiles import ProfilesViewSet
 from .api.projects import ProjectsViewSet
-from .api.public.registry import PublicRegistryViewSet
+
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
@@ -188,7 +188,7 @@ router.register(r"validationstatus", ValidationStatusViewSet, basename="validati
 router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="lastupdates")
 router.register(r"modules", ModulesViewSet, basename="modules")
 router.register(r"configs", ConfigViewSet, basename="jsonconfigs")
-router.register(r"public/registry", PublicRegistryViewSet, basename="publicregistry")
+
 
 router.register(r"mobile/bulkupload", MobileBulkUploadsViewSet, basename="mobilebulkupload")
 router.registry.extend(plugins_router.registry)

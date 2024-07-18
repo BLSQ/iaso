@@ -1,5 +1,3 @@
-
-
 # Configuring a Public Registry
 
 To configure a public registry, follow these steps:
@@ -8,11 +6,9 @@ To configure a public registry, follow these steps:
 
 First, you need to activate the plugin by adding `"registry"` to the `PLUGINS` variable in your settings.
 
-
 ```
 PLUGINS = registry,...
 ```
-
 
 ## Step 2: Make a Data Source Public
 
@@ -27,27 +23,27 @@ PLUGINS = registry,...
 
 ### Configuration Fields
 
-- **Host**: Enter any URL you want to use as the host.
-- **Slug**: Set this to `google_registry` (this value is hardcoded in the front-end).
-- **Whitelist**: Leave this field to the default value.
-- **Account**: Select the account where your data source is located.
-- **Root Orgunit**: Leave this field empty.
-- **Data Source**: Select the data source you made public.
-- **Source Version**: Select the version of the data source.
-- **App ID**: Fill in the App ID of the project that uses the account and the data source.
+-   **Host**: Enter any URL you want to use as the host.
+-   **Slug**: Set this to `default_registry` (this value is hardcoded in the front-end at the moment).
+-   **Whitelist**: Leave this field to the default value.
+-   **Account**: Select the account where your data source is located.
+-   **Root Orgunit**: Leave this field empty.
+-   **Data Source**: Select the data source you made public.
+-   **Source Version**: Select the version of the data source.
+-   **App ID**: Fill in the App ID of the project that uses the account and the data source.
 
 ## Example Configuration
 
 Here is an example configuration:
 
-- **Host**: `https://www.example.com`
-- **Slug**: `google_registry`
-- **Whitelist**: `{"fields": []}`
-- **Account**: `polioTest`
-- **Root Orgunit**: (leave empty)
-- **Data Source**: `polio`
-- **Source Version**: `Polio 1`
-- **App ID**: `com.poliooutbreaks.app`
+-   **Host**: `https://www.example.com`
+-   **Slug**: `default_registry`
+-   **Whitelist**: `{"fields": ["Name"]}`
+-   **Account**: `polioTest`
+-   **Root Orgunit**: (leave empty)
+-   **Data Source**: `polio`
+-   **Source Version**: `Polio 1`
+-   **App ID**: `com.poliooutbreaks.app`
 
 ## Final Steps
 

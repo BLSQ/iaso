@@ -91,19 +91,21 @@ class EntityTypeAPITestCase(APITestCase):
         form_2_file_mock.name = "test.xml"
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.form_2.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(form=cls.form_2, period="202001", org_unit=cls.jedi_council_corruscant)
+        cls.create_form_instance(form=cls.form_2, period="202001", org_unit=cls.jedi_council_corruscant, project=None)
         cls.form_2.save()
 
         # Instance saved without period
         cls.form_3.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.form_3.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(form=cls.form_3, org_unit=cls.jedi_council_corruscant)
+        cls.create_form_instance(form=cls.form_3, org_unit=cls.jedi_council_corruscant, project=None)
         cls.form_3.save()
 
         # A deleted Instance
         cls.form_4.form_versions.create(file=form_2_file_mock, version_id="2020022402")
         cls.form_4.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(form=cls.form_4, period="2020Q1", org_unit=cls.jedi_council_corruscant, deleted=True)
+        cls.create_form_instance(
+            form=cls.form_4, period="2020Q1", org_unit=cls.jedi_council_corruscant, deleted=True, project=None
+        )
         cls.form_4.save()
 
         cls.project.unit_types.add(cls.jedi_council)

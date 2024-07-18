@@ -362,6 +362,7 @@ class InstancesAPITestCase(APITestCase):
             org_unit=self.jedi_council_corruscant,
             uuid=instance_uuid,
             deleted=True,
+            project=None,
         )
         pre_existing_instance_count = m.Instance.objects.count()
         body = [
@@ -401,6 +402,7 @@ class InstancesAPITestCase(APITestCase):
             period="202002",
             org_unit=self.jedi_council_corruscant,
             uuid=instance_uuid,
+            project=None,
         )
         pre_existing_instance_count = m.Instance.objects.count()
         body = [
@@ -446,7 +448,7 @@ class InstancesAPITestCase(APITestCase):
         """POST /api/instances/ with one pre-existing instance (created by the /sync view, with a filename only)"""
 
         instance_filename = "RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml"
-        pre_existing_instance = self.create_form_instance(file_name=instance_filename)
+        pre_existing_instance = self.create_form_instance(file_name=instance_filename, project=None)
         pre_existing_instance_count = m.Instance.objects.count()
         body = [
             {

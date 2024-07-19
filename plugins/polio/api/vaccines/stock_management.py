@@ -58,26 +58,11 @@ class VaccineStockCalculator:
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.vaccine_stock.vaccine]
 
-    def get_vials_received(self):
-        if not self.arrival_reports.exists():
-            return 0
-        return sum(report.vials_received or 0 for report in self.arrival_reports)
-
     def get_vials_used(self):
-        if not self.stock_movements.exists():
-            return 0
-        return sum(movement.usable_vials_used or 0 for movement in self.stock_movements)
+        received = self.get_vials_received()
+        stock = self.get_total_of_usable_vials()[0]
 
-    def get_stock_of_usable_vials(self):
-        return self.get_vials_received() - self.get_vials_used()
-
-    def get_stock_of_unusable_vials(self):
-        if self.incident_reports.exists():
-            ir_sum = sum(report.unusable_vials or 0 for report in self.incident_reports)
-        else:
-            ir_sum = 0
-
-        return ir_sum
+        return received - stock
 
     def get_vials_destroyed(self):
         if not self.destruction_reports.exists():
@@ -101,6 +86,17 @@ class VaccineStockCalculator:
                 total_doses_in -= result["doses_out"]
 
         return total_vials_in, total_doses_in
+
+    def get_vials_received(self):
+        results = self.get_list_of_usable_vials()
+
+        total_vials_in = 0
+
+        for result in results:
+            if result["vials_in"]:
+                total_vials_in += result["vials_in"]
+
+        return total_vials_in
 
     def get_total_of_unusable_vials(self):
         results = self.get_list_of_unusable_vials()
@@ -327,10 +323,10 @@ class VaccineStockSerializer(serializers.ModelSerializer):
         return obj.calculator.get_vials_used()
 
     def get_stock_of_usable_vials(self, obj):
-        return obj.calculator.get_total_of_usable_vials()
+        return obj.calculator.get_total_of_usable_vials()[0]
 
     def get_stock_of_unusable_vials(self, obj):
-        return obj.calculator.get_total_of_unusable_vials()
+        return obj.calculator.get_total_of_unusable_vials()[0]
 
     def get_vials_destroyed(self, obj):
         return obj.calculator.get_vials_destroyed()

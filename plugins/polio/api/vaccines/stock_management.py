@@ -327,10 +327,10 @@ class VaccineStockSerializer(serializers.ModelSerializer):
         return obj.calculator.get_vials_used()
 
     def get_stock_of_usable_vials(self, obj):
-        return obj.calculator.get_stock_of_usable_vials()
+        return obj.calculator.get_total_of_usable_vials()
 
     def get_stock_of_unusable_vials(self, obj):
-        return obj.calculator.get_stock_of_unusable_vials()
+        return obj.calculator.get_total_of_unusable_vials()
 
     def get_vials_destroyed(self, obj):
         return obj.calculator.get_vials_destroyed()

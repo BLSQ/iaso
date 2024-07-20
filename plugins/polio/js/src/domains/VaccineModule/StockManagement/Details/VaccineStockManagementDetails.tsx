@@ -15,7 +15,10 @@ import { UNUSABLE_VIALS, USABLE_VIALS } from '../constants';
 import { StockManagementDetailsParams, TabValue } from '../types';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../messages';
-import { VaccineStockManagementDetailsTable } from './Table/VaccineStockManagementDetailsTable';
+import {
+    VaccineStockManagementDetailsTableUnusable,
+    VaccineStockManagementDetailsTableUsable,
+} from './Table/VaccineStockManagementDetailsTable';
 import {
     useGetStockManagementSummary,
     useGetUnusableVials,
@@ -127,7 +130,7 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
 
                         {/* Using 2 tables to avoid messing up the Tables internal state, which will create bugs */}
                         {tab === USABLE_VIALS && (
-                            <VaccineStockManagementDetailsTable
+                            <VaccineStockManagementDetailsTableUsable
                                 params={params}
                                 paramsPrefix={tab}
                                 data={usableVials}
@@ -135,7 +138,7 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                             />
                         )}
                         {tab === UNUSABLE_VIALS && (
-                            <VaccineStockManagementDetailsTable
+                            <VaccineStockManagementDetailsTableUnusable
                                 params={params}
                                 paramsPrefix={tab}
                                 data={unusableVials}

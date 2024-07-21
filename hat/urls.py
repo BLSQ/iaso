@@ -21,6 +21,11 @@ admin.site.index_title = "Administration de Iaso"
 if settings.MAINTENANCE_MODE:
     maintenance_template = "iaso/maintenance.html"
     urlpatterns = [path("", TemplateView.as_view(template_name=maintenance_template), name="maintenance")]
+    urlpatterns += [
+        path("_health/", health),
+        path("_health", health),  # same without slash otherwise AWS complain about redirect
+        path("health/", health),  # alias since current apache config hide _health/
+    ]
 else:
     if settings.DISABLE_PASSWORD_LOGINS:
         login_template = "iaso/disabled_password_login.html"

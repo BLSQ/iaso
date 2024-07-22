@@ -76,4 +76,4 @@ Once the script has run, you can log in to your server using the account name as
 
     You will need to add param `--additionnal_projects`:
 
-        python3 setuper.py -a
+        python3 setuper.py --additional_projects

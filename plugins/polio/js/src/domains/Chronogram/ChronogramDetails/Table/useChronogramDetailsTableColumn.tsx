@@ -17,6 +17,7 @@ export const useChronogramDetailsTableColumn = (
     chronogramTaskMetaData: ChronogramTaskMetaData,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
+    // @ts-ignore
     return useMemo(() => {
         return [
             {
@@ -59,7 +60,8 @@ export const useChronogramDetailsTableColumn = (
             {
                 Header: formatMessage(MESSAGES.labelUserInCharge),
                 id: 'user_in_charge',
-                accessor: 'user_in_charge.full_name',
+                accessor: row =>
+                    row.user_in_charge.full_name || row.user_in_charge.username,
                 sortable: false,
             },
             {

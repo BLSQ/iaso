@@ -361,3 +361,15 @@ class ChronogramViewSetTestCase(APITestCase):
             ],
         }
         self.assertEqual(response_data, expected_data)
+
+        # Ensure test campaigns doesn't appear in the list.
+        self.campaign.is_test = True
+        self.campaign.save()
+        response = self.client.get("/api/polio/chronograms/available_rounds_for_create/")
+        response_data = self.assertJSONResponse(response, 200)
+        expected_data = {
+            "countries": [],
+            "campaigns": [],
+            "rounds": [],
+        }
+        self.assertEqual(response_data, expected_data)

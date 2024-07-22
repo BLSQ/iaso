@@ -71,7 +71,10 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         """
         Returns all available rounds that can be used to create a new `Chronogram`.
         """
-        user_campaigns = Campaign.polio_objects.filter_for_user(self.request.user).filter(country__isnull=False)
+        user_campaigns = Campaign.polio_objects.filter_for_user(self.request.user).filter(
+            country__isnull=False,
+            is_test=False,
+        )
         already_linked_rounds = (
             Chronogram.objects.valid().filter(round__campaign__in=user_campaigns).values_list("round_id", flat=True)
         )

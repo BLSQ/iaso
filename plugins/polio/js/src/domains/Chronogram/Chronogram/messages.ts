@@ -25,6 +25,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.save',
         defaultMessage: 'Save',
     },
+    updatedAt: {
+        id: 'iaso.label.updated_at',
+        defaultMessage: 'Updated',
+    },
     chronogramTitle: {
         id: 'iaso.polio.chronogram.title',
         defaultMessage: 'Chronogram',

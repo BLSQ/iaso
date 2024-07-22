@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.yes',
         defaultMessage: 'Yes',
     },
+    updatedAt: {
+        id: 'iaso.label.updated_at',
+        defaultMessage: 'Updated',
+    },
     chronogramDetailsTitle: {
         id: 'iaso.polio.chronogram.details.title',
         defaultMessage: `Chronogram for {campaignName} Round {round_number} - Start: {round_start_date}`,

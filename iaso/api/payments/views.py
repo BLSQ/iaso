@@ -296,7 +296,7 @@ class PaymentLotsViewSet(ModelViewSet):
 
         This function returns a tuple of two dictionaries:
 
-        - the first one lists of all forms:
+        - the first one lists all forms:
             {form_id: form_name}
 
         - the second one counts forms by payment:

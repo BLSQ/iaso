@@ -256,12 +256,14 @@ class PaymentLotsViewSet(ModelViewSet):
 
         return super().retrieve(request, *args, **kwargs)
 
-    def _get_table_row(self, payment, row_num=None, forms=None, forms_count_by_payment=None, export_type="csv"):
-        change_requests = payment.change_requests.all()
-        change_requests_str = "\n".join(
-            [f"ID: {cr.id}, Org Unit: {cr.org_unit.name} (ID: {cr.org_unit.id})" for cr in change_requests]
-        )
-        change_requests_count = change_requests.count()
+    def _get_table_row(self, payment, row_num=None, forms=None, forms_count_by_payment=None):
+        change_requests = {
+            cr.id: f"ID: {cr.id}, Org Unit: {cr.org_unit.name} (ID: {cr.org_unit.id})"
+            for cr in payment.change_requests.all()
+        }
+        change_requests = dict(sorted(change_requests.items()))
+        change_requests_str = "\n".join(change_requests.values())
+        change_requests_count = payment.change_requests.count()
 
         row = [
             str(payment.id),
@@ -294,10 +296,10 @@ class PaymentLotsViewSet(ModelViewSet):
 
         This function returns a tuple of two dictionaries:
 
-        - the first one is the list of all forms:
+        - the first one lists of all forms:
             {form_id: form_name}
 
-        - the second one counts the changes of each form by payment:
+        - the second one counts forms by payment:
             {payment_id: {form_id: form_count}}
 
         These two dictionaries allow to add columns dynamically.
@@ -338,7 +340,7 @@ class PaymentLotsViewSet(ModelViewSet):
                     payments,
                     Echo(),
                     columns,
-                    lambda payment: self._get_table_row(payment, export_type="csv"),
+                    lambda payment: self._get_table_row(payment),
                 )
             ),
             content_type="text/csv",
@@ -376,9 +378,7 @@ class PaymentLotsViewSet(ModelViewSet):
                 f"{payment_lot.name}_Payments",
                 columns,
                 payments,
-                lambda payment, row_num: self._get_table_row(
-                    payment, row_num, forms, forms_count_by_payment, export_type="xlsx"
-                ),
+                lambda payment, row_num: self._get_table_row(payment, row_num, forms, forms_count_by_payment),
             ),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )

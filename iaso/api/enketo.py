@@ -55,6 +55,7 @@ def enketo_create_url(request):
     return_url = request.data.get("return_url", None)
 
     uuid = str(uuid4())
+    now = timezone.now()
     form = get_object_or_404(Form, id=form_id)
 
     i = Instance(
@@ -67,7 +68,8 @@ def enketo_create_url(request):
         file_name=str(uuid) + "xml",
         created_by=request.user,
         last_modified_by=request.user,
-
+        source_created_at=now,
+        source_updated_at=now,
     )  # warning for access rights here
     i.save()
 

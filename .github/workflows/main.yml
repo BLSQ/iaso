@@ -108,7 +108,7 @@ jobs:
         with:
           python-version: 3.9
       - name: Install GDAL
-        run: sudo apt-get update && sudo apt install gdal-bin && sudo apt install --only-upgrade libgeos-dev
+        run: sudo apt-get update && sudo apt install gdal-bin
       - uses: actions/cache@v2
         id: cache-venv
         with:

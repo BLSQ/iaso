@@ -56,7 +56,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
-            return entity.attributes.as_full_model()
+            return entity.attributes.as_dict()
         return None
 
     def get_org_unit(self, entity: Entity):
@@ -213,6 +213,11 @@ class EntityViewSet(ModelViewSet):
         entities = Entity.objects.filter(account=request.user.iaso_profile.account)
         serializer = EntitySerializer(entities, many=True)
         return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        queryset = Entity.objects.filter_for_user(self.request.user).distinct()
+        entity = get_object_or_404(queryset, pk=pk)
+        return Response(EntitySerializer(entity, many=False).data)
 
     def list(self, request: Request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

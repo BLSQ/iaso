@@ -1,6 +1,8 @@
-import datetime
-from iaso import models as m
+import numpy as np
+import pandas as pd
+
 from hat.audit import models as am
+from iaso import models as m
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -8,8 +10,6 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
     """
     Test actions on the ViewSet for Payment Lots.
     """
-
-    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
     @classmethod
     def setUpTestData(cls):
@@ -21,7 +21,9 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         cls.user = cls.create_user_with_profile(
             username="user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
         )
-        cls.payment_beneficiary = cls.create_user_with_profile(username="payment_beneficiary", account=account)
+        cls.payment_beneficiary = cls.create_user_with_profile(
+            username="payment_beneficiary", first_name="John", last_name="Doe", account=account
+        )
         org_unit_type = m.OrgUnitType.objects.create(name="Stable", short_name="Cnc")
         org_unit = m.OrgUnit.objects.create(
             name="Woodland",
@@ -61,6 +63,16 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             potential_payment=cls.potential_payment,
         )
+
+        cls.form1 = m.Form.objects.create(name="Vaccine form")
+        cls.form2 = m.Form.objects.create(name="Other form")
+        cls.form3 = m.Form.objects.create(name="Population form")
+        cls.instance1 = m.Instance.objects.create(form=cls.form1, org_unit=org_unit)
+        cls.instance2 = m.Instance.objects.create(form=cls.form2, org_unit=org_unit)
+        cls.instance3 = m.Instance.objects.create(form=cls.form3, org_unit=org_unit)
+
+        cls.change_request.new_reference_instances.set([cls.instance1, cls.instance3])
+        cls.second_change_request.new_reference_instances.set([cls.instance2])
 
     def test_create_payment_lot(self):
         self.client.force_authenticate(self.user)
@@ -133,6 +145,88 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
     def test_retrieve_payment_lot_to_xlsx(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+        with self.assertNumQueries(10):
+            response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+        excel_data = pd.read_excel(response.content, engine="openpyxl")
+
+        excel_columns = list(excel_data.columns.ravel())
+        self.assertEqual(
+            excel_columns,
+            [
+                "ID",
+                "Status",
+                "User ID",
+                "User Username",
+                "User Phone",
+                "User Last Name",
+                "User First Name",
+                "Change Requests",
+                "Change Requests Count",
+                # Dynamic form columns.
+                "Other form",
+                "Population form",
+                "Vaccine form",
+            ],
+        )
+
+        data_dict = excel_data.replace({np.nan: None}).to_dict()
+        self.assertDictEqual(
+            data_dict,
+            {
+                "ID": {
+                    0: self.second_payment.id,
+                    1: self.payment.id,
+                },
+                "Status": {
+                    0: "pending",
+                    1: "pending",
+                },
+                "User ID": {
+                    0: self.payment_beneficiary.id,
+                    1: self.payment_beneficiary.id,
+                },
+                "User Username": {
+                    0: "payment_beneficiary",
+                    1: "payment_beneficiary",
+                },
+                "User Phone": {
+                    0: None,
+                    1: None,
+                },
+                "User Last Name": {
+                    0: "Doe",
+                    1: "Doe",
+                },
+                "User First Name": {
+                    0: "John",
+                    1: "John",
+                },
+                "Change Requests": {
+                    0: f"ID: {self.second_change_request.id}, Org Unit: {self.second_change_request.org_unit.name} (ID: {self.second_change_request.org_unit.id})",
+                    1: f"ID: {self.change_request.id}, Org Unit: {self.change_request.org_unit.name} (ID: {self.change_request.org_unit.id})",
+                },
+                "Change Requests Count": {
+                    0: 1,
+                    1: 1,
+                },
+                # Dynamic form columns.
+                "Other form": {
+                    0: 1,
+                    1: 0,
+                },
+                "Population form": {
+                    0: 0,
+                    1: 1,
+                },
+                "Vaccine form": {
+                    0: 0,
+                    1: 1,
+                },
+            },
+        )

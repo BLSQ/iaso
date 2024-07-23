@@ -25,7 +25,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             username="payment_beneficiary", first_name="John", last_name="Doe", account=account
         )
         org_unit_type = m.OrgUnitType.objects.create(name="Stable", short_name="Cnc")
-        org_unit = m.OrgUnit.objects.create(
+        cls.org_unit = m.OrgUnit.objects.create(
             name="Woodland",
             org_unit_type=org_unit_type,
             version=version,
@@ -45,20 +45,20 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             user=cls.payment_beneficiary,
         )
         cls.change_request = m.OrgUnitChangeRequest.objects.create(
-            org_unit=org_unit,
+            org_unit=cls.org_unit,
             new_name="Dueling Peaks",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             payment=cls.payment,
         )
         cls.second_change_request = m.OrgUnitChangeRequest.objects.create(
-            org_unit=org_unit,
+            org_unit=cls.org_unit,
             new_name="Serenne",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             payment=cls.second_payment,
         )
         cls.potential_payment = m.PotentialPayment.objects.create(user=cls.payment_beneficiary)
         cls.third_change_request = m.OrgUnitChangeRequest.objects.create(
-            org_unit=org_unit,
+            org_unit=cls.org_unit,
             new_name="Wetlands",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             potential_payment=cls.potential_payment,
@@ -67,9 +67,9 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         cls.form1 = m.Form.objects.create(name="Vaccine form")
         cls.form2 = m.Form.objects.create(name="Other form")
         cls.form3 = m.Form.objects.create(name="Population form")
-        cls.instance1 = m.Instance.objects.create(form=cls.form1, org_unit=org_unit)
-        cls.instance2 = m.Instance.objects.create(form=cls.form2, org_unit=org_unit)
-        cls.instance3 = m.Instance.objects.create(form=cls.form3, org_unit=org_unit)
+        cls.instance1 = m.Instance.objects.create(form=cls.form1, org_unit=cls.org_unit)
+        cls.instance2 = m.Instance.objects.create(form=cls.form2, org_unit=cls.org_unit)
+        cls.instance3 = m.Instance.objects.create(form=cls.form3, org_unit=cls.org_unit)
 
         cls.change_request.new_reference_instances.set([cls.instance1, cls.instance3])
         cls.second_change_request.new_reference_instances.set([cls.instance2])
@@ -146,6 +146,13 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
     def test_retrieve_payment_lot_to_xlsx(self):
         self.client.force_authenticate(self.user)
 
+        extra_change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            payment=self.second_payment,
+        )
+        extra_change_request.new_reference_instances.set([self.instance1, self.instance2, self.instance3])
+
         with self.assertNumQueries(10):
             response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true")
             self.assertEqual(response.status_code, 200)
@@ -168,7 +175,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
                 "User First Name",
                 "Change Requests",
                 "Change Requests Count",
-                # Dynamic form columns.
+                # The following columns are dynamic and should be sorted alphabetically.
                 "Other form",
                 "Population form",
                 "Vaccine form",
@@ -208,24 +215,28 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
                     1: "John",
                 },
                 "Change Requests": {
-                    0: f"ID: {self.second_change_request.id}, Org Unit: {self.second_change_request.org_unit.name} (ID: {self.second_change_request.org_unit.id})",
+                    0: (
+                        f"ID: {self.second_change_request.id}, Org Unit: {self.second_change_request.org_unit.name} (ID: {self.second_change_request.org_unit.id})"
+                        "\n"
+                        f"ID: {extra_change_request.id}, Org Unit: {extra_change_request.org_unit.name} (ID: {extra_change_request.org_unit.id})"
+                    ),
                     1: f"ID: {self.change_request.id}, Org Unit: {self.change_request.org_unit.name} (ID: {self.change_request.org_unit.id})",
                 },
                 "Change Requests Count": {
-                    0: 1,
+                    0: 2,
                     1: 1,
                 },
                 # Dynamic form columns.
                 "Other form": {
-                    0: 1,
+                    0: 2,
                     1: 0,
                 },
                 "Population form": {
-                    0: 0,
+                    0: 1,
                     1: 1,
                 },
                 "Vaccine form": {
-                    0: 0,
+                    0: 1,
                     1: 1,
                 },
             },

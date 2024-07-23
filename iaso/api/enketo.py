@@ -4,6 +4,7 @@ from uuid import uuid4
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpRequest
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from rest_framework import permissions
 from rest_framework import status
@@ -66,6 +67,7 @@ def enketo_create_url(request):
         file_name=str(uuid) + "xml",
         created_by=request.user,
         last_modified_by=request.user,
+
     )  # warning for access rights here
     i.save()
 
@@ -162,6 +164,7 @@ def enketo_public_create_url(request):
         return JsonResponse({"url": url_for_edition}, status=201)
     else:  # creation
         uuid = str(uuid4())
+        now = timezone.now()
         instance = Instance.objects.create(
             form_id=form.id,
             name=form.name,
@@ -171,6 +174,8 @@ def enketo_public_create_url(request):
             project=project,
             file_name=uuid + "xml",
             to_export=(to_export == "true"),
+            source_created_at=now,
+            source_updated_at=now,
         )
 
         try:
@@ -191,6 +196,7 @@ def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
 
     org_unit = get_object_or_404(OrgUnit, id=org_unit_id)
     uuid = str(uuid4())
+    now = timezone.now()
     i = Instance(
         form_id=form.id,
         name=form.name,
@@ -199,6 +205,8 @@ def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
         org_unit=org_unit,
         project=form.projects.first(),
         file_name=str(uuid) + "xml",
+        source_created_at=now,
+        source_updated_at=now,
     )  # warning for access rights here
     i.save()
 

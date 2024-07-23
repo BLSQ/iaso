@@ -55,7 +55,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
                 "project": project_id,
                 "sub_teams": [],
                 "type": "TEAM_OF_USERS",
-                "users": sorted(user_ids),
+                "users": user_ids,
             },
         )
         team_index = team_index + 1

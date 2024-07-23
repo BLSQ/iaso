@@ -291,7 +291,7 @@ class PaymentLotsViewSet(ModelViewSet):
         self, payments: models.QuerySet[Payment]
     ) -> Tuple[Dict[int, str], Dict[int, Dict[int, int]]]:
         """
-        The export should allow to count the number of forms that have changed,
+        The export should allow to count the number of forms,
         because some changes are paid while others are not.
 
         This function returns a tuple of two dictionaries:

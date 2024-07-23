@@ -8,9 +8,7 @@ import { Box } from '@mui/material';
 import EditIcon from '@mui/icons-material/Settings';
 import {
     useSafeIntl,
-    // @ts-ignore
     selectionInitialState,
-    // @ts-ignore
     setTableSelection,
     useSkipEffectOnMount,
 } from 'bluesquare-components';

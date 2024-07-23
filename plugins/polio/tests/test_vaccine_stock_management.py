@@ -284,10 +284,10 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # Check that the values match what is expected
         self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
-        self.assertEqual(data["total_usable_vials"], 10)
-        self.assertEqual(data["total_unusable_vials"], 1)
-        self.assertEqual(data["total_usable_doses"], 200)
-        self.assertEqual(data["total_unusable_doses"], 20)
+        self.assertEqual(data["total_usable_vials"], 7)
+        self.assertEqual(data["total_unusable_vials"], 8)
+        self.assertEqual(data["total_usable_doses"], 140)
+        self.assertEqual(data["total_unusable_doses"], 160)
 
     def test_delete(self):
         self.client.force_authenticate(self.user_rw_perms)

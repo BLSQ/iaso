@@ -7,10 +7,15 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ("iaso", "0287_instance_source_created_at_and_more"),
+        ("iaso", "0290_fill_orgunit_source_created_at"),
     ]
 
     operations = [
+        # Up the memory to improve performance
+        migrations.RunSQL(
+            sql="SET work_mem = '1GB';",
+            reverse_sql=migrations.RunSQL.noop,
+        ),
         migrations.RunSQL(
             sql=["CREATE INDEX CONCURRENTLY iaso_instan_created_04174a_idx ON iaso_instance (created_at)"],
             reverse_sql=["DROP INDEX CONCURRENTLY iaso_instan_created_04174a_idx"],

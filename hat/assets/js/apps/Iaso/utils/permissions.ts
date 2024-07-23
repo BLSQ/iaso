@@ -19,6 +19,7 @@ const PLANNING_READ = 'iaso_planning_read';
 const PLANNING_WRITE = 'iaso_planning_write';
 const POLIO = 'iaso_polio';
 const POLIO_CONFIG = 'iaso_polio_config';
+const POLIO_CHRONOGRAM = 'iaso_polio_chronogram';
 const POLIO_SUPPLY_CHAIN_READ = 'iaso_polio_vaccine_supply_chain_read';
 const POLIO_SUPPLY_CHAIN_WRITE = 'iaso_polio_vaccine_supply_chain_write';
 const POLIO_VACCINE_STOCK_READ = 'iaso_polio_vaccine_stock_management_read';
@@ -66,6 +67,7 @@ export {
     PLANNING_WRITE,
     POLIO,
     POLIO_CONFIG,
+    POLIO_CHRONOGRAM,
     POLIO_NOTIFICATIONS,
     POLIO_SUPPLY_CHAIN_READ,
     POLIO_SUPPLY_CHAIN_WRITE,

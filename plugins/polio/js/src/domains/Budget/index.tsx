@@ -157,7 +157,6 @@ export const BudgetProcessList: FunctionComponent = () => {
                             csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
                             isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
                         />
-                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             data={budgets?.results ?? []}
                             count={budgets?.count}

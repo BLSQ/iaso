@@ -7,11 +7,8 @@ import React, {
 import isEqual from 'lodash/isEqual';
 
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     ConfirmCancelModal,
-    // @ts-ignore
     makeFullModal,
 } from 'bluesquare-components';
 import { Box } from '@mui/material';

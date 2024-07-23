@@ -5,6 +5,7 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
+import EditIcon from '@mui/icons-material/Edit';
 import { baseUrls } from '../../../../constants/urls';
 import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
@@ -107,6 +108,7 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                         <>
                             <IconButton
                                 icon="edit"
+                                overrideIcon={EditIcon}
                                 tooltipMessage={MESSAGES.edit}
                                 url={`/${baseUrls.vaccineSupplyChainDetails}/id/${settings.row.original.id}`}
                             />

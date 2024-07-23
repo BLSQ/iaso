@@ -9,5 +9,5 @@ export const useDeleteUserRole = (): UseMutationResult =>
         mutationFn: body => deleteRequest(`/api/userroles/${body.id}/`),
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
-        invalidateQueryKey: ['userRolesList'],
+        invalidateQueryKey: ['userRoles'],
     });

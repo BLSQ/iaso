@@ -13,11 +13,8 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     formatThousand,
-    // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 import ReportIcon from '@mui/icons-material/Report';
@@ -203,204 +200,198 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         }).then(() => closeAndReset());
     };
     return (
-        <>
-            <Dialog
-                fullWidth
-                maxWidth="xs"
-                open={open}
-                classes={{
-                    paper: classes.paper,
-                }}
-                onClose={(event, reason) => {
-                    if (reason === 'backdropClick') {
-                        closeAndReset();
-                    }
-                }}
-                scroll="body"
-            >
-                <DialogTitle className={classes.title}>
-                    {formatMessage(MESSAGES.multiEditTitle)}
-                    {` (${formatThousand(selectCount)} `}
-                    {selectCount === 1 && formatMessage(MESSAGES.titleSingle)}
-                    {selectCount > 1 && formatMessage(MESSAGES.titleMulti)})
-                </DialogTitle>
-                <DialogContent className={classes.content}>
-                    <div>
-                        <InputComponent
-                            keyValue="editGroups"
-                            onChange={(key, checked) =>
-                                handleSetEditGroups(checked)
-                            }
-                            value={editGroups}
-                            type="checkbox"
-                            label={MESSAGES.editGroups}
-                        />
-                        {editGroups && (
-                            <>
-                                <InputComponent
-                                    multi
-                                    clearable
-                                    keyValue="addGroups"
-                                    onChange={(key, value) =>
-                                        setGroupsAdded(
-                                            stringOfIdsToArrayofIds(value),
-                                        )
-                                    }
-                                    value={
-                                        groupsAdded.length > 0
-                                            ? groupsAdded
-                                            : null
-                                    }
-                                    type="select"
-                                    loading={isFetchingGroups}
-                                    options={groups
-                                        .sort(compareGroupVersions)
-                                        .map(g => ({
-                                            label: `${g.name} - Version: ${g.source_version.number}`,
-                                            value: g.id,
-                                        }))}
-                                    label={MESSAGES.addToGroups}
-                                />
-                                <InputComponent
-                                    multi
-                                    clearable
-                                    keyValue="removeGroups"
-                                    onChange={(key, value) =>
-                                        setGroupsRemoved(
-                                            stringOfIdsToArrayofIds(value),
-                                        )
-                                    }
-                                    value={
-                                        groupsRemoved.length > 0
-                                            ? groupsRemoved
-                                            : null
-                                    }
-                                    type="select"
-                                    options={groupsWithoutAdded.map(g => ({
+        <Dialog
+            fullWidth
+            maxWidth="xs"
+            open={open}
+            classes={{
+                paper: classes.paper,
+            }}
+            onClose={(event, reason) => {
+                if (reason === 'backdropClick') {
+                    closeAndReset();
+                }
+            }}
+            scroll="body"
+        >
+            <DialogTitle className={classes.title}>
+                {formatMessage(MESSAGES.multiEditTitle)}
+                {` (${formatThousand(selectCount)} `}
+                {selectCount === 1 && formatMessage(MESSAGES.titleSingle)}
+                {selectCount > 1 && formatMessage(MESSAGES.titleMulti)})
+            </DialogTitle>
+            <DialogContent className={classes.content}>
+                <div>
+                    <InputComponent
+                        keyValue="editGroups"
+                        onChange={(key, checked) =>
+                            handleSetEditGroups(checked)
+                        }
+                        value={editGroups}
+                        type="checkbox"
+                        label={MESSAGES.editGroups}
+                    />
+                    {editGroups && (
+                        <>
+                            <InputComponent
+                                multi
+                                clearable
+                                keyValue="addGroups"
+                                onChange={(key, value) =>
+                                    setGroupsAdded(
+                                        stringOfIdsToArrayofIds(value),
+                                    )
+                                }
+                                value={
+                                    groupsAdded.length > 0 ? groupsAdded : null
+                                }
+                                type="select"
+                                loading={isFetchingGroups}
+                                options={groups
+                                    .sort(compareGroupVersions)
+                                    .map(g => ({
                                         label: `${g.name} - Version: ${g.source_version.number}`,
                                         value: g.id,
                                     }))}
-                                    label={MESSAGES.removeFromGroups}
-                                />
-                            </>
-                        )}
-                    </div>
-                    <div>
-                        <InputComponent
-                            keyValue="editOrgUnitType"
-                            onChange={(key, checked) =>
-                                handleSetEditOuType(checked)
-                            }
-                            value={editOrgUnitType}
-                            type="checkbox"
-                            label={MESSAGES.editOrgUnitType}
-                        />
-                        {editOrgUnitType && (
-                            <InputComponent
-                                multi={false}
-                                clearable
-                                keyValue="changeOrgUnitType"
-                                onChange={(key, value) => setOrgUnitType(value)}
-                                value={orgUnitType}
-                                type="select"
-                                options={orgUnitTypes || []}
-                                label={MESSAGES.org_unit_type}
-                                isSearchable
+                                label={MESSAGES.addToGroups}
                             />
-                        )}
-                    </div>
-                    <div>
+                            <InputComponent
+                                multi
+                                clearable
+                                keyValue="removeGroups"
+                                onChange={(key, value) =>
+                                    setGroupsRemoved(
+                                        stringOfIdsToArrayofIds(value),
+                                    )
+                                }
+                                value={
+                                    groupsRemoved.length > 0
+                                        ? groupsRemoved
+                                        : null
+                                }
+                                type="select"
+                                options={groupsWithoutAdded.map(g => ({
+                                    label: `${g.name} - Version: ${g.source_version.number}`,
+                                    value: g.id,
+                                }))}
+                                label={MESSAGES.removeFromGroups}
+                            />
+                        </>
+                    )}
+                </div>
+                <div>
+                    <InputComponent
+                        keyValue="editOrgUnitType"
+                        onChange={(key, checked) =>
+                            handleSetEditOuType(checked)
+                        }
+                        value={editOrgUnitType}
+                        type="checkbox"
+                        label={MESSAGES.editOrgUnitType}
+                    />
+                    {editOrgUnitType && (
                         <InputComponent
-                            keyValue="editValidation"
-                            onChange={(key, checked) =>
-                                handleSetEditValidation(checked)
-                            }
-                            value={editValidation}
-                            type="checkbox"
-                            label={MESSAGES.editValidation}
+                            multi={false}
+                            clearable
+                            keyValue="changeOrgUnitType"
+                            onChange={(key, value) => setOrgUnitType(value)}
+                            value={orgUnitType}
+                            type="select"
+                            options={orgUnitTypes || []}
+                            label={MESSAGES.org_unit_type}
+                            isSearchable
                         />
-                        {editValidation && (
-                            <div className={classes.marginLeft}>
-                                <InputComponent
-                                    keyValue="isValid"
-                                    onChange={(key, value) => {
-                                        setValidationStatus(value);
-                                    }}
-                                    value={validationStatus}
-                                    type="radio"
-                                    options={validationStatusOptions || []}
-                                    loading={isLoadingValidationStatusOptions}
-                                />
-                            </div>
-                        )}
-                    </div>
-                    <Box style={{ display: 'flex' }}>
-                        <InputComponent
-                            keyValue="updateGPS"
-                            onChange={(key, checked) =>
-                                handleSetUpdateGPS(checked)
-                            }
-                            value={updateGPS}
-                            type="checkbox"
-                            label={MESSAGES.useGPSFromSubmission}
-                        />
-                        <Box position="relative">
-                            <Box
-                                position="absolute"
-                                top={theme.spacing(3)}
-                                left={theme.spacing(-1)}
+                    )}
+                </div>
+                <div>
+                    <InputComponent
+                        keyValue="editValidation"
+                        onChange={(key, checked) =>
+                            handleSetEditValidation(checked)
+                        }
+                        value={editValidation}
+                        type="checkbox"
+                        label={MESSAGES.editValidation}
+                    />
+                    {editValidation && (
+                        <div className={classes.marginLeft}>
+                            <InputComponent
+                                keyValue="isValid"
+                                onChange={(key, value) => {
+                                    setValidationStatus(value);
+                                }}
+                                value={validationStatus}
+                                type="radio"
+                                options={validationStatusOptions || []}
+                                loading={isLoadingValidationStatusOptions}
+                            />
+                        </div>
+                    )}
+                </div>
+                <Box style={{ display: 'flex' }}>
+                    <InputComponent
+                        keyValue="updateGPS"
+                        onChange={(key, checked) => handleSetUpdateGPS(checked)}
+                        value={updateGPS}
+                        type="checkbox"
+                        label={MESSAGES.useGPSFromSubmission}
+                    />
+                    <Box position="relative">
+                        <Box
+                            position="absolute"
+                            top={theme.spacing(3)}
+                            left={theme.spacing(-1)}
+                        >
+                            <Tooltip
+                                arrow
+                                title={formatMessage(MESSAGES.GPSWarning)}
                             >
-                                <Tooltip
-                                    arrow
-                                    title={formatMessage(MESSAGES.GPSWarning)}
-                                >
-                                    <InfoOutlinedIcon />
-                                </Tooltip>
-                            </Box>
+                                <InfoOutlinedIcon />
+                            </Tooltip>
                         </Box>
                     </Box>
-                </DialogContent>
-                <DialogActions className={classes.action}>
-                    <Button onClick={closeAndReset} color="primary">
-                        {formatMessage(MESSAGES.cancel)}
-                    </Button>
+                </Box>
+            </DialogContent>
+            <DialogActions className={classes.action}>
+                <Button onClick={closeAndReset} color="primary">
+                    {formatMessage(MESSAGES.cancel)}
+                </Button>
 
-                    <ConfirmDialog
-                        withDivider
-                        btnMessage={formatMessage(MESSAGES.validate)}
-                        question={
-                            <Box className={classes.warningTitle}>
-                                <ReportIcon
-                                    className={classes.warningIcon}
-                                    color="error"
-                                    fontSize="large"
-                                />
-                                {formatMessage(MESSAGES.confirmMultiChange)}
-                                <ReportIcon
-                                    className={classes.warningIcon}
-                                    color="error"
-                                    fontSize="large"
-                                />
-                            </Box>
-                        }
-                        message={
-                            <Typography
-                                variant="body2"
+                <ConfirmDialog
+                    withDivider
+                    btnMessage={formatMessage(MESSAGES.validate)}
+                    question={
+                        <Box className={classes.warningTitle}>
+                            <ReportIcon
+                                className={classes.warningIcon}
                                 color="error"
-                                component="span"
-                                className={classes.warningMessage}
-                            >
-                                {formatMessage(MESSAGES.bulkChangeCount, {
-                                    count: `${formatThousand(selectCount)}`,
-                                })}
-                            </Typography>
-                        }
-                        confirm={() => saveAndReset()}
-                        btnDisabled={isSaveDisabled()}
-                        btnVariant="text"
-                    />
-                </DialogActions>
-            </Dialog>
-        </>
+                                fontSize="large"
+                            />
+                            {formatMessage(MESSAGES.confirmMultiChange)}
+                            <ReportIcon
+                                className={classes.warningIcon}
+                                color="error"
+                                fontSize="large"
+                            />
+                        </Box>
+                    }
+                    message={
+                        <Typography
+                            variant="body2"
+                            color="error"
+                            component="span"
+                            className={classes.warningMessage}
+                        >
+                            {formatMessage(MESSAGES.bulkChangeCount, {
+                                count: `${formatThousand(selectCount)}`,
+                            })}
+                        </Typography>
+                    }
+                    confirm={() => saveAndReset()}
+                    btnDisabled={isSaveDisabled()}
+                    btnVariant="text"
+                />
+            </DialogActions>
+        </Dialog>
     );
 };

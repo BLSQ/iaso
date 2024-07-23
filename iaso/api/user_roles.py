@@ -1,7 +1,8 @@
 from typing import Any
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, serializers
+from rest_framework.response import Response
+from rest_framework import permissions, serializers, status
 from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
 from iaso.models import UserRole
@@ -128,3 +129,16 @@ class UserRolesViewSet(ModelViewSet):
             queryset = queryset.order_by(*orders)
 
         return queryset
+
+    def perform_destroy(self, user_role):
+        group = user_role.group
+        users_in_group = group.user_set.all()
+        # remove the group form all users in it
+        for user in users_in_group:
+            user.groups.remove(group)
+        # delete the group
+        group.delete()
+        # delete the user role
+        super().perform_destroy(user_role)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

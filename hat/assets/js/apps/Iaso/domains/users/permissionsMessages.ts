@@ -550,6 +550,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_forms_stats_tooltip',
         defaultMessage: 'See statistics of number forms submissions',
     },
+    iaso_polio_chronogram: {
+        id: 'iaso.permissions.iaso_polio_chronogram',
+        defaultMessage: 'Polio chronogram - Read and Write',
+    },
+    iaso_polio_chronogram_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_polio_chronogram',
+        defaultMessage: 'Manage polio chronogram - Read and Write',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

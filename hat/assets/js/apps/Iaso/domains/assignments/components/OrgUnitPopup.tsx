@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useMemo } from 'react';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { Paper, ClickAwayListener, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';

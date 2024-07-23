@@ -147,7 +147,6 @@ export const Beneficiaries: FunctionComponent = () => {
                     </Box>
                     {tab === 'list' && (
                         <Box>
-                            {/* @ts-ignore */}
                             <TableWithDeepLink
                                 marginTop={false}
                                 data={result ?? []}

@@ -25,7 +25,6 @@ export const useGetStorages = (
 ): UseQueryResult<StoragePaginated, Error> => {
     const queryKey: any[] = ['storageLog', options];
     const { select } = options as Record<string, any>;
-    // @ts-ignore
     return useSnackQuery(queryKey, () => getStorage(options), undefined, {
         select,
     });

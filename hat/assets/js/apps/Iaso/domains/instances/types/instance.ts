@@ -31,7 +31,7 @@ export type Instance = {
     longitude: number;
     altitude: number;
     accuracy: number;
-    files: ShortFile[];
+    files: string[];
     status: string;
     export_statuses: Array<string>;
     correlation_id?: string;
@@ -39,7 +39,7 @@ export type Instance = {
     org_unit: OrgUnit;
     period?: string;
     file_content: Record<string, any>;
-    form_descriptor: unknown;
+    form_descriptor: Record<string, unknown>;
     last_export_success_at: unknown;
     instance_locks: Lock[];
     can_user_modify: boolean;

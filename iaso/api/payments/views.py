@@ -5,7 +5,7 @@ from django.db import models, transaction
 from django.db.models import Count, OuterRef, Prefetch, Subquery, Q
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, status
@@ -249,20 +249,73 @@ class PaymentLotsViewSet(ModelViewSet):
         csv_format = bool(request.query_params.get("csv"))
         xlsx_format = bool(request.query_params.get("xlsx"))
 
-        if csv_format:
-            return self.retrieve_to_csv(request, *args, **kwargs)
-        elif xlsx_format:
-            return self.retrieve_to_xlsx(request, *args, **kwargs)
+        if csv_format or xlsx_format:
+            payment_lot = self.get_object()
+
+            payments = (
+                payment_lot.payments.all()
+                .select_related("user__iaso_profile")
+                .prefetch_related("change_requests__org_unit")
+                .prefetch_related("change_requests__new_reference_instances__form")
+                .annotate(
+                    annotated_count_org_unit_creation=Count(
+                        "change_requests__org_unit",
+                        filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_NEW),
+                    ),
+                    annotated_count_org_unit_change=Count(
+                        "change_requests__org_unit",
+                        filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_VALID),
+                    ),
+                )
+                .order_by("-id")
+            )
+
+            forms, forms_count_by_payment = self._get_dynamic_form_columns(payments)
+
+            if csv_format:
+                return self.retrieve_to_csv(payment_lot, payments, forms, forms_count_by_payment)
+            elif xlsx_format:
+                return self.retrieve_to_xlsx(payment_lot, payments, forms, forms_count_by_payment)
 
         return super().retrieve(request, *args, **kwargs)
+
+    def _get_dynamic_form_columns(
+        self, payments: models.QuerySet[Payment]
+    ) -> Tuple[Dict[int, str], Dict[int, Dict[int, int]]]:
+        """
+        The export should allow to count the number of forms,
+        because some changes are paid while others are not.
+
+        This function returns a tuple of two dictionaries:
+
+        - the first one lists all forms:
+            {form_id: form_name}
+
+        - the second one counts forms by payment:
+            {payment_id: {form_id: form_count}}
+
+        These two dictionaries allow to add columns dynamically.
+        """
+        forms = {}
+        forms_count_by_payment = {}
+        for payment in payments:
+            forms_count_by_payment[payment.id] = {}
+            for change_request in payment.change_requests.all():
+                for instance in change_request.new_reference_instances.all():
+                    forms[instance.form.id] = instance.form.name
+                    forms_count_by_payment[payment.id].setdefault(instance.form.id, 0)
+                    forms_count_by_payment[payment.id][instance.form.id] += 1
+
+        forms_sorted_by_names = dict(sorted(forms.items(), key=lambda item: item[1]))
+        return forms_sorted_by_names, forms_count_by_payment
 
     def _get_table_row(self, payment, forms, forms_count_by_payment):
         change_requests = {
             cr.id: f"ID: {cr.id}, Org Unit: {cr.org_unit.name} (ID: {cr.org_unit.id})"
             for cr in payment.change_requests.all()
         }
-        change_requests = dict(sorted(change_requests.items()))
-        change_requests_str = "\n".join(change_requests.values())
+        change_requests_sorted_by_id = dict(sorted(change_requests.items()))
+        change_requests_str = "\n".join(change_requests_sorted_by_id.values())
         change_requests_count = payment.change_requests.count()
 
         row = [
@@ -288,72 +341,22 @@ class PaymentLotsViewSet(ModelViewSet):
 
         return row
 
-    def _get_dynamic_form_columns(
-        self, payments: models.QuerySet[Payment]
-    ) -> Tuple[Dict[int, str], Dict[int, Dict[int, int]]]:
-        """
-        The export should allow to count the number of forms,
-        because some changes are paid while others are not.
-
-        This function returns a tuple of two dictionaries:
-
-        - the first one lists all forms:
-            {form_id: form_name}
-
-        - the second one counts forms by payment:
-            {payment_id: {form_id: form_count}}
-
-        These two dictionaries allow to add columns dynamically.
-        """
-        forms = {}
-        forms_count_by_payment = {}
-        for payment in payments:
-            forms_count_by_payment[payment.id] = {}
-            for change_request in payment.change_requests.all():
-                for instance in change_request.new_reference_instances.all():
-                    form = instance.form
-                    forms[form.id] = form.name
-                    forms_count_by_payment[payment.id].setdefault(form.id, 0)
-                    forms_count_by_payment[payment.id][instance.form.id] += 1
-        return dict(sorted(forms.items(), key=lambda item: item[1])), forms_count_by_payment
-
-    def retrieve_to_csv(self, request, *args, **kwargs):
-        payment_lot = self.get_object()
-        payments = (
-            payment_lot.payments.all()
-            .select_related("user__iaso_profile")
-            .prefetch_related("change_requests__org_unit")
-            .prefetch_related("change_requests__new_reference_instances__form")
-            .annotate(
-                annotated_count_org_unit_creation=Count(
-                    "change_requests__org_unit",
-                    filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_NEW),
-                ),
-                annotated_count_org_unit_change=Count(
-                    "change_requests__org_unit",
-                    filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_VALID),
-                ),
-            )
-            .order_by("-id")
-        )
-
-        forms, forms_count_by_payment = self._get_dynamic_form_columns(payments)
-
+    def retrieve_to_csv(self, payment_lot, payments, forms, forms_count_by_payment):
         columns = [
-            str(_("ID")),
-            str(_("Status")),
-            str(_("User ID")),
-            str(_("User Username")),
-            str(_("User Phone")),
-            str(_("User Last Name")),
-            str(_("User First Name")),
-            str(_("Change Requests")),
-            str(_("Total Change Requests Count")),
-            str(_("Org Unit Creation Count")),
-            str(_("Org Unit Change Count")),
+            _("ID"),
+            _("Status"),
+            _("User ID"),
+            _("User Username"),
+            _("User Phone"),
+            _("User Last Name"),
+            _("User First Name"),
+            _("Change Requests"),
+            _("Total Change Requests Count"),
+            _("Org Unit Creation Count"),
+            _("Org Unit Change Count"),
         ]
         for form_name in forms.values():
-            columns.append(f"Form: {form_name}")
+            columns.append(_("Form: %(name)s") % {"name": form_name})
 
         response = StreamingHttpResponse(
             streaming_content=(
@@ -369,50 +372,29 @@ class PaymentLotsViewSet(ModelViewSet):
         response["Content-Disposition"] = f'attachment; filename="{payment_lot.name}_payments.csv"'
         return response
 
-    def retrieve_to_xlsx(self, request, *args, **kwargs):
-        payment_lot = self.get_object()
-        payments = (
-            payment_lot.payments.all()
-            .select_related("user__iaso_profile")
-            .prefetch_related("change_requests__org_unit")
-            .prefetch_related("change_requests__new_reference_instances__form")
-            .annotate(
-                annotated_count_org_unit_creation=Count(
-                    "change_requests__org_unit",
-                    filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_NEW),
-                ),
-                annotated_count_org_unit_change=Count(
-                    "change_requests__org_unit",
-                    filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_VALID),
-                ),
-            )
-            .order_by("-id")
-        )
-
-        forms, forms_count_by_payment = self._get_dynamic_form_columns(payments)
-
+    def retrieve_to_xlsx(self, payment_lot, payments, forms, forms_count_by_payment):
         columns = [
-            {"title": str(_("ID")), "width": 10},
-            {"title": str(_("Status")), "width": 10},
-            {"title": str(_("User ID")), "width": 10},
-            {"title": str(_("User Username")), "width": 20},
-            {"title": str(_("User Phone")), "width": 20},
-            {"title": str(_("User Last Name")), "width": 20},
-            {"title": str(_("User First Name")), "width": 20},
-            {"title": str(_("Change Requests")), "width": 40},
-            {"title": str(_("Total Change Requests Count")), "width": 20},
-            {"title": str(_("Org Unit Creation Count")), "width": 20},
-            {"title": str(_("Org Unit Change Count")), "width": 20},
+            {"title": _("ID"), "width": 10},
+            {"title": _("Status"), "width": 10},
+            {"title": _("User ID"), "width": 10},
+            {"title": _("User Username"), "width": 20},
+            {"title": _("User Phone"), "width": 20},
+            {"title": _("User Last Name"), "width": 20},
+            {"title": _("User First Name"), "width": 20},
+            {"title": _("Change Requests"), "width": 40},
+            {"title": _("Total Change Requests Count"), "width": 20},
+            {"title": _("Org Unit Creation Count"), "width": 20},
+            {"title": _("Org Unit Change Count"), "width": 20},
         ]
         for form_name in forms.values():
-            columns.append({"title": f"Form: {form_name}", "width": 15})
+            columns.append({"title": _("Form: %(name)s") % {"name": form_name}, "width": 15})
 
         response = HttpResponse(
             generate_xlsx(
                 f"{payment_lot.name}_Payments",
                 columns,
                 payments,
-                lambda payment, _: self._get_table_row(payment, forms, forms_count_by_payment),
+                lambda payment, row_num: self._get_table_row(payment, forms, forms_count_by_payment),
             ),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )

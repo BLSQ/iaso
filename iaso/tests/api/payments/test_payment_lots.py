@@ -142,6 +142,8 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?csv=true")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
+        response_csv = response.getvalue().decode("utf-8")
+        self.assertTrue(len(response_csv) > 0)
 
     def test_retrieve_payment_lot_to_xlsx(self):
         self.client.force_authenticate(self.user)

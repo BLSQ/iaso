@@ -2,7 +2,7 @@ from typing import Dict, Tuple
 
 import django_filters
 from django.db import models, transaction
-from django.db.models import Count, OuterRef, Prefetch, Subquery
+from django.db.models import Count, OuterRef, Prefetch, Subquery, Q
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.translation import gettext_lazy as _
@@ -20,7 +20,7 @@ from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.payments.filters import payments_lots as payments_lots_filters
 from iaso.api.payments.filters import potential_payments as potential_payments_filters
 from iaso.api.tasks import TaskSerializer
-from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
+from iaso.models import OrgUnit, OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.tasks.create_payments_from_payment_lot import create_payments_from_payment_lot
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
 
@@ -256,7 +256,7 @@ class PaymentLotsViewSet(ModelViewSet):
 
         return super().retrieve(request, *args, **kwargs)
 
-    def _get_table_row(self, payment, row_num=None, forms=None, forms_count_by_payment=None):
+    def _get_table_row(self, payment, forms, forms_count_by_payment):
         change_requests = {
             cr.id: f"ID: {cr.id}, Org Unit: {cr.org_unit.name} (ID: {cr.org_unit.id})"
             for cr in payment.change_requests.all()
@@ -279,11 +279,12 @@ class PaymentLotsViewSet(ModelViewSet):
             payment.user.first_name,
             change_requests_str,
             str(change_requests_count),
+            payment.annotated_count_org_unit_creation,
+            payment.annotated_count_org_unit_change,
         ]
 
-        if forms and forms_count_by_payment:
-            counts_by_forms = [forms_count_by_payment[payment.id].get(form_id, 0) for form_id in forms.keys()]
-            row += counts_by_forms
+        counts_by_forms = [forms_count_by_payment[payment.id].get(form_id, 0) for form_id in forms.keys()]
+        row += counts_by_forms
 
         return row
 
@@ -322,7 +323,22 @@ class PaymentLotsViewSet(ModelViewSet):
             payment_lot.payments.all()
             .select_related("user__iaso_profile")
             .prefetch_related("change_requests__org_unit")
+            .prefetch_related("change_requests__new_reference_instances__form")
+            .annotate(
+                annotated_count_org_unit_creation=Count(
+                    "change_requests__org_unit",
+                    filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_NEW),
+                ),
+                annotated_count_org_unit_change=Count(
+                    "change_requests__org_unit",
+                    filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_VALID),
+                ),
+            )
+            .order_by("-id")
         )
+
+        forms, forms_count_by_payment = self._get_dynamic_form_columns(payments)
+
         columns = [
             str(_("ID")),
             str(_("Status")),
@@ -332,15 +348,20 @@ class PaymentLotsViewSet(ModelViewSet):
             str(_("User Last Name")),
             str(_("User First Name")),
             str(_("Change Requests")),
-            str(_("Change Requests Count")),
+            str(_("Total Change Requests Count")),
+            str(_("Org Unit Creation Count")),
+            str(_("Org Unit Change Count")),
         ]
+        for form_name in forms.values():
+            columns.append(f"Form: {form_name}")
+
         response = StreamingHttpResponse(
             streaming_content=(
                 iter_items(
                     payments,
                     Echo(),
                     columns,
-                    lambda payment: self._get_table_row(payment),
+                    lambda payment: self._get_table_row(payment, forms, forms_count_by_payment),
                 )
             ),
             content_type="text/csv",
@@ -355,6 +376,17 @@ class PaymentLotsViewSet(ModelViewSet):
             .select_related("user__iaso_profile")
             .prefetch_related("change_requests__org_unit")
             .prefetch_related("change_requests__new_reference_instances__form")
+            .annotate(
+                annotated_count_org_unit_creation=Count(
+                    "change_requests__org_unit",
+                    filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_NEW),
+                ),
+                annotated_count_org_unit_change=Count(
+                    "change_requests__org_unit",
+                    filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_VALID),
+                ),
+            )
+            .order_by("-id")
         )
 
         forms, forms_count_by_payment = self._get_dynamic_form_columns(payments)
@@ -368,17 +400,19 @@ class PaymentLotsViewSet(ModelViewSet):
             {"title": str(_("User Last Name")), "width": 20},
             {"title": str(_("User First Name")), "width": 20},
             {"title": str(_("Change Requests")), "width": 40},
-            {"title": str(_("Change Requests Count")), "width": 20},
+            {"title": str(_("Total Change Requests Count")), "width": 20},
+            {"title": str(_("Org Unit Creation Count")), "width": 20},
+            {"title": str(_("Org Unit Change Count")), "width": 20},
         ]
         for form_name in forms.values():
-            columns.append({"title": form_name, "width": 15})
+            columns.append({"title": f"Form: {form_name}", "width": 15})
 
         response = HttpResponse(
             generate_xlsx(
                 f"{payment_lot.name}_Payments",
                 columns,
                 payments,
-                lambda payment, row_num: self._get_table_row(payment, row_num, forms, forms_count_by_payment),
+                lambda payment, _: self._get_table_row(payment, forms, forms_count_by_payment),
             ),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )

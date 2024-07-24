@@ -174,11 +174,13 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
                 "User Last Name",
                 "User First Name",
                 "Change Requests",
-                "Change Requests Count",
+                "Total Change Requests Count",
+                "Org Unit Creation Count",
+                "Org Unit Change Count",
                 # The following columns are dynamic and should be sorted alphabetically.
-                "Other form",
-                "Population form",
-                "Vaccine form",
+                "Form: Other form",
+                "Form: Population form",
+                "Form: Vaccine form",
             ],
         )
 
@@ -222,20 +224,28 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
                     ),
                     1: f"ID: {self.change_request.id}, Org Unit: {self.change_request.org_unit.name} (ID: {self.change_request.org_unit.id})",
                 },
-                "Change Requests Count": {
+                "Total Change Requests Count": {
+                    0: 2,
+                    1: 1,
+                },
+                "Org Unit Creation Count": {
+                    0: 0,
+                    1: 0,
+                },
+                "Org Unit Change Count": {
                     0: 2,
                     1: 1,
                 },
                 # Dynamic form columns.
-                "Other form": {
+                "Form: Other form": {
                     0: 2,
                     1: 0,
                 },
-                "Population form": {
+                "Form: Population form": {
                     0: 1,
                     1: 1,
                 },
-                "Vaccine form": {
+                "Form: Vaccine form": {
                     0: 1,
                     1: 1,
                 },

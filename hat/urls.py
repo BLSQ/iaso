@@ -11,23 +11,25 @@ from django.views.generic import RedirectView, TemplateView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from django.shortcuts import render
 
-from hat.dashboard import views
 from iaso.views import health, page
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
 admin.site.index_title = "Administration de Iaso"
 
-
 if settings.MAINTENANCE_MODE:
-    maintenance_template = "iaso/maintenance.html"
-    urlpatterns = [path("", TemplateView.as_view(template_name=maintenance_template), name="maintenance")]
-    urlpatterns += [
+    urlpatterns = [
         path("_health/", health),
         path("_health", health),  # same without slash otherwise AWS complain about redirect
         path("health/", health),  # alias since current apache config hide _health/
     ]
+
+    def custom_404_view(request, exception):
+        return render(request, "iaso/maintenance.html", {}, status=404)
+
+    handler404 = custom_404_view
 else:
     if settings.DISABLE_PASSWORD_LOGINS:
         login_template = "iaso/disabled_password_login.html"

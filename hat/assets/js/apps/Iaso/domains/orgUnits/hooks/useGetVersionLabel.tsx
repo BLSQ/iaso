@@ -6,9 +6,7 @@ import MESSAGES from '../messages';
 import { DataSource } from '../types/dataSources';
 
 export const getVersionLabel = (version: Version, defaultMessage: string) => {
-    return `${version.number}${
-        version.description ? ` - ${version.description}` : ''
-    }${version.is_default ? ` (${defaultMessage})` : ''}`;
+    return `${version.number}${version.is_default ? ` (${defaultMessage})` : ''}`;
 };
 
 export const useGetVersionLabel = (

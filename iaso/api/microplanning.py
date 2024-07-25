@@ -164,6 +164,15 @@ class TeamSerializer(serializers.ModelSerializer):
         return validated_data
 
 
+class TeamManagersFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        managers = request.GET.get("managers", None)
+        if managers:
+            manager_ids = [int(val) for val in managers.split(",") if val.isnumeric()]
+            return queryset.filter(manager_id__in=manager_ids)
+        return queryset
+
+
 class TeamSearchFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         search = request.query_params.get("search")
@@ -205,6 +214,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         DjangoFilterBackend,
         TeamSearchFilterBackend,
         DeletionFilterBackend,
+        TeamManagersFilterBackend,
     ]
     permission_classes = [ReadOnlyOrHasPermission(permission.TEAMS)]  # type: ignore
     serializer_class = TeamSerializer

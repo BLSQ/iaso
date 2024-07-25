@@ -2479,7 +2479,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Chronogram',
     },
     notShowTestCampaigns: {
-        id: 'iaso.polio.NotShowTestCampaigns',
+        id: 'iaso.polio.notShowTestCampaigns',
         defaultMessage: 'Do not show test campaigns',
     },
 });

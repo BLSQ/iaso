@@ -334,7 +334,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             }}
                             value={notShowTest}
                             type="checkbox"
-                            label={MESSAGES.NotShowTestCampaigns}
+                            label={MESSAGES.notShowTestCampaigns}
                         />
                     </>
                 )}

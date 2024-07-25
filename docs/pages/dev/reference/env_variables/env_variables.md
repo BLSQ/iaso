@@ -58,7 +58,7 @@ SESSION_COOKIE_SECURE
 
 ## CORS
 
-It is possible to setup a Iaso server with CORS authorizing access from any server with the following environment
+It is possible to setup a IASO server with CORS authorizing access from any server with the following environment
 variable `"ENABLE_CORS"`.
 Default is `"true"`
 
@@ -83,4 +83,9 @@ If you don't provide a SENTRY_URL, sentry won't be configured
 | SENTRY_ERRORS_SAMPLE_RATE           | true     | 1.0           | float between 0 and 1 : send everything        |     |
 | SENTRY_ERRORS_HTTPERROR_SAMPLE_RATE | true     | 0.8           | float between 0 and 1 : send 80% of the errors |     |  
 
-     
+## Maintenance mode
+`MAINTENANCE_MODE` (default is `"false"`)
+
+If you need to set up IASO in maintenance mode, meaning that it will display at / a page indicating that the 
+server is under maintenance, and give a 404 answer to all requests except for /health or /_health (wich we encourage to use 
+for status monitoring), you can set the environment variable `MAINTENANCE_MODE` to the value `"true"`

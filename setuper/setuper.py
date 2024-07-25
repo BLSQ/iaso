@@ -69,7 +69,6 @@ def create_account(server_url, username, password, additional_projects):
 
     if seed_instances:
         setup_instances(account_name, iaso_client=iaso_client)
-        setup_users_teams_micro_planning(account_name, iaso_client=iaso_client)
 
     if seed_entities:
         setup_entities(account_name, iaso_client=iaso_client)
@@ -77,6 +76,7 @@ def create_account(server_url, username, password, additional_projects):
     if additional_projects:
         create_projects(account_name, iaso_client=iaso_client)
         link_new_projects_to_main_data_source(account_name, iaso_client=iaso_client)
+        setup_users_teams_micro_planning(account_name, iaso_client=iaso_client)
 
     if seed_review_change_proposal:
         setup_review_change_proposal(account_name, iaso_client=iaso_client)

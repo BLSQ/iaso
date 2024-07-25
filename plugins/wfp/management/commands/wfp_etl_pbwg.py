@@ -79,7 +79,6 @@ class PBWG:
 
         for visit in visits:
             if visit:
-
                 if visit.get("duration", None) is not None and visit.get("duration", None) != "":
                     current_journey["duration"] = visit.get("duration")
 

@@ -64,6 +64,11 @@ class PBWG:
         journey.nutrition_programme = record["nutrition_programme"]
         journey.exit_type = record.get("exit_type", None)
         journey.instance_id = record.get("instance_id", None)
+        journey.start_date = record.get("start_date", None)
+
+        if record.get("exit_type", None) is not None and record.get("exit_type", None) != "":
+            journey.duration = record.get("duration", None)
+            journey.end_date = record.get("end_date", None)
         journey.save()
 
         return journey
@@ -74,6 +79,10 @@ class PBWG:
 
         for visit in visits:
             if visit:
+
+                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
+                    current_journey["duration"] = visit.get("duration")
+
                 if visit["form_id"] == "wfp_coda_pbwg_registration":
                     current_journey["nutrition_programme"] = visit.get("physiology_status", None)
 
@@ -125,6 +134,8 @@ class PBWG:
         instances = []
         i = 0
         instances_by_entity = groupby(list(entities), key=itemgetter("entity_id"))
+        initial_date = None
+        duration = 0
 
         for entity_id, entity in instances_by_entity:
             instances.append({"entity_id": entity_id, "visits": [], "journey": []})
@@ -151,8 +162,17 @@ class PBWG:
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
-                    if visit.get("created_at"):
-                        current_record["date"] = visit.get("created_at").strftime("%Y-%m-%d")
+                    visit_date = visit.get("_visit_date", visit.get("visit_date", visit.get("created_at")))
+                    if form_id == "wfp_coda_pbwg_anthropometric":
+                        initial_date = visit_date
+
+                    if initial_date is not None:
+                        current_record["date"] = visit_date.strftime("%Y-%m-%d")
+                        current_record["start_date"] = initial_date.strftime("%Y-%m-%d")
+                        duration = (visit_date - initial_date).days
+
+                    current_record["end_date"] = visit_date.strftime("%Y-%m-%d")
+                    current_record["duration"] = duration
 
                     current_record["instance_id"] = visit["id"]
                     current_record["form_id"] = form_id

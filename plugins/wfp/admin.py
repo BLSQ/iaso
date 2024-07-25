@@ -32,17 +32,25 @@ class JourneyAdmin(admin.ModelAdmin):
         "exit_type",
         "instance_id",
     )
-    list_filter = ("admission_criteria", "admission_type", "nutrition_programme", "programme_type", "exit_type")
+    list_filter = (
+        "admission_criteria",
+        "admission_type",
+        "nutrition_programme",
+        "programme_type",
+        "start_date",
+        "end_date",
+        "exit_type",
+    )
 
 
 @admin.register(Visit)
 class VisitAdmin(admin.ModelAdmin):
     list_display = ("id", "date", "number", "org_unit", "journey")
     raw_id_fields = ("org_unit", "journey")
-    list_filter = ("date",)
+    list_filter = ("date", "number", "journey__programme_type")
 
 
 @admin.register(Step)
 class StepAdmin(admin.ModelAdmin):
     list_display = ("id", "assistance_type", "visit")
-    list_filter = ("assistance_type",)
+    list_filter = ("assistance_type", "visit__journey__programme_type")

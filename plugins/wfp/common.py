@@ -21,7 +21,7 @@ class ETL:
         updated_at = datetime.date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__name=self.type)
-            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330])
+            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226])
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)
@@ -194,6 +194,8 @@ class ETL:
         elif admission_type == "referred_from_tsfp":
             return "referred_from_tsfp_mam"
         elif admission_type == "referred_from_sc_itp":
+            return "referred_from_sc"
+        elif admission_type == "returned_from_sc":
             return "referred_from_sc"
         else:
             return admission_type

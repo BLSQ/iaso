@@ -1,5 +1,6 @@
 import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent, useCallback, useState } from "react";
+import { useSafeIntl } from "bluesquare-components";
 import { FilterButton } from '../../../components/FilterButton';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
@@ -9,6 +10,7 @@ import { baseUrls } from '../../../constants/urls';
 import { AsyncSelect } from "../../../components/forms/AsyncSelect";
 import { getUsersDropDown } from "../../instances/hooks/requests/getUsersDropDown";
 import { useGetProfilesDropdown } from "../../instances/hooks/useGetProfilesDropdown";
+import { TEAM_OF_TEAMS, TEAM_OF_USERS } from "../constants";
 
 type Props = {
     params: TeamParams;
@@ -16,6 +18,7 @@ type Props = {
 
 const baseUrl = baseUrls.teams;
 export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
+    const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
@@ -30,7 +33,7 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid item xs={12} md={3} lg={3}>
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -42,7 +45,7 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                     blockForbiddenChars
                 />
             </Grid>
-            <Grid item xs={12} md={4} lg={3}>
+            <Grid item xs={12} md={3} lg={3}>
                 <Box mt={2}>
                     <AsyncSelect
                         keyValue="managers"
@@ -55,8 +58,28 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Box>
             </Grid>
+            <Grid item xs={12} md={3} lg={3}>
+                <InputComponent
+                    type="select"
+                    keyValue="types"
+                    onChange={handleChange}
+                    value={filters.types}
+                    label={MESSAGES.type}
+                    multi
+                    options={[
+                        {
+                            label: formatMessage(MESSAGES.teamsOfTeams),
+                            value: TEAM_OF_TEAMS,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.teamsOfUsers),
+                            value: TEAM_OF_USERS,
+                        },
+                    ]}
+                />
+            </Grid>
 
-            <Grid item xs={12} md={4} lg={6}>
+            <Grid item xs={12} md={3} lg={3}>
                 <Box mt={2} display="flex" justifyContent="flex-end">
                     <FilterButton
                         disabled={textSearchError || !filtersUpdated}

@@ -52,6 +52,7 @@ export const campaignParams = [
     'campaignGroups',
     'show_test',
     'filterLaunched',
+    'notShowTest',
 ];
 
 export const polioRouteConfigs: Record<string, RouteConfig> = {

@@ -608,6 +608,10 @@ class OrgUnitChangeRequest(models.Model):
     `VALIDATION_REJECTED` or `VALIDATION_VALID`.
     """
 
+    class Kind(models.TextChoices):
+        ORG_UNIT_CREATION = "org_unit_creation", _("Org Unit Creation")
+        ORG_UNIT_CHANGE = "org_unit_change", _("Org Unit Change")
+
     class Statuses(models.TextChoices):
         NEW = "new", _("New")
         REJECTED = "rejected", _("Rejected")
@@ -619,6 +623,7 @@ class OrgUnitChangeRequest(models.Model):
 
     # Metadata.
 
+    kind = models.CharField(choices=Kind.choices, default=Kind.ORG_UNIT_CHANGE, max_length=40)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_created_set"
@@ -692,6 +697,10 @@ class OrgUnitChangeRequest(models.Model):
         self.clean()
         is_new = self.pk is None
         if is_new:
+            if self.org_unit.validation_status == self.org_unit.VALIDATION_NEW:
+                self.kind = self.Kind.ORG_UNIT_CREATION
+            else:
+                self.kind = self.Kind.ORG_UNIT_CHANGE
             # Save old values.
             self.old_parent_id = self.org_unit.parent_id
             self.old_name = self.org_unit.name

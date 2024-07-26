@@ -17,14 +17,13 @@ export const useChronogramTaskSchema = () => {
             .required(formatMessage(MESSAGES.validationFieldRequired)),
         start_offset_in_days: yup
             .number()
+            .integer()
             .required(formatMessage(MESSAGES.validationFieldRequired)),
         status: yup
             .string()
             .trim()
             .required(formatMessage(MESSAGES.validationFieldRequired)),
-        user_in_charge: yup
-            .number()
-            .required(formatMessage(MESSAGES.validationFieldRequired)),
+        user_in_charge: yup.number().nullable(),
         comment: yup.string().trim(),
     });
 };

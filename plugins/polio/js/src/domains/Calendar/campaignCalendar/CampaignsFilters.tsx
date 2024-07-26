@@ -1,9 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
-import {
-    useRedirectToReplace
-} from 'bluesquare-components';
+import { useRedirectToReplace } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
@@ -71,6 +69,9 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
     );
+    const [notShowTest, setNotShowTest] = useState(
+        params.notShowTest === 'true',
+    );
     const [roundStartFrom, setRoundStartFrom] = useState(
         dateApiToDateRangePicker(params.roundStartFrom),
     );
@@ -87,7 +88,8 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         campaignType ||
         campaignCategory ||
         campaignGroups ||
-        orgUnitGroups;
+        orgUnitGroups ||
+        notShowTest;
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -109,6 +111,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                 orgUnitGroups,
                 filterLaunched: filtersFilled ? 'true' : 'false',
                 periodType: params?.periodType,
+                notShowTest: notShowTest ? 'true' : undefined,
             };
             redirectToReplace(redirectUrl, urlParams);
         }
@@ -125,6 +128,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         orgUnitGroups,
         filtersFilled,
         params?.periodType,
+        notShowTest,
         redirectToReplace,
         redirectUrl,
     ]);
@@ -162,6 +166,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         campaignCategory,
         campaignGroups,
         orgUnitGroups,
+        notShowTest,
     ]);
 
     useEffect(() => {
@@ -312,17 +317,29 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                     </>
                 )}
                 {!disableOnlyDeleted && (
-                    <InputComponent
-                        keyValue="showOnlyDeleted"
-                        onChange={(key, value) => {
-                            setShowOnlyDeleted(value);
-                        }}
-                        value={showOnlyDeleted}
-                        type="checkbox"
-                        label={MESSAGES.showOnlyDeleted}
-                    />
+                    <>
+                        <InputComponent
+                            keyValue="showOnlyDeleted"
+                            onChange={(key, value) => {
+                                setShowOnlyDeleted(value);
+                            }}
+                            value={showOnlyDeleted}
+                            type="checkbox"
+                            label={MESSAGES.showOnlyDeleted}
+                        />
+                        <InputComponent
+                            keyValue="NotShowTest"
+                            onChange={(key, value) => {
+                                setNotShowTest(value);
+                            }}
+                            value={notShowTest}
+                            type="checkbox"
+                            label={MESSAGES.notShowTestCampaigns}
+                        />
+                    </>
                 )}
             </Grid>
+
             <Grid
                 container
                 item

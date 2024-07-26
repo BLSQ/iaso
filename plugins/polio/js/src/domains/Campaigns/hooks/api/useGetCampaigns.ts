@@ -29,6 +29,7 @@ export type Options = {
     last_budget_event__status?: string;
     fieldset?: string;
     filterLaunched?: boolean;
+    notShowTest?: boolean;
 };
 
 export type GetCampaignsParams = {
@@ -50,6 +51,7 @@ export type GetCampaignsParams = {
     last_budget_event__status?: string;
     fieldset?: string;
     format?: string;
+    not_show_test?: boolean;
 };
 
 const getURL = (urlParams: GetCampaignsParams, url: string): string => {
@@ -89,28 +91,30 @@ export const useGetCampaignsOptions = (
         }),
         [
             asCsv,
-            options.campaignGroups,
-            options.campaignType,
-            options.campaignCategory,
-            options.countries,
-            options.enabled,
-            options.fieldset,
-            options.last_budget_event__status,
-            options.order,
-            options.orgUnitGroups,
-            options.page,
             options.pageSize,
+            options.page,
+            options.order,
+            options.countries,
+            options.search,
             options.roundStartFrom,
             options.roundStartTo,
-            options.search,
             options.showOnlyDeleted,
+            options.campaignType,
+            options.campaignCategory,
+            options.campaignGroups,
+            options.orgUnitGroups,
             options.show_test,
+            options.enabled,
+            options.last_budget_event__status,
+            options.fieldset,
         ],
     );
 };
 
 export const useGetCampaigns = (
+    // eslint-disable-next-line default-param-last
     options: Options = {},
+    // eslint-disable-next-line default-param-last
     url: string | undefined = CAMPAIGNS_ENDPOINT,
     queryKey?: string | unknown[],
     queryOptions?: Record<string, any>,
@@ -166,8 +170,9 @@ export const useCampaignParams = (params: Options): Options => {
             campaignCategory: params.campaignCategory,
             campaignGroups: params.campaignGroups,
             show_test:
-                params.campaignCategory === 'test' ||
-                params.campaignCategory === 'all',
+                (params.campaignCategory === 'test' ||
+                    params.campaignCategory === 'all') &&
+                !params.notShowTest,
             last_budget_event__status: params.last_budget_event__status,
             fieldset: 'list',
             orgUnitGroups: params.orgUnitGroups,

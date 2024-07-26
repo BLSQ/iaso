@@ -137,11 +137,11 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.form_hs_4.org_unit_types.add(cls.org_unit_type_aire_sante)
         cls.form_hs_4.org_unit_types.add(cls.org_unit_type_country)
         cls.hopital_aaa_ou = OrgUnit.objects.filter(org_unit_type=cls.org_unit_type_hopital).first()
-        cls.instance_1 = cls.create_form_instance(form=cls.form_hs_1, org_unit=cls.hopital_aaa_ou)
+        cls.instance_1 = cls.create_form_instance(form=cls.form_hs_1, org_unit=cls.hopital_aaa_ou, project=None)
 
         cls.as_abb_ou = OrgUnit.objects.get(pk=10)
-        cls.instance_2 = cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
-        cls.instance_3 = cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
+        cls.instance_2 = cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou, project=None)
+        cls.instance_3 = cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou, project=None)
 
         cls.user_1 = User.objects.create(username="test 1")
         Profile.objects.create(user=cls.user_1, account=cls.account)
@@ -776,7 +776,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Make sure that non-valid ous are not counted in the counters for OU+children. See IA-1788"""
         self.client.force_authenticate(self.user)
         # first check it's counted when it's valid
-        self.create_form_instance(form=self.form_hs_4, org_unit=self.as_abb_ou)
+        self.create_form_instance(form=self.form_hs_4, org_unit=self.as_abb_ou, project=None)
         self.as_abb_ou.validation_status = OrgUnit.VALIDATION_NEW
         self.as_abb_ou.save()
         response = self.client.get(

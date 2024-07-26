@@ -455,6 +455,79 @@ class TeamAPITestCase(APITestCase):
         # one for delete, one for undelete
         self.assertEqual(Modification.objects.count(), 2)
 
+    def test_list_filter_by_manager(self):
+        # Set up new team and new user who'll be the new manager
+        ash_ketchum = self.create_user_with_profile(
+            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+        )
+        team_fire_pokemons = Team.objects.create(project=self.project1, name="team_fire_pokemons", manager=ash_ketchum)
+        team_electric_pokemons = Team.objects.create(
+            project=self.project1, name="team_electric_pokemons", manager=ash_ketchum
+        )
+
+        misty = self.create_user_with_profile(
+            username="misty", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+        )
+        team_water_pokemons = Team.objects.create(project=self.project1, name="team_water_pokemons", manager=misty)
+
+        self.client.force_authenticate(ash_ketchum)
+
+        # Fetch the list of teams with a filter on a single manager
+        response = self.client.get(f"/api/microplanning/teams/?order=id&managers={ash_ketchum.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(r[0]["name"], team_fire_pokemons.name)
+        self.assertEqual(r[1]["name"], team_electric_pokemons.name)
+
+        # Fetch the list of teams with a filter on multiple managers
+        response = self.client.get(f"/api/microplanning/teams/?managers={ash_ketchum.id},{misty.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 3)
+
+    def test_list_filter_by_type(self):
+        # Set up teams of various types
+        ash_ketchum = self.create_user_with_profile(
+            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+        )
+        team_fire_pokemons = Team.objects.create(
+            project=self.project1, name="team_fire_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
+        )
+        team_electric_pokemons = Team.objects.create(
+            project=self.project1, name="team_electric_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
+        )
+        team_water_pokemons = Team.objects.create(
+            project=self.project1, name="team_water_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
+        )
+        team_pokemons = Team.objects.create(
+            project=self.project1, name="team_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_TEAMS
+        )
+        self.client.force_authenticate(ash_ketchum)
+
+        # Fetch the list of teams without any type filter
+        response = self.client.get(f"/api/microplanning/teams/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 6)  # 2 from happy path (set up) + 4 new ones
+
+        # Fetch the list of teams with a single type
+        response = self.client.get(f"/api/microplanning/teams/?order=id&types={TeamType.TEAM_OF_USERS}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 3)
+        self.assertEqual(r[0]["name"], team_fire_pokemons.name)
+        self.assertEqual(r[1]["name"], team_electric_pokemons.name)
+        self.assertEqual(r[2]["name"], team_water_pokemons.name)
+
+        response = self.client.get(f"/api/microplanning/teams/?order=id&types={TeamType.TEAM_OF_TEAMS}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]["name"], team_pokemons.name)
+
+        # Fetch the list of teams with a filter on multiple types
+        response = self.client.get(
+            f"/api/microplanning/teams/?types={TeamType.TEAM_OF_TEAMS},{TeamType.TEAM_OF_USERS}", format="json"
+        )
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 4)
+
 
 class PlanningTestCase(APITestCase):
     fixtures = ["user.yaml"]

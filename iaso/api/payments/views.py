@@ -259,12 +259,12 @@ class PaymentLotsViewSet(ModelViewSet):
                 .prefetch_related("change_requests__new_reference_instances__form")
                 .annotate(
                     annotated_count_org_unit_creation=Count(
-                        "change_requests__org_unit",
-                        filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_NEW),
+                        "change_requests__kind",
+                        filter=Q(change_requests__kind=OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION),
                     ),
                     annotated_count_org_unit_change=Count(
-                        "change_requests__org_unit",
-                        filter=Q(change_requests__org_unit__validation_status=OrgUnit.VALIDATION_VALID),
+                        "change_requests__kind",
+                        filter=Q(change_requests__kind=OrgUnitChangeRequest.Kind.ORG_UNIT_CHANGE),
                     ),
                 )
                 .order_by("-id")

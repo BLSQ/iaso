@@ -290,6 +290,14 @@ class InstancesViewSet(viewsets.ViewSet):
             )
         elif file_format == FileFormatEnum.CSV:
             filename = filename + ".csv"
+            queryset = queryset.prefetch_related( "created_by", "form_version__form")
+            queryset = queryset.prefetch_related(Prefetch("org_unit", queryset=OrgUnit.objects.only("name", "parent_id", "source_ref")))
+            queryset = queryset.prefetch_related(Prefetch("org_unit__parent", queryset=OrgUnit.objects.only("name", "parent_id", "source_ref")))
+            queryset = queryset.prefetch_related(Prefetch("org_unit__parent__parent", queryset=OrgUnit.objects.only("name", "parent_id", "source_ref")))
+            queryset = queryset.prefetch_related(Prefetch("org_unit__parent__parent__parent", queryset=OrgUnit.objects.only("name", "parent_id", "source_ref")))
+            queryset = queryset.prefetch_related(Prefetch("org_unit__parent__parent__parent__parent", queryset=OrgUnit.objects.only("name", "parent_id", "source_ref")))
+            queryset = queryset.prefetch_related(Prefetch("org_unit__parent__parent__parent__parent__parent", queryset=OrgUnit.objects.only("name", "parent_id", "source_ref")))
+
             response = StreamingHttpResponse(
                 streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
             )
@@ -320,9 +328,9 @@ class InstancesViewSet(viewsets.ViewSet):
 
         # 2. Prepare queryset (common part between searches and exports)
         queryset = self.get_queryset()
-        queryset = queryset.exclude(file="").exclude(device__test_device=True)
-        queryset = queryset.prefetch_related("org_unit__org_unit_type")
-        queryset = queryset.prefetch_related("org_unit__version__data_source")
+        queryset = queryset.exclude(file="")#.exclude(device__test_device=True)
+        #queryset = queryset.prefetch_related("org_unit__org_unit_type")
+        #queryset = queryset.prefetch_related("org_unit__version__data_source")
         queryset = queryset.prefetch_related("form")
         queryset = queryset.prefetch_related("created_by")
         queryset = queryset.for_filters(**filters)

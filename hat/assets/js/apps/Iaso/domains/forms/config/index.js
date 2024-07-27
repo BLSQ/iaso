@@ -1,20 +1,19 @@
-import React, { useMemo } from 'react';
-import { Grid } from '@mui/material';
+import React, { useMemo, useState } from 'react';
+import { Menu, MenuItem } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import { useDispatch } from 'react-redux';
+import { Download } from '@mui/icons-material';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import { baseUrls } from '../../../constants/urls.ts';
 import { userHasPermission, userHasOneOfPermissions } from '../../users/utils';
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
-import { YesNoCell } from '../../../components/Cells/YesNoCell';
 import { CreateSubmissionModal } from '../components/CreateSubmissionModal/CreateSubmissionModal.tsx';
 import { createInstance } from '../../instances/actions';
 import * as Permission from '../../../utils/permissions.ts';
-import { BreakWordCell } from '../../../components/Cells/BreakWordCell.tsx';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { useDeleteForm } from '../hooks/useDeleteForm.tsx';
 import { useRestoreForm } from '../hooks/useRestoreForm.tsx';
@@ -107,8 +106,14 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: deleteForm } = useDeleteForm();
     const { mutateAsync: restoreForm } = useRestoreForm();
+
     return useMemo(() => {
         const cols = [
+            {
+                Header: formatMessage(MESSAGES.projects),
+                accessor: 'projects',
+                Cell: settings => settings.value.map(p => p.name).join(', '),
+            },
             {
                 Header: formatMessage(MESSAGES.name),
                 accessor: 'name',
@@ -130,11 +135,6 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                 Cell: DateTimeCell,
             },
             {
-                Header: formatMessage(MESSAGES.singlePerPeriod),
-                accessor: 'single_per_period',
-                Cell: YesNoCell,
-            },
-            {
                 Header: formatMessage(MESSAGES.type),
                 sortable: false,
                 accessor: 'org_unit_types',
@@ -148,64 +148,20 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                 accessor: 'instances_count',
             },
             {
-                Header: formatMessage(MESSAGES.form_id),
-                accessor: 'form_id',
-                sortable: false,
-                Cell: BreakWordCell,
-            },
-            {
-                Header: formatMessage(MESSAGES.latest_version_files),
-                accessor: 'latest_version_files',
-                sortable: false,
-                Cell: settings =>
-                    settings.row.original.latest_form_version !== null && (
-                        <Grid container spacing={1} justifyContent="center">
-                            <Grid item>
-                                {
-                                    settings.row.original.latest_form_version
-                                        .version_id
-                                }
-                            </Grid>
-                            <Grid container spacing={1} justifyContent="center">
-                                {settings.row.original.latest_form_version
-                                    .xls_file && (
-                                    <Grid item>
-                                        <Link
-                                            download
-                                            reloadDocument
-                                            to={
-                                                settings.row.original
-                                                    .latest_form_version
-                                                    .xls_file
-                                            }
-                                        >
-                                            XLS
-                                        </Link>
-                                    </Grid>
-                                )}
-                                <Grid item>
-                                    <Link
-                                        download
-                                        reloadDocument
-                                        to={
-                                            settings.row.original
-                                                .latest_form_version.file
-                                        }
-                                    >
-                                        XML
-                                    </Link>
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    ),
-            },
-            {
                 Header: formatMessage(MESSAGES.actions),
                 resizable: false,
                 sortable: false,
                 width: getActionsColWidth(user),
                 accessor: 'actions',
                 Cell: settings => {
+                    const [anchorEl, setAnchorEl] = useState(null);
+                    const open = Boolean(anchorEl);
+                    const handleClick = event => {
+                        setAnchorEl(event.currentTarget);
+                    };
+                    const handleClose = () => {
+                        setAnchorEl(null);
+                    };
                     let urlToInstances = `/${baseUrls.instances}/formIds/${settings.row.original.id}`;
                     if (orgUnitId) {
                         urlToInstances = `${urlToInstances}/levels/${orgUnitId}`;
@@ -313,6 +269,56 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                                             </DisplayIfUserHasPerm>
                                         </>
                                     )}
+                                </>
+                            )}
+                            {settings.row.original.latest_form_version !==
+                                null && (
+                                <>
+                                    <IconButton
+                                        onClick={handleClick}
+                                        overrideIcon={Download}
+                                        tooltipMessage={MESSAGES.edit}
+                                    />
+
+                                    <Menu
+                                        id="basic-menu"
+                                        open={open}
+                                        onClose={handleClose}
+                                        anchorEl={anchorEl}
+                                        MenuListProps={{
+                                            'aria-labelledby': 'basic-button',
+                                        }}
+                                    >
+                                        {settings.row.original
+                                            .latest_form_version.xls_file && (
+                                            <MenuItem onClick={handleClose}>
+                                                <Link
+                                                    download
+                                                    reloadDocument
+                                                    to={
+                                                        settings.row.original
+                                                            .latest_form_version
+                                                            .xls_file
+                                                    }
+                                                >
+                                                    XLS
+                                                </Link>
+                                            </MenuItem>
+                                        )}
+                                        <MenuItem onClick={handleClose}>
+                                            <Link
+                                                download
+                                                reloadDocument
+                                                to={
+                                                    settings.row.original
+                                                        .latest_form_version
+                                                        .file
+                                                }
+                                            >
+                                                XML
+                                            </Link>
+                                        </MenuItem>
+                                    </Menu>
                                 </>
                             )}
                         </section>

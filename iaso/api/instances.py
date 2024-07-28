@@ -42,6 +42,7 @@ from . import common
 from .comment import UserSerializerForComment
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, TimestampField, safe_api_import
 from .instance_filters import get_form_from_instance_filters, parse_instance_filters
+from ..utils.models.common import get_creator_name
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -235,8 +236,12 @@ class InstancesViewSet(viewsets.ViewSet):
         filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
         def get_row(instance, **kwargs):
-            created_at = timestamp_to_datetime(instance.source_created_at.timestamp())
-            updated_at = timestamp_to_datetime(instance.source_updated_at.timestamp())
+            created_at = (
+                timestamp_to_datetime(instance.source_created_at.timestamp()) if instance.source_created_at else ""
+            )
+            updated_at = (
+                timestamp_to_datetime(instance.source_updated_at.timestamp()) if instance.source_updated_at else ""
+            )
             org_unit = instance.org_unit
             file_content = instance.get_and_save_json_of_xml()
 
@@ -251,7 +256,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 instance.period,
                 created_at,
                 updated_at,
-                instance.created_by,
+                get_creator_name(instance.created_by) if instance.created_by else None,
                 instance.status,
                 instance.org_unit.name,
                 instance.org_unit.id,

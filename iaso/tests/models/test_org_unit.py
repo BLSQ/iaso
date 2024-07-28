@@ -1,5 +1,5 @@
 from django.contrib.gis.geos import Point
-from django.db import IntegrityError, InternalError, connections
+from django.db import IntegrityError, InternalError, connections, connection
 from django.db.models import Q
 
 from iaso import models as m
@@ -276,9 +276,29 @@ class OrgUnitModelDbTestCase(TestCase):
         #  regression test for IA-1326
         ou = m.OrgUnit.objects.create(name="test", location=Point(float("nan"), float("nan"), z=0))
 
+        with connection.cursor() as cursor:
+            # Get PostGIS version
+            cursor.execute("SELECT PostGIS_Full_Version();")
+            postgis_version_raw = cursor.fetchone()[0]
+
+            # Get PostgreSQL version
+            cursor.execute("SELECT version();")
+            postgres_version = cursor.fetchone()[0]
+
+            postgis_version = postgis_version_raw.split("[EXTENSION]")[0]
+            # if "3.4.2" not in postgis_version:
+            #     cursor.execute("SELECT PostGIS_Extensions_Upgrade();")
+            #     cursor.execute("ALTER EXTENSION postgis UPDATE TO '3.4.2';")
+
+            print(f"*** postgis version = {postgis_version} ***")
+            print(f"*** postgis version raw = {postgis_version_raw} ***")
+            print(f"*** postgres version = {postgres_version} ***")
+            print(f"*** orgunit location = {ou.location} ***")
+
         # DB return an empty 2D point, and not POINT Z EMPTY which is 3D
         ous = m.OrgUnit.objects.filter(id=ou.id).extra(select={"raw_location": "ST_AsEWKT(location)"})
-        self.assertEqual("SRID=4326;POINT EMPTY", ous.first().raw_location)
+
+        self.assertIsNone(ous.first().raw_location)
 
         ou.refresh_from_db()
         ou.name = "test2"

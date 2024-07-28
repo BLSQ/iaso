@@ -235,51 +235,46 @@ class InstancesViewSet(viewsets.ViewSet):
         filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
         def get_row(instance, **kwargs):
-            idict = instance.as_dict_with_parents()
-            created_at = timestamp_to_datetime(idict.get("created_at"))
-            updated_at = timestamp_to_datetime(idict.get("updated_at"))
-            org_unit = idict.get("org_unit")
-            file_content = idict.get("file_content")
+            created_at = timestamp_to_datetime(instance.source_created_at.timestamp())
+            updated_at = timestamp_to_datetime(instance.source_updated_at.timestamp())
+            org_unit = instance.org_unit
+            file_content = instance.get_and_save_json_of_xml()
 
             instance_values = [
-                idict.get("id"),
+                instance.id,
                 file_content.get("_version") if file_content else None,
-                idict.get("export_id"),
-                idict.get("latitude"),
-                idict.get("longitude"),
-                idict.get("altitude"),
-                idict.get("accuracy"),
-                idict.get("period"),
+                instance.export_id,
+                instance.location.y if instance.location else None,
+                instance.location.x if instance.location else None,
+                instance.location.z if instance.location else None,
+                instance.accuracy,
+                instance.period,
                 created_at,
                 updated_at,
-                idict.get("created_by"),
-                idict.get("status"),
-                org_unit.get("name") if org_unit else None,
-                org_unit.get("id") if org_unit else None,
-                org_unit.get("source_ref") if org_unit else None,
+                instance.created_by,
+                instance.status,
+                instance.org_unit.name,
+                instance.org_unit.id,
+                instance.org_unit.source_ref,
             ]
 
-            parent = org_unit["parent"] if org_unit else None
+            parent = org_unit.parent
             for i in range(4):
                 if parent:
-                    instance_values.append(parent["name"])
-                    parent = parent["parent"]
+                    instance_values.append(parent.name)
+                    parent = parent.parent
                 else:
                     instance_values.append("")
             if instance.form.correlatable:
                 instance_values.append(instance.correlation_id)
 
             for k in file_content_template:
-                v = idict["file_content"].get(k, None)
+                v = file_content.get(k, None)
                 if type(v) is list:
                     instance_values.append(json.dumps(v))
                 else:
                     instance_values.append(v)
             return instance_values
-
-        queryset.prefetch_related("org_unit__parent__parent__parent__parent").prefetch_related(
-            "org_unit__parent__parent__parent"
-        ).prefetch_related("org_unit__parent__parent").prefetch_related("org_unit__parent").prefetch_related("org_unit")
 
         response: Union[HttpResponse, StreamingHttpResponse]
         if file_format == FileFormatEnum.XLSX:

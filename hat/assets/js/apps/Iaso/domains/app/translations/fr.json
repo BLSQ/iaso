@@ -229,6 +229,7 @@
     "iaso.form.attachments": "Pièces jointes",
     "iaso.form.cr_mode_if_reference_form": "Créer une demande de changement si le formulaire est un formulaire de référence",
     "iaso.form.cr_mode_none": "Aucune demande de changement",
+    "iaso.form.downloadXLSandXML": "Télécharger XLS/XML",
     "iaso.form.formDeleted": "Formulaire effacé",
     "iaso.form.formRestored": "Formulaire récupéré",
     "iaso.form.label.changeRequestMode": "Mode de demande de changement",

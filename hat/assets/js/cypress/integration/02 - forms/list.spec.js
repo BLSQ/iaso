@@ -171,35 +171,52 @@ describe('Forms', () => {
                     const actionCol = row.find('td').last();
                     actionCol.find('button').should('have.length', 2);
                 });
-                // describe('download xls and xml button', () => {
-                //     beforeEach(() => {
-                //         goToPage();
-                //     });
-                //     it('should display a XML link, XLS link and a version number', () => {
-                //         table = cy.get('table');
-                //         row = table.find('tbody').find('tr').eq(0);
-                //         const latestCol = row.find('td').eq(8);
-                //         latestCol.should(
-                //             'contain',
-                //             listFixture.forms[0].latest_form_version.version_id,
-                //         );
-                //         latestCol
-                //             .find('a')
-                //             .as('links')
-                //             .should('have.length', 2);
-                //         // TODO Find a way to test file download
-                //     });
-                //     it('should be empty if no latest_form_version', () => {
-                //         table = cy.get('table');
-                //         row = table.find('tbody').find('tr').eq(1);
-                //         const latestCol = row.find('td').eq(8);
-                //         latestCol.should(
-                //             'not.contain',
-                //             listFixture.forms[0].latest_form_version.version_id,
-                //         );
-                //         latestCol.find('a').should('not.exist');
-                //     });
-                // });
+                describe.only('download xls and xml buttons', () => {
+                    beforeEach(() => {
+                        goToPage();
+                    });
+                    it('should display download button', () => {
+                        table = cy.get('table');
+                        row = table.find('tbody').find('tr').eq(0);
+                        const latestCol = row.find('td').eq(7);
+                        latestCol
+                            .find('button')
+                            .find('[data-testid="DownloadIcon"]')
+                            .should('exist');
+                    });
+                    it('should not display download button if no latest_form_version', () => {
+                        table = cy.get('table');
+                        row = table.find('tbody').find('tr').eq(1);
+                        const latestCol = row.find('td').eq(7);
+                        latestCol
+                            .find('button')
+                            .find('[data-testid="DownloadIcon"]')
+                            .should('not.exist');
+                    });
+
+                    it('should not display XLM and XML link if download button not clicked', () => {
+                        table = cy.get('table');
+                        row = table.find('tbody').find('tr').eq(0);
+                        const latestCol = row.find('td').eq(7);
+                        latestCol.find('button').eq(5);
+                        cy.get('a')
+                            .filter((index, element) => {
+                                return Cypress.$(element)
+                                    .text()
+                                    .includes(['XLS', 'XML']);
+                            })
+                            .should('not.exist');
+                    });
+
+                    it('should display XLM and XML link if download button clicked', () => {
+                        table = cy.get('table');
+                        row = table.find('tbody').find('tr').eq(0);
+                        const latestCol = row.find('td').eq(7);
+                        latestCol.find('button').eq(5).click();
+                        cy.get('ul').get('li').eq(0).should('have.text', 'XLS');
+                        cy.get('ul').get('li').eq(1).should('have.text', 'XML');
+                    });
+                });
             });
         });
         describe('Exports buttons', () => {

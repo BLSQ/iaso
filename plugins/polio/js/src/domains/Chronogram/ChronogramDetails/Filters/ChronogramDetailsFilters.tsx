@@ -8,12 +8,15 @@ import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/co
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 
 import MESSAGES from '../messages';
+import { Chronogram } from '../../Chronogram/types';
 import { ChronogramTaskMetaData } from '../../types';
 import { ChronogramTasksParams } from '../types';
+import { CreateChronogramTaskModal } from '../Modals/ChronogramTaskCreateEditModal';
 import { baseUrls } from '../../../../constants/urls';
 
 type Props = {
     params: ChronogramTasksParams;
+    chronogram: Chronogram;
     chronogramTaskMetaData: ChronogramTaskMetaData;
 };
 
@@ -21,6 +24,7 @@ const baseUrl = baseUrls.chronogramDetails;
 
 export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
     params,
+    chronogram,
     chronogramTaskMetaData,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -61,6 +65,17 @@ export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
                         onFilter={handleSearch}
                     />
                 </Box>
+            </Grid>
+            <Grid container item justifyContent="flex-end" mt={4}>
+                <CreateChronogramTaskModal
+                    iconProps={{
+                        message: MESSAGES.modalAddTitle,
+                    }}
+                    chronogram={chronogram as Chronogram}
+                    chronogramTaskMetaData={
+                        chronogramTaskMetaData as ChronogramTaskMetaData
+                    }
+                />
             </Grid>
         </>
     );

@@ -113,9 +113,7 @@ const goToPage = (
     cy.intercept('GET', '/api/forms/**', {
         fixture: 'forms/list.json',
     });
-    cy.intercept('GET', '/api/userroles/?order=group__name', userRoles).as(
-        'userRoles',
-    );
+    cy.intercept('GET', '/api/userroles/**', userRoles).as('userRoles');
 
     const options = {
         method: 'GET',

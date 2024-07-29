@@ -11,6 +11,7 @@ import { useStyles } from '../../../styles/theme';
 
 import MESSAGES from './messages';
 import { Chronogram } from '../Chronogram/types';
+import { ChronogramDetailsFilters } from './Filters/ChronogramDetailsFilters';
 import { ChronogramDetailsTable } from './Table/ChronogramDetailsTable';
 import { ChronogramTaskMetaData } from '../types';
 import { ChronogramTasksParams } from './types';
@@ -61,6 +62,12 @@ export const ChronogramDetails: FunctionComponent = () => {
                             />
                         </Box>
                     </Grid>
+                    <ChronogramDetailsFilters
+                        params={paramsNew}
+                        chronogramTaskMetaData={
+                            chronogramTaskMetaData as ChronogramTaskMetaData
+                        }
+                    />
                     <ChronogramDetailsTable
                         params={paramsNew}
                         chronogramTaskMetaData={

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
-from submissions import submission2xml, org_unit_gps_point
+from submissions import submission2xml, org_unit_gps_point, picture_by_org_unit_type_name
 import random
 
 
@@ -155,7 +155,8 @@ def setup_instances(account_name, iaso_client):
             }
 
             # see hat/sync/views.py
-            image = random.choice(["CS_communautaire.png", "burkina_cs.jpg", "CSPS.jpeg"])
+            image = picture_by_org_unit_type_name(orgunit["org_unit_type_name"])
+
             with open(f"./data/{image}", "rb") as fp_image:
                 iaso_client.post(
                     "/sync/form_upload/",

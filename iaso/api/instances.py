@@ -659,8 +659,6 @@ def import_data(instances, user, app_id):
         updated_at_ts = instance_data.get("updated_at", None)
         if updated_at_ts:
             instance.source_updated_at = timestamp_to_utc_datetime(int(updated_at_ts))
-        else:
-            instance.source_created_at
 
         latitude = instance_data.get("latitude", None)
         longitude = instance_data.get("longitude", None)

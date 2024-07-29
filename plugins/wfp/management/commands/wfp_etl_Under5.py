@@ -78,10 +78,9 @@ class Under5:
 
                     if form_id == "Anthropometric visit child":
                         initial_weight = current_weight
-
                         instances[i]["initial_weight"] = initial_weight
-                        visit_date = visit.get("visit_date", current_date)
-                        initial_date = visit.get("_visit_date", visit_date)
+                        visit_date = visit.get("_visit_date", visit.get("visit_date", current_date))
+                        initial_date = visit_date
 
                     if initial_date is not None:
                         duration = (current_date - initial_date).days
@@ -95,13 +94,13 @@ class Under5:
                     current_record["weight_difference"] = weight["weight_difference"]
                     current_record["duration"] = duration
 
-                    if visit.get("created_at"):
-                        current_record["date"] = visit.get("created_at").strftime("%Y-%m-%d")
+                    visit_date = visit.get("_visit_date", visit.get("visit_date", current_date))
+                    if visit_date:
+                        current_record["date"] = visit_date.strftime("%Y-%m-%d")
 
                     current_record["instance_id"] = visit["id"]
                     current_record["form_id"] = form_id
                     instances[i]["visits"].append(current_record)
-
             i = i + 1
         return list(
             filter(

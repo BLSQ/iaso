@@ -280,12 +280,14 @@ class BasicAPITestCase(APITestCase):
 
         form = Form(name="CDS FORM")
         form.save()
+        mobile_created_at = 1565258153
+        mobile_updated_at = 1565258153
         instance_body = [
             {
                 "id": uuid,
                 "latitude": 4.4,
-                "created_at": 1565258153704,
-                "updated_at": 1565258153704,
+                "created_at": mobile_created_at,
+                "updated_at": mobile_updated_at,
                 "orgUnitId": velpo_model.id,
                 "formId": form.id,
                 "longitude": 4.4,
@@ -307,6 +309,10 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(instance.location.x, 4.4)
         self.assertEqual(instance.location.y, 4.4)
         self.assertEqual(instance.location.z, 100)
+        self.assertEqual(instance.source_created_at.timestamp(), mobile_created_at)
+        self.assertEqual(instance.source_updated_at.timestamp(), mobile_updated_at)
+        self.assertGreater(instance.created_at, instance.source_created_at)
+        self.assertGreater(instance.updated_at, instance.source_updated_at)
 
         self.assertAPIImport("instance", request_body=instance_body, has_problems=False)
 

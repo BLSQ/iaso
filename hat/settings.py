@@ -31,6 +31,8 @@ from sentry_sdk.integrations.logging import ignore_logger
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
+MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "false").lower() == "true"
+
 # security settings
 CSRF_COOKIE_HTTPONLY = os.environ.get("CSRF_COOKIE_HTTPONLY", "false").lower() == "true"
 CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "false").lower() == "true"

@@ -236,11 +236,15 @@ class InstancesViewSet(viewsets.ViewSet):
         filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
         def get_row(instance, **kwargs):
-            created_at = (
-                timestamp_to_datetime(instance.source_created_at.timestamp()) if instance.source_created_at else ""
+            created_at_timestamp = (
+                instance.source_created_at.timestamp()
+                if instance.source_created_at
+                else instance.created_at.timestamp()
             )
-            updated_at = (
-                timestamp_to_datetime(instance.source_updated_at.timestamp()) if instance.source_updated_at else ""
+            updated_at_timestamp = (
+                instance.source_updated_at.timestamp()
+                if instance.source_updated_at
+                else instance.updated_at.timestamp()
             )
             org_unit = instance.org_unit
             file_content = instance.get_and_save_json_of_xml()
@@ -254,8 +258,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 instance.location.z if instance.location else None,
                 instance.accuracy,
                 instance.period,
-                created_at,
-                updated_at,
+                timestamp_to_datetime(created_at_timestamp),
+                timestamp_to_datetime(updated_at_timestamp),
                 get_creator_name(instance.created_by) if instance.created_by else None,
                 instance.status,
                 instance.org_unit.name,

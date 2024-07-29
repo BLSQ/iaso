@@ -1,6 +1,7 @@
 import csv
 import datetime
 import io
+import json
 import math
 from time import gmtime, strftime
 from typing import Any, List, Union
@@ -29,6 +30,7 @@ from iaso.api.common import (
 )
 from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
+from iaso.utils.jsonlogic import jsonlogic_to_q
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -228,6 +230,14 @@ class EntityViewSet(ModelViewSet):
 
     def list(self, request: Request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
+
+        json_content = request.GET.get("jsonContent", None)
+        # json_content = '{"and": [{"==": [{"var": "trypelim_CATT.result"}, "positive"]}]}'
+        if json_content:
+            q = jsonlogic_to_q(json.loads(json_content), field_prefix="json__")
+            queryset = queryset.filter(q)
+            print(queryset.query)
+
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         is_export = any([csv_format, xlsx_format])

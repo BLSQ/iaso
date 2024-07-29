@@ -4,7 +4,7 @@ import operator
 from functools import reduce
 from typing import Dict, Any
 
-from django.db.models import Q, Transform
+from django.db.models import Exists, Q, Transform, OuterRef
 from django.db.models.fields.json import KeyTransformTextLookupMixin, JSONField
 
 
@@ -99,8 +99,21 @@ def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
         extract = "__forcefloat"
 
     lookup = lookups[op]
+
+    form_id = None
+    field_name_arr = field_name.split(".")
+    if len(field_name_arr) == 2:
+        form_id, field_name = field_name_arr
+
     f = f"{field_prefix}{field_name}{extract}__{lookup}"
     q = Q(**{f: value})
+
+    if form_id:
+        from iaso.models import Instance
+
+        subquery = Instance.objects.filter(Q(entity_id=OuterRef("id")) & Q(form__form_id=form_id) & q)
+        q = Exists(subquery)
+
     if op == "!=":
         # invert the filter
         q = ~q

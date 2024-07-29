@@ -989,7 +989,7 @@ class InstancesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
-            f"/api/instances/?form_ids={sourceless_instance.form.id}&order_by=id&csv=true",
+            f"/api/instances/?form_ids={sourceless_instance.form.id}&order=id&csv=true",
             headers={"Content-Type": "text/csv"},
         )
         self.assertEqual(response.status_code, 200)

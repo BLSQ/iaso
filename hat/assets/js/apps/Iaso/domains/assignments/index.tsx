@@ -176,7 +176,6 @@ export const Assignments: FunctionComponent = () => {
                                 ...params,
                                 baseOrgunitType: newBaseOrgUnitType,
                             };
-                            console.log('redirecting', newParams);
                             redirectTo(
                                 baseUrl,
                                 newParams as Record<string, any>,

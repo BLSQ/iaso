@@ -21,7 +21,7 @@ module.exports = {
         children: true,
     },
     output: {
-        path: path.resolve(__dirname, './assets/webpack'),
+        path: path.resolve(__dirname, './assets/webpack/'),
         filename: '[name]-[chunkhash].js',
         publicPath: '/static/',
         assetModuleFilename: 'assets/[name].[hash][ext][query]',

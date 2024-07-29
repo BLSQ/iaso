@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class PBWG:
     def run(self):
-        beneficiaries = ETL("Test PBWG").retrieve_entities()
+        beneficiaries = ETL("PBWG").retrieve_entities()
         logger.info(f"Instances linked to PBWG program: {beneficiaries.count()}")
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()

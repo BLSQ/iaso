@@ -46,7 +46,7 @@ const baseUrl = baseUrls.assignments;
 export const Assignments: FunctionComponent = () => {
     const params: AssignmentParams = useParamsObject(
         baseUrls.assignments,
-    ) as AssignmentParams;
+    ) as unknown as AssignmentParams;
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
     const redirectToReplace = useRedirectToReplace();
@@ -59,6 +59,7 @@ export const Assignments: FunctionComponent = () => {
     const [selectedItem, setSelectedItem] = useState<
         SubTeam | User | undefined
     >();
+    console.log('params', params);
 
     const handleChangeTab = (newTab: string) => {
         setTab(newTab);
@@ -167,21 +168,26 @@ export const Assignments: FunctionComponent = () => {
                             ),
                         );
                     }
-                    const newBaseOrgUnitType =
-                        firstAssignment?.org_unit_details?.org_unit_type;
-                    if (newBaseOrgUnitType) {
-                        const newParams = {
-                            ...params,
-                            baseOrgunitType: newBaseOrgUnitType,
-                        };
-
-                        redirectTo(baseUrl, newParams as Record<string, any>);
+                    if (!params?.baseOrgunitType) {
+                        const newBaseOrgUnitType =
+                            firstAssignment?.org_unit_details?.org_unit_type;
+                        if (newBaseOrgUnitType) {
+                            const newParams = {
+                                ...params,
+                                baseOrgunitType: newBaseOrgUnitType,
+                            };
+                            console.log('redirecting', newParams);
+                            redirectTo(
+                                baseUrl,
+                                newParams as Record<string, any>,
+                            );
+                        }
                     }
                 }
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentTeamId, teams, redirectTo]);
+    }, [currentTeamId, teams, redirectTo, params?.baseOrgunitType]);
 
     useEffect(() => {
         if (params.order) {
@@ -258,121 +264,113 @@ export const Assignments: FunctionComponent = () => {
                     isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
                 />
                 <Box mt={2}>
-                    <>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} lg={5}>
-                                <Sidebar
-                                    data={sidebarData || []}
-                                    assignments={assignments}
-                                    selectedItem={selectedItem}
-                                    orgUnits={orgUnitsList || []}
-                                    setSelectedItem={setSelectedItem}
-                                    currentTeam={currentTeam}
-                                    setItemColor={setItemColor}
-                                    teams={teams || []}
-                                    profiles={profiles}
-                                    isLoadingAssignments={
-                                        isLoadingAssignments ||
-                                        isFetchingOrgUnitsList
-                                    }
-                                />
-                            </Grid>
-                            <Grid item xs={12} lg={7}>
-                                <Paper>
-                                    <Box ml={-4}>
-                                        <Tabs
-                                            textColor="inherit"
-                                            indicatorColor="secondary"
-                                            value={tab}
-                                            classes={{
-                                                root: classes.tabs,
-                                                indicator: classes.indicator,
-                                            }}
-                                            onChange={(_, newtab) =>
-                                                handleChangeTab(newtab)
-                                            }
-                                        >
-                                            <Tab
-                                                value="map"
-                                                label={formatMessage(
-                                                    MESSAGES.map,
-                                                )}
-                                            />
-                                            <Tab
-                                                value="list"
-                                                label={formatMessage(
-                                                    MESSAGES.list,
-                                                )}
-                                            />
-                                        </Tabs>
-                                    </Box>
-                                    <Box position="relative" width="100%">
-                                        <Box
-                                            width="100%"
-                                            className={
-                                                tab === 'map'
-                                                    ? ''
-                                                    : classes.hiddenOpacity
-                                            }
-                                        >
-                                            {!isLoadingAssignments && (
-                                                <AssignmentsMapTab
-                                                    orgunitTypes={
-                                                        orgunitTypes || []
-                                                    }
-                                                    isFetchingOrgUnitTypes={
-                                                        isFetchingOrgunitTypes
-                                                    }
-                                                    planning={planning}
-                                                    currentTeam={currentTeam}
-                                                    teams={teams || []}
-                                                    profiles={profiles}
-                                                    params={params}
-                                                    allAssignments={
-                                                        allAssignments
-                                                    }
-                                                    setParentSelected={
-                                                        setParentSelected
-                                                    }
-                                                    locations={orgUnits}
-                                                    isFetchingLocations={
-                                                        isFetchingOrgUnits
-                                                    }
-                                                    handleSaveAssignment={
-                                                        handleSaveAssignment
-                                                    }
-                                                    isLoadingAssignments={
-                                                        isLoadingAssignments
-                                                    }
-                                                />
-                                            )}
-                                        </Box>
-                                        {tab === 'list' && (
-                                            <AssignmentsListTab
-                                                assignments={allAssignments}
-                                                params={params}
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} lg={5}>
+                            <Sidebar
+                                data={sidebarData || []}
+                                assignments={assignments}
+                                selectedItem={selectedItem}
+                                orgUnits={orgUnitsList || []}
+                                setSelectedItem={setSelectedItem}
+                                currentTeam={currentTeam}
+                                setItemColor={setItemColor}
+                                teams={teams || []}
+                                profiles={profiles}
+                                isLoadingAssignments={
+                                    isLoadingAssignments ||
+                                    isFetchingOrgUnitsList
+                                }
+                            />
+                        </Grid>
+                        <Grid item xs={12} lg={7}>
+                            <Paper>
+                                <Box ml={-4}>
+                                    <Tabs
+                                        textColor="inherit"
+                                        indicatorColor="secondary"
+                                        value={tab}
+                                        classes={{
+                                            root: classes.tabs,
+                                            indicator: classes.indicator,
+                                        }}
+                                        onChange={(_, newtab) =>
+                                            handleChangeTab(newtab)
+                                        }
+                                    >
+                                        <Tab
+                                            value="map"
+                                            label={formatMessage(MESSAGES.map)}
+                                        />
+                                        <Tab
+                                            value="list"
+                                            label={formatMessage(MESSAGES.list)}
+                                        />
+                                    </Tabs>
+                                </Box>
+                                <Box position="relative" width="100%">
+                                    <Box
+                                        width="100%"
+                                        className={
+                                            tab === 'map'
+                                                ? ''
+                                                : classes.hiddenOpacity
+                                        }
+                                    >
+                                        {!isLoadingAssignments && (
+                                            <AssignmentsMapTab
+                                                orgunitTypes={
+                                                    orgunitTypes || []
+                                                }
+                                                isFetchingOrgUnitTypes={
+                                                    isFetchingOrgunitTypes
+                                                }
+                                                planning={planning}
+                                                currentTeam={currentTeam}
                                                 teams={teams || []}
                                                 profiles={profiles}
-                                                currentTeam={currentTeam}
-                                                orgUnits={orgUnitsList}
+                                                params={params}
+                                                allAssignments={allAssignments}
+                                                setParentSelected={
+                                                    setParentSelected
+                                                }
+                                                locations={orgUnits}
+                                                isFetchingLocations={
+                                                    isFetchingOrgUnits
+                                                }
                                                 handleSaveAssignment={
                                                     handleSaveAssignment
                                                 }
-                                                isFetchingOrgUnits={
-                                                    isLoadingAssignments ||
-                                                    isFetchingOrgUnitsList
-                                                }
-                                                selectedItem={selectedItem}
-                                                setParentSelected={
-                                                    setParentSelected
+                                                isLoadingAssignments={
+                                                    isLoadingAssignments
                                                 }
                                             />
                                         )}
                                     </Box>
-                                </Paper>
-                            </Grid>
+                                    {tab === 'list' && (
+                                        <AssignmentsListTab
+                                            assignments={allAssignments}
+                                            params={params}
+                                            teams={teams || []}
+                                            profiles={profiles}
+                                            currentTeam={currentTeam}
+                                            orgUnits={orgUnitsList}
+                                            handleSaveAssignment={
+                                                handleSaveAssignment
+                                            }
+                                            isFetchingOrgUnits={
+                                                isLoadingAssignments ||
+                                                isFetchingOrgUnitsList
+                                            }
+                                            selectedItem={selectedItem}
+                                            setParentSelected={
+                                                setParentSelected
+                                            }
+                                        />
+                                    )}
+                                </Box>
+                            </Paper>
                         </Grid>
-                    </>
+                    </Grid>
                 </Box>
             </Box>
         </>

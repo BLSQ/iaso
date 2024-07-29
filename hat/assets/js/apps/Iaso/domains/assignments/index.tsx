@@ -59,7 +59,6 @@ export const Assignments: FunctionComponent = () => {
     const [selectedItem, setSelectedItem] = useState<
         SubTeam | User | undefined
     >();
-    console.log('params', params);
 
     const handleChangeTab = (newTab: string) => {
         setTab(newTab);

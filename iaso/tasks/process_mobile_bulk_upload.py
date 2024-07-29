@@ -78,7 +78,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 dirs = get_directory_handlers(zip_ref)
 
                 for instance_data in instances_data:
-                    uuid = instance_data.get("id", None)
+                    uuid = instance_data["id"]
                     instance = process_instance_xml(uuid, instance_data, zip_ref, user)
                     stats["new_instances"] += 1
                     new_instance_files += process_instance_attachments(dirs[uuid], instance)

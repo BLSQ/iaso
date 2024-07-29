@@ -168,6 +168,7 @@ export const Assignments: FunctionComponent = () => {
                             ),
                         );
                     }
+                    // Only write OU type if none exists otherwise the effect wil always overwrite the type selecetd in the filter
                     if (!params?.baseOrgunitType) {
                         const newBaseOrgUnitType =
                             firstAssignment?.org_unit_details?.org_unit_type;

@@ -721,6 +721,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         sent_date_to=None,
         json_content=None,
         planning_ids=None,
+        project_ids=None,
         only_reference=None,
     ):
         queryset = self
@@ -796,6 +797,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
 
         if planning_ids:
             queryset = queryset.filter(planning_id__in=planning_ids.split(","))
+
+        if project_ids:
+            queryset = queryset.filter(project_id__in=project_ids.split(","))
 
         if search:
             if search.startswith("ids:"):
@@ -1133,6 +1137,7 @@ class Instance(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
+            "project_name": self.project.name if self.project else None,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
             "created_by": (

@@ -355,7 +355,13 @@ LANGUAGES = (
     ("en", _("English")),
 )
 
-LOCALE_PATHS = ["/var/app/current/hat/locale/", "/opt/app/hat/locale/", "hat/locale/"]
+LOCALE_PATHS = [
+    "/var/app/current/hat/locale/",
+    "/opt/app/hat/locale/",
+    "hat/locale/",
+    "/opt/app/iaso/locale/",
+    "iaso/locale/",
+]
 
 TIME_ZONE = "UTC"
 

@@ -560,7 +560,7 @@ class PaymentsViewSet(ModelViewSet):
 
     When updating, the status of the linked `PaymentLot` is recalculated and updated if necessary.
 
-    Changes are logged in a `Modification`. If the `PaymentLot` status changed as well, it is logged ina separate `Modification`
+    Changes are logged in a `Modification`. If the `PaymentLot` status changed as well, it is logged in a separate `Modification`
 
 
     ## Permissions
@@ -570,13 +570,17 @@ class PaymentsViewSet(ModelViewSet):
 
     """
 
-    http_method_names = ["patch", "get"]
+    http_method_names = ["patch", "get", "options", "post"]
     results_key = "results"
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
 
     def get_queryset(self) -> models.QuerySet:
         return Payment.objects.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+
+    # Prevent direct POSTing. POST method needs to be authorized to get choices in OPTIONS request
+    def create(self, request):
+        pass
 
     def update(self, request, *args, **kwargs):
         with transaction.atomic():

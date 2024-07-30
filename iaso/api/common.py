@@ -3,7 +3,7 @@ import logging
 from datetime import date, datetime
 from functools import wraps
 from traceback import format_exc
-
+from rest_framework.exceptions import ValidationError
 import pytz
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -453,3 +453,14 @@ class Custom403Exception(APIException):
 
     status_code = 403
     default_detail = "Forbidden"
+
+
+def parse_comma_separated_numeric_values(value: str, field_name: str) -> list:
+    """
+    Parses a comma-separated string of numeric values and returns a list of integers.
+    Raises a ValidationError if the input is not valid.
+    """
+    ids = [val for val in value.split(",") if val.isnumeric()]
+    if not ids:
+        raise ValidationError({field_name: ["Invalid value."]})
+    return [int(val) for val in ids]

@@ -1,14 +1,12 @@
 import django_filters
 from django.conf import settings
-from django.contrib.gis.db.models import PointField
-from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q
-from django.db.models.functions import Cast
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
 
 from iaso.models import OrgUnit, OrgUnitChangeRequest
+from iaso.models.payments import PaymentStatuses
 
 
 class MobileOrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
@@ -32,6 +30,7 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     user_roles = django_filters.CharFilter(method="filter_user_roles", label=_("User roles IDs (comma-separated)"))
     with_location = django_filters.CharFilter(method="filter_with_location", label=_("With or without location"))
     status = django_filters.CharFilter(method="filter_status", label=_("Status (comma-separated)"))
+    payment_status = django_filters.CharFilter(method="filter_payment_status", label=_("Payment status"))
 
     @staticmethod
     def parse_comma_separated_numeric_values(value: str, field_name: str) -> list:
@@ -109,3 +108,18 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
             queryset = queryset.exclude(has_location)
 
         return queryset
+
+    def filter_payment_status(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
+        """
+        `value` is one of `PaymentStatuses`
+        """
+
+        if value not in PaymentStatuses.values:
+            raise ValidationError(
+                f"Expected payment status to be one of {','.join(PaymentStatuses.values)}, got {value}"
+            )
+        if value == PaymentStatuses.PENDING:
+            pending_filter = Q(payment__isnull=True) | Q(payment__status=PaymentStatuses.PENDING)
+            return queryset.filter(pending_filter)
+        else:
+            return queryset.filter(payment__status=value)

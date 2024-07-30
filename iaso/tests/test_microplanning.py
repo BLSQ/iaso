@@ -260,9 +260,9 @@ class TeamAPITestCase(APITestCase):
         cls.account = account = Account.objects.get(name="test")
         cls.user = user = User.objects.get(username="test")
         cls.project1 = project1 = account.project_set.create(name="project1")
-        project2 = account.project_set.create(name="project2")
+        cls.project2 = project2 = account.project_set.create(name="project2")
         cls.team1 = Team.objects.create(project=project1, name="team1", manager=user)
-        Team.objects.create(project=project2, name="team2", manager=user)
+        cls.team2 = Team.objects.create(project=project2, name="team2", manager=user)
         other_account = Account.objects.create(name="other account")
         cls.create_user_with_profile(username="user", account=other_account)
         account.project_set.create(name="other_project")
@@ -527,6 +527,39 @@ class TeamAPITestCase(APITestCase):
         )
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 4)
+
+    def test_list_filter_by_project(self):
+        ash_ketchum = self.create_user_with_profile(
+            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+        )
+        team_electric_pokemons = Team.objects.create(
+            project=self.project1, name="team_electric_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
+        )
+
+        self.client.force_authenticate(self.user)
+        # Fetch the list of teams without any project filter
+        response = self.client.get(f"/api/microplanning/teams/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 3)  # 2 from happy path (set up) + 1 new one
+
+        # Fetch the list of teams with a single project
+        response = self.client.get(f"/api/microplanning/teams/?order=id&projects={self.project1.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(r[0]["name"], self.team1.name)
+        self.assertEqual(r[1]["name"], team_electric_pokemons.name)
+
+        response = self.client.get(f"/api/microplanning/teams/?order=id&projects={self.project2.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]["name"], self.team2.name)
+
+        # Fetch the list of teams with a filter on multiple projects
+        response = self.client.get(
+            f"/api/microplanning/teams/?projects={self.project2.id},{self.project1.id}", format="json"
+        )
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 3)
 
 
 class PlanningTestCase(APITestCase):

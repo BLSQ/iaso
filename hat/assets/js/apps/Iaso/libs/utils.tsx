@@ -7,7 +7,8 @@
 
 import React, { ReactElement } from 'react';
 import { textPlaceholder } from 'bluesquare-components';
-import { Nullable, Optional } from '../types/utils';
+import { DropdownOptions, Nullable, Optional } from '../types/utils';
+import { OptionsResponse } from '../types/general';
 
 // url should include closing slash
 export const makeUrlWithParams = (
@@ -75,3 +76,29 @@ export const BooleanValue = (value: Array<unknown> | unknown): boolean => {
 export const PlaceholderValue: ReactElement | Optional<Nullable<string>> = (
     <span>{textPlaceholder}</span>
 );
+
+export const mapOptions = (
+    data: OptionsResponse,
+    fields?: string[],
+): Record<string, DropdownOptions<string>[]> => {
+    const result = {};
+    if (!data) return result;
+
+    Object.entries(data.actions.POST)
+        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+        .filter(([_key, dict]) => dict.type === 'choice')
+        .map(([key, dict]) => [
+            key,
+            dict.choices
+                .map(choice => [
+                    { label: choice.display_name, value: choice.value },
+                ])
+                .flat(),
+        ])
+        .forEach(([key, dict]) => {
+            if (!fields || fields?.includes(key as string)) {
+                result[key as string] = dict;
+            }
+        });
+    return result;
+};

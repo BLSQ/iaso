@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { Chip, Box, Tooltip } from '@mui/material';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';

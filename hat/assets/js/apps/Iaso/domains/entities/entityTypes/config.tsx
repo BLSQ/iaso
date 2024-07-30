@@ -63,6 +63,7 @@ export const useColumns = ({
                 accessor: 'actions',
                 resizable: false,
                 sortable: false,
+                width: 200,
                 Cell: (settings): ReactElement => {
                     const type = settings.row.original as EntityType;
                     return (

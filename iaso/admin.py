@@ -695,7 +695,7 @@ class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
 class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
     list_display = ("pk", "org_unit", "created_at", "status")
     list_display_links = ("pk", "org_unit")
-    list_filter = ("status", "created_by")
+    list_filter = ("status", "kind")
     readonly_fields = (
         "uuid",
         "created_at",
@@ -762,6 +762,7 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
             "Metadata",
             {
                 "fields": (
+                    "kind",
                     "created_at",
                     "created_by",
                     "updated_at",
@@ -788,7 +789,7 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("org_unit")
+        return super().get_queryset(request).select_related("org_unit__org_unit_type")
 
 
 @admin.register(Config)

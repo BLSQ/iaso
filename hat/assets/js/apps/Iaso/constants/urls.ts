@@ -374,7 +374,14 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     teams: {
         url: 'settings/teams',
-        params: ['accountId', 'search', ...paginationPathParams],
+        params: [
+            'accountId',
+            'search',
+            'managers',
+            'types',
+            'projects',
+            ...paginationPathParams,
+        ],
     },
     storages: {
         url: 'storages',

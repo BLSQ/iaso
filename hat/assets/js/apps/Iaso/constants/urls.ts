@@ -102,6 +102,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'modificationDateTo',
             'sentDateFrom',
             'sentDateTo',
+            'projectIds',
         ],
     },
     instanceDetail: {

@@ -1,4 +1,6 @@
 /* eslint-disable camelcase */
+import moment from 'moment';
+
 import { PostArg } from '../types/general';
 import { Nullable, Optional } from '../types/utils';
 import { FETCHING_ABORTED } from './constants';
@@ -88,7 +90,10 @@ export const getRequest = async (
     url: string,
     signal?: Nullable<AbortSignal>,
 ): Promise<any> => {
-    return iasoFetch(url, { signal }).then(response => {
+    return iasoFetch(url, {
+        headers: { 'Accept-Language': moment.locale() },
+        signal,
+    }).then(response => {
         return response.json();
     });
 };
@@ -128,7 +133,10 @@ export const basePostRequest = (
         init = {
             method: 'POST',
             body: JSON.stringify(data),
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept-Language': moment.locale(),
+            },
             signal,
         };
     }
@@ -161,7 +169,10 @@ export const patchRequest = (
     iasoFetch(url, {
         method: 'PATCH',
         body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept-Language': moment.locale(),
+        },
         signal,
     }).then(response => response.json());
 
@@ -174,6 +185,7 @@ export const deleteRequest = (
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            'Accept-Language': moment.locale(),
         },
         signal,
     }).then(() => true);
@@ -187,7 +199,10 @@ export const restoreRequest = (
         body: JSON.stringify({
             deleted_at: null,
         }),
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept-Language': moment.locale(),
+        },
         signal,
     }).then(() => true);
 
@@ -199,7 +214,10 @@ export const putRequest = (
     iasoFetch(url, {
         method: 'PUT',
         body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept-Language': moment.locale(),
+        },
         signal,
     }).then(response => response.json());
 
@@ -212,6 +230,7 @@ export const optionsRequest = async (
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            'Accept-Language': moment.locale(),
         },
         signal,
     }).then(response => {

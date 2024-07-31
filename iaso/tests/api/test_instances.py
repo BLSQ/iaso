@@ -1024,6 +1024,15 @@ class InstancesAPITestCase(APITestCase):
         # Make sure the export is using the default created/updated_at if there is no source
         self.assertEqual(row_to_test, expected_row)
 
+    def test_submissions_list_in_csv_format_error_no_form(self):
+        # Make sure IA-3275 is fixed by sending a 400 instead of letting the backend crash
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/instances/?limit=20&order=org_unit__name&page=1&showDeleted=false&org_unit_status=VALID&csv=true",
+            headers={"Content-Type": "text/csv"},
+        )
+        self.assertJSONResponse(response, 400)
+
     def test_user_restriction(self):
         full = self.create_user_with_profile(username="full", account=self.star_wars, permissions=["iaso_submissions"])
         self.client.force_authenticate(full)

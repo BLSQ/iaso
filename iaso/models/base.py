@@ -1177,29 +1177,6 @@ class Instance(models.Model):
         dict["form_descriptor"] = form_version.get_or_save_form_descriptor() if form_version is not None else None
         return dict
 
-    def as_dict_with_parents(self):
-        file_content = self.get_and_save_json_of_xml()
-        return {
-            "uuid": self.uuid,
-            "export_id": self.export_id,
-            "file_name": self.file_name,
-            "file_content": file_content,
-            "file_url": self.file.url if self.file else None,
-            "id": self.id,
-            "form_id": self.form_id,
-            "created_at": self.source_created_at_with_fallback.timestamp(),
-            "updated_at": self.source_updated_at_with_fallback.timestamp(),
-            "created_by": get_creator_name(self.created_by) if self.created_by else None,
-            "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
-            "latitude": self.location.y if self.location else None,
-            "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
-            "accuracy": self.accuracy,
-            "period": self.period,
-            "status": getattr(self, "status", None),
-            "correlation_id": self.correlation_id,
-        }
-
     def as_full_model(self, with_entity=False):
         file_content = self.get_and_save_json_of_xml()
         form_version = self.get_form_version()

@@ -93,6 +93,13 @@ export const INSTANCE_METAS_FIELDS = [
         },
     },
     {
+        key: 'source_created_at',
+        active: false,
+        render: value => displayDateFromTimestamp(value),
+        tableOrder: 7,
+        type: 'info',
+    },
+    {
         key: 'updated_at',
         render: value => displayDateFromTimestamp(value),
         active: true,

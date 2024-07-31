@@ -1,3 +1,4 @@
+from iaso.models.payments import PaymentStatuses
 from iaso.test import APITestCase
 from iaso import models as m
 from hat.audit import models as am
@@ -31,7 +32,7 @@ class PaymentViewSetAPITestCase(APITestCase):
         cls.payment = m.Payment.objects.create(
             created_by=cls.user,
             payment_lot=cls.payment_lot,
-            status=m.Payment.Statuses.PENDING,
+            status=PaymentStatuses.PENDING,
             user=cls.payment_beneficiary,
         )
         cls.change_request = m.OrgUnitChangeRequest.objects.create(
@@ -74,7 +75,7 @@ class PaymentViewSetAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.patch(f"/api/payments/{self.payment.id}/", format="json", data={"status": "sent"})
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(r["status"], m.Payment.Statuses.SENT)
+        self.assertEqual(r["status"], PaymentStatuses.SENT)
         self.assertEqual(r["updated_by"], self.user.id)
         self.payment_lot.refresh_from_db()
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.SENT)

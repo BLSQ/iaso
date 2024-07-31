@@ -76,8 +76,8 @@ class PaymentLot(models.Model):
         if not payments.exists():
             return self.Statuses.NEW
         total_payments = payments.count()
-        paid_payments = payments.filter(status=Payment.Statuses.PAID).count()
-        sent_payments = payments.filter(status=Payment.Statuses.SENT).count()
+        paid_payments = payments.filter(status=PaymentStatuses.PAID).count()
+        sent_payments = payments.filter(status=PaymentStatuses.SENT).count()
 
         if paid_payments == total_payments:
             return self.Statuses.PAID

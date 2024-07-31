@@ -7,7 +7,7 @@ from hat.audit import models as audit_models
 from iaso.api.payments.serializers import PaymentLotAuditLogger
 from iaso.models import Task
 from iaso.models.base import ERRORED
-from iaso.models.payments import Payment, PaymentLot
+from iaso.models.payments import Payment, PaymentLot, PaymentStatuses
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -17,7 +17,7 @@ def update_payment_from_bulk(user, payment, *, status, api):
 
     original_copy = deepcopy(payment)
     source = api if api else audit_models.PAYMENT_API_BULK
-    if status is not None and status in Payment.Statuses:
+    if status is not None and status in PaymentStatuses:
         payment.status = status
     payment.save()
 
@@ -133,7 +133,7 @@ def mark_payments_as_read(
             the_task.report_progress_and_stop_if_killed(
                 progress_message=res_string, end_value=total, progress_value=index
             )
-            update_payment_from_bulk(user, payment, status=Payment.Statuses.SENT, api=api)
+            update_payment_from_bulk(user, payment, status=PaymentStatuses.SENT, api=api)
 
         # All Payments have been updated so we always need to update the PaymentLot status
         payment_lot.status = payment_lot.compute_status()

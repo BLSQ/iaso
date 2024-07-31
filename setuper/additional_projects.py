@@ -9,7 +9,7 @@ def projects_mapper(account_name):
         {
             "name": "Georegistry/Géoregistre",
             "app_id": f"{account_name}.georegistry",
-            "feature_flags": ["REQUIRE_AUTHENTICATION", "TAKE_GPS_ON_FORM"],
+            "feature_flags": ["REQUIRE_AUTHENTICATION", "TAKE_GPS_ON_FORM", "MOBILE_ORG_UNIT_REGISTRY"],
             "linked_forms": ["Equipment/Pop/Social mob./Microplans"],
         },
         {

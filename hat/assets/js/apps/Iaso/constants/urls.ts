@@ -245,6 +245,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'showDirectCompleteness',
             'teamsIds',
             'userIds',
+            'projectIds',
         ],
     },
     modules: {

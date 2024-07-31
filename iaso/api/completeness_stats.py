@@ -51,7 +51,7 @@ from rest_framework.serializers import ModelSerializer
 from typing_extensions import Annotated
 
 from hat.menupermissions import models as permission
-from iaso.models import Form, Group, Instance, OrgUnit, OrgUnitType
+from iaso.models import Form, Group, Instance, OrgUnit, OrgUnitType, Project
 from iaso.utils import geojson_queryset
 
 from ..models.microplanning import Planning, Team
@@ -136,6 +136,10 @@ class ParamSerializer(serializers.Serializer):
                 iaso_profile__account=user.iaso_profile.account
             ).distinct()
 
+            self.fields["project_ids"].child_relation.queryset = Project.objects.filter(
+                account=user.iaso_profile.account
+            ).distinct()
+
     org_unit_type_ids = PrimaryKeysRelatedField(
         child_relation=serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none()),
         source="org_unit_types",
@@ -183,6 +187,13 @@ class ParamSerializer(serializers.Serializer):
         source="teams",
         required=False,
         help_text="filter on teams",
+    )
+
+    project_ids = PrimaryKeysRelatedField(
+        child_relation=serializers.PrimaryKeyRelatedField(queryset=Project.objects.none()),
+        source="projects",
+        required=False,
+        help_text="filter on projects",
     )
 
     user_ids = PrimaryKeysRelatedField(
@@ -243,7 +254,6 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         paramsSerializer = ParamSerializer(data=request.query_params, context={"request": request})
         paramsSerializer.is_valid(raise_exception=True)
         params: Params = paramsSerializer.validated_data
-
         orders = params["order"]
         form_qs = params["forms"]
         period = params.get("period", None)
@@ -252,6 +262,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         as_location = params.get("as_location", None)
         teams = params.get("teams")
         users = params.get("users")
+        projects = params.get("projects")
 
         instance_qs = Instance.objects.all()
 
@@ -270,6 +281,11 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         # filter instance_qs on users
         if users:
             instance_qs = instance_qs.filter(created_by__in=users)
+
+        # filter instance_qs and form_qs on projects
+        if projects:
+            instance_qs = instance_qs.filter(project__in=projects)
+            form_qs = form_qs.filter(projects__in=projects).distinct()
 
         profile = request.user.iaso_profile  # type: ignore
 

@@ -173,6 +173,15 @@ class TeamManagersFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class TeamProjectsFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        projects = request.GET.get("projects", None)
+        if projects:
+            project_ids = [int(val) for val in projects.split(",") if val.isnumeric()]
+            return queryset.filter(project_id__in=project_ids)
+        return queryset
+
+
 class TeamTypesFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         types = request.GET.get("types", None)
@@ -225,6 +234,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         DeletionFilterBackend,
         TeamManagersFilterBackend,
         TeamTypesFilterBackend,
+        TeamProjectsFilterBackend,
     ]
     permission_classes = [ReadOnlyOrHasPermission(permission.TEAMS)]  # type: ignore
     serializer_class = TeamSerializer

@@ -11,6 +11,7 @@ import { AsyncSelect } from "../../../components/forms/AsyncSelect";
 import { getUsersDropDown } from "../../instances/hooks/requests/getUsersDropDown";
 import { useGetProfilesDropdown } from "../../instances/hooks/useGetProfilesDropdown";
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from "../constants";
+import { useGetProjectsDropdownOptions } from "../../projects/hooks/requests";
 
 type Props = {
     params: TeamParams;
@@ -23,6 +24,8 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const { data: selectedManagers } = useGetProfilesDropdown(filters.managers);
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
     const handleChangeManagers = useCallback(
         (keyValue, newValue) => {
             const joined = newValue?.map(r => r.value)?.join(',');
@@ -44,8 +47,6 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                     onErrorChange={setTextSearchError}
                     blockForbiddenChars
                 />
-            </Grid>
-            <Grid item xs={12} md={3} lg={3}>
                 <Box mt={2}>
                     <AsyncSelect
                         keyValue="managers"
@@ -77,9 +78,20 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                         },
                     ]}
                 />
+                <InputComponent
+                    keyValue="projects"
+                    onChange={handleChange}
+                    value={filters.projects}
+                    type="select"
+                    options={allProjects}
+                    label={MESSAGES.project}
+                    loading={isFetchingProjects}
+                    onEnterPressed={handleSearch}
+                    clearable
+                    multi
+                />
             </Grid>
-
-            <Grid item xs={12} md={3} lg={3}>
+            <Grid item xs={12} md={6} lg={6}>
                 <Box mt={2} display="flex" justifyContent="flex-end">
                     <FilterButton
                         disabled={textSearchError || !filtersUpdated}

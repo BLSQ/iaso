@@ -1101,6 +1101,22 @@ class Instance(models.Model):
         except NothingToExportError:
             print("Export failed for instance", self)
 
+    def _common_dict_fields(self):
+        return {
+            "id": self.id,
+            "correlation_id": self.correlation_id,
+            "file_url": self.file.url if self.file else None,
+            "longitude": self.location.x if self.location else None,
+            "latitude": self.location.y if self.location else None,
+            "altitude": self.location.z if self.location else None,
+            "period": self.period,
+            "status": getattr(self, "status", None),
+            "created_at": self.created_at.timestamp(),
+            "updated_at": self.updated_at.timestamp(),
+            "source_created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "source_updated_at": self.source_updated_at.timestamp() if self.source_updated_at else None,
+        }
+
     def as_dict(self):
         file_content = self.get_and_save_json_of_xml()
         last_modified_by = None
@@ -1108,24 +1124,14 @@ class Instance(models.Model):
         if self.last_modified_by is not None:
             last_modified_by = self.last_modified_by.username
 
-        return {
+        return self._common_dict_fields() | {
             "uuid": self.uuid,
             "export_id": self.export_id,
             "file_name": self.file_name,
             "file_content": file_content,
-            "file_url": self.file.url if self.file else None,
-            "id": self.id,
             "form_id": self.form_id,
             "form_name": self.form.name if self.form else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
-            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
             "org_unit": self.org_unit.as_dict(with_groups=False) if self.org_unit else None,
-            "latitude": self.location.y if self.location else None,
-            "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
-            "period": self.period,
-            "status": getattr(self, "status", None),
-            "correlation_id": self.correlation_id,
             "created_by": (
                 {
                     "username": self.created_by.username,
@@ -1145,40 +1151,22 @@ class Instance(models.Model):
         return dict
 
     def as_full_model(self, with_entity=False):
-        file_content = self.get_and_save_json_of_xml()
         form_version = self.get_form_version()
 
-        last_modified_by = None
-        if self.last_modified_by is not None:
-            last_modified_by = self.last_modified_by.username
-
-        result = {
-            "uuid": self.uuid,
-            "last_modified_by": last_modified_by,
+        # Show all 4 timestamps on the instance
+        # Need a coalesce on the order when there's a fallback or it'll bug out when
+        # there's a null
+        result = self.as_dict() | {
             "modification": True,
-            "id": self.id,
             "device_id": self.device.imei if self.device else None,
-            "file_name": self.file_name,
-            "file_url": self.file.url if self.file else None,
-            "form_id": self.form_id,
             "form_version_id": self.form_version.id if self.form_version else None,
-            "form_name": self.form.name,
             "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
-            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
+            # TODO: perf issue, as_dict() also has a org_units key
             "org_unit": self.org_unit.as_dict_with_parents(light=False, light_parents=False) if self.org_unit else None,
-            "latitude": self.location.y if self.location else None,
-            "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
-            "accuracy": self.accuracy,
-            "period": self.period,
             "planning_id": self.planning.id if self.planning else None,
             "planning_name": self.planning.name if self.planning else None,
             "team_id": self.planning.team_id if self.planning else None,
-            "file_content": file_content,
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
-            "status": getattr(self, "status", None),
-            "correlation_id": self.correlation_id,
             "last_export_success_at": self.last_export_success_at.timestamp() if self.last_export_success_at else None,
             "export_id": self.export_id,
             "export_statuses": [
@@ -1204,15 +1192,6 @@ class Instance(models.Model):
                 for export_status in Paginator(self.exportstatus_set.order_by("-id"), 3).object_list
             ],
             "deleted": self.deleted,
-            "created_by": (
-                {
-                    "username": self.created_by.username,
-                    "first_name": self.created_by.first_name,
-                    "last_name": self.created_by.last_name,
-                }
-                if self.created_by
-                else None
-            ),
         }
 
         if with_entity and self.entity_id:
@@ -1221,19 +1200,9 @@ class Instance(models.Model):
         return result
 
     def as_small_dict(self):
-        return {
-            "id": self.id,
-            "file_url": self.file.url if self.file else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
-            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
-            "period": self.period,
-            "latitude": self.location.y if self.location else None,
-            "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
+        return self._common_dict_fields() | {
             "accuracy": self.accuracy,
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
-            "status": getattr(self, "status", None),
-            "correlation_id": self.correlation_id,
         }
 
     def soft_delete(self, user: typing.Optional[User] = None):

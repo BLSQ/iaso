@@ -1766,3 +1766,30 @@ class InstancesAPITestCase(APITestCase):
         instances = response.json()["instances"]
         self.assertEqual(self.instance_5.id, instances[0].get("id"))
         self.assertEqual(self.instance_6.id, instances[1].get("id"))
+
+    def test_instances_filter_from_date_to_date(self):
+        # Create new instance with source_created_at None
+        # It will be in the results because it falls back to created_at
+        d = datetime.datetime(2020, 2, 5, 0, 0, 5, tzinfo=pytz.utc)
+        with patch("django.utils.timezone.now", lambda: d):
+            another_instance = self.create_form_instance(
+                form=self.form_1,
+                project=self.project,
+                source_created_at=None,
+            )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {
+                query.DATE_FROM: "2020-02-03",
+                query.DATE_TO: "2020-02-05",
+            },
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 3)
+        instances = response.json()["instances"]
+        self.assertEqual(self.instance_3.id, instances[0].get("id"))
+        self.assertEqual(self.instance_4.id, instances[1].get("id"))
+        self.assertEqual(another_instance.id, instances[2].get("id"))

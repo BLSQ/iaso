@@ -21,9 +21,9 @@ module.exports = {
         children: true,
     },
     output: {
-        path: path.resolve(__dirname, './assets/webpack'),
+        path: path.resolve(__dirname, './iasostatics/assets/webpack'),
         filename: '[name]-[chunkhash].js',
-        publicPath: '/',
+        publicPath: '',
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
     },
     devtool: 'source-map',

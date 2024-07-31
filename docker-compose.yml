@@ -116,3 +116,4 @@ services:
     environment: *hat_environment
     logging: *iaso_logging
     command: start_webpack
+  #       - '6379:6379'

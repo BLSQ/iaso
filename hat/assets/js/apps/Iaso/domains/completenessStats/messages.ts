@@ -156,6 +156,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.user',
         defaultMessage: 'User',
     },
+    projects: {
+        id: 'iaso.label.projects',
+        defaultMessage: 'Projects',
+    },
 });
 
 export default MESSAGES;

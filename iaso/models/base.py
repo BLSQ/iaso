@@ -26,6 +26,7 @@ from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import Count, Exists, FilteredRelation, OuterRef, Q
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -718,26 +719,28 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         status=None,
         instance_id=None,
         search=None,
-        from_date=None,
-        to_date=None,
+        created_from=None,
+        created_to=None,
         show_deleted=None,
         entity_id=None,
         user_ids=None,
-        modification_date_from=None,
-        modification_date_to=None,
-        sent_date_from=None,
-        sent_date_to=None,
+        modification_from=None,
+        modification_to=None,
+        sent_from=None,
+        sent_to=None,
         json_content=None,
         planning_ids=None,
         project_ids=None,
         only_reference=None,
     ):
         queryset = self
-        if from_date:
-            queryset = queryset.filter(created_at__gte=from_date)
 
-        if to_date:
-            queryset = queryset.filter(created_at__lte=to_date)
+        if created_from or created_to:
+            queryset = queryset.annotate(creation_timestamp=Coalesce("source_created_at", "created_at"))
+            if created_from:
+                queryset = queryset.filter(creation_timestamp__gte=created_from)
+            if created_to:
+                queryset = queryset.filter(creation_timestamp__lte=created_to)
 
         if period_ids:
             if isinstance(period_ids, str):
@@ -832,27 +835,15 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         # add status annotation
         queryset = queryset.with_status()
 
-        def range_from(date: datetime.date):
-            return (
-                datetime.datetime.combine(date, datetime.time.min),
-                datetime.datetime.max,
-            )
+        if modification_from:
+            queryset = queryset.filter(updated_at__gte=modification_from)
+        if modification_to:
+            queryset = queryset.filter(updated_at__lte=modification_to)
 
-        def range_to(date: datetime.date):
-            return (
-                datetime.datetime.min,
-                datetime.datetime.combine(date, datetime.time.max),
-            )
-
-        if modification_date_from:
-            queryset = queryset.filter(updated_at__range=range_from(modification_date_from))
-        if modification_date_to:
-            queryset = queryset.filter(updated_at__range=range_to(modification_date_to))
-
-        if sent_date_from:
-            queryset = queryset.filter(created_at__range=range_from(sent_date_from))
-        if sent_date_to:
-            queryset = queryset.filter(created_at__range=range_to(sent_date_to))
+        if sent_from:
+            queryset = queryset.filter(created_at__gte=sent_from)
+        if sent_to:
+            queryset = queryset.filter(created_at__lte=sent_to)
 
         if status:
             statuses = status.split(",")

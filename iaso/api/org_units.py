@@ -33,6 +33,9 @@ from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 # noinspection PyMethodMayBeStatic
 class HasOrgUnitPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
+        if obj.version.data_source.public and request.method == "GET":
+            return True
+
         if not (
             request.user.is_authenticated
             and (

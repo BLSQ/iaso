@@ -75,21 +75,37 @@ class SourceVersionViewSet(ModelViewSet):
     GET /api/sourceversions/<id>
     """
 
+    def get_permissions(self):
+        source_id = self.kwargs.get("pk", None)
+        if source_id:
+            try:
+                source_version = SourceVersion.objects.get(id=source_id)
+                if source_version.data_source.public:
+                    return []
+            except SourceVersion.DoesNotExist:
+                pass
+
+        return [permission() for permission in self.permission_classes]
+
     permission_classes = [
         permissions.IsAuthenticated,
         HasPermission(permission.MAPPINGS, permission.ORG_UNITS, permission.LINKS),  # type: ignore
     ]
+
     serializer_class = SourceVersionSerializer
     results_key = "versions"
     queryset = DataSource.objects.all()
     http_method_names = ["get", "post", "put", "head", "options", "trace", "delete"]
 
     def get_queryset(self):
-        profile = self.request.user.iaso_profile
+        profile = self.request.user.iaso_profile if not self.request.user.is_anonymous else None
 
-        versions = SourceVersion.objects.filter(data_source__projects__account=profile.account).prefetch_related(
-            "data_source"
-        )
+        if profile:
+            versions = SourceVersion.objects.filter(data_source__projects__account=profile.account).prefetch_related(
+                "data_source"
+            )
+        else:
+            versions = SourceVersion.objects.filter(data_source__public=True).prefetch_related("data_source")
 
         source_id = self.kwargs.get("source", None)
         if source_id:

@@ -26,6 +26,7 @@ class DataSource(models.Model):
         blank=True,
         help_text="List of statuses used for display configuration of the OrgUnit tree.",
     )
+    public = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s " % (self.name,)

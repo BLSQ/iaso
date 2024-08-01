@@ -31,7 +31,7 @@ class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):
         data_source_id = self.form.cleaned_data.get("data_source_id")
         version = self.form.cleaned_data.get("version")
 
-        if not data_source_id and user.is_anonymous:
+        if not (data_source_id or version) and user.is_anonymous:
             raise ValidationError({"data_source_id": ["A `data_source_id` must be provided for anonymous users."]})
 
         if not (data_source_id or version):

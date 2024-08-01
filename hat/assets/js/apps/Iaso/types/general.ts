@@ -63,6 +63,7 @@ export type PaginationParams = {
 declare global {
     interface Window {
         STATIC_URL?: string;
+        IASO_VERSION?: string;
     }
 }
 

@@ -32,11 +32,12 @@ export const usePossibleFields = (
     }, [form?.possible_fields, isFetchingForm]);
 };
 
-export const useGetPossibleFields = (formId?: number): Result => {
+export const useGetPossibleFields = (formId?: number, appId?: string): Result => {
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         formId,
         Boolean(formId),
         'possible_fields',
+        appId,
     );
     return usePossibleFields(isFetchingForm, currentForm);
 };

@@ -99,79 +99,71 @@ export const MapSettings: FunctionComponent<Props> = ({
         setTilePopup(!tilePopup);
     };
     return (
-        <>
-            <Box sx={styles.root}>
-                {!tilePopup && (
-                    <Box
-                        sx={styles.barButton}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => toggleTilePopup()}
-                    >
-                        <Box sx={styles.button}>
-                            <Settings fontSize="small" />
+        <Box sx={styles.root}>
+            {!tilePopup && (
+                <Box
+                    sx={styles.barButton}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => toggleTilePopup()}
+                >
+                    <Box sx={styles.button}>
+                        <Settings fontSize="small" />
+                    </Box>
+                </Box>
+            )}
+
+            <Box
+                sx={{
+                    ...styles.container,
+                    ...((tilePopup ? styles.open : styles.closed) as SxStyles),
+                }}
+            >
+                {tilePopup && (
+                    <Box sx={styles.tooltip}>
+                        <Box sx={styles.iconContainer}>
+                            <IconButton
+                                size="small"
+                                onClick={() => toggleTilePopup()}
+                                icon="clear"
+                                tooltipMessage={MESSAGES.close}
+                            />
+                        </Box>
+                        <Box px={3} pt="20px">
+                            <FormControlLabel
+                                label={formatMessage(MESSAGES.showNames)}
+                                control={
+                                    <Switch
+                                        size="small"
+                                        checked={settings.showTooltip}
+                                        onChange={() =>
+                                            handleChangeSettings('showTooltip')
+                                        }
+                                        color="primary"
+                                    />
+                                }
+                            />
+                        </Box>
+                        <Box px={3} pt={1}>
+                            <FormControlLabel
+                                label={formatMessage(MESSAGES.markerClustering)}
+                                control={
+                                    <Switch
+                                        size="small"
+                                        checked={settings.clusterEnabled}
+                                        onChange={() =>
+                                            handleChangeSettings(
+                                                'clusterEnabled',
+                                            )
+                                        }
+                                        color="primary"
+                                    />
+                                }
+                            />
                         </Box>
                     </Box>
                 )}
-
-                <Box
-                    sx={{
-                        ...styles.container,
-                        ...((tilePopup
-                            ? styles.open
-                            : styles.closed) as SxStyles),
-                    }}
-                >
-                    {tilePopup && (
-                        <Box sx={styles.tooltip}>
-                            <Box sx={styles.iconContainer}>
-                                <IconButton
-                                    size="small"
-                                    onClick={() => toggleTilePopup()}
-                                    icon="clear"
-                                    tooltipMessage={MESSAGES.close}
-                                />
-                            </Box>
-                            <Box px={3} pt="20px">
-                                <FormControlLabel
-                                    label={formatMessage(MESSAGES.showNames)}
-                                    control={
-                                        <Switch
-                                            size="small"
-                                            checked={settings.showTooltip}
-                                            onChange={() =>
-                                                handleChangeSettings(
-                                                    'showTooltip',
-                                                )
-                                            }
-                                            color="primary"
-                                        />
-                                    }
-                                />
-                            </Box>
-                            <Box px={3} pt={1}>
-                                <FormControlLabel
-                                    label={formatMessage(
-                                        MESSAGES.markerClustering,
-                                    )}
-                                    control={
-                                        <Switch
-                                            size="small"
-                                            checked={settings.clusterEnabled}
-                                            onChange={() =>
-                                                handleChangeSettings(
-                                                    'clusterEnabled',
-                                                )
-                                            }
-                                            color="primary"
-                                        />
-                                    }
-                                />
-                            </Box>
-                        </Box>
-                    )}
-                </Box>
             </Box>
-        </>
+        </Box>
     );
 };

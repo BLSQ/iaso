@@ -105,6 +105,7 @@ export const Beneficiaries: FunctionComponent = () => {
     }
     const { data: locations, isFetching: isFetchingLocations } =
         useGetBeneficiariesLocations(params, displayedLocation);
+
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}

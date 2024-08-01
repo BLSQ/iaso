@@ -3,15 +3,18 @@ import django_filters
 from django.db.models import QuerySet, Prefetch
 from django.utils import timezone
 
-from rest_framework import filters, status
+from hat.menupermissions import models as iaso_permission
+
+from rest_framework import filters, status, exceptions
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 
 from iaso.api.common import Paginator
 
 from plugins.polio.api.chronogram.filters import ChronogramFilter, ChronogramTaskFilter
-from plugins.polio.api.chronogram.permissions import HasChronogramPermission
+from plugins.polio.api.chronogram.permissions import HasChronogramPermission, HasChronogramRestrictedWritePermission
 from plugins.polio.api.chronogram.serializers import (
     ChronogramSerializer,
     ChronogramTaskSerializer,
@@ -30,12 +33,21 @@ class ChronogramViewSet(viewsets.ModelViewSet):
     filterset_class = ChronogramFilter
     http_method_names = ["delete", "get", "options", "head", "post", "trace"]
     pagination_class = ChronogramPagination
-    permission_classes = [HasChronogramPermission]
+    permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]
 
     def get_serializer_class(self):
         if self.action in ["create"]:
             return ChronogramCreateSerializer
         return ChronogramSerializer
+
+    def get_permissions(self):
+        if self.request.user.has_perm(iaso_permission.POLIO_CHRONOGRAM):
+            return super().get_permissions()
+        if self.request.method not in SAFE_METHODS and self.request.user.has_perm(
+            iaso_permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE
+        ):
+            raise exceptions.PermissionDenied()
+        return super().get_permissions()
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
@@ -100,7 +112,7 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = ChronogramTaskFilter
     pagination_class = ChronogramPagination
-    permission_classes = [HasChronogramPermission]
+    permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]
     serializer_class = ChronogramTaskSerializer
 
     def get_queryset(self) -> QuerySet:

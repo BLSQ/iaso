@@ -20,7 +20,9 @@ import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const baseUrl = baseUrls.potentialPayments;
 export const PotentialPayments: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as PotentialPaymentParams;
+    const params = useParamsObject(
+        baseUrl,
+    ) as unknown as PotentialPaymentParams;
 
     const { data, isFetching } = useGetPotentialPayments(params);
     const { formatMessage } = useSafeIntl();

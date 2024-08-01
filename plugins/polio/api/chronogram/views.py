@@ -36,7 +36,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
     permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]
 
     def get_serializer_class(self):
-        if self.action in ["create"]:
+        if self.action == "create":
             return ChronogramCreateSerializer
         return ChronogramSerializer
 
@@ -114,6 +114,15 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
     pagination_class = ChronogramPagination
     permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]
     serializer_class = ChronogramTaskSerializer
+
+    def get_permissions(self):
+        if self.request.user.has_perm(iaso_permission.POLIO_CHRONOGRAM):
+            return super().get_permissions()
+        if self.request.method in ["POST", "DELETE"] and self.request.user.has_perm(
+            iaso_permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE
+        ):
+            raise exceptions.PermissionDenied()
+        return super().get_permissions()
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user

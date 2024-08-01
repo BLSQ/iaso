@@ -1,7 +1,7 @@
 from django.db.models import Q
 from rest_framework import status, permissions
 from rest_framework.response import Response
-from iaso.api.query_params import APP_ID, ORDER, PROJECT, SEARCH
+from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECTIDS, SEARCH
 
 from iaso.models import OrgUnitType
 from .serializers import OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2
@@ -37,7 +37,6 @@ class OrgUnitTypeViewSet(ModelViewSet):
         queryset = OrgUnitType.objects.filter_for_user_and_app_id(
             self.request.user, self.request.query_params.get(APP_ID)
         )
-
         search = self.request.query_params.get(SEARCH, None)
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(short_name__icontains=search))
@@ -72,8 +71,12 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         )
 
         project = self.request.query_params.get(PROJECT, None)
+        project_ids = self.request.query_params.get(PROJECTIDS, None)
         if project:
             queryset = queryset.filter(projects__id=project)
+
+        if project_ids:
+            queryset = queryset.filter(projects__id__in=project_ids.split(","))
 
         search = self.request.query_params.get(SEARCH, None)
         if search:

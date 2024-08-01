@@ -26,9 +26,9 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
 
-    const { countriesData, isFetchingCountriesData: isFetchingCountries } =
+    const { data, isFetchingCountriesData: isFetchingCountries } =
         useGetCountries();
-    const countriesOptions = (countriesData && countriesData.orgUnits) || [];
+    const countriesOptions = (data && data.orgUnits) || [];
 
     const onTimeOptions = [
         {
@@ -61,7 +61,7 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         multi
                         clearable
                         onChange={handleChange}
-                        value={filters.countries}
+                        value={filters.country}
                         type="select"
                         options={countriesOptions.map(c => ({
                             label: c.name,

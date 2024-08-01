@@ -192,6 +192,7 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Date de modification", "width": 20},
             {"title": "Créé par", "width": 20},
             {"title": "Status", "width": 20},
+            {"title": "Entité", "width": 20},
             {"title": "Org unit", "width": 20},
             {"title": "Org unit id", "width": 20},
             {"title": "Référence externe", "width": 20},
@@ -261,6 +262,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 timestamp_to_datetime(updated_at_timestamp),
                 get_creator_name(instance.created_by) if instance.created_by else None,
                 instance.status,
+                # Special format for UUID to stay consistent with other UUIDs coming from file_content_template
+                f"uuid:{instance.entity.uuid}" if instance.entity else None,
                 instance.org_unit.name,
                 instance.org_unit.id,
                 instance.org_unit.source_ref,
@@ -286,7 +289,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
         response: Union[HttpResponse, StreamingHttpResponse]
 
-        queryset = queryset.prefetch_related("created_by", "form_version__form")
+        queryset = queryset.prefetch_related("created_by", "entity", "form_version__form")
         queryset = queryset.prefetch_related(
             Prefetch("org_unit", queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"))
         )

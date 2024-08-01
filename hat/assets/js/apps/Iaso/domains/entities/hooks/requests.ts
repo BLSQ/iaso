@@ -43,6 +43,7 @@ type Params = {
     entityTypeIds?: string;
     locationLimit?: string;
     groups?: string;
+    tab?: string;
 };
 
 type ApiParams = {
@@ -59,6 +60,7 @@ type ApiParams = {
     asLocation?: boolean;
     locationLimit?: string;
     groups?: string;
+    tab: string;
 };
 
 type GetAPiParams = {
@@ -85,6 +87,7 @@ export const useGetBeneficiariesApiParams = (
         limit: params.pageSize || '20',
         page: params.page || '1',
         groups: params.groups,
+        tab: params.tab || 'list',
     };
     if (asLocation) {
         apiParams.asLocation = true;
@@ -105,6 +108,7 @@ export const useGetBeneficiariesPaginated = (
         queryKey: ['beneficiaries', apiParams],
         queryFn: () => getRequest(url),
         options: {
+            enabled: apiParams.tab === 'list',
             staleTime: 60000,
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,
@@ -120,6 +124,7 @@ export const useGetBeneficiariesLocations = (
         queryKey: ['beneficiariesLocations', apiParams],
         queryFn: () => getRequest(url),
         options: {
+            enabled: apiParams.tab === 'map',
             staleTime: 60000,
             select: data =>
                 data?.result?.map(beneficiary => ({

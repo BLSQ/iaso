@@ -43,52 +43,48 @@ export const OrgUnitLocation: FunctionComponent<Props> = ({
     const color = selectedChildrenId
         ? theme.palette.primary.main
         : selectedOrgUnitColor;
-    return (
+    return isOrgUnitActive ? (
         <>
-            {isOrgUnitActive && (
-                <>
-                    {orgUnit.geo_json && (
-                        <Pane name="orgunit-shape" style={{ zIndex: 400 }}>
-                            <GeoJSON
-                                key={`orgunit-shape-${orgUnit.id}`}
-                                data={orgUnit.geo_json}
-                                onEachFeature={handleFeatureEvents(orgUnit)}
-                                style={() => ({
-                                    color,
-                                })}
-                            >
-                                <MapToolTip
-                                    permanent={showTooltip}
-                                    pane="popupPane"
-                                    label={orgUnit.name}
-                                />
-                            </GeoJSON>
-                        </Pane>
-                    )}
-                    {orgUnit.latitude && orgUnit.longitude && (
-                        <CircleMarkerComponent
-                            item={{
-                                latitude: orgUnit.latitude,
-                                longitude: orgUnit.longitude,
-                            }}
-                            markerProps={() => ({
-                                ...circleColorMarkerOptions(color),
-                                key: `markers-${orgUnit.id}-${showTooltip}`,
-                            })}
-                            popupProps={() => ({
-                                orgUnit,
-                            })}
-                            onClick={handleSingleClick}
-                            tooltipProps={() => ({
-                                permanent: showTooltip,
-                                pane: 'popupPane',
-                                label: orgUnit.name,
-                            })}
-                            TooltipComponent={MapToolTip}
+            {orgUnit.geo_json && (
+                <Pane name="orgunit-shape" style={{ zIndex: 400 }}>
+                    <GeoJSON
+                        key={`orgunit-shape-${orgUnit.id}`}
+                        data={orgUnit.geo_json}
+                        onEachFeature={handleFeatureEvents(orgUnit)}
+                        style={() => ({
+                            color,
+                        })}
+                    >
+                        <MapToolTip
+                            permanent={showTooltip}
+                            pane="popupPane"
+                            label={orgUnit.name}
                         />
-                    )}
-                </>
+                    </GeoJSON>
+                </Pane>
+            )}
+            {orgUnit.latitude && orgUnit.longitude && (
+                <CircleMarkerComponent
+                    item={{
+                        latitude: orgUnit.latitude,
+                        longitude: orgUnit.longitude,
+                    }}
+                    markerProps={() => ({
+                        ...circleColorMarkerOptions(color),
+                        key: `markers-${orgUnit.id}-${showTooltip}`,
+                    })}
+                    popupProps={() => ({
+                        orgUnit,
+                    })}
+                    onClick={handleSingleClick}
+                    tooltipProps={() => ({
+                        permanent: showTooltip,
+                        pane: 'popupPane',
+                        label: orgUnit.name,
+                    })}
+                    TooltipComponent={MapToolTip}
+                />
             )}
         </>
-    );
+    ) : null;
 };

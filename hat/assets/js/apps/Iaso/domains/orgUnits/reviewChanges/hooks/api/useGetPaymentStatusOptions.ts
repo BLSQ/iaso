@@ -3,13 +3,15 @@ import { optionsRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { mapOptions } from '../../../../../libs/utils';
 import { DropdownOptions } from '../../../../../types/utils';
+import { useLocale } from '../../../../app/contexts/LocaleContext';
 
 export const usePaymentStatusOptions = (): UseQueryResult<
     DropdownOptions<string>[],
     Error
-> =>
-    useSnackQuery({
-        queryKey: ['paymentStatusOptions'],
+> => {
+    const { locale } = useLocale();
+    return useSnackQuery({
+        queryKey: ['paymentStatusOptions', locale],
         queryFn: () => optionsRequest('/api/payments'),
         options: {
             staleTime: 1000 * 60 * 15, // in ms
@@ -17,3 +19,4 @@ export const usePaymentStatusOptions = (): UseQueryResult<
             select: data => mapOptions(data, ['status']).status,
         },
     });
+};

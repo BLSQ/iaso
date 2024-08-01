@@ -186,6 +186,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.phoneNumber',
         defaultMessage: 'Phone number',
     },
+    viewChangeRequestsForUser: {
+        id: 'iaso.label.viewChangeRequestsForUser',
+        defaultMessage: 'View change requests for user',
+    },
+    viewChangeRequestforLot: {
+        id: 'iaso.label.viewChangeRequestforLot',
+        defaultMessage: 'View change requests for this payment lot',
+    },
 });
 
 export default MESSAGES;

@@ -1,4 +1,9 @@
-import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
+import {
+    Column,
+    IconButton,
+    IntlFormatMessage,
+    useSafeIntl,
+} from 'bluesquare-components';
 import React, { useMemo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { textPlaceholder } from '../../../../constants/uiConstants';
@@ -6,6 +11,7 @@ import { EditPaymentDialog } from '../../components/EditPaymentLot/EditPaymentDi
 import MESSAGES from '../../messages';
 import { PaymentLot, PotentialPayment } from '../../types';
 import { SavePaymentStatusArgs } from '../requests/useSavePaymentStatus';
+import { baseUrls } from '../../../../constants/urls';
 
 export const usePaymentColumns = ({
     potential = true,
@@ -81,6 +87,28 @@ export const usePaymentColumns = ({
             },
             //  TODO: we should add user phone number here
         ];
+
+        if (potential) {
+            return columns.concat([
+                {
+                    Header: formatMessage(MESSAGES.actions),
+                    id: 'action',
+                    accessor: 'action',
+                    sortable: false,
+                    Cell: settings => {
+                        return (
+                            <IconButton
+                                icon="remove-red-eye"
+                                url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${settings.row.original.user.id}`}
+                                tooltipMessage={
+                                    MESSAGES.viewChangeRequestsForUser
+                                }
+                            />
+                        );
+                    },
+                },
+            ]);
+        }
         if (!potential) {
             return columns.concat([
                 {

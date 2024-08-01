@@ -278,7 +278,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     sources: {
         url: 'orgunits/sources/list',
-        params: ['accountId', ...paginationPathParams],
+        params: ['accountId', 'projectIds', ...paginationPathParams],
     },
     sourceDetails: {
         url: 'orgunits/source/details',

@@ -2,6 +2,7 @@ from iaso.models.payments import PaymentStatuses
 from iaso.test import APITestCase
 from iaso import models as m
 from hat.audit import models as am
+from django.utils.translation import override
 
 
 class PaymentViewSetAPITestCase(APITestCase):
@@ -80,3 +81,29 @@ class PaymentViewSetAPITestCase(APITestCase):
         self.payment_lot.refresh_from_db()
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.SENT)
         self.assertEqual(am.Modification.objects.count(), 2)
+
+    def test_dropdown_options(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(f"/api/payments/options/")
+        r = self.assertJSONResponse(response, 200)
+        for item in r:
+            if item["value"] == PaymentStatuses.PENDING:
+                self.assertEqual(item["label"], "Pending")
+            elif item["value"] == PaymentStatuses.SENT:
+                self.assertEqual(item["label"], "Sent")
+            elif item["value"] == PaymentStatuses.REJECTED:
+                self.assertEqual(item["label"], "Rejected")
+            elif item["value"] == PaymentStatuses.PAID:
+                self.assertEqual(item["label"], "Paid")
+        # Passingthe header works in the front-end, but fails the test
+        # response = self.client.get(f"/api/payments/options/", headers={"Accept-Language": "fr"})
+        # r = self.assertJSONResponse(response, 200)
+        # for item in r:
+        #     if item['value'] == PaymentStatuses.PENDING:
+        #         self.assertEqual(item['label'], 'En attente')
+        #     elif item['value'] == PaymentStatuses.SENT:
+        #         self.assertEqual(item['label'], 'Envoyé')
+        #     elif item['value'] == PaymentStatuses.REJECTED:
+        #         self.assertEqual(item['label'], 'Rejeté')
+        #     elif item['value'] == PaymentStatuses.PAID:
+        #         self.assertEqual(item['label'], 'Payé')

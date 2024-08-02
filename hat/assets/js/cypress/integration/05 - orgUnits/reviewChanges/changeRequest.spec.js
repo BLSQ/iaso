@@ -23,6 +23,13 @@ const defaultQuery = {
     order: '-updated_at',
 };
 const newFilters = {
+    projectIds: {
+        value: [0],
+        urlValue: '1',
+        selector: '#projectIds',
+        type: 'multi',
+        clear: false,
+    },
     groups: {
         value: [0],
         urlValue: '1',
@@ -73,7 +80,7 @@ const newFilters = {
     },
     userRoles: {
         value: [0],
-        urlValue: userRoles.results[0].id, // This seems dependant on the DB
+        urlValue: userRoles.results[5].id, // This seems dependant on the DB
         selector: '#userRoles',
         type: 'multi',
         clear: false,
@@ -96,6 +103,7 @@ const openDialogForChangeRequestIndex = index => {
 };
 
 const goToPage = (
+    // eslint-disable-next-line default-param-last
     fakeUser = superUser,
     formQuery,
     fixture = listFixture,
@@ -136,10 +144,11 @@ const goToPage = (
 };
 
 const testRowContent = (index, changeRequest = listFixture.results[index]) => {
-    const groups = [];
-    changeRequest.groups.forEach(group => {
-        groups.push(group.name);
+    const projects = [];
+    changeRequest.projects.forEach(project => {
+        projects.push(project.name);
     });
+
     const changeRequestCreatedAt = moment
         .unix(changeRequest.created_at)
         .format('DD/MM/YYYY HH:mm');
@@ -149,20 +158,20 @@ const testRowContent = (index, changeRequest = listFixture.results[index]) => {
     cy.get('table').as('table');
     cy.get('@table').find('tbody').find('tr').eq(index).as('row');
     cy.get('@row').find('td').eq(0).should('contain', changeRequest.id);
-    cy.get('@row')
-        .find('td')
-        .eq(1)
-        .should('contain', changeRequest.org_unit_name);
+    cy.get('@row').find('td').eq(1).should('contain', projects.join(', '));
     cy.get('@row')
         .find('td')
         .eq(2)
-        .should('contain', changeRequest.org_unit_parent_name);
+        .should('contain', changeRequest.org_unit_name);
     cy.get('@row')
         .find('td')
         .eq(3)
+        .should('contain', changeRequest.org_unit_parent_name);
+    cy.get('@row')
+        .find('td')
+        .eq(4)
         .should('contain', changeRequest.org_unit_type_name);
 
-    cy.get('@row').find('td').eq(4).should('contain', groups.join(', '));
     cy.get('@row')
         .find('td')
         .eq(5)
@@ -358,15 +367,15 @@ describe('Organisations changes', () => {
                         order: 'id',
                     },
                     {
-                        colIndex: 1,
+                        colIndex: 2,
                         order: 'org_unit__name',
                     },
                     {
-                        colIndex: 2,
+                        colIndex: 3,
                         order: 'org_unit__parent__name',
                     },
                     {
-                        colIndex: 3,
+                        colIndex: 4,
                         order: 'org_unit__org_unit_type__name',
                     },
                     {
@@ -417,6 +426,7 @@ describe('Organisations changes', () => {
                     },
                     {
                         ...defaultQuery,
+                        projects: newFilters.projectIds.urlValue,
                         groups: newFilters.groups.urlValue,
                         forms: newFilters.forms.urlValue,
                         parent_id: newFilters.parent_id.urlValue,

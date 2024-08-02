@@ -21,6 +21,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Group',
         id: 'iaso.label.group',
     },
+    projects: {
+        defaultMessage: 'Projects',
+        id: 'iaso.label.projects',
+    },
     confirm: {
         id: 'iaso.label.confirm',
         defaultMessage: 'Confirm',
@@ -194,10 +198,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'This field is required',
     },
     viewDetails: {
-         id: 'iaso.label.viewDetails',
+        id: 'iaso.label.viewDetails',
         defaultMessage: 'View details',
-    }
-
+    },
 });
 
 export default MESSAGES;

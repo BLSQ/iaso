@@ -9,7 +9,7 @@ from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPaym
 from iaso.models.base import Task
 from iaso.models.payments import PaymentStatuses
 
-from ..common import TimestampField
+from ..common import DropdownOptionsSerializer, TimestampField
 
 
 class UserNestedSerializer(serializers.ModelSerializer):

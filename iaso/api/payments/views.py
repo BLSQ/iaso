@@ -11,16 +11,17 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, status
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
-
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
 from hat.menupermissions import models as permission
-from iaso.api.common import HasPermission, ModelViewSet
+from iaso.api.common import DropdownOptionsListViewSet, DropdownOptionsSerializer, HasPermission, ModelViewSet
 from iaso.api.payments.filters import payments_lots as payments_lots_filters
 from iaso.api.payments.filters import potential_payments as potential_payments_filters
 from iaso.api.tasks import TaskSerializer
-from iaso.models import OrgUnit, OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
+from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
+from iaso.models.payments import PaymentStatuses
 from iaso.tasks.create_payments_from_payment_lot import create_payments_from_payment_lot
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
 
@@ -610,3 +611,10 @@ class PaymentsViewSet(ModelViewSet):
                     source=PAYMENT_API,
                 )
             return Response(serializer.data)
+
+
+class PaymentOptionsViewSet(DropdownOptionsListViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    http_method_names = ["get"]
+    serializer = DropdownOptionsSerializer
+    choices = PaymentStatuses

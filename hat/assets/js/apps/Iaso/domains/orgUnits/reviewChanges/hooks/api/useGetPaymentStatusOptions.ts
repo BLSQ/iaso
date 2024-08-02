@@ -15,7 +15,6 @@ export const usePaymentStatusOptions = (): UseQueryResult<
         options: {
             staleTime: 1000 * 60 * 15, // in ms
             cacheTime: 1000 * 60 * 5,
-            // select: data => mapOptions(data, ['status']).status,
         },
     });
 };

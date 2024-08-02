@@ -571,17 +571,13 @@ class PaymentsViewSet(ModelViewSet):
 
     """
 
-    http_method_names = ["patch", "get", "options", "post"]
+    http_method_names = ["patch", "get"]
     results_key = "results"
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
 
     def get_queryset(self) -> models.QuerySet:
         return Payment.objects.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
-
-    # Prevent direct POSTing. POST method needs to be authorized to get choices in OPTIONS request
-    def create(self, request):
-        pass
 
     def update(self, request, *args, **kwargs):
         with transaction.atomic():

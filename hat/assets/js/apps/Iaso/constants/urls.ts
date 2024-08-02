@@ -168,6 +168,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'userIds',
             'userRoles',
             'withLocation',
+            'projectIds',
             ...paginationPathParams,
         ],
     },

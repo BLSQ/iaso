@@ -37,6 +37,30 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No',
         id: 'iaso.label.no',
     },
+    form: {
+        defaultMessage: 'Form',
+        id: 'iaso.instance.form',
+    },
+    owner: {
+        defaultMessage: 'User',
+        id: 'iaso.label.user',
+    },
+    orgUnit: {
+        defaultMessage: 'Org unit',
+        id: 'iaso.label.orgUnitSingle',
+    },
+    clear: {
+        id: 'iaso.label.clear',
+        defaultMessage: 'Clear',
+    },
+    lastUse: {
+        id: 'iaso.label.lastUse',
+        defaultMessage: 'Last use',
+    },
+    firstUse: {
+        id: 'iaso.label.firstUse',
+        defaultMessage: 'First use',
+    },
 });
 
 export default MESSAGES;

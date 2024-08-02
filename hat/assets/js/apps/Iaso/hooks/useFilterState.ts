@@ -16,6 +16,8 @@ export type FilterState = {
     // eslint-disable-next-line no-unused-vars
     setFiltersUpdated: (updated: boolean) => void;
     setFilters: React.Dispatch<Record<string, any>>;
+    // eslint-disable-next-line no-unused-vars
+    handleChangeArray: (keyValue: string, value: unknown[]) => void;
 };
 
 type FilterStateParams = {
@@ -111,6 +113,14 @@ export const useFilterState = ({
         [filters, updateFilters],
     );
 
+    const handleChangeArray = useCallback(
+        (keyValue, newValue) => {
+            const joined = newValue?.map(r => r.value)?.join(',');
+            handleChange(keyValue, joined);
+        },
+        [handleChange],
+    );
+
     useEffect(() => {
         setFilters(removePaginationParams(params));
     }, [params]);
@@ -123,8 +133,16 @@ export const useFilterState = ({
             filtersUpdated,
             setFiltersUpdated,
             setFilters: updateFilters,
+            handleChangeArray,
         };
-    }, [filters, handleChange, handleSearch, filtersUpdated, updateFilters]);
+    }, [
+        filters,
+        handleChange,
+        handleSearch,
+        filtersUpdated,
+        updateFilters,
+        handleChangeArray,
+    ]);
 };
 
 type MultiTreeviewArgs = {

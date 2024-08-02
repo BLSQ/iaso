@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { ReactNode, useContext, useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import Link from '@mui/icons-material/Link';

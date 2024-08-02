@@ -288,7 +288,15 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     devices: {
         url: 'settings/devices',
-        params: ['accountId', ...paginationPathParams],
+        params: [
+            'accountId',
+            'form',
+            'owner',
+            'orgUnit',
+            'lastUse',
+            'firstUse',
+            ...paginationPathParams,
+        ],
     },
     groups: {
         url: 'orgunits/groups',

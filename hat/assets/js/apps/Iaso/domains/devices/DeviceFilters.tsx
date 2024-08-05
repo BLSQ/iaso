@@ -71,7 +71,7 @@ export const DeviceFilters: FunctionComponent<Props> = ({
                         />
                     </Box>
                 </Grid>
-                <Grid xs={3}>
+                <Grid item xs={3}>
                     <Box mt={4} display="flex" justifyContent="flex-end">
                         <FilterButton
                             disabled={!filtersUpdated}

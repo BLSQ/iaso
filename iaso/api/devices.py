@@ -52,7 +52,7 @@ class DeviceSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_synched_at(obj: Device):
         # updated_at field is better compared to created_at
-        instance = Instance.objects.filter(device__id=obj.id).order_by("-updated_at").first()
+        instance = Instance.objects.filter(device__id=obj.id).order_by("updated_at").first()
         return instance.source_created_at.timestamp() if instance and instance.source_created_at else None
 
     @staticmethod
@@ -61,7 +61,7 @@ class DeviceSerializer(serializers.ModelSerializer):
         return owner.user.iaso_profile.as_short_dict() if owner else None
 
     def get_first_use(self, obj):
-        instance = obj.instances.filter(device__id=obj.id).order_by("updated_at").first()
+        instance = obj.instances.filter(device__id=obj.id).order_by("-updated_at").first()
         return instance.source_created_at.timestamp() if instance and instance.source_created_at else None
 
     def get_forms_imported(self, obj):

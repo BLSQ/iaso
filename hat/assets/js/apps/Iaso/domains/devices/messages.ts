@@ -1,9 +1,9 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
-    imei: {
-        defaultMessage: 'IMEI',
-        id: 'iaso.devices.imei',
+    id: {
+        defaultMessage: 'Identifier',
+        id: 'iaso.label.id',
     },
     test_device: {
         defaultMessage: 'Test Device',
@@ -60,6 +60,14 @@ const MESSAGES = defineMessages({
     firstUse: {
         id: 'iaso.label.firstUse',
         defaultMessage: 'First use',
+    },
+    formsImported: {
+        id: 'iaso.devices.label.formsImported',
+        defaultMessage: 'Forms imported',
+    },
+    orgUnitsVisited: {
+        id: 'iaso.devices.label.orgUnitsVisited',
+        defaultMessage: 'Org units visited',
     },
 });
 

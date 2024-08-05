@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
@@ -29,21 +29,51 @@ export const useDevicesTableColumns = (): Column[] => {
                         : textPlaceholder,
             },
             {
+                Header: formatMessage(MESSAGES.formsImported),
+                sortable: false,
+                accessor: 'forms_imported',
+                Cell: settings => {
+                    return (
+                        <span>
+                            {settings.row.original.forms_imported.count}
+                        </span>
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.orgUnitsVisited),
+                sortable: false,
+                accessor: 'org_units_visited',
+                Cell: settings => {
+                    return (
+                        <span>
+                            {settings.row.original.org_units_visited.count}
+                        </span>
+                    );
+                },
+            },
+            {
                 Header: formatMessage(MESSAGES.timeSynched),
                 sortable: false,
                 accessor: 'synched_at',
                 Cell: DateTimeCell,
             },
+            // {
+            //     Header: formatMessage(MESSAGES.timeCreated),
+            //     sortable: false,
+            //     accessor: 'created_at',
+            //     Cell: DateTimeCell,
+            // },
+            // {
+            //     Header: formatMessage(MESSAGES.timeUpdated),
+            //     sortable: false,
+            //     accessor: 'updated_at',
+            //     Cell: DateTimeCell,
+            // },
             {
-                Header: formatMessage(MESSAGES.timeCreated),
+                Header: formatMessage(MESSAGES.firstUse),
                 sortable: false,
-                accessor: 'created_at',
-                Cell: DateTimeCell,
-            },
-            {
-                Header: formatMessage(MESSAGES.timeUpdated),
-                sortable: false,
-                accessor: 'updated_at',
+                accessor: 'first_use',
                 Cell: DateTimeCell,
             },
         ],

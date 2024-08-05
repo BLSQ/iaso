@@ -71,12 +71,14 @@ export const useStaticColumns = (): Array<Column> => {
                 }
 
                 return groups.map(group => (
-                    <LinkWithLocation
-                        key={group.id}
-                        to={filterOrgUnitsByGroupUrl(group.id)}
-                    >
-                        {group.name}
-                    </LinkWithLocation>
+                    <div>
+                        <LinkWithLocation
+                            key={group.id}
+                            to={filterOrgUnitsByGroupUrl(group.id)}
+                        >
+                            {group.name}
+                        </LinkWithLocation>
+                    </div>
                 ));
             },
         },

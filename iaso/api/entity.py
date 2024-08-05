@@ -129,6 +129,7 @@ class EntityViewSet(ModelViewSet):
         show_deleted = self.request.query_params.get("show_deleted", None)
         created_by_id = self.request.query_params.get("created_by_id", None)
         created_by_team_id = self.request.query_params.get("created_by_team_id", None)
+        groups = self.request.query_params.get("groups", None)
 
         queryset = Entity.objects.filter_for_user(self.request.user)
 
@@ -174,6 +175,14 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(attributes__created_by_id=created_by_id)
         if created_by_team_id:
             queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
+        if groups:
+            if isinstance(groups, str):
+                group_ids = groups.split(",")
+            elif isinstance(groups, int):
+                group_ids = [groups]
+            else:
+                group_ids = groups
+            queryset = queryset.filter(attributes__org_unit__groups__in=group_ids)
 
         # location
         return queryset

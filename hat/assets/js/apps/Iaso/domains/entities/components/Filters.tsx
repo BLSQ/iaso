@@ -30,6 +30,7 @@ import MESSAGES from '../messages';
 import { baseUrl } from '../config';
 
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { useGetGroups } from '../../orgUnits/hooks/requests/useGetGroups';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import {
     useGetBeneficiariesApiParams,
@@ -70,6 +71,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         submitterTeamId: params.submitterTeamId,
         entityTypeIds: params.entityTypeIds,
         locationLimit: params.locationLimit,
+        groups: params.groups,
     });
 
     useEffect(() => {
@@ -82,6 +84,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
             submitterTeamId: params.submitterTeamId,
             entityTypeIds: params.entityTypeIds,
             locationLimit: params.locationLimit,
+            groups: params.groups,
         });
     }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -100,6 +103,12 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     }, [filters.submitterTeamId, teamOptions]);
 
     const { data: usersOptions } = useGetUsersDropDown(selectedTeam);
+    const dataSourceId = currentUser?.account?.default_version?.data_source?.id;
+    const sourceVersionId = currentUser?.account?.default_version?.id;
+    const { data: groups, isFetching: isFetchingGroups } = useGetGroups({
+        dataSourceId,
+        sourceVersionId,
+    });
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -180,6 +189,17 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
+                    <InputComponent
+                        type="select"
+                        multi
+                        disabled={isFetchingGroups}
+                        keyValue="groups"
+                        onChange={handleChange}
+                        value={!isFetchingGroups && filters?.groups}
+                        label={MESSAGES.groups}
+                        options={groups}
+                        loading={isFetchingGroups}
+                    />
                     {params.tab === 'map' && (
                         <Box mt={2}>
                             <LocationLimit

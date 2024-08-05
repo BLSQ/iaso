@@ -570,7 +570,7 @@ class PaymentsViewSet(ModelViewSet):
 
     """
 
-    http_method_names = ["patch", "get"]
+    http_method_names = ["patch", "get", "options"]
     results_key = "results"
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]

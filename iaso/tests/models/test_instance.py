@@ -1,5 +1,6 @@
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
+from django.utils import timezone
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 
@@ -539,6 +540,24 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         self.assertEqual(1, Modification.objects.count())
         modification = Modification.objects.first()
         self.assertEqual(self.yoda, modification.user)
+
+    def test_as_dict_with_parents_no_source_fields(self):
+        # Explicitly set source fields to None because the test helpers will set default values otherwise
+        current_timestamp = timezone.now()
+        instance = self.create_form_instance(
+            form=self.form_1,
+            period="202002",
+            org_unit=self.jedi_council_coruscant,
+            project=None,
+            source_created_at=None,
+            source_updated_at=None,
+            created_at=current_timestamp.timestamp(),
+            updated_at=current_timestamp.timestamp(),
+        )
+        result = instance.as_dict_with_parents()
+
+        self.assertIsNotNone(result["created_at"])
+        self.assertIsNotNone(result["updated_at"])
 
 
 class InstanceAPITestCase(APITestCase, InstanceBase):

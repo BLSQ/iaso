@@ -290,6 +290,12 @@ const OrgUnitDetail = () => {
     );
 
     useEffect(() => {
+        if (!params.tab) {
+            redirectToReplace(baseUrl, { ...params, tab: 'infos' });
+        }
+    }, [params, redirectToReplace]);
+
+    useEffect(() => {
         if (isNewOrgunit && !currentOrgUnit) {
             if (params.levels && parentOrgUnit) {
                 setCurrentOrgUnit({

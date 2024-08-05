@@ -136,7 +136,7 @@ class ChronogramTask(SoftDeletableModel):
         PENDING = "PENDING", _("Not started")
         IN_PROGRESS = "IN_PROGRESS", _("In progress")
         DONE = "DONE", _("Done")
-        NA = "N/A", _("N/A")
+        NA = "NON_APPLICABLE", _("N/A")
 
     chronogram = models.ForeignKey(Chronogram, on_delete=models.CASCADE, related_name="tasks")
     period = models.CharField(max_length=15, choices=Period.choices, default=Period.BEFORE)

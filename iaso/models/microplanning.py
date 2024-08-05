@@ -34,6 +34,10 @@ class TeamType(models.TextChoices):
     TEAM_OF_TEAMS = "TEAM_OF_TEAMS", "Team of teams"
     TEAM_OF_USERS = "TEAM_OF_USERS", "Team of users"
 
+    @classmethod
+    def is_valid_team_type(cls, value):
+        return value in cls.values
+
 
 TeamManager = models.Manager.from_queryset(TeamQuerySet)
 

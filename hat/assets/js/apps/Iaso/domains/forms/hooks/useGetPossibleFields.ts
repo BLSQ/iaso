@@ -3,7 +3,10 @@ import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
 import { cloneDeep } from 'lodash';
 import { DropdownOptions } from '../../../types/utils';
-import { useGetForm } from '../../entities/entityTypes/hooks/requests/forms';
+import {
+    useGetForm,
+    useGetForms,
+} from '../../entities/entityTypes/hooks/requests/forms';
 
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
@@ -13,6 +16,10 @@ import { Form, PossibleField } from '../types/forms';
 type Result = {
     possibleFields: PossibleField[];
     isFetchingForm: boolean;
+};
+type AllResults = {
+    allPossibleFields: any; // TODO
+    isFetchingForms: boolean;
 };
 
 export const usePossibleFields = (
@@ -39,6 +46,36 @@ export const useGetPossibleFields = (formId?: number): Result => {
         'possible_fields',
     );
     return usePossibleFields(isFetchingForm, currentForm);
+};
+
+export const useAllPossibleFields = (
+    isFetchingForms: boolean,
+    allForms: Form[] = [],
+): AllResults => {
+    return useMemo(() => {
+        let allPossibleFields = {};
+        allForms.forEach(form => {
+            const possibleFields =
+                form?.possible_fields?.map(field => ({
+                    ...field,
+                    fieldKey: field.name.replace('.', ''),
+                })) || [];
+            allPossibleFields[form.form_id] = possibleFields;
+        });
+
+        return {
+            allPossibleFields,
+            isFetchingForms,
+        };
+    }, [isFetchingForms]);
+};
+
+export const useGetAllPossibleFields = (): AllResults => {
+    const { data: allForms, isFetching: isFetchingForms } = useGetForms(true, [
+        'form_id',
+        'possible_fields',
+    ]);
+    return useAllPossibleFields(isFetchingForms, allForms);
 };
 
 type PossibleFieldsDropdown = {

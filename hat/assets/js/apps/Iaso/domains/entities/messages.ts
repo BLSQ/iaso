@@ -249,6 +249,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.submissionsLocations',
         defaultMessage: 'Submissions locations',
     },
+    queryBuilder: {
+        id: 'iaso.instance.queryBuilder',
+        defaultMessage: 'Search in submitted fields',
+    },
 });
 
 export default MESSAGES;

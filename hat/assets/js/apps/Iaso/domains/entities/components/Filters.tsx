@@ -11,9 +11,11 @@ import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
 
 import {
+    QueryBuilderInput,
     commonStyles,
-    useSafeIntl,
+    useHumanReadableJsonLogic,
     useRedirectTo,
+    useSafeIntl,
 } from 'bluesquare-components';
 
 // @ts-ignore
@@ -46,6 +48,13 @@ import {
     hasFeatureFlag,
 } from '../../../utils/featureFlags';
 
+import { Popper } from '../../forms/fields/components/Popper';
+import { parseJson } from '../../instances/utils/jsonLogicParse';
+import { useGetAllPossibleFields } from '../../forms/hooks/useGetPossibleFields';
+import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor';
+import { useGetQueryBuilderFieldsForAllForms } from '../../forms/fields/hooks/useGetQueryBuildersFields';
+import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace';
+
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
@@ -70,6 +79,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         submitterTeamId: params.submitterTeamId,
         entityTypeIds: params.entityTypeIds,
         locationLimit: params.locationLimit,
+        fieldsSearch: params.fieldsSearch,
     });
 
     useEffect(() => {
@@ -82,6 +92,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
             submitterTeamId: params.submitterTeamId,
             entityTypeIds: params.entityTypeIds,
             locationLimit: params.locationLimit,
+            fieldsSearch: params.fieldsSearch,
         });
     }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -100,6 +111,31 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     }, [filters.submitterTeamId, teamOptions]);
 
     const { data: usersOptions } = useGetUsersDropDown(selectedTeam);
+
+    // Load QueryBuilder resources
+    const { allPossibleFields } = useGetAllPossibleFields();
+    const { data: formDescriptors } = useGetFormDescriptor();
+    const fields = useGetQueryBuilderFieldsForAllForms(
+        formDescriptors,
+        allPossibleFields,
+    );
+    const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
+    const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
+        fields,
+        queryBuilderListToReplace,
+    );
+    const fieldsSearchJson = filters.fieldsSearch
+        ? JSON.parse(filters.fieldsSearch)
+        : undefined;
+
+    const handleChangeQueryBuilder = value => {
+        if (value) {
+            const parsedValue = parseJson({ value, fields });
+            handleChange('fieldsSearch', JSON.stringify(parsedValue));
+        } else {
+            handleChange('fieldsSearch', undefined);
+        }
+    };
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -180,6 +216,19 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
+                    <QueryBuilderInput
+                        label={MESSAGES.queryBuilder}
+                        onChange={handleChangeQueryBuilder}
+                        initialLogic={fieldsSearchJson}
+                        fields={fields}
+                        iconProps={{
+                            label: MESSAGES.queryBuilder,
+                            value: getHumanReadableJsonLogic(fieldsSearchJson),
+                            onClear: () =>
+                                handleChange('fieldsSearch', undefined),
+                        }}
+                        InfoPopper={<Popper />}
+                    />
                     {params.tab === 'map' && (
                         <Box mt={2}>
                             <LocationLimit

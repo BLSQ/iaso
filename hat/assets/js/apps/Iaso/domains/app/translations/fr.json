@@ -587,6 +587,7 @@
     "iaso.label.noGeographicalData": "Sans données géographiques",
     "iaso.label.noOptions": "Aucun résultat trouvé",
     "iaso.label.noPeriod": "Pas de période",
+    "iaso.label.noPeriodPlaceHolder": "Le formulaire sélectionné n'a pas de type de période",
     "iaso.label.notValid": "Non valide(s)",
     "iaso.label.ok": "OK",
     "iaso.label.onlyOneExisitingVersion": "Une seule version existante",

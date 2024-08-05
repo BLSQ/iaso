@@ -586,6 +586,7 @@
     "iaso.label.noGeographicalData": "Without geography",
     "iaso.label.noOptions": "No result found",
     "iaso.label.noPeriod": "No period",
+    "iaso.label.noPeriodPlaceHolder": "The selected form has no period type",
     "iaso.label.notValid": "Not valid(s)",
     "iaso.label.ok": "OK",
     "iaso.label.onlyOneExisitingVersion": "Only one existing version",

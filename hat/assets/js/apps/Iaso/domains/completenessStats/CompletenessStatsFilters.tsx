@@ -27,7 +27,7 @@ import PeriodPicker from '../periods/components/PeriodPicker';
 import { useGetPlanningsOptions } from '../plannings/hooks/requests/useGetPlannings';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
-import { PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
+import { NO_PERIOD, PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
 import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
 import { InputWithInfos } from '../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../types/utils';
@@ -124,9 +124,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 .map(f => f.original.period_type)
                 .filter(periodType_ => Boolean(periodType_));
             const uniqPeriods = uniq(periods);
-            return uniqPeriods && uniqPeriods[0]
-                ? uniqPeriods[0]
-                : PERIOD_TYPE_PLACEHOLDER;
+            return uniqPeriods && uniqPeriods[0] ? uniqPeriods[0] : NO_PERIOD;
         }
         return PERIOD_TYPE_PLACEHOLDER;
     }, [filters, forms]);
@@ -156,10 +154,22 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         [handleChange],
     );
 
+    const periodTypePlaceHolder = useMemo(() => {
+        const messages = {
+            [PERIOD_TYPE_PLACEHOLDER]: MESSAGES.periodPlaceHolder,
+            [NO_PERIOD]: MESSAGES.noPeriodPlaceHolder,
+        };
+
+        return messages[periodType]
+            ? formatMessage(messages[periodType])
+            : undefined;
+    }, [formatMessage, periodType]);
+
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
     } = useGetValidationStatus();
+
     return (
         <>
             <Grid container spacing={2}>
@@ -177,11 +187,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         />
                     </InputWithInfos>
                     <PeriodPicker
-                        message={
-                            periodType === PERIOD_TYPE_PLACEHOLDER
-                                ? formatMessage(MESSAGES.periodPlaceHolder)
-                                : undefined
-                        }
+                        message={periodTypePlaceHolder}
                         periodType={periodType}
                         title={formatMessage(MESSAGES.period)}
                         onChange={v => handleChange('period', v)}

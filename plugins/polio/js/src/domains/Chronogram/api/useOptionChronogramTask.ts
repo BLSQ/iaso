@@ -17,7 +17,7 @@ export const useOptionChronogramTask = (): UseQueryResult<
             staleTime: 1000 * 60 * 15, // in ms
             cacheTime: 1000 * 60 * 5,
             select: data => {
-                const metadata = data.actions.POST;
+                const metadata = data.actions.OPTIONS;
                 const mapChoices = choices =>
                     choices.map(choice => ({
                         label: choice.display_name,

@@ -448,6 +448,12 @@ class Group(models.Model):
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)
 
+    def as_small_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+        }
+
     def as_dict(self, with_counts=True):
         res = {
             "id": self.id,
@@ -1128,7 +1134,7 @@ class Instance(models.Model):
             "form_name": self.form.name if self.form else None,
             "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
             "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
-            "org_unit": self.org_unit.as_dict(with_groups=False) if self.org_unit else None,
+            "org_unit": self.org_unit.as_dict() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,

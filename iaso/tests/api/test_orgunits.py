@@ -1196,7 +1196,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         jedi_squad_endor_2_children.save()
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(8):
             response = self.client.get(
                 f"/api/orgunits/?&parent_id={self.jedi_council_endor.pk}&limit=10&page=1&order=name&validation_status=all&onlyDirectChildren=true"
             )

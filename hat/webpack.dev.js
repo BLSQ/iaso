@@ -298,10 +298,12 @@ module.exports = {
                 '../node_modules/react-redux',
             ),
             '@mui': path.resolve(__dirname, '../node_modules/@mui'),
-            'bluesquare-components': path.resolve(
-                __dirname,
-                '../node_modules/bluesquare-components',
-            ),
+            ...(process.env.LIVE_COMPONENTS !== 'true' && {
+                'bluesquare-components': path.resolve(
+                    __dirname,
+                    '../node_modules/bluesquare-components',
+                ),
+            }),
             leaflet: path.resolve(__dirname, '../node_modules/leaflet'),
             'react-leaflet': path.resolve(
                 __dirname,

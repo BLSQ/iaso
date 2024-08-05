@@ -34,4 +34,4 @@ class ChronogramFilter(django_filters.rest_framework.FilterSet):
 class ChronogramTaskFilter(django_filters.rest_framework.FilterSet):
     class Meta:
         model = ChronogramTask
-        fields = ["chronogram_id"]
+        fields = ["chronogram_id", "period", "status"]

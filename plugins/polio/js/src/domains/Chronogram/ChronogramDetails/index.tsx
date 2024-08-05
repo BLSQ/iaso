@@ -4,6 +4,7 @@ import { Box, Grid } from '@mui/material';
 import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 
 import { baseUrls } from '../../../constants/urls';
@@ -18,6 +19,7 @@ import { CreateChronogramTaskModal } from './Modals/ChronogramTaskCreateEditModa
 import { defaultParams } from '../constants';
 import { useGetChronogram } from './api/useGetChronogram';
 import { useOptionChronogramTask } from '../api/useOptionChronogramTask';
+import * as Permission from '../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
 export const ChronogramDetails: FunctionComponent = () => {
     const params = useParamsObject(
@@ -48,19 +50,23 @@ export const ChronogramDetails: FunctionComponent = () => {
             {isFetching && isFetchingMetaData && <LoadingSpinner />}
             {!isFetching && !isFetchingMetaData && (
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    <Grid container justifyContent="flex-end">
-                        <Box>
-                            <CreateChronogramTaskModal
-                                iconProps={{
-                                    message: MESSAGES.modalAddTitle,
-                                }}
-                                chronogram={data as Chronogram}
-                                chronogramTaskMetaData={
-                                    chronogramTaskMetaData as ChronogramTaskMetaData
-                                }
-                            />
-                        </Box>
-                    </Grid>
+                    <DisplayIfUserHasPerm
+                        permissions={[Permission.POLIO_CHRONOGRAM]}
+                    >
+                        <Grid container justifyContent="flex-end">
+                            <Box>
+                                <CreateChronogramTaskModal
+                                    iconProps={{
+                                        message: MESSAGES.modalAddTitle,
+                                    }}
+                                    chronogram={data as Chronogram}
+                                    chronogramTaskMetaData={
+                                        chronogramTaskMetaData as ChronogramTaskMetaData
+                                    }
+                                />
+                            </Box>
+                        </Grid>
+                    </DisplayIfUserHasPerm>
                     <ChronogramDetailsTable
                         params={paramsNew}
                         chronogramTaskMetaData={

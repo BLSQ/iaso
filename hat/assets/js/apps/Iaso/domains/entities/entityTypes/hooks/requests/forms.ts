@@ -35,11 +35,15 @@ export const useGetForm = (
 
 export const useGetForms = (
     enabled: boolean,
+    fields?: string[] | undefined,
 ): UseQueryResult<Form[], Error> => {
+    let url = '/api/forms/?fields=id,name,latest_form_version';
+    if (fields) {
+        url += `,${fields.join(',')}`;
+    }
     return useSnackQuery({
         queryKey: ['forms'],
-        queryFn: () =>
-            getRequest('/api/forms/?fields=id,name,latest_form_version'),
+        queryFn: () => getRequest(url),
         options: {
             staleTime: 60000,
             enabled,

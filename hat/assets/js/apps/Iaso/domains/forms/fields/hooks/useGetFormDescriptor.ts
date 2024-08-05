@@ -12,7 +12,7 @@ type FormVersionsList = {
 };
 
 const getVersion = (formId: number | undefined): Promise<FormVersionsList> => {
-    return getRequest(`/api/formversions/?form_id=${formId}&fields=descriptor`);
+    return getRequest(`/api/formversions/?form_id=&fields=descriptor`);
 };
 export const useGetFormDescriptor = (
     formId?: number,
@@ -25,7 +25,7 @@ export const useGetFormDescriptor = (
         queryKey,
         queryFn: () => getVersion(formId),
         options: {
-            enabled: Boolean(formId),
+            // enabled: Boolean(formId), TODO
             select: (
                 data: FormVersionsList | undefined,
             ): FormDescriptor[] | undefined => {

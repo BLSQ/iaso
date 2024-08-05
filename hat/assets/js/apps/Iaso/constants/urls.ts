@@ -120,13 +120,13 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     mappings: {
         url: 'forms/mappings',
         params: [
-            'accountId', 
-            'formId', 
+            'accountId',
+            'formId',
             'mappingTypes',
             'orgUnitTypeIds',
             'projectsIds',
-            'search', 
-            ...paginationPathParams
+            'search',
+            ...paginationPathParams,
         ],
     },
     mappingDetail: {
@@ -326,6 +326,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'entityTypeIds',
             'locationLimit',
             'groups',
+            'fieldsSearch',
             ...paginationPathParams,
         ],
     },

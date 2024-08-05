@@ -54,3 +54,30 @@ export const useGetQueryBuildersFields = (
     });
     return fields;
 };
+
+export const useGetQueryBuilderFieldsForAllForms = (
+    formDescriptors?: FormDescriptor[],
+    allPossibleFields?: PossibleField[],
+): QueryBuilderFields => {
+    if (!allPossibleFields || !formDescriptors) return {};
+    const fields: QueryBuilderFields = {};
+
+    for (const [form_id, possibleFields] of Object.entries(allPossibleFields)) {
+        const subfields = useGetQueryBuildersFields(
+            formDescriptors,
+            possibleFields,
+        );
+
+        fields[form_id] = {
+            label: form_id,
+            type: '!group',
+            mode: 'array',
+            conjunctions: ['AND', 'OR'],
+            operators: ['some', 'all', 'none'],
+            defaultOperator: 'some',
+            subfields: subfields,
+        };
+    }
+
+    return fields;
+};

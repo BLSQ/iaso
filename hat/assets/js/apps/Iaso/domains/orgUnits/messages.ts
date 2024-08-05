@@ -163,7 +163,7 @@ const MESSAGES = defineMessages({
     },
     projects: {
         defaultMessage: 'Projects',
-        id: 'iaso.orgUnits.projects',
+        id: 'iaso.label.projects',
     },
     source: {
         defaultMessage: 'Source',

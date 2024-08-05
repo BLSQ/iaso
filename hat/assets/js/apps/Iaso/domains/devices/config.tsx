@@ -9,7 +9,7 @@ export const useDevicesTableColumns = (): Column[] => {
     return useMemo(
         () => [
             {
-                Header: formatMessage(MESSAGES.imei),
+                Header: formatMessage(MESSAGES.id),
                 sortable: false,
                 accessor: 'imei',
             },

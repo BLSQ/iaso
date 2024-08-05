@@ -1,19 +1,51 @@
+from iaso.api.forms import FormSerializer
+from iaso.models.forms import Form
+from iaso.models.org_unit import OrgUnit
 from .common import ModelViewSet, HasPermission, TimestampField
 from rest_framework import serializers, permissions
+from django.db.models import Prefetch
+from django.db.models import Count
 
 from iaso.models import Device, DeviceOwnership, Instance
 from .common import ModelViewSet, HasPermission, TimestampField
 from hat.menupermissions import models as permission
 
 
+class FormSerializerForDevices(serializers.ModelSerializer):
+    class Meta:
+        model = Form
+        fields = ["id", "name"]
+        read_only_fields = ["id", "name"]
+
+
+class OrgUnitSerializerForDevices(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name"]
+
+
 class DeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device
-        fields = ["id", "imei", "test_device", "last_owner", "synched_at", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "imei",
+            "test_device",
+            "last_owner",
+            "synched_at",
+            "created_at",
+            "updated_at",
+            "first_use",
+            "forms_imported",
+            "org_units_visited",
+        ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
     last_owner = serializers.SerializerMethodField()
     synched_at = serializers.SerializerMethodField()
+    first_use = serializers.SerializerMethodField()
+    forms_imported = serializers.SerializerMethodField()
+    org_units_visited = serializers.SerializerMethodField()
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
@@ -27,6 +59,21 @@ class DeviceSerializer(serializers.ModelSerializer):
     def get_last_owner(obj: Device):
         owner = DeviceOwnership.objects.filter(device__id=obj.id).order_by("-created_at").first()
         return owner.user.iaso_profile.as_short_dict() if owner else None
+
+    def get_first_use(self, obj):
+        instance = obj.instances.filter(device__id=obj.id).order_by("updated_at").first()
+        return instance.source_created_at.timestamp() if instance and instance.source_created_at else None
+
+    def get_forms_imported(self, obj):
+        instances = Instance.objects.filter(device__id=obj.id)
+        # For some reason this filters out deleted forms
+        forms = Form.objects.filter(instances__in=instances)
+        return {"forms": FormSerializerForDevices(forms, many=True).data, "count": forms.count()}
+
+    def get_org_units_visited(self, obj):
+        instances = Instance.objects.filter(device__id=obj.id)
+        org_units = OrgUnit.objects.filter(instances__in=instances)
+        return {"org_units": OrgUnitSerializerForDevices(org_units, many=True).data, "count": org_units.count()}
 
 
 class DevicesViewSet(ModelViewSet):
@@ -44,7 +91,6 @@ class DevicesViewSet(ModelViewSet):
     ]
     serializer_class = DeviceSerializer
     results_key = "devices"
-    queryset = Device.objects.all()
     http_method_names = ["get"]
 
     def get_queryset(self):

@@ -926,7 +926,9 @@ class Instance(models.Model):
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, dim=3, srid=4326)
-    org_unit = models.ForeignKey("OrgUnit", on_delete=models.DO_NOTHING, null=True, blank=True)
+    org_unit = models.ForeignKey(
+        "OrgUnit", on_delete=models.DO_NOTHING, null=True, blank=True, related_name="instances"
+    )
     form = models.ForeignKey(
         "Form",
         on_delete=models.PROTECT,
@@ -937,7 +939,7 @@ class Instance(models.Model):
     project = models.ForeignKey("Project", blank=True, null=True, on_delete=models.DO_NOTHING)
     json = models.JSONField(null=True, blank=True)
     accuracy = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=7)
-    device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
+    device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
     planning = models.ForeignKey("Planning", null=True, blank=True, on_delete=models.SET_NULL, related_name="instances")

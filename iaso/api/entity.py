@@ -61,7 +61,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def get_org_unit(self, entity: Entity):
         if entity.attributes and entity.attributes.org_unit:
-            return entity.attributes.org_unit.as_location(with_parents=False)
+            return entity.attributes.org_unit.as_dict_for_entity()
         return None
 
     def get_submitter(self, entity: Entity):
@@ -135,6 +135,7 @@ class EntityViewSet(ModelViewSet):
         queryset = queryset.prefetch_related(
             "attributes__created_by__teams",
             "attributes__form",
+            "attributes__org_unit__groups",
             "attributes__org_unit__org_unit_type",
             "attributes__org_unit__parent",
             "attributes__org_unit__version__data_source",
@@ -285,7 +286,7 @@ class EntityViewSet(ModelViewSet):
             if attributes is not None and entity.attributes is not None:
                 file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
                 attributes_pk = attributes.pk
-                attributes_ou = entity.attributes.org_unit.as_location(with_parents=False) if entity.attributes.org_unit else None  # type: ignore
+                attributes_ou = entity.attributes.org_unit.as_dict_for_entity() if entity.attributes.org_unit else None  # type: ignore
                 attributes_latitude = attributes.location.y if attributes.location else None  # type: ignore
                 attributes_longitude = attributes.location.x if attributes.location else None  # type: ignore
             name = None

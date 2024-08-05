@@ -187,6 +187,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "latitude": 50.0,
                 "longitude": 4.0,
                 "altitude": 100.0,
+                "projects": [],
             },
         )
 
@@ -240,6 +241,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "longitude": 4.0,
                 "altitude": 100.0,
                 "creator": None,
+                "projects": [],
             },
         )
 

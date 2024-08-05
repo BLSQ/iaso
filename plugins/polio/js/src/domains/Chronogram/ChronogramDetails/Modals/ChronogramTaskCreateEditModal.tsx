@@ -24,6 +24,8 @@ import { Chronogram } from '../../Chronogram/types';
 import { ChronogramTaskMetaData } from '../../types';
 import { useChronogramTaskSchema } from '../hooks/validation';
 import { useCreateEditChronogramTask } from '../api/useCreateEditChronogramTask';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 
 type Props = {
     isOpen: boolean;
@@ -69,6 +71,9 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
     const allowConfirm =
         !formik.isSubmitting && formik.isValid && isFormChanged;
 
+    const currentUser = useCurrentUser();
+    const isUserAdmin = userHasPermission('iaso_polio_chronogram', currentUser);
+
     const title = chronogramTask?.id
         ? `${formatMessage(MESSAGES.modalEditTitle)}`
         : `${formatMessage(MESSAGES.modalAddTitle)}`;
@@ -98,6 +103,7 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         component={SingleSelect}
                         options={chronogramTaskMetaData.period}
                         required
+                        disabled={!isUserAdmin}
                     />
                 </Box>
                 <Box mb={2}>
@@ -106,6 +112,7 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         name="description"
                         component={TextInput}
                         required
+                        disabled={!isUserAdmin}
                     />
                 </Box>
                 <Box mb={2}>
@@ -121,6 +128,7 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                             name="start_offset_in_days"
                             component={NumberInput}
                             required
+                            disabled={!isUserAdmin}
                         />
                     </InputWithInfos>
                 </Box>
@@ -140,6 +148,7 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         component={SingleSelect}
                         options={profilesDropdown}
                         isLoading={isFetchingProfiles}
+                        disabled={!isUserAdmin}
                     />
                 </Box>
                 <Box mb={2}>

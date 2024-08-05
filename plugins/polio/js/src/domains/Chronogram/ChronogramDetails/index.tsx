@@ -11,10 +11,10 @@ import { useStyles } from '../../../styles/theme';
 
 import MESSAGES from './messages';
 import { Chronogram } from '../Chronogram/types';
+import { ChronogramDetailsFilters } from './Filters/ChronogramDetailsFilters';
 import { ChronogramDetailsTable } from './Table/ChronogramDetailsTable';
 import { ChronogramTaskMetaData } from '../types';
 import { ChronogramTasksParams } from './types';
-import { CreateChronogramTaskModal } from './Modals/ChronogramTaskCreateEditModal';
 import { defaultParams } from '../constants';
 import { useGetChronogram } from './api/useGetChronogram';
 import { useOptionChronogramTask } from '../api/useOptionChronogramTask';
@@ -48,19 +48,13 @@ export const ChronogramDetails: FunctionComponent = () => {
             {isFetching && isFetchingMetaData && <LoadingSpinner />}
             {!isFetching && !isFetchingMetaData && (
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    <Grid container justifyContent="flex-end">
-                        <Box>
-                            <CreateChronogramTaskModal
-                                iconProps={{
-                                    message: MESSAGES.modalAddTitle,
-                                }}
-                                chronogram={data as Chronogram}
-                                chronogramTaskMetaData={
-                                    chronogramTaskMetaData as ChronogramTaskMetaData
-                                }
-                            />
-                        </Box>
-                    </Grid>
+                    <ChronogramDetailsFilters
+                        params={paramsNew}
+                        chronogram={data as Chronogram}
+                        chronogramTaskMetaData={
+                            chronogramTaskMetaData as ChronogramTaskMetaData
+                        }
+                    />
                     <ChronogramDetailsTable
                         params={paramsNew}
                         chronogramTaskMetaData={

@@ -252,7 +252,13 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     },
     chronogramDetails: {
         url: CHRONOGRAM_DETAILS,
-        params: [...paginationPathParams, 'chronogram_id', 'limit'],
+        params: [
+            ...paginationPathParams,
+            'chronogram_id',
+            'limit',
+            'period',
+            'status',
+        ],
     },
 };
 

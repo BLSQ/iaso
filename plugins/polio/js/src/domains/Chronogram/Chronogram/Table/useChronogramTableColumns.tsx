@@ -7,11 +7,13 @@ import {
     DateCell,
     DateTimeCellRfc,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { baseUrls } from '../../../../constants/urls';
 
 import MESSAGES from '../messages';
 import { ChronogramTaskMetaData } from '../../types';
 import { DeleteChronogram } from '../Modals/DeleteChronogramModal';
+import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
 export const useChronogramTableColumns = (
     chronogramTaskMetaData: ChronogramTaskMetaData,
@@ -84,10 +86,14 @@ export const useChronogramTableColumns = (
                                 size="small"
                                 url={`/${baseUrls.chronogramDetails}/chronogram_id/${settings.row.original.id}`}
                             />
-                            {/* @ts-ignore */}
-                            <DeleteChronogram
-                                chronogram={settings.row.original}
-                            />
+                            <DisplayIfUserHasPerm
+                                permissions={[Permission.POLIO_CHRONOGRAM]}
+                            >
+                                {/* @ts-ignore */}
+                                <DeleteChronogram
+                                    chronogram={settings.row.original}
+                                />
+                            </DisplayIfUserHasPerm>
                         </>
                     );
                 },

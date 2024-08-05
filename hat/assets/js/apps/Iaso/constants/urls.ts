@@ -311,6 +311,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'submitterTeamId',
             'entityTypeIds',
             'locationLimit',
+            'groups',
             ...paginationPathParams,
         ],
     },

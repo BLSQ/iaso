@@ -70,15 +70,15 @@ export const useStaticColumns = (): Array<Column> => {
                     return <>--</>;
                 }
 
-                return groups.map(group => (
-                    <div>
+                return groups.map((group, index) => (
+                    <span key={group.id}>
                         <LinkWithLocation
-                            key={group.id}
                             to={filterOrgUnitsByGroupUrl(group.id)}
                         >
                             {group.name}
                         </LinkWithLocation>
-                    </div>
+                        {index !== groups.length - 1 && ', '}
+                    </span>
                 ));
             },
         },

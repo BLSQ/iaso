@@ -983,7 +983,7 @@
     "iaso.permissions.tooltip.iaso_org_unit_types": "Gestion des types d’unité d’organisation, i.e. définir les différents niveaux de la pyramide (ex: Pays/Région/Aire/Formation sanitaire)",
     "iaso.permissions.tooltip.iaso_page_write": "Gestion des liens externes : créer ou modifier un lien externe",
     "iaso.permissions.tooltip.iaso_polio_chronogram": "Gestion des chronogrammes Polio - Lecture et écriture",
-    "iaso.permissions.tooltip.iaso_polio_chronogram_restricted_write": "Chronogramme Polio (utilisateur) - Écriture restreinte",
+    "iaso.permissions.tooltip.iaso_polio_chronogram_restricted_write": "Gestion des chronogrammes Polio (utilisateur) - Écriture restreinte",
     "iaso.permissions.tooltip.iaso_polio_notifications": "Manage polio notifications - Read and Write",
     "iaso.permissions.tooltip.iaso_registry_read": "Vue résumée des données collectées par unité d’organisation - Lecture",
     "iaso.permissions.tooltip.iaso_registry_write": "Vue résumée des données collectées par unité d’organisation - Ecriture",

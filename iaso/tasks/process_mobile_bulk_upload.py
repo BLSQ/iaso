@@ -142,7 +142,7 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
         instance.last_modified_by = user
         instance.source_updated_at = incoming_updated_at
         instance.save()
-        instance.get_and_save_json_of_xml(force=True)
+        instance.get_and_save_json_of_xml(force=True, tries=8)
     else:
         logger.info(
             "\tSkipping form %s (current timestamp %s, incoming %s)",

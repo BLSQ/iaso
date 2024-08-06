@@ -2,11 +2,13 @@ import datetime
 import operator
 import random
 import re
+import time
 import typing
 from copy import copy
 from functools import reduce
 from io import StringIO
 from logging import getLogger
+from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import django_cte
@@ -1062,10 +1064,13 @@ class Instance(models.Model):
         else:
             return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
-    def get_and_save_json_of_xml(self, force=False):
+    def get_and_save_json_of_xml(self, force=False, tries=3):
         """
         Convert the xml file to json and save it to the instance.
         If the instance already has a json, don't do anything unless `force=True`.
+
+        When downloading from S3, attempt `tries` times (3 by default) with
+        exponential backoff.
 
         :return: in all cases, return the JSON representation of the instance
         """
@@ -1075,7 +1080,16 @@ class Instance(models.Model):
         elif self.file:
             # not converted yet, but we have a file, so we can convert it
             if "amazonaws" in self.file.url:
-                file = urlopen(self.file.url)
+                for i in range(tries):
+                    try:
+                        file = urlopen(self.file.url)
+                        break
+                    except HTTPError as err:
+                        if err.code == 503:  # Slow Down
+                            time.sleep(2**i)
+                        else:
+                            raise err
+
             else:
                 file = self.file
 

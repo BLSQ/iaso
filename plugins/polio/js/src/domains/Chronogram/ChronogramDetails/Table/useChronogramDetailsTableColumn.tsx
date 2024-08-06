@@ -102,5 +102,5 @@ export const useChronogramDetailsTableColumn = (
                 },
             },
         ];
-    }, [formatMessage]);
+    }, [formatMessage, chronogramTaskMetaData]);
 };

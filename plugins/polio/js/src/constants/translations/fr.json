@@ -93,7 +93,7 @@
     "iaso.polio.chronogram.label.delay_in_days": "Délai",
     "iaso.polio.chronogram.label.description": "Activité",
     "iaso.polio.chronogram.label.is_on_time": "Dans les délais",
-    "iaso.polio.chronogram.label.num_task_delayed": "Tâche retardée",
+    "iaso.polio.chronogram.label.num_task_delayed": "Nombre de tâches retardées",
     "iaso.polio.chronogram.label.percentage_of_completion": "Pourcentage de réalisation avant/pendant/après",
     "iaso.polio.chronogram.label.period": "Période",
     "iaso.polio.chronogram.label.round": "Round",

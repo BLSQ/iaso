@@ -11,13 +11,10 @@ import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps
 import { baseUrls } from '../../../../constants/urls';
 
 import MESSAGES from '../messages';
-import { ChronogramTaskMetaData } from '../../types';
 import { DeleteChronogram } from '../Modals/DeleteChronogramModal';
 import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
-export const useChronogramTableColumns = (
-    chronogramTaskMetaData: ChronogramTaskMetaData,
-): Column[] => {
+export const useChronogramTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -99,5 +96,5 @@ export const useChronogramTableColumns = (
                 },
             },
         ];
-    }, [formatMessage, chronogramTaskMetaData]);
+    }, [formatMessage]);
 };

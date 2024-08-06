@@ -3,20 +3,15 @@ import React, { FunctionComponent } from 'react';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
 import { ChronogramParams } from '../types';
-import { ChronogramTaskMetaData } from '../../types';
 import { baseUrls } from '../../../../constants/urls';
 import { useChronogramTableColumns } from './useChronogramTableColumns';
 import { useGetChronogram } from '../api/useGetChronogram';
 
 type Props = {
     params: ChronogramParams;
-    chronogramTaskMetaData: ChronogramTaskMetaData;
 };
 
-export const ChronogramTable: FunctionComponent<Props> = ({
-    params,
-    chronogramTaskMetaData,
-}) => {
+export const ChronogramTable: FunctionComponent<Props> = ({ params }) => {
     const apiParams: ChronogramParams = {
         ...params,
         limit: params.pageSize || '20',
@@ -24,7 +19,7 @@ export const ChronogramTable: FunctionComponent<Props> = ({
         page: params.page || '1',
     };
     const { data, isFetching } = useGetChronogram(apiParams);
-    const columns = useChronogramTableColumns(chronogramTaskMetaData);
+    const columns = useChronogramTableColumns();
     return (
         <TableWithDeepLink
             baseUrl={baseUrls.chronogram}

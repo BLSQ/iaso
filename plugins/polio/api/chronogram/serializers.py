@@ -19,16 +19,19 @@ class UserNestedSerializer(serializers.ModelSerializer):
 
 class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
     def get_fields(self, *args, **kwargs):
-        """
-        Restrict writable fields for the `POLIO_CHRONOGRAM_RESTRICTED_WRITE` permission.
-        """
         fields = super().get_fields(*args, **kwargs)
         user = getattr(self.context.get("request", {}), "user", None)
+
+        if user.has_perm(iaso_permission.POLIO_CHRONOGRAM):
+            return fields
+
+        # Restrict writable fields for the `POLIO_CHRONOGRAM_RESTRICTED_WRITE` permission.
         if user and user.has_perm(iaso_permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE):
             allowed_fields = ["status", "comment"]
             read_only_fields = [field for field in fields if field not in allowed_fields]
             for field in read_only_fields:
                 fields[field].read_only = True
+
         return fields
 
     created_by = UserNestedSerializer(read_only=True)

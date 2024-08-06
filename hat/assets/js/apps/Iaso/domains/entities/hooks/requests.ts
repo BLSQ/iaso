@@ -14,36 +14,22 @@ import {
 } from '../../../libs/Api';
 import MESSAGES from '../messages';
 
+import { Location } from '../components/ListMap';
+import getDisplayName, { Profile } from '../../../utils/usersUtils';
 import { makeUrlWithParams } from '../../../libs/utils';
 
 import { Beneficiary } from '../types/beneficiary';
-import { PaginatedInstances } from '../../instances/types/instance';
+import { DisplayedLocation } from '../types/locations';
 import { DropdownOptions } from '../../../types/utils';
-import getDisplayName, { Profile } from '../../../utils/usersUtils';
 import { DropdownTeamsOptions, Team } from '../../teams/types/team';
 import { ExtraColumn } from '../types/fields';
-import { DisplayedLocation } from '../types/locations';
-import { Location } from '../components/ListMap';
+import { PaginatedInstances } from '../../instances/types/instance';
+import { Params } from '../types/filters';
 
 export interface PaginatedBeneficiaries extends Pagination {
     result: Array<Beneficiary>;
     columns: Array<ExtraColumn>;
 }
-
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-    location?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    submitterId?: string;
-    submitterTeamId?: string;
-    entityTypeIds?: string;
-    locationLimit?: string;
-    tab?: string;
-};
 
 type ApiParams = {
     limit?: string;
@@ -59,6 +45,7 @@ type ApiParams = {
     asLocation?: boolean;
     locationLimit?: string;
     tab: string;
+    fields_search?: string;
 };
 
 type GetAPiParams = {
@@ -85,6 +72,7 @@ export const useGetBeneficiariesApiParams = (
         limit: params.pageSize || '20',
         page: params.page || '1',
         tab: params.tab || 'list',
+        fields_search: params.fieldsSearch,
     };
     if (asLocation) {
         apiParams.asLocation = true;

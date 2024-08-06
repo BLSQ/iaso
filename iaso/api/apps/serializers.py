@@ -24,6 +24,7 @@ class AppSerializer(ProjectSerializer):
             "forms",
             "feature_flags",
             "needs_authentication",
+            "redirection_url",
             "min_version",
             "created_at",
             "updated_at",

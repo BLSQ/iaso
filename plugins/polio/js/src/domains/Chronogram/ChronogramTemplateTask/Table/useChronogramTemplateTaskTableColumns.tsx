@@ -29,6 +29,7 @@ export const useChronogramTemplateTaskTableColumns = (
                 id: 'description',
                 accessor: 'description',
                 sortable: false,
+                width: 800,
             },
             {
                 Header: formatMessage(MESSAGES.labelStartOffsetInDays),

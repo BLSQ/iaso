@@ -55,9 +55,18 @@ def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
             operator.or_,
             (jsonlogic_to_q(subquery, field_prefix) for subquery in jsonlogic["or"]),
         )
-
     elif "!" in jsonlogic:
         return ~jsonlogic_to_q(jsonlogic["!"], field_prefix)
+    elif "some" in jsonlogic:
+        from iaso.models import Instance
+
+        form_var, conditions = jsonlogic["some"]
+        form_id = form_var["var"]
+
+        subquery = Instance.objects.filter(
+            Q(entity_id=OuterRef("id")) & Q(form__form_id=form_id) & jsonlogic_to_q(conditions, field_prefix)
+        )
+        return Exists(subquery)
 
     if not jsonlogic.keys():
         return Q()
@@ -100,19 +109,8 @@ def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
 
     lookup = lookups[op]
 
-    form_id = None
-    field_name_arr = field_name.split(".")
-    if len(field_name_arr) == 2:
-        form_id, field_name = field_name_arr
-
     f = f"{field_prefix}{field_name}{extract}__{lookup}"
     q = Q(**{f: value})
-
-    if form_id:
-        from iaso.models import Instance
-
-        subquery = Instance.objects.filter(Q(entity_id=OuterRef("id")) & Q(form__form_id=form_id) & q)
-        q = Exists(subquery)
 
     if op == "!=":
         # invert the filter

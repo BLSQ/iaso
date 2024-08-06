@@ -268,7 +268,7 @@ class EntityAPITestCase(APITestCase):
 
     def test_get_entity_search_in_instances(self):
         """
-        Test the 'searchInInstances' filter of /api/entities
+        Test the 'fields_search' filter of /api/entities
 
         This parameter allows to filter entities based on the presence of a
         form instance with certain attributes.
@@ -320,7 +320,7 @@ class EntityAPITestCase(APITestCase):
 
         response = self.client.get(
             "/api/entities/",
-            {"jsonContent": self._generate_json_filter("and", "F", "Bujumbura")},
+            {"fields_search": self._generate_json_filter("and", "F", "Bujumbura")},
         )
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
@@ -328,13 +328,13 @@ class EntityAPITestCase(APITestCase):
 
         response = self.client.get(
             "/api/entities/",
-            {"jsonContent": self._generate_json_filter("and", "M", "Bujumbura")},
+            {"fields_search": self._generate_json_filter("and", "M", "Bujumbura")},
         )
         self.assertEqual(len(response.json()["result"]), 0)
 
         response = self.client.get(
             "/api/entities/",
-            {"jsonContent": self._generate_json_filter("or", "F", "Kinshasa")},
+            {"fields_search": self._generate_json_filter("or", "F", "Kinshasa")},
         )
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
@@ -345,15 +345,15 @@ class EntityAPITestCase(APITestCase):
             {
                 operator: [
                     {
-                        "==": [
-                            {"var": f"{self.form_1.form_id}.gender"},
-                            gender,
+                        "some": [
+                            {"var": self.form_1.form_id},
+                            {"==": [{"var": "gender"}, gender]},
                         ]
                     },
                     {
-                        "==": [
-                            {"var": f"{self.form_2.form_id}.residence"},
-                            residence,
+                        "some": [
+                            {"var": self.form_2.form_id},
+                            {"==": [{"var": "residence"}, residence]},
                         ]
                     },
                 ]

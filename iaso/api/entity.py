@@ -133,6 +133,7 @@ class EntityViewSet(ModelViewSet):
         created_by_id = self.request.query_params.get("created_by_id", None)
         created_by_team_id = self.request.query_params.get("created_by_team_id", None)
         groups = self.request.query_params.get("groups", None)
+        fields_search = self.request.GET.get("fields_search", None)
 
         queryset = Entity.objects.filter_for_user(self.request.user)
 
@@ -183,6 +184,10 @@ class EntityViewSet(ModelViewSet):
         if groups:
             queryset = queryset.filter(attributes__org_unit__groups__in=groups.split(","))
 
+        if fields_search:
+            q = jsonlogic_to_q(json.loads(fields_search), field_prefix="json__")
+            queryset = queryset.filter(q)
+
         # location
         return queryset
 
@@ -230,13 +235,6 @@ class EntityViewSet(ModelViewSet):
 
     def list(self, request: Request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-
-        json_content = request.GET.get("jsonContent", None)
-        # json_content = '{"and": [{"==": [{"var": "trypelim_CATT.result"}, "positive"]}]}'
-        if json_content:
-            q = jsonlogic_to_q(json.loads(json_content), field_prefix="json__")
-            queryset = queryset.filter(q)
-            print(queryset.query)
 
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)

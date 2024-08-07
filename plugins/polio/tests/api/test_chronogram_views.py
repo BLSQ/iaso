@@ -27,11 +27,19 @@ class ChronogramTaskViewSetTestCase(APITestCase):
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
         cls.user = cls.create_user_with_profile(
             email="john@polio.org",
-            username="test",
+            username="john",
             first_name="John",
             last_name="Doe",
             account=cls.account,
             permissions=[iaso_permission._POLIO_CHRONOGRAM],
+        )
+        cls.user_with_restricted_write_perms = cls.create_user_with_profile(
+            email="kevin@polio.org",
+            username="kevin",
+            first_name="Kevin",
+            last_name="Walsh",
+            account=cls.account,
+            permissions=[iaso_permission._POLIO_CHRONOGRAM_RESTRICTED_WRITE],
         )
 
         cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
@@ -114,6 +122,33 @@ class ChronogramTaskViewSetTestCase(APITestCase):
         self.assertEqual(self.chronogram_task.updated_by, self.user)
         self.assertEqual(self.chronogram_task.deleted_at, None)
 
+    def test_update_restricted_ok(self):
+        self.client.force_authenticate(self.user_with_restricted_write_perms)
+        data = {
+            "period": Period.AFTER,
+            "description": "New description",
+            "start_offset_in_days": 10,
+            "status": ChronogramTask.Status.DONE,
+            "comment": "Restricted user should be able to comment.",
+        }
+
+        response = self.client.patch(
+            f"/api/polio/chronograms/tasks/{self.chronogram_task.pk}/", data=data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.chronogram_task.refresh_from_db()
+        # The following fields should be read-only and keep their old values.
+        self.assertEqual(self.chronogram_task.period, "BEFORE")
+        self.assertEqual(self.chronogram_task.description, "Assurer la commande des marqueurs")
+        self.assertEqual(self.chronogram_task.start_offset_in_days, 0)
+        # The following fields should have been changed.
+        self.assertEqual(self.chronogram_task.status, "DONE")
+        self.assertEqual(self.chronogram_task.comment, "Restricted user should be able to comment.")
+        # Meta data.
+        self.assertEqual(self.chronogram_task.updated_by, self.user_with_restricted_write_perms)
+        self.assertEqual(self.chronogram_task.deleted_at, None)
+
     def test_soft_delete_ok(self):
         self.client.force_authenticate(self.user)
         response = self.client.delete(f"/api/polio/chronograms/tasks/{self.chronogram_task.pk}/")
@@ -121,6 +156,19 @@ class ChronogramTaskViewSetTestCase(APITestCase):
 
         self.chronogram_task.refresh_from_db()
         self.assertEqual(self.chronogram_task.deleted_at, TODAY)  # Soft deleted.
+
+    def test_for_user_with_restricted_access(self):
+        self.client.force_authenticate(self.user_with_restricted_write_perms)
+        response = self.client.get(f"/api/polio/chronograms/tasks/{self.chronogram_task.pk}/")
+        self.assertJSONResponse(response, 200)
+
+        response = self.client.post("/api/polio/chronograms/tasks/", data={}, format="json")
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.delete(f"/api/polio/chronograms/tasks/{self.chronogram_task.pk}/")
+        self.assertEqual(response.status_code, 403)
+
+        self.client.logout()
 
 
 @time_machine.travel(TODAY, tick=False)
@@ -136,13 +184,20 @@ class ChronogramTemplateTaskViewSetTestCase(APITestCase):
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
         cls.user = cls.create_user_with_profile(
             email="john@polio.org",
-            username="test",
+            username="john",
             first_name="John",
             last_name="Doe",
             account=cls.account,
             permissions=[iaso_permission._POLIO_CHRONOGRAM],
         )
-
+        cls.user_with_restricted_write_perms = cls.create_user_with_profile(
+            email="kevin@polio.org",
+            username="kevin",
+            first_name="Kevin",
+            last_name="Walsh",
+            account=cls.account,
+            permissions=[iaso_permission._POLIO_CHRONOGRAM_RESTRICTED_WRITE],
+        )
         cls.chronogram_template_task = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.BEFORE,
@@ -218,6 +273,25 @@ class ChronogramTemplateTaskViewSetTestCase(APITestCase):
         self.chronogram_template_task.refresh_from_db()
         self.assertEqual(self.chronogram_template_task.deleted_at, TODAY)  # Soft deleted.
 
+    def test_for_user_with_restricted_access(self):
+        """
+        A user with restricted write permission should not have access to chronogram templates.
+        """
+        self.client.force_authenticate(self.user_with_restricted_write_perms)
+        response = self.client.get(f"/api/polio/chronograms/template_tasks/{self.chronogram_template_task.pk}/")
+        self.assertJSONResponse(response, 403)
+
+        response = self.client.post("/api/polio/chronograms/template_tasks/", data={}, format="json")
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.patch(
+            f"/api/polio/chronograms/template_tasks/{self.chronogram_template_task.pk}/", data={}, format="json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.delete(f"/api/polio/chronograms/template_tasks/{self.chronogram_template_task.pk}/")
+        self.assertEqual(response.status_code, 403)
+
 
 @time_machine.travel(TODAY, tick=False)
 class ChronogramViewSetTestCase(APITestCase):
@@ -232,11 +306,19 @@ class ChronogramViewSetTestCase(APITestCase):
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
         cls.user = cls.create_user_with_profile(
             email="john@polio.org",
-            username="test",
+            username="john",
             first_name="John",
             last_name="Doe",
             account=cls.account,
             permissions=[iaso_permission._POLIO_CHRONOGRAM],
+        )
+        cls.user_with_restricted_write_perms = cls.create_user_with_profile(
+            email="kevin@polio.org",
+            username="kevin",
+            first_name="Kevin",
+            last_name="Walsh",
+            account=cls.account,
+            permissions=[iaso_permission._POLIO_CHRONOGRAM_RESTRICTED_WRITE],
         )
 
         cls.campaign = Campaign.objects.create(
@@ -373,3 +455,18 @@ class ChronogramViewSetTestCase(APITestCase):
             "rounds": [],
         }
         self.assertEqual(response_data, expected_data)
+
+    def test_for_user_with_restricted_access(self):
+        """
+        A user with restricted write permission should have access to safe methods only.
+        """
+        self.client.force_authenticate(self.user_with_restricted_write_perms)
+        response = self.client.get(f"/api/polio/chronograms/{self.chronogram.pk}/")
+        self.assertJSONResponse(response, 200)
+
+        response = self.client.delete(f"/api/polio/chronograms/{self.chronogram.pk}/", format="json")
+        self.assertEqual(response.status_code, 403)
+
+        data = {"round": self.round_1.pk}
+        response = self.client.post("/api/polio/chronograms/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)

@@ -264,7 +264,7 @@ const InstancesFiltersComponent = ({
             <UserOrgUnitRestriction />
 
             <Grid container spacing={2}>
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleFormChange}
@@ -322,7 +322,7 @@ const InstancesFiltersComponent = ({
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="status"
                         clearable
@@ -358,7 +358,7 @@ const InstancesFiltersComponent = ({
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} sm={6} md={3}>
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -397,7 +397,7 @@ const InstancesFiltersComponent = ({
                         loading={fetchingPlannings}
                     />
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} sm={6} md={3}>
                     <DatesRange
                         xs={12}
                         sm={12}

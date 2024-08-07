@@ -3,7 +3,9 @@ import { Box, Grid } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
 
+import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 
@@ -66,17 +68,19 @@ export const ChronogramDetailsFilters: FunctionComponent<Props> = ({
                     />
                 </Box>
             </Grid>
-            <Grid container item justifyContent="flex-end" mt={4}>
-                <CreateChronogramTaskModal
-                    iconProps={{
-                        message: MESSAGES.modalAddTitle,
-                    }}
-                    chronogram={chronogram as Chronogram}
-                    chronogramTaskMetaData={
-                        chronogramTaskMetaData as ChronogramTaskMetaData
-                    }
-                />
-            </Grid>
+            <DisplayIfUserHasPerm permissions={[Permission.POLIO_CHRONOGRAM]}>
+                <Grid container item justifyContent="flex-end" mt={4}>
+                    <CreateChronogramTaskModal
+                        iconProps={{
+                            message: MESSAGES.modalAddTitle,
+                        }}
+                        chronogram={chronogram as Chronogram}
+                        chronogramTaskMetaData={
+                            chronogramTaskMetaData as ChronogramTaskMetaData
+                        }
+                    />
+                </Grid>
+            </DisplayIfUserHasPerm>
         </>
     );
 };

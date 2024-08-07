@@ -79,7 +79,7 @@ from .api.periods import PeriodsViewSet
 from .api.permissions import PermissionsViewSet
 from .api.profiles import ProfilesViewSet
 from .api.projects import ProjectsViewSet
-from .api.payments.views import PaymentsViewSet, PotentialPaymentsViewSet, PaymentLotsViewSet
+from .api.payments.views import PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet, PaymentLotsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
@@ -112,6 +112,7 @@ router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
 router.register(r"potential_payments", PotentialPaymentsViewSet, basename="potential_payments")
 router.register(r"payments/lots", PaymentLotsViewSet, basename="paymentslots")
+router.register(r"payments/options", PaymentOptionsViewSet, basename="paymentsoptions")
 router.register(r"payments", PaymentsViewSet, basename="payments")
 router.register(r"instances", InstancesViewSet, basename="instances")
 router.register(r"forms", FormsViewSet, basename="forms")

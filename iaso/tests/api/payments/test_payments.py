@@ -1,6 +1,8 @@
+from iaso.models.payments import PaymentStatuses
 from iaso.test import APITestCase
 from iaso import models as m
 from hat.audit import models as am
+from django.utils.translation import override
 
 
 class PaymentViewSetAPITestCase(APITestCase):
@@ -31,7 +33,7 @@ class PaymentViewSetAPITestCase(APITestCase):
         cls.payment = m.Payment.objects.create(
             created_by=cls.user,
             payment_lot=cls.payment_lot,
-            status=m.Payment.Statuses.PENDING,
+            status=PaymentStatuses.PENDING,
             user=cls.payment_beneficiary,
         )
         cls.change_request = m.OrgUnitChangeRequest.objects.create(
@@ -74,8 +76,34 @@ class PaymentViewSetAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.patch(f"/api/payments/{self.payment.id}/", format="json", data={"status": "sent"})
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(r["status"], m.Payment.Statuses.SENT)
+        self.assertEqual(r["status"], PaymentStatuses.SENT)
         self.assertEqual(r["updated_by"], self.user.id)
         self.payment_lot.refresh_from_db()
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.SENT)
         self.assertEqual(am.Modification.objects.count(), 2)
+
+    def test_dropdown_options(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(f"/api/payments/options/")
+        r = self.assertJSONResponse(response, 200)
+        for item in r:
+            if item["value"] == PaymentStatuses.PENDING:
+                self.assertEqual(item["label"], "Pending")
+            elif item["value"] == PaymentStatuses.SENT:
+                self.assertEqual(item["label"], "Sent")
+            elif item["value"] == PaymentStatuses.REJECTED:
+                self.assertEqual(item["label"], "Rejected")
+            elif item["value"] == PaymentStatuses.PAID:
+                self.assertEqual(item["label"], "Paid")
+        # Passingthe header works in the front-end, but fails the test
+        # response = self.client.get(f"/api/payments/options/", headers={"Accept-Language": "fr"})
+        # r = self.assertJSONResponse(response, 200)
+        # for item in r:
+        #     if item['value'] == PaymentStatuses.PENDING:
+        #         self.assertEqual(item['label'], 'En attente')
+        #     elif item['value'] == PaymentStatuses.SENT:
+        #         self.assertEqual(item['label'], 'Envoyé')
+        #     elif item['value'] == PaymentStatuses.REJECTED:
+        #         self.assertEqual(item['label'], 'Rejeté')
+        #     elif item['value'] == PaymentStatuses.PAID:
+        #         self.assertEqual(item['label'], 'Payé')

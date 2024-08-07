@@ -1,3 +1,4 @@
+from iaso.models.payments import PaymentStatuses
 from iaso.test import APITestCase
 from iaso.models import PaymentLot, Payment, OrgUnit, OrgUnitType, SourceVersion, Account, DataSource
 
@@ -16,7 +17,7 @@ class TestPaymentLotsFilters(APITestCase):
         cls.payment = Payment.objects.create(
             user=cls.user,
             payment_lot=cls.payment_lot,
-            status=Payment.Statuses.PAID,
+            status=PaymentStatuses.PAID,
         )
         cls.user_with_perm = cls.create_user_with_profile(
             username="user_with_perm",

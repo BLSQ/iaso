@@ -194,10 +194,13 @@ const MESSAGES = defineMessages({
         defaultMessage: 'This field is required',
     },
     viewDetails: {
-         id: 'iaso.label.viewDetails',
+        id: 'iaso.label.viewDetails',
         defaultMessage: 'View details',
-    }
-
+    },
+    paymentStatus: {
+        id: 'iaso.label.paymentStatus',
+        defaultMessage: 'Payment status',
+    },
 });
 
 export default MESSAGES;

@@ -8,7 +8,7 @@ from iaso.api.org_unit_change_requests.serializers import (
 from typing import List
 from iaso.api.payments.serializers import PaymentAuditLogger, PaymentLotAuditLogger
 from iaso.models import Task
-from iaso.models.payments import Payment, PaymentLot, PotentialPayment
+from iaso.models.payments import Payment, PaymentLot, PaymentStatuses, PotentialPayment
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from iaso.models.base import ERRORED
@@ -17,7 +17,7 @@ from iaso.models.base import ERRORED
 def create_payment_from_payment_lot(user, payment_lot, *, potential_payment):
     """Used within the context of a bulk operation"""
     payment = Payment.objects.create(
-        status=Payment.Statuses.PENDING,
+        status=PaymentStatuses.PENDING,
         user=potential_payment.user,
         created_by=user,
         updated_by=user,

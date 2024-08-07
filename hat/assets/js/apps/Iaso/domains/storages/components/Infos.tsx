@@ -2,7 +2,6 @@
 import { Table, TableBody, TableRow, TableCell, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useMemo, ReactElement } from 'react';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 
@@ -86,16 +85,14 @@ export const Infos: FunctionComponent<Props> = ({ storage }) => {
         [formatMessage, storage],
     );
     return (
-        <>
-            <Table size="small">
-                <TableBody>
-                    <>
-                        {staticFields.map(field => (
-                            <Row field={field} key={field.key} />
-                        ))}
-                    </>
-                </TableBody>
-            </Table>
-        </>
+        <Table size="small">
+            <TableBody>
+                <>
+                    {staticFields.map(field => (
+                        <Row field={field} key={field.key} />
+                    ))}
+                </>
+            </TableBody>
+        </Table>
     );
 };

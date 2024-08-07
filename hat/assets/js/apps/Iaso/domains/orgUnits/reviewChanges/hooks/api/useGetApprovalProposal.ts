@@ -2,8 +2,7 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { OrgUnitChangeRequestDetails } from '../../types';
-
-const apiUrl = '/api/orgunits/changes/';
+import { apiUrl } from '../../constants';
 
 export const useGetApprovalProposal = (
     id?: number,

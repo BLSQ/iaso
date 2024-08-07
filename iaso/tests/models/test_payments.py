@@ -3,6 +3,8 @@ from iaso import models as m
 from django.contrib.auth.models import User
 from datetime import datetime
 
+from iaso.models.payments import PaymentStatuses
+
 
 class PaymentModelTestCase(TestCase):
     """
@@ -16,11 +18,11 @@ class PaymentModelTestCase(TestCase):
         cls.org_unit = m.OrgUnit.objects.create(name="Test OrgUnit")
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
         payment_lot = m.PaymentLot.objects.create(name="Test Payment Lot", created_by=created_by_user)
-        cls.payment = m.Payment.objects.create(user=user, status=m.Payment.Statuses.PENDING, payment_lot=payment_lot)
+        cls.payment = m.Payment.objects.create(user=user, status=PaymentStatuses.PENDING, payment_lot=payment_lot)
         cls.payment.change_requests.add(change_request)
 
     def test_create(self):
-        self.assertEqual(self.payment.status, m.Payment.Statuses.PENDING)
+        self.assertEqual(self.payment.status, PaymentStatuses.PENDING)
         self.assertEqual(self.payment.user.username, "test_user")
         self.assertEqual(self.payment.change_requests.first().new_name, "Foo")
         self.assertIsInstance(self.payment.created_at, datetime)
@@ -43,21 +45,21 @@ class PaymentLotModelTestCase(TestCase):
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.NEW)
 
     def test_compute_status_paid(self):
-        m.Payment.objects.create(user=self.user, status=m.Payment.Statuses.PAID, payment_lot=self.payment_lot)
+        m.Payment.objects.create(user=self.user, status=PaymentStatuses.PAID, payment_lot=self.payment_lot)
         self.payment_lot.status = self.payment_lot.compute_status()
         self.payment_lot.save()
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.PAID)
 
     def test_compute_status_partially_paid(self):
-        m.Payment.objects.create(user=self.user, status=m.Payment.Statuses.PAID, payment_lot=self.payment_lot)
-        m.Payment.objects.create(user=self.user, status=m.Payment.Statuses.PENDING, payment_lot=self.payment_lot)
+        m.Payment.objects.create(user=self.user, status=PaymentStatuses.PAID, payment_lot=self.payment_lot)
+        m.Payment.objects.create(user=self.user, status=PaymentStatuses.PENDING, payment_lot=self.payment_lot)
         self.payment_lot.status = self.payment_lot.compute_status()
         self.payment_lot.save()
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.PARTIALLY_PAID)
 
     def test_compute_status_sent(self):
-        m.Payment.objects.create(user=self.user, status=m.Payment.Statuses.SENT, payment_lot=self.payment_lot)
-        m.Payment.objects.create(user=self.user, status=m.Payment.Statuses.SENT, payment_lot=self.payment_lot)
+        m.Payment.objects.create(user=self.user, status=PaymentStatuses.SENT, payment_lot=self.payment_lot)
+        m.Payment.objects.create(user=self.user, status=PaymentStatuses.SENT, payment_lot=self.payment_lot)
         self.payment_lot.status = self.payment_lot.compute_status()
         self.payment_lot.save()
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.SENT)

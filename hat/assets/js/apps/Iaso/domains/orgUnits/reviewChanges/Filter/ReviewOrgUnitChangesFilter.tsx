@@ -18,6 +18,7 @@ import { AsyncSelect } from '../../../../components/forms/AsyncSelect';
 import { getUsersDropDown } from '../../../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../../../instances/hooks/useGetProfilesDropdown';
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
+import { usePaymentStatusOptions } from '../hooks/api/useGetPaymentStatusOptions';
 
 const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = { params: ApproveOrgUnitParams };
@@ -37,6 +38,8 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
     const { data: userRoles, isFetching: isFetchingUserRoles } =
         useGetUserRolesDropDown();
+    const { data: paymentStatuses, isFetching: isFetchingPaymentStatuses } =
+        usePaymentStatusOptions();
     const formOptions = useMemo(
         () =>
             forms?.map(form => ({
@@ -169,6 +172,16 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     loading={isFetchingUserRoles}
                     options={userRoles}
                     labelString={formatMessage(MESSAGES.userRoles)}
+                />
+                <InputComponent
+                    type="select"
+                    clearable
+                    keyValue="paymentStatus"
+                    value={filters.paymentStatus}
+                    onChange={handleChange}
+                    loading={isFetchingPaymentStatuses}
+                    options={paymentStatuses}
+                    labelString={formatMessage(MESSAGES.paymentStatus)}
                 />
             </Grid>
 

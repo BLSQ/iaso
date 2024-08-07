@@ -180,7 +180,8 @@ class ChronogramTemplateTaskManager(models.Manager):
             ChronogramTask(
                 chronogram=chronogram,
                 created_by=created_by,
-                description=template.description,
+                description_en=template.description_en,
+                description_fr=template.description_fr,
                 period=template.period,
                 start_offset_in_days=template.start_offset_in_days,
             )

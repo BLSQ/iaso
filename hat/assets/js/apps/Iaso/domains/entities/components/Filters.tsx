@@ -56,6 +56,23 @@ type Props = {
     isFetching: boolean;
 };
 
+const createGroupsInputComponent = props => {
+    const { isFetchingGroups, handleChange, filters, groups } = props;
+    return (
+        <InputComponent
+            type="select"
+            multi
+            disabled={isFetchingGroups}
+            keyValue="groups"
+            onChange={handleChange}
+            value={!isFetchingGroups && filters?.groups}
+            label={MESSAGES.groups}
+            options={groups}
+            loading={isFetchingGroups}
+        />
+    );
+};
+
 const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const getParams = useFiltersParams();
     const currentUser = useCurrentUser();
@@ -143,6 +160,15 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         [filters],
     );
 
+    const groupsInputComponent = useMemo(() => {
+        return createGroupsInputComponent({
+            isFetchingGroups,
+            handleChange,
+            filters,
+            groups,
+        });
+    }, [filters, groups, handleChange, isFetchingGroups]);
+
     const { url: apiUrl } = useGetBeneficiariesApiParams(params);
     return (
         <Box mb={1}>
@@ -176,6 +202,10 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                         />
                     )}
 
+                    {hasFeatureFlag(
+                        currentUser,
+                        SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+                    ) && groupsInputComponent}
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -189,17 +219,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
-                    <InputComponent
-                        type="select"
-                        multi
-                        disabled={isFetchingGroups}
-                        keyValue="groups"
-                        onChange={handleChange}
-                        value={!isFetchingGroups && filters?.groups}
-                        label={MESSAGES.groups}
-                        options={groups}
-                        loading={isFetchingGroups}
-                    />
+
                     {params.tab === 'map' && (
                         <Box mt={2}>
                             <LocationLimit
@@ -222,6 +242,10 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                         dateFrom={filters.dateFrom}
                         dateTo={filters.dateTo}
                     />
+                    {!hasFeatureFlag(
+                        currentUser,
+                        SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+                    ) && groupsInputComponent}
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent

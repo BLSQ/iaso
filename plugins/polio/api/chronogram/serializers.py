@@ -67,6 +67,8 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "period",
             "get_period_display",
             "description",
+            "description_en",
+            "description_fr",
             "start_offset_in_days",
             "deadline_date",
             "status",
@@ -158,6 +160,8 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
             "period",
             "get_period_display",
             "description",
+            "description_en",
+            "description_fr",
             "start_offset_in_days",
         ]
         extra_kwargs = {

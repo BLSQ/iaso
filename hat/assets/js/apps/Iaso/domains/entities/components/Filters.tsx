@@ -255,19 +255,6 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
-                    <QueryBuilderInput
-                        label={MESSAGES.queryBuilder}
-                        onChange={handleChangeQueryBuilder}
-                        initialLogic={fieldsSearchJson}
-                        fields={fields}
-                        iconProps={{
-                            label: MESSAGES.queryBuilder,
-                            value: getHumanReadableJsonLogic(fieldsSearchJson),
-                            onClear: () =>
-                                handleChange('fieldsSearch', undefined),
-                        }}
-                        InfoPopper={<Popper />}
-                    />
                     {params.tab === 'map' && (
                         <Box mt={2}>
                             <LocationLimit
@@ -313,35 +300,60 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                         options={usersOptions}
                     />
                 </Grid>
-
-                <Grid item xs={12} sm={6} md={3}>
-                    <Box
-                        mt={2}
-                        display="flex"
-                        justifyContent="flex-end"
-                        alignItems="end"
-                        flexDirection="column"
-                    >
-                        <Box mb={2}>
-                            <Button
-                                data-test="search-button"
-                                disabled={textSearchError || !filtersUpdated}
-                                variant="contained"
-                                color="primary"
-                                onClick={() => handleSearch()}
-                            >
-                                <SearchIcon className={classes.buttonIcon} />
-                                {formatMessage(MESSAGES.search)}
-                            </Button>
-                        </Box>
-                        <DownloadButtonsComponent
-                            csvUrl={`${apiUrl}&csv=true`}
-                            xlsxUrl={`${apiUrl}&xlsx=true`}
-                            disabled={isFetching}
-                        />
-                    </Box>
-                </Grid>
             </Grid>
+
+            <Box mt={-2}>
+                <Grid container columnSpacing={2}>
+                    <Grid item xs={12} sm={6}>
+                        <QueryBuilderInput
+                            label={MESSAGES.queryBuilder}
+                            onChange={handleChangeQueryBuilder}
+                            initialLogic={fieldsSearchJson}
+                            fields={fields}
+                            iconProps={{
+                                label: MESSAGES.queryBuilder,
+                                value: getHumanReadableJsonLogic(
+                                    fieldsSearchJson,
+                                ),
+                                onClear: () =>
+                                    handleChange('fieldsSearch', undefined),
+                            }}
+                            InfoPopper={<Popper />}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <Box
+                            mt={2}
+                            display="flex"
+                            justifyContent="flex-end"
+                            alignItems="end"
+                            flexDirection="column"
+                        >
+                            <Box mb={2}>
+                                <Button
+                                    data-test="search-button"
+                                    disabled={
+                                        textSearchError || !filtersUpdated
+                                    }
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => handleSearch()}
+                                >
+                                    <SearchIcon
+                                        className={classes.buttonIcon}
+                                    />
+                                    {formatMessage(MESSAGES.search)}
+                                </Button>
+                            </Box>
+                            <DownloadButtonsComponent
+                                csvUrl={`${apiUrl}&csv=true`}
+                                xlsxUrl={`${apiUrl}&xlsx=true`}
+                                disabled={isFetching}
+                            />
+                        </Box>
+                    </Grid>
+                </Grid>
+            </Box>
         </Box>
     );
 };

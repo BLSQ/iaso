@@ -94,7 +94,7 @@
     "iaso.polio.chronogram.label.delay_in_days": "Delay",
     "iaso.polio.chronogram.label.description": "Activity",
     "iaso.polio.chronogram.label.is_on_time": "On time",
-    "iaso.polio.chronogram.label.num_task_delayed": "Task delayed",
+    "iaso.polio.chronogram.label.num_task_delayed": "Number of task(s) delayed",
     "iaso.polio.chronogram.label.percentage_of_completion": "Percentage of Completion Before/During/After",
     "iaso.polio.chronogram.label.period": "Period",
     "iaso.polio.chronogram.label.round": "Round",

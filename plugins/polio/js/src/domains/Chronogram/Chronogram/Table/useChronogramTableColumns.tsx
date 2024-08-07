@@ -27,6 +27,7 @@ export const useChronogramTableColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.labelCampaignObrName),
                 id: 'round__campaign__obr_name',
                 accessor: 'campaign_obr_name',
+                width: 700,
             },
             {
                 Header: formatMessage(MESSAGES.labelRoundNumber),

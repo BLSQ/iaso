@@ -317,41 +317,66 @@ class EntityAPITestCase(APITestCase):
             json={"residence": "Kinshasa"},
             entity=ent2,
         )
+        Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_2,
+            json={"residence": "Accra"},
+            entity=ent2,
+        )
 
+        # gender f AND SOME residence Bujumbura
         response = self.client.get(
             "/api/entities/",
-            {"fields_search": self._generate_json_filter("and", "F", "Bujumbura")},
+            {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
         )
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], ent1.id)
 
+        # gender m AND SOME residence Bujumbura
         response = self.client.get(
             "/api/entities/",
-            {"fields_search": self._generate_json_filter("and", "M", "Bujumbura")},
+            {"fields_search": self._generate_json_filter("and", "some", "M", "Bujumbura")},
         )
         self.assertEqual(len(response.json()["result"]), 0)
 
+        # gender f OR SOME residence Kinshasa
         response = self.client.get(
             "/api/entities/",
-            {"fields_search": self._generate_json_filter("or", "F", "Kinshasa")},
+            {"fields_search": self._generate_json_filter("or", "some", "F", "Kinshasa")},
         )
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertEqual(sorted(result_ids), sorted([ent1.id, ent2.id]))
 
-    def _generate_json_filter(self, operator, gender, residence):
+        # gender m AND SOME residence Kinshasa
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "M", "Kinshasa")},
+        )
+        self.assertEqual(len(response.json()["result"]), 1)
+        the_result = response.json()["result"][0]
+        self.assertEqual(the_result["id"], ent2.id)
+
+        # gender M AND ALL residence Kinshasa
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "all", "M", "Kinshasa")},
+        )
+        self.assertEqual(len(response.json()["result"]), 0)
+
+    def _generate_json_filter(self, operator, some_or_all, gender, residence):
         return json.dumps(
             {
                 operator: [
                     {
-                        "some": [
+                        some_or_all: [
                             {"var": self.form_1.form_id},
                             {"==": [{"var": "gender"}, gender]},
                         ]
                     },
                     {
-                        "some": [
+                        some_or_all: [
                             {"var": self.form_2.form_id},
                             {"==": [{"var": "residence"}, residence]},
                         ]

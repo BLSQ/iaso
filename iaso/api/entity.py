@@ -30,7 +30,7 @@ from iaso.api.common import (
 )
 from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
-from iaso.utils.jsonlogic import jsonlogic_to_q
+from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -185,7 +185,7 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(attributes__org_unit__groups__in=groups.split(","))
 
         if fields_search:
-            q = jsonlogic_to_q(json.loads(fields_search), field_prefix="json__")
+            q = entities_jsonlogic_to_q(json.loads(fields_search))
             queryset = queryset.filter(q)
 
         # location

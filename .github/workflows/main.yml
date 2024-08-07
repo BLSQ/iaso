@@ -129,6 +129,7 @@ jobs:
           . ./venv/bin/activate && black --check .
       - name: Django tests
         run: |
+          . ./venv/bin/activate &&  python manage.py compilemessages
           . ./venv/bin/activate &&  python manage.py migrate
           . ./venv/bin/activate &&  python manage.py createcachetable
           . ./venv/bin/activate &&  python -W "ignore" manage.py test

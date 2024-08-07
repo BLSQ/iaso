@@ -80,8 +80,6 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
         extra_kwargs = {
             "id": {"read_only": True},
             "description": {"read_only": True},
-            "description_en": {"write_only": True},
-            "description_fr": {"write_only": True},
             "deadline_date": {"read_only": True},
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
@@ -168,8 +166,6 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
             "account": {"read_only": True},
             "created_at": {"read_only": True},
             "description": {"read_only": True},
-            "description_en": {"write_only": True},
-            "description_fr": {"write_only": True},
             "updated_at": {"read_only": True},
             "get_period_display": {"read_only": True},
         }

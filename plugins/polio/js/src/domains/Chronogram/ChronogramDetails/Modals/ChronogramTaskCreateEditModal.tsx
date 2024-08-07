@@ -55,7 +55,8 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
             id: chronogramTask?.id,
             chronogram: chronogramTask?.chronogram || chronogram?.id,
             period: chronogramTask?.period,
-            description: chronogramTask?.description,
+            description_en: chronogramTask?.description_en,
+            description_fr: chronogramTask?.description_fr,
             start_offset_in_days: chronogramTask?.start_offset_in_days,
             status: chronogramTask?.status,
             user_in_charge: chronogramTask?.user_in_charge.id,
@@ -112,11 +113,18 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                 </Box>
                 <Box mb={2}>
                     <Field
-                        label={formatMessage(MESSAGES.labelDescription)}
-                        name="description"
+                        label={formatMessage(MESSAGES.labelDescriptionEn)}
+                        name="description_en"
                         component={TextInput}
                         required
-                        disabled={!userHasReadAndWritePerm}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.labelDescriptionFr)}
+                        name="description_fr"
+                        component={TextInput}
+                        required
                     />
                 </Box>
                 <Box mb={2}>

@@ -12,6 +12,7 @@ export const useChronogramTemplateTaskTableColumns = (
     chronogramTaskMetaData: ChronogramTaskMetaData,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
+    // @ts-ignore
     return useMemo(() => {
         return [
             {
@@ -27,7 +28,7 @@ export const useChronogramTemplateTaskTableColumns = (
             {
                 Header: formatMessage(MESSAGES.labelDescription),
                 id: 'description',
-                accessor: 'description',
+                accessor: row => row.description || row.description_en,
                 sortable: false,
                 width: 800,
             },
@@ -56,5 +57,5 @@ export const useChronogramTemplateTaskTableColumns = (
                 },
             },
         ];
-    }, [formatMessage]);
+    }, [formatMessage, chronogramTaskMetaData]);
 };

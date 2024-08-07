@@ -41,6 +41,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.chronogram.label.description',
         defaultMessage: 'Activity',
     },
+    labelDescriptionEn: {
+        id: 'iaso.polio.chronogram.label.description_en',
+        defaultMessage: 'Activity (in English)',
+    },
+    labelDescriptionFr: {
+        id: 'iaso.polio.chronogram.label.description_fr',
+        defaultMessage: 'Activity (in French)',
+    },
     labelPeriod: {
         id: 'iaso.polio.chronogram.label.period',
         defaultMessage: 'Period',

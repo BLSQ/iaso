@@ -35,7 +35,7 @@ export const useChronogramDetailsTableColumn = (
             {
                 Header: formatMessage(MESSAGES.labelDescription),
                 id: 'description',
-                accessor: 'description',
+                accessor: row => row.description || row.description_en,
                 sortable: false,
             },
             {

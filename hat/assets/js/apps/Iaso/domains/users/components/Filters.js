@@ -136,14 +136,15 @@ const Filters = ({ baseUrl, params }) => {
                     multi
                 />
                 <InputComponent
-                    keyValue="search"
+                    keyValue="permissions"
                     onChange={handleChange}
-                    value={filters.search}
-                    type="search"
-                    label={MESSAGES.search}
-                    onEnterPressed={handleSearch}
-                    onErrorChange={setTextSearchError}
-                    blockForbiddenChars
+                    value={filters.permissions}
+                    type="select"
+                    multi
+                    options={dropdown ?? []}
+                    label={MESSAGES.permissions}
+                    loading={isFetching}
+                    onEnterPressed={handleSearchPerms}
                 />
                 <InputComponent
                     keyValue="userRoles"
@@ -159,15 +160,14 @@ const Filters = ({ baseUrl, params }) => {
             </Grid>
             <Grid item xs={12} md={3}>
                 <InputComponent
-                    keyValue="permissions"
+                    keyValue="search"
                     onChange={handleChange}
-                    value={filters.permissions}
-                    type="select"
-                    multi
-                    options={dropdown ?? []}
-                    label={MESSAGES.permissions}
-                    loading={isFetching}
-                    onEnterPressed={handleSearchPerms}
+                    value={filters.search}
+                    type="search"
+                    label={MESSAGES.search}
+                    onEnterPressed={handleSearch}
+                    onErrorChange={setTextSearchError}
+                    blockForbiddenChars
                 />
                 <InputComponent
                     keyValue="teamsIds"

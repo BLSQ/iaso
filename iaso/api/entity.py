@@ -176,13 +176,7 @@ class EntityViewSet(ModelViewSet):
         if created_by_team_id:
             queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
         if groups:
-            if isinstance(groups, str):
-                group_ids = groups.split(",")
-            elif isinstance(groups, int):
-                group_ids = [groups]
-            else:
-                group_ids = groups
-            queryset = queryset.filter(attributes__org_unit__groups__in=group_ids)
+            queryset = queryset.filter(attributes__org_unit__groups__in=groups.split(","))
 
         # location
         return queryset

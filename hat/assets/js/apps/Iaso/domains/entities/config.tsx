@@ -7,6 +7,7 @@ import {
     Column,
     IntlFormatMessage,
     LinkWithLocation,
+    textPlaceholder,
 } from 'bluesquare-components';
 
 import moment from 'moment';
@@ -67,7 +68,7 @@ export const useStaticColumns = (): Array<Column> => {
             Cell: settings => {
                 const groups = settings.row.original?.org_unit?.groups;
                 if (!groups || groups.length === 0) {
-                    return <>--</>;
+                    return <>{textPlaceholder}</>;
                 }
 
                 return groups.map((group, index) => (
@@ -90,7 +91,7 @@ export const useStaticColumns = (): Array<Column> => {
                 return settings.row.original?.org_unit ? (
                     <LinkToOrgUnit orgUnit={settings.row.original?.org_unit} />
                 ) : (
-                    <>--</>
+                    <>{textPlaceholder}</>
                 );
             },
         },

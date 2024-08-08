@@ -124,7 +124,6 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.labelDescriptionFr)}
                         name="description_fr"
                         component={TextInput}
-                        required
                     />
                 </Box>
                 <Box mb={2}>

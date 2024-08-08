@@ -46,7 +46,9 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "chronogram",
             "period",
             "get_period_display",
-            "description",
+            "description",  # This will be automatically translated depending on the active language.
+            "description_en",
+            "description_fr",
             "start_offset_in_days",
             "deadline_date",
             "status",
@@ -65,6 +67,8 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "period",
             "get_period_display",
             "description",
+            "description_en",
+            "description_fr",
             "start_offset_in_days",
             "deadline_date",
             "status",
@@ -75,6 +79,7 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
         ]
         extra_kwargs = {
             "id": {"read_only": True},
+            "description": {"read_only": True},
             "deadline_date": {"read_only": True},
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
@@ -138,7 +143,9 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
             "account",
             "period",
             "get_period_display",
-            "description",
+            "description",  # This will be automatically translated depending on the active language.
+            "description_en",
+            "description_fr",
             "start_offset_in_days",
             "created_at",
             "created_by",
@@ -151,11 +158,14 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
             "period",
             "get_period_display",
             "description",
+            "description_en",
+            "description_fr",
             "start_offset_in_days",
         ]
         extra_kwargs = {
             "account": {"read_only": True},
             "created_at": {"read_only": True},
+            "description": {"read_only": True},
             "updated_at": {"read_only": True},
             "get_period_display": {"read_only": True},
         }

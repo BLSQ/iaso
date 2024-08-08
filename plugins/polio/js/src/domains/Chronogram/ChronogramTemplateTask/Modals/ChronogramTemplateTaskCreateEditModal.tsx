@@ -42,7 +42,8 @@ const CreateEditChronogramTemplateTaskModal: FunctionComponent<Props> = ({
         initialValues: {
             id: chronogramTemplateTask?.id,
             period: chronogramTemplateTask?.period,
-            description: chronogramTemplateTask?.description,
+            description_en: chronogramTemplateTask?.description_en,
+            description_fr: chronogramTemplateTask?.description_fr,
             start_offset_in_days: chronogramTemplateTask?.start_offset_in_days,
         },
         enableReinitialize: true,
@@ -89,10 +90,17 @@ const CreateEditChronogramTemplateTaskModal: FunctionComponent<Props> = ({
                 </Box>
                 <Box mb={2}>
                     <Field
-                        label={formatMessage(MESSAGES.labelDescription)}
-                        name="description"
+                        label={formatMessage(MESSAGES.labelDescriptionEn)}
+                        name="description_en"
                         component={TextInput}
                         required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.labelDescriptionFr)}
+                        name="description_fr"
+                        component={TextInput}
                     />
                 </Box>
                 <Box mb={2}>

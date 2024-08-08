@@ -1,4 +1,6 @@
 import gspread.utils  # type: ignore
+from translated_fields import TranslatedFieldAdmin
+
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import widgets
@@ -349,7 +351,7 @@ class ChronogramTaskAdminInline(admin.StackedInline):
 
 
 @admin.register(Chronogram)
-class ChronogramAdmin(admin.ModelAdmin):
+class ChronogramAdmin(TranslatedFieldAdmin, admin.ModelAdmin):
     date_hierarchy = "created_at"
     list_display = ("pk", "obr_name", "created_at")
     list_display_links = ("pk", "obr_name")
@@ -380,7 +382,7 @@ class ChronogramAdmin(admin.ModelAdmin):
 
 
 @admin.register(ChronogramTemplateTask)
-class ChronogramTemplateTaskAdmin(admin.ModelAdmin):
+class ChronogramTemplateTaskAdmin(TranslatedFieldAdmin, admin.ModelAdmin):
     date_hierarchy = "created_at"
     list_display = ("pk", "start_offset_in_days", "description", "created_at")
     list_display_links = ("pk", "start_offset_in_days", "description")

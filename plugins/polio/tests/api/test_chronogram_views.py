@@ -51,7 +51,8 @@ class ChronogramTaskViewSetTestCase(APITestCase):
         cls.chronogram_task = ChronogramTask.objects.create(
             period=Period.BEFORE,
             chronogram=cls.chronogram,
-            description="Assurer la commande des marqueurs",
+            description_en="Ordering markers",
+            description_fr="Assurer la commande des marqueurs",
             start_offset_in_days=0,
             user_in_charge=cls.user,
             comment="Comment",
@@ -77,7 +78,8 @@ class ChronogramTaskViewSetTestCase(APITestCase):
         data = {
             "chronogram": self.chronogram.pk,
             "period": Period.AFTER,
-            "description": "Baz",
+            "description_en": "Baz EN",
+            "description_fr": "Baz FR",
             "start_offset_in_days": 0,
             "status": ChronogramTask.Status.IN_PROGRESS,
             "user_in_charge": self.user.pk,
@@ -88,7 +90,8 @@ class ChronogramTaskViewSetTestCase(APITestCase):
 
         chronogram_task = ChronogramTask.objects.get(pk=response.data["id"])
         self.assertEqual(chronogram_task.period, "AFTER")
-        self.assertEqual(chronogram_task.description, "Baz")
+        self.assertEqual(chronogram_task.description_en, "Baz EN")
+        self.assertEqual(chronogram_task.description_fr, "Baz FR")
         self.assertEqual(chronogram_task.start_offset_in_days, 0)
         self.assertEqual(chronogram_task.user_in_charge, self.user)
         self.assertEqual(chronogram_task.comment, "Comment")
@@ -102,7 +105,7 @@ class ChronogramTaskViewSetTestCase(APITestCase):
         self.client.force_authenticate(self.user)
         data = {
             "period": Period.AFTER,
-            "description": "New description",
+            "description_en": "New description",
             "start_offset_in_days": 10,
             "status": ChronogramTask.Status.DONE,
             "comment": "New comment",
@@ -115,7 +118,7 @@ class ChronogramTaskViewSetTestCase(APITestCase):
 
         self.chronogram_task.refresh_from_db()
         self.assertEqual(self.chronogram_task.period, "AFTER")
-        self.assertEqual(self.chronogram_task.description, "New description")
+        self.assertEqual(self.chronogram_task.description_en, "New description")
         self.assertEqual(self.chronogram_task.start_offset_in_days, 10)
         self.assertEqual(self.chronogram_task.status, "DONE")
         self.assertEqual(self.chronogram_task.comment, "New comment")
@@ -126,7 +129,7 @@ class ChronogramTaskViewSetTestCase(APITestCase):
         self.client.force_authenticate(self.user_with_restricted_write_perms)
         data = {
             "period": Period.AFTER,
-            "description": "New description",
+            "description_en": "New description",
             "start_offset_in_days": 10,
             "status": ChronogramTask.Status.DONE,
             "comment": "Restricted user should be able to comment.",
@@ -140,7 +143,7 @@ class ChronogramTaskViewSetTestCase(APITestCase):
         self.chronogram_task.refresh_from_db()
         # The following fields should be read-only and keep their old values.
         self.assertEqual(self.chronogram_task.period, "BEFORE")
-        self.assertEqual(self.chronogram_task.description, "Assurer la commande des marqueurs")
+        self.assertEqual(self.chronogram_task.description_en, "Ordering markers")
         self.assertEqual(self.chronogram_task.start_offset_in_days, 0)
         # The following fields should have been changed.
         self.assertEqual(self.chronogram_task.status, "DONE")
@@ -201,7 +204,8 @@ class ChronogramTemplateTaskViewSetTestCase(APITestCase):
         cls.chronogram_template_task = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.BEFORE,
-            description="Assurer la commande des marqueurs",
+            description_en="Ordering markers",
+            description_fr="Assurer la commande des marqueurs",
             start_offset_in_days=0,
             created_by=cls.user,
         )
@@ -226,7 +230,8 @@ class ChronogramTemplateTaskViewSetTestCase(APITestCase):
         data = {
             "account": self.account.pk,
             "period": Period.DURING,
-            "description": "Template description",
+            "description_en": "Description EN",
+            "description_fr": "Description FR",
             "start_offset_in_days": 5,
         }
         response = self.client.post("/api/polio/chronograms/template_tasks/", data=data, format="json")
@@ -235,7 +240,8 @@ class ChronogramTemplateTaskViewSetTestCase(APITestCase):
         chronogram_template_task = ChronogramTemplateTask.objects.get(pk=response.data["id"])
         self.assertEqual(chronogram_template_task.account, self.account)
         self.assertEqual(chronogram_template_task.period, "DURING")
-        self.assertEqual(chronogram_template_task.description, "Template description")
+        self.assertEqual(chronogram_template_task.description_en, "Description EN")
+        self.assertEqual(chronogram_template_task.description_fr, "Description FR")
         self.assertEqual(chronogram_template_task.start_offset_in_days, 5)
         self.assertEqual(chronogram_template_task.created_by, self.user)
         self.assertEqual(chronogram_template_task.created_at, TODAY)
@@ -246,7 +252,8 @@ class ChronogramTemplateTaskViewSetTestCase(APITestCase):
         self.client.force_authenticate(self.user)
         data = {
             "period": Period.AFTER,
-            "description": "New template description",
+            "description_en": "New template description EN",
+            "description_fr": "New template description FR",
             "start_offset_in_days": 10,
         }
 
@@ -258,7 +265,8 @@ class ChronogramTemplateTaskViewSetTestCase(APITestCase):
         self.chronogram_template_task.refresh_from_db()
         self.assertEqual(self.chronogram_template_task.account, self.account)
         self.assertEqual(self.chronogram_template_task.period, "AFTER")
-        self.assertEqual(self.chronogram_template_task.description, "New template description")
+        self.assertEqual(self.chronogram_template_task.description_en, "New template description EN")
+        self.assertEqual(self.chronogram_template_task.description_fr, "New template description FR")
         self.assertEqual(self.chronogram_template_task.start_offset_in_days, 10)
         self.assertEqual(self.chronogram_template_task.created_by, self.user)
         self.assertEqual(self.chronogram_template_task.created_at, TODAY)
@@ -334,21 +342,24 @@ class ChronogramViewSetTestCase(APITestCase):
         ChronogramTask.objects.create(
             period=Period.BEFORE,
             chronogram=cls.chronogram,
-            description="Foo",
+            description_en="Foo EN",
+            description_fr="Foo FR",
             start_offset_in_days=0,
             user_in_charge=cls.user,
         )
         ChronogramTask.objects.create(
             period=Period.DURING,
             chronogram=cls.chronogram,
-            description="Bar",
+            description_en="Bar EN",
+            description_fr="Bar FR",
             start_offset_in_days=0,
             user_in_charge=cls.user,
         )
         ChronogramTask.objects.create(
             period=Period.AFTER,
             chronogram=cls.chronogram,
-            description="Bar",
+            description_en="Baz EN",
+            description_fr="BaZ FR",
             start_offset_in_days=0,
             user_in_charge=cls.user,
         )

@@ -3,6 +3,8 @@ import datetime
 import time_machine
 from rest_framework.test import APIRequestFactory
 
+from django.utils import translation
+
 from iaso import models as m
 from iaso.test import TestCase
 
@@ -46,7 +48,8 @@ class ChronogramTaskSerializerTestCase(TestCase):
         cls.chronogram_task = ChronogramTask.objects.create(
             period=Period.BEFORE,
             chronogram=cls.chronogram,
-            description="Assurer la commande des marqueurs",
+            description_en="Ordering markers",
+            description_fr="Assurer la commande des marqueurs",
             start_offset_in_days=0,
             user_in_charge=cls.user,
             comment="Comment",
@@ -54,34 +57,63 @@ class ChronogramTaskSerializerTestCase(TestCase):
 
     def test_serialize_chronogram_task(self):
         task = ChronogramTask.objects.get(pk=self.chronogram_task.pk)
-        serializer = ChronogramTaskSerializer(task)
-        self.assertEqual(
-            serializer.data,
-            {
-                "id": self.chronogram_task.pk,
-                "chronogram": self.chronogram.pk,
-                "period": "BEFORE",
-                "get_period_display": "Before",
-                "description": "Assurer la commande des marqueurs",
-                "start_offset_in_days": 0,
-                "deadline_date": "2024-06-27",
-                "status": "PENDING",
-                "get_status_display": "Not started",
-                "user_in_charge": {"id": self.user.id, "username": "test", "full_name": "John Doe"},
-                "delay_in_days": 0,
-                "comment": "Comment",
-                "created_at": "2024-06-27T14:00:00Z",
-                "created_by": None,
-                "updated_at": "2024-06-27T14:00:00Z",
-                "updated_by": None,
-            },
-        )
+        with translation.override("en"):
+            serializer = ChronogramTaskSerializer(task)
+            self.assertEqual(
+                serializer.data,
+                {
+                    "id": self.chronogram_task.pk,
+                    "chronogram": self.chronogram.pk,
+                    "period": "BEFORE",
+                    "get_period_display": "Before",
+                    "description": "Ordering markers",
+                    "description_en": "Ordering markers",
+                    "description_fr": "Assurer la commande des marqueurs",
+                    "start_offset_in_days": 0,
+                    "deadline_date": "2024-06-27",
+                    "status": "PENDING",
+                    "get_status_display": "Not started",
+                    "user_in_charge": {"id": self.user.id, "username": "test", "full_name": "John Doe"},
+                    "delay_in_days": 0,
+                    "comment": "Comment",
+                    "created_at": "2024-06-27T14:00:00Z",
+                    "created_by": None,
+                    "updated_at": "2024-06-27T14:00:00Z",
+                    "updated_by": None,
+                },
+            )
+        with translation.override("fr"):
+            serializer = ChronogramTaskSerializer(task)
+            self.assertEqual(
+                serializer.data,
+                {
+                    "id": self.chronogram_task.pk,
+                    "chronogram": self.chronogram.pk,
+                    "period": "BEFORE",
+                    "get_period_display": "Avant",
+                    "description": "Assurer la commande des marqueurs",
+                    "description_en": "Ordering markers",
+                    "description_fr": "Assurer la commande des marqueurs",
+                    "start_offset_in_days": 0,
+                    "deadline_date": "2024-06-27",
+                    "status": "PENDING",
+                    "get_status_display": "Pas commencé",
+                    "user_in_charge": {"id": self.user.id, "username": "test", "full_name": "John Doe"},
+                    "delay_in_days": 0,
+                    "comment": "Comment",
+                    "created_at": "2024-06-27T14:00:00Z",
+                    "created_by": None,
+                    "updated_at": "2024-06-27T14:00:00Z",
+                    "updated_by": None,
+                },
+            )
 
     def test_deserialize_chronogram_task(self):
         data = {
             "chronogram": self.chronogram.pk,
             "period": Period.AFTER,
-            "description": "Foo",
+            "description_en": "Foo EN",
+            "description_fr": "Foo FR",
             "start_offset_in_days": 0,
             "status": ChronogramTask.Status.IN_PROGRESS,
             "user_in_charge": self.user.pk,
@@ -95,7 +127,8 @@ class ChronogramTaskSerializerTestCase(TestCase):
 
         self.assertEqual(chronogram_task.chronogram, self.chronogram)
         self.assertEqual(chronogram_task.period, "AFTER")
-        self.assertEqual(chronogram_task.description, "Foo")
+        self.assertEqual(chronogram_task.description_en, "Foo EN")
+        self.assertEqual(chronogram_task.description_fr, "Foo FR")
         self.assertEqual(chronogram_task.start_offset_in_days, 0)
         self.assertEqual(chronogram_task.status, "IN_PROGRESS")
         self.assertEqual(chronogram_task.user_in_charge, self.user)
@@ -126,40 +159,71 @@ class ChronogramTemplateTaskSerializerTestCase(TestCase):
         cls.chronogram_template_task = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.BEFORE,
-            description="Assurer la commande des marqueurs",
+            description_en="Ordering markers",
+            description_fr="Assurer la commande des marqueurs",
             start_offset_in_days=0,
             created_by=cls.user,
         )
 
     def test_serialize_chronogram_template_task(self):
-        serializer = ChronogramTemplateTaskSerializer(self.chronogram_template_task)
-        self.assertEqual(
-            serializer.data,
-            {
-                "id": self.chronogram_template_task.pk,
-                "account": self.account.pk,
-                "period": "BEFORE",
-                "get_period_display": "Before",
-                "description": "Assurer la commande des marqueurs",
-                "start_offset_in_days": 0,
-                "created_at": "2024-06-27T14:00:00Z",
-                "created_by": {
-                    "id": self.user.pk,
-                    "username": "test",
-                    "full_name": "John Doe",
+        with translation.override("en"):
+            serializer = ChronogramTemplateTaskSerializer(self.chronogram_template_task)
+            self.assertEqual(
+                serializer.data,
+                {
+                    "id": self.chronogram_template_task.pk,
+                    "account": self.account.pk,
+                    "period": "BEFORE",
+                    "get_period_display": "Before",
+                    "description": "Ordering markers",
+                    "description_en": "Ordering markers",
+                    "description_fr": "Assurer la commande des marqueurs",
+                    "start_offset_in_days": 0,
+                    "created_at": "2024-06-27T14:00:00Z",
+                    "created_by": {
+                        "id": self.user.pk,
+                        "username": "test",
+                        "full_name": "John Doe",
+                    },
+                    "updated_at": "2024-06-27T14:00:00Z",
+                    "updated_by": {
+                        "username": "",
+                        "full_name": "",
+                    },
                 },
-                "updated_at": "2024-06-27T14:00:00Z",
-                "updated_by": {
-                    "username": "",
-                    "full_name": "",
+            )
+        with translation.override("fr"):
+            serializer = ChronogramTemplateTaskSerializer(self.chronogram_template_task)
+            self.assertEqual(
+                serializer.data,
+                {
+                    "id": self.chronogram_template_task.pk,
+                    "account": self.account.pk,
+                    "period": "BEFORE",
+                    "get_period_display": "Avant",
+                    "description": "Assurer la commande des marqueurs",
+                    "description_en": "Ordering markers",
+                    "description_fr": "Assurer la commande des marqueurs",
+                    "start_offset_in_days": 0,
+                    "created_at": "2024-06-27T14:00:00Z",
+                    "created_by": {
+                        "id": self.user.pk,
+                        "username": "test",
+                        "full_name": "John Doe",
+                    },
+                    "updated_at": "2024-06-27T14:00:00Z",
+                    "updated_by": {
+                        "username": "",
+                        "full_name": "",
+                    },
                 },
-            },
-        )
+            )
 
     def test_deserialize_chronogram_template_task(self):
         data = {
             "period": Period.BEFORE,
-            "description": "Bar",
+            "description_en": "Bar EN",
+            "description_fr": "Bar FR",
             "start_offset_in_days": 10,
         }
         serializer = ChronogramTemplateTaskSerializer(data=data)
@@ -169,7 +233,8 @@ class ChronogramTemplateTaskSerializerTestCase(TestCase):
 
         self.assertEqual(chronogram_template_task.account, self.account)
         self.assertEqual(chronogram_template_task.period, "BEFORE")
-        self.assertEqual(chronogram_template_task.description, "Bar")
+        self.assertEqual(chronogram_template_task.description_en, "Bar EN")
+        self.assertEqual(chronogram_template_task.description_fr, "Bar FR")
         self.assertEqual(chronogram_template_task.start_offset_in_days, 10)
         self.assertEqual(chronogram_template_task.created_by, self.user)
         self.assertEqual(chronogram_template_task.created_at, TODAY)
@@ -208,19 +273,22 @@ class ChronogramCreateSerializerTestCase(TestCase):
         cls.chronogram_template_1 = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.BEFORE,
-            description="Identifier les solutions pour palier aux gaps",
+            description_en="Identify solutions for gaps",
+            description_fr="Identifier les solutions pour palier aux gaps",
             start_offset_in_days=-20,
         )
         cls.chronogram_template_2 = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.DURING,
-            description="Analyse quotidienne des tableaux de bord et rétro information",
+            description_en="Daily dashboard analysis and feedback",
+            description_fr="Analyse quotidienne des tableaux de bord et rétro information",
             start_offset_in_days=0,
         )
         cls.chronogram_template_3 = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.AFTER,
-            description="Elaboration de l'inventaire physique des vaccins à tous les niveaux",
+            description_en="Drawing up a physical inventory of vaccines at all levels",
+            description_fr="Elaboration de l'inventaire physique des vaccins à tous les niveaux",
             start_offset_in_days=20,
         )
 

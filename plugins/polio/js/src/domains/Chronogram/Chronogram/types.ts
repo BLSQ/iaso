@@ -21,6 +21,8 @@ export type ChronogramTask = {
     period: string;
     get_period_display: string;
     description: string;
+    description_en: string;
+    description_fr: string;
     start_offset_in_days: number;
     deadline_date: string; // Date
     status: string;

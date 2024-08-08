@@ -92,6 +92,8 @@
     "iaso.polio.chronogram.label.deadline_date": "Date butoir",
     "iaso.polio.chronogram.label.delay_in_days": "Délai",
     "iaso.polio.chronogram.label.description": "Activité",
+    "iaso.polio.chronogram.label.description_en": "Activité (en anglais)",
+    "iaso.polio.chronogram.label.description_fr": "Activité (en français)",
     "iaso.polio.chronogram.label.is_on_time": "Dans les délais",
     "iaso.polio.chronogram.label.num_task_delayed": "Nombre de tâches retardées",
     "iaso.polio.chronogram.label.percentage_of_completion": "Pourcentage de réalisation avant/pendant/après",

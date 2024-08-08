@@ -117,6 +117,7 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         name="description_en"
                         component={TextInput}
                         required
+                        disabled={!userHasReadAndWritePerm}
                     />
                 </Box>
                 <Box mb={2}>
@@ -124,6 +125,7 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.labelDescriptionFr)}
                         name="description_fr"
                         component={TextInput}
+                        disabled={!userHasReadAndWritePerm}
                     />
                 </Box>
                 <Box mb={2}>

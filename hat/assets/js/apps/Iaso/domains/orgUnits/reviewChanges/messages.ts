@@ -147,7 +147,7 @@ const MESSAGES = defineMessages({
     },
     addPartiallyApprovedComment: {
         id: 'iaso.changeRequest.addPartiallyApprovedComment',
-        defaultMessage: 'Add comment for the partially approvement',
+        defaultMessage: 'Add comment for the partial approval',
     },
     comment: {
         id: 'iaso.changeRequest.comment',

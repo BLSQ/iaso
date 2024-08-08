@@ -17,8 +17,13 @@ type Result = {
     possibleFields: PossibleField[];
     isFetchingForm: boolean;
 };
+export type PossibleFieldsForForm = {
+    form_id: string;
+    name: string;
+    possibleFields: PossibleField[];
+};
 type AllResults = {
-    allPossibleFields: any; // TODO
+    allPossibleFields: PossibleFieldsForForm[];
     isFetchingForms: boolean;
 };
 
@@ -54,14 +59,18 @@ export const useAllPossibleFields = (
     allForms: Form[] = [],
 ): AllResults => {
     return useMemo(() => {
-        let allPossibleFields = {};
+        let allPossibleFields: PossibleFieldsForForm[] = [];
         allForms.forEach(form => {
             const possibleFields =
                 form?.possible_fields?.map(field => ({
                     ...field,
                     fieldKey: field.name.replace('.', ''),
                 })) || [];
-            allPossibleFields[form.form_id] = possibleFields;
+            allPossibleFields.push({
+                form_id: form.form_id,
+                name: form.name,
+                possibleFields,
+            });
         });
 
         return {

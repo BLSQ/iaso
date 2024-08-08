@@ -141,9 +141,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.changeRequest.seeApprovedChanges',
         defaultMessage: 'See approved change(s)',
     },
-    addComment: {
-        id: 'iaso.changeRequest.addComment',
+    addRejectionComment: {
+        id: 'iaso.changeRequest.addRejectionComment',
         defaultMessage: 'Add comment for rejection',
+    },
+    addPartiallyApprovedComment: {
+        id: 'iaso.changeRequest.addPartiallyApprovedComment',
+        defaultMessage: 'Add comment for the partial approval',
     },
     comment: {
         id: 'iaso.changeRequest.comment',
@@ -194,10 +198,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'This field is required',
     },
     viewDetails: {
-         id: 'iaso.label.viewDetails',
+        id: 'iaso.label.viewDetails',
         defaultMessage: 'View details',
-    }
-
+    },
 });
 
 export default MESSAGES;

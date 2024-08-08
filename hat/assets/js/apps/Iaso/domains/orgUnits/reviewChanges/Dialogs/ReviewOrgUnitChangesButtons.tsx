@@ -41,6 +41,8 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     const [isCommentDialogOpen, setIsCommentDialogOpen] =
         useState<boolean>(false);
 
+    const [dialogTitleMessage, setDialogTitleMessage] = useState<string>('');
+
     const approvedFields: string[] = useMemo(() => {
         return isNewOrgUnit && changeRequest
             ? [...changeRequest.requested_fields]
@@ -55,13 +57,21 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     const handleConfirm = useCallback(() => {
         if (isPartiallyApproved) {
             setIsCommentDialogOpen(true);
+            setDialogTitleMessage(
+                formatMessage(MESSAGES.addPartiallyApprovedComment),
+            );
         } else {
             submitChangeRequest({
                 status: 'approved',
                 approved_fields: approvedFields,
             });
         }
-    }, [approvedFields, submitChangeRequest, isPartiallyApproved]);
+    }, [
+        isPartiallyApproved,
+        formatMessage,
+        submitChangeRequest,
+        approvedFields,
+    ]);
 
     const allowConfirm = isNewOrgUnit || selectedFields.length > 0;
     return (
@@ -72,6 +82,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                 setIsCommentDialogOpen={setIsCommentDialogOpen}
                 isPartiallyApproved={isPartiallyApproved}
                 approvedFields={approvedFields}
+                titleMessage={dialogTitleMessage}
             />
             <Box display="flex" justifyContent="flex-end" m={2}>
                 <Button
@@ -90,7 +101,14 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                         <Box pl={1} display="inline-block">
                             <Button
                                 data-test="reject-button"
-                                onClick={() => setIsCommentDialogOpen(true)}
+                                onClick={() => {
+                                    setDialogTitleMessage(
+                                        formatMessage(
+                                            MESSAGES.addRejectionComment,
+                                        ),
+                                    );
+                                    setIsCommentDialogOpen(true);
+                                }}
                                 variant="contained"
                                 color="error"
                                 autoFocus

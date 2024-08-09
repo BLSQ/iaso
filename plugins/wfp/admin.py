@@ -1,11 +1,6 @@
 from django.contrib import admin
 
-from .models import (
-    Beneficiary,
-    Journey,
-    Step,
-    Visit,
-)
+from .models import Beneficiary, Journey, Step, Visit, MonthlyStatistics, YearlyStatistics
 
 
 @admin.register(Beneficiary)
@@ -31,11 +26,14 @@ class JourneyAdmin(admin.ModelAdmin):
         "weight_loss",
         "exit_type",
         "instance_id",
+        "beneficiary",
     )
+    raw_id_fields = ["beneficiary"]
     list_filter = (
         "admission_criteria",
         "admission_type",
         "nutrition_programme",
+        "beneficiary__gender",
         "programme_type",
         "start_date",
         "end_date",
@@ -54,3 +52,57 @@ class VisitAdmin(admin.ModelAdmin):
 class StepAdmin(admin.ModelAdmin):
     list_display = ("id", "assistance_type", "visit")
     list_filter = ("assistance_type", "visit__journey__programme_type")
+
+
+@admin.register(MonthlyStatistics)
+class MonthlyStatisticsAdmin(admin.ModelAdmin):
+    list_filter = (
+        "org_unit",
+        "org_unit__name",
+        "month",
+        "gender",
+        "admission_criteria",
+        "admission_type",
+        "nutrition_programme",
+        "programme_type",
+        "exit_type",
+    )
+    list_display = (
+        "id",
+        "org_unit",
+        # "org_unit__name",
+        "month",
+        "gender",
+        "admission_criteria",
+        "admission_type",
+        "nutrition_programme",
+        "programme_type",
+        "exit_type",
+    )
+
+
+@admin.register(YearlyStatistics)
+class YearlyStatisticsAdmin(admin.ModelAdmin):
+    list_filter = (
+        "org_unit",
+        "org_unit__name",
+        "year",
+        "gender",
+        "admission_criteria",
+        "admission_type",
+        "nutrition_programme",
+        "programme_type",
+        "exit_type",
+    )
+    list_display = (
+        "id",
+        "org_unit",
+        # "org_unit__org_unit_type",
+        "year",
+        "gender",
+        "admission_criteria",
+        "admission_type",
+        "nutrition_programme",
+        "programme_type",
+        "exit_type",
+    )

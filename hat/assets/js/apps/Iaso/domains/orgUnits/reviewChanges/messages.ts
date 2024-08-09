@@ -21,6 +21,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Group',
         id: 'iaso.label.group',
     },
+    projects: {
+        defaultMessage: 'Projects',
+        id: 'iaso.label.projects',
+    },
     confirm: {
         id: 'iaso.label.confirm',
         defaultMessage: 'Confirm',

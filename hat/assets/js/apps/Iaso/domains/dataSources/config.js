@@ -1,7 +1,11 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Tooltip } from '@mui/material';
 import React, { useMemo } from 'react';
-import { IconButton, useSafeIntl } from 'bluesquare-components';
+import {
+    IconButton,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 // eslint-disable-next-line import/no-named-as-default-member,import/no-named-as-default
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import PublishIcon from '@mui/icons-material/Publish';
@@ -19,6 +23,10 @@ export const useDataSourcesTableColumns = defaultSourceVersion => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
         () => [
+            {
+                Header: formatMessage(MESSAGES.dataSourceName),
+                accessor: 'name',
+            },
             {
                 Header: formatMessage(MESSAGES.defaultSource),
                 accessor: 'defaultSource',
@@ -41,13 +49,20 @@ export const useDataSourcesTableColumns = defaultSourceVersion => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.defaultVersion),
-                id: 'default_version__number',
-                accessor: row => row.default_version?.number,
-            },
-            {
-                Header: formatMessage(MESSAGES.dataSourceName),
-                accessor: 'name',
+                Header: formatMessage(MESSAGES.projects),
+                accessor: 'projects',
+                sortable: false,
+                Cell: settings => {
+                    const projects = settings.row.original.projects.flat();
+                    if (!projects) {
+                        return textPlaceholder;
+                    }
+                    const projectNames = [];
+                    projects.forEach(project => {
+                        projectNames.push(project.name);
+                    });
+                    return projectNames.join(', ');
+                },
             },
             {
                 Header: formatMessage(MESSAGES.dataSourceDescription),

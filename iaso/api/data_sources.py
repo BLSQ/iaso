@@ -247,6 +247,7 @@ class DataSourceViewSet(ModelViewSet):
         profile = self.request.user.iaso_profile
         order = self.request.GET.get("order", "name").split(",")
         filter_empty_versions = self.request.GET.get("filter_empty_versions", "false").lower() == "true"
+        project_ids = self.request.GET.get("projectIds")
 
         sources = (
             DataSource.objects.select_related("default_version", "credentials")
@@ -257,7 +258,8 @@ class DataSourceViewSet(ModelViewSet):
 
         if filter_empty_versions:
             sources = sources.annotate(version_count=Count("versions")).filter(version_count__gt=0)
-
+        if project_ids:
+            sources = sources.filter(projects__in=project_ids.split(","))
         if linked_to:
             org_unit = OrgUnit.objects.get(pk=linked_to)
             useful_sources = org_unit.source_set.values_list("algorithm_run__version_2__data_source_id", flat=True)

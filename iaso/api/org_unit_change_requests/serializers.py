@@ -140,6 +140,7 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     org_unit_type_id = serializers.IntegerField(source="org_unit.org_unit_type.id", allow_null=True)
     org_unit_type_name = serializers.CharField(source="org_unit.org_unit_type.name", allow_null=True)
     groups = serializers.SerializerMethodField(method_name="get_current_org_unit_groups")
+    projects = serializers.SerializerMethodField(method_name="get_current_org_unit_type_projects")
     created_by = UserNestedSerializer()
     updated_by = UserNestedSerializer()
     created_at = TimestampField()
@@ -160,6 +161,7 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "org_unit_type_name",
             "status",
             "groups",
+            "projects",
             "requested_fields",
             "approved_fields",
             "rejection_comment",
@@ -171,6 +173,9 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
 
     def get_current_org_unit_groups(self, obj: OrgUnitChangeRequest):
         return [{"id": group.id, "name": group.name} for group in obj.org_unit.groups.all()]
+
+    def get_current_org_unit_type_projects(self, obj: OrgUnitChangeRequest):
+        return [{"id": project.id, "name": project.name} for project in obj.org_unit.org_unit_type.projects.all()]
 
 
 class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):

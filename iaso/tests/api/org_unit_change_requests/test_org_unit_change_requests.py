@@ -73,7 +73,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(13):
             # filter_for_user_and_app_id
             #   1. SELECT OrgUnit
             # get_queryset
@@ -88,6 +88,8 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             #   9. PREFETCH OrgUnitChangeRequest.new_reference_instances
             #  10. PREFETCH OrgUnitChangeRequest.old_reference_instances
             #  11. PREFETCH OrgUnitChangeRequest.{new/old}_reference_instances__form
+            #  12. PREFETCH OrgUnitChangeRequest.new_org_unit_type.projects
+            #  13. PREFETCH OrgUnitChangeRequest.old_org_unit_type.projects
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data["results"]))

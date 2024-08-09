@@ -3,6 +3,8 @@ import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
+import { FormsCell } from './components/FormsCell';
+import { OrgUnitsCell } from './components/OrgUnitsCell';
 
 export const useDevicesTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -32,25 +34,13 @@ export const useDevicesTableColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.formsImported),
                 sortable: false,
                 accessor: 'forms_imported',
-                Cell: settings => {
-                    return (
-                        <span>
-                            {settings.row.original.forms_imported.count}
-                        </span>
-                    );
-                },
+                Cell: FormsCell,
             },
             {
                 Header: formatMessage(MESSAGES.orgUnitsVisited),
                 sortable: false,
                 accessor: 'org_units_visited',
-                Cell: settings => {
-                    return (
-                        <span>
-                            {settings.row.original.org_units_visited.count}
-                        </span>
-                    );
-                },
+                Cell: OrgUnitsCell,
             },
             {
                 Header: formatMessage(MESSAGES.timeSynched),

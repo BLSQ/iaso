@@ -15,6 +15,7 @@ type Props = {
     iconSize?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
     size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
     icon?: IconVariant;
+    name?: string;
 };
 
 export const LinkToOrgUnit: FunctionComponent<Props> = ({
@@ -25,11 +26,12 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
     iconSize,
     size,
     icon,
+    name,
 }) => {
     const user = useCurrentUser();
     const condition = userHasPermission(ORG_UNITS, user) && Boolean(orgUnit);
     const url = `/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit?.id}`;
-    const text = orgUnit?.name;
+    const text = name ?? orgUnit?.name;
 
     return (
         <LinkTo

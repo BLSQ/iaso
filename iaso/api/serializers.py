@@ -188,7 +188,7 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
         if hasattr(org_unit, "instances_count"):
             return org_unit.instances_count
         else:
-            return org_unit.instance_set.filter(~Q(file="") & ~Q(device__test_device=True) & ~Q(deleted=True)).count()
+            return org_unit.instances.filter(~Q(file="") & ~Q(device__test_device=True) & ~Q(deleted=True)).count()
 
     class Meta:
         model = OrgUnit

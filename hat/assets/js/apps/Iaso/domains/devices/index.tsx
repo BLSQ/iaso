@@ -9,7 +9,7 @@ import MESSAGES from './messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { tableDefaults, useGetDevices } from './hooks/api/useGetDevices';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { DeviceFilters } from './DeviceFilters';
+import { DeviceFilters } from './components/DeviceFilters';
 
 const baseUrl = baseUrls.devices;
 

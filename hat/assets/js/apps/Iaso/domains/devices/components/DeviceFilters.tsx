@@ -1,17 +1,17 @@
 import React, { FunctionComponent } from 'react';
 import { DatePicker, useSafeIntl } from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
-import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import InputComponent from '../../components/forms/InputComponent';
-import { AsyncSelect } from '../../components/forms/AsyncSelect';
-import { useFilterState } from '../../hooks/useFilterState';
-import MESSAGES from './messages';
-import { getUsersDropDown } from '../instances/hooks/requests/getUsersDropDown';
-import { useGetProfilesDropdown } from '../instances/hooks/useGetProfilesDropdown';
-import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
-import { useGetFormsOptions } from '../completenessStats/hooks/api/useGetFormsOptions';
-import { FilterButton } from '../../components/FilterButton';
-import { apiDateFormat } from '../../utils/dates';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import InputComponent from '../../../components/forms/InputComponent';
+import { AsyncSelect } from '../../../components/forms/AsyncSelect';
+import { useFilterState } from '../../../hooks/useFilterState';
+import MESSAGES from '../messages';
+import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
+import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDropdown';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { useGetFormsOptions } from '../../completenessStats/hooks/api/useGetFormsOptions';
+import { FilterButton } from '../../../components/FilterButton';
+import { apiDateFormat } from '../../../utils/dates';
 
 type Props = {
     baseUrl: string;

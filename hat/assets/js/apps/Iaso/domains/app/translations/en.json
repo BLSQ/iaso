@@ -230,6 +230,7 @@
     "iaso.form.attachments": "Attachments",
     "iaso.form.cr_mode_if_reference_form": "Create change request if form is reference form",
     "iaso.form.cr_mode_none": "No change request",
+    "iaso.form.downloadXLSandXML": "Download XLS/XML",
     "iaso.form.formDeleted": "Form deleted",
     "iaso.form.formRestored": "Form restored",
     "iaso.form.label.changeRequestMode": "Change request mode",

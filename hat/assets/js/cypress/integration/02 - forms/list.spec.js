@@ -142,14 +142,14 @@ describe('Forms', () => {
             });
 
             describe('Action column', () => {
-                it('should display 4 buttons if user has all rights', () => {
+                it('should display 6 buttons if user has all rights', () => {
                     goToPage();
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
                     actionCol.find('button').should('have.length', 6);
                 });
-                it('should display 3 buttons if user has iaso_forms permission', () => {
+                it('should display 4 buttons if user has iaso_forms permission', () => {
                     goToPage({
                         ...superUser,
                         permissions: [Permission.FORMS],
@@ -160,7 +160,7 @@ describe('Forms', () => {
                     const actionCol = row.find('td').last();
                     actionCol.find('button').should('have.length', 4);
                 });
-                it('should display 1 buttons if user has iaso_submissions permission', () => {
+                it('should display 2 buttons if user has iaso_submissions permission', () => {
                     goToPage({
                         ...superUser,
                         permissions: [Permission.SUBMISSIONS],
@@ -176,22 +176,18 @@ describe('Forms', () => {
                         goToPage();
                     });
                     it('should display download button', () => {
+                        goToPage();
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(0);
-                        const latestCol = row.find('td').eq(7);
-                        latestCol
-                            .find('button')
-                            .find('[data-testid="DownloadIcon"]')
-                            .should('exist');
+                        const actionCol = row.find('td').last();
+                        actionCol.find('button').eq(5).should('exist');
                     });
+
                     it('should not display download button if no latest_form_version', () => {
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(1);
                         const latestCol = row.find('td').eq(7);
-                        latestCol
-                            .find('button')
-                            .find('[data-testid="DownloadIcon"]')
-                            .should('not.exist');
+                        latestCol.find('button').eq(5).should('not.exist');
                     });
 
                     it('should not display XLS and XML link if download button not clicked', () => {

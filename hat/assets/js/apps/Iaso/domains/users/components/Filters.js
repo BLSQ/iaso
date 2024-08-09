@@ -124,14 +124,27 @@ const Filters = ({ baseUrl, params }) => {
         <Grid container spacing={2}>
             <Grid item xs={12} md={3}>
                 <InputComponent
-                    keyValue="search"
+                    keyValue="projectsIds"
                     onChange={handleChange}
-                    value={filters.search}
-                    type="search"
-                    label={MESSAGES.search}
-                    onEnterPressed={handleSearch}
-                    onErrorChange={setTextSearchError}
-                    blockForbiddenChars
+                    value={filters.projectsIds}
+                    type="select"
+                    options={allProjects}
+                    label={MESSAGES.projects}
+                    loading={isFetchingProjects}
+                    onEnterPressed={handleSearchPerms}
+                    clearable
+                    multi
+                />
+                <InputComponent
+                    keyValue="permissions"
+                    onChange={handleChange}
+                    value={filters.permissions}
+                    type="select"
+                    multi
+                    options={dropdown ?? []}
+                    label={MESSAGES.permissions}
+                    loading={isFetching}
+                    onEnterPressed={handleSearchPerms}
                 />
                 <InputComponent
                     keyValue="userRoles"
@@ -143,6 +156,18 @@ const Filters = ({ baseUrl, params }) => {
                     label={MESSAGES.userRoles}
                     loading={isFetchingUserRoles}
                     onEnterPressed={handleSearchUserRoles}
+                />
+            </Grid>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    keyValue="search"
+                    onChange={handleChange}
+                    value={filters.search}
+                    type="search"
+                    label={MESSAGES.search}
+                    onEnterPressed={handleSearch}
+                    onErrorChange={setTextSearchError}
+                    blockForbiddenChars
                 />
                 <InputComponent
                     keyValue="teamsIds"
@@ -156,32 +181,6 @@ const Filters = ({ baseUrl, params }) => {
                     clearable
                     multi
                 />
-            </Grid>
-            <Grid item xs={12} md={3}>
-                <InputComponent
-                    keyValue="permissions"
-                    onChange={handleChange}
-                    value={filters.permissions}
-                    type="select"
-                    multi
-                    options={dropdown ?? []}
-                    label={MESSAGES.permissions}
-                    loading={isFetching}
-                    onEnterPressed={handleSearchPerms}
-                />
-                <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
-                    <OrgUnitTreeviewModal
-                        toggleOnLabelClick={false}
-                        titleMessage={MESSAGES.location}
-                        onConfirm={orgUnit =>
-                            handleChange(
-                                'location',
-                                orgUnit ? orgUnit.id : undefined,
-                            )
-                        }
-                        initialSelection={initialOrgUnit}
-                    />
-                </Box>
             </Grid>
             <Grid item xs={12} md={3}>
                 <InputComponent
@@ -209,18 +208,19 @@ const Filters = ({ baseUrl, params }) => {
                 />
             </Grid>
             <Grid item xs={12} md={3}>
-                <InputComponent
-                    keyValue="projectsIds"
-                    onChange={handleChange}
-                    value={filters.projectsIds}
-                    type="select"
-                    options={allProjects}
-                    label={MESSAGES.projects}
-                    loading={isFetchingProjects}
-                    onEnterPressed={handleSearchPerms}
-                    clearable
-                    multi
-                />
+                <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
+                    <OrgUnitTreeviewModal
+                        toggleOnLabelClick={false}
+                        titleMessage={MESSAGES.location}
+                        onConfirm={orgUnit =>
+                            handleChange(
+                                'location',
+                                orgUnit ? orgUnit.id : undefined,
+                            )
+                        }
+                        initialSelection={initialOrgUnit}
+                    />
+                </Box>
                 <InputComponent
                     keyValue="ouParent"
                     type="checkbox"

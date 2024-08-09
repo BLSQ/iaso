@@ -78,7 +78,7 @@ describe('OrgUnits', () => {
             rows.eq(0).find('td').should('have.length', 12);
 
             const row = cy.get('table').find('tbody').find('tr').eq(0);
-            const nameCol = row.find('td').eq(1);
+            const nameCol = row.find('td').eq(2);
             nameCol.should('contain.text', 'Sierra Leone');
         });
     });

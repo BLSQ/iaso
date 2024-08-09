@@ -32,8 +32,8 @@ import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { parseJson } from '../utils/jsonLogicParse.ts';
 
 import { Popper } from '../../forms/fields/components/Popper.tsx';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
 import MESSAGES from '../messages';
 
 import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
@@ -44,6 +44,7 @@ import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPla
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
 import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
 import { ColumnSelect } from './ColumnSelect.tsx';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -97,6 +98,10 @@ const InstancesFiltersComponent = ({
         filters.showDeleted = filters.showDeleted === 'true';
         return filters;
     }, [params]);
+
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
+
     const [formState, setFormState] = useFormState(
         filterDefault(defaultFilters),
     );
@@ -122,7 +127,6 @@ const InstancesFiltersComponent = ({
     );
     const { data, isFetching: fetchingForms } = useGetForms();
     const formsList = useMemo(() => data?.forms ?? [], [data]);
-
     const formId =
         formState.formIds.value?.split(',').length === 1
             ? formState.formIds.value.split(',')[0]
@@ -173,7 +177,7 @@ const InstancesFiltersComponent = ({
     const handleFormChange = useCallback(
         (key, value) => {
             // checking only as value can be null or false
-            if (key === 'formIds') {
+            if (['formIds', 'projectIds'].includes(key)) {
                 setFormState('fieldsSearch', null);
                 setFormIds(value ? value.split(',') : undefined);
             }
@@ -265,6 +269,16 @@ const InstancesFiltersComponent = ({
 
             <Grid container spacing={2}>
                 <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="projectIds"
+                        onChange={handleFormChange}
+                        value={formState.projectIds.value || null}
+                        type="select"
+                        options={allProjects}
+                        label={MESSAGES.projects}
+                        loading={isFetchingProjects}
+                        multi
+                    />
                     <InputComponent
                         keyValue="search"
                         onChange={handleFormChange}

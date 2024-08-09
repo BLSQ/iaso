@@ -124,6 +124,18 @@ const Filters = ({ baseUrl, params }) => {
         <Grid container spacing={2}>
             <Grid item xs={12} md={3}>
                 <InputComponent
+                    keyValue="projectsIds"
+                    onChange={handleChange}
+                    value={filters.projectsIds}
+                    type="select"
+                    options={allProjects}
+                    label={MESSAGES.projects}
+                    loading={isFetchingProjects}
+                    onEnterPressed={handleSearchPerms}
+                    clearable
+                    multi
+                />
+                <InputComponent
                     keyValue="search"
                     onChange={handleChange}
                     value={filters.search}
@@ -144,18 +156,6 @@ const Filters = ({ baseUrl, params }) => {
                     loading={isFetchingUserRoles}
                     onEnterPressed={handleSearchUserRoles}
                 />
-                <InputComponent
-                    keyValue="teamsIds"
-                    onChange={handleChange}
-                    value={filters.teamsIds}
-                    type="select"
-                    options={teamsDropdown}
-                    label={MESSAGES.teams}
-                    loading={isFetchingTeams}
-                    onEnterPressed={handleSearchPerms}
-                    clearable
-                    multi
-                />
             </Grid>
             <Grid item xs={12} md={3}>
                 <InputComponent
@@ -169,19 +169,18 @@ const Filters = ({ baseUrl, params }) => {
                     loading={isFetching}
                     onEnterPressed={handleSearchPerms}
                 />
-                <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
-                    <OrgUnitTreeviewModal
-                        toggleOnLabelClick={false}
-                        titleMessage={MESSAGES.location}
-                        onConfirm={orgUnit =>
-                            handleChange(
-                                'location',
-                                orgUnit ? orgUnit.id : undefined,
-                            )
-                        }
-                        initialSelection={initialOrgUnit}
-                    />
-                </Box>
+                <InputComponent
+                    keyValue="teamsIds"
+                    onChange={handleChange}
+                    value={filters.teamsIds}
+                    type="select"
+                    options={teamsDropdown}
+                    label={MESSAGES.teams}
+                    loading={isFetchingTeams}
+                    onEnterPressed={handleSearchPerms}
+                    clearable
+                    multi
+                />
             </Grid>
             <Grid item xs={12} md={3}>
                 <InputComponent
@@ -209,18 +208,19 @@ const Filters = ({ baseUrl, params }) => {
                 />
             </Grid>
             <Grid item xs={12} md={3}>
-                <InputComponent
-                    keyValue="projectsIds"
-                    onChange={handleChange}
-                    value={filters.projectsIds}
-                    type="select"
-                    options={allProjects}
-                    label={MESSAGES.projects}
-                    loading={isFetchingProjects}
-                    onEnterPressed={handleSearchPerms}
-                    clearable
-                    multi
-                />
+                <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
+                    <OrgUnitTreeviewModal
+                        toggleOnLabelClick={false}
+                        titleMessage={MESSAGES.location}
+                        onConfirm={orgUnit =>
+                            handleChange(
+                                'location',
+                                orgUnit ? orgUnit.id : undefined,
+                            )
+                        }
+                        initialSelection={initialOrgUnit}
+                    />
+                </Box>
                 <InputComponent
                     keyValue="ouParent"
                     type="checkbox"

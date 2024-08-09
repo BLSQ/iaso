@@ -53,6 +53,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Please select a form with a period to filter',
         id: 'iaso.label.periodPlaceHolder',
     },
+    noPeriodPlaceHolder: {
+        defaultMessage: 'The selected form has no period type',
+        id: 'iaso.label.noPeriodPlaceHolder',
+    },
     itselfColumnTitle: {
         defaultMessage: 'Submissions on this org unit',
         id: 'iaso.completenessStats.itselfColumnTitle',
@@ -155,6 +159,10 @@ const MESSAGES = defineMessages({
     user: {
         id: 'iaso.label.user',
         defaultMessage: 'User',
+    },
+    projects: {
+        id: 'iaso.label.projects',
+        defaultMessage: 'Projects',
     },
 });
 

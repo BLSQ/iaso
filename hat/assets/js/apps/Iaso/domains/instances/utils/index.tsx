@@ -205,7 +205,7 @@ export const formatLabel = (field: Field): string => {
     if (!field.label.trim()) return field.name;
     if (field.label.includes(':')) return field.label.split(':')[0];
     if (field.label.includes('$')) return field.label.split('$')[0];
-    if (field.type === 'calculate') return 'Σ ' + field.label;
+    if (field.type === 'calculate') return `Σ ${field.label}`;
     return field.label;
 };
 
@@ -234,7 +234,7 @@ const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
 };
 
 export const useInstancesColumns = (
-    // eslint-disable-next-line no-unused-vars
+    // eslint-disable-next-line no-unused-vars, default-param-last
     getActionCell: RenderCell = settings => (
         <ActionTableColumnComponent settings={settings} />
     ),
@@ -492,6 +492,7 @@ type SelectionAction = {
 export const useSelectionActions = (
     filters: Record<string, string>,
     setForceRefresh: () => void,
+    // eslint-disable-next-line default-param-last
     isUnDeleteAction = false,
     classes: Record<string, string>,
 ): SelectionAction[] => {
@@ -608,6 +609,7 @@ export const getFilters = (
         form_ids: params.formIds,
         jsonContent: params.fieldsSearch,
         planningIds: params.planningIds,
+        project_ids: params.projectIds,
         userIds: params.userIds,
         modificationDateFrom: getFromDateString(
             params.modificationDateFrom,

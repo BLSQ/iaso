@@ -29,6 +29,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.save',
         defaultMessage: 'Save',
     },
+    search: {
+        id: 'iaso.search',
+        defaultMessage: 'Search',
+    },
     close: {
         id: 'iaso.label.close',
         defaultMessage: 'Close',

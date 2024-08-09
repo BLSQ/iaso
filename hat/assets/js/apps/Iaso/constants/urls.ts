@@ -102,6 +102,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'modificationDateTo',
             'sentDateFrom',
             'sentDateTo',
+            'projectIds',
         ],
     },
     instanceDetail: {
@@ -168,6 +169,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'userIds',
             'userRoles',
             'withLocation',
+            'projectIds',
             ...paginationPathParams,
         ],
     },
@@ -244,6 +246,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'showDirectCompleteness',
             'teamsIds',
             'userIds',
+            'projectIds',
         ],
     },
     modules: {
@@ -276,7 +279,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     sources: {
         url: 'orgunits/sources/list',
-        params: ['accountId', ...paginationPathParams],
+        params: ['accountId', 'projectIds', ...paginationPathParams],
     },
     sourceDetails: {
         url: 'orgunits/source/details',
@@ -296,7 +299,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     orgUnitTypes: {
         url: 'orgunits/types',
-        params: ['accountId', 'search', ...paginationPathParams],
+        params: ['accountId', 'search', 'projectIds', ...paginationPathParams],
     },
     entities: {
         url: 'entities/list',

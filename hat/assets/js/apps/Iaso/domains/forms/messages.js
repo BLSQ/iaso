@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',
     },
+    ok: {
+        id: 'iaso.label.ok',
+        defaultMessage: 'OK',
+    },
     name: {
         id: 'iaso.forms.name',
         defaultMessage: 'Name',
@@ -661,6 +665,10 @@ const MESSAGES = defineMessages({
     formRestored: {
         id: 'iaso.form.formRestored',
         defaultMessage: 'Form restored',
+    },
+    downloadXLSandXML: {
+        id: 'iaso.form.downloadXLSandXML',
+        defaultMessage: 'Download XLS/XML',
     },
 });
 

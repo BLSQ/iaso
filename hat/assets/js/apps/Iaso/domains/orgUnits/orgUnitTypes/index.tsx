@@ -19,6 +19,7 @@ import MESSAGES from './messages';
 import { useGetColumns } from './config/tableColumns';
 import { useGetOrgUnitTypes } from './hooks/useGetOrgUnitTypes';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { Filters } from './components/Filters';
 
 const baseUrl = baseUrls.orgUnitTypes;
 
@@ -38,7 +39,9 @@ const OrgUnitTypes: FunctionComponent = () => {
                 title={formatMessage(MESSAGES.orgUnitsTypes)}
                 displayBackButton={false}
             />
+
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <Filters params={params} baseUrl={baseUrl} />
                 <Grid
                     container
                     spacing={0}

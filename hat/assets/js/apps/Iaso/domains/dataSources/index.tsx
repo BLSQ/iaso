@@ -18,6 +18,7 @@ import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetDataSources } from './useGetDataSources';
+import { Filters } from './components/Filters';
 
 const baseUrl = baseUrls.sources;
 const defaultOrder = 'name';
@@ -35,11 +36,12 @@ const DataSources: FunctionComponent = () => {
         page?: string;
         pageSize?: string;
         order?: string;
+        projectIds?: string;
     };
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const defaultSourceVersion = useDefaultSourceVersion();
-    const columns = useDataSourcesTableColumns(defaultSourceVersion);
+    const columns: any = useDataSourcesTableColumns(defaultSourceVersion);
     const { data, isFetching: loading } = useGetDataSources(params);
 
     return (
@@ -50,6 +52,7 @@ const DataSources: FunctionComponent = () => {
             />
             <ErrorBoundary>
                 <Box className={classes.containerFullHeightNoTabPadded}>
+                    <Filters params={params} baseUrl={baseUrl} />
                     <DisplayIfUserHasPerm permissions={[SOURCE_WRITE]}>
                         <Box
                             display="inline-flex"

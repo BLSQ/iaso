@@ -130,11 +130,14 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        project = m.Project.objects.create(name="Project", app_id="app_id")
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        org_unit_type.projects.set([project])
         org_unit_parent = m.OrgUnit.objects.create(name="Parent")
         org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type, parent=org_unit_parent)
 
         group = m.Group.objects.create(name="Group")
+
         org_unit.groups.set([group])
 
         account = m.Account.objects.create(name="Account")
@@ -143,6 +146,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
         )
 
         cls.group = group
+        cls.project = project
         cls.org_unit = org_unit
         cls.org_unit_type = org_unit_type
         cls.user = user
@@ -176,6 +180,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "groups": [
                     {"id": self.group.id, "name": "Group"},
                 ],
+                "projects": [{"id": self.project.id, "name": self.project.name}],
                 "requested_fields": serializer.data["requested_fields"],
                 "approved_fields": serializer.data["approved_fields"],
                 "rejection_comment": "",

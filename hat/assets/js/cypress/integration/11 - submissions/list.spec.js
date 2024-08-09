@@ -28,6 +28,12 @@ const defaultQuery = {
 };
 
 const newFilters = {
+    projectIds: {
+        value: [0],
+        urlValue: '1',
+        selector: '#projectIds',
+        type: 'multi',
+    },
     search: {
         value: 'ZELDA',
         urlValue: 'ZELDA',
@@ -87,6 +93,7 @@ const newFilters = {
 };
 
 const goToPage = (
+    // eslint-disable-next-line default-param-last
     fakeUser = superUser,
     formQuery,
     fixture = listFixture,
@@ -130,7 +137,7 @@ const goToPage = (
 const testRowContent = (index, p = listFixture.instances[index]) => {
     cy.get('table').as('table');
     cy.get('@table').find('tbody').find('tr').eq(index).as('row');
-    cy.get('@row').find('td').eq(0).should('contain', p.form_name);
+    cy.get('@row').find('td').eq(0).should('contain', p.project_name);
     cy.get('@row').find('td').eq(3).should('contain', p.org_unit.name);
 };
 
@@ -178,6 +185,7 @@ describe('Submissions', () => {
                         orgUnitParentId: newFilters.levels.urlValue,
                         dateFrom: newFilters.dateFrom.apiValue,
                         dateTo: newFilters.dateTo.apiValue,
+                        project_ids: newFilters.projectIds.urlValue,
                         form_ids: newFilters.formIds.urlValue,
                     },
                 },
@@ -286,7 +294,7 @@ describe('Submissions', () => {
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(1);
                     row.find('td')
-                        .eq(0)
+                        .eq(1)
                         .find('a')
                         .should(
                             'have.attr',
@@ -300,12 +308,8 @@ describe('Submissions', () => {
             cy.wait('@getSubmissions').then(() => {
                 const sorts = [
                     {
-                        colIndex: 1,
-                        order: 'updated_at',
-                    },
-                    {
                         colIndex: 2,
-                        order: 'period',
+                        order: 'updated_at',
                     },
                     {
                         colIndex: 3,

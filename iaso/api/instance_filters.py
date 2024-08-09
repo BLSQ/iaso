@@ -48,6 +48,7 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         "period_ids": periods,
         "periods_bound": periods_bound,
         "planning_ids": req.get(query.PLANNING_IDS, None),
+        "project_ids": req.get(query.PROJECT_IDS, None),
         "search": req.get(query.SEARCH, None),
         "status": req.get(query.STATUS, None),
         "from_date": req.get(query.DATE_FROM, None),

@@ -1,24 +1,13 @@
 import React, { useMemo } from 'react';
-import { Grid } from '@mui/material';
-import { Link } from 'react-router-dom';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
-import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
-import { useDispatch } from 'react-redux';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import { baseUrls } from '../../../constants/urls.ts';
 import { userHasPermission, userHasOneOfPermissions } from '../../users/utils';
 import MESSAGES from '../messages';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
-import { YesNoCell } from '../../../components/Cells/YesNoCell';
-import { CreateSubmissionModal } from '../components/CreateSubmissionModal/CreateSubmissionModal.tsx';
-import { createInstance } from '../../instances/actions';
 import * as Permission from '../../../utils/permissions.ts';
-import { BreakWordCell } from '../../../components/Cells/BreakWordCell.tsx';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
-import { useDeleteForm } from '../hooks/useDeleteForm.tsx';
-import { useRestoreForm } from '../hooks/useRestoreForm.tsx';
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm.tsx';
+import { FormActions } from '../components/FormActions.tsx';
 
 export const baseUrl = baseUrls.forms;
 
@@ -103,12 +92,15 @@ const getActionsColWidth = user => {
 
 export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
     const user = useCurrentUser();
-    const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: deleteForm } = useDeleteForm();
-    const { mutateAsync: restoreForm } = useRestoreForm();
+
     return useMemo(() => {
         const cols = [
+            {
+                Header: formatMessage(MESSAGES.projects),
+                accessor: 'projects',
+                Cell: settings => settings.value.map(p => p.name).join(', '),
+            },
             {
                 Header: formatMessage(MESSAGES.name),
                 accessor: 'name',
@@ -130,11 +122,6 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                 Cell: DateTimeCell,
             },
             {
-                Header: formatMessage(MESSAGES.singlePerPeriod),
-                accessor: 'single_per_period',
-                Cell: YesNoCell,
-            },
-            {
                 Header: formatMessage(MESSAGES.type),
                 sortable: false,
                 accessor: 'org_unit_types',
@@ -148,174 +135,19 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                 accessor: 'instances_count',
             },
             {
-                Header: formatMessage(MESSAGES.form_id),
-                accessor: 'form_id',
-                sortable: false,
-                Cell: BreakWordCell,
-            },
-            {
-                Header: formatMessage(MESSAGES.latest_version_files),
-                accessor: 'latest_version_files',
-                sortable: false,
-                Cell: settings =>
-                    settings.row.original.latest_form_version !== null && (
-                        <Grid container spacing={1} justifyContent="center">
-                            <Grid item>
-                                {
-                                    settings.row.original.latest_form_version
-                                        .version_id
-                                }
-                            </Grid>
-                            <Grid container spacing={1} justifyContent="center">
-                                {settings.row.original.latest_form_version
-                                    .xls_file && (
-                                    <Grid item>
-                                        <Link
-                                            download
-                                            reloadDocument
-                                            to={
-                                                settings.row.original
-                                                    .latest_form_version
-                                                    .xls_file
-                                            }
-                                        >
-                                            XLS
-                                        </Link>
-                                    </Grid>
-                                )}
-                                <Grid item>
-                                    <Link
-                                        download
-                                        reloadDocument
-                                        to={
-                                            settings.row.original
-                                                .latest_form_version.file
-                                        }
-                                    >
-                                        XML
-                                    </Link>
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    ),
-            },
-            {
                 Header: formatMessage(MESSAGES.actions),
                 resizable: false,
                 sortable: false,
                 width: getActionsColWidth(user),
                 accessor: 'actions',
                 Cell: settings => {
-                    let urlToInstances = `/${baseUrls.instances}/formIds/${settings.row.original.id}`;
-                    if (orgUnitId) {
-                        urlToInstances = `${urlToInstances}/levels/${orgUnitId}`;
-                    }
-                    urlToInstances = `${urlToInstances}/tab/list`;
                     return (
-                        <section>
-                            {showDeleted && (
-                                <IconButton
-                                    onClick={() =>
-                                        restoreForm(settings.row.original.id)
-                                    }
-                                    icon="restore-from-trash"
-                                    tooltipMessage={MESSAGES.restoreFormTooltip}
-                                />
-                            )}
-                            {!showDeleted && (
-                                <>
-                                    <DisplayIfUserHasPerm
-                                        permissions={[
-                                            Permission.SUBMISSIONS,
-                                            Permission.SUBMISSIONS_UPDATE,
-                                        ]}
-                                    >
-                                        <IconButton
-                                            url={`${urlToInstances}`}
-                                            tooltipMessage={
-                                                MESSAGES.viewInstances
-                                            }
-                                            overrideIcon={FormatListBulleted}
-                                        />
-                                    </DisplayIfUserHasPerm>
-                                    {/* If orgUnitId is not undefined, it means the btable is used in the org units details page,
-                                    which, in turn, means we shouldn't show the button to create a submission */}
-                                    {!orgUnitId && (
-                                        <>
-                                            <DisplayIfUserHasPerm
-                                                permissions={[
-                                                    Permission.SUBMISSIONS_UPDATE,
-                                                ]}
-                                            >
-                                                <CreateSubmissionModal
-                                                    titleMessage={
-                                                        MESSAGES.instanceCreationDialogTitle
-                                                    }
-                                                    confirmMessage={MESSAGES.ok}
-                                                    cancelMessage={
-                                                        MESSAGES.cancel
-                                                    }
-                                                    formType={{
-                                                        id: settings.row
-                                                            .original.id,
-                                                        periodType:
-                                                            settings.row
-                                                                .original
-                                                                .period_type,
-                                                    }}
-                                                    onCreateOrReAssign={(
-                                                        currentForm,
-                                                        payload,
-                                                    ) =>
-                                                        dispatch(
-                                                            createInstance(
-                                                                currentForm,
-                                                                payload,
-                                                            ),
-                                                        )
-                                                    }
-                                                    orgUnitTypes={
-                                                        settings.row.original
-                                                            .org_unit_type_ids
-                                                    }
-                                                />
-                                            </DisplayIfUserHasPerm>
-
-                                            <DisplayIfUserHasPerm
-                                                permissions={[Permission.FORMS]}
-                                            >
-                                                <IconButton
-                                                    url={`/${baseUrls.formDetail}/formId/${settings.row.original.id}`}
-                                                    icon="edit"
-                                                    tooltipMessage={
-                                                        MESSAGES.edit
-                                                    }
-                                                />
-                                                <IconButton
-                                                    // eslint-disable-next-line max-len
-                                                    url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
-                                                    icon="dhis"
-                                                    tooltipMessage={
-                                                        MESSAGES.dhis2Mappings
-                                                    }
-                                                />
-                                                <DeleteDialog
-                                                    titleMessage={
-                                                        MESSAGES.deleteFormTitle
-                                                    }
-                                                    onConfirm={closeDialog =>
-                                                        deleteForm(
-                                                            settings.row
-                                                                .original.id,
-                                                        ).then(closeDialog)
-                                                    }
-                                                />
-                                            </DisplayIfUserHasPerm>
-                                        </>
-                                    )}
-                                </>
-                            )}
-                        </section>
+                        <FormActions
+                            settings={settings}
+                            orgUnitId={orgUnitId}
+                            baseUrls={baseUrls}
+                            showDeleted={showDeleted}
+                        />
                     );
                 },
             },
@@ -328,15 +160,7 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
             });
         }
         return cols;
-    }, [
-        deleteForm,
-        dispatch,
-        formatMessage,
-        orgUnitId,
-        restoreForm,
-        showDeleted,
-        user,
-    ]);
+    }, [formatMessage, orgUnitId, showDeleted, user]);
 };
 
 export const requiredFields = [

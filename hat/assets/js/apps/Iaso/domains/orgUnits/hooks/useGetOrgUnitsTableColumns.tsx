@@ -6,10 +6,11 @@ import {
     useSafeIntl,
     Column,
     IntlFormatMessage,
+    textPlaceholder,
 } from 'bluesquare-components';
 import OrgUnitTooltip from '../components/OrgUnitTooltip';
 import MESSAGES from '../messages';
-import { useGetStatusMessage, getOrgUnitGroups } from '../utils';
+import { useGetStatusMessage, getOrgUnitProjects } from '../utils';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { Search } from '../types/search';
 import { ActionCell } from '../components/ActionCell';
@@ -45,6 +46,13 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                 accessor: 'id',
             },
             {
+                Header: formatMessage(MESSAGES.projects),
+                accessor: 'projects',
+                sortable: false,
+                Cell: settings => getOrgUnitProjects(settings.row.original),
+            },
+
+            {
                 Header: formatMessage(MESSAGES.name),
                 accessor: 'name',
                 Cell: settings => (
@@ -57,12 +65,6 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                 Header: formatMessage(MESSAGES.type),
                 accessor: 'org_unit_type_name',
                 id: 'org_unit_type__name',
-            },
-            {
-                Header: formatMessage(MESSAGES.groups),
-                accessor: 'groups',
-                sortable: false,
-                Cell: settings => getOrgUnitGroups(settings.row.original),
             },
             {
                 Header: formatMessage(MESSAGES.source),
@@ -79,20 +81,23 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                 accessor: 'instances_count',
             },
             {
-                Header: formatMessage(MESSAGES.updated_at),
-                accessor: 'updated_at',
-                Cell: DateTimeCell,
-            },
-            {
                 Header: formatMessage(MESSAGES.created_at),
                 accessor: 'created_at',
                 Cell: DateTimeCell,
             },
             {
+                Header: formatMessage(MESSAGES.updated_at),
+                accessor: 'updated_at',
+                Cell: DateTimeCell,
+            },
+
+            {
                 Header: formatMessage(MESSAGES.creator),
                 accessor: 'creator',
                 id: 'creator',
-                Cell: settings => <>{settings.row.original.creator || '--'}</>,
+                Cell: settings => {
+                    return settings.row.original.creator || textPlaceholder;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.action),

@@ -8,13 +8,37 @@ import {
     OrgUnitTypesParams,
 } from '../../types/orgunitTypes';
 
+const queryParamsMap = new Map([['projectIds', 'project_ids']]);
+const apiParamsKeys = ['order', 'page', 'limit', 'search'];
+
+const getParams = (params: OrgUnitTypesParams) => {
+    const { pageSize, ...urlParams } = params;
+    const apiParams: Record<string, any> = {
+        ...urlParams,
+        limit: pageSize ?? 10,
+    };
+
+    const queryParams: Record<string, string> = {};
+    apiParamsKeys.forEach(apiParamKey => {
+        const apiParam = apiParams[apiParamKey];
+        if (apiParam !== undefined) {
+            queryParams[apiParamKey] = apiParam;
+        }
+    });
+
+    queryParamsMap.forEach((value, key) => {
+        if (params[key]) {
+            queryParams[value] = params[key];
+        }
+    });
+
+    return queryParams;
+};
+
 const getOrgUnitTypes = async (
     options: OrgUnitTypesParams,
 ): Promise<PaginatedOrgUnitTypes> => {
-    const { pageSize, ...params } = options as Record<string, any>;
-    if (pageSize) {
-        params.limit = pageSize;
-    }
+    const params = getParams(options);
     const url = makeUrlWithParams('/api/v2/orgunittypes/', params);
     return getRequest(url) as Promise<PaginatedOrgUnitTypes>;
 };

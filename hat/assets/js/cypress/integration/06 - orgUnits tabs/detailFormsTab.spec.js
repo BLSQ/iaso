@@ -25,25 +25,17 @@ const testRowContent = (index, form = formsList.forms[index]) => {
 
     cy.get('[data-test=forms-tab]').find('table').as('table');
     cy.get('@table').find('tbody').find('tr').eq(index).as('row');
-    cy.get('@row').find('td').eq(0).should('contain', form.name);
-    cy.get('@row').find('td').eq(1).should('contain', formCreatedAt);
-    cy.get('@row').find('td').eq(2).should('contain', formUpdatedAt);
-    cy.get('@row').find('td').eq(3).should('contain', formLastInstance);
-    cy.get('@row')
-        .find('td')
-        .eq(4)
-        .should('contain', form.single_per_period ? 'Yes' : 'No');
+    cy.get('@row').find('td').eq(1).should('contain', form.name);
+    cy.get('@row').find('td').eq(2).should('contain', formCreatedAt);
+    cy.get('@row').find('td').eq(3).should('contain', formUpdatedAt);
+    cy.get('@row').find('td').eq(4).should('contain', formLastInstance);
+
     cy.get('@row')
         .find('td')
         .eq(5)
         .should('contain', form.org_unit_types[0].name);
     cy.get('@row').find('td').eq(6).should('contain', form.instances_count);
-    cy.get('@row').find('td').eq(7).should('contain', form.form_id);
-    cy.get('@row')
-        .find('td')
-        .eq(8)
-        .should('contain', form.latest_form_version.version_id);
-    cy.get('@row').find('td').last().find('button').should('have.length', 1);
+    cy.get('@row').find('td').last().find('button').should('have.length', 2);
 };
 
 const goToPage = () => {
@@ -94,8 +86,8 @@ describe('forms tab', () => {
                 cy.get('@table').find('tbody').find('tr').as('rows');
                 cy.get('@rows').should('have.length', formsList.count);
                 cy.get('@rows').eq(0).as('row');
-                cy.get('@row').find('td').should('have.length', 10);
-                cy.get('@row').find('td').eq(0).as('nameCol');
+                cy.get('@row').find('td').should('have.length', 8);
+                cy.get('@row').find('td').eq(1).as('nameCol');
 
                 cy.get('@nameCol').should(
                     'contain.text',
@@ -107,7 +99,7 @@ describe('forms tab', () => {
         testTablerender({
             baseUrl,
             rows: formsList.forms.length,
-            columns: 10,
+            columns: 8,
             apiPath: `forms/?orgUnitId=${orgUnit.id}&order=name&limit=10&page=1`,
             apiKey: `forms`,
             withVisit: false,

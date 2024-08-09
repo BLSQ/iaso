@@ -153,17 +153,13 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         },
         [handleChange],
     );
-
-    const periodTypePlaceHolder = useMemo(() => {
-        const messages = {
-            [PERIOD_TYPE_PLACEHOLDER]: MESSAGES.periodPlaceHolder,
-            [NO_PERIOD]: MESSAGES.noPeriodPlaceHolder,
-        };
-
-        return messages[periodType]
-            ? formatMessage(messages[periodType])
-            : undefined;
-    }, [formatMessage, periodType]);
+    const messages = {
+        [PERIOD_TYPE_PLACEHOLDER]: MESSAGES.periodPlaceHolder,
+        [NO_PERIOD]: MESSAGES.noPeriodPlaceHolder,
+    };
+    const periodTypePlaceHolder = messages[periodType]
+        ? formatMessage(messages[periodType])
+        : undefined;
 
     const {
         data: validationStatusOptions,

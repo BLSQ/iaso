@@ -171,7 +171,7 @@ describe('Forms', () => {
                     const actionCol = row.find('td').last();
                     actionCol.find('button').should('have.length', 2);
                 });
-                describe.only('download xls and xml buttons', () => {
+                describe('download xls and xml buttons', () => {
                     beforeEach(() => {
                         goToPage();
                     });
@@ -194,7 +194,7 @@ describe('Forms', () => {
                             .should('not.exist');
                     });
 
-                    it('should not display XLM and XML link if download button not clicked', () => {
+                    it('should not display XLS and XML link if download button not clicked', () => {
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(0);
                         const latestCol = row.find('td').eq(7);
@@ -208,7 +208,7 @@ describe('Forms', () => {
                             .should('not.exist');
                     });
 
-                    it('should display XLM and XML link if download button clicked', () => {
+                    it('should display XLS and XML link if download button clicked', () => {
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(0);
                         const latestCol = row.find('td').eq(7);

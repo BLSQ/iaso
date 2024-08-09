@@ -113,8 +113,7 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
         return creator
 
     def get_projects(self, org_unit):
-        projects = org_unit.org_unit_type.projects
-        return ([project.as_dict() for project in projects.all()]) if org_unit.org_unit_type.projects else []
+        return [project.as_dict() for project in org_unit.org_unit_type.projects.all()]
 
     class Meta:
         model = OrgUnit

@@ -1,3 +1,4 @@
+import json
 import time
 import uuid
 from unittest import mock
@@ -48,7 +49,9 @@ class EntityAPITestCase(APITestCase):
             username="user_without_ou", account=star_wars, permissions=["iaso_entities"]
         )
 
-        cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
+        cls.form_1 = m.Form.objects.create(
+            name="Hydroponics study", period_type=m.MONTH, single_per_period=True, form_id="form_1"
+        )
 
         cls.create_form_instance(
             form=cls.form_1, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project, uuid=uuid.uuid4
@@ -63,10 +66,14 @@ class EntityAPITestCase(APITestCase):
             form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project, uuid=uuid.uuid4
         )
 
+        cls.entity_type = EntityType.objects.create(
+            name="Type 1",
+            reference_form=cls.form_1,
+            account=cls.star_wars,
+        )
+
     def test_create_single_entity(self):
         self.client.force_authenticate(self.yoda)
-
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
@@ -76,7 +83,7 @@ class EntityAPITestCase(APITestCase):
 
         payload = {
             "name": "New Client",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
@@ -88,8 +95,6 @@ class EntityAPITestCase(APITestCase):
     def test_create_multiples_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
-
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
@@ -100,12 +105,12 @@ class EntityAPITestCase(APITestCase):
 
         payload = {
             "name": "New Client",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }, {
             "name": "New Client 2",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": second_instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
@@ -118,20 +123,18 @@ class EntityAPITestCase(APITestCase):
     def test_create_entity_same_attributes(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
-
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
         payload = {
             "name": "New Client",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }, {
             "name": "New Client 2",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
@@ -143,8 +146,6 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
-
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
@@ -155,12 +156,12 @@ class EntityAPITestCase(APITestCase):
 
         payload = {
             "name": "New Client",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }, {
             "name": "New Client 2",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": second_instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
@@ -175,8 +176,6 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity_without_attributes(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
-
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
@@ -187,12 +186,12 @@ class EntityAPITestCase(APITestCase):
 
         payload = {
             "name": "New Client",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }, {
             "name": "New Client 2",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": second_instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
@@ -200,7 +199,7 @@ class EntityAPITestCase(APITestCase):
         self.client.post("/api/entities/bulk_create/", data=payload, format="json")
 
         entity = Entity.objects.create(
-            name="New Client 3", entity_type=entity_type, account=self.yoda.iaso_profile.account
+            name="New Client 3", entity_type=self.entity_type, account=self.yoda.iaso_profile.account
         )
 
         entity.refresh_from_db()
@@ -210,7 +209,7 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 3)
 
-        response = self.client.get(f"/api/entities/?entity_type_id={entity_type.pk}", format="json")
+        response = self.client.get(f"/api/entities/?entity_type_id={self.entity_type.pk}", format="json")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 3)
@@ -227,9 +226,6 @@ class EntityAPITestCase(APITestCase):
         """
         self.client.force_authenticate(self.yoda)
 
-        # Let's first create the test data
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
-
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
             form=self.form_1,
@@ -239,7 +235,7 @@ class EntityAPITestCase(APITestCase):
 
         payload = {
             "name": "New Client",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
@@ -270,10 +266,127 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
+    def test_get_entity_search_in_instances(self):
+        """
+        Test the 'fields_search' filter of /api/entities
+
+        This parameter allows to filter entities based on the presence of a
+        form instance with certain attributes.
+        """
+        self.client.force_authenticate(self.yoda)
+        self.form_2 = m.Form.objects.create(name="Form 2", form_id="form_2")
+
+        # Entity 1 - Female from Bujumbura
+        ent1_instance1 = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            json={"gender": "F"},
+        )
+        ent1 = Entity.objects.create(
+            name="Ent 1",
+            entity_type=self.entity_type,
+            attributes=ent1_instance1,
+            account=self.star_wars,
+        )
+        ent1_instance1.entity = ent1
+        ent1_instance1.save()
+        Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_2,
+            json={"residence": "Bujumbura"},
+            entity=ent1,
+        )
+
+        # Entity 2 - Male from Kinshasa
+        ent2_instance1 = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            json={"gender": "M"},
+        )
+        ent2 = Entity.objects.create(
+            name="Ent 1",
+            entity_type=self.entity_type,
+            attributes=ent2_instance1,
+            account=self.star_wars,
+        )
+        ent2_instance1.entity = ent2
+        ent2_instance1.save()
+        Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_2,
+            json={"residence": "Kinshasa"},
+            entity=ent2,
+        )
+        Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_2,
+            json={"residence": "Accra"},
+            entity=ent2,
+        )
+
+        # gender f AND SOME residence Bujumbura
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
+        )
+        self.assertEqual(len(response.json()["result"]), 1)
+        the_result = response.json()["result"][0]
+        self.assertEqual(the_result["id"], ent1.id)
+
+        # gender m AND SOME residence Bujumbura
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "M", "Bujumbura")},
+        )
+        self.assertEqual(len(response.json()["result"]), 0)
+
+        # gender f OR SOME residence Kinshasa
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("or", "some", "F", "Kinshasa")},
+        )
+        self.assertEqual(len(response.json()["result"]), 2)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertEqual(sorted(result_ids), sorted([ent1.id, ent2.id]))
+
+        # gender m AND SOME residence Kinshasa
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "some", "M", "Kinshasa")},
+        )
+        self.assertEqual(len(response.json()["result"]), 1)
+        the_result = response.json()["result"][0]
+        self.assertEqual(the_result["id"], ent2.id)
+
+        # gender M AND ALL residence Kinshasa
+        response = self.client.get(
+            "/api/entities/",
+            {"fields_search": self._generate_json_filter("and", "all", "M", "Kinshasa")},
+        )
+        self.assertEqual(len(response.json()["result"]), 0)
+
+    def _generate_json_filter(self, operator, some_or_all, gender, residence):
+        return json.dumps(
+            {
+                operator: [
+                    {
+                        some_or_all: [
+                            {"var": self.form_1.form_id},
+                            {"==": [{"var": "gender"}, gender]},
+                        ]
+                    },
+                    {
+                        some_or_all: [
+                            {"var": self.form_2.form_id},
+                            {"==": [{"var": "residence"}, residence]},
+                        ]
+                    },
+                ]
+            }
+        )
+
     def test_get_entity_by_id(self):
         self.client.force_authenticate(self.yoda)
-
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
@@ -283,7 +396,7 @@ class EntityAPITestCase(APITestCase):
 
         payload = {
             "name": "New Client",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
@@ -297,11 +410,10 @@ class EntityAPITestCase(APITestCase):
 
     def test_handle_wrong_attributes(self):
         self.client.force_authenticate(self.yoda)
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         payload = {
             "name": "New Client",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": 2324,
             "account": self.yoda.iaso_profile.account.pk,
         }
@@ -313,22 +425,20 @@ class EntityAPITestCase(APITestCase):
     def test_update_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
-
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
         payload_post = {
             "name": "New Client",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
 
         self.client.post("/api/entities/", data=payload_post, format="json")
 
-        payload = {"name": "New Client-2", "entity_type": entity_type.pk, "attributes": instance.pk}
+        payload = {"name": "New Client-2", "entity_type": self.entity_type.pk, "attributes": instance.pk}
 
         response = self.client.patch("/api/entities/{0}/".format(Entity.objects.last().pk), data=payload, format="json")
 
@@ -336,8 +446,6 @@ class EntityAPITestCase(APITestCase):
 
     def test_retrieve_only_non_deleted_entity(self):
         self.client.force_authenticate(self.yoda)
-
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -349,12 +457,12 @@ class EntityAPITestCase(APITestCase):
 
         payload = {
             "name": "New Client",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }, {
             "name": "New Client 2",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": second_instance.uuid,
             "account": self.yoda.iaso_profile.account.pk,
         }
@@ -369,11 +477,9 @@ class EntityAPITestCase(APITestCase):
     def test_cant_create_entity_without_attributes(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
-
         payload = {
             "name": "New Client",
-            "entity_type": entity_type.pk,
+            "entity_type": self.entity_type.pk,
             "attributes": None,
             "account": self.yoda.iaso_profile.account.pk,
         }
@@ -384,8 +490,6 @@ class EntityAPITestCase(APITestCase):
 
     def test_retrieve_entity_only_same_account(self):
         self.client.force_authenticate(self.yoda)
-
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
@@ -401,14 +505,14 @@ class EntityAPITestCase(APITestCase):
 
         Entity.objects.create(
             name="New Client",
-            entity_type=entity_type,
+            entity_type=self.entity_type,
             attributes=instance,
             account=self.yop_solo.iaso_profile.account,
         )
 
         Entity.objects.create(
             name="New Client",
-            entity_type=entity_type,
+            entity_type=self.entity_type,
             attributes=second_instance,
             account=self.yoda.iaso_profile.account,
         )
@@ -421,12 +525,12 @@ class EntityAPITestCase(APITestCase):
     @mock.patch("iaso.api.entity.gmtime", lambda: time.struct_time((2021, 7, 18, 14, 57, 0, 1, 291, 0)))
     def test_export_entity(self):
         self.client.force_authenticate(self.yoda)
-        entity_type = EntityType.objects.create(
-            name="Type 1",
-            reference_form=self.form_1,
-            fields_detail_info_view=["something", "else"],
-            fields_list_view=["something", "else"],
-        )
+        # entity_type = EntityType.objects.create(
+        #     name="Type 1",
+        #     reference_form=self.form_1,
+        #     fields_detail_info_view=["something", "else"],
+        #     fields_list_view=["something", "else"],
+        # )
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
@@ -442,14 +546,14 @@ class EntityAPITestCase(APITestCase):
 
         Entity.objects.create(
             name="New Client",
-            entity_type=entity_type,
+            entity_type=self.entity_type,
             attributes=instance,
             account=self.yop_solo.iaso_profile.account,
         )
 
         Entity.objects.create(
             name="New Client",
-            entity_type=entity_type,
+            entity_type=self.entity_type,
             attributes=second_instance,
             account=self.yoda.iaso_profile.account,
         )
@@ -465,12 +569,12 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
 
         # export specific entity type as xlsx
-        response = self.client.get(f"/api/entities/?entity_type_ids={entity_type.pk}&xlsx=true/")
+        response = self.client.get(f"/api/entities/?entity_type_ids={self.entity_type.pk}&xlsx=true/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
 
         # export specific entity type as csv
-        response = self.client.get(f"/api/entities/?entity_type_ids={entity_type.pk}&csv=true/")
+        response = self.client.get(f"/api/entities/?entity_type_ids={self.entity_type.pk}&csv=true/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
 
@@ -478,11 +582,6 @@ class EntityAPITestCase(APITestCase):
 
     def test_handle_export_entity_type_empty_field_list(self):
         self.client.force_authenticate(self.yoda)
-
-        entity_type = EntityType.objects.create(
-            name="Type 1",
-            reference_form=self.form_1,
-        )
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
@@ -492,7 +591,7 @@ class EntityAPITestCase(APITestCase):
 
         entity = Entity.objects.create(
             name="New Client",
-            entity_type=entity_type,
+            entity_type=self.entity_type,
             account=self.yop_solo.iaso_profile.account,
         )
 
@@ -516,11 +615,6 @@ class EntityAPITestCase(APITestCase):
 
         FormVersion.objects.create(form=self.form_1, version_id="A_FORM_ID")
 
-        entity_type = EntityType.objects.create(
-            name="Type 1",
-            reference_form=self.form_1,
-        )
-
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
             form=self.form_1,
@@ -534,7 +628,7 @@ class EntityAPITestCase(APITestCase):
 
         entity = Entity.objects.create(
             name="New Client",
-            entity_type=entity_type,
+            entity_type=self.entity_type,
             attributes=instance,
             account=self.yoda.iaso_profile.account,
         )
@@ -566,11 +660,6 @@ class EntityAPITestCase(APITestCase):
         self.form_1.save()
 
         FormVersion.objects.create(form=self.form_1, version_id="A_FORM_ID")
-
-        entity_type = EntityType.objects.create(
-            name="Type 1",
-            reference_form=self.form_1,
-        )
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
@@ -657,21 +746,21 @@ class EntityAPITestCase(APITestCase):
 
         entity = Entity.objects.create(
             name="New Client",
-            entity_type=entity_type,
+            entity_type=self.entity_type,
             attributes=instance,
             account=self.yoda.iaso_profile.account,
         )
 
         entity_unvalidated = Entity.objects.create(
             name="New Client",
-            entity_type=entity_type,
+            entity_type=self.entity_type,
             attributes=instance_unvalidated_ou,
             account=self.yoda.iaso_profile.account,
         )
 
         entity_no_attributes = Entity.objects.create(
             name="New Client_2",
-            entity_type=entity_type,
+            entity_type=self.entity_type,
             account=self.yop_solo.iaso_profile.account,
         )
 
@@ -692,9 +781,9 @@ class EntityAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_json.get("count"), 2)
-        self.assertEqual(response_json.get("results")[0].get("entity_type_id"), str(entity_type.id))
+        self.assertEqual(response_json.get("results")[0].get("entity_type_id"), str(self.entity_type.id))
         self.assertEqual(len(response_json.get("results")[0].get("instances")), 1)
-        self.assertEqual(response_json.get("results")[1].get("entity_type_id"), str(entity_type.id))
+        self.assertEqual(response_json.get("results")[1].get("entity_type_id"), str(self.entity_type.id))
         self.assertEqual(len(response_json.get("results")[1].get("instances")), 0)
 
     def test_access_respect_appid_mobile(self):
@@ -730,14 +819,9 @@ class EntityAPITestCase(APITestCase):
         }
         instance_app_id.save()
 
-        entity_type, created = EntityType.objects.get_or_create(
-            name="Type 1",
-            reference_form=self.form_1,
-        )
-
         entity_app_id = Entity.objects.create(
             name="New Client",
-            entity_type=entity_type,
+            entity_type=self.entity_type,
             attributes=instance_app_id,
             account=self.yoda.iaso_profile.account,
         )
@@ -755,7 +839,7 @@ class EntityAPITestCase(APITestCase):
         response_json = response.json()
 
         self.assertEqual(response_json["count"], 1)
-        self.assertEqual(response_json["results"][0]["entity_type_id"], str(entity_type.id))
+        self.assertEqual(response_json["results"][0]["entity_type_id"], str(self.entity_type.id))
 
         response_entity_instance = response_json["results"][0]["instances"]
 
@@ -789,17 +873,15 @@ class EntityAPITestCase(APITestCase):
         user_manager.refresh_from_db()
         self.client.force_authenticate(user_manager)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
-
         # Village 1 (district 1): instance + entity
         instance_1 = Instance.objects.create(org_unit=village_1, form=self.form_1, period="202002")
-        entity = Entity.objects.create(entity_type=entity_type, attributes=instance_1, account=self.star_wars)
+        entity = Entity.objects.create(entity_type=self.entity_type, attributes=instance_1, account=self.star_wars)
         instance_1.entity = entity
         instance_1.save()
 
         # Village 2 (district 2): instance + entity
         instance_2 = Instance.objects.create(org_unit=village_2, form=self.form_1, period="202002")
-        entity_2 = Entity.objects.create(entity_type=entity_type, attributes=instance_2, account=self.star_wars)
+        entity_2 = Entity.objects.create(entity_type=self.entity_type, attributes=instance_2, account=self.star_wars)
         instance_2.entity = entity_2
         instance_2.save()
 

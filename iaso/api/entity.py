@@ -1,6 +1,7 @@
 import csv
 import datetime
 import io
+import json
 import math
 from time import gmtime, strftime
 from typing import Any, List, Union
@@ -28,6 +29,7 @@ from iaso.api.common import (
 )
 from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
+from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -129,6 +131,7 @@ class EntityViewSet(ModelViewSet):
         show_deleted = self.request.query_params.get("show_deleted", None)
         created_by_id = self.request.query_params.get("created_by_id", None)
         created_by_team_id = self.request.query_params.get("created_by_team_id", None)
+        fields_search = self.request.GET.get("fields_search", None)
 
         queryset = Entity.objects.filter_for_user(self.request.user)
 
@@ -173,6 +176,10 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(attributes__created_by_id=created_by_id)
         if created_by_team_id:
             queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
+
+        if fields_search:
+            q = entities_jsonlogic_to_q(json.loads(fields_search))
+            queryset = queryset.filter(q)
 
         # location
         return queryset
@@ -221,6 +228,7 @@ class EntityViewSet(ModelViewSet):
 
     def list(self, request: Request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
+
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         is_export = any([csv_format, xlsx_format])

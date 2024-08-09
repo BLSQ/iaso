@@ -1,7 +1,7 @@
 from django.db.models import Q
 from rest_framework import status, permissions
 from rest_framework.response import Response
-from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECTIDS, SEARCH
+from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
 
 from iaso.models import OrgUnitType
 from .serializers import OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2
@@ -71,10 +71,10 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         )
 
         project = self.request.query_params.get(PROJECT, None)
-        project_ids = self.request.query_params.get(PROJECTIDS, None)
         if project:
             queryset = queryset.filter(projects__id=project)
 
+        project_ids = self.request.query_params.get(PROJECT_IDS, None)
         if project_ids:
             queryset = queryset.filter(projects__id__in=project_ids.split(","))
 

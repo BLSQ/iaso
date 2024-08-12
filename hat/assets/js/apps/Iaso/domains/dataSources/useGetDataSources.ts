@@ -12,25 +12,13 @@ const tableDefaults = {
 
 const queryParamsMap = new Map([['projectIds', 'project_ids']]);
 
-const apiParamsKeys = ['order', 'page', 'limit'];
 const getParams = (params: Record<string, string | undefined>) => {
-    const { pageSize, ...urlParams } = params;
-    const apiParams: Record<string, any> | undefined = {
-        ...urlParams,
-        limit: pageSize ?? 10,
-    };
-
-    const queryParams: Record<string, string | undefined> = {};
-    apiParamsKeys.forEach(apiParamKey => {
-        const apiParam = apiParams[apiParamKey];
-        if (apiParam !== undefined) {
-            queryParams[apiParamKey] = apiParam;
-        }
-    });
+    const queryParams: Record<string, string | undefined> = params;
 
     queryParamsMap.forEach((value, key) => {
         if (params[key]) {
             queryParams[value] = params[key];
+            delete queryParams[key];
         }
     });
 
@@ -43,7 +31,6 @@ export const useGetDataSources = (
     const { accountId, ...tableParams } = getParams(params);
     const apiParams = useApiParams(tableParams, tableDefaults);
     const queryString = new URLSearchParams(apiParams).toString();
-
     return useSnackQuery({
         queryKey: ['sources', queryString],
         queryFn: () => getRequest(`${apiUrl}/?${queryString}`),

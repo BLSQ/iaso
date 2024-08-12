@@ -29,6 +29,7 @@ export const useGetApprovalProposals = (
         users: params.userIds,
         user_roles: params.userRoles,
         with_location: params.withLocation,
+        projects: params.projectIds,
         payment_status: params.paymentStatus,
     };
 

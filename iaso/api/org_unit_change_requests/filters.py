@@ -30,6 +30,7 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     user_roles = django_filters.CharFilter(method="filter_user_roles", label=_("User roles IDs (comma-separated)"))
     with_location = django_filters.CharFilter(method="filter_with_location", label=_("With or without location"))
     status = django_filters.CharFilter(method="filter_status", label=_("Status (comma-separated)"))
+    projects = django_filters.CharFilter(method="filter_projects", label=_("Projects IDs (comma-separated)"))
     payment_status = django_filters.CharFilter(method="filter_payment_status", label=_("Payment status"))
 
     def __init__(self, *args, **kwargs):
@@ -59,6 +60,12 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     def filter_groups(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
         groups_ids = parse_comma_separated_numeric_values(value, name)
         return queryset.filter(Q(old_groups__in=groups_ids) | Q(new_groups__in=groups_ids))
+
+    def filter_projects(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
+        projects_ids = parse_comma_separated_numeric_values(value, name)
+        return queryset.filter(
+            Q(old_org_unit_type__projects__in=projects_ids) | Q(new_org_unit_type__projects__in=projects_ids)
+        )
 
     def filter_forms(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
         forms_ids = parse_comma_separated_numeric_values(value, name)

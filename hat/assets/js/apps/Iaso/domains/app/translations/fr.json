@@ -607,6 +607,7 @@
     "iaso.label.parent": "Parent direct",
     "iaso.label.parentOu": "Unité d'org. parent",
     "iaso.label.payments": "Paiements",
+    "iaso.label.paymentStatus": "Statut du paiement",
     "iaso.label.pending": "En attente",
     "iaso.label.period": "Periode",
     "iaso.label.periodPlaceHolder": "Sélectionnez un formulaire pour filtrer",

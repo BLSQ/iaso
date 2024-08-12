@@ -169,6 +169,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'userIds',
             'userRoles',
             'withLocation',
+            'paymentStatus',
             ...paginationPathParams,
         ],
     },

@@ -3,6 +3,7 @@ import pandas as pd
 
 from hat.audit import models as am
 from iaso import models as m
+from iaso.models.payments import PaymentStatuses
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -35,13 +36,13 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         cls.payment = m.Payment.objects.create(
             user=cls.payment_beneficiary,
             payment_lot=cls.payment_lot,
-            status=m.Payment.Statuses.PENDING,
+            status=PaymentStatuses.PENDING,
             created_by=cls.user,
         )
         cls.second_payment = m.Payment.objects.create(
             created_by=cls.user,
             payment_lot=cls.payment_lot,
-            status=m.Payment.Statuses.PENDING,
+            status=PaymentStatuses.PENDING,
             user=cls.payment_beneficiary,
         )
         cls.change_request = m.OrgUnitChangeRequest.objects.create(
@@ -102,7 +103,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
         # New Payment has been assigned to new Payment lot and has status PENDING
         self.assertEqual(new_payment.payment_lot, new_lot)
-        self.assertEqual(new_payment.status, m.Payment.Statuses.PENDING)
+        self.assertEqual(new_payment.status, PaymentStatuses.PENDING)
 
         # Change request has been updated: potential payment has been deleted and replaced with new payment
         self.assertEqual(self.third_change_request.payment, new_payment)
@@ -125,8 +126,8 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         self.payment_lot.refresh_from_db()
         self.payment.refresh_from_db()
         self.second_payment.refresh_from_db()
-        self.assertEqual(self.payment.status, m.Payment.Statuses.SENT)
-        self.assertEqual(self.second_payment.status, m.Payment.Statuses.SENT)
+        self.assertEqual(self.payment.status, PaymentStatuses.SENT)
+        self.assertEqual(self.second_payment.status, PaymentStatuses.SENT)
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.SENT)
 
         self.assertEqual(3, am.Modification.objects.count())

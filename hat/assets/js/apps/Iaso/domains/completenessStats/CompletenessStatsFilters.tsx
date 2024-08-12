@@ -36,6 +36,7 @@ import { AsyncSelect } from '../../components/forms/AsyncSelect';
 import { getUsersDropDown } from '../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../instances/hooks/useGetProfilesDropdown';
 import { PLANNING_READ, PLANNING_WRITE } from '../../utils/permissions';
+import { useGetProjectsDropdownOptions } from '../projects/hooks/requests';
 
 type Props = {
     params: UrlParams & any;
@@ -84,7 +85,8 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     const { data: groups, isFetching: isFetchingGroups } = useGetGroups({});
 
     const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
-
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
     // React to org unit type filtering, if the type is not available anymore
     // we remove it
     useEffect(() => {
@@ -170,6 +172,16 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         <>
             <Grid container spacing={2}>
                 <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="projectIds"
+                        onChange={handleChangeForm}
+                        value={filters.projectIds}
+                        type="select"
+                        options={allProjects}
+                        label={MESSAGES.projects}
+                        loading={isFetchingProjects}
+                        multi
+                    />
                     <InputWithInfos infos={formatMessage(MESSAGES.formsInfos)}>
                         <InputComponent
                             type="select"

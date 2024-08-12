@@ -239,7 +239,6 @@ class ETL:
             "wfp_coda_pbwg_assistance",
             "wfp_coda_pbwg_assistance_followup",
         ]:
-
             if visit.get("next_visit__date__", None) is not None and visit.get("next_visit__date__", None) != "":
                 next_visit_date = visit.get("next_visit__date__", None)
             elif (

@@ -247,7 +247,7 @@ class DataSourceViewSet(ModelViewSet):
         profile = self.request.user.iaso_profile
         order = self.request.GET.get("order", "name").split(",")
         filter_empty_versions = self.request.GET.get("filter_empty_versions", "false").lower() == "true"
-        project_ids = self.request.GET.get("projectIds")
+        project_ids = self.request.GET.get("project_ids")
 
         sources = (
             DataSource.objects.select_related("default_version", "credentials")

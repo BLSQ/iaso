@@ -19,6 +19,7 @@ import { getUsersDropDown } from '../../../instances/hooks/requests/getUsersDrop
 import { useGetProfilesDropdown } from '../../../instances/hooks/useGetProfilesDropdown';
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
+import { usePaymentStatusOptions } from '../hooks/api/useGetPaymentStatusOptions';
 
 const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = { params: ApproveOrgUnitParams };
@@ -41,6 +42,8 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
 
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
+    const { data: paymentStatuses, isFetching: isFetchingPaymentStatuses } =
+        usePaymentStatusOptions();
     const formOptions = useMemo(
         () =>
             forms?.map(form => ({
@@ -184,7 +187,17 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                             value: 'false',
                         },
                     ]}
+                />
+                <InputComponent
                     label={MESSAGES.location}
+                    type="select"
+                    clearable
+                    keyValue="paymentStatus"
+                    value={filters.paymentStatus}
+                    onChange={handleChange}
+                    loading={isFetchingPaymentStatuses}
+                    options={paymentStatuses}
+                    labelString={formatMessage(MESSAGES.paymentStatus)}
                 />
             </Grid>
 

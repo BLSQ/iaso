@@ -17,6 +17,7 @@ export type ApproveOrgUnitParams = UrlParams & {
     userRoles?: string;
     withLocation?: string;
     projectIds?: string;
+    paymentStatus?: 'pending' | 'sent' | 'rejected' | 'paid';
 };
 export type Group = {
     id: number;

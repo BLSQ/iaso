@@ -6,8 +6,7 @@ import {
     OrgUnitChangeRequestsPaginated,
     ApproveOrgUnitParams,
 } from '../../types';
-
-const apiUrl = '/api/orgunits/changes/';
+import { apiUrl } from '../../constants';
 
 const getOrgUnitChangeProposals = (url: string) => {
     return getRequest(url) as Promise<OrgUnitChangeRequestsPaginated>;
@@ -31,6 +30,7 @@ export const useGetApprovalProposals = (
         user_roles: params.userRoles,
         with_location: params.withLocation,
         projects: params.projectIds,
+        payment_status: params.paymentStatus,
     };
 
     const url = makeUrlWithParams(apiUrl, apiParams);

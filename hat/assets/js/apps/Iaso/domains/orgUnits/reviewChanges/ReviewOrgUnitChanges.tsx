@@ -62,7 +62,7 @@ const useStyles = makeStyles(theme => ({
 export const ReviewOrgUnitChanges: FunctionComponent = () => {
     const params = useParamsObject(
         baseUrls.orgUnitsChangeRequest,
-    ) as ApproveOrgUnitParams;
+    ) as unknown as ApproveOrgUnitParams;
     const { data, isFetching } = useGetApprovalProposals(params);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();

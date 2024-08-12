@@ -114,7 +114,7 @@ describe('Org unit types', () => {
         it('displays tooltip when hovering over info icon', () => {
             cy.visit(baseUrl);
             cy.wait('@getOrgUnitTypes');
-            cy.findTableHead(4).find('svg').eq(0).as('icon');
+            cy.findTableHead(5).find('svg').eq(0).as('icon');
             cy.assertTooltipDiplay('icon');
         });
         describe('edit button', () => {

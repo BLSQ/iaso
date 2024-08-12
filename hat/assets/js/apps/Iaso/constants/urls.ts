@@ -170,6 +170,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'userRoles',
             'withLocation',
             'projectIds',
+            'paymentStatus',
             ...paginationPathParams,
         ],
     },
@@ -246,6 +247,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'showDirectCompleteness',
             'teamsIds',
             'userIds',
+            'projectIds',
         ],
     },
     modules: {
@@ -298,7 +300,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     orgUnitTypes: {
         url: 'orgunits/types',
-        params: ['accountId', 'search', ...paginationPathParams],
+        params: ['accountId', 'search', 'projectIds', ...paginationPathParams],
     },
     entities: {
         url: 'entities/list',

@@ -42,6 +42,7 @@ type Params = {
     submitterTeamId?: string;
     entityTypeIds?: string;
     locationLimit?: string;
+    groups?: string;
 };
 
 type ApiParams = {
@@ -57,6 +58,7 @@ type ApiParams = {
     entity_type_ids?: string;
     asLocation?: boolean;
     locationLimit?: string;
+    groups?: string;
 };
 
 type GetAPiParams = {
@@ -82,6 +84,7 @@ export const useGetBeneficiariesApiParams = (
         entity_type_ids: params.entityTypeIds,
         limit: params.pageSize || '20',
         page: params.page || '1',
+        groups: params.groups,
     };
     if (asLocation) {
         apiParams.asLocation = true;

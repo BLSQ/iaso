@@ -1,5 +1,8 @@
 import React, { useCallback } from 'react';
 import { textPlaceholder } from 'bluesquare-components';
+
+import { getChipColors } from '../../constants/chipColors';
+import { baseUrls } from '../../constants/urls';
 import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils.ts';
 import { useGetOrgUnitValidationStatus } from './hooks/utils/useGetOrgUnitValidationStatus.ts';
 import MESSAGES from './messages.ts';
@@ -185,4 +188,13 @@ export const compareGroupVersions = (a, b) => {
         return 0;
     }
     return comparison;
+};
+
+export const filterOrgUnitsByGroupUrl = groupId => {
+    const defaultChipColor = getChipColors(0).replace('#', '');
+    return (
+        `/${baseUrls.orgUnits}/locationLimit/3000/order/id` +
+        `/pageSize/50/page/1/searchTabIndex/0/searchActive/true` +
+        `/searches/[{"validation_status":"all", "color":"${defaultChipColor}", "group":"${groupId}", "source": null}]`
+    );
 };

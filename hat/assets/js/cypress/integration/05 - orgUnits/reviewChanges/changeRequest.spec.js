@@ -80,7 +80,7 @@ const newFilters = {
     },
     userRoles: {
         value: [0],
-        urlValue: userRoles.results[5].id, // This seems dependant on the DB
+        urlValue: userRoles.results[0].id, // This seems dependant on the DB
         selector: '#userRoles',
         type: 'multi',
         clear: false,

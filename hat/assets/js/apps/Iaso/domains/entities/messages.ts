@@ -249,6 +249,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.submissionsLocations',
         defaultMessage: 'Submissions locations',
     },
+    groups: {
+        defaultMessage: 'Group',
+        id: 'iaso.label.group',
+    },
 });
 
 export default MESSAGES;

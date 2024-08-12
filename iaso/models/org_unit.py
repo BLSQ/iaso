@@ -410,7 +410,7 @@ class OrgUnit(TreeModel):
             "aliases": self.aliases,
         }
 
-    def as_dict(self, with_groups=True):
+    def as_dict(self):
         res = {
             "name": self.name,
             "short_name": self.name,
@@ -548,6 +548,11 @@ class OrgUnit(TreeModel):
             res["search_index"] = self.search_index
         if with_parents:
             res["parent"] = self.parent.as_dict_with_parents(light=True, light_parents=True) if self.parent else None
+        return res
+
+    def as_dict_for_entity(self):
+        res = self.as_location(with_parents=False)
+        res["groups"] = [group.as_small_dict() for group in self.groups.all()]
         return res
 
     def source_path(self):

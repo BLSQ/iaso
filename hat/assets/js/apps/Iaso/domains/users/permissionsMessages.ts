@@ -558,6 +558,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.tooltip.iaso_polio_chronogram',
         defaultMessage: 'Manage polio chronogram - Read and Write',
     },
+    iaso_polio_chronogram_restricted_write: {
+        id: 'iaso.permissions.iaso_polio_chronogram_restricted_write',
+        defaultMessage: 'Polio chronogram user - Restricted Write',
+    },
+    iaso_polio_chronogram_restricted_write_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_polio_chronogram_restricted_write',
+        defaultMessage: 'Manage polio chronogram - Restricted Write',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

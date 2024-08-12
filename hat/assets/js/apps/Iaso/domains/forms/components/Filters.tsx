@@ -64,6 +64,27 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         <Grid container spacing={2}>
             <Grid item xs={12} md={3}>
                 <InputComponent
+                    keyValue="projectsIds"
+                    onChange={handleChange}
+                    value={filters.projectsIds}
+                    type="select"
+                    options={allProjects}
+                    label={MESSAGES.projects}
+                    loading={isFetchingProjects}
+                    onEnterPressed={handleSearch}
+                    clearable
+                    multi
+                />
+                <InputComponent
+                    keyValue="showDeleted"
+                    onChange={handleShowDeleted}
+                    value={showDeleted}
+                    type="checkbox"
+                    label={MESSAGES.showDeleted}
+                />
+            </Grid>
+            <Grid item xs={12} md={3}>
+                <InputComponent
                     keyValue="search"
                     onChange={handleChange}
                     value={filters.search}
@@ -72,13 +93,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     blockForbiddenChars
                     onEnterPressed={handleSearch}
                     onErrorChange={setTextSearchError}
-                />
-                <InputComponent
-                    keyValue="showDeleted"
-                    onChange={handleShowDeleted}
-                    value={showDeleted}
-                    type="checkbox"
-                    label={MESSAGES.showDeleted}
                 />
             </Grid>
 
@@ -105,20 +119,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     options={orgUnitTypes ?? []}
                 />
             </Grid>
-            <Grid item xs={12} md={3}>
-                <InputComponent
-                    keyValue="projectsIds"
-                    onChange={handleChange}
-                    value={filters.projectsIds}
-                    type="select"
-                    options={allProjects}
-                    label={MESSAGES.projects}
-                    loading={isFetchingProjects}
-                    onEnterPressed={handleSearch}
-                    clearable
-                    multi
-                />
-            </Grid>
+
             <Grid container item xs={12} md={12} justifyContent="flex-end">
                 <Box mt={isLargeLayout ? 3 : 0}>
                     <Button

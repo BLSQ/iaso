@@ -63,7 +63,7 @@ const MESSAGES = defineMessages({
     },
     labelNumTaskDelayed: {
         id: 'iaso.polio.chronogram.label.num_task_delayed',
-        defaultMessage: 'Task delayed',
+        defaultMessage: 'Number of task(s) delayed',
     },
     labelPercentageOfCompletion: {
         id: 'iaso.polio.chronogram.label.percentage_of_completion',

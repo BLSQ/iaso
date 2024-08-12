@@ -958,6 +958,7 @@ class InstancesAPITestCase(APITestCase):
             self.instance_1.source_updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             "yoda (Yo Da)",
             "READY",
+            "",  # entity UUID
             "Coruscant Jedi Council",
             f"{self.jedi_council_corruscant.id}",
             "jedi_council_corruscant_ref",
@@ -1013,6 +1014,7 @@ class InstancesAPITestCase(APITestCase):
             sourceless_instance.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             "yoda (Yo Da)",
             "READY",
+            "",  # entity UUID
             "Coruscant Jedi Council",
             f"{self.jedi_council_corruscant.id}",
             "jedi_council_corruscant_ref",

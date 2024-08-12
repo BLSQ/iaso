@@ -6,6 +6,8 @@ import {
     useSafeIntl,
     Column,
     IntlFormatMessage,
+    LinkWithLocation,
+    textPlaceholder,
 } from 'bluesquare-components';
 
 import moment from 'moment';
@@ -27,6 +29,7 @@ import getDisplayName from '../../utils/usersUtils';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
 import { formatLabel } from '../instances/utils';
 import { LinkToInstance } from '../instances/components/LinkToInstance';
+import { filterOrgUnitsByGroupUrl } from '../orgUnits/utils';
 
 export const baseUrl = baseUrls.entities;
 
@@ -59,6 +62,28 @@ export const useStaticColumns = (): Array<Column> => {
             },
         },
         {
+            Header: 'Groups',
+            id: 'attributes__org_unit__groups',
+            sortable: false,
+            Cell: settings => {
+                const groups = settings.row.original?.org_unit?.groups;
+                if (!groups || groups.length === 0) {
+                    return <>{textPlaceholder}</>;
+                }
+
+                return groups.map((group, index) => (
+                    <span key={group.id}>
+                        <LinkWithLocation
+                            to={filterOrgUnitsByGroupUrl(group.id)}
+                        >
+                            {group.name}
+                        </LinkWithLocation>
+                        {index !== groups.length - 1 && ', '}
+                    </span>
+                ));
+            },
+        },
+        {
             Header: 'HC',
             id: 'attributes__org_unit__name',
             accessor: 'attributes__org_unit__name',
@@ -66,7 +91,7 @@ export const useStaticColumns = (): Array<Column> => {
                 return settings.row.original?.org_unit ? (
                     <LinkToOrgUnit orgUnit={settings.row.original?.org_unit} />
                 ) : (
-                    <>--</>
+                    <>{textPlaceholder}</>
                 );
             },
         },

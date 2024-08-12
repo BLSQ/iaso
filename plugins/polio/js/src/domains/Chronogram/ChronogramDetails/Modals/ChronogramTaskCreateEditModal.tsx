@@ -10,6 +10,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
+import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
@@ -24,6 +25,8 @@ import { Chronogram } from '../../Chronogram/types';
 import { ChronogramTaskMetaData } from '../../types';
 import { useChronogramTaskSchema } from '../hooks/validation';
 import { useCreateEditChronogramTask } from '../api/useCreateEditChronogramTask';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 
 type Props = {
     isOpen: boolean;
@@ -52,7 +55,8 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
             id: chronogramTask?.id,
             chronogram: chronogramTask?.chronogram || chronogram?.id,
             period: chronogramTask?.period,
-            description: chronogramTask?.description,
+            description_en: chronogramTask?.description_en,
+            description_fr: chronogramTask?.description_fr,
             start_offset_in_days: chronogramTask?.start_offset_in_days,
             status: chronogramTask?.status,
             user_in_charge: chronogramTask?.user_in_charge.id,
@@ -68,6 +72,12 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
     const isFormChanged = !isEqual(formik.values, formik.initialValues);
     const allowConfirm =
         !formik.isSubmitting && formik.isValid && isFormChanged;
+
+    const currentUser = useCurrentUser();
+    const userHasReadAndWritePerm = userHasPermission(
+        Permission.POLIO_CHRONOGRAM,
+        currentUser,
+    );
 
     const title = chronogramTask?.id
         ? `${formatMessage(MESSAGES.modalEditTitle)}`
@@ -98,14 +108,24 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         component={SingleSelect}
                         options={chronogramTaskMetaData.period}
                         required
+                        disabled={!userHasReadAndWritePerm}
                     />
                 </Box>
                 <Box mb={2}>
                     <Field
-                        label={formatMessage(MESSAGES.labelDescription)}
-                        name="description"
+                        label={formatMessage(MESSAGES.labelDescriptionEn)}
+                        name="description_en"
                         component={TextInput}
                         required
+                        disabled={!userHasReadAndWritePerm}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.labelDescriptionFr)}
+                        name="description_fr"
+                        component={TextInput}
+                        disabled={!userHasReadAndWritePerm}
                     />
                 </Box>
                 <Box mb={2}>
@@ -121,6 +141,7 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                             name="start_offset_in_days"
                             component={NumberInput}
                             required
+                            disabled={!userHasReadAndWritePerm}
                         />
                     </InputWithInfos>
                 </Box>
@@ -140,6 +161,7 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                         component={SingleSelect}
                         options={profilesDropdown}
                         isLoading={isFetchingProfiles}
+                        disabled={!userHasReadAndWritePerm}
                     />
                 </Box>
                 <Box mb={2}>

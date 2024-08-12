@@ -9,7 +9,11 @@ import { apiBaseUrl } from '../../constants';
 const getChronogram = async (
     params: Partial<ChronogramParams>,
 ): Promise<ChronogramApiResponse> => {
-    const queryString = new URLSearchParams(params).toString();
+    const { country, ...paramsWithoutCountry } = params;
+    let queryString = new URLSearchParams(paramsWithoutCountry).toString();
+    if (country) {
+        queryString += `&country=${country.split(',').join('&country=')}`;
+    }
     return getRequest(`${apiBaseUrl}?${queryString}&fields=:all`);
 };
 

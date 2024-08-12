@@ -4,7 +4,6 @@ from itertools import groupby
 from operator import itemgetter
 from ...common import ETL
 import logging
-from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +47,6 @@ class Under5:
         for entity_id, entity in instances_by_entity:
             instances.append({"entity_id": entity_id, "visits": [], "journey": []})
             for visit in entity:
-                # print("VISIT ", visit)
                 current_record = visit.get("json", None)
                 instances[i]["program"] = ETL().program_mapper(current_record)
                 if current_record is not None and current_record != None:
@@ -198,18 +196,20 @@ class Under5:
             logger.info("Retrieving journey linked to beneficiary")
 
             for journey_instance in instance["journey"]:
-                if len(journey_instance["visits"]) > 0 and journey_instance.get("nutrition_programme") is not None:
-                    if journey_instance.get("admission_criteria") is not None:
-                        journey = self.save_journey(beneficiary, journey_instance)
-                        visits = ETL().save_visit(journey_instance["visits"], journey)
-                        logger.info(f"Inserted {len(visits)} Visits")
-                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
-                        admission_step = grouped_steps[0]
+                if (
+                    len(journey_instance["visits"]) > 0
+                    and journey_instance.get("nutrition_programme", None) is not None
+                ):
+                    journey = self.save_journey(beneficiary, journey_instance)
+                    visits = ETL().save_visit(journey_instance["visits"], journey)
+                    logger.info(f"Inserted {len(visits)} Visits")
+                    grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
+                    admission_step = grouped_steps[0]
 
-                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
+                    followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
 
-                        steps = ETL().save_steps(visits, followUpVisits)
-                        logger.info(f"Inserted {len(steps)} Steps")
+                    steps = ETL().save_steps(visits, followUpVisits)
+                    logger.info(f"Inserted {len(steps)} Steps")
                 else:
                     logger.info("No new journey")
             logger.info(

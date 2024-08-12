@@ -20,7 +20,7 @@ class ETL:
         updated_at = date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__name=self.type)
-            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226, 254,315, 424, 430, 431])
+            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226, 254,315, 424, 430, 431, 408, 19])
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)
@@ -38,8 +38,6 @@ class ETL:
                 "updated_at",
                 "form",
                 "entity__deleted_at",
-                "json__visit_date",
-                "json___visit_date",
                 "source_created_at",
             )
             .order_by(
@@ -74,19 +72,28 @@ class ETL:
     def program_mapper(self, visit):
         program = None
         if visit:
-            if visit.get("programme") is not None and visit.get("programme") != "NONE":
-                program = visit.get("programme")
+            if visit.get("programme") is not None:
+                if visit.get("programme") != "NONE":
+                    program = visit.get("programme")
+                else:
+                    program = ""
+            elif visit.get("_programme") is not None:
+                if visit.get("_programme") != "NONE":
+                    program = visit.get("_programme")
+                else:
+                    program = ""
             elif visit.get("program") is not None:
                 if visit.get("program") == "NONE":
-                    program = visit.get("previous_discharge_program", None)
-                elif visit.get("program") != "NONE":
-                    program = visit.get("program")
+                    if visit.get("previous_discharge_program", None) is not None:
+                        program = visit.get("previous_discharge_program", None)
+                    elif visit.get("program") != "NONE":
+                        program = visit.get("program")
+                    else:
+                        program = ""
             elif visit.get("program_two") is not None and visit.get("program_two") != "NONE":
                 program = visit.get("program_two", None)
             elif visit.get("discharge_program") is not None and visit.get("discharge_program") != "NONE":
                 program = visit.get("discharge_program")
-            elif visit.get("_programme") is not None and visit.get("_programme") != "NONE":
-                program = visit.get("_programme")
             elif visit.get("new_programme") is not None and visit.get("new_programme") != "NONE":
                 program = visit.get("new_programme")
             elif (
@@ -206,6 +213,8 @@ class ETL:
             return "referred_from_sc"
         elif admission_type == "returned_from_sc":
             return "referred_from_sc"
+        elif admission_type == "returnee":
+            return "returned_referral"
         else:
             return admission_type
 
@@ -320,7 +329,6 @@ class ETL:
                 - datetime.strptime(current_journey["start_date"], "%Y-%m-%d")
             ).days
             current_journey["duration"] = duration
-            return current_journey
         return current_journey
 
     def assistance_to_step(self, assistance, visit, instance_id):

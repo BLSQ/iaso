@@ -4,7 +4,6 @@ from itertools import groupby
 from operator import itemgetter
 from ...common import ETL
 import logging
-from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -38,17 +37,16 @@ class PBWG:
 
             for journey_instance in instance["journey"]:
                 if len(journey_instance["visits"]) > 0 and journey_instance.get("nutrition_programme") is not None:
-                    if journey_instance.get("admission_criteria") is not None:
-                        journey = self.save_journey(beneficiary, journey_instance)
-                        visits = ETL().save_visit(journey_instance["visits"], journey)
-                        logger.info(f"Inserted {len(visits)} Visits")
+                    journey = self.save_journey(beneficiary, journey_instance)
+                    visits = ETL().save_visit(journey_instance["visits"], journey)
+                    logger.info(f"Inserted {len(visits)} Visits")
 
-                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
-                        admission_step = grouped_steps[0]
-                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
+                    grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
+                    admission_step = grouped_steps[0]
+                    followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
 
-                        steps = ETL().save_steps(visits, followUpVisits)
-                        logger.info(f"Inserted {len(steps)} Steps")
+                    steps = ETL().save_steps(visits, followUpVisits)
+                    logger.info(f"Inserted {len(steps)} Steps")
                 else:
                     logger.info("No new journey")
             logger.info(
@@ -65,6 +63,7 @@ class PBWG:
         journey.exit_type = record.get("exit_type", None)
         journey.instance_id = record.get("instance_id", None)
         journey.start_date = record.get("start_date", None)
+        journey.end_date = record.get("end_date", None)
 
         if record.get("exit_type", None) is not None and record.get("exit_type", None) != "":
             journey.duration = record.get("duration", None)
@@ -76,6 +75,10 @@ class PBWG:
     def journeyMapper(self, visits):
         journey = []
         current_journey = {"visits": [], "steps": []}
+        anthropometric_visit_forms = [
+            "wfp_coda_pbwg_luctating_followup_anthro",
+            "wfp_coda_pbwg_followup_anthro",
+        ]
 
         for index, visit in enumerate(visits):
             if visit:
@@ -85,10 +88,6 @@ class PBWG:
                 if visit["form_id"] == "wfp_coda_pbwg_registration":
                     current_journey["nutrition_programme"] = visit.get("physiology_status", None)
 
-                anthropometric_visit_forms = [
-                    "wfp_coda_pbwg_luctating_followup_anthro",
-                    "wfp_coda_pbwg_followup_anthro",
-                ]
                 current_journey = ETL().journey_Formatter(
                     visit, "wfp_coda_pbwg_anthropometric", anthropometric_visit_forms, current_journey, visits, index
                 )

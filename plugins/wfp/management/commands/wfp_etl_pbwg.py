@@ -77,7 +77,7 @@ class PBWG:
         journey = []
         current_journey = {"visits": [], "steps": []}
 
-        for visit in visits:
+        for index, visit in enumerate(visits):
             if visit:
                 if visit.get("duration", None) is not None and visit.get("duration", None) != "":
                     current_journey["duration"] = visit.get("duration")
@@ -90,7 +90,7 @@ class PBWG:
                     "wfp_coda_pbwg_followup_anthro",
                 ]
                 current_journey = ETL().journey_Formatter(
-                    visit, "wfp_coda_pbwg_anthropometric", anthropometric_visit_forms, current_journey, visits
+                    visit, "wfp_coda_pbwg_anthropometric", anthropometric_visit_forms, current_journey, visits, index
                 )
                 current_journey["steps"].append(visit)
         journey.append(current_journey)
@@ -128,7 +128,6 @@ class PBWG:
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
-                    # visit_date = visit.get("_visit_date", visit.get("visit_date", visit.get("created_at")))
                     visit_date = visit.get("source_created_at", visit.get("_visit_date", visit.get("visit_date", None)))
                     if form_id == "wfp_coda_pbwg_anthropometric":
                         initial_date = visit_date

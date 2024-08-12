@@ -22,7 +22,8 @@ class ETL:
             Instance.objects.filter(entity__entity_type__name=self.type)
             # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226, 254, 424, 430, 431])
             # .filter(entity__id__in=[254, 424, 430, 431])
-            .filter(entity__id__in=[254, 431, 315])
+            # .filter(entity__id__in=[254, 431, 315])
+            # .filter(entity__id__in=[254])
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)
@@ -277,17 +278,16 @@ class ETL:
 
             if next_visit_date is not None and next_visit_date != "":
                 nextSecondVisitDate = datetime.strptime(next_visit_date[:10], "%Y-%m-%d").date() + timedelta(
-                    days=int(next_visit_days)
+                    days=int(next_visit_days) + 1
                 )
             missed_followup_visit = self.missed_followup_visit(
                 visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
             )
-            # print("MISSED FOLLOWUP ", missed_followup_visit, next_visit_date, nextSecondVisitDate, next_visit_days)
         if missed_followup_visit > 1 and next_visit_date != "" and nextSecondVisitDate != "":
             exit = {"exit_type": "defaulter", "end_date": nextSecondVisitDate}
         return exit
 
-    def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey, visits):
+    def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey, visits, index):
         if visit["form_id"] == anthropometric_visit_form:
             current_journey["instance_id"] = visit.get("instance_id", None)
             current_journey["start_date"] = visit.get("start_date", None)
@@ -302,6 +302,7 @@ class ETL:
             current_journey["programme_type"] = self.program_mapper(visit)
             current_journey["org_unit_id"] = visit.get("org_unit_id")
 
+        exit = None
         followup_forms.append(anthropometric_visit_form)
         if visit["form_id"] in followup_forms:
             end_date = visit.get("end_date", visit.get("source_created_at", ""))
@@ -313,8 +314,8 @@ class ETL:
             current_journey["exit_type"] = self.exit_type(visit)
             current_journey["visits"].append(visit)
 
-        exit = self.exit_by_defaulter(visits, visit, followup_forms)
-        # print("exit ...:", exit)
+            if index > 0:
+                exit = self.exit_by_defaulter(visits, visits[index - 1], followup_forms)
         if exit is not None and current_journey.get("exit_type", None) is None:
             current_journey["exit_type"] = exit["exit_type"]
             current_journey["end_date"] = exit["end_date"]
@@ -322,8 +323,6 @@ class ETL:
                 datetime.strptime(datetime.strftime(exit["end_date"], "%Y-%m-%d"), "%Y-%m-%d")
                 - datetime.strptime(current_journey["start_date"], "%Y-%m-%d")
             ).days
-            # print("DURATION IN DAYS ...:", duration)
-            # print("for exit ...:", duration, exit, exit["exit_type"], exit["end_date"], current_journey)
             current_journey["duration"] = duration
             return current_journey
         return current_journey

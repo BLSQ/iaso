@@ -89,13 +89,10 @@ class Under5:
                             "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
                         )
                         initial_date = visit_date
-                    # print("ALL CURRENT ...:", current_date, visit)
+
                     if initial_date is not None:
                         duration = (current_date - initial_date).days
                         current_record["start_date"] = initial_date.strftime("%Y-%m-%d")
-                    # print("INITIAL DATE ", initial_date)
-                    # print("CURRENT DATE ", current_date)
-                    # print("DURATION DATE ", duration)
 
                     weight = self.compute_gained_weight(initial_weight, current_weight, duration)
                     current_record["end_date"] = current_date.strftime("%Y-%m-%d")
@@ -106,11 +103,9 @@ class Under5:
                     current_record["weight_difference"] = weight["weight_difference"]
                     current_record["duration"] = duration
 
-                    # visit_date = visit.get("_visit_date", visit.get("visit_date", current_date))
                     visit_date = visit.get(
                         "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
                     )
-
                     if visit_date:
                         current_record["date"] = visit_date.strftime("%Y-%m-%d")
 
@@ -136,7 +131,7 @@ class Under5:
             "child_antropometric_followUp_tsfp",
             "child_antropometric_followUp_otp",
         ]
-        for visit in visits:
+        for index, visit in enumerate(visits):
             if visit:
                 current_journey["weight_gain"] = visit.get("weight_gain", None)
                 current_journey["weight_loss"] = visit.get("weight_loss", None)
@@ -147,15 +142,13 @@ class Under5:
                     current_journey["nutrition_programme"] = ETL().program_mapper(visit)
 
                 current_journey = ETL().journey_Formatter(
-                    visit, "Anthropometric visit child", anthropometric_visit_forms, current_journey, visits
+                    visit, "Anthropometric visit child", anthropometric_visit_forms, current_journey, visits, index
                 )
             current_journey["steps"].append(visit)
-        # print("GOT CURRENTLY THE JOURNEY ", current_journey)
         journey.append(current_journey)
         return journey
 
     def save_journey(self, beneficiary, record):
-        # print("GOT RECORD ", record)
         journey = Journey()
         journey.beneficiary = beneficiary
         journey.programme_type = "U5"
@@ -168,19 +161,16 @@ class Under5:
         journey.start_date = record.get("start_date", None)
         journey.duration = record.get("duration", None)
         journey.end_date = record.get("end_date", None)
-        # journey.duration = record["duration"]
-        # journey.end_date = record["end_date"]
 
         # Calculate the weight gain only for cured and Transfer from OTP to TSFP cases!
         if (
             record.get("exit_type", None) is not None
             and record.get("exit_type", None) != ""
-            # and record.get("exit_type", None) in ["cured", "transfer_to_tsfp", "defaulter", "death", "transferred_out"]
+            and record.get("exit_type", None) in ["cured", "transfer_to_tsfp"]
         ):
             journey.discharge_weight = record.get("discharge_weight", None)
             journey.weight_gain = record.get("weight_gain", 0)
             journey.weight_loss = record.get("weight_loss", 0)
-        # print("JOURNEY ...:", journey)
         journey.save()
         return journey
 

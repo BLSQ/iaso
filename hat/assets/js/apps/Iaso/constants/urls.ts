@@ -102,6 +102,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'modificationDateTo',
             'sentDateFrom',
             'sentDateTo',
+            'projectIds',
         ],
     },
     instanceDetail: {
@@ -312,6 +313,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'submitterTeamId',
             'entityTypeIds',
             'locationLimit',
+            'groups',
             ...paginationPathParams,
         ],
     },

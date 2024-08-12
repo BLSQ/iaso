@@ -27,7 +27,7 @@ import PeriodPicker from '../periods/components/PeriodPicker';
 import { useGetPlanningsOptions } from '../plannings/hooks/requests/useGetPlannings';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
-import { PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
+import { NO_PERIOD, PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
 import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
 import { InputWithInfos } from '../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../types/utils';
@@ -126,9 +126,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 .map(f => f.original.period_type)
                 .filter(periodType_ => Boolean(periodType_));
             const uniqPeriods = uniq(periods);
-            return uniqPeriods && uniqPeriods[0]
-                ? uniqPeriods[0]
-                : PERIOD_TYPE_PLACEHOLDER;
+            return uniqPeriods && uniqPeriods[0] ? uniqPeriods[0] : NO_PERIOD;
         }
         return PERIOD_TYPE_PLACEHOLDER;
     }, [filters, forms]);
@@ -157,11 +155,19 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         },
         [handleChange],
     );
+    const messages = {
+        [PERIOD_TYPE_PLACEHOLDER]: MESSAGES.periodPlaceHolder,
+        [NO_PERIOD]: MESSAGES.noPeriodPlaceHolder,
+    };
+    const periodTypePlaceHolder = messages[periodType]
+        ? formatMessage(messages[periodType])
+        : undefined;
 
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
     } = useGetValidationStatus();
+
     return (
         <>
             <Grid container spacing={2}>
@@ -188,6 +194,26 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                             multi
                         />
                     </InputWithInfos>
+                    <PeriodPicker
+                        message={periodTypePlaceHolder}
+                        periodType={periodType}
+                        title={formatMessage(MESSAGES.period)}
+                        onChange={v => handleChange('period', v)}
+                        activePeriodString={filters?.period as string}
+                    />
+                </Grid>
+
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        disabled={isFetchingGroups}
+                        keyValue="groupId"
+                        onChange={handleChange}
+                        value={filters?.groupId}
+                        label={MESSAGES.group}
+                        options={groups}
+                        loading={isFetchingGroups}
+                    />
                     <DisplayIfUserHasPerm
                         permissions={[PLANNING_READ, PLANNING_WRITE]}
                     >

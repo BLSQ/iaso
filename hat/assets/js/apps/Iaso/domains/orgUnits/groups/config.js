@@ -3,25 +3,17 @@ import {
     formatThousand,
     IconButton,
     textPlaceholder,
-    LinkWithLocation
+    LinkWithLocation,
 } from 'bluesquare-components';
 import GroupsDialog from './components/GroupsDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls';
-import { getChipColors } from '../../../constants/chipColors';
+import { filterOrgUnitsByGroupUrl } from '../utils';
 
 export const baseUrl = baseUrls.groups;
 
-const getUrl = groupId => {
-    const defaultChipColor = getChipColors(0).replace('#', '');
-    return (
-        `/${baseUrls.orgUnits}/locationLimit/3000/order/id` +
-        `/pageSize/50/page/1/searchTabIndex/0/searchActive/true` +
-        `/searches/[{"validation_status":"all", "color":"${defaultChipColor}", "group":"${groupId}", "source": null}]`
-    );
-};
 const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
     {
         Header: 'Id',
@@ -53,7 +45,9 @@ const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
         Header: formatMessage(MESSAGES.orgUnit),
         accessor: 'org_unit_count',
         Cell: settings => (
-            <LinkWithLocation to={getUrl(settings.row.original.id)}>
+            <LinkWithLocation
+                to={filterOrgUnitsByGroupUrl(settings.row.original.id)}
+            >
                 {formatThousand(settings.value)}
             </LinkWithLocation>
         ),

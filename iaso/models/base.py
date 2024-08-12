@@ -2,11 +2,13 @@ import datetime
 import operator
 import random
 import re
+import time
 import typing
 from copy import copy
 from functools import reduce
 from io import StringIO
 from logging import getLogger
+from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import django_cte
@@ -448,6 +450,12 @@ class Group(models.Model):
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)
 
+    def as_small_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+        }
+
     def as_dict(self, with_counts=True):
         res = {
             "id": self.id,
@@ -721,6 +729,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         sent_date_to=None,
         json_content=None,
         planning_ids=None,
+        project_ids=None,
         only_reference=None,
     ):
         queryset = self
@@ -796,6 +805,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
 
         if planning_ids:
             queryset = queryset.filter(planning_id__in=planning_ids.split(","))
+
+        if project_ids:
+            queryset = queryset.filter(project_id__in=project_ids.split(","))
 
         if search:
             if search.startswith("ids:"):
@@ -1062,10 +1074,13 @@ class Instance(models.Model):
         else:
             return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
-    def get_and_save_json_of_xml(self, force=False):
+    def get_and_save_json_of_xml(self, force=False, tries=3):
         """
         Convert the xml file to json and save it to the instance.
         If the instance already has a json, don't do anything unless `force=True`.
+
+        When downloading from S3, attempt `tries` times (3 by default) with
+        exponential backoff.
 
         :return: in all cases, return the JSON representation of the instance
         """
@@ -1075,7 +1090,16 @@ class Instance(models.Model):
         elif self.file:
             # not converted yet, but we have a file, so we can convert it
             if "amazonaws" in self.file.url:
-                file = urlopen(self.file.url)
+                for i in range(tries):
+                    try:
+                        file = urlopen(self.file.url)
+                        break
+                    except HTTPError as err:
+                        if err.code == 503:  # Slow Down
+                            time.sleep(2**i)
+                        else:
+                            raise err
+
             else:
                 file = self.file
 
@@ -1128,11 +1152,12 @@ class Instance(models.Model):
             "form_name": self.form.name if self.form else None,
             "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
             "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
-            "org_unit": self.org_unit.as_dict(with_groups=False) if self.org_unit else None,
+            "org_unit": self.org_unit.as_dict() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
+            "project_name": self.project.name if self.project else None,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
             "created_by": (

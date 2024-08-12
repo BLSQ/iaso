@@ -412,7 +412,6 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_csv.renderers.CSVRenderer",
     ),
-    "DEFAULT_METADATA_CLASS": "iaso.metadata.CustomSimpleMetaData",
 }
 
 SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=3650), "REFRESH_TOKEN_LIFETIME": timedelta(days=3651)}

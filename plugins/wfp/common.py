@@ -20,10 +20,7 @@ class ETL:
         updated_at = date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__name=self.type)
-            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226, 254, 424, 430, 431])
-            # .filter(entity__id__in=[254, 424, 430, 431])
-            # .filter(entity__id__in=[254, 431, 315])
-            # .filter(entity__id__in=[254])
+            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226, 254,315, 424, 430, 431])
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)

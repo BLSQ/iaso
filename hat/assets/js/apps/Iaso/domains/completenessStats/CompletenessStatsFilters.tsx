@@ -230,30 +230,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 </Grid>
 
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        disabled={isFetchingGroups}
-                        keyValue="groupId"
-                        onChange={handleChange}
-                        value={filters?.groupId}
-                        label={MESSAGES.group}
-                        options={groups}
-                        loading={isFetchingGroups}
-                    />
-                    <PeriodPicker
-                        message={
-                            periodType === PERIOD_TYPE_PLACEHOLDER
-                                ? formatMessage(MESSAGES.periodPlaceHolder)
-                                : undefined
-                        }
-                        periodType={periodType}
-                        title={formatMessage(MESSAGES.period)}
-                        onChange={v => handleChange('period', v)}
-                        activePeriodString={filters?.period as string}
-                    />
-                </Grid>
-
-                <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input-parent">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}

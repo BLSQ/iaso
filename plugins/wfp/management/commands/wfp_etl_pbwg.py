@@ -90,41 +90,8 @@ class PBWG:
                     "wfp_coda_pbwg_followup_anthro",
                 ]
                 current_journey = ETL().journey_Formatter(
-                    visit,
-                    "wfp_coda_pbwg_anthropometric",
-                    anthropometric_visit_forms,
-                    current_journey,
+                    visit, "wfp_coda_pbwg_anthropometric", anthropometric_visit_forms, current_journey, visits
                 )
-
-                if visit["form_id"] in ["wfp_coda_pbwg_assistance", "wfp_coda_pbwg_assistance_followup"]:
-                    next_visit_date = ""
-                    next_visit_days = 0
-                    nextSecondVisitDate = ""
-                    if (
-                        visit.get("next_visit__date__", None) is not None
-                        and visit.get("next_visit__date__", None) != ""
-                    ):
-                        next_visit_date = visit.get("next_visit__date__", None)
-                    elif (
-                        visit.get("new_next_visit__date__", None) is not None
-                        and visit.get("new_next_visit__date__", None) != ""
-                    ):
-                        next_visit_date = visit.get("new_next_visit__date__", None)
-
-                    if visit.get("next_visit_days", None) is not None and visit.get("next_visit_days", None) != "":
-                        next_visit_days = visit.get("next_visit_days", None)
-                        if next_visit_date is not None and next_visit_date != "":
-                            nextSecondVisitDate = datetime.strptime(
-                                next_visit_date[:10], "%Y-%m-%d"
-                            ).date() + timedelta(days=int(next_visit_days))
-
-                    missed_followup_visit = ETL().missed_followup_visit(
-                        visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
-                    )
-
-                    if current_journey.get("exit_type", None) is None and missed_followup_visit > 1:
-                        current_journey["exit_type"] = "defaulter"
-
                 current_journey["steps"].append(visit)
         journey.append(current_journey)
         return journey
@@ -161,7 +128,8 @@ class PBWG:
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
-                    visit_date = visit.get("_visit_date", visit.get("visit_date", visit.get("created_at")))
+                    # visit_date = visit.get("_visit_date", visit.get("visit_date", visit.get("created_at")))
+                    visit_date = visit.get("source_created_at", visit.get("_visit_date", visit.get("visit_date", None)))
                     if form_id == "wfp_coda_pbwg_anthropometric":
                         initial_date = visit_date
 

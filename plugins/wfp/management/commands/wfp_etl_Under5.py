@@ -33,7 +33,7 @@ class Under5:
             ),
             "weight_difference": weight_difference,
             "weight_gain": weight_gain,
-            "weight_loss": weight_loss,
+            "weight_loss": weight_loss / 1000,
         }
 
     def group_visit_by_entity(self, entities):
@@ -48,6 +48,7 @@ class Under5:
         for entity_id, entity in instances_by_entity:
             instances.append({"entity_id": entity_id, "visits": [], "journey": []})
             for visit in entity:
+                # print("VISIT ", visit)
                 current_record = visit.get("json", None)
                 instances[i]["program"] = ETL().program_mapper(current_record)
                 if current_record is not None and current_record != None:
@@ -74,17 +75,28 @@ class Under5:
                         current_weight = current_record.get("weight_kgs", None)
                     elif current_record.get("previous_weight_kgs__decimal__", None) is not None:
                         current_weight = current_record.get("previous_weight_kgs__decimal__", None)
-                    current_date = visit.get("created_at", None)
+                    current_date = visit.get(
+                        "source_created_at",
+                        visit.get(
+                            "_visit_date", visit.get("visit_date", visit.get("_new_discharged_today", current_date))
+                        ),
+                    )
 
                     if form_id == "Anthropometric visit child":
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
-                        visit_date = visit.get("_visit_date", visit.get("visit_date", current_date))
+                        visit_date = visit.get(
+                            "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
+                        )
                         initial_date = visit_date
-
+                    # print("ALL CURRENT ...:", current_date, visit)
                     if initial_date is not None:
                         duration = (current_date - initial_date).days
                         current_record["start_date"] = initial_date.strftime("%Y-%m-%d")
+                    # print("INITIAL DATE ", initial_date)
+                    # print("CURRENT DATE ", current_date)
+                    # print("DURATION DATE ", duration)
+
                     weight = self.compute_gained_weight(initial_weight, current_weight, duration)
                     current_record["end_date"] = current_date.strftime("%Y-%m-%d")
                     current_record["weight_gain"] = weight["weight_gain"]
@@ -94,7 +106,11 @@ class Under5:
                     current_record["weight_difference"] = weight["weight_difference"]
                     current_record["duration"] = duration
 
-                    visit_date = visit.get("_visit_date", visit.get("visit_date", current_date))
+                    # visit_date = visit.get("_visit_date", visit.get("visit_date", current_date))
+                    visit_date = visit.get(
+                        "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
+                    )
+
                     if visit_date:
                         current_record["date"] = visit_date.strftime("%Y-%m-%d")
 
@@ -116,7 +132,10 @@ class Under5:
     def journeyMapper(self, visits):
         journey = []
         current_journey = {"visits": [], "steps": []}
-
+        anthropometric_visit_forms = [
+            "child_antropometric_followUp_tsfp",
+            "child_antropometric_followUp_otp",
+        ]
         for visit in visits:
             if visit:
                 current_journey["weight_gain"] = visit.get("weight_gain", None)
@@ -126,71 +145,17 @@ class Under5:
 
                 if visit["form_id"] == "Anthropometric visit child":
                     current_journey["nutrition_programme"] = ETL().program_mapper(visit)
-                anthropometric_visit_forms = [
-                    "child_antropometric_followUp_tsfp",
-                    "child_antropometric_followUp_otp",
-                ]
 
                 current_journey = ETL().journey_Formatter(
-                    visit,
-                    "Anthropometric visit child",
-                    anthropometric_visit_forms,
-                    current_journey,
+                    visit, "Anthropometric visit child", anthropometric_visit_forms, current_journey, visits
                 )
-
-                if visit["form_id"] in ["child_assistance_follow_up", "child_assistance_admission"]:
-                    next_visit_date = ""
-                    next_visit_days = 0
-                    nextSecondVisitDate = ""
-
-                    if (
-                        visit.get("next_visit__date__", None) is not None
-                        and visit.get("next_visit__date__", None) != ""
-                    ):
-                        next_visit_date = visit.get("next_visit__date__", None)
-                    elif (
-                        visit.get("new_next_visit__date__", None) is not None
-                        and visit.get("new_next_visit__date__", None) != ""
-                    ):
-                        next_visit_date = visit.get("new_next_visit__date__", None)
-
-                    if visit.get("next_visit_days", None) is not None and visit.get("next_visit_days", None) != "":
-                        next_visit_days = visit.get("next_visit_days", None)
-                    elif (
-                        visit.get("number_of_days__int__", None) is not None
-                        and visit.get("number_of_days__int__", None) != ""
-                    ):
-                        next_visit_days = visit.get("number_of_days__int__", None)
-                    elif (
-                        visit.get("OTP_next_visit", None) is not None
-                        and visit.get("OTP_next_visit", None) != ""
-                        and visit.get("OTP_next_visit") != "--"
-                    ):
-                        next_visit_days = visit.get("OTP_next_visit", None)
-                    elif (
-                        visit.get("TSFP_next_visit", None) is not None
-                        and visit.get("TSFP_next_visit", None) != ""
-                        and visit.get("TSFP_next_visit") != "--"
-                    ):
-                        next_visit_days = visit.get("TSFP_next_visit", None)
-
-                    if next_visit_date is not None and next_visit_date != "":
-                        nextSecondVisitDate = datetime.strptime(next_visit_date[:10], "%Y-%m-%d").date() + timedelta(
-                            days=int(next_visit_days)
-                        )
-
-                    missed_followup_visit = ETL().missed_followup_visit(
-                        visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
-                    )
-                    if current_journey.get("exit_type", None) is None and missed_followup_visit > 1:
-                        current_journey["exit_type"] = "defaulter"
-
-                current_journey["steps"].append(visit)
-
+            current_journey["steps"].append(visit)
+        # print("GOT CURRENTLY THE JOURNEY ", current_journey)
         journey.append(current_journey)
         return journey
 
     def save_journey(self, beneficiary, record):
+        # print("GOT RECORD ", record)
         journey = Journey()
         journey.beneficiary = beneficiary
         journey.programme_type = "U5"
@@ -201,18 +166,21 @@ class Under5:
         journey.instance_id = record.get("instance_id", None)
         journey.initial_weight = record.get("initial_weight", None)
         journey.start_date = record.get("start_date", None)
+        journey.duration = record.get("duration", None)
+        journey.end_date = record.get("end_date", None)
+        # journey.duration = record["duration"]
+        # journey.end_date = record["end_date"]
 
         # Calculate the weight gain only for cured and Transfer from OTP to TSFP cases!
         if (
             record.get("exit_type", None) is not None
             and record.get("exit_type", None) != ""
-            and record.get("exit_type", None) in ["cured", "transfer_to_tsfp"]
+            # and record.get("exit_type", None) in ["cured", "transfer_to_tsfp", "defaulter", "death", "transferred_out"]
         ):
             journey.discharge_weight = record.get("discharge_weight", None)
             journey.weight_gain = record.get("weight_gain", 0)
             journey.weight_loss = record.get("weight_loss", 0)
-            journey.duration = record.get("duration", None)
-            journey.end_date = record.get("end_date", None)
+        # print("JOURNEY ...:", journey)
         journey.save()
         return journey
 

@@ -138,7 +138,7 @@ class ParamSerializer(serializers.Serializer):
 
             self.fields["project_ids"].child_relation.queryset = Project.objects.filter(
                 account=user.iaso_profile.account
-            ).distinct()
+            ).distinct("id")
 
     org_unit_type_ids = PrimaryKeysRelatedField(
         child_relation=serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none()),
@@ -285,7 +285,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         # filter instance_qs and form_qs on projects
         if projects:
             instance_qs = instance_qs.filter(project__in=projects)
-            form_qs = form_qs.filter(projects__in=projects).distinct()
+            form_qs = form_qs.filter(projects__in=projects).distinct("id")
 
         profile = request.user.iaso_profile  # type: ignore
 

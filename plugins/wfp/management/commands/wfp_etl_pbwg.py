@@ -4,7 +4,6 @@ from itertools import groupby
 from operator import itemgetter
 from ...common import ETL
 import logging
-from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -38,17 +37,16 @@ class PBWG:
 
             for journey_instance in instance["journey"]:
                 if len(journey_instance["visits"]) > 0 and journey_instance.get("nutrition_programme") is not None:
-                    if journey_instance.get("admission_criteria") is not None:
-                        journey = self.save_journey(beneficiary, journey_instance)
-                        visits = ETL().save_visit(journey_instance["visits"], journey)
-                        logger.info(f"Inserted {len(visits)} Visits")
+                    journey = self.save_journey(beneficiary, journey_instance)
+                    visits = ETL().save_visit(journey_instance["visits"], journey)
+                    logger.info(f"Inserted {len(visits)} Visits")
 
-                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
-                        admission_step = grouped_steps[0]
-                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
+                    grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
+                    admission_step = grouped_steps[0]
+                    followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
 
-                        steps = ETL().save_steps(visits, followUpVisits)
-                        logger.info(f"Inserted {len(steps)} Steps")
+                    steps = ETL().save_steps(visits, followUpVisits)
+                    logger.info(f"Inserted {len(steps)} Steps")
                 else:
                     logger.info("No new journey")
             logger.info(
@@ -59,12 +57,13 @@ class PBWG:
         journey = Journey()
         journey.beneficiary = beneficiary
         journey.programme_type = "PLW"
-        journey.admission_criteria = record["admission_criteria"]
+        journey.admission_criteria = record.get("admission_criteria", None)
         journey.admission_type = record.get("admission_type", None)
-        journey.nutrition_programme = record["nutrition_programme"]
+        journey.nutrition_programme = record.get("nutrition_programme", None)
         journey.exit_type = record.get("exit_type", None)
         journey.instance_id = record.get("instance_id", None)
         journey.start_date = record.get("start_date", None)
+        journey.end_date = record.get("end_date", None)
 
         if record.get("exit_type", None) is not None and record.get("exit_type", None) != "":
             journey.duration = record.get("duration", None)
@@ -76,8 +75,12 @@ class PBWG:
     def journeyMapper(self, visits):
         journey = []
         current_journey = {"visits": [], "steps": []}
+        anthropometric_visit_forms = [
+            "wfp_coda_pbwg_luctating_followup_anthro",
+            "wfp_coda_pbwg_followup_anthro",
+        ]
 
-        for visit in visits:
+        for index, visit in enumerate(visits):
             if visit:
                 if visit.get("duration", None) is not None and visit.get("duration", None) != "":
                     current_journey["duration"] = visit.get("duration")
@@ -85,46 +88,9 @@ class PBWG:
                 if visit["form_id"] == "wfp_coda_pbwg_registration":
                     current_journey["nutrition_programme"] = visit.get("physiology_status", None)
 
-                anthropometric_visit_forms = [
-                    "wfp_coda_pbwg_luctating_followup_anthro",
-                    "wfp_coda_pbwg_followup_anthro",
-                ]
                 current_journey = ETL().journey_Formatter(
-                    visit,
-                    "wfp_coda_pbwg_anthropometric",
-                    anthropometric_visit_forms,
-                    current_journey,
+                    visit, "wfp_coda_pbwg_anthropometric", anthropometric_visit_forms, current_journey, visits, index
                 )
-
-                if visit["form_id"] in ["wfp_coda_pbwg_assistance", "wfp_coda_pbwg_assistance_followup"]:
-                    next_visit_date = ""
-                    next_visit_days = 0
-                    nextSecondVisitDate = ""
-                    if (
-                        visit.get("next_visit__date__", None) is not None
-                        and visit.get("next_visit__date__", None) != ""
-                    ):
-                        next_visit_date = visit.get("next_visit__date__", None)
-                    elif (
-                        visit.get("new_next_visit__date__", None) is not None
-                        and visit.get("new_next_visit__date__", None) != ""
-                    ):
-                        next_visit_date = visit.get("new_next_visit__date__", None)
-
-                    if visit.get("next_visit_days", None) is not None and visit.get("next_visit_days", None) != "":
-                        next_visit_days = visit.get("next_visit_days", None)
-                        if next_visit_date is not None and next_visit_date != "":
-                            nextSecondVisitDate = datetime.strptime(
-                                next_visit_date[:10], "%Y-%m-%d"
-                            ).date() + timedelta(days=int(next_visit_days))
-
-                    missed_followup_visit = ETL().missed_followup_visit(
-                        visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
-                    )
-
-                    if current_journey.get("exit_type", None) is None and missed_followup_visit > 1:
-                        current_journey["exit_type"] = "defaulter"
-
                 current_journey["steps"].append(visit)
         journey.append(current_journey)
         return journey
@@ -161,7 +127,7 @@ class PBWG:
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
-                    visit_date = visit.get("_visit_date", visit.get("visit_date", visit.get("created_at")))
+                    visit_date = visit.get("source_created_at", visit.get("_visit_date", visit.get("visit_date", None)))
                     if form_id == "wfp_coda_pbwg_anthropometric":
                         initial_date = visit_date
 

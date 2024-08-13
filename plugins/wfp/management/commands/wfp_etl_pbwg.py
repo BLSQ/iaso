@@ -57,9 +57,9 @@ class PBWG:
         journey = Journey()
         journey.beneficiary = beneficiary
         journey.programme_type = "PLW"
-        journey.admission_criteria = record["admission_criteria"]
+        journey.admission_criteria = record.get("admission_criteria", None)
         journey.admission_type = record.get("admission_type", None)
-        journey.nutrition_programme = record["nutrition_programme"]
+        journey.nutrition_programme = record.get("nutrition_programme", None)
         journey.exit_type = record.get("exit_type", None)
         journey.instance_id = record.get("instance_id", None)
         journey.start_date = record.get("start_date", None)

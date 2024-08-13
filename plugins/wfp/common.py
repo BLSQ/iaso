@@ -313,7 +313,7 @@ class ETL:
             current_journey["admission_type"] = self.admission_type(visit)
             current_journey["programme_type"] = self.program_mapper(visit)
             current_journey["org_unit_id"] = visit.get("org_unit_id")
-
+            current_journey["visits"].append(visit)
         exit = None
         followup_forms.append(anthropometric_visit_form)
         if visit["form_id"] in followup_forms:
@@ -324,7 +324,6 @@ class ETL:
             current_journey["discharge_weight"] = visit.get("discharge_weight", None)
             current_journey["weight_difference"] = visit.get("weight_difference", None)
             current_journey["exit_type"] = self.exit_type(visit)
-            current_journey["visits"].append(visit)
 
         if index > 0:
             index = index - 1
@@ -456,7 +455,7 @@ class ETL:
         visit_number = 0
         for current_visit in visits:
             visit = Visit()
-            visit.date = current_visit["date"]
+            visit.date = current_visit.get("date", None)
             visit.number = visit_number
             visit.journey = journey
             orgUnit = OrgUnit.objects.get(id=current_visit["org_unit_id"])

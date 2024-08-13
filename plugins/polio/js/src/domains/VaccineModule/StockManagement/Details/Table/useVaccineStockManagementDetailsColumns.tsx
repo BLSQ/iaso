@@ -5,11 +5,21 @@ import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/com
 import MESSAGES from '../../messages';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 
-export const useVaccineStockManagementDetailsColumns = (): Column[] => {
+export const useVaccineStockManagementDetailsColumnsUsable = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    // @ts-ignore
     return useMemo(() => {
         const columns = [
+            {
+                Header: formatMessage(MESSAGES.date),
+                accessor: 'date',
+                id: 'date',
+                Cell: DateCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.action),
+                accessor: 'action',
+                id: 'action',
+            },
             {
                 Header: formatMessage(MESSAGES.vials_in),
                 accessor: 'vials_in',
@@ -57,6 +67,15 @@ export const useVaccineStockManagementDetailsColumns = (): Column[] => {
                     return <NumberCell value={doses_out} />;
                 },
             },
+        ];
+        return columns;
+    }, [formatMessage]);
+};
+
+export const useVaccineStockManagementDetailsColumnsUnusable = (): Column[] => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(() => {
+        const columns = [
             {
                 Header: formatMessage(MESSAGES.date),
                 accessor: 'date',
@@ -67,6 +86,29 @@ export const useVaccineStockManagementDetailsColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.action),
                 accessor: 'action',
                 id: 'action',
+            },
+            {
+                Header: formatMessage(MESSAGES.vials_in),
+                accessor: 'vials_in',
+                Cell: settings => {
+                    const { vials_in } = settings.row.original;
+                    if (!vials_in) {
+                        return <span>{textPlaceholder}</span>;
+                    }
+                    return <NumberCell value={vials_in} />;
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.vials_out),
+                accessor: 'vials_out',
+                Cell: settings => {
+                    const { vials_out } = settings.row.original;
+                    if (!vials_out) {
+                        return <span>{textPlaceholder}</span>;
+                    }
+
+                    return <NumberCell value={vials_out} />;
+                },
             },
         ];
         return columns;

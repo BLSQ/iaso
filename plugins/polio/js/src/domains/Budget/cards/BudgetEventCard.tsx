@@ -10,11 +10,7 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import {
-    formatThousand,
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { formatThousand, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import classNames from 'classnames';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';

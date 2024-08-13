@@ -8,12 +8,10 @@ const getTeams = (): Promise<any> => {
 };
 
 export const useGetTeams = (): UseQueryResult<any, Error> => {
-    // @ts-ignore
     return useSnackQuery(['allteams'], () => getTeams());
 };
 
 export const useGetTeamsDropDown = (): UseQueryResult<any, Error> => {
-    // @ts-ignore
     return useSnackQuery(['teams'], () => getTeams(), undefined, {
         // staleTime required to avoid infinite loop
         staleTime: Infinity,
@@ -31,7 +29,6 @@ export const useGetTeamsDropDown = (): UseQueryResult<any, Error> => {
 
 export const useGetApprovalTeams = (): UseQueryResult<any, Error> => {
     const queryKey: any[] = ['teamsList'];
-    // @ts-ignore
     return useSnackQuery(queryKey, () => getTeams(), undefined, {
         // staleTime required to avoid infinite loop
         staleTime: Infinity,

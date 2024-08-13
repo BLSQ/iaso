@@ -1,9 +1,6 @@
 /* eslint-disable camelcase */
 import { Box, FormControl, List, ListItem } from '@mui/material';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { FieldInputProps } from 'formik';
 import React, { FunctionComponent, useMemo } from 'react';
 import { MapLegend } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';

@@ -260,9 +260,9 @@ class TeamAPITestCase(APITestCase):
         cls.account = account = Account.objects.get(name="test")
         cls.user = user = User.objects.get(username="test")
         cls.project1 = project1 = account.project_set.create(name="project1")
-        project2 = account.project_set.create(name="project2")
+        cls.project2 = project2 = account.project_set.create(name="project2")
         cls.team1 = Team.objects.create(project=project1, name="team1", manager=user)
-        Team.objects.create(project=project2, name="team2", manager=user)
+        cls.team2 = Team.objects.create(project=project2, name="team2", manager=user)
         other_account = Account.objects.create(name="other account")
         cls.create_user_with_profile(username="user", account=other_account)
         account.project_set.create(name="other_project")
@@ -455,6 +455,112 @@ class TeamAPITestCase(APITestCase):
         # one for delete, one for undelete
         self.assertEqual(Modification.objects.count(), 2)
 
+    def test_list_filter_by_manager(self):
+        # Set up new team and new user who'll be the new manager
+        ash_ketchum = self.create_user_with_profile(
+            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+        )
+        team_fire_pokemons = Team.objects.create(project=self.project1, name="team_fire_pokemons", manager=ash_ketchum)
+        team_electric_pokemons = Team.objects.create(
+            project=self.project1, name="team_electric_pokemons", manager=ash_ketchum
+        )
+
+        misty = self.create_user_with_profile(
+            username="misty", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+        )
+        team_water_pokemons = Team.objects.create(project=self.project1, name="team_water_pokemons", manager=misty)
+
+        self.client.force_authenticate(ash_ketchum)
+
+        # Fetch the list of teams with a filter on a single manager
+        response = self.client.get(f"/api/microplanning/teams/?order=id&managers={ash_ketchum.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(r[0]["name"], team_fire_pokemons.name)
+        self.assertEqual(r[1]["name"], team_electric_pokemons.name)
+
+        # Fetch the list of teams with a filter on multiple managers
+        response = self.client.get(f"/api/microplanning/teams/?managers={ash_ketchum.id},{misty.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 3)
+
+    def test_list_filter_by_type(self):
+        # Set up teams of various types
+        ash_ketchum = self.create_user_with_profile(
+            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+        )
+        team_fire_pokemons = Team.objects.create(
+            project=self.project1, name="team_fire_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
+        )
+        team_electric_pokemons = Team.objects.create(
+            project=self.project1, name="team_electric_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
+        )
+        team_water_pokemons = Team.objects.create(
+            project=self.project1, name="team_water_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
+        )
+        team_pokemons = Team.objects.create(
+            project=self.project1, name="team_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_TEAMS
+        )
+        self.client.force_authenticate(ash_ketchum)
+
+        # Fetch the list of teams without any type filter
+        response = self.client.get(f"/api/microplanning/teams/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 6)  # 2 from happy path (set up) + 4 new ones
+
+        # Fetch the list of teams with a single type
+        response = self.client.get(f"/api/microplanning/teams/?order=id&types={TeamType.TEAM_OF_USERS}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 3)
+        self.assertEqual(r[0]["name"], team_fire_pokemons.name)
+        self.assertEqual(r[1]["name"], team_electric_pokemons.name)
+        self.assertEqual(r[2]["name"], team_water_pokemons.name)
+
+        response = self.client.get(f"/api/microplanning/teams/?order=id&types={TeamType.TEAM_OF_TEAMS}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]["name"], team_pokemons.name)
+
+        # Fetch the list of teams with a filter on multiple types
+        response = self.client.get(
+            f"/api/microplanning/teams/?types={TeamType.TEAM_OF_TEAMS},{TeamType.TEAM_OF_USERS}", format="json"
+        )
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 4)
+
+    def test_list_filter_by_project(self):
+        ash_ketchum = self.create_user_with_profile(
+            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+        )
+        team_electric_pokemons = Team.objects.create(
+            project=self.project1, name="team_electric_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
+        )
+
+        self.client.force_authenticate(self.user)
+        # Fetch the list of teams without any project filter
+        response = self.client.get(f"/api/microplanning/teams/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 3)  # 2 from happy path (set up) + 1 new one
+
+        # Fetch the list of teams with a single project
+        response = self.client.get(f"/api/microplanning/teams/?order=id&projects={self.project1.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+        self.assertEqual(r[0]["name"], self.team1.name)
+        self.assertEqual(r[1]["name"], team_electric_pokemons.name)
+
+        response = self.client.get(f"/api/microplanning/teams/?order=id&projects={self.project2.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]["name"], self.team2.name)
+
+        # Fetch the list of teams with a filter on multiple projects
+        response = self.client.get(
+            f"/api/microplanning/teams/?projects={self.project2.id},{self.project1.id}", format="json"
+        )
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 3)
+
 
 class PlanningTestCase(APITestCase):
     fixtures = ["user.yaml"]
@@ -501,6 +607,10 @@ class PlanningTestCase(APITestCase):
                 "team": self.planning.team_id,
                 "team_details": {"id": self.team1.id, "name": self.team1.name, "deleted_at": self.team1.deleted_at},
                 "project": self.planning.project.id,
+                "project_details": {
+                    "id": self.planning.project.id,
+                    "name": self.planning.project.name,
+                },
                 "org_unit": self.planning.org_unit_id,
                 "org_unit_details": {
                     "id": self.org_unit.id,
@@ -529,6 +639,7 @@ class PlanningTestCase(APITestCase):
                 "team": self.team1.id,
                 "team_details": {"id": self.team1.id, "name": self.team1.name},
                 "project": self.project1.id,
+                "project_details": {"id": self.project1.id, "name": self.project1.name},
                 "started_at": "2022-02-02",
                 "ended_at": "2022-03-03",
             },
@@ -542,6 +653,7 @@ class PlanningTestCase(APITestCase):
                 "forms": [self.form1.id, self.form2.id],
                 "team": self.team1.id,
                 "project": self.project1.id,
+                "project_details": {"id": self.project1.id, "name": self.project1.name},
                 "started_at": "2022-03-03",
                 "ended_at": "2022-02-02",
             },
@@ -555,6 +667,7 @@ class PlanningTestCase(APITestCase):
                 "forms": [self.form1.id, self.form2.id],
                 "team": self.other_team.id,
                 "project": self.project1.id,
+                "project_details": {"id": self.project1.id, "name": self.project1.name},
                 "started_at": "2022-02-02",
                 "ended_at": "2022-03-03",
             },

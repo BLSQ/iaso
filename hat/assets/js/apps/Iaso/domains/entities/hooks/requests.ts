@@ -42,6 +42,7 @@ type Params = {
     submitterTeamId?: string;
     entityTypeIds?: string;
     locationLimit?: string;
+    groups?: string;
 };
 
 type ApiParams = {
@@ -57,6 +58,7 @@ type ApiParams = {
     entity_type_ids?: string;
     asLocation?: boolean;
     locationLimit?: string;
+    groups?: string;
 };
 
 type GetAPiParams = {
@@ -82,6 +84,7 @@ export const useGetBeneficiariesApiParams = (
         entity_type_ids: params.entityTypeIds,
         limit: params.pageSize || '20',
         page: params.page || '1',
+        groups: params.groups,
     };
     if (asLocation) {
         apiParams.asLocation = true;
@@ -98,7 +101,6 @@ export const useGetBeneficiariesPaginated = (
     params: Params,
 ): UseQueryResult<PaginatedBeneficiaries, Error> => {
     const { url, apiParams } = useGetBeneficiariesApiParams(params);
-    // @ts-ignore
     return useSnackQuery({
         queryKey: ['beneficiaries', apiParams],
         queryFn: () => getRequest(url),
@@ -114,7 +116,6 @@ export const useGetBeneficiariesLocations = (
     displayedLocation: DisplayedLocation,
 ): UseQueryResult<Array<Location>, Error> => {
     const { url, apiParams } = useGetBeneficiariesApiParams(params, true);
-    // @ts-ignore
     return useSnackQuery({
         queryKey: ['beneficiariesLocations', apiParams],
         queryFn: () => getRequest(url),
@@ -157,7 +158,7 @@ export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
                             label: type.name,
                             value: type.id,
                             original: type,
-                        } || []),
+                        }) || [],
                 ),
         },
     });

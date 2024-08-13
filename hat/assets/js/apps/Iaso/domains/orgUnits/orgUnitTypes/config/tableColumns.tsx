@@ -1,7 +1,6 @@
 import React from 'react';
 import {
     IconButton,
-    // @ts-ignore
     formatThousand,
     useSafeIntl,
     Column,
@@ -11,6 +10,9 @@ import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from '../messages';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import { useDeleteOrgUnitType } from '../hooks/useDeleteOrgUnitType';
+import { baseUrls } from '../../../../constants/urls';
+
+export const baseUrl = baseUrls.orgUnitTypes;
 
 export const useGetColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -22,11 +24,15 @@ export const useGetColumns = (): Column[] => {
             align: 'left',
         },
         {
+            Header: formatMessage(MESSAGES.projects),
+            accessor: 'projects',
+            Cell: settings => settings.value.map(p => p.name).join(', '),
+        },
+        {
             Header: formatMessage(MESSAGES.subUnitTypes),
             accessor: 'sub_unit_types',
-            Cell: settings => (
-                <>{settings.value?.map(subType => subType.name).join(',')}</>
-            ),
+            Cell: settings =>
+                settings.value?.map(subType => subType.name).join(','),
         },
         {
             Header: formatMessage(MESSAGES.shortName),
@@ -43,11 +49,6 @@ export const useGetColumns = (): Column[] => {
             headerInfo: formatMessage(MESSAGES.depthInfos),
             sortable: true,
             accessor: 'depth',
-        },
-        {
-            Header: formatMessage(MESSAGES.projects),
-            accessor: 'projects',
-            Cell: settings => settings.value.map(p => p.name).join(', '),
         },
         {
             Header: formatMessage(MESSAGES.createdAt),

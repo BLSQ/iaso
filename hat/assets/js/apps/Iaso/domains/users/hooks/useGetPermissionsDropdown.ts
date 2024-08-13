@@ -1,5 +1,4 @@
 import { UseQueryResult } from 'react-query';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';

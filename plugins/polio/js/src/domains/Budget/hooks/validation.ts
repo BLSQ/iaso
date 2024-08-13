@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import {
     mixed,

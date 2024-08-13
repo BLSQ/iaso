@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import get from 'lodash/get';
 import { InitialUserData, UserDialogData } from '../types';
 import { UserRole } from '../../userRoles/types/userRoles';
-import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown';
+import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
 
 export type InitialUserUtils = {
     user: UserDialogData;

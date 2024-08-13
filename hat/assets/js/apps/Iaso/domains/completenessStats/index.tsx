@@ -213,13 +213,11 @@ export const CompletenessStats: FunctionComponent = () => {
                             pages={completenessStats?.pages ?? 1}
                             defaultSorted={['name']}
                             columns={columns}
-                            // @ts-ignore
                             count={completenessStats?.count ?? 0}
                             baseUrl={baseUrl}
                             countOnTop={false}
                             params={params}
                             extraProps={{ loading: isFetching }}
-                            // @ts-ignore
                             rowProps={getRowStyles}
                         />
                     </Box>

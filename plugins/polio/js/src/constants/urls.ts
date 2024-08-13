@@ -24,7 +24,7 @@ export const LQAS_BASE_URL = 'polio/lqas/lqas';
 export const LQAS_AFRO_MAP_URL = 'polio/lqas/lqas-map';
 export const IM_GLOBAL = 'polio/im/global';
 export const IM_OHH = 'polio/im/ohh';
-export const IM_IHH = 'polio/im/ihh';
+export const IM_HH = 'polio/im/hh';
 export const GROUPED_CAMPAIGNS = 'polio/groupedcampaigns';
 export const BUDGET = 'polio/budget';
 export const BUDGET_DETAILS = 'polio/budget/details';
@@ -37,6 +37,9 @@ export const STOCK_MANAGEMENT = `${VACCINE_MODULE}/stockmanagement`;
 export const STOCK_MANAGEMENT_DETAILS = `${STOCK_MANAGEMENT}/details`;
 export const STOCK_VARIATION = `${STOCK_MANAGEMENT}/variation`;
 export const NOTIFICATIONS_BASE_URL = 'polio/notifications';
+export const CHRONOGRAM_BASE_URL = 'polio/chronogram';
+export const CHRONOGRAM_TEMPLATE_TASK = `${CHRONOGRAM_BASE_URL}/templateTask`;
+export const CHRONOGRAM_DETAILS = `${CHRONOGRAM_BASE_URL}/details`;
 
 export const campaignParams = [
     'countries',
@@ -49,6 +52,7 @@ export const campaignParams = [
     'campaignGroups',
     'show_test',
     'filterLaunched',
+    'notShowTest',
 ];
 
 export const polioRouteConfigs: Record<string, RouteConfig> = {
@@ -113,15 +117,15 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     },
     imGlobal: {
         url: IM_GLOBAL,
-        params: ['campaign', 'country', 'rounds'],
+        params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
-    imIhh: {
-        url: IM_IHH,
-        params: ['campaign', 'country', 'rounds'],
+    imHH: {
+        url: IM_HH,
+        params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
-    imOhh: {
+    imOHH: {
         url: IM_OHH,
-        params: ['campaign', 'country', 'rounds'],
+        params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
     budget: {
         url: BUDGET,
@@ -232,6 +236,30 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'date_of_onset_before',
         ],
     },
+    chronogram: {
+        url: CHRONOGRAM_BASE_URL,
+        params: [
+            ...paginationPathParams,
+            'limit',
+            'search',
+            'country',
+            'on_time',
+        ],
+    },
+    chronogramTemplateTask: {
+        url: CHRONOGRAM_TEMPLATE_TASK,
+        params: [...paginationPathParams, 'limit'],
+    },
+    chronogramDetails: {
+        url: CHRONOGRAM_DETAILS,
+        params: [
+            ...paginationPathParams,
+            'chronogram_id',
+            'limit',
+            'period',
+            'status',
+        ],
+    },
 };
 
 export type PolioBaseUrls = {
@@ -242,8 +270,8 @@ export type PolioBaseUrls = {
     lqasCountry: string;
     lqasAfro: string;
     imGlobal: string;
-    imIhh: string;
-    imOhh: string;
+    imHH: string;
+    imOHH: string;
     budget: string;
     budgetDetails: string;
     nopv2Auth: string;
@@ -257,6 +285,9 @@ export type PolioBaseUrls = {
     reasonsForDelayConfig: string;
     embeddedCalendar: string;
     notification: string;
+    chronogram: string;
+    chronogramTemplateTask: string;
+    chronogramDetails: string;
 };
 export const baseUrls = extractUrls(polioRouteConfigs) as PolioBaseUrls;
 export const baseParams = extractParams(polioRouteConfigs);

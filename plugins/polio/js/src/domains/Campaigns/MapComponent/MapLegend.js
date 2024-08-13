@@ -4,8 +4,7 @@ import { array, oneOf, string } from 'prop-types';
 import { useStyles } from './styles';
 import { convertWidth } from '../../../utils/index.tsx';
 
-// TODO pass font size as props
-export const MapLegend = ({ title, legendItems, width }) => {
+export const MapLegend = ({ title, legendItems, width, name }) => {
     const classes = useStyles();
     return (
         <Paper elevation={1} style={{ width: convertWidth(width) }}>
@@ -16,43 +15,47 @@ export const MapLegend = ({ title, legendItems, width }) => {
                 >
                     {title}
                 </Typography>
-                {legendItems.map((legendItem, i) => (
-                    <Box py={1}>
-                        <Grid
-                            container
-                            spacing={1}
-                            key={`${title}${i}${legendItem.value}`}
+                {legendItems.map((legendItem, i) => {
+                    return (
+                        <Box
+                            py={1}
+                            key={`${title}${i}${legendItem.label}${legendItem.value}-${name}`}
                         >
-                            <Grid
-                                item
-                                sm={width === 'xs' || width === 'sm' ? 6 : 3}
-                                container
-                                justifyContent="flex-start"
-                            >
-                                <span
-                                    className={classes.roundColor}
-                                    style={{
-                                        backgroundImage: legendItem.background,
-                                        backgroundColor: legendItem.color,
-                                    }}
-                                />
+                            <Grid container spacing={1}>
+                                <Grid
+                                    item
+                                    sm={
+                                        width === 'xs' || width === 'sm' ? 6 : 3
+                                    }
+                                    container
+                                    justifyContent="flex-start"
+                                >
+                                    <span
+                                        className={classes.roundColor}
+                                        style={{
+                                            backgroundImage:
+                                                legendItem.background,
+                                            backgroundColor: legendItem.color,
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid
+                                    item
+                                    sm={
+                                        width === 'xs' || width === 'sm' ? 6 : 9
+                                    }
+                                    container
+                                    justifyContent="flex-end"
+                                    alignItems="center"
+                                >
+                                    <div style={{ fontSize: '14px' }}>
+                                        {legendItem.label}
+                                    </div>
+                                </Grid>
                             </Grid>
-                            <Grid
-                                item
-                                sm={width === 'xs' || width === 'sm' ? 6 : 9}
-                                container
-                                justifyContent="flex-end"
-                                alignItems="center"
-                            >
-                                {/* <Typography variant="subtitle2"> */}
-                                <div style={{ fontSize: '14px' }}>
-                                    {legendItem.label}
-                                </div>
-                                {/* </Typography> */}
-                            </Grid>
-                        </Grid>
-                    </Box>
-                ))}
+                        </Box>
+                    );
+                })}
             </Box>
         </Paper>
     );
@@ -62,6 +65,7 @@ MapLegend.propTypes = {
     title: string.isRequired,
     legendItems: array.isRequired,
     width: oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
+    name: string.isRequired,
 };
 MapLegend.defaultProps = {
     width: 'sm',

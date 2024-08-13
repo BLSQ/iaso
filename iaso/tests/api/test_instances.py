@@ -84,7 +84,11 @@ class InstancesAPITestCase(APITestCase):
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
-        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=pytz.UTC)):
+        date1 = datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=pytz.UTC)
+        date2 = datetime.datetime(2020, 2, 3, 0, 0, 5, tzinfo=pytz.UTC)
+        date3 = datetime.datetime(2020, 2, 5, 0, 0, 5, tzinfo=pytz.UTC)
+
+        with patch("django.utils.timezone.now", lambda: date1):
             cls.instance_1 = cls.create_form_instance(
                 form=cls.form_1,
                 period="202001",
@@ -92,30 +96,34 @@ class InstancesAPITestCase(APITestCase):
                 project=cls.project,
                 created_by=cls.yoda,
                 export_id="Vzhn0nceudr",
+                source_created_at=date1,
             )
-        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=pytz.UTC)):
+        with patch("django.utils.timezone.now", lambda: date1):
             cls.instance_2 = cls.create_form_instance(
                 form=cls.form_1,
                 period="202002",
                 org_unit=cls.jedi_council_corruscant,
                 project=cls.project,
                 created_by=cls.guest,
+                source_created_at=date1,
             )
-        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 3, 0, 0, 5, tzinfo=pytz.UTC)):
+        with patch("django.utils.timezone.now", lambda: date2):
             cls.instance_3 = cls.create_form_instance(
                 form=cls.form_1,
                 period="202002",
                 org_unit=cls.jedi_council_corruscant,
                 project=cls.project,
                 created_by=cls.supervisor,
+                source_created_at=date2,
             )
-        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 5, 0, 0, 5, tzinfo=pytz.UTC)):
+        with patch("django.utils.timezone.now", lambda: date3):
             cls.instance_4 = cls.create_form_instance(
                 form=cls.form_1,
                 period="202003",
                 org_unit=cls.jedi_council_corruscant,
                 project=cls.project,
                 created_by=cls.yoda,
+                source_created_at=date3,
             )
 
         cls.form_2 = m.Form.objects.create(
@@ -223,6 +231,7 @@ class InstancesAPITestCase(APITestCase):
                 "name": "1",
             }
         ]
+
         response = self.client.post(
             f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
@@ -240,15 +249,9 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(50.2, last_instance.location.y)
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
-        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
-        self.assertEqual(
-            datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.created_at
-        )
-        # TODO: the assertion below will fail because our API does not store properly the updated_at property
-        # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
-        # self.assertEqual(
-        #     timestamp_to_utc_datetime(1565258153709), last_instance.updated_at
-        # )
+        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.source_created_at)
+        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.source_created_at)
+        self.assertEqual(timestamp_to_utc_datetime(1565258153709), last_instance.source_updated_at)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertIsNotNone(last_instance.project)
 
@@ -292,15 +295,11 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(50.2, last_instance.location.y)
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
-        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
+        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.source_created_at)
         self.assertEqual(
-            datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.created_at
+            datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.source_created_at
         )
-        # TODO: the assertion below will fail because our API does not store properly the updated_at property
-        # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
-        # self.assertEqual(
-        #     timestamp_to_utc_datetime(1565258153709), last_instance.updated_at
-        # )
+        self.assertEqual(timestamp_to_utc_datetime(1565258153709), last_instance.source_updated_at)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertEqual(last_instance.project, self.project)
         self.assertEqual(last_instance.planning, planning)
@@ -346,15 +345,9 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(50.2, last_instance.location.y)
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
-        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
-        self.assertEqual(
-            datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.created_at
-        )
-        # TODO: the assertion below will fail because our API does not store properly the updated_at property
-        # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
-        # self.assertEqual(
-        #     timestamp_to_utc_datetime(1565258153709), last_instance.updated_at
-        # )
+        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.source_created_at)
+        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.source_created_at)
+        self.assertEqual(timestamp_to_utc_datetime(1565258153709), last_instance.source_updated_at)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertIsNotNone(last_instance.project)
 
@@ -369,6 +362,7 @@ class InstancesAPITestCase(APITestCase):
             org_unit=self.jedi_council_corruscant,
             uuid=instance_uuid,
             deleted=True,
+            project=None,
         )
         pre_existing_instance_count = m.Instance.objects.count()
         body = [
@@ -408,6 +402,7 @@ class InstancesAPITestCase(APITestCase):
             period="202002",
             org_unit=self.jedi_council_corruscant,
             uuid=instance_uuid,
+            project=None,
         )
         pre_existing_instance_count = m.Instance.objects.count()
         body = [
@@ -453,7 +448,7 @@ class InstancesAPITestCase(APITestCase):
         """POST /api/instances/ with one pre-existing instance (created by the /sync view, with a filename only)"""
 
         instance_filename = "RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml"
-        pre_existing_instance = self.create_form_instance(file_name=instance_filename)
+        pre_existing_instance = self.create_form_instance(file_name=instance_filename, project=None)
         pre_existing_instance_count = m.Instance.objects.count()
         body = [
             {
@@ -474,6 +469,8 @@ class InstancesAPITestCase(APITestCase):
             f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
+        j = response.json()
+        self.assertFalse("problem" in j["res"], j)
 
         self.assertEqual(pre_existing_instance_count, m.Instance.objects.count())  # No-added instance
         pre_existing_instance.refresh_from_db()
@@ -957,10 +954,11 @@ class InstancesAPITestCase(APITestCase):
             "",
             "",
             "202001",
-            self.instance_1.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            now().strftime("%Y-%m-%d %H:%M:%S"),
+            self.instance_1.source_created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            self.instance_1.source_updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             "yoda (Yo Da)",
             "READY",
+            "",  # entity UUID
             "Coruscant Jedi Council",
             f"{self.jedi_council_corruscant.id}",
             "jedi_council_corruscant_ref",
@@ -969,6 +967,63 @@ class InstancesAPITestCase(APITestCase):
             "",
             "",
         ]
+        self.assertEqual(row_to_test, expected_row)
+
+    def test_can_retrieve_submissions_list_in_csv_format_without_source_fields(self):
+        # Set up a new instance without source fields
+        new_date = datetime.datetime(2006, 5, 4, 3, 2, 1, tzinfo=pytz.UTC)
+        export_id = "TESTING"
+        period = "200605"
+        with patch("django.utils.timezone.now", lambda: new_date):
+            # Explicitly set source fields to None because the test helpers will set default values otherwise
+            sourceless_instance = self.create_form_instance(
+                form=self.form_4,
+                period=period,
+                org_unit=self.jedi_council_corruscant,
+                project=self.project,
+                created_by=self.yoda,
+                export_id=export_id,
+                source_created_at=None,
+                source_updated_at=None,
+                json={"test": "test"},
+            )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/instances/?form_ids={sourceless_instance.form.id}&order=id&csv=true",
+            headers={"Content-Type": "text/csv"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        response_csv = response.getvalue().decode("utf-8")
+        response_string = "".join(s for s in response_csv)
+        reader = csv.reader(io.StringIO(response_string), delimiter=",")
+        data = list(reader)
+        row_to_test = data[len(data) - 1]
+        expected_row = [
+            f"{sourceless_instance.id}",
+            "",
+            export_id,
+            "",
+            "",
+            "",
+            "",
+            period,
+            sourceless_instance.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            sourceless_instance.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "yoda (Yo Da)",
+            "READY",
+            "",  # entity UUID
+            "Coruscant Jedi Council",
+            f"{self.jedi_council_corruscant.id}",
+            "jedi_council_corruscant_ref",
+            "",
+            "",
+            "",
+            "",
+        ]
+        # Make sure the export is using the default created/updated_at if there is no source
         self.assertEqual(row_to_test, expected_row)
 
     def test_user_restriction(self):

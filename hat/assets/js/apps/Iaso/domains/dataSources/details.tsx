@@ -143,7 +143,6 @@ export const Details: FunctionComponent = () => {
                         <Box className={classes.test}>
                             <Table
                                 data={sortedSourceVersions}
-                                // @ts-ignore
                                 columns={columns}
                                 params={tableParams}
                                 pages={pages}

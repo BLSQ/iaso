@@ -67,6 +67,8 @@ _POLIO = "iaso_polio"
 _POLIO_BUDGET = "iaso_polio_budget"
 _POLIO_BUDGET_ADMIN = "iaso_polio_budget_admin"
 _POLIO_CONFIG = "iaso_polio_config"
+_POLIO_CHRONOGRAM = "iaso_polio_chronogram"
+_POLIO_CHRONOGRAM_RESTRICTED_WRITE = "iaso_polio_chronogram_restricted_write"
 _POLIO_NOTIFICATIONS = "iaso_polio_notifications"
 _POLIO_VACCINE_AUTHORIZATIONS_ADMIN = "iaso_polio_vaccine_authorizations_admin"
 _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = "iaso_polio_vaccine_authorizations_read_only"
@@ -139,6 +141,8 @@ PLANNING_READ = _PREFIX + _PLANNING_READ
 POLIO = _PREFIX + _POLIO
 POLIO_BUDGET = _PREFIX + _POLIO_BUDGET
 POLIO_BUDGET_ADMIN = _PREFIX + _POLIO_BUDGET_ADMIN
+POLIO_CHRONOGRAM = _PREFIX + _POLIO_CHRONOGRAM
+POLIO_CHRONOGRAM_RESTRICTED_WRITE = _PREFIX + _POLIO_CHRONOGRAM_RESTRICTED_WRITE
 POLIO_CONFIG = _PREFIX + _POLIO_CONFIG
 POLIO_NOTIFICATIONS = _PREFIX + _POLIO_NOTIFICATIONS
 POLIO_VACCINE_AUTHORIZATIONS_ADMIN = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_ADMIN
@@ -269,6 +273,8 @@ class CustomPermissionSupport(models.Model):
             # Polio
             (_POLIO, _("Polio")),
             (_POLIO_CONFIG, _("Polio config")),
+            (_POLIO_CHRONOGRAM, _("Polio chronogram")),
+            (_POLIO_CHRONOGRAM_RESTRICTED_WRITE, _("Polio chronogram user (restricted write)")),
             (_POLIO_NOTIFICATIONS, _("Polio notifications")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
             (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),

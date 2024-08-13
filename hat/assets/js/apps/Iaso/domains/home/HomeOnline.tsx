@@ -102,7 +102,6 @@ const useStyles = makeStyles(theme => ({
 export const HomeOnline: FunctionComponent = () => {
     const classes = useStyles();
     const { LOGO_PATH, APP_TITLE } = useContext(ThemeConfigContext);
-    // @ts-ignore
     const staticUrl = window.STATIC_URL ?? '/static/';
     const { toggleSidebar } = useSidebar();
     const homeButtons = useHomeButtons();

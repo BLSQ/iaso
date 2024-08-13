@@ -46,7 +46,6 @@ export const Planning: FunctionComponent = () => {
                     </Grid>
                 </DisplayIfUserHasPerm>
 
-                {/* @ts-ignore */}
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}

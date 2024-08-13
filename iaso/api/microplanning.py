@@ -164,6 +164,33 @@ class TeamSerializer(serializers.ModelSerializer):
         return validated_data
 
 
+class TeamManagersFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        managers = request.GET.get("managers", None)
+        if managers:
+            manager_ids = [int(val) for val in managers.split(",") if val.isnumeric()]
+            return queryset.filter(manager_id__in=manager_ids)
+        return queryset
+
+
+class TeamProjectsFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        projects = request.GET.get("projects", None)
+        if projects:
+            project_ids = [int(val) for val in projects.split(",") if val.isnumeric()]
+            return queryset.filter(project_id__in=project_ids)
+        return queryset
+
+
+class TeamTypesFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        types = request.GET.get("types", None)
+        if types:
+            team_types = [val for val in types.split(",") if TeamType.is_valid_team_type(val)]
+            return queryset.filter(type__in=team_types)
+        return queryset
+
+
 class TeamSearchFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         search = request.query_params.get("search")
@@ -205,6 +232,9 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         DjangoFilterBackend,
         TeamSearchFilterBackend,
         DeletionFilterBackend,
+        TeamManagersFilterBackend,
+        TeamTypesFilterBackend,
+        TeamProjectsFilterBackend,
     ]
     permission_classes = [ReadOnlyOrHasPermission(permission.TEAMS)]  # type: ignore
     serializer_class = TeamSerializer
@@ -214,7 +244,6 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         "id": ["in"],
         "name": ["icontains"],
         "project": ["exact"],
-        "type": ["exact"],
     }
 
     audit_serializer = AuditTeamSerializer  # type: ignore
@@ -245,6 +274,7 @@ class PlanningSerializer(serializers.ModelSerializer):
             "org_unit_details",
             "forms",
             "project",
+            "project_details",
             "description",
             "published_at",
             "started_at",
@@ -254,6 +284,7 @@ class PlanningSerializer(serializers.ModelSerializer):
 
     team_details = NestedTeamSerializer(source="team", read_only=True)
     org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
+    project_details = NestedProjectSerializer(source="project", read_only=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -331,7 +362,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         PlanningSearchFilterBackend,
         DeletionFilterBackend,
     ]
-    ordering_fields = ["id", "name", "started_at", "ended_at"]
+    ordering_fields = ["id", "name", "started_at", "ended_at", "project__name", "org_unit__name"]
     filterset_fields = {
         "name": ["icontains"],
         "started_at": ["gte", "lte"],

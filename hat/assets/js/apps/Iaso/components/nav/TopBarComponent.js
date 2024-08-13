@@ -16,6 +16,7 @@ import { useCurrentUser } from '../../utils/usersUtils.ts';
 import { useSidebar } from '../../domains/app/contexts/SideBarContext.tsx';
 import { CurrentUserInfos } from './CurrentUser/index.tsx';
 import { LogoutButton } from './LogoutButton.tsx';
+import { HomePageButton } from './HomePageButton.tsx';
 
 const styles = theme => ({
     menuButton: {
@@ -121,8 +122,10 @@ function TopBar(props) {
                                     version={window.IASO_VERSION}
                                 />
                             </Box>
-
                             <Box display="flex" justifyContent="center" pl={2}>
+                                <HomePageButton />
+                            </Box>
+                            <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />
                             </Box>
                         </Grid>

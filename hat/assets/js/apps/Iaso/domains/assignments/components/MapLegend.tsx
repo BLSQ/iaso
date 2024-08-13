@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { Grid, Paper, Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';

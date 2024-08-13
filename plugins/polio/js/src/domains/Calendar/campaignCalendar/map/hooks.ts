@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 // @ts-ignore
 import moment, { Moment } from 'moment';
 import { Query as RQQuery, useQueries } from 'react-query';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 import { MergedShapes } from '../../../../constants/types';

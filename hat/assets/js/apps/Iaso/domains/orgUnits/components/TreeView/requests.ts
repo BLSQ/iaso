@@ -16,13 +16,19 @@ const baseApiUrl = '/api/orgunits/tree/';
 export const getChildrenData = async (
     id: string,
     statusSettings: OrgUnitStatus[],
+    version?: string | number,
+    source?: string | number,
 ): Promise<OrgUnit[]> => {
     try {
-        const response = await getRequest(
-            `${baseApiUrl}?parent_id=${id}&ignoreEmptyNames=true${getValidationStatus(
-                statusSettings,
-            )}`,
-        );
+        let url = `${baseApiUrl}?parent_id=${id}&ignoreEmptyNames=true${getValidationStatus(
+            statusSettings,
+        )}`;
+        if (version) {
+            url = `${url}&version=${version}`;
+        } else if (source) {
+            url = `${url}&data_source_id=${source}`;
+        }
+        const response = await getRequest(url);
         return response.map((orgUnit: any) => ({
             ...orgUnit,
             id: orgUnit.id.toString(),

@@ -143,7 +143,6 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                 countOnTop={false}
                 marginTop={false}
                 marginBottom={false}
-                // @ts-ignore
                 cellProps={getCellProps}
                 columns={columns}
                 count={orgUnits?.length ?? 0}
@@ -157,7 +156,6 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                     parentOrgunitType: params.parentOrgunitType,
                 }}
                 params={{ order: params.order }}
-                // @ts-ignore
                 onRowClick={handleClick}
                 onTableParamsChange={p => {
                     const newParams = {

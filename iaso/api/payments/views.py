@@ -1,24 +1,27 @@
+from typing import Dict, Tuple
+
 import django_filters
 from django.db import models, transaction
-from django.db.models import Count, OuterRef, Prefetch, Subquery
+from django.db.models import Count, OuterRef, Prefetch, Subquery, Q
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, status
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
-
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
 from hat.menupermissions import models as permission
-from iaso.api.common import HasPermission, ModelViewSet
+from iaso.api.common import DropdownOptionsListViewSet, DropdownOptionsSerializer, HasPermission, ModelViewSet
 from iaso.api.payments.filters import payments_lots as payments_lots_filters
 from iaso.api.payments.filters import potential_payments as potential_payments_filters
 from iaso.api.tasks import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
+from iaso.models.payments import PaymentStatuses
 from iaso.tasks.create_payments_from_payment_lot import create_payments_from_payment_lot
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
 
@@ -247,21 +250,76 @@ class PaymentLotsViewSet(ModelViewSet):
         csv_format = bool(request.query_params.get("csv"))
         xlsx_format = bool(request.query_params.get("xlsx"))
 
-        if csv_format:
-            return self.retrieve_to_csv(request, *args, **kwargs)
-        elif xlsx_format:
-            return self.retrieve_to_xlsx(request, *args, **kwargs)
+        if csv_format or xlsx_format:
+            payment_lot = self.get_object()
+
+            payments = (
+                payment_lot.payments.all()
+                .select_related("user__iaso_profile")
+                .prefetch_related("change_requests__org_unit")
+                .prefetch_related("change_requests__new_reference_instances__form")
+                .annotate(
+                    annotated_count_org_unit_creation=Count(
+                        "change_requests__kind",
+                        filter=Q(change_requests__kind=OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION),
+                    ),
+                    annotated_count_org_unit_change=Count(
+                        "change_requests__kind",
+                        filter=Q(change_requests__kind=OrgUnitChangeRequest.Kind.ORG_UNIT_CHANGE),
+                    ),
+                )
+                .order_by("-id")
+            )
+
+            forms, forms_count_by_payment = self._get_dynamic_form_columns(payments)
+
+            if csv_format:
+                return self.retrieve_to_csv(payment_lot, payments, forms, forms_count_by_payment)
+            elif xlsx_format:
+                return self.retrieve_to_xlsx(payment_lot, payments, forms, forms_count_by_payment)
 
         return super().retrieve(request, *args, **kwargs)
 
-    def _get_table_row(self, payment, row_num=None, export_type="csv"):
-        change_requests = payment.change_requests.all()
-        change_requests_str = "\n".join(
-            [f"ID: {cr.id}, Org Unit: {cr.org_unit.name} (ID: {cr.org_unit.id})" for cr in change_requests]
-        )
-        change_requests_count = len(change_requests)
+    def _get_dynamic_form_columns(
+        self, payments: models.QuerySet[Payment]
+    ) -> Tuple[Dict[int, str], Dict[int, Dict[int, int]]]:
+        """
+        The export should allow to count the number of forms,
+        because some changes are paid while others are not.
 
-        return [
+        This function returns a tuple of two dictionaries:
+
+        - the first one lists all forms:
+            {form_id: form_name}
+
+        - the second one counts forms by payment:
+            {payment_id: {form_id: form_count}}
+
+        These two dictionaries allow to add columns dynamically.
+        """
+        forms = {}
+        forms_count_by_payment = {}
+        for payment in payments:
+            forms_count_by_payment[payment.id] = {}
+            for change_request in payment.change_requests.all():
+                for instance in change_request.new_reference_instances.all():
+                    forms[instance.form.id] = instance.form.name
+                    forms_count_by_payment[payment.id].setdefault(instance.form.id, 0)
+                    forms_count_by_payment[payment.id][instance.form.id] += 1
+
+        forms_sorted_by_names = dict(sorted(forms.items(), key=lambda item: item[1]))
+        return forms_sorted_by_names, forms_count_by_payment
+
+    def _get_table_row(self, payment, forms, forms_count_by_payment):
+        change_requests = {
+            cr.id: f"ID: {cr.id}, Org Unit: {cr.org_unit.name} (ID: {cr.org_unit.id})"
+            for cr in payment.change_requests.all()
+        }
+        change_requests_sorted_by_id = dict(sorted(change_requests.items()))
+        change_requests_str = "\n".join(change_requests_sorted_by_id.values())
+        change_requests_count = payment.change_requests.count()
+
+        row = [
             str(payment.id),
             payment.status,
             str(payment.user.id),
@@ -275,29 +333,39 @@ class PaymentLotsViewSet(ModelViewSet):
             payment.user.first_name,
             change_requests_str,
             str(change_requests_count),
+            payment.annotated_count_org_unit_creation,
+            payment.annotated_count_org_unit_change,
         ]
 
-    def retrieve_to_csv(self, request, *args, **kwargs):
-        payment_lot = self.get_object()
-        payments = payment_lot.payments.all()
+        counts_by_forms = [forms_count_by_payment[payment.id].get(form_id, 0) for form_id in forms.keys()]
+        row += counts_by_forms
+
+        return row
+
+    def retrieve_to_csv(self, payment_lot, payments, forms, forms_count_by_payment):
         columns = [
-            str(_("ID")),
-            str(_("Status")),
-            str(_("User ID")),
-            str(_("User Username")),
-            str(_("User Phone")),
-            str(_("User Last Name")),
-            str(_("User First Name")),
-            str(_("Change Requests")),
-            str(_("Change Requests Count")),
+            _("ID"),
+            _("Status"),
+            _("User ID"),
+            _("User Username"),
+            _("User Phone"),
+            _("User Last Name"),
+            _("User First Name"),
+            _("Change Requests"),
+            _("Total Change Requests Count"),
+            _("Org Unit Creation Count"),
+            _("Org Unit Change Count"),
         ]
+        for form_name in forms.values():
+            columns.append(_("Form: %(name)s") % {"name": form_name})
+
         response = StreamingHttpResponse(
             streaming_content=(
                 iter_items(
                     payments,
                     Echo(),
                     columns,
-                    lambda payment: self._get_table_row(payment, export_type="csv"),
+                    lambda payment: self._get_table_row(payment, forms, forms_count_by_payment),
                 )
             ),
             content_type="text/csv",
@@ -305,26 +373,29 @@ class PaymentLotsViewSet(ModelViewSet):
         response["Content-Disposition"] = f'attachment; filename="{payment_lot.name}_payments.csv"'
         return response
 
-    def retrieve_to_xlsx(self, request, *args, **kwargs):
-        payment_lot = self.get_object()
-        payments = payment_lot.payments.all()
+    def retrieve_to_xlsx(self, payment_lot, payments, forms, forms_count_by_payment):
         columns = [
-            {"title": str(_("ID")), "width": 10},
-            {"title": str(_("Status")), "width": 10},
-            {"title": str(_("User ID")), "width": 10},
-            {"title": str(_("User Username")), "width": 20},
-            {"title": str(_("User Phone")), "width": 20},
-            {"title": str(_("User Last Name")), "width": 20},
-            {"title": str(_("User First Name")), "width": 20},
-            {"title": str(_("Change Requests")), "width": 40},
-            {"title": str(_("Change Requests Count")), "width": 20},
+            {"title": _("ID"), "width": 10},
+            {"title": _("Status"), "width": 10},
+            {"title": _("User ID"), "width": 10},
+            {"title": _("User Username"), "width": 20},
+            {"title": _("User Phone"), "width": 20},
+            {"title": _("User Last Name"), "width": 20},
+            {"title": _("User First Name"), "width": 20},
+            {"title": _("Change Requests"), "width": 40},
+            {"title": _("Total Change Requests Count"), "width": 20},
+            {"title": _("Org Unit Creation Count"), "width": 20},
+            {"title": _("Org Unit Change Count"), "width": 20},
         ]
+        for form_name in forms.values():
+            columns.append({"title": _("Form: %(name)s") % {"name": form_name}, "width": 15})
+
         response = HttpResponse(
             generate_xlsx(
                 f"{payment_lot.name}_Payments",
                 columns,
                 payments,
-                lambda payment, row_num: self._get_table_row(payment, row_num, export_type="xlsx"),
+                lambda payment, row_num: self._get_table_row(payment, forms, forms_count_by_payment),
             ),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
@@ -490,7 +561,7 @@ class PaymentsViewSet(ModelViewSet):
 
     When updating, the status of the linked `PaymentLot` is recalculated and updated if necessary.
 
-    Changes are logged in a `Modification`. If the `PaymentLot` status changed as well, it is logged ina separate `Modification`
+    Changes are logged in a `Modification`. If the `PaymentLot` status changed as well, it is logged in a separate `Modification`
 
 
     ## Permissions
@@ -500,7 +571,7 @@ class PaymentsViewSet(ModelViewSet):
 
     """
 
-    http_method_names = ["patch", "get"]
+    http_method_names = ["patch", "get", "options"]
     results_key = "results"
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
@@ -536,3 +607,10 @@ class PaymentsViewSet(ModelViewSet):
                     source=PAYMENT_API,
                 )
             return Response(serializer.data)
+
+
+class PaymentOptionsViewSet(DropdownOptionsListViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    http_method_names = ["get"]
+    serializer = DropdownOptionsSerializer
+    choices = PaymentStatuses

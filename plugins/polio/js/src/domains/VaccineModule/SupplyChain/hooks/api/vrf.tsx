@@ -48,7 +48,7 @@ import {
 } from '../../types';
 
 const defaults = {
-    order: 'country',
+    order: '-start_date',
     pageSize: 20,
     page: 1,
 };

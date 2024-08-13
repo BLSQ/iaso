@@ -294,6 +294,7 @@ class OrgUnit(TreeModel):
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    source_created_at = models.DateTimeField(null=True, blank=True, help_text="Creation time on the client device")
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     extra_fields = models.JSONField(default=dict)
 
@@ -305,6 +306,9 @@ class OrgUnit(TreeModel):
         indexes = [
             GistIndex(fields=["path"], buffering=True),
             GinIndex(fields=["extra_fields"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["updated_at"]),
+            models.Index(fields=["source_created_at"]),
         ]
 
     def root(self):
@@ -384,7 +388,7 @@ class OrgUnit(TreeModel):
             "id": self.id,
             "p": self.parent_id,
             "out": self.org_unit_type_id,
-            "c_a": self.created_at.timestamp() if self.created_at else None,
+            "c_a": self.source_created_at.timestamp() if self.source_created_at else None,
             "lat": self.location.y if self.location else None,
             "lon": self.location.x if self.location else None,
             "alt": self.location.z if self.location else None,
@@ -398,7 +402,7 @@ class OrgUnit(TreeModel):
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
             "validation_status": self.validation_status if self.org_unit_type else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -406,7 +410,7 @@ class OrgUnit(TreeModel):
             "aliases": self.aliases,
         }
 
-    def as_dict(self, with_groups=True):
+    def as_dict(self):
         res = {
             "name": self.name,
             "short_name": self.name,
@@ -418,7 +422,7 @@ class OrgUnit(TreeModel):
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
             "org_unit_type_depth": self.org_unit_type.depth if self.org_unit_type else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "validation_status": self.validation_status,
@@ -457,7 +461,7 @@ class OrgUnit(TreeModel):
                 else None
             ),
             "org_unit_type_id": self.org_unit_type_id,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "latitude": self.location.y if self.location else None,
@@ -546,6 +550,11 @@ class OrgUnit(TreeModel):
             res["parent"] = self.parent.as_dict_with_parents(light=True, light_parents=True) if self.parent else None
         return res
 
+    def as_dict_for_entity(self):
+        res = self.as_location(with_parents=False)
+        res["groups"] = [group.as_small_dict() for group in self.groups.all()]
+        return res
+
     def source_path(self):
         """DHIS2-friendly path built using source refs"""
 
@@ -604,6 +613,10 @@ class OrgUnitChangeRequest(models.Model):
     `VALIDATION_REJECTED` or `VALIDATION_VALID`.
     """
 
+    class Kind(models.TextChoices):
+        ORG_UNIT_CREATION = "org_unit_creation", _("Org Unit Creation")
+        ORG_UNIT_CHANGE = "org_unit_change", _("Org Unit Change")
+
     class Statuses(models.TextChoices):
         NEW = "new", _("New")
         REJECTED = "rejected", _("Rejected")
@@ -615,6 +628,7 @@ class OrgUnitChangeRequest(models.Model):
 
     # Metadata.
 
+    kind = models.CharField(choices=Kind.choices, default=Kind.ORG_UNIT_CHANGE, max_length=40)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_created_set"
@@ -688,6 +702,10 @@ class OrgUnitChangeRequest(models.Model):
         self.clean()
         is_new = self.pk is None
         if is_new:
+            if self.org_unit.validation_status == self.org_unit.VALIDATION_NEW:
+                self.kind = self.Kind.ORG_UNIT_CREATION
+            else:
+                self.kind = self.Kind.ORG_UNIT_CHANGE
             # Save old values.
             self.old_parent_id = self.org_unit.parent_id
             self.old_name = self.org_unit.name

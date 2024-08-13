@@ -1,4 +1,3 @@
-// @ts-ignore
 import { getTableUrl } from 'bluesquare-components';
 import { OrgUnitParams } from '../types/orgUnit';
 import { Search } from '../types/search';

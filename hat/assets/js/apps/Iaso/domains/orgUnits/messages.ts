@@ -161,6 +161,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Project',
         id: 'iaso.orgUnits.project',
     },
+    projects: {
+        defaultMessage: 'Projects',
+        id: 'iaso.label.projects',
+    },
     source: {
         defaultMessage: 'Source',
         id: 'iaso.orgUnits.source',
@@ -560,6 +564,10 @@ const MESSAGES = defineMessages({
     onlyDirectChildren: {
         id: 'iaso.orgUnits.onlyDirectChildren',
         defaultMessage: 'Only Direct children',
+    },
+    default: {
+        id: 'iaso.datasources.options.label.default',
+        defaultMessage: 'default',
     },
 });
 

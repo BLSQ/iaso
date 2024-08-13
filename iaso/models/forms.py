@@ -195,7 +195,6 @@ def _reformat_questions(questions):
     r = []
 
     for question in questions.values():
-        print(question)
         question_type = question.get("type")
 
         if question_type == "note":

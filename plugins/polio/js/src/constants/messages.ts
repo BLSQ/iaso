@@ -818,6 +818,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.verypoor',
         defaultMessage: 'Very poor',
     },
+    '3lqasverypoor': {
+        id: 'iaso.polio.label.verypoor',
+        defaultMessage: 'Very poor',
+    },
     '3lqasmoderate': {
         id: 'iaso.polio.label.moderate',
         defaultMessage: 'Moderate',
@@ -873,6 +877,10 @@ const MESSAGES = defineMessages({
     '3imFail': {
         id: 'iaso.polio.label.imFail',
         defaultMessage: '<90%',
+    },
+    '4imError': {
+        id: 'iaso.polio.label.invalidData',
+        defaultMessage: 'Invalid data',
     },
     imResults: {
         id: 'iaso.polio.label.imResults',
@@ -2465,6 +2473,14 @@ const MESSAGES = defineMessages({
     other: {
         defaultMessage: 'Other',
         id: 'iaso.label.other',
+    },
+    chronogram: {
+        id: 'iaso.polio.label.chronogram',
+        defaultMessage: 'Chronogram',
+    },
+    notShowTestCampaigns: {
+        id: 'iaso.polio.notShowTestCampaigns',
+        defaultMessage: 'Do not show test campaigns',
     },
 });
 

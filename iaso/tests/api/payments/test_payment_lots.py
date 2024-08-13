@@ -1,6 +1,9 @@
-import datetime
-from iaso import models as m
+import numpy as np
+import pandas as pd
+
 from hat.audit import models as am
+from iaso import models as m
+from iaso.models.payments import PaymentStatuses
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -8,8 +11,6 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
     """
     Test actions on the ViewSet for Payment Lots.
     """
-
-    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
     @classmethod
     def setUpTestData(cls):
@@ -21,9 +22,11 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         cls.user = cls.create_user_with_profile(
             username="user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
         )
-        cls.payment_beneficiary = cls.create_user_with_profile(username="payment_beneficiary", account=account)
+        cls.payment_beneficiary = cls.create_user_with_profile(
+            username="payment_beneficiary", first_name="John", last_name="Doe", account=account
+        )
         org_unit_type = m.OrgUnitType.objects.create(name="Stable", short_name="Cnc")
-        org_unit = m.OrgUnit.objects.create(
+        cls.org_unit = m.OrgUnit.objects.create(
             name="Woodland",
             org_unit_type=org_unit_type,
             version=version,
@@ -33,34 +36,44 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         cls.payment = m.Payment.objects.create(
             user=cls.payment_beneficiary,
             payment_lot=cls.payment_lot,
-            status=m.Payment.Statuses.PENDING,
+            status=PaymentStatuses.PENDING,
             created_by=cls.user,
         )
         cls.second_payment = m.Payment.objects.create(
             created_by=cls.user,
             payment_lot=cls.payment_lot,
-            status=m.Payment.Statuses.PENDING,
+            status=PaymentStatuses.PENDING,
             user=cls.payment_beneficiary,
         )
         cls.change_request = m.OrgUnitChangeRequest.objects.create(
-            org_unit=org_unit,
+            org_unit=cls.org_unit,
             new_name="Dueling Peaks",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             payment=cls.payment,
         )
         cls.second_change_request = m.OrgUnitChangeRequest.objects.create(
-            org_unit=org_unit,
+            org_unit=cls.org_unit,
             new_name="Serenne",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             payment=cls.second_payment,
         )
         cls.potential_payment = m.PotentialPayment.objects.create(user=cls.payment_beneficiary)
         cls.third_change_request = m.OrgUnitChangeRequest.objects.create(
-            org_unit=org_unit,
+            org_unit=cls.org_unit,
             new_name="Wetlands",
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             potential_payment=cls.potential_payment,
         )
+
+        cls.form1 = m.Form.objects.create(name="Vaccine form")
+        cls.form2 = m.Form.objects.create(name="Other form")
+        cls.form3 = m.Form.objects.create(name="Population form")
+        cls.instance1 = m.Instance.objects.create(form=cls.form1, org_unit=cls.org_unit)
+        cls.instance2 = m.Instance.objects.create(form=cls.form2, org_unit=cls.org_unit)
+        cls.instance3 = m.Instance.objects.create(form=cls.form3, org_unit=cls.org_unit)
+
+        cls.change_request.new_reference_instances.set([cls.instance1, cls.instance3])
+        cls.second_change_request.new_reference_instances.set([cls.instance2])
 
     def test_create_payment_lot(self):
         self.client.force_authenticate(self.user)
@@ -90,7 +103,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
         # New Payment has been assigned to new Payment lot and has status PENDING
         self.assertEqual(new_payment.payment_lot, new_lot)
-        self.assertEqual(new_payment.status, m.Payment.Statuses.PENDING)
+        self.assertEqual(new_payment.status, PaymentStatuses.PENDING)
 
         # Change request has been updated: potential payment has been deleted and replaced with new payment
         self.assertEqual(self.third_change_request.payment, new_payment)
@@ -113,8 +126,8 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         self.payment_lot.refresh_from_db()
         self.payment.refresh_from_db()
         self.second_payment.refresh_from_db()
-        self.assertEqual(self.payment.status, m.Payment.Statuses.SENT)
-        self.assertEqual(self.second_payment.status, m.Payment.Statuses.SENT)
+        self.assertEqual(self.payment.status, PaymentStatuses.SENT)
+        self.assertEqual(self.second_payment.status, PaymentStatuses.SENT)
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.SENT)
 
         self.assertEqual(3, am.Modification.objects.count())
@@ -130,9 +143,114 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?csv=true")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
+        response_csv = response.getvalue().decode("utf-8")
+        self.assertTrue(len(response_csv) > 0)
 
     def test_retrieve_payment_lot_to_xlsx(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+        extra_change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            payment=self.second_payment,
+        )
+        extra_change_request.new_reference_instances.set([self.instance1, self.instance2, self.instance3])
+
+        with self.assertNumQueries(10):
+            response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+        excel_data = pd.read_excel(response.content, engine="openpyxl")
+
+        excel_columns = list(excel_data.columns.ravel())
+        self.assertEqual(
+            excel_columns,
+            [
+                "ID",
+                "Status",
+                "User ID",
+                "User Username",
+                "User Phone",
+                "User Last Name",
+                "User First Name",
+                "Change Requests",
+                "Total Change Requests Count",
+                "Org Unit Creation Count",
+                "Org Unit Change Count",
+                # The following columns are dynamic and should be sorted alphabetically.
+                "Form: Other form",
+                "Form: Population form",
+                "Form: Vaccine form",
+            ],
+        )
+
+        data_dict = excel_data.replace({np.nan: None}).to_dict()
+        self.assertDictEqual(
+            data_dict,
+            {
+                "ID": {
+                    0: self.second_payment.id,
+                    1: self.payment.id,
+                },
+                "Status": {
+                    0: "pending",
+                    1: "pending",
+                },
+                "User ID": {
+                    0: self.payment_beneficiary.id,
+                    1: self.payment_beneficiary.id,
+                },
+                "User Username": {
+                    0: "payment_beneficiary",
+                    1: "payment_beneficiary",
+                },
+                "User Phone": {
+                    0: None,
+                    1: None,
+                },
+                "User Last Name": {
+                    0: "Doe",
+                    1: "Doe",
+                },
+                "User First Name": {
+                    0: "John",
+                    1: "John",
+                },
+                "Change Requests": {
+                    0: (
+                        f"ID: {self.second_change_request.id}, Org Unit: {self.second_change_request.org_unit.name} (ID: {self.second_change_request.org_unit.id})"
+                        "\n"
+                        f"ID: {extra_change_request.id}, Org Unit: {extra_change_request.org_unit.name} (ID: {extra_change_request.org_unit.id})"
+                    ),
+                    1: f"ID: {self.change_request.id}, Org Unit: {self.change_request.org_unit.name} (ID: {self.change_request.org_unit.id})",
+                },
+                "Total Change Requests Count": {
+                    0: 2,
+                    1: 1,
+                },
+                "Org Unit Creation Count": {
+                    0: 0,
+                    1: 0,
+                },
+                "Org Unit Change Count": {
+                    0: 2,
+                    1: 1,
+                },
+                # Dynamic form columns.
+                "Form: Other form": {
+                    0: 2,
+                    1: 0,
+                },
+                "Form: Population form": {
+                    0: 1,
+                    1: 1,
+                },
+                "Form: Vaccine form": {
+                    0: 1,
+                    1: 1,
+                },
+            },
+        )

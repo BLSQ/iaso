@@ -9,6 +9,8 @@ const SUPPLYCHAIN_WRITE = 'iaso_polio_vaccine_supply_chain_write';
 const STOCK_MANAGEMENT_READ = 'iaso_polio_vaccine_stock_management_read';
 const STOCK_MANAGEMENT_WRITE = 'iaso_polio_vaccine_stock_management_write';
 const NOTIFICATION = 'iaso_polio_notifications';
+const CHRONOGRAM = 'iaso_polio_chronogram';
+const CHRONOGRAM_RESTRICTED_WRITE = 'iaso_polio_chronogram_restricted_write';
 
 export {
     POLIO,
@@ -22,4 +24,6 @@ export {
     STOCK_MANAGEMENT_READ,
     STOCK_MANAGEMENT_WRITE,
     NOTIFICATION,
+    CHRONOGRAM,
+    CHRONOGRAM_RESTRICTED_WRITE,
 };

@@ -58,7 +58,6 @@ export const useGetStorageLogs = (
     const queryKey: any[] = ['storageLog', options];
 
     const { url, apiParams } = useGetApiParams(options);
-    // @ts-ignore
     return useSnackQuery(
         queryKey,
         () => getStorageLogs(apiParams, url),

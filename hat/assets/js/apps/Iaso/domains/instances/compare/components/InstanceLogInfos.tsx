@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
-// @ts-ignore
 import {
     useSafeIntl,
     LoadingSpinner,

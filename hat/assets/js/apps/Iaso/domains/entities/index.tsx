@@ -47,6 +47,7 @@ type Params = {
     entityTypes?: string;
     entityTypeIds?: string;
     locationLimit?: string;
+    groups?: string;
 };
 
 export const Beneficiaries: FunctionComponent = () => {
@@ -147,7 +148,6 @@ export const Beneficiaries: FunctionComponent = () => {
                     </Box>
                     {tab === 'list' && (
                         <Box>
-                            {/* @ts-ignore */}
                             <TableWithDeepLink
                                 marginTop={false}
                                 data={result ?? []}

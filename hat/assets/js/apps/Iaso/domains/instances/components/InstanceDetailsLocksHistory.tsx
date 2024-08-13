@@ -9,7 +9,6 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
-// @ts-ignore
 import {
     IconButton as IconButtonComponent,
     LoadingSpinner,
@@ -37,7 +36,7 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
         },
         MESSAGES.lockSuccess,
     );
-    // @ts-ignore
+    const hasLocks = (currentInstance?.instance_locks?.length ?? 0) > 0;
     return (
         <WidgetPaper
             id="export-requests"
@@ -45,7 +44,7 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
             title={formatMessage(MESSAGES.instanceLocks)}
         >
             {isLoading && <LoadingSpinner fixed={false} />}
-            {currentInstance.instance_locks.length === 0 && (
+            {!hasLocks && (
                 <Grid xs={5} container item>
                     <Typography
                         variant="body2"
@@ -56,7 +55,7 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
                     </Typography>
                 </Grid>
             )}
-            {currentInstance.instance_locks.length > 0 && (
+            {hasLocks && (
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -85,18 +84,16 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
                                 </TableCell>
                                 <TableCell>
                                     {instanceLock.unlocked_by ? (
-                                        <>
-                                            <span
-                                                title={formatMessage(
-                                                    MESSAGES.lockOpened,
-                                                )}
-                                            >
-                                                <LockOpenIcon />
-                                                {getDisplayName(
-                                                    instanceLock.unlocked_by,
-                                                )}
-                                            </span>
-                                        </>
+                                        <span
+                                            title={formatMessage(
+                                                MESSAGES.lockOpened,
+                                            )}
+                                        >
+                                            <LockOpenIcon />
+                                            {getDisplayName(
+                                                instanceLock.unlocked_by,
+                                            )}
+                                        </span>
                                     ) : (
                                         <ConfirmCancelDialogComponent
                                             titleMessage={

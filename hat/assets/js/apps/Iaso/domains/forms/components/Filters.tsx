@@ -3,7 +3,6 @@ import React, { useState, FunctionComponent, useCallback } from 'react';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
-// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import InputComponent from '../../../components/forms/InputComponent';
@@ -62,85 +61,83 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
 
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="search"
-                        onChange={handleChange}
-                        value={filters.search}
-                        type="search"
-                        label={MESSAGES.search}
-                        blockForbiddenChars
-                        onEnterPressed={handleSearch}
-                        onErrorChange={setTextSearchError}
-                    />
-                    <InputComponent
-                        keyValue="showDeleted"
-                        onChange={handleShowDeleted}
-                        value={showDeleted}
-                        type="checkbox"
-                        label={MESSAGES.showDeleted}
-                    />
-                </Grid>
-
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        multi
-                        keyValue="planning"
-                        onChange={handleChange}
-                        value={filters.planning}
-                        label={MESSAGES.planning}
-                        options={planningsDropdownOptions}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        onChange={handleChange}
-                        keyValue="orgUnitTypeIds"
-                        multi
-                        label={MESSAGES.orgUnitsTypes}
-                        value={filters.orgUnitTypeIds}
-                        loading={isFetchingOuTypes}
-                        options={orgUnitTypes ?? []}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="projectsIds"
-                        onChange={handleChange}
-                        value={filters.projectsIds}
-                        type="select"
-                        options={allProjects}
-                        label={MESSAGES.projects}
-                        loading={isFetchingProjects}
-                        onEnterPressed={handleSearch}
-                        clearable
-                        multi
-                    />
-                </Grid>
-                <Grid container item xs={12} md={12} justifyContent="flex-end">
-                    <Box mt={isLargeLayout ? 3 : 0}>
-                        <Button
-                            data-test="search-button"
-                            disabled={
-                                (!showDeleted && !filtersUpdated) ||
-                                textSearchError
-                            }
-                            variant="contained"
-                            className={classes.button}
-                            color="primary"
-                            onClick={() => handleSearch()}
-                        >
-                            <SearchIcon className={classes.buttonIcon} />
-                            {formatMessage(MESSAGES.search)}
-                        </Button>
-                    </Box>
-                </Grid>
+        <Grid container spacing={2}>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    keyValue="projectsIds"
+                    onChange={handleChange}
+                    value={filters.projectsIds}
+                    type="select"
+                    options={allProjects}
+                    label={MESSAGES.projects}
+                    loading={isFetchingProjects}
+                    onEnterPressed={handleSearch}
+                    clearable
+                    multi
+                />
+                <InputComponent
+                    keyValue="showDeleted"
+                    onChange={handleShowDeleted}
+                    value={showDeleted}
+                    type="checkbox"
+                    label={MESSAGES.showDeleted}
+                />
             </Grid>
-        </>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    keyValue="search"
+                    onChange={handleChange}
+                    value={filters.search}
+                    type="search"
+                    label={MESSAGES.search}
+                    blockForbiddenChars
+                    onEnterPressed={handleSearch}
+                    onErrorChange={setTextSearchError}
+                />
+            </Grid>
+
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    type="select"
+                    multi
+                    keyValue="planning"
+                    onChange={handleChange}
+                    value={filters.planning}
+                    label={MESSAGES.planning}
+                    options={planningsDropdownOptions}
+                />
+            </Grid>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    type="select"
+                    onChange={handleChange}
+                    keyValue="orgUnitTypeIds"
+                    multi
+                    label={MESSAGES.orgUnitsTypes}
+                    value={filters.orgUnitTypeIds}
+                    loading={isFetchingOuTypes}
+                    options={orgUnitTypes ?? []}
+                />
+            </Grid>
+
+            <Grid container item xs={12} md={12} justifyContent="flex-end">
+                <Box mt={isLargeLayout ? 3 : 0}>
+                    <Button
+                        data-test="search-button"
+                        disabled={
+                            (!showDeleted && !filtersUpdated) || textSearchError
+                        }
+                        variant="contained"
+                        className={classes.button}
+                        color="primary"
+                        onClick={() => handleSearch()}
+                    >
+                        <SearchIcon className={classes.buttonIcon} />
+                        {formatMessage(MESSAGES.search)}
+                    </Button>
+                </Box>
+            </Grid>
+        </Grid>
     );
 };
 

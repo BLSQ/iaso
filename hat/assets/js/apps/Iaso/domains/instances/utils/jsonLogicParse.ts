@@ -1,5 +1,4 @@
 import moment, { MomentInput } from 'moment';
-// @ts-ignore
 import { QueryBuilderFields } from 'bluesquare-components';
 
 import {

@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import moment from 'moment';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
 import { CampaignFieldType } from '../constants/types';

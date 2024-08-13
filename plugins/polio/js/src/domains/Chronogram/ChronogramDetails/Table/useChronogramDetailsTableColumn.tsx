@@ -37,6 +37,7 @@ export const useChronogramDetailsTableColumn = (
                 id: 'description',
                 accessor: row => row.description || row.description_en,
                 sortable: false,
+                width: 800,
             },
             {
                 Header: formatMessage(MESSAGES.labelStartOffsetInDays),

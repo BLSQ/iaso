@@ -20,7 +20,8 @@ class ETL:
         updated_at = date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__name=self.type)
-            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226, 254,315, 424, 430, 431, 408, 19])
+            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226, 254,315, 424, 430, 431, 408, 19, 230, 359])
+            # .filter(entity__id__in=[230, 359, 254])
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)
@@ -275,6 +276,13 @@ class ETL:
             ):
                 next_visit_days = visit.get("TSFP_next_visit", None)
             elif (
+                visit.get("tsfp_next_visit", None) is not None
+                and visit.get("tsfp_next_visit", None) != ""
+                and visit.get("tsfp_next_visit") != "--"
+            ):
+
+                next_visit_days = visit.get("tsfp_next_visit", None)
+            elif (
                 visit.get("otp_next_visit", None) is not None
                 and visit.get("otp_next_visit", None) != ""
                 and visit.get("otp_next_visit") != "--"
@@ -319,9 +327,14 @@ class ETL:
             current_journey["exit_type"] = self.exit_type(visit)
             current_journey["visits"].append(visit)
 
-            if index > 0:
-                exit = self.exit_by_defaulter(visits, visits[index - 1], followup_forms)
-        if exit is not None and current_journey.get("exit_type", None) is None:
+        if index > 0:
+            index = index - 1
+        exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
+        if (
+            exit is not None
+            and current_journey.get("exit_type", None) is None
+            and current_journey.get("start_date") is not None
+        ):
             current_journey["exit_type"] = exit["exit_type"]
             current_journey["end_date"] = exit["end_date"]
             duration = (

@@ -214,6 +214,16 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         options={groups}
                         loading={isFetchingGroups}
                     />
+                    <InputComponent
+                        type="select"
+                        onChange={handleChange}
+                        keyValue="orgUnitTypeIds"
+                        multi
+                        label={MESSAGES.orgUnitTypeGroupBy}
+                        value={filters.orgUnitTypeIds}
+                        loading={fetchingTypes}
+                        options={orgUnitTypes ?? []}
+                    />
                     <DisplayIfUserHasPerm
                         permissions={[PLANNING_READ, PLANNING_WRITE]}
                     >
@@ -252,16 +262,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 </Grid>
 
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        onChange={handleChange}
-                        keyValue="orgUnitTypeIds"
-                        multi
-                        label={MESSAGES.orgUnitTypeGroupBy}
-                        value={filters.orgUnitTypeIds}
-                        loading={fetchingTypes}
-                        options={orgUnitTypes ?? []}
-                    />
                     <Box mt={2}>
                         <AsyncSelect
                             keyValue="userIds"

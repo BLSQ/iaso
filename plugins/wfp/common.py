@@ -280,7 +280,6 @@ class ETL:
                 and visit.get("tsfp_next_visit", None) != ""
                 and visit.get("tsfp_next_visit") != "--"
             ):
-
                 next_visit_days = visit.get("tsfp_next_visit", None)
             elif (
                 visit.get("otp_next_visit", None) is not None

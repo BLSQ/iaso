@@ -31,6 +31,19 @@ from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 
 
 # noinspection PyMethodMayBeStatic
+
+
+class HasCreateOrUnitPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        if not request.user.has_perm(permission.ORG_UNITS):
+            return False
+
+        return True
+
+
 class HasOrgUnitPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if not (
@@ -38,6 +51,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
             and (
                 request.user.has_perm(permission.FORMS)
                 or request.user.has_perm(permission.ORG_UNITS)
+                or request.user.has_perm(permission.ORG_UNITS_READ)
                 or request.user.has_perm(permission.SUBMISSIONS)
                 or request.user.has_perm(permission.REGISTRY_WRITE)
                 or request.user.has_perm(permission.REGISTRY_READ)
@@ -46,8 +60,10 @@ class HasOrgUnitPermission(permissions.BasePermission):
         ):
             return False
 
-        if obj.version.data_source.read_only and request.method != "GET":
+        read_only = request.user.has_perm(permission.ORG_UNITS_READ) and not request.user.has_perm(permission.ORG_UNITS)
+        if (read_only or obj.version.data_source.read_only) and request.method != "GET":
             return False
+
         # TODO: can be handled with get_queryset()
         user_account = request.user.iaso_profile.account
         projects = obj.version.data_source.projects.all()
@@ -569,7 +585,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 pass
         return None
 
-    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
+    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasCreateOrUnitPermission])
     def create_org_unit(self, request):
         """This endpoint is used by the React frontend"""
         errors = []

@@ -14,6 +14,7 @@ import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContex
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 import { useSidebar } from '../../domains/app/contexts/SideBarContext.tsx';
+import { AccountSwitch } from './AccountSwitch.tsx';
 import { CurrentUserInfos } from './CurrentUser/index.tsx';
 import { LogoutButton } from './LogoutButton.tsx';
 import { HomePageButton } from './HomePageButton.tsx';
@@ -122,9 +123,15 @@ function TopBar(props) {
                                     version={window.IASO_VERSION}
                                 />
                             </Box>
+
+                            <Box display="flex" justifyContent="center" pl={2}>
+                                <AccountSwitch />
+                            </Box>
+
                             <Box display="flex" justifyContent="center" pl={2}>
                                 <HomePageButton />
                             </Box>
+
                             <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />
                             </Box>

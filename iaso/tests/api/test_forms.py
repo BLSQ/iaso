@@ -103,9 +103,6 @@ class FormsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
-        import pdb
-
-        pdb.set_trace()
         self.assertValidFormListData(response.json(), 2)
 
     def find_forms_data_for(self, response, form):

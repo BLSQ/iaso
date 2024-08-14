@@ -15,13 +15,14 @@ export const ChronogramTable: FunctionComponent<Props> = ({ params }) => {
     const apiParams: ChronogramParams = {
         ...params,
         limit: params.pageSize || '20',
-        order: params.order || 'id',
+        order: params.order || '-round__started_at',
         page: params.page || '1',
     };
     const { data, isFetching } = useGetChronogram(apiParams);
     const columns = useChronogramTableColumns();
     return (
         <TableWithDeepLink
+            defaultSorted={[{ id: 'round__started_at', desc: true }]}
             baseUrl={baseUrls.chronogram}
             data={data?.results ?? []}
             pages={data?.pages ?? 1}

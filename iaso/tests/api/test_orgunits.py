@@ -128,6 +128,9 @@ class OrgUnitAPITestCase(APITestCase):
         )
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
+        cls.user_read_permission = cls.create_user_with_profile(
+            username="user_read_permission", account=star_wars, permissions=["iaso_org_units_read"]
+        )
         cls.luke = cls.create_user_with_profile(
             username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[jedi_council_endor]
         )
@@ -578,6 +581,28 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.assertTrue(set(createds.items()).issubset(set(diff.items())))
 
+    def test_create_org_unit_with_read_permission(self):
+        self.client.force_authenticate(self.user_read_permission)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={
+                "id": None,
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [],
+                "sub_source": "",
+                "status": False,
+                "aliases": ["my alias"],
+                "validation_status": "NEW",
+                "parent_id": "",
+                "source_ref": "",
+                "creation_source": "dashboard",
+                "opening_date": "01-01-2024",
+            },
+        )
+        self.assertJSONResponse(response, 403)
+
     def test_create_org_unit(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
@@ -828,7 +853,6 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertNotEqual(ou.updated_at, old_ou.updated_at)
 
     def test_edit_org_unit_unflag_reference_instance(self):
-        org_unit_type = self.jedi_council
         org_unit = self.jedi_council_corruscant
         form = self.reference_form
         instance = self.instance_related_to_reference_form
@@ -858,6 +882,35 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertNotIn(instance, org_unit.reference_instances.all())
         self.assertEqual(response.data["reference_instances"], [])
+
+    def test_edit_org_unit_reference_instance_read_permission(self):
+        org_unit = self.jedi_council_corruscant
+        form = self.reference_form
+        instance = self.instance_related_to_reference_form
+
+        # Create a reference instance.
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, instance=instance, form=form)
+        self.assertIn(instance, org_unit.reference_instances.all())
+
+        # GET /api/orgunits/id.
+        self.client.force_authenticate(self.user_read_permission)
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/")
+        data = self.assertJSONResponse(response, 200)
+
+        # PATCH /api/orgunits/id.
+        data.update(
+            {
+                "groups": [g["id"] for g in response.data["groups"]],
+                "reference_instance_id": instance.id,
+                "reference_instance_action": m.Instance.REFERENCE_UNFLAG_CODE,
+            }
+        )
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+        self.assertJSONResponse(response, 403)
 
     def test_edit_org_unit_flag_reference_instance(self):
         """Retrieve an orgunit data and modify the reference_instance_id"""
@@ -933,6 +986,27 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertQuerySetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
         self.assertEqual(response.data["reference_instances"], [])
+
+    def test_edit_org_unit_partial_update_read_permission(self):
+        """Check tha we can only modify a part of the fille"""
+        ou = m.OrgUnit(version=self.sw_version_1)
+        ou.name = "test ou"
+        ou.source_ref = "b"
+        group_a = m.Group.objects.create(name="test group a")
+        group_b = m.Group.objects.create(name="test group b")
+        ou.geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
+        ou.save()
+        ou.groups.set([group_a, group_b])
+        ou.save()
+        old_modification_date = ou.updated_at
+        self.client.force_authenticate(self.user_read_permission)
+        data = {"source_ref": "new source ref", "opening_date": "01-01-2024"}
+        response = self.client.patch(
+            f"/api/orgunits/{ou.id}/",
+            format="json",
+            data=data,
+        )
+        self.assertJSONResponse(response, 403)
 
     def test_edit_org_unit_edit_bad_group_fail(self):
         """Check for a previous bug if an org unit is already member of a bad group

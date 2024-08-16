@@ -4,6 +4,7 @@ import { Menu, MenuItem, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { useCurrentUser } from '../../utils/usersUtils';
+import { useSwitchAccount } from '../../hooks/useSwitchAccount';
 
 const useStyles = makeStyles(theme => ({
     accountSwitchButton: {
@@ -26,12 +27,11 @@ export const AccountSwitch: FunctionComponent<Props> = ({
         setAnchorEl(event.currentTarget);
     };
 
+    const { mutateAsync: switchAccount, isLoading } = useSwitchAccount();
+
     const handleAccountSwitch = accountId => {
         console.log('accountId', accountId);
-        // setLocale(localeCode);
-        // saveCurrentUser({
-        //     language: localeCode,
-        // });
+        switchAccount(accountId);
         setAnchorEl(null);
     };
 

@@ -295,7 +295,7 @@ class ETL:
             missed_followup_visit = self.missed_followup_visit(
                 visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
             )
-        if missed_followup_visit > 1 and next_visit_date != "" and nextSecondVisitDate != "":
+        if missed_followup_visit > 0 and next_visit_date != "" and nextSecondVisitDate != "":
             exit = {"exit_type": "defaulter", "end_date": nextSecondVisitDate}
         return exit
 
@@ -314,8 +314,9 @@ class ETL:
             current_journey["programme_type"] = self.program_mapper(visit)
             current_journey["org_unit_id"] = visit.get("org_unit_id")
             current_journey["visits"].append(visit)
-        exit = None
         followup_forms.append(anthropometric_visit_form)
+        exit = None
+
         if visit["form_id"] in followup_forms:
             end_date = visit.get("end_date", visit.get("source_created_at", ""))
             current_journey["end_date"] = (
@@ -325,9 +326,12 @@ class ETL:
             current_journey["weight_difference"] = visit.get("weight_difference", None)
             current_journey["exit_type"] = self.exit_type(visit)
 
-        if index > 0:
+        if index > 3:
             index = index - 1
-        exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
+            exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
+        else:
+            exit = self.exit_by_defaulter(visits, visit, followup_forms)
+
         if (
             exit is not None
             and current_journey.get("exit_type", None) is None
@@ -512,3 +516,18 @@ class ETL:
                 ):
                     count_missed_visit = count_missed_visit + 1
         return count_missed_visit
+
+    def calculate_birth_date(self, current_record):
+        age_entry = current_record.get("age_entry", None)
+        age = current_record.get("age__int__", None)
+        registration_date = current_record.get("registration_date", None)
+        calculated_date = None
+        if age_entry is not None and age_entry != "":
+            beneficiary_age = int(age)
+            registered_at = datetime.strptime(registration_date[:10], "%Y-%m-%d").date()
+            if age_entry == "years":
+                calculated_date = registered_at - timedelta(days=(beneficiary_age * 365.25) + 1)
+            elif age_entry == "months":
+                calculated_date = registered_at - timedelta(days=(beneficiary_age * 30.44) + 1)
+            calculated_date = {"registration_date": registration_date, "birth_date": calculated_date}
+        return calculated_date

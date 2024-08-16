@@ -1,11 +1,17 @@
 """This api is only there so the default version on an account can be modified"""
+
 from .common import ModelViewSet, HasPermission
 from iaso.models import Account, SourceVersion
 
-from rest_framework import serializers, permissions
+from rest_framework import serializers, permissions, status
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from hat.menupermissions import models as permission
+
+from django.contrib.auth.models import User
+from django.contrib.auth import login
+from rest_framework.response import Response
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -60,4 +66,23 @@ class AccountViewSet(ModelViewSet):
     results_key = "accounts"
     queryset = Account.objects.all()
     # FIXME: USe a PATCH in the future, it make more sense regarding HTTP method semantic
-    http_method_names = ["put"]
+    http_method_names = ["patch", "put"]
+
+    @action(detail=False, methods=["patch"], url_path="switch")
+    def switch(self, request):
+        print("SWITCH ACCOUNT!")
+        print("SWITCH ACCOUNT!")
+        print("SWITCH ACCOUNT!")
+        print(request.data)
+        account_id = request.data.get("account_id", None)
+
+        # current_user = request.user
+        # print("current_user.backend", current_user.backend)
+
+        # account = Account.objects.get(id=account_id)
+        user = User.objects.get(id=3)
+        user.backend = "django.contrib.auth.backends.ModelBackend"
+
+        login(request, user)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

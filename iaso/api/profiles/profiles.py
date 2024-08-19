@@ -1,6 +1,7 @@
+import copy
 from typing import Any, List, Optional, Union
 from django.conf import settings
-from django.contrib.auth import models, update_session_auth_hash
+from django.contrib.auth import login, models, update_session_auth_hash
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import ObjectDoesNotExist
@@ -27,7 +28,7 @@ from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
-from iaso.models import OrgUnit, Profile, Project, UserRole
+from iaso.models import OrgUnit, Profile, Project, TenantUser, UserRole
 from iaso.utils.module_permissions import account_module_permissions
 
 PK_ME = "me"
@@ -353,10 +354,17 @@ class ProfilesViewSet(viewsets.ViewSet):
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
         if pk == PK_ME:
+            # if the user is a main_user, login as an account user
+            # TODO: remember the last account_user
+            if request.user.tenant_users.exists():
+                account_user = request.user.tenant_users.first().account_user
+                account_user.backend = "django.contrib.auth.backends.ModelBackend"
+                login(request, account_user)
+
             try:
                 profile = request.user.iaso_profile
                 return Response(profile.as_dict())
-            except ObjectDoesNotExist:
+            except Profile.DoesNotExist:
                 return Response(
                     {
                         "first_name": request.user.first_name,
@@ -636,6 +644,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         return self.EMAIL_SUBJECT_FR if language == "fr" else self.EMAIL_SUBJECT_EN
 
     def create(self, request):
+        current_profile = request.user.iaso_profile
+        current_account = current_profile.account
+
         username = request.data.get("user_name")
         password = request.data.get("password", "")
         send_email_invitation = request.data.get("send_email_invitation")
@@ -644,9 +655,40 @@ class ProfilesViewSet(viewsets.ViewSet):
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
         if not password and not send_email_invitation:
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
-        existing_user = User.objects.filter(username__iexact=username)
-        if existing_user:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
+
+        try:
+            existing_user = User.objects.get(username__iexact=username)
+            main_user = None
+            if existing_user:
+                user_in_same_account = (
+                    existing_user.iaso_profile and existing_user.iaso_profile.account == current_account
+                )
+                if user_in_same_account:
+                    return JsonResponse(
+                        {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
+                    )
+                else:
+                    # TODO: invitation
+                    # TODO what if no iaso_profile?
+                    # TODO what if already main user?
+                    old_username = username
+                    username = f"{username}_{current_account.name.lower().replace(' ', '_')}"
+
+                    # duplicate existing_user into main user and account user
+                    main_user = copy.copy(existing_user)
+
+                    existing_user.username = (
+                        f"{old_username}_{existing_user.iaso_profile.account.name.lower().replace(' ', '_')}"
+                    )
+                    existing_user.set_unusable_password()
+                    existing_user.save()
+
+                    main_user.pk = None
+                    main_user.save()
+
+                    TenantUser.objects.create(main_user=main_user, account_user=existing_user)
+        except User.DoesNotExist:
+            pass  # no existing user, simply create a new user
 
         user = User()
         user.first_name = request.data.get("first_name", "")
@@ -655,14 +697,15 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.email = request.data.get("email", "")
         permissions = request.data.get("user_permissions", [])
 
-        current_profile = request.user.iaso_profile
-        current_account = current_profile.account
-
         modules_permissions = self.module_permissions(current_account)
 
         if password != "":
             user.set_password(password)
         user.save()
+
+        if existing_user:
+            TenantUser.objects.create(main_user=main_user, account_user=user)
+
         for permission_codename in permissions:
             if permission_codename in modules_permissions:
                 permission = get_object_or_404(Permission, codename=permission_codename)
@@ -672,7 +715,6 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         # Create an Iaso profile for the new user and attach it to the same account
         # as the currently authenticated user
-        current_profile = request.user.iaso_profile
         user.profile = Profile.objects.create(
             user=user,
             account=current_account,
@@ -692,7 +734,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_roles = request.data.get("user_roles", [])
         for user_role_id in user_roles:
             # Get only a user role linked to the account's user
-            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
+            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_account)
             user_group_item = get_object_or_404(models.Group, pk=user_role_item.group.id)
             profile.user.groups.add(user_group_item)
             profile.user_roles.add(user_role_item)

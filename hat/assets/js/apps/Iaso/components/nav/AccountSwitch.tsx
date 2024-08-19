@@ -27,19 +27,20 @@ export const AccountSwitch: FunctionComponent<Props> = ({
         setAnchorEl(event.currentTarget);
     };
 
-    const { mutateAsync: switchAccount, isLoading } = useSwitchAccount();
+    const { mutateAsync: switchAccount } = useSwitchAccount();
 
     const handleAccountSwitch = accountId => {
         console.log('accountId', accountId);
         switchAccount(accountId);
         setAnchorEl(null);
+        window.location.href = '/';
     };
 
     const handleClose = () => {
         setAnchorEl(null);
     };
 
-    if (currentUser.accounts) {
+    if (currentUser.other_accounts.length > 0) {
         return (
             <>
                 <Typography
@@ -57,7 +58,7 @@ export const AccountSwitch: FunctionComponent<Props> = ({
                     open={Boolean(anchorEl)}
                     onClose={handleClose}
                 >
-                    {currentUser.accounts.map(account => (
+                    {currentUser.other_accounts.map(account => (
                         <MenuItem
                             key={account.id}
                             selected={account.id === currentUser.account.id}

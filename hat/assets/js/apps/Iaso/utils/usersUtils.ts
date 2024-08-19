@@ -50,6 +50,15 @@ export type SourceVersion = {
     version?: DataSource;
 };
 
+export type Account = {
+    name: string;
+    id: number;
+    created_at: number;
+    updated_at: number;
+    default_version?: DefaultVersion;
+    feature_flags: string[];
+};
+
 export type User = {
     id: number;
     first_name: string;
@@ -57,14 +66,8 @@ export type User = {
     username?: string;
     user_name?: string;
     email: string;
-    account: {
-        name: string;
-        id: number;
-        created_at: number;
-        updated_at: number;
-        default_version?: DefaultVersion;
-        feature_flags: string[];
-    };
+    account: Account;
+    other_accounts: Account[];
     permissions: string[];
     is_staff?: boolean;
     is_superuser: boolean;

@@ -138,9 +138,9 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(stock["country_name"], "Testland")
         self.assertEqual(stock["vaccine_type"], pm.VACCINES[0][0])
         self.assertEqual(stock["vials_received"], 20)  # 400 doses / 20 doses per vial
-        self.assertEqual(stock["vials_used"], 10)
-        self.assertEqual(stock["stock_of_usable_vials"], 10)  # 20 received - 10 used
-        self.assertEqual(stock["stock_of_unusable_vials"], 1)  # 1 incident
+        self.assertEqual(stock["vials_used"], 13)
+        self.assertEqual(stock["stock_of_usable_vials"], 7)  # 20 received - 13 used
+        self.assertEqual(stock["stock_of_unusable_vials"], 8)
         self.assertEqual(stock["vials_destroyed"], 3)  # 3 destroyed
 
     def test_usable_vials_endpoint(self):

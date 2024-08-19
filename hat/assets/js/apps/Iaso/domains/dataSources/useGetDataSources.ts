@@ -10,11 +10,25 @@ const tableDefaults = {
     limit: 20,
 };
 
+const queryParamsMap = new Map([['projectIds', 'project_ids']]);
+
+const getParams = (params: Record<string, string | undefined>) => {
+    const queryParams: Record<string, string | undefined> = params;
+
+    queryParamsMap.forEach((value, key) => {
+        if (params[key]) {
+            queryParams[value] = params[key];
+            delete queryParams[key];
+        }
+    });
+
+    return queryParams;
+};
 export const useGetDataSources = (
     params: Record<string, string | undefined>,
 ): UseQueryResult<any> => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { accountId, ...tableParams } = params;
+    const { accountId, ...tableParams } = getParams(params);
     const apiParams = useApiParams(tableParams, tableDefaults);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({

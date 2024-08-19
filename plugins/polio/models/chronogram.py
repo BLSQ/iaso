@@ -1,3 +1,5 @@
+from translated_fields import TranslatedField
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import (
@@ -61,7 +63,7 @@ class Chronogram(SoftDeletableModel):
     A chronogram can be thought as a to-do list.
     """
 
-    round = models.OneToOneField(Round, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name="chronograms")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     created_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="created_chronograms"
@@ -133,14 +135,14 @@ class ChronogramTask(SoftDeletableModel):
     """
 
     class Status(models.TextChoices):
-        PENDING = "PENDING", _("Pending")
+        PENDING = "PENDING", _("Not started")
         IN_PROGRESS = "IN_PROGRESS", _("In progress")
         DONE = "DONE", _("Done")
-        NA = "N/A", _("N/A")
+        NA = "NON_APPLICABLE", _("N/A")
 
     chronogram = models.ForeignKey(Chronogram, on_delete=models.CASCADE, related_name="tasks")
     period = models.CharField(max_length=15, choices=Period.choices, default=Period.BEFORE)
-    description = models.TextField(max_length=300)
+    description = TranslatedField(models.TextField(max_length=300), {"fr": {"blank": True}})
     start_offset_in_days = models.IntegerField(default=0)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.PENDING)
     user_in_charge = models.ForeignKey(
@@ -178,7 +180,8 @@ class ChronogramTemplateTaskManager(models.Manager):
             ChronogramTask(
                 chronogram=chronogram,
                 created_by=created_by,
-                description=template.description,
+                description_en=template.description_en,
+                description_fr=template.description_fr,
                 period=template.period,
                 start_offset_in_days=template.start_offset_in_days,
             )
@@ -197,7 +200,7 @@ class ChronogramTemplateTask(SoftDeletableModel):
 
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     period = models.CharField(max_length=15, choices=Period.choices, default=Period.BEFORE)
-    description = models.TextField(max_length=300)
+    description = TranslatedField(models.TextField(max_length=300), {"fr": {"blank": True}})
     start_offset_in_days = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     created_by = models.ForeignKey(

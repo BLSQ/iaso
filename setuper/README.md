@@ -74,6 +74,6 @@ Once the script has run, you can log in to your server using the account name as
       - Georegistry/Géoregistre
       - Children vaccination/Vaccination des enfants
 
-    You will need to add param `--additionnal_projects`:
+    You will need to add param `--additional_projects`:
 
-        python3 setuper.py --additionnal_projects
+        python3 setuper.py --additional_projects

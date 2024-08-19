@@ -600,8 +600,7 @@ const MESSAGES = defineMessages({
     },
     filterParam: {
         id: 'iaso.submissions.filterParam',
-        defaultMessage:
-           'Select a form to enable data download',
+        defaultMessage: 'Select a form to enable data download',
     },
     searchSubmissionFormsParamsInfo: {
         id: 'iaso.submissions.searchSubmissionFormsParamsInfo',
@@ -611,6 +610,14 @@ const MESSAGES = defineMessages({
     beneficiaryInfo: {
         defaultMessage: 'Beneficiary information',
         id: 'iaso.entities.label.beneficiaryInfo',
+    },
+    projects: {
+        id: 'iaso.label.projects',
+        defaultMessage: 'Projects',
+    },
+    project_name: {
+        id: 'iaso.label.project',
+        defaultMessage: 'Project',
     },
 });
 

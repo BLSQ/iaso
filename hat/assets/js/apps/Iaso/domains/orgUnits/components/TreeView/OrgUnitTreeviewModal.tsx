@@ -77,7 +77,6 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     appId,
 }) => {
     const theme = useTheme();
-
     const { formatMessage } = useSafeIntl();
     const { fetchOrgUnit, isFetching: isFetchingOrgUnit } = useFetchOrgUnits(appId);
     const [settings, setSettings] = useState<Settings>({
@@ -287,7 +286,7 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
             </Box>
             <Box position="relative">
                 {isFetchingOrgUnit && <LoadingSpinner absolute />}
-                <Box mt={1}>
+                <Box mt={1} minHeight="350px">
                     <TreeViewWithSearch
                         getChildrenData={getChildrenWithSource}
                         getRootData={getRootDataWithSource}

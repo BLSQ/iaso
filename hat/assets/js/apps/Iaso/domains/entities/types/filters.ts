@@ -7,6 +7,7 @@ export type Filters = {
     submitterTeamId?: string;
     entityTypeIds?: string;
     locationLimit?: string;
+    groups?: string;
 };
 
 export type Params = {
@@ -22,4 +23,5 @@ export type Params = {
     submitterTeamId?: string;
     entityTypeIds?: string;
     locationLimit?: string;
+    groups?: string;
 };

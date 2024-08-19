@@ -50,7 +50,7 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
         # If the value is not in the cache, calculate it
         if cache_key not in self.context["stock_in_hand_cache"]:
             vaccine_stock_calculator = VaccineStockCalculator(vaccine_stock)
-            self.context["stock_in_hand_cache"][cache_key] = vaccine_stock_calculator.get_stock_of_usable_vials()
+            self.context["stock_in_hand_cache"][cache_key] = vaccine_stock_calculator.get_total_of_usable_vials()
 
         return self.context["stock_in_hand_cache"][cache_key]
 

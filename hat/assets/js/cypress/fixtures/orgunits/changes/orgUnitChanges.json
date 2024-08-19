@@ -29,6 +29,12 @@
           "name": "Northern Area"
         }
       ],
+      "projects": [
+        {
+          "id": 15,
+          "name": "Project"
+        }
+      ],
       "id": 27,
       "org_unit_id": 7312,
       "org_unit_name": "Tonkolili",
@@ -64,6 +70,12 @@
         "last_name": "user last name"
       },
       "groups": [],
+      "projects":[
+        {
+          "id": 15,
+          "name": "Project"
+        }
+      ],
       "id": 23,
       "org_unit_id": 9356,
       "org_unit_name": "Test 1-545",
@@ -126,6 +138,7 @@
           "name": "Eastern Area"
         }
       ],
+      "projects":[],
       "id": 14,
       "org_unit_id": 6696,
       "org_unit_name": "Buma MCHP",
@@ -185,6 +198,12 @@
         {
           "id": 17,
           "name": "Eastern Area"
+        }
+      ],
+      "projects": [
+        {
+          "id": 21,
+          "name": "Project 1"
         }
       ],
       "id": 12,
@@ -252,6 +271,20 @@
         {
           "id": 18,
           "name": "Northern Area"
+        }
+      ],
+      "projects": [
+        {
+          "id": 15,
+          "name": "Project"
+        },
+        {
+          "id": 21,
+          "name": "Project 1"
+        },
+        {
+          "id": 22,
+          "name": "Project 2"
         }
       ],
       "id": 20,
@@ -364,6 +397,7 @@
           "name": "Eastern Area"
         }
       ],
+      "projects": [],
       "id": 25,
       "new_closed_date": "2025-12-31",
       "new_groups": [
@@ -1138,6 +1172,7 @@
           "name": "MCHP"
         }
       ],
+      "projects": [],
       "id": 30,
       "new_closed_date": "2025-12-31",
       "new_groups": [
@@ -2646,6 +2681,7 @@
           "name": "Northern Area"
         }
       ],
+      "projects": [{"id": 25, "name": "Project 2"}],
       "id": 31,
       "org_unit_id": 7385,
       "org_unit_name": "Tonkolili test 1",
@@ -2680,6 +2716,7 @@
           "name": "Northern Area"
         }
       ],
+      "projects": [{"id": 25, "name": "Project 2"}],
       "id": 32,
       "org_unit_id": 7386,
       "org_unit_name": "Tonkolili test 2",
@@ -2714,6 +2751,7 @@
           "name": "Northern Area"
         }
       ],
+      "projects": [{"id": 25, "name": "Project 2"}],
       "id": 33,
       "org_unit_id": 7387,
       "org_unit_name": "Tonkolili test 3",

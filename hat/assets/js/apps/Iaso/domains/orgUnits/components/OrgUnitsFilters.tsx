@@ -267,6 +267,16 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
+                <InputComponent
+                    type="select"
+                    disabled={isFetchingProjects}
+                    keyValue="project"
+                    onChange={handleChange}
+                    value={!isFetchingProjects && projectId}
+                    label={MESSAGES.project}
+                    options={projects}
+                    loading={isFetchingProjects}
+                />
                 <InputWithInfos infos={formatMessage(MESSAGES.searchParams)}>
                     <InputComponent
                         keyValue="search"
@@ -289,16 +299,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     options={dataSources}
                     loading={isFetchingDataSources}
                 />
-                <InputComponent
-                    type="select"
-                    disabled={isFetchingProjects}
-                    keyValue="project"
-                    onChange={handleChange}
-                    value={!isFetchingProjects && projectId}
-                    label={MESSAGES.project}
-                    options={projects}
-                    loading={isFetchingProjects}
-                />
+
                 {!showAdvancedSettings && (
                     <Typography
                         className={classes.advancedSettings}

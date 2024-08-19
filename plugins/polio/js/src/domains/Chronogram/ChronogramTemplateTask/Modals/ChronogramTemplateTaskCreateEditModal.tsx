@@ -11,6 +11,7 @@ import { isEqual } from 'lodash';
 
 import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
 import { NumberInput } from '../../../../components/Inputs/NumberInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 
@@ -41,7 +42,8 @@ const CreateEditChronogramTemplateTaskModal: FunctionComponent<Props> = ({
         initialValues: {
             id: chronogramTemplateTask?.id,
             period: chronogramTemplateTask?.period,
-            description: chronogramTemplateTask?.description,
+            description_en: chronogramTemplateTask?.description_en,
+            description_fr: chronogramTemplateTask?.description_fr,
             start_offset_in_days: chronogramTemplateTask?.start_offset_in_days,
         },
         enableReinitialize: true,
@@ -88,19 +90,34 @@ const CreateEditChronogramTemplateTaskModal: FunctionComponent<Props> = ({
                 </Box>
                 <Box mb={2}>
                     <Field
-                        label={formatMessage(MESSAGES.labelDescription)}
-                        name="description"
+                        label={formatMessage(MESSAGES.labelDescriptionEn)}
+                        name="description_en"
                         component={TextInput}
                         required
                     />
                 </Box>
                 <Box mb={2}>
                     <Field
-                        label={formatMessage(MESSAGES.labelStartOffsetInDays)}
-                        name="start_offset_in_days"
-                        component={NumberInput}
-                        required
+                        label={formatMessage(MESSAGES.labelDescriptionFr)}
+                        name="description_fr"
+                        component={TextInput}
                     />
+                </Box>
+                <Box mb={2}>
+                    <InputWithInfos
+                        infos={formatMessage(
+                            MESSAGES.labelStartOffsetInDaysTooltip,
+                        )}
+                    >
+                        <Field
+                            label={formatMessage(
+                                MESSAGES.labelStartOffsetInDays,
+                            )}
+                            name="start_offset_in_days"
+                            component={NumberInput}
+                            required
+                        />
+                    </InputWithInfos>
                 </Box>
             </ConfirmCancelModal>
         </FormikProvider>

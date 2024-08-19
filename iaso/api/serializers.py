@@ -67,6 +67,7 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
     latitude = serializers.SerializerMethodField()
     longitude = serializers.SerializerMethodField()
     altitude = serializers.SerializerMethodField()
+    projects = serializers.SerializerMethodField()
 
     # If in a subclass this will correctly use the subclass own serializer
     parent = serializers.SerializerMethodField()  # type: ignore # see https://github.com/typeddjango/djangorestframework-stubs/issues/4
@@ -110,6 +111,9 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
             else:
                 creator = org_unit.creator.username
         return creator
+
+    def get_projects(self, org_unit):
+        return [project.as_dict() for project in org_unit.org_unit_type.projects.all()]
 
     class Meta:
         model = OrgUnit
@@ -218,6 +222,7 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
             "updated_at",
             "groups",
             "creator",
+            "projects",
         ]
 
 

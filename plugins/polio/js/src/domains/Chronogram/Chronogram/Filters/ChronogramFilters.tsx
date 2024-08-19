@@ -2,9 +2,9 @@ import React, { FunctionComponent } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
-import { LinkWithLocation } from 'bluesquare-components';
 
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 
@@ -13,6 +13,7 @@ import { ChronogramParams } from '../types';
 import { baseUrls } from '../../../../constants/urls';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
 import { CreateChronogramModal } from '../Modals/CreateChronogramModal';
+import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
 type Props = {
     params: ChronogramParams;
@@ -26,9 +27,9 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
 
-    const { countriesData, isFetchingCountriesData: isFetchingCountries } =
+    const { data, isFetchingCountriesData: isFetchingCountries } =
         useGetCountries();
-    const countriesOptions = (countriesData && countriesData.orgUnits) || [];
+    const countriesOptions = (data && data.orgUnits) || [];
 
     const onTimeOptions = [
         {
@@ -61,7 +62,7 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         multi
                         clearable
                         onChange={handleChange}
-                        value={filters.countries}
+                        value={filters.country}
                         type="select"
                         options={countriesOptions.map(c => ({
                             label: c.name,
@@ -90,21 +91,25 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Box>
             </Grid>
-            <Grid container item justifyContent="flex-end" mt={4}>
-                <Box mr={2}>
-                    <Button
-                        variant="contained"
-                        href={`/dashboard/${baseUrls.chronogramTemplateTask}`}
-                    >
-                        {formatMessage(MESSAGES.linkToChronogramTemplateTask)}
-                    </Button>
-                </Box>
-                <CreateChronogramModal
-                    iconProps={{
-                        message: MESSAGES.createChronogramTitle,
-                    }}
-                />
-            </Grid>
+            <DisplayIfUserHasPerm permissions={[Permission.POLIO_CHRONOGRAM]}>
+                <Grid container item justifyContent="flex-end" mt={4}>
+                    <Box mr={2}>
+                        <Button
+                            variant="contained"
+                            href={`/dashboard/${baseUrls.chronogramTemplateTask}`}
+                        >
+                            {formatMessage(
+                                MESSAGES.linkToChronogramTemplateTask,
+                            )}
+                        </Button>
+                    </Box>
+                    <CreateChronogramModal
+                        iconProps={{
+                            message: MESSAGES.createChronogramTitle,
+                        }}
+                    />
+                </Grid>
+            </DisplayIfUserHasPerm>
         </>
     );
 };

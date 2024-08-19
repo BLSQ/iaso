@@ -34,7 +34,9 @@ const getRowProps = row => {
 
 const baseUrl = baseUrls.lotsPayments;
 export const LotsPayments: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as PotentialPaymentParams;
+    const params = useParamsObject(
+        baseUrl,
+    ) as unknown as PotentialPaymentParams;
     const theme = useTheme();
     // Replaced isFetching with isLoading to avoid flicker effect when refreshing data, eg when PATCHing a payment
     const {

@@ -5,7 +5,6 @@ import React, { FunctionComponent, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { CurrentUserInfos } from '../../components/nav/CurrentUser';
 import { LogoutButton } from '../../components/nav/LogoutButton';
-import { STATIC_URL } from '../../constants/urls';
 import iasoBg from '../../images/iaso-bg.jpg';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { LogoSvg } from '../app/components/LogoSvg';
@@ -102,14 +101,13 @@ const useStyles = makeStyles(theme => ({
 export const HomeOnline: FunctionComponent = () => {
     const classes = useStyles();
     const { LOGO_PATH, APP_TITLE } = useContext(ThemeConfigContext);
-    const staticUrl = window.STATIC_URL ?? '/static/';
     const { toggleSidebar } = useSidebar();
     const homeButtons = useHomeButtons();
     const currentUser = useCurrentUser();
     return (
         <Box
             className={classes.root}
-            sx={{ backgroundImage: `url("${STATIC_URL}${iasoBg}")` }}
+            sx={{ backgroundImage: `url("${window.STATIC_URL}${iasoBg}")` }}
         >
             <Grid className={classes.topMenu} container spacing={2}>
                 <Grid container item xs={6} justifyContent="flex-start">

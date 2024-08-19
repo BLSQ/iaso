@@ -5,7 +5,6 @@ import { useSafeIntl } from 'bluesquare-components';
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DHIS2Svg from '../../../../../../hat/assets/js/apps/Iaso/components/svg/DHIS2SvgComponent';
-import { STATIC_URL } from '../../../../../../hat/assets/js/apps/Iaso/constants/urls';
 import blsqLogo from '../../../images/blsq.png';
 import datavizLogo from '../../../images/dataviz.png';
 import dhis2Logo from '../../../images/dhis2.png';
@@ -25,6 +24,7 @@ export const Home = () => {
         link.rel = 'stylesheet';
         document.head.appendChild(link);
     }, []);
+    console.log('window.STATIC_URL', window.STATIC_URL);
     return (
         <>
             <Box sx={styles.background}>
@@ -44,7 +44,7 @@ export const Home = () => {
                             <Box sx={styles.logoContainer}>
                                 <Box sx={styles.logo}>
                                     <img
-                                        src={`${STATIC_URL}${logo}`}
+                                        src={`${window.STATIC_URL}${logo}`}
                                         alt="logo"
                                     />
                                 </Box>
@@ -135,7 +135,7 @@ export const Home = () => {
                                 >
                                     <Box sx={styles.footerBoxImage}>
                                         <img
-                                            src={`${STATIC_URL}${enabelLogo}`}
+                                            src={`${window.STATIC_URL}${enabelLogo}`}
                                             alt="logo-enabel"
                                         />
                                     </Box>
@@ -147,7 +147,7 @@ export const Home = () => {
                                 >
                                     <Box sx={styles.footerBoxImage}>
                                         <img
-                                            src={`${STATIC_URL}${blsqLogo}`}
+                                            src={`${window.STATIC_URL}${blsqLogo}`}
                                             alt="logo-blsq"
                                         />
                                     </Box>
@@ -166,7 +166,7 @@ export const Home = () => {
                                 >
                                     <Box sx={styles.footerBoxImage}>
                                         <img
-                                            src={`${STATIC_URL}${datavizLogo}`}
+                                            src={`${window.STATIC_URL}${datavizLogo}`}
                                             alt="logo-dataviz"
                                         />
                                     </Box>
@@ -178,7 +178,7 @@ export const Home = () => {
                                 >
                                     <Box sx={styles.footerBoxImage}>
                                         <img
-                                            src={`${STATIC_URL}${dhis2Logo}`}
+                                            src={`${window.STATIC_URL}${dhis2Logo}`}
                                             alt="logo-dhis2"
                                         />
                                     </Box>

@@ -1,6 +1,7 @@
 from .models import *
 from iaso.models import *
 from datetime import datetime, timedelta, date
+from dateutil.relativedelta import *
 
 
 class ETL:
@@ -326,6 +327,9 @@ class ETL:
             current_journey["weight_difference"] = visit.get("weight_difference", None)
             current_journey["exit_type"] = self.exit_type(visit)
 
+        """ Check if it's first followup visit, in order to calculate the defaulter case based on the number of days defined in the assistance
+        admission form and next visit date in the antropometric followup visit form.
+        When the index is less or equal to 3, it means we still in the admission visit(visit 0). Otherwise, it's a start of first follow up visit(visit 1) """
         if index > 3:
             index = index - 1
             exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
@@ -526,8 +530,7 @@ class ETL:
             beneficiary_age = int(age)
             registered_at = datetime.strptime(registration_date[:10], "%Y-%m-%d").date()
             if age_entry == "years":
-                calculated_date = registered_at - timedelta(days=(beneficiary_age * 365.25) + 1)
+                calculated_date = registered_at - relativedelta(years=beneficiary_age)
             elif age_entry == "months":
-                calculated_date = registered_at - timedelta(days=(beneficiary_age * 30.44) + 1)
-            calculated_date = {"registration_date": registration_date, "birth_date": calculated_date}
+                calculated_date = registered_at - relativedelta(months=beneficiary_age)
         return calculated_date

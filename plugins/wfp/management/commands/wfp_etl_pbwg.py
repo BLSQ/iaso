@@ -127,7 +127,7 @@ class PBWG:
                         and current_record.get("age_entry", None) != ""
                     ):
                         calculated_date = ETL().calculate_birth_date(current_record)
-                        instances[i]["birth_date"] = calculated_date["birth_date"]
+                        instances[i]["birth_date"] = calculated_date
 
                     if current_record.get("last_name") is not None:
                         instances[i]["last_name"] = current_record.get("last_name", "")

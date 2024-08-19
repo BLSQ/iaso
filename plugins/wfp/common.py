@@ -1,6 +1,7 @@
 from .models import *
 from iaso.models import *
 from datetime import datetime, timedelta, date
+from dateutil.relativedelta import *
 
 
 class ETL:
@@ -295,11 +296,12 @@ class ETL:
             missed_followup_visit = self.missed_followup_visit(
                 visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
             )
-        if missed_followup_visit > 1 and next_visit_date != "" and nextSecondVisitDate != "":
+        if missed_followup_visit > 0 and next_visit_date != "" and nextSecondVisitDate != "":
             exit = {"exit_type": "defaulter", "end_date": nextSecondVisitDate}
         return exit
 
     def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey, visits, index):
+        default_anthropometric_followup_forms = followup_forms
         if visit["form_id"] == anthropometric_visit_form:
             current_journey["instance_id"] = visit.get("instance_id", None)
             current_journey["start_date"] = visit.get("start_date", None)
@@ -314,8 +316,9 @@ class ETL:
             current_journey["programme_type"] = self.program_mapper(visit)
             current_journey["org_unit_id"] = visit.get("org_unit_id")
             current_journey["visits"].append(visit)
-        exit = None
         followup_forms.append(anthropometric_visit_form)
+        exit = None
+
         if visit["form_id"] in followup_forms:
             end_date = visit.get("end_date", visit.get("source_created_at", ""))
             current_journey["end_date"] = (
@@ -325,9 +328,16 @@ class ETL:
             current_journey["weight_difference"] = visit.get("weight_difference", None)
             current_journey["exit_type"] = self.exit_type(visit)
 
-        if index > 0:
+        """ Check if it's first followup visit, in order to calculate the defaulter case based on the number of days defined in the assistance
+        admission form(previous form) and next visit date in the antropometric followup visit form.
+        When it's Anthropometric admission form, it means we still in the admission visit(visit 0).
+        Otherwise, it's Anthropometric followup form which is a start of first follow up visit(visit 1) """
+        if visit["form_id"] in default_anthropometric_followup_forms:
             index = index - 1
-        exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
+            exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
+        else:
+            exit = self.exit_by_defaulter(visits, visit, followup_forms)
+
         if (
             exit is not None
             and current_journey.get("exit_type", None) is None
@@ -512,3 +522,17 @@ class ETL:
                 ):
                     count_missed_visit = count_missed_visit + 1
         return count_missed_visit
+
+    def calculate_birth_date(self, current_record):
+        age_entry = current_record.get("age_entry", None)
+        age = current_record.get("age__int__", None)
+        registration_date = current_record.get("registration_date", None)
+        calculated_date = None
+        if age_entry is not None and age_entry != "":
+            beneficiary_age = int(age)
+            registered_at = datetime.strptime(registration_date[:10], "%Y-%m-%d").date()
+            if age_entry == "years":
+                calculated_date = registered_at - relativedelta(years=beneficiary_age)
+            elif age_entry == "months":
+                calculated_date = registered_at - relativedelta(months=beneficiary_age)
+        return calculated_date

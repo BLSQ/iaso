@@ -301,6 +301,7 @@ class ETL:
         return exit
 
     def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey, visits, index):
+        default_anthropometric_followup_forms = followup_forms
         if visit["form_id"] == anthropometric_visit_form:
             current_journey["instance_id"] = visit.get("instance_id", None)
             current_journey["start_date"] = visit.get("start_date", None)
@@ -328,9 +329,10 @@ class ETL:
             current_journey["exit_type"] = self.exit_type(visit)
 
         """ Check if it's first followup visit, in order to calculate the defaulter case based on the number of days defined in the assistance
-        admission form and next visit date in the antropometric followup visit form.
-        When the index is less or equal to 3, it means we still in the admission visit(visit 0). Otherwise, it's a start of first follow up visit(visit 1) """
-        if index > 3:
+        admission form(previous form) and next visit date in the antropometric followup visit form.
+        When it's Anthropometric admission form, it means we still in the admission visit(visit 0).
+        Otherwise, it's Anthropometric followup form which is a start of first follow up visit(visit 1) """
+        if visit["form_id"] in default_anthropometric_followup_forms:
             index = index - 1
             exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
         else:

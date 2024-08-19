@@ -13,7 +13,7 @@ const defaultQueryParams = {
 };
 export const useGetMappingVersions = params => {
     if (params.formId) {
-        queryParams['form_id'] = params.formId;
+        params['form_id'] = params.formId;
     }
     const safeParams = useApiParams(params, defaultQueryParams);
     const queryString = new URLSearchParams(safeParams);

@@ -553,5 +553,3 @@ type IasoBaseUrls = {
 export const baseUrls = extractUrls(baseRouteConfigs) as IasoBaseUrls;
 export const baseParams = extractParams(baseRouteConfigs);
 export const paramsConfig = extractParamsConfig(baseRouteConfigs);
-export const STATIC_URL =
-    window.IASO_VERSION === 'dev' ? '' : window.STATIC_URL || '';

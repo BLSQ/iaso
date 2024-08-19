@@ -61,7 +61,7 @@ L.Control.Zoom = L.Control.Zoom.extend({
         );
 
         this._zoomBoxButton = this._createButton(
-            `<img src="${square}"/>`,
+            `<img src="${window.STATIC_URL}${square}"/>`,
             options.zoomBoxTitle,
             `${className}-box`,
             container,
@@ -71,7 +71,7 @@ L.Control.Zoom = L.Control.Zoom.extend({
 
         if (options.fitToBounds) {
             this._fitToBoundsButton = this._createButton(
-                `<img src="${location}"/>`,
+                `<img src="${window.STATIC_URL}${location}"/>`,
                 options.fitToBoundsTitle,
                 `${className}-fit`,
                 container,

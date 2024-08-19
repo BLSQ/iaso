@@ -24,7 +24,6 @@ module.exports = {
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
         publicPath: '',
-        assetModuleFilename: 'assets/[name].[hash][ext][query]',
     },
     devtool: 'source-map',
 
@@ -176,43 +175,67 @@ module.exports = {
                 test: /\.css$/,
                 use: [MiniCssExtractPlugin.loader, 'css-loader'],
             },
-            {
-                test: /\.(png|jpg|jpeg|gif|svg)$/,
-                type: 'asset/resource',
-            },
+            // font files
             {
                 test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
+                loader: 'url-loader',
+                options: {
+                    limit: 10000,
+                    mimetype: 'application/font-woff',
                 },
             },
             {
                 test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
+                loader: 'url-loader',
+                options: {
+                    limit: 10000,
+                    mimetype: 'application/font-woff',
                 },
             },
             {
                 test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
+                loader: 'url-loader',
+                options: {
+                    limit: 10000,
+                    mimetype: 'application/octet-stream',
                 },
             },
             {
                 test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'fonts/[name].[hash][ext]',
+                loader: 'file-loader',
+            },
+            {
+                test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+                loader: 'url-loader',
+                options: {
+                    limit: 10000,
+                    mimetype: 'image/svg+xml',
+                },
+            },
+            // videos
+            {
+                test: /\.mp4$/,
+                loader: 'url-loader',
+                options: {
+                    limit: 10000,
+                    mimetype: 'video/mp4',
+                },
+            },
+            // Leaftlet images
+            {
+                test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
+                loader: 'url-loader',
+                options: {
+                    limit: 10000,
+                    mimetype: 'image/png',
                 },
             },
             {
-                test: /\.mp4$/,
-                type: 'asset/resource',
-                generator: {
-                    filename: 'videos/[name].[hash][ext]',
+                test: /\.jpg(\?v=\d+\.\d+\.\d+)?$/,
+                loader: 'url-loader',
+                options: {
+                    limit: 10000,
+                    mimetype: 'image/jpg',
                 },
             },
         ],

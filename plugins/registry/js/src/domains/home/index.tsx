@@ -24,7 +24,6 @@ export const Home = () => {
         link.rel = 'stylesheet';
         document.head.appendChild(link);
     }, []);
-    console.log('window.STATIC_URL', window.STATIC_URL);
     return (
         <>
             <Box sx={styles.background}>

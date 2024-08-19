@@ -27,7 +27,7 @@ export const useGetQueryBuildersFields = (
         ) {
             fields[field.fieldKey] = {
                 ...currentField.queryBuilder,
-                label: formatLabel(field),
+                label: formatLabel(field) + ' [' + field.name + ']',
             };
             // in case the field needs a list of values to display
             if (currentField.useListValues) {

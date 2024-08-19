@@ -7,7 +7,7 @@ import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
-import { mappingTypeOptions } from './MappingTypeOptions'
+import { mappingTypeOptions } from './MappingTypeOptions';
 
 import MESSAGES from '../messages';
 
@@ -40,9 +40,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params, withPagination: false });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const [showDeleted, setShowDeleted] = useState<boolean>(
-        filters.showDeleted === 'true',
-    );
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypes();
     const { data: allProjects, isFetching: isFetchingProjects } =
@@ -84,11 +81,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 />
             </Grid>
 
-    
-
-            
-
-
             <Grid item xs={12} md={3}>
                 <InputComponent
                     type="select"
@@ -129,13 +121,12 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 />
             </Grid>
 
-
             <Grid container item xs={12} md={12} justifyContent="flex-end">
                 <Box mt={isLargeLayout ? 3 : 0}>
                     <Button
                         data-test="search-button"
                         disabled={
-                            (!showDeleted && !filtersUpdated) || textSearchError
+                            (!filtersUpdated) || textSearchError
                         }
                         variant="contained"
                         className={classes.button}

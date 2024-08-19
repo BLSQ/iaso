@@ -177,7 +177,7 @@ class MappingVersionsViewSet(ModelViewSet):
 
     GET /api/mappingversions/
         order
-        projectsIds orgUnitTypeIds
+        projectsIds orgUnitTypeIds (comma seperated ids)
         mappingTypes
         formId form_id (comma seperated ids)
     GET /api/mappingversions/<id>

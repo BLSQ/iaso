@@ -5,10 +5,8 @@ import { Form } from '../../../forms/types/forms';
 import { useApiParams } from '../../../../hooks/useApiParams';
 
 const getForms = params => {
-    debugger;
     const queryString = new URLSearchParams(params).toString();
     return getRequest(`/api/forms/?${queryString}`).then((value) => {
-        debugger;
         return value.forms.map(f => {
             return  {
                 value: f.id,
@@ -24,19 +22,14 @@ export const tableDefaults = {
     page: 1,
 };
 
-type FormResponse = {
-    limit: number;
-    count: number;
-    forms: Form[];
-    has_previous: boolean;
-    has_next: boolean;
-    page: number;
-    pages: number;
-};
+type ValueLabel = {
+    value: string;
+    label: string;
+  };
 export const useGetFormsDropdownOptions = (
     params,
     defaults = tableDefaults,
-): UseQueryResult<FormResponse, Error> => {
+): UseQueryResult<ValueLabel[], Error> => {
     const safeParams = useApiParams(params, defaults);
     if (safeParams?.accountId) {
         delete safeParams.accountId;

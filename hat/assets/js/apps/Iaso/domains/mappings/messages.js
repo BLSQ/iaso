@@ -220,7 +220,11 @@ const MESSAGES = defineMessages({
     forms: {
         id: 'iaso.label.forms',
         defaultMessage: 'Forms',
-    }
+    },
+    search: {
+        id: 'iaso.search',
+        defaultMessage: 'Search',
+    },
 });
 
 export default MESSAGES;

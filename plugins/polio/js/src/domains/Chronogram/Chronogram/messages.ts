@@ -25,6 +25,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.save',
         defaultMessage: 'Save',
     },
+    updatedAt: {
+        id: 'iaso.label.updated_at',
+        defaultMessage: 'Updated',
+    },
     chronogramTitle: {
         id: 'iaso.polio.chronogram.title',
         defaultMessage: 'Chronogram',
@@ -59,7 +63,7 @@ const MESSAGES = defineMessages({
     },
     labelNumTaskDelayed: {
         id: 'iaso.polio.chronogram.label.num_task_delayed',
-        defaultMessage: 'Task delayed',
+        defaultMessage: 'Number of task(s) delayed',
     },
     labelPercentageOfCompletion: {
         id: 'iaso.polio.chronogram.label.percentage_of_completion',
@@ -88,6 +92,14 @@ const MESSAGES = defineMessages({
     messageCreateSuccess: {
         id: 'iaso.polio.chronogram.message.create_success',
         defaultMessage: 'Chronogram successfully created',
+    },
+    modalDeleteConfirm: {
+        id: 'iaso.polio.chronogram.modal.delete.confirm',
+        defaultMessage: `Do you really want to delete the chronogram for round {round_number} of {campaignName}?`,
+    },
+    modalDeleteTitle: {
+        id: 'iaso.polio.chronogram.modal.delete.title',
+        defaultMessage: 'Delete Chronogram',
     },
     createChronogramTitle: {
         id: 'iaso.polio.chronogram.title.create_chronogram',

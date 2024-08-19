@@ -11,8 +11,12 @@ from plugins.polio.models import Campaign, Chronogram, ChronogramTask
 def countries(request) -> QuerySet[OrgUnit]:
     if request is None:
         return OrgUnit.objects.none()
-    country_ids = Campaign.polio_objects.filter_for_user(request.user).values_list("country_id", flat=True)
-    return OrgUnit.objects.filter(id__in=country_ids).select_related("org_unit_type").order_by("name")
+    return (
+        OrgUnit.objects.filter_for_user(request.user)
+        .filter(org_unit_type__category="COUNTRY")
+        .select_related("org_unit_type")
+        .order_by("name")
+    )
 
 
 class ChronogramFilter(django_filters.rest_framework.FilterSet):
@@ -30,4 +34,4 @@ class ChronogramFilter(django_filters.rest_framework.FilterSet):
 class ChronogramTaskFilter(django_filters.rest_framework.FilterSet):
     class Meta:
         model = ChronogramTask
-        fields = ["chronogram_id"]
+        fields = ["chronogram_id", "period", "status"]

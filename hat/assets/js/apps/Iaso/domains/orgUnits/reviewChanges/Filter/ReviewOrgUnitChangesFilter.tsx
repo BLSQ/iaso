@@ -18,6 +18,8 @@ import { AsyncSelect } from '../../../../components/forms/AsyncSelect';
 import { getUsersDropDown } from '../../../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../../../instances/hooks/useGetProfilesDropdown';
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
+import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
+import { usePaymentStatusOptions } from '../hooks/api/useGetPaymentStatusOptions';
 
 const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = { params: ApproveOrgUnitParams };
@@ -37,6 +39,11 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
     const { data: userRoles, isFetching: isFetchingUserRoles } =
         useGetUserRolesDropDown();
+
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
+    const { data: paymentStatuses, isFetching: isFetchingPaymentStatuses } =
+        usePaymentStatusOptions();
     const formOptions = useMemo(
         () =>
             forms?.map(form => ({
@@ -74,6 +81,18 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         <Grid container spacing={2}>
             <Grid item xs={12} md={4} lg={3}>
                 <InputComponent
+                    keyValue="projectIds"
+                    onChange={handleChange}
+                    value={filters.projectIds}
+                    type="select"
+                    options={allProjects}
+                    label={MESSAGES.projects}
+                    loading={isFetchingProjects}
+                    onEnterPressed={handleSearch}
+                    clearable
+                    multi
+                />
+                <InputComponent
                     type="select"
                     multi
                     clearable
@@ -93,17 +112,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     options={groupOptions}
                     loading={isLoadingGroups}
                     labelString={formatMessage(MESSAGES.group)}
-                />
-                <InputComponent
-                    type="select"
-                    multi
-                    clearable
-                    keyValue="forms"
-                    value={filters.forms}
-                    onChange={handleChange}
-                    options={formOptions}
-                    loading={isLoadingForms}
-                    labelString={formatMessage(MESSAGES.forms)}
                 />
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
@@ -129,22 +137,15 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.orgUnitType)}
                 />
                 <InputComponent
-                    keyValue="withLocation"
-                    clearable
-                    onChange={handleChange}
-                    value={filters.withLocation || null}
                     type="select"
-                    options={[
-                        {
-                            label: formatMessage(MESSAGES.with),
-                            value: 'true',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.without),
-                            value: 'false',
-                        },
-                    ]}
-                    label={MESSAGES.location}
+                    multi
+                    clearable
+                    keyValue="forms"
+                    value={filters.forms}
+                    onChange={handleChange}
+                    options={formOptions}
+                    loading={isLoadingForms}
+                    labelString={formatMessage(MESSAGES.forms)}
                 />
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
@@ -169,6 +170,34 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     loading={isFetchingUserRoles}
                     options={userRoles}
                     labelString={formatMessage(MESSAGES.userRoles)}
+                />
+                <InputComponent
+                    keyValue="withLocation"
+                    clearable
+                    onChange={handleChange}
+                    value={filters.withLocation || null}
+                    type="select"
+                    options={[
+                        {
+                            label: formatMessage(MESSAGES.with),
+                            value: 'true',
+                        },
+                        {
+                            label: formatMessage(MESSAGES.without),
+                            value: 'false',
+                        },
+                    ]}
+                />
+                <InputComponent
+                    label={MESSAGES.location}
+                    type="select"
+                    clearable
+                    keyValue="paymentStatus"
+                    value={filters.paymentStatus}
+                    onChange={handleChange}
+                    loading={isFetchingPaymentStatuses}
+                    options={paymentStatuses}
+                    labelString={formatMessage(MESSAGES.paymentStatus)}
                 />
             </Grid>
 

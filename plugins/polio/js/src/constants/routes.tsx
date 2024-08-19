@@ -29,6 +29,7 @@ import {
     SUPPLYCHAIN_READ,
     SUPPLYCHAIN_WRITE,
     CHRONOGRAM,
+    CHRONOGRAM_RESTRICTED_WRITE,
 } from './permissions';
 import {
     AnonymousRoutePath,
@@ -199,7 +200,7 @@ export const chronogramPath: RoutePath = {
     baseUrl: baseUrls.chronogram,
     routerUrl: `${baseUrls.chronogram}/*`,
     element: <Chronogram />,
-    permissions: [CHRONOGRAM],
+    permissions: [CHRONOGRAM, CHRONOGRAM_RESTRICTED_WRITE],
 };
 
 export const chronogramTemplateTaskPath: RoutePath = {
@@ -213,7 +214,7 @@ export const chronogramDetailsPath: RoutePath = {
     baseUrl: baseUrls.chronogramDetails,
     routerUrl: `${baseUrls.chronogramDetails}/*`,
     element: <ChronogramDetails />,
-    permissions: [CHRONOGRAM],
+    permissions: [CHRONOGRAM, CHRONOGRAM_RESTRICTED_WRITE],
 };
 
 export const routes: (RoutePath | AnonymousRoutePath)[] = [

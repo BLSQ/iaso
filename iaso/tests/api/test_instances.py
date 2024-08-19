@@ -362,6 +362,7 @@ class InstancesAPITestCase(APITestCase):
             org_unit=self.jedi_council_corruscant,
             uuid=instance_uuid,
             deleted=True,
+            project=None,
         )
         pre_existing_instance_count = m.Instance.objects.count()
         body = [
@@ -401,6 +402,7 @@ class InstancesAPITestCase(APITestCase):
             period="202002",
             org_unit=self.jedi_council_corruscant,
             uuid=instance_uuid,
+            project=None,
         )
         pre_existing_instance_count = m.Instance.objects.count()
         body = [
@@ -446,7 +448,7 @@ class InstancesAPITestCase(APITestCase):
         """POST /api/instances/ with one pre-existing instance (created by the /sync view, with a filename only)"""
 
         instance_filename = "RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml"
-        pre_existing_instance = self.create_form_instance(file_name=instance_filename)
+        pre_existing_instance = self.create_form_instance(file_name=instance_filename, project=None)
         pre_existing_instance_count = m.Instance.objects.count()
         body = [
             {
@@ -956,6 +958,7 @@ class InstancesAPITestCase(APITestCase):
             self.instance_1.source_updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             "yoda (Yo Da)",
             "READY",
+            "",  # entity UUID
             "Coruscant Jedi Council",
             f"{self.jedi_council_corruscant.id}",
             "jedi_council_corruscant_ref",
@@ -964,6 +967,63 @@ class InstancesAPITestCase(APITestCase):
             "",
             "",
         ]
+        self.assertEqual(row_to_test, expected_row)
+
+    def test_can_retrieve_submissions_list_in_csv_format_without_source_fields(self):
+        # Set up a new instance without source fields
+        new_date = datetime.datetime(2006, 5, 4, 3, 2, 1, tzinfo=pytz.UTC)
+        export_id = "TESTING"
+        period = "200605"
+        with patch("django.utils.timezone.now", lambda: new_date):
+            # Explicitly set source fields to None because the test helpers will set default values otherwise
+            sourceless_instance = self.create_form_instance(
+                form=self.form_4,
+                period=period,
+                org_unit=self.jedi_council_corruscant,
+                project=self.project,
+                created_by=self.yoda,
+                export_id=export_id,
+                source_created_at=None,
+                source_updated_at=None,
+                json={"test": "test"},
+            )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/instances/?form_ids={sourceless_instance.form.id}&order=id&csv=true",
+            headers={"Content-Type": "text/csv"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        response_csv = response.getvalue().decode("utf-8")
+        response_string = "".join(s for s in response_csv)
+        reader = csv.reader(io.StringIO(response_string), delimiter=",")
+        data = list(reader)
+        row_to_test = data[len(data) - 1]
+        expected_row = [
+            f"{sourceless_instance.id}",
+            "",
+            export_id,
+            "",
+            "",
+            "",
+            "",
+            period,
+            sourceless_instance.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            sourceless_instance.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "yoda (Yo Da)",
+            "READY",
+            "",  # entity UUID
+            "Coruscant Jedi Council",
+            f"{self.jedi_council_corruscant.id}",
+            "jedi_council_corruscant_ref",
+            "",
+            "",
+            "",
+            "",
+        ]
+        # Make sure the export is using the default created/updated_at if there is no source
         self.assertEqual(row_to_test, expected_row)
 
     def test_user_restriction(self):

@@ -31,6 +31,8 @@ from sentry_sdk.integrations.logging import ignore_logger
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
+MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "false").lower() == "true"
+
 # security settings
 CSRF_COOKIE_HTTPONLY = os.environ.get("CSRF_COOKIE_HTTPONLY", "false").lower() == "true"
 CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "false").lower() == "true"
@@ -353,7 +355,13 @@ LANGUAGES = (
     ("en", _("English")),
 )
 
-LOCALE_PATHS = ["/var/app/current/hat/locale/", "/opt/app/hat/locale/", "hat/locale/"]
+LOCALE_PATHS = [
+    "/var/app/current/hat/locale/",
+    "/opt/app/hat/locale/",
+    "hat/locale/",
+    "/opt/app/iaso/locale/",
+    "iaso/locale/",
+]
 
 TIME_ZONE = "UTC"
 
@@ -395,6 +403,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_METADATA_CLASS": "hat.api.metadata.IasoMetadata",
     "PAGE_SIZE": None,
     "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},

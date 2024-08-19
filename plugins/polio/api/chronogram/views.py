@@ -1,16 +1,20 @@
 import django_filters
 
 from django.db.models import QuerySet, Prefetch
+from django.utils import timezone
 
-from rest_framework import filters, status
+from hat.menupermissions import models as iaso_permission
+
+from rest_framework import filters, status, exceptions
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 
 from iaso.api.common import Paginator
 
 from plugins.polio.api.chronogram.filters import ChronogramFilter, ChronogramTaskFilter
-from plugins.polio.api.chronogram.permissions import HasChronogramPermission
+from plugins.polio.api.chronogram.permissions import HasChronogramPermission, HasChronogramRestrictedWritePermission
 from plugins.polio.api.chronogram.serializers import (
     ChronogramSerializer,
     ChronogramTaskSerializer,
@@ -27,14 +31,23 @@ class ChronogramPagination(Paginator):
 class ChronogramViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = ChronogramFilter
-    http_method_names = ["get", "options", "head", "post", "trace"]
+    http_method_names = ["delete", "get", "options", "head", "post", "trace"]
     pagination_class = ChronogramPagination
-    permission_classes = [HasChronogramPermission]
+    permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]
 
     def get_serializer_class(self):
-        if self.action in ["create"]:
+        if self.action == "create":
             return ChronogramCreateSerializer
         return ChronogramSerializer
+
+    def get_permissions(self):
+        if self.request.user.has_perm(iaso_permission.POLIO_CHRONOGRAM):
+            return super().get_permissions()
+        if self.request.method not in SAFE_METHODS and self.request.user.has_perm(
+            iaso_permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE
+        ):
+            raise exceptions.PermissionDenied()
+        return super().get_permissions()
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
@@ -58,14 +71,28 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def perform_destroy(self, instance):
+        """
+        Perform soft delete.
+        """
+        instance.delete()
+        instance.tasks.update(deleted_at=timezone.now())  # Bulk soft delete of related tasks.
+
     @action(detail=False, methods=["GET"])
     def available_rounds_for_create(self, request):
         """
         Returns all available rounds that can be used to create a new `Chronogram`.
         """
-        user_campaigns = Campaign.polio_objects.filter_for_user(self.request.user).filter(country__isnull=False)
+        user_campaigns = Campaign.polio_objects.filter_for_user(self.request.user).filter(
+            country__isnull=False,
+            is_test=False,
+        )
+        already_linked_rounds = (
+            Chronogram.objects.valid().filter(round__campaign__in=user_campaigns).values_list("round_id", flat=True)
+        )
         available_rounds = (
-            Round.objects.filter(chronogram__isnull=True, campaign__in=user_campaigns)
+            Round.objects.filter(campaign__in=user_campaigns)
+            .exclude(pk__in=already_linked_rounds)
             .select_related("campaign__country")
             .order_by("campaign__country__name", "campaign__obr_name", "number")
             .only(
@@ -85,8 +112,17 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = ChronogramTaskFilter
     pagination_class = ChronogramPagination
-    permission_classes = [HasChronogramPermission]
+    permission_classes = [HasChronogramPermission | HasChronogramRestrictedWritePermission]
     serializer_class = ChronogramTaskSerializer
+
+    def get_permissions(self):
+        if self.request.user.has_perm(iaso_permission.POLIO_CHRONOGRAM):
+            return super().get_permissions()
+        if self.request.method in ["POST", "DELETE"] and self.request.user.has_perm(
+            iaso_permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE
+        ):
+            raise exceptions.PermissionDenied()
+        return super().get_permissions()
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user

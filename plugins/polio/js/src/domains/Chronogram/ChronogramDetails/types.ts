@@ -8,6 +8,9 @@ export type ChronogramTasksParams = {
     page?: string;
     limit?: string; // API name for "number of results per page".
     pageSize?: string; // TableWithDeepLink name for "number of results per page".
+    // Search params.
+    period?: string;
+    status?: string;
 };
 
 export type ChronogramTaskApiResponse = {

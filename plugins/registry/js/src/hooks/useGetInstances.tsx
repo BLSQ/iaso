@@ -27,6 +27,7 @@ type ApiParams = {
     orgUnitParentId: string;
     org_unit_status?: OrgUnitStatus;
     planning_ids?: string;
+    registry_slug: string;
 };
 
 type InstanceApi = {
@@ -36,6 +37,7 @@ type InstanceApi = {
 
 export const useGetInstanceApi = (
     params: RegistryParams,
+    registrySlug: string,
     orgUnitTypeId?: number,
     orgUnitStatus?: OrgUnitStatus,
 ): InstanceApi => {
@@ -58,9 +60,10 @@ export const useGetInstanceApi = (
         orgUnitParentId: orgUnitId,
         org_unit_status: orgUnitStatus,
         planning_ids: planningIds,
+        registry_slug: registrySlug,
     };
     const url = makeUrlWithParams(
-        '/api/instances/',
+        '/api/public/registry/instances/',
         apiParams as Record<string, any>,
     );
     return {
@@ -71,10 +74,12 @@ export const useGetInstanceApi = (
 
 export const useGetInstances = (
     params: RegistryParams,
+    registrySlug: string,
     orgUnitTypeId?: number,
 ): UseQueryResult<PaginatedInstances, Error> => {
     const { apiParams, url } = useGetInstanceApi(
         params,
+        registrySlug,
         orgUnitTypeId,
         'VALID',
     );
@@ -90,6 +95,7 @@ export const useGetInstances = (
 };
 
 export const useGetOrgUnitInstances = (
+    registrySlug: string,
     orgUnitId?: number,
     onlyReference = false,
 ): UseQueryResult<Instance[], Error> => {
@@ -97,8 +103,9 @@ export const useGetOrgUnitInstances = (
         orgUnitId,
         showDeleted: false,
         onlyReference,
+        registry_slug: registrySlug,
     };
-    const url = makeUrlWithParams('/api/instances/', apiParams);
+    const url = makeUrlWithParams('/api/public/registry/instances/', apiParams);
     return useSnackQuery({
         queryKey: ['registry-org-unit-instances', apiParams],
         queryFn: () => getRequest(url),
@@ -113,11 +120,15 @@ export const useGetOrgUnitInstances = (
 
 export const useGetInstance = (
     instanceId: number | string | undefined,
+    registrySlug: string,
     keepPreviousData = true,
 ): UseQueryResult<Instance, Error> => {
     return useSnackQuery({
         queryKey: ['instance', instanceId],
-        queryFn: () => getRequest(`/api/instances/${instanceId}/`),
+        queryFn: () =>
+            getRequest(
+                `/api/public/registry/instances/${instanceId}/?registry_slug=${registrySlug}`,
+            ),
         options: {
             enabled: Boolean(instanceId),
             retry: false,

@@ -410,7 +410,7 @@ class OrgUnit(TreeModel):
             "aliases": self.aliases,
         }
 
-    def as_dict(self, with_groups=True):
+    def as_dict(self):
         res = {
             "name": self.name,
             "short_name": self.name,
@@ -550,6 +550,11 @@ class OrgUnit(TreeModel):
             res["parent"] = self.parent.as_dict_with_parents(light=True, light_parents=True) if self.parent else None
         return res
 
+    def as_dict_for_entity(self):
+        res = self.as_location(with_parents=False)
+        res["groups"] = [group.as_small_dict() for group in self.groups.all()]
+        return res
+
     def source_path(self):
         """DHIS2-friendly path built using source refs"""
 
@@ -608,6 +613,10 @@ class OrgUnitChangeRequest(models.Model):
     `VALIDATION_REJECTED` or `VALIDATION_VALID`.
     """
 
+    class Kind(models.TextChoices):
+        ORG_UNIT_CREATION = "org_unit_creation", _("Org Unit Creation")
+        ORG_UNIT_CHANGE = "org_unit_change", _("Org Unit Change")
+
     class Statuses(models.TextChoices):
         NEW = "new", _("New")
         REJECTED = "rejected", _("Rejected")
@@ -619,6 +628,7 @@ class OrgUnitChangeRequest(models.Model):
 
     # Metadata.
 
+    kind = models.CharField(choices=Kind.choices, default=Kind.ORG_UNIT_CHANGE, max_length=40)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_created_set"
@@ -692,6 +702,10 @@ class OrgUnitChangeRequest(models.Model):
         self.clean()
         is_new = self.pk is None
         if is_new:
+            if self.org_unit.validation_status == self.org_unit.VALIDATION_NEW:
+                self.kind = self.Kind.ORG_UNIT_CREATION
+            else:
+                self.kind = self.Kind.ORG_UNIT_CHANGE
             # Save old values.
             self.old_parent_id = self.org_unit.parent_id
             self.old_name = self.org_unit.name

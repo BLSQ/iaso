@@ -36,6 +36,8 @@ import { Placeholder } from '../../../../../../hat/assets/js/apps/Iaso/domains/r
 /* STILL USING REGISTRY COMPONENTS */
 /* eslint-enable sort-imports */
 
+import { useGetRegistryConfig } from '../../hooks/useGetRegistryConfig';
+
 const styles: SxStyles = {
     breadCrumbContainer: {
         '& nav': {
@@ -69,13 +71,10 @@ const styles: SxStyles = {
             'inset 0px 2px 4px -1px rgba(0,0,0,0.2),inset 0px 4px 5px 0px rgba(0,0,0,0.14),inset 0px 1px 10px 0px rgba(0,0,0,0.12)',
     },
 };
-
-const config = {
-    version: 40,
-    source: 31,
-};
-
 const baseUrl = baseUrls.registry;
+
+// This is hardcoded for now, but should be given through URL params
+const registrySlug = 'default_registry';
 
 export const Registry: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as unknown as RegistryParams;
@@ -87,19 +86,23 @@ export const Registry: FunctionComponent = () => {
     const redirectTo = useRedirectTo();
     const redirectToReplace = useRedirectToReplace();
 
-    const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
+    const { data: config } = useGetRegistryConfig(registrySlug);
+
+    const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId, config?.app_id);
     const { data: selectedChildren, isFetching: isFetchingSelectedChildren } =
-        useGetOrgUnit(selectedChildrenId);
+        useGetOrgUnit(selectedChildrenId, config?.app_id);
     const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =
         useGetOrgUnitListChildren(
             orgUnitId,
             params,
             orgUnit?.org_unit_type?.sub_unit_types,
+            config?.app_id,
         );
     const { data: orgUnitMapChildren, isFetching: isFetchingMapChildren } =
         useGetOrgUnitsMapChildren(
             orgUnitId,
             orgUnit?.org_unit_type?.sub_unit_types,
+            config?.app_id,
         );
 
     const subOrgUnitTypes: OrgunitTypeRegistry[] = useMemo(() => {
@@ -152,6 +155,10 @@ export const Registry: FunctionComponent = () => {
         },
         [params, redirectToReplace],
     );
+    if (!config) {
+        return null;
+    }
+
     return (
         <Box
             sx={{
@@ -170,8 +177,9 @@ export const Registry: FunctionComponent = () => {
                                 initialSelection={orgUnit}
                                 defaultOpen={!orgUnitId}
                                 useIcon
-                                version={config.version}
-                                source={config.source}
+                                version={config.source_version}
+                                source={config.data_source}
+                                appId={config.app_id}
                             />
                         </Box>
                         <Box display="inline-block" ml={1} mr={2}>
@@ -213,6 +221,7 @@ export const Registry: FunctionComponent = () => {
                         >
                             {orgUnit && (
                                 <SelectedOrgUnit
+                                    registrySlug={config.slug}
                                     orgUnit={
                                         selectedChildrenId
                                             ? selectedChildren
@@ -234,6 +243,8 @@ export const Registry: FunctionComponent = () => {
                 isLoading={isFetching}
                 subOrgUnitTypes={subOrgUnitTypes}
                 params={params}
+                appId={config.app_id}
+                registrySlug={registrySlug}
             />
             {!orgUnitId && <Placeholder />}
         </Box>

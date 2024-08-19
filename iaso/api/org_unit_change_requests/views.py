@@ -80,6 +80,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             "old_groups",
             "new_reference_instances__form",
             "old_reference_instances__form",
+            "org_unit__org_unit_type__projects",
         )
         return org_units_change_requests.filter(org_unit__in=org_units)
 

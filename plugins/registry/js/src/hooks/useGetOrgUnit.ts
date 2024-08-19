@@ -11,14 +11,16 @@ import { RegistryParams } from '../types';
 
 export const useGetOrgUnit = (
     orgUnitId?: string,
+    appId?: string,
 ): UseQueryResult<OrgUnit, Error> => {
     const queryKey: any[] = ['orgUnit', orgUnitId];
     return useSnackQuery({
         queryKey,
-        queryFn: () => getRequest(`/api/orgunits/${orgUnitId}/`),
+        queryFn: () =>
+            getRequest(`/api/orgunits/${orgUnitId}/?app_id=${appId}`),
         options: {
             retry: false,
-            enabled: Boolean(orgUnitId),
+            enabled: Boolean(orgUnitId) && Boolean(appId),
             keepPreviousData: Boolean(orgUnitId),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
@@ -41,6 +43,7 @@ export const useGetOrgUnitListChildren = (
     orgUnitParentId: string,
     params: RegistryParams,
     orgUnitTypes?: OrgunitTypes,
+    appId?: string,
 ): UseQueryResult<OrgUnitListChildren, Error> => {
     const order = getOrder(params.orgUnitListOrder);
     const apiParams: Record<string, any> = {
@@ -50,6 +53,7 @@ export const useGetOrgUnitListChildren = (
         limit: params.orgUnitListPageSize || '10',
         order,
         page: params.orgUnitListPage || '1',
+        app_id: appId,
     };
     if (orgUnitTypes && orgUnitTypes.length > 0) {
         apiParams.orgUnitTypeId = orgUnitTypes
@@ -63,7 +67,7 @@ export const useGetOrgUnitListChildren = (
         queryFn: () => getRequest(url),
         options: {
             keepPreviousData: true,
-            enabled: Boolean(orgUnitParentId && orgUnitTypes),
+            enabled: Boolean(orgUnitParentId && orgUnitTypes && appId),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select: data => {
@@ -86,12 +90,14 @@ type Result = {
 export const useGetOrgUnitsMapChildren = (
     orgUnitParentId: string,
     orgUnitTypes?: OrgunitTypes,
+    appId?: string,
 ): UseQueryResult<OrgUnit[], Error> => {
     const params: Record<string, any> = {
         validation_status: 'VALID',
         orgUnitParentId,
         withShapes: true,
         onlyDirectChildren: true,
+        app_id: appId,
     };
     if (orgUnitTypes && orgUnitTypes.length > 0) {
         params.orgUnitTypeId = orgUnitTypes
@@ -105,7 +111,7 @@ export const useGetOrgUnitsMapChildren = (
         options: {
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
-            enabled: Boolean(orgUnitParentId && orgUnitTypes),
+            enabled: Boolean(orgUnitParentId && orgUnitTypes && appId),
             select: (data: Result): OrgUnit[] => data?.orgUnits || [],
         },
     });

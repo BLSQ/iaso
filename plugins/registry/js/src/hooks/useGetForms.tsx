@@ -12,6 +12,7 @@ export type DropdownOptions<T> = {
 };
 
 export const useGetForms = (
+    appId: string,
     apiParams: Record<string, any> | undefined = {},
 ): UseQueryResult<DropdownOptions<string>[], Error> => {
     const fields = [
@@ -23,6 +24,7 @@ export const useGetForms = (
     ];
     const params: Record<string, any> = {
         fields: fields.join(','),
+        app_id: appId,
         ...apiParams,
     };
     const url = makeUrlWithParams('/api/forms/', params);
@@ -32,6 +34,7 @@ export const useGetForms = (
         options: {
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
+            enabled: Boolean(appId),
             select: data =>
                 data?.forms?.map(t => ({
                     label: t.name,

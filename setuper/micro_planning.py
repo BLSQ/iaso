@@ -1,11 +1,12 @@
 import json
 from fake import fake_person
+from datetime import datetime, timedelta
 
 
 def setup_users_teams_micro_planning(account_name, iaso_client):
     print("-- users, teams and micro planning")
 
-    project_ids = [x["id"] for x in iaso_client.get("/api/projects/")["projects"]]
+    project_ids = [x["id"] for x in iaso_client.get("/api/projects/")["projects"] if x["name"] == "Planning"]
 
     permissions_codes = [x["codename"] for x in iaso_client.get("/api/permissions/")["permissions"]]
 
@@ -60,9 +61,10 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         team_index = team_index + 1
 
     teams = iaso_client.get("/api/microplanning/teams/?limit=20000")["results"]
+
     print(f"\t{len(teams) -1 } teams created")
 
-    team_of_team = iaso_client.post(
+    iaso_client.post(
         "/api/microplanning/teams/",
         json={
             "name": "Team of Teams",
@@ -87,21 +89,23 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         },
     )["orgunits"][0]
 
+    team = teams[0]
+    current_date = datetime.now()
     campaign = iaso_client.post(
         "/api/microplanning/plannings/",
         {
             "name": "Campagne Carte Sanitaire",
-            "forms": [f["id"] for f in forms],
+            "forms": [f["id"] for f in forms if f["form_id"] == "SAMPLE_FORM_new5"],
             "project": project_id,
-            "team": team_of_team["id"],
+            "team": team["id"],
             "org_unit": country["id"],
-            "started_at": "2023-12-01",
-            "ended_at": "2023-12-31",
-            "published_at": None,
+            "started_at": current_date.strftime("%Y-%m-%d"),
+            "ended_at": (current_date + timedelta(days=365)).strftime("%Y-%m-%d"),
+            "published_at": current_date.strftime("%Y-%m-%d"),
         },
     )
 
-    districts = iaso_client.get(
+    health_facitities = iaso_client.get(
         "/api/orgunits/",
         params={
             "validation_status": "VALID",
@@ -110,20 +114,16 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
             "page": 1,
             "withParents": "true",
             "order": "name",
-            "depth": 3,
+            "depth": 5,
         },
     )["orgUnits"]
 
-    district_index = 0
-    for district in districts:
-        team = teams[district_index]
-        print("assigning", district["name"], "to", team["name"])
+    for health_facitity in health_facitities:
+        print("assigning", health_facitity["name"], "to", team["name"])
 
         iaso_client.post(
             "/api/microplanning/assignments/",
-            json={"planning": campaign["id"], "org_unit": district["id"], "team": team["id"]},
+            json={"planning": campaign["id"], "org_unit": health_facitity["id"], "team": team["id"]},
         )
-
-        district_index = district_index + 1
 
     print(campaign)

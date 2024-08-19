@@ -33,6 +33,7 @@ export type TeamFilterParams = {
     dateFrom?: string;
     project?: number;
     type?: TeamType;
+    managers?: User;
 };
 
 export type TeamParams = UrlParams &

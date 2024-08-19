@@ -8,6 +8,11 @@ from iaso.api.common import CONTENT_TYPE_XLSX
 from iaso.models import Form, OrgUnit, Instance
 from iaso.test import APITestCase
 
+from iaso.models import (
+    Mapping,
+    AGGREGATE,
+)
+
 
 class FormsAPITestCase(APITestCase):
     @classmethod
@@ -99,6 +104,23 @@ class FormsAPITestCase(APITestCase):
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
+
+    def find_forms_data_for(self, response, form):
+        return [f for f in response.json()["forms"] if f["name"] == form.name][0]
+
+    def test_forms_list_ok_has_mappings_true(self):
+        """GET /forms/ web app happy path: we expect two results one with has_mappings"""
+
+        mapping = Mapping(form=self.form_2, data_source=self.sw_source, mapping_type=AGGREGATE)
+        mapping.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+
+        self.assertTrue(self.find_forms_data_for(response, self.form_2)["has_mappings"])
+        self.assertFalse(self.find_forms_data_for(response, self.form_1)["has_mappings"])
 
     def test_forms_list_filtered_by_org_unit_type(self):
         self.client.force_authenticate(self.yoda)

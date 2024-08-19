@@ -59,6 +59,15 @@ class FormQuerySet(models.QuerySet):
 
         return queryset
 
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if user.is_anonymous or user.iaso_profile is None:
+            return self
+
+        user_projects_ids = user.iaso_profile.projects.values_list("pk", flat=True)
+        if not user_projects_ids:
+            return self
+        return self.filter(projects__in=user_projects_ids)
+
 
 class Form(SoftDeletableModel):
     """Metadata about a form

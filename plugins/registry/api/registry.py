@@ -6,10 +6,10 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.viewsets import ViewSet
 
+from iaso.api.common import Paginator
 from iaso.api.instances import InstanceSerializer
 from iaso.models import Instance
 from plugins.registry.models import PublicRegistryConfig
-from iaso.api.common import Paginator
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -100,7 +100,7 @@ class InstanceSerializer(serializers.ModelSerializer):
         return obj.get_and_save_json_of_xml()
 
     def get_org_unit(self, obj):
-        return obj.org_unit.as_dict(with_groups=False) if obj.org_unit else None
+        return obj.org_unit.as_dict() if obj.org_unit else None
 
     def get_status(self, obj):
         return getattr(obj, "status", None)

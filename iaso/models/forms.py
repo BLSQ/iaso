@@ -60,7 +60,7 @@ class FormQuerySet(models.QuerySet):
         return queryset
 
     def filter_on_user_projects(self, user: User) -> models.QuerySet:
-        if user.is_anonymous or user.iaso_profile is None:
+        if user.is_anonymous or not hasattr(user, "iaso_profile"):
             return self
 
         user_projects_ids = user.iaso_profile.projects.values_list("pk", flat=True)

@@ -24,6 +24,8 @@ import { Group, OrgUnit, OrgUnitState } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
 import { useGetOrgUnit } from './TreeView/requests';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
+import { ORG_UNITS } from '../../../utils/permissions';
 
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
@@ -191,42 +193,48 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     keyDateFrom="opening_date"
                     keyDateTo="closed_date"
                     onChangeDate={onChangeInfo}
-                    dateFrom={orgUnitState.opening_date.value}
-                    dateTo={orgUnitState.closed_date.value}
+                    dateFrom={
+                        orgUnitState.opening_date.value as string | undefined
+                    }
+                    dateTo={
+                        orgUnitState.closed_date.value as string | undefined
+                    }
                     labelFrom={MESSAGES.openingDate}
                     labelTo={MESSAGES.closingDate}
                     marginTop={0}
                 />
-                <Grid
-                    container
-                    item
-                    xs={12}
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    <Box mt={1}>
-                        {!isNewOrgunit && (
+                <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
+                    <Grid
+                        container
+                        item
+                        xs={12}
+                        justifyContent="flex-end"
+                        alignItems="center"
+                    >
+                        <Box mt={1}>
+                            {!isNewOrgunit && (
+                                <Button
+                                    className={classes.marginLeft}
+                                    disabled={!orgUnitModified}
+                                    variant="contained"
+                                    onClick={() => handleReset()}
+                                >
+                                    {formatMessage(MESSAGES.cancel)}
+                                </Button>
+                            )}
                             <Button
-                                className={classes.marginLeft}
-                                disabled={!orgUnitModified}
+                                id="save-ou"
+                                disabled={isSaveDisabled}
                                 variant="contained"
-                                onClick={() => handleReset()}
+                                className={classes.marginLeft}
+                                color="primary"
+                                onClick={handleSave}
                             >
-                                {formatMessage(MESSAGES.cancel)}
+                                {formatMessage(MESSAGES.save)}
                             </Button>
-                        )}
-                        <Button
-                            id="save-ou"
-                            disabled={isSaveDisabled}
-                            variant="contained"
-                            className={classes.marginLeft}
-                            color="primary"
-                            onClick={handleSave}
-                        >
-                            {formatMessage(MESSAGES.save)}
-                        </Button>
-                    </Box>
-                </Grid>
+                        </Box>
+                    </Grid>
+                </DisplayIfUserHasPerm>
             </Grid>
 
             <Grid item xs={12} md={4}>

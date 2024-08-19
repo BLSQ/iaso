@@ -20,7 +20,10 @@ import { useGetFormsByProjects } from '../../../instances/hooks';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
-import { userHasPermission } from '../../../users/utils';
+import {
+    userHasOneOfPermissions,
+    userHasPermission,
+} from '../../../users/utils';
 import { useFormState } from '../../../../hooks/form';
 import {
     commaSeparatedIdsToArray,
@@ -223,8 +226,10 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         [formState, formatMessage, saveType, setFieldErrors],
     );
     const hasPermission =
-        userHasPermission(Permission.ORG_UNITS, currentUser) &&
-        userHasPermission(Permission.FORMS, currentUser);
+        userHasOneOfPermissions(
+            [Permission.ORG_UNITS, Permission.ORG_UNITS_READ],
+            currentUser,
+        ) && userHasPermission(Permission.FORMS, currentUser);
 
     const resetForm = () => {
         setFormState(mapOrgUnitType(orgUnitType));

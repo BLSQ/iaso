@@ -110,13 +110,24 @@ class PBWG:
 
                 instances[i]["program"] = ETL().program_mapper(current_record)
                 if current_record is not None and current_record != None:
-                    if current_record.get("actual_birthday__date__") is not None:
+                    if (
+                        current_record.get("actual_birthday__date__") is not None
+                        and current_record.get("actual_birthday__date__", None) != ""
+                    ):
                         birth_date = current_record.get("actual_birthday__date__", None)
                         instances[i]["birth_date"] = birth_date[:10]
-
-                    if current_record.get("actual_birthday") is not None:
+                    elif (
+                        current_record.get("actual_birthday") is not None
+                        and current_record.get("actual_birthday", None) != ""
+                    ):
                         birth_date = current_record.get("actual_birthday", None)
                         instances[i]["birth_date"] = birth_date[:10]
+                    elif (
+                        current_record.get("age_entry", None) is not None
+                        and current_record.get("age_entry", None) != ""
+                    ):
+                        calculated_date = ETL().calculate_birth_date(current_record)
+                        instances[i]["birth_date"] = calculated_date
 
                     if current_record.get("last_name") is not None:
                         instances[i]["last_name"] = current_record.get("last_name", "")

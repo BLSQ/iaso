@@ -37,6 +37,15 @@ class ProjectQuerySet(models.QuerySet):
 
         raise self.model.DoesNotExist(f"Could not find project for user {user} and app_id {app_id}")
 
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if user.is_anonymous or user.iaso_profile is None:
+            return self
+
+        user_projects_ids = user.iaso_profile.projects.values_list("pk", flat=True)
+        if not user_projects_ids:
+            return self
+        return self.filter(id__in=user_projects_ids)
+
 
 ProjectManager = models.Manager.from_queryset(ProjectQuerySet)
 

@@ -59,7 +59,8 @@ class AccountViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.SOURCES),  # type: ignore
+        # TODO: How to remove this only for the switch?
+        # HasPermission(permission.SOURCES),  # type: ignore
         HasAccountPermission,
     ]
     serializer_class = AccountSerializer
@@ -70,19 +71,18 @@ class AccountViewSet(ModelViewSet):
 
     @action(detail=False, methods=["patch"], url_path="switch")
     def switch(self, request):
-        print("SWITCH ACCOUNT!")
-        print("SWITCH ACCOUNT!")
-        print("SWITCH ACCOUNT!")
-        print(request.data)
+        # TODO: Make sure the account_id is present
         account_id = request.data.get("account_id", None)
 
-        # current_user = request.user
-        # print("current_user.backend", current_user.backend)
+        current_user = request.user
+        account_users = current_user.tenant_user.get_all_account_users()
+        user_to_login = next(
+            (u for u in account_users if u.iaso_profile and u.iaso_profile.account_id == account_id), None
+        )
 
-        # account = Account.objects.get(id=account_id)
-        user = User.objects.get(id=3)
-        user.backend = "django.contrib.auth.backends.ModelBackend"
-
-        login(request, user)
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if user_to_login:
+            user_to_login.backend = "django.contrib.auth.backends.ModelBackend"
+            login(request, user_to_login)
+            return Response(user_to_login.iaso_profile.account.as_dict())
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)

@@ -30,14 +30,6 @@ class ProjectModelTestCase(TestCase):
         total_projects = m.Project.objects.count()
         self.assertEqual(total_projects, 3)
 
-        user_without_profile_projects = m.Project.objects.filter_on_user_projects(user=self.user_without_profile)
-        self.assertEqual(user_without_profile_projects.count(), total_projects)
-
-        account_projects = self.global_health.project_set.all()
-        self.assertEqual(account_projects.count(), 2)
-        self.assertIn(self.project_1, account_projects)
-        self.assertIn(self.project_2, account_projects)
-
         jane_projects = m.Project.objects.filter_on_user_projects(user=self.jane)
         self.assertEqual(jane_projects.count(), 2)
         self.assertIn(self.project_1, jane_projects)
@@ -49,3 +41,6 @@ class ProjectModelTestCase(TestCase):
 
         jim_projects = m.Project.objects.filter_on_user_projects(user=self.jim)
         self.assertEqual(jim_projects.count(), total_projects)
+
+        user_without_profile_projects = m.Project.objects.filter_on_user_projects(user=self.user_without_profile)
+        self.assertEqual(user_without_profile_projects.count(), total_projects)

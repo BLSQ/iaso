@@ -707,6 +707,8 @@ def import_data(instances, user, app_id):
             if instance.form in instance.org_unit.org_unit_type.reference_forms.all():
                 oucr = OrgUnitChangeRequest()
                 oucr.org_unit = instance.org_unit
+                if user and not user.is_anonymous:
+                    oucr.created_by = user
                 previous_reference_instances = list(instance.org_unit.reference_instances.all())
                 new_reference_instances = list(filter(lambda i: i.form != instance.form, previous_reference_instances))
                 new_reference_instances.append(instance)

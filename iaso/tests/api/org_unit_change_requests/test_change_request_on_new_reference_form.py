@@ -79,6 +79,7 @@ class AutoChangeRequestForInstanceFormTestCase(APITestCase):
         self.assertEqual(instance.orgunitchangerequest_set.count(), 1)
 
         change_request = instance.orgunitchangerequest_set.first()
+        self.assertIsNone(change_request.created_by)
         self.assertEqual(change_request.new_name, "")
         self.assertIsNone(change_request.new_org_unit_type)
         self.assertEqual(change_request.new_groups.count(), 0)

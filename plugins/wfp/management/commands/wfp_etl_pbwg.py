@@ -20,8 +20,9 @@ class PBWG:
             logger.info(
                 f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
             )
+            instance["journey"] = self.journeyMapper(instance["visits"])
             beneficiary = Beneficiary()
-            if instance["entity_id"] not in existing_beneficiaries:
+            if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
                 beneficiary.gender = ""
                 beneficiary.entity_id = instance["entity_id"]
                 if instance.get("birth_date") is not None:
@@ -29,14 +30,12 @@ class PBWG:
                     beneficiary.save()
                     logger.info(f"Created new beneficiary")
             else:
-                beneficiary = Beneficiary.objects.get(entity_id=instance["entity_id"])
-
-            instance["journey"] = self.journeyMapper(instance["visits"])
+                beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"])
 
             logger.info("Retrieving journey linked to beneficiary")
 
             for journey_instance in instance["journey"]:
-                if len(journey_instance["visits"]) > 0 and journey_instance.get("nutrition_programme") is not None:
+                if len(journey_instance["visits"]) > 0:
                     journey = self.save_journey(beneficiary, journey_instance)
                     visits = ETL().save_visit(journey_instance["visits"], journey)
                     logger.info(f"Inserted {len(visits)} Visits")
@@ -154,4 +153,9 @@ class PBWG:
                     current_record["form_id"] = form_id
                     instances[i]["visits"].append(current_record)
             i = i + 1
-        return instances
+        return list(
+            filter(
+                lambda instance: (instance.get("visits") and len(instance.get("visits")) > 1),
+                instances,
+            )
+        )

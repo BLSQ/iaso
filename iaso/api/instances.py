@@ -712,4 +712,5 @@ def import_data(instances, user, app_id):
                 new_reference_instances.append(instance)
                 oucr.save()
                 oucr.new_reference_instances.set(new_reference_instances)
+                oucr.requested_fields = ["new_reference_instances"]
                 oucr.save()

@@ -210,7 +210,7 @@ class InstancesViewSet(viewsets.ViewSet):
             if form.correlatable:
                 columns.append({"title": "correlation id", "width": 20})
         else:
-            return Response({"error": "There is no form"}, status=400)
+            return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
 
         sub_columns = ["" for __ in columns]
         latest_form_version = form.latest_version

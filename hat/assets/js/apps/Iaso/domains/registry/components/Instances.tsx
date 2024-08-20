@@ -192,8 +192,7 @@ export const Instances: FunctionComponent<Props> = ({
                                             disabled={
                                                 isFetchingList ||
                                                 data?.count === 0 ||
-                                                formIds === undefined ||
-                                                formIds === null
+                                                !formIds
                                             }
                                         />
                                     </Box>

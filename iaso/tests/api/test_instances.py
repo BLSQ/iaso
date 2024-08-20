@@ -10,6 +10,8 @@ from django.contrib.gis.geos import Point
 from django.core.files import File
 from django.utils import timezone
 from django.utils.timezone import now
+from rest_framework import status
+
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.audit.models import Modification
 from iaso import models as m
@@ -1031,7 +1033,7 @@ class InstancesAPITestCase(APITestCase):
             f"/api/instances/?limit=20&order=org_unit__name&page=1&showDeleted=false&org_unit_status=VALID&csv=true",
             headers={"Content-Type": "text/csv"},
         )
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_user_restriction(self):
         full = self.create_user_with_profile(username="full", account=self.star_wars, permissions=["iaso_submissions"])

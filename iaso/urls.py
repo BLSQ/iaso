@@ -59,7 +59,6 @@ from .api.instances import InstancesViewSet
 from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
-from .api.mappings import MappingsViewSet
 from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
@@ -138,7 +137,6 @@ router.register(r"mobile/groups", MobileGroupsViewSet, basename="groupsmobile")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
 router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
-router.register(r"mappings", MappingsViewSet, basename="mappings")
 router.register(r"mappingversions", MappingVersionsViewSet, basename="mappingversions")
 router.register(r"permissions", PermissionsViewSet, basename="permissions")
 router.register(r"derivedinstances", DerivedInstancesViewSet, basename="derivedinstances")

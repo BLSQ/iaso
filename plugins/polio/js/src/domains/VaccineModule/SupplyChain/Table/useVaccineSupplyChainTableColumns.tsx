@@ -69,6 +69,17 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 },
             },
             {
+                Header: formatMessage(MESSAGES.dosesRequested),
+                accessor: 'quantities_ordered_in_doses',
+                Cell: settings => (
+                    <NumberCell
+                        value={
+                            settings.row.original.quantities_ordered_in_doses
+                        }
+                    />
+                ),
+            },
+            {
                 Header: formatMessage(MESSAGES.startDate),
                 accessor: 'start_date',
                 sortable: true,

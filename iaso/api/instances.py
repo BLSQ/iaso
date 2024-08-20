@@ -210,12 +210,11 @@ class InstancesViewSet(viewsets.ViewSet):
             filename = "%s-%s" % (filename, form.id)
             if form.correlatable:
                 columns.append({"title": "correlation id", "width": 20})
+        else:
+            return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
 
         sub_columns = ["" for __ in columns]
-        # TODO: Check the logic here, it's going to fail in any case if there is no form
-        # Don't know what we are trying to achieve exactly
-        # The type ignore is obviously wrong since the type can be null, but the frontend always send forms.
-        latest_form_version = form.latest_version  # type: ignore
+        latest_form_version = form.latest_version
         questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
         if form and latest_form_version:
             file_content_template = questions_by_name

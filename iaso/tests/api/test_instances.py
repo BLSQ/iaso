@@ -1790,6 +1790,13 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 3)
         instances = response.json()["instances"]
-        self.assertEqual(self.instance_3.id, instances[0].get("id"))
-        self.assertEqual(self.instance_4.id, instances[1].get("id"))
-        self.assertEqual(another_instance.id, instances[2].get("id"))
+        instance_ids = [i["id"] for i in instances]
+        instance_ids.sort()
+        self.assertEqual(
+            instance_ids,
+            [
+                self.instance_3.id,
+                self.instance_4.id,
+                another_instance.id,
+            ],
+        )

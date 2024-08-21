@@ -60,7 +60,6 @@ from .api.instances import InstancesViewSet
 from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
-from .api.mappings import MappingsViewSet
 from .api.microplanning import AssignmentViewSet, MobilePlanningViewSet, PlanningViewSet, TeamViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityViewSet
@@ -78,12 +77,11 @@ from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
 from .api.org_unit_validation_status import ValidationStatusViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
-from .api.payments.views import PaymentLotsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
+from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
 from .api.permissions import PermissionsViewSet
 from .api.profiles import ProfilesViewSet
 from .api.projects import ProjectsViewSet
-from .api.payments.views import PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet, PaymentLotsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
@@ -140,7 +138,6 @@ router.register(r"mobile/groups", MobileGroupsViewSet, basename="groupsmobile")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
 router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
-router.register(r"mappings", MappingsViewSet, basename="mappings")
 router.register(r"mappingversions", MappingVersionsViewSet, basename="mappingversions")
 router.register(r"permissions", PermissionsViewSet, basename="permissions")
 router.register(r"derivedinstances", DerivedInstancesViewSet, basename="derivedinstances")

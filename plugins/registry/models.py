@@ -6,6 +6,9 @@ def get_default_whitelist():
 
 
 class PublicRegistryConfig(models.Model):
+    class Meta:
+        app_label = "registry"
+
     host = models.URLField(unique=True)
     slug = models.SlugField(unique=True)
     whitelist = models.JSONField(default=get_default_whitelist)

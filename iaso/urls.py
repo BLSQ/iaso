@@ -1,9 +1,9 @@
 import pkgutil
-from typing import Union, List
+from typing import List, Union
 
-from django.contrib import auth
 from django.conf import settings
-from django.urls import path, include, URLPattern, URLResolver
+from django.contrib import auth
+from django.urls import URLPattern, URLResolver, include, path
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
@@ -11,6 +11,7 @@ from hat.api.token_authentication import token_auth
 from iaso import matching
 from iaso.api.config import ConfigViewSet
 from iaso.api.data_store import DataStoreViewSet
+from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
@@ -18,11 +19,12 @@ from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
 from iaso.models import MatchingAlgorithm
 from plugins.router import router as plugins_router
+
 from .api.accounts import AccountViewSet
 from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
-from .api.apps import AppsViewSet
 from .api.api_tokens import APITokenViewSet
+from .api.apps import AppsViewSet
 from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.comment import CommentViewSet
@@ -37,13 +39,13 @@ from .api.devices_ownership import DevicesOwnershipViewSet
 from .api.devices_position import DevicesPositionViewSet
 from .api.dhis2_resources import DHIS2_VIEWSETS
 from .api.enketo import (
-    enketo_edit_url,
-    enketo_create_url,
-    enketo_form_list,
     EnketoSubmissionAPIView,
+    enketo_create_url,
+    enketo_edit_url,
     enketo_form_download,
-    enketo_public_launch,
+    enketo_form_list,
     enketo_public_create_url,
+    enketo_public_launch,
 )
 from .api.entity import EntityViewSet
 from .api.entity_types import EntityTypeViewSet
@@ -53,49 +55,48 @@ from .api.form_attachments import FormAttachmentsViewSet
 from .api.form_versions import FormVersionsViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
 from .api.groups import GroupsViewSet
-from .api.mobile.groups import MobileGroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
 from .api.instances import InstancesViewSet
 from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
-from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
-from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
+from .api.microplanning import AssignmentViewSet, MobilePlanningViewSet, PlanningViewSet, TeamViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
+from .api.mobile.groups import MobileGroupsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
+from .api.modules import ModulesViewSet
 from .api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
 from .api.org_unit_change_requests.views_mobile import MobileOrgUnitChangeRequestViewSet
 from .api.org_unit_tree.views import OrgUnitTreeViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
+from .api.org_unit_validation_status import ValidationStatusViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
+from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
 from .api.permissions import PermissionsViewSet
 from .api.profiles import ProfilesViewSet
 from .api.projects import ProjectsViewSet
-from .api.payments.views import PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet, PaymentLotsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
-from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device, StorageBlacklistedViewSet
+from .api.storage import StorageBlacklistedViewSet, StorageLogViewSet, StorageViewSet, logs_per_device
 from .api.tasks import TaskSourceViewSet
-from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
+from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
+from .api.user_roles import UserRolesViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
+from .api.workflows.import_export import export_workflow, import_workflow
 from .api.workflows.mobile import MobileWorkflowViewSet
 from .api.workflows.versions import WorkflowVersionViewSet
-from .api.workflows.import_export import export_workflow, import_workflow
-from .api.org_unit_validation_status import ValidationStatusViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
-from .api.user_roles import UserRolesViewSet
-from .api.modules import ModulesViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -185,6 +186,7 @@ router.register(r"validationstatus", ValidationStatusViewSet, basename="validati
 router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="lastupdates")
 router.register(r"modules", ModulesViewSet, basename="modules")
 router.register(r"configs", ConfigViewSet, basename="jsonconfigs")
+
 
 router.register(r"mobile/bulkupload", MobileBulkUploadsViewSet, basename="mobilebulkupload")
 router.registry.extend(plugins_router.registry)

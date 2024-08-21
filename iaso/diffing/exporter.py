@@ -1,12 +1,13 @@
 import json
 from pprint import pprint
-
+from typing import List
 import dhis2.exceptions
 from dhis2 import Api
 from django.contrib.gis.geos import GEOSGeometry
 
 from iaso.models import generate_id_for_dhis_2
 from .comparisons import as_field_types
+from .comparisons import Diff, Comparison
 
 
 def all_slices(iterables, size: int):
@@ -67,7 +68,7 @@ class Exporter:
     def __init__(self, logger):
         self.iaso_logger = logger
 
-    def export_to_dhis2(self, api, diffs, fields, task=None):
+    def export_to_dhis2(self, api: Api, diffs: List[Diff], fields, task=None):
         if task:
             task.report_progress_and_stop_if_killed(
                 progress_message="Creating new Org Units", progress_value=0, end_value=3
@@ -85,7 +86,7 @@ class Exporter:
         self.iaso_logger.ok("   ------ Modified groups----")
         self.update_groups(api, diffs, fields)
 
-    def create_missings(self, api, diffs, task=None):
+    def create_missings(self, api, diffs: List[Diff], task=None):
         to_create_diffs = list(filter(lambda x: x.status == "new", diffs))
         self.iaso_logger.info("orgunits to create : ", len(to_create_diffs))
 
@@ -99,6 +100,10 @@ class Exporter:
         index = 0
         for to_create in to_create_diffs:
             name_comparison = to_create.comparison("name")
+
+            if name_comparison is None:
+                raise Exception("can't create missing orgunit " + to_create.org_unit.path)
+
             self.iaso_logger.info("----", name_comparison.after, to_create.org_unit.path)
 
             payload = {
@@ -147,7 +152,7 @@ class Exporter:
             payload["coordinates"] = json.dumps(geometry["coordinates"])
             payload["featureType"] = to_dhis2_feature_type(geometry["type"])
 
-    def update_orgunits(self, api: Api, diffs, task=None):
+    def update_orgunits(self, api: Api, diffs: List[Diff], task=None):
         support_by_update_fields = ("name", "parent", "geometry", "opening_date", "closed_date")
         to_update_diffs = list(
             filter(lambda x: x.status == "modified" and x.are_fields_modified(support_by_update_fields), diffs)
@@ -219,12 +224,25 @@ class Exporter:
             if task and index % 10 == 0:
                 task.report_progress_and_stop_if_killed(progress_message="Updating Orgunits", progress_value=index)
 
-    def apply_comparison(self, payload, comparison):
+    def fill_in_date(self, field_name: str, dhis_field_name: str, comparison: Comparison, payload):
+        if comparison.field == field_name and comparison.after is None:
+            payload[dhis_field_name] = None
+            return
+
+        if comparison.field == field_name and comparison.after:
+            payload[dhis_field_name] = comparison.after.strftime("%Y-%m-%dT%H:%M:%S")
+            return
+
+    def apply_comparison(self, payload, comparison: Comparison):
         # TODO ideally move to FieldTypes in comparisons.py
         if comparison.field == "name":
             payload[comparison.field] = comparison.after
             return
 
+        if comparison.field == "geometry" and comparison.after is None:
+            payload["geometry"] = None
+            payload["coordinates"] = None
+            return
         if comparison.field == "geometry":
             self.fill_geometry_or_coordinates(comparison, payload)
             return
@@ -234,20 +252,20 @@ class Exporter:
             return
 
         if comparison.field == "opening_date":
-            payload["openingDate"] = comparison.after.strftime("%Y-%m-%dT%H:%M:%S")
+            self.fill_in_date("opening_date", "openingDate", comparison, payload)
             return
 
         if comparison.field == "closed_date":
-            payload["closedDate"] = comparison.after.strftime("%Y-%m-%dT%H:%M:%S")
+            self.fill_in_date("closed_date", "closedDate", comparison, payload)
             return
 
         raise Exception("unsupported field", comparison.field)
 
-    def fill_parent_id(self, comparison, payload):
+    def fill_parent_id(self, comparison: Comparison, payload):
         if comparison.after:
             payload["parent"] = {"id": comparison.after}
 
-    def update_groups(self, api, diffs, fields):
+    def update_groups(self, api, diffs: List[Diff], fields):
         support_by_update_fields = [field for field in fields if field.startswith("groupset:")]
         to_update_diffs = list(
             filter(

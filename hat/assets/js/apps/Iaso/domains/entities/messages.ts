@@ -182,8 +182,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Updated',
     },
     created_at: {
-        id: 'iaso.forms.created_at',
-        defaultMessage: 'Created',
+        id: 'iaso.instance.source_created_at',
+        defaultMessage: 'Created on device',
     },
     attributes: {
         defaultMessage: 'Submission',

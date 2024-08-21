@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import { Box } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -7,13 +7,17 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { Box } from '@mui/material';
-import { Vaccine } from '../../../../../constants/types';
-import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
-import MESSAGES from '../../messages';
-import { DateInput, NumberInput } from '../../../../../components/Inputs';
-import { useSaveIncident } from '../../hooks/api';
+import React, { FunctionComponent } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import {
+    DateInput,
+    NumberInput,
+    TextInput,
+} from '../../../../../components/Inputs';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
+import { Vaccine } from '../../../../../constants/types';
+import { useSaveIncident } from '../../hooks/api';
+import MESSAGES from '../../messages';
 import { useIncidentOptions } from './useIncidentOptions';
 import { useIncidentValidation } from './validation';
 
@@ -42,6 +46,8 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
         initialValues: {
             id: incident?.id,
             stock_correction: incident?.stock_correction,
+            title: incident?.title,
+            comment: incident?.comment,
             incident_report_received_by_rrt:
                 incident?.incident_report_received_by_rrt,
             date_of_incident_report: incident?.date_of_incident_report,
@@ -86,6 +92,17 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         withMarginTop
                     />
                 </Box>
+
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.title)}
+                        name="title"
+                        component={TextInput}
+                        required
+                        shrinkLabel={false}
+                    />
+                </Box>
+                <Box mb={2} />
                 <Field
                     label={formatMessage(
                         MESSAGES.incident_report_received_by_rrt,
@@ -116,6 +133,13 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
+                <Field
+                    label={formatMessage(MESSAGES.comment)}
+                    name="comment"
+                    multiline
+                    component={TextInput}
+                    shrinkLabel={false}
+                />
             </ConfirmCancelModal>
         </FormikProvider>
     );

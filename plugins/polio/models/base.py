@@ -1239,12 +1239,15 @@ class IncidentReport(models.Model):
         PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
         BROKEN = "broken", _("Broken")
         UNREADABLE_LABEL = "unreadable_label", _("Unreadable label")
+        OTHER = "other", _("Other")
 
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
 
     stock_correction = models.CharField(
         max_length=50, choices=StockCorrectionChoices.choices, default=StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
     )
+    title = models.CharField(max_length=255, null=True)
+    comment = models.TextField(blank=True, null=True)
     date_of_incident_report = models.DateField()  # Date du document
     incident_report_received_by_rrt = models.DateField()  # Date reception document
     unusable_vials = models.PositiveIntegerField()

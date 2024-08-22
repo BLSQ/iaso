@@ -193,14 +193,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.physical_inventory',
         defaultMessage: 'Physical inventory',
     },
-    physical_inventory_usable: {
-        id: 'iaso.polio.label.physical_inventory_usable',
-        defaultMessage: 'Physical inventory usable',
-    },
-    physical_inventory_unusable: {
-        id: 'iaso.polio.label.physical_inventory_unusable',
-        defaultMessage: 'Physical inventory unusable',
-    },
     stealing: {
         id: 'iaso.polio.label.stealing',
         defaultMessage: 'Theft',
@@ -324,19 +316,19 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Comment',
     },
     movement: {
-        id: 'iaso.label.movement',
+        id: 'iaso.polio.label.movement',
         defaultMessage: 'Movement',
     },
     vialsOut: {
-        id: 'iaso.label.vialsOut',
+        id: 'iaso.polio.label.vialsOut',
         defaultMessage: 'Vials Out',
     },
     usableVialsIn: {
-        id: 'iaso.label.usableVialsIn',
+        id: 'iaso.polio.label.usableVialsIn',
         defaultMessage: 'Usable Vials In',
     },
     unusableVialsIn: {
-        id: 'iaso.label.unusableVialsIn',
+        id: 'iaso.polio.label.unusableVialsIn',
         defaultMessage: 'Unusable Vials In',
     },
     plainMovement: {

@@ -30,7 +30,7 @@ class PBWG:
                     beneficiary.save()
                     logger.info(f"Created new beneficiary")
             else:
-                beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"])
+                beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
 
             logger.info("Retrieving journey linked to beneficiary")
 

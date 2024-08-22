@@ -12,10 +12,16 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
-from plugins.polio.models import (DOSES_PER_VIAL, Campaign, DestructionReport,
-                                  IncidentReport, OutgoingStockMovement,
-                                  VaccineArrivalReport, VaccineRequestForm,
-                                  VaccineStock)
+from plugins.polio.models import (
+    DOSES_PER_VIAL,
+    Campaign,
+    DestructionReport,
+    IncidentReport,
+    OutgoingStockMovement,
+    VaccineArrivalReport,
+    VaccineRequestForm,
+    VaccineStock,
+)
 
 vaccine_stock_id_param = openapi.Parameter(
     name="vaccine_stock",

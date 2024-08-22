@@ -225,6 +225,8 @@ export const useIncidentTableColumns = (
                 accessor: 'title',
                 id: 'title',
                 sortable: true,
+                Cell: settings =>
+                    settings.row.original.title || textPlaceholder,
             },
             {
                 Header: formatMessage(MESSAGES.incident_report_received_by_rrt),

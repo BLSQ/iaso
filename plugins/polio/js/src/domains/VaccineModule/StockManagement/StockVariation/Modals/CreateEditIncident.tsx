@@ -52,7 +52,7 @@ type Props = {
  *      * Increases unusable vials
  *      * Total vial count remains the same
  *    - Example: 100 vials expire
- *      * usable_vials: -100
+ *      * usable_vials: 100
  *      * unusable_vials: +100
  *
  * 2. missingMovement:
@@ -63,23 +63,23 @@ type Props = {
  *      * Unusable vials remain unchanged
  *      * Total vial count decreases
  *    - Example: 50 vials are stolen
- *      * usable_vials: -50
+ *      * usable_vials: 50
  *      * unusable_vials: 0
  *
  * 3. inventory:
  *    - Used for: physical_inventory
- *    - Behavior: Adjusts the count of either usable or unusable vials based on physical inventory
+ *    - Behavior: Adjusts the count of either usable or unusable vials in based on physical inventory
  *    - Effect:
- *      * User chooses between adjusting usable or unusable vials
+ *      * User chooses between usable or unusable vials
  *      * The chosen type (usable or unusable) can be increased or decreased
  *      * The other type is automatically set to zero
  *      * Total vial count may increase or decrease
  *    - Example 1: Physical count shows 20 more usable vials than recorded
- *      * usable_vials: +20
+ *      * usable_vials: 20
  *      * unusable_vials: 0
  *    - Example 2: Physical count shows 10 fewer unusable vials than recorded
  *      * usable_vials: 0
- *      * unusable_vials: -10
+ *      * unusable_vials: 10
  *
  * Note: The actual addition or subtraction of vials is handled by the backend.
  * This frontend component is responsible for correctly categorizing the movement,

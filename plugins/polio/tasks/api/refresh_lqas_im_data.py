@@ -41,7 +41,6 @@ class RefreshLQASIMDataPostSerializer(ExternalTaskPostSerializer):
         validated_data = super().validate(attrs)
         request = self.context["request"]
         config_slug = self.context.get("config_slug", None)
-        print("DOES IT WORK", config_slug)
         slug = validated_data.get("slug", None)
         config = validated_data.get("config", None)
         id_field = validated_data.get("id_field", None)

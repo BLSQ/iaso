@@ -283,7 +283,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
         mutation_input = (
             {"id": pipeline, "versionId": pipeline_version, "config": oh_config}
             if pipeline_version
-            else {"id": pipeline, "config": config}
+            else {"id": pipeline, "config": oh_config}
         )
         try:
             run_mutation = gql(

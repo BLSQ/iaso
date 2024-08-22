@@ -80,7 +80,7 @@ class GroupDropdownSerializer(serializers.ModelSerializer):
 class GroupsViewSet(ModelViewSet):
     f"""Groups API
 
-    This API is restricted to users having the "{permission.ORG_UNITS}" and "{permission.COMPLETENESS_STATS}" permission
+    This API is restricted to users having the "{permission.ORG_UNITS}", "{permission.ORG_UNITS_READ}" and "{permission.COMPLETENESS_STATS}" permission
 
     GET /api/groups/
     GET /api/groups/<id>
@@ -91,7 +91,7 @@ class GroupsViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.ORG_UNITS, permission.COMPLETENESS_STATS),  # type: ignore
+        HasPermission(permission.ORG_UNITS, permission.ORG_UNITS_READ, permission.COMPLETENESS_STATS),  # type: ignore
         HasGroupPermission,
     ]
     serializer_class = GroupSerializer

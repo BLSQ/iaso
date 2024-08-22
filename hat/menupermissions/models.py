@@ -39,6 +39,7 @@ _LINKS = "iaso_links"
 _MAPPINGS = "iaso_mappings"
 _MODULES = "iaso_modules"
 _ORG_UNITS = "iaso_org_units"
+_ORG_UNITS_READ = "iaso_org_units_read"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
 _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
 _ORG_UNITS_CHANGE_REQUEST_REVIEW = "iaso_org_unit_change_request_review"
@@ -130,6 +131,7 @@ LINKS = _PREFIX + _LINKS
 MAPPINGS = _PREFIX + _MAPPINGS
 MODULES = _PREFIX + _MODULES
 ORG_UNITS = _PREFIX + _ORG_UNITS
+ORG_UNITS_READ = _PREFIX + _ORG_UNITS_READ
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
 ORG_UNITS_CHANGE_REQUEST_REVIEW = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_REVIEW
@@ -236,6 +238,7 @@ class CustomPermissionSupport(models.Model):
             (_MODULES, _("modules")),
             (_COMPLETENESS, _("Complétude des données")),
             (_ORG_UNITS, _("Unités d'organisations")),
+            (_ORG_UNITS_READ, _("Lire les unités d'organisations")),
             (_REGISTRY_WRITE, _("Editer le Registre")),
             (_REGISTRY_READ, _("Lire le Registre")),
             (_LINKS, _("Correspondances sources")),

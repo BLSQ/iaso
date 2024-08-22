@@ -25,6 +25,8 @@ import ValueWithErrorBoundary from './ValueWithErrorBoundary';
 
 import MESSAGES from '../../forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm.tsx';
+import { ORG_UNITS } from '../../../utils/permissions.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -183,40 +185,42 @@ const LogCompareComponent = ({
                     alignItems="center"
                     justifyContent="center"
                 >
-                    <Grid xs={6} item>
-                        <ConfirmDialog
-                            btnMessage={formatMessage(
-                                LOG_MESSAGES.goToRevision,
-                            )}
-                            question={formatMessage(
-                                LOG_MESSAGES.goToRevisionQuestion,
-                            )}
-                            message={formatMessage(
-                                LOG_MESSAGES.goToRevisionText,
-                            )}
-                            confirm={() => goToRevision(l)}
-                        />
-                    </Grid>
-                    {isNewValue && (
+                    <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
                         <Grid xs={6} item>
                             <ConfirmDialog
                                 btnMessage={formatMessage(
-                                    LOG_MESSAGES.goToRevisionChanges,
+                                    LOG_MESSAGES.goToRevision,
                                 )}
                                 question={formatMessage(
                                     LOG_MESSAGES.goToRevisionQuestion,
                                 )}
                                 message={formatMessage(
-                                    LOG_MESSAGES.goToRevisionTextChanges,
+                                    LOG_MESSAGES.goToRevisionText,
                                 )}
-                                confirm={() =>
-                                    goToRevision({
-                                        fields: differenceArray[i],
-                                    })
-                                }
+                                confirm={() => goToRevision(l)}
                             />
                         </Grid>
-                    )}
+                        {isNewValue && (
+                            <Grid xs={6} item>
+                                <ConfirmDialog
+                                    btnMessage={formatMessage(
+                                        LOG_MESSAGES.goToRevisionChanges,
+                                    )}
+                                    question={formatMessage(
+                                        LOG_MESSAGES.goToRevisionQuestion,
+                                    )}
+                                    message={formatMessage(
+                                        LOG_MESSAGES.goToRevisionTextChanges,
+                                    )}
+                                    confirm={() =>
+                                        goToRevision({
+                                            fields: differenceArray[i],
+                                        })
+                                    }
+                                />
+                            </Grid>
+                        )}
+                    </DisplayIfUserHasPerm>
                 </Grid>
             </Paper>
         );

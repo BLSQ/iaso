@@ -581,9 +581,8 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.assertTrue(set(createds.items()).issubset(set(diff.items())))
 
-    def test_create_org_unit_with_read_permission(self):
-        self.client.force_authenticate(self.user_read_permission)
-        response = self.client.post(
+    def set_up_org_unit_creation(self):
+        return self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
             data={
@@ -601,28 +600,17 @@ class OrgUnitAPITestCase(APITestCase):
                 "opening_date": "01-01-2024",
             },
         )
+
+    def test_create_org_unit_with_read_permission(self):
+        """Check that we cannot create org unit with org units read only permission"""
+        self.client.force_authenticate(self.user_read_permission)
+        response = self.set_up_org_unit_creation()
         self.assertJSONResponse(response, 403)
 
     def test_create_org_unit(self):
+        """Check that we can create org unit with only org units management permission"""
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
-            format="json",
-            data={
-                "id": None,
-                "name": "Test ou",
-                "org_unit_type_id": self.jedi_council.pk,
-                "groups": [],
-                "sub_source": "",
-                "status": False,
-                "aliases": ["my alias"],
-                "validation_status": "NEW",
-                "parent_id": "",
-                "source_ref": "",
-                "creation_source": "dashboard",
-                "opening_date": "01-01-2024",
-            },
-        )
+        response = self.set_up_org_unit_creation()
         self.assertJSONResponse(response, 200)
         json = response.json()
         self.assertValidOrgUnitData(json)
@@ -852,7 +840,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.created_at, old_ou.created_at)
         self.assertNotEqual(ou.updated_at, old_ou.updated_at)
 
-    def test_edit_org_unit_unflag_reference_instance(self):
+    def set_up_edit_org_flag_reference_instance(self, user):
         org_unit = self.jedi_council_corruscant
         form = self.reference_form
         instance = self.instance_related_to_reference_form
@@ -862,7 +850,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertIn(instance, org_unit.reference_instances.all())
 
         # GET /api/orgunits/id.
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(user)
         response = self.client.get(f"/api/orgunits/{org_unit.id}/")
         data = self.assertJSONResponse(response, 200)
 
@@ -874,6 +862,11 @@ class OrgUnitAPITestCase(APITestCase):
                 "reference_instance_action": m.Instance.REFERENCE_UNFLAG_CODE,
             }
         )
+
+        return org_unit, instance, data
+
+    def test_edit_org_unit_unflag_reference_instance(self):
+        org_unit, instance, data = self.set_up_edit_org_flag_reference_instance(self.yoda)
         response = self.client.patch(
             f"/api/orgunits/{org_unit.id}/",
             format="json",
@@ -884,27 +877,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.data["reference_instances"], [])
 
     def test_edit_org_unit_reference_instance_read_permission(self):
-        org_unit = self.jedi_council_corruscant
-        form = self.reference_form
-        instance = self.instance_related_to_reference_form
-
-        # Create a reference instance.
-        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, instance=instance, form=form)
-        self.assertIn(instance, org_unit.reference_instances.all())
-
-        # GET /api/orgunits/id.
-        self.client.force_authenticate(self.user_read_permission)
-        response = self.client.get(f"/api/orgunits/{org_unit.id}/")
-        data = self.assertJSONResponse(response, 200)
-
-        # PATCH /api/orgunits/id.
-        data.update(
-            {
-                "groups": [g["id"] for g in response.data["groups"]],
-                "reference_instance_id": instance.id,
-                "reference_instance_action": m.Instance.REFERENCE_UNFLAG_CODE,
-            }
-        )
+        org_unit, _, data = self.set_up_edit_org_flag_reference_instance(self.user_read_permission)
         response = self.client.patch(
             f"/api/orgunits/{org_unit.id}/",
             format="json",
@@ -958,8 +931,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(old_modification_date, old_ou.updated_at)
         self.assertNotIn(self.instance_not_related_to_reference_form, old_ou.reference_instances.all())
 
-    def test_edit_org_unit_partial_update(self):
-        """Check tha we can only modify a part of the fille"""
+    def set_up_org_unit_partial_update(self):
         ou = m.OrgUnit(version=self.sw_version_1)
         ou.name = "test ou"
         ou.source_ref = "b"
@@ -970,8 +942,14 @@ class OrgUnitAPITestCase(APITestCase):
         ou.groups.set([group_a, group_b])
         ou.save()
         old_modification_date = ou.updated_at
-        self.client.force_authenticate(self.yoda)
         data = {"source_ref": "new source ref", "opening_date": "01-01-2024"}
+
+        return ou, group_a, group_b, old_modification_date, data
+
+    def test_edit_org_unit_partial_update(self):
+        """Check that we can only modify a part of the file with org units management permission"""
+        ou, group_a, group_b, old_modification_date, data = self.set_up_org_unit_partial_update()
+        self.client.force_authenticate(self.yoda)
         response = self.client.patch(
             f"/api/orgunits/{ou.id}/",
             format="json",
@@ -988,19 +966,9 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.data["reference_instances"], [])
 
     def test_edit_org_unit_partial_update_read_permission(self):
-        """Check tha we can only modify a part of the fille"""
-        ou = m.OrgUnit(version=self.sw_version_1)
-        ou.name = "test ou"
-        ou.source_ref = "b"
-        group_a = m.Group.objects.create(name="test group a")
-        group_b = m.Group.objects.create(name="test group b")
-        ou.geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
-        ou.save()
-        ou.groups.set([group_a, group_b])
-        ou.save()
-        old_modification_date = ou.updated_at
+        """Check that we can only modify a part of the file with org units read only permission"""
+        ou, _, _, _, data = self.set_up_org_unit_partial_update()
         self.client.force_authenticate(self.user_read_permission)
-        data = {"source_ref": "new source ref", "opening_date": "01-01-2024"}
         response = self.client.patch(
             f"/api/orgunits/{ou.id}/",
             format="json",

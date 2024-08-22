@@ -119,7 +119,10 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
                 f"Expected payment status to be one of {','.join(PaymentStatuses.values)}, got {value}"
             )
         if value == PaymentStatuses.PENDING:
-            pending_filter = Q(payment__isnull=True) | Q(payment__status=PaymentStatuses.PENDING)
+            pending_filter = (
+                Q(payment__isnull=True)
+                & (Q(potential_payment__isnull=False) | Q(status=OrgUnitChangeRequest.Statuses.APPROVED.value))
+            ) | Q(payment__status=PaymentStatuses.PENDING)
             return queryset.filter(pending_filter)
         else:
             return queryset.filter(payment__status=value)

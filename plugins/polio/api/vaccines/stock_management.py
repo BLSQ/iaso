@@ -1,8 +1,9 @@
 import enum
 from typing import Union
-from drf_yasg import openapi
+
 from django.db.models import QuerySet
-from drf_yasg.utils import swagger_auto_schema, no_body
+from drf_yasg import openapi
+from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import filters, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -11,16 +12,10 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
-from plugins.polio.models import (
-    Campaign,
-    DestructionReport,
-    IncidentReport,
-    OutgoingStockMovement,
-    VaccineArrivalReport,
-    VaccineRequestForm,
-    VaccineStock,
-    DOSES_PER_VIAL,
-)
+from plugins.polio.models import (DOSES_PER_VIAL, Campaign, DestructionReport,
+                                  IncidentReport, OutgoingStockMovement,
+                                  VaccineArrivalReport, VaccineRequestForm,
+                                  VaccineStock)
 
 vaccine_stock_id_param = openapi.Parameter(
     name="vaccine_stock",
@@ -174,6 +169,7 @@ class VaccineStockCalculator:
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.OTHER
             ):
                 results.append(
                     {
@@ -261,6 +257,7 @@ class VaccineStockCalculator:
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.OTHER
             ):
                 results.append(
                     {

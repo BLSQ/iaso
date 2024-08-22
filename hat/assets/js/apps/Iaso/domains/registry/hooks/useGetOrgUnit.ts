@@ -16,7 +16,7 @@ type FetchOrgUnitsListResult = {
     fetchOrgUnit: (orgUnit: OrgUnit) => Promise<OrgUnit | Error>;
 };
 
-export const useFetchOrgUnits = (): FetchOrgUnitsListResult => {
+export const useFetchOrgUnits = (appId?: string): FetchOrgUnitsListResult => {
     const queryClient = useQueryClient();
     const [isFetching, setIsFetching] = useState(false);
 
@@ -24,9 +24,13 @@ export const useFetchOrgUnits = (): FetchOrgUnitsListResult => {
         async (orgUnit: OrgUnit): Promise<OrgUnit | Error> => {
             setIsFetching(true);
             try {
+                let url = `/api/orgunits/${orgUnit.id}/`
+                if (appId) {
+                    url += `?app_id=${appId}`;
+                }
                 const result = await queryClient.fetchQuery<OrgUnit>(
                     ['orgUnit', orgUnit.id],
-                    () => getRequest(`/api/orgunits/${orgUnit.id}/`),
+                    () => getRequest(url),
                     {
                         staleTime: 1000 * 60 * 5, // Example: 5 minutes stale time
                     },

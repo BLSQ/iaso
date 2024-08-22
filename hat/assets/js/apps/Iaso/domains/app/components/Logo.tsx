@@ -1,9 +1,9 @@
-import React, { FunctionComponent, useContext } from 'react';
 import { Theme } from '@mui/material';
+import React, { FunctionComponent, useContext } from 'react';
 
 import { makeStyles } from '@mui/styles';
-import { LogoSvg } from './LogoSvg';
 import { ThemeConfigContext } from '../contexts/ThemeConfigContext';
+import { LogoSvg } from './LogoSvg';
 
 const useStyles = makeStyles((theme: Theme) => ({
     text: {
@@ -18,13 +18,12 @@ export const Logo: FunctionComponent = () => {
         useContext(ThemeConfigContext);
     const classes = useStyles();
     const showAppName = SHOW_NAME_WITH_LOGO === 'yes';
-    const staticUrl = window.STATIC_URL ?? '/static/';
     if (LOGO_PATH && APP_TITLE !== 'Iaso') {
         return (
             <>
                 <img
                     alt="logo"
-                    src={`${staticUrl}${LOGO_PATH}`}
+                    src={`${window.STATIC_URL}${LOGO_PATH}`}
                     style={{ maxHeight: '50px', maxWidth: '200px' }}
                 />
                 {showAppName && (

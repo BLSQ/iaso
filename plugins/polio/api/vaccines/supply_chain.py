@@ -388,6 +388,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "obr_name",
             "po_numbers",
             "rounds",
+            "quantities_ordered_in_doses",
             "start_date",
             "end_date",
             "doses_shipped",
@@ -458,6 +459,10 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.order_by("vaccine_type")
         elif current_order == "-vaccine_type":
             queryset = queryset.order_by("-vaccine_type")
+        elif current_order == "quantities_ordered_in_doses":
+            queryset = queryset.order_by("quantities_ordered_in_doses")
+        elif current_order == "-quantities_ordered_in_doses":
+            queryset = queryset.order_by("-quantities_ordered_in_doses")
 
         # handle the case where there are no rounds
         elif current_order == "start_date":

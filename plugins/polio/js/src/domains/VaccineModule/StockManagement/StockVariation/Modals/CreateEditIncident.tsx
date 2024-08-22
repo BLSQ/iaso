@@ -1,4 +1,11 @@
-import { Box } from '@mui/material';
+import {
+    Box,
+    FormControl,
+    FormControlLabel,
+    Radio,
+    RadioGroup,
+    Typography,
+} from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -7,7 +14,7 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import {
     DateInput,
@@ -31,6 +38,72 @@ type Props = {
     vaccineStockId: string;
 };
 
+/**
+ * Incident Report Movement Types Documentation
+ *
+ * This module handles different types of vaccine stock movements for incident reports.
+ * There are four main types of movements, each with its own behavior:
+ *
+ * 1. plainMovement:
+ *    - Used for: vaccine_expired, unreadable_label, vvm_reached_discard_point
+ *    - Behavior: Vials are still present but change from usable to unusable
+ *    - Effect:
+ *      * Decreases usable vials
+ *      * Increases unusable vials
+ *      * Total vial count remains the same
+ *    - Example: 100 vials expire
+ *      * usable_vials: -100
+ *      * unusable_vials: +100
+ *
+ * 2. missingMovement:
+ *    - Used for: broken, stealing, return, losses
+ *    - Behavior: Vials are no longer present in the inventory
+ *    - Effect:
+ *      * Decreases usable vials
+ *      * Unusable vials remain unchanged
+ *      * Total vial count decreases
+ *    - Example: 50 vials are stolen
+ *      * usable_vials: -50
+ *      * unusable_vials: 0
+ *
+ * 3. inventory:
+ *    - Used for: physical_inventory
+ *    - Behavior: Adjusts the count of either usable or unusable vials based on physical inventory
+ *    - Effect:
+ *      * User chooses between adjusting usable or unusable vials
+ *      * The chosen type (usable or unusable) can be increased or decreased
+ *      * The other type is automatically set to zero
+ *      * Total vial count may increase or decrease
+ *    - Example 1: Physical count shows 20 more usable vials than recorded
+ *      * usable_vials: +20
+ *      * unusable_vials: 0
+ *    - Example 2: Physical count shows 10 fewer unusable vials than recorded
+ *      * usable_vials: 0
+ *      * unusable_vials: -10
+ *
+ * Note: The actual addition or subtraction of vials is handled by the backend.
+ * This frontend component is responsible for correctly categorizing the movement,
+ * allowing the user to choose between usable and unusable vials for inventory movements,
+ * and sending the appropriate values to the API.
+ */
+type IncidentReportFieldType =
+    | 'plainMovement'
+    | 'missingMovement'
+    | 'inventory';
+type IncidentReportConfig = {
+    [key: string]: IncidentReportFieldType;
+};
+
+const incidentReportConfig: IncidentReportConfig = {
+    broken: 'missingMovement',
+    stealing: 'missingMovement',
+    return: 'missingMovement',
+    losses: 'missingMovement',
+    vaccine_expired: 'plainMovement',
+    unreadable_label: 'plainMovement',
+    vvm_reached_discard_point: 'plainMovement',
+    physical_inventory: 'inventory',
+};
 export const CreateEditIncident: FunctionComponent<Props> = ({
     incident,
     isOpen,
@@ -42,6 +115,67 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveIncident();
     const validationSchema = useIncidentValidation();
+
+    const [inventoryType, setInventoryType] = React.useState(() => {
+        if (incident && incident.stock_correction === 'physical_inventory') {
+            return incident.usable_vials > 0 ? 'usable' : 'unusable';
+        }
+        return 'usable';
+    });
+
+    const handleInventoryTypeChange = (
+        event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        setInventoryType(event.target.value);
+        formik.setFieldValue(
+            event.target.value === 'usable' ? 'unusable_vials' : 'usable_vials',
+            0,
+        );
+    };
+
+    const getInitialMovement = useCallback(() => {
+        if (!incident) return 0;
+        const movementType = incidentReportConfig[incident.stock_correction];
+        return movementType === 'inventory' ? 0 : incident.usable_vials;
+    }, [incident]);
+
+    const handleSubmit = useCallback(
+        (values: any) => {
+            const movementType = incidentReportConfig[values.stock_correction];
+            const { movement } = values;
+
+            let usableVials = 0;
+            let unusableVials = 0;
+
+            switch (movementType) {
+                case 'plainMovement':
+                    usableVials = movement;
+                    unusableVials = movement;
+                    break;
+                case 'missingMovement':
+                    usableVials = movement;
+                    break;
+                case 'inventory':
+                    usableVials =
+                        inventoryType === 'usable' ? values.usable_vials : 0;
+                    unusableVials =
+                        inventoryType === 'unusable'
+                            ? values.unusable_vials
+                            : 0;
+                    break;
+                default:
+                    break;
+            }
+
+            const submissionValues = {
+                ...values,
+                usable_vials: usableVials,
+                unusable_vials: unusableVials,
+            };
+            save(submissionValues);
+        },
+        [inventoryType, save],
+    );
     const formik = useFormik<any>({
         initialValues: {
             id: incident?.id,
@@ -51,11 +185,12 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             incident_report_received_by_rrt:
                 incident?.incident_report_received_by_rrt,
             date_of_incident_report: incident?.date_of_incident_report,
-            usable_vials: incident?.usable_vials,
-            unusable_vials: incident?.unusable_vials,
+            usable_vials: incident?.usable_vials || 0,
+            unusable_vials: incident?.unusable_vials || 0,
+            movement: getInitialMovement(),
             vaccine_stock: vaccineStockId,
         },
-        onSubmit: values => save(values),
+        onSubmit: handleSubmit,
         validationSchema,
     });
     const incidentTypeOptions = useIncidentOptions();
@@ -64,6 +199,31 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
         titleMessage,
     )} ${formatMessage(MESSAGES.incidentReports)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
+
+    const currentMovementType =
+        incidentReportConfig[formik.values.stock_correction];
+    const getMovementDescription = (
+        movementType: IncidentReportFieldType,
+        movement: number,
+    ) => {
+        if (movementType === 'plainMovement') {
+            return formatMessage(MESSAGES.plainMovement, { movement });
+        }
+        if (movementType === 'missingMovement') {
+            return formatMessage(MESSAGES.missingMovement, { movement });
+        }
+        return '';
+    };
+
+    const getMovementLabel = (movementType: IncidentReportFieldType) => {
+        switch (movementType) {
+            case 'plainMovement':
+            case 'missingMovement':
+                return MESSAGES.vialsOut;
+            default:
+                return MESSAGES.movement;
+        }
+    };
 
     return (
         <FormikProvider value={formik}>
@@ -117,22 +277,70 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                     component={DateInput}
                     required
                 />
-                <Box mb={2}>
-                    <Field
-                        label={formatMessage(MESSAGES.usable_vials)}
-                        name="usable_vials"
-                        component={NumberInput}
-                        required
-                    />
-                </Box>
-                <Box mb={2}>
-                    <Field
-                        label={formatMessage(MESSAGES.unusable_vials)}
-                        name="unusable_vials"
-                        component={NumberInput}
-                        required
-                    />
-                </Box>
+
+                {currentMovementType && currentMovementType !== 'inventory' && (
+                    <Box mb={2}>
+                        <Field
+                            label={formatMessage(
+                                getMovementLabel(currentMovementType),
+                            )}
+                            name="movement"
+                            component={NumberInput}
+                            required
+                        />
+                        <Typography variant="body2">
+                            {getMovementDescription(
+                                currentMovementType,
+                                formik.values.movement,
+                            )}
+                        </Typography>
+                    </Box>
+                )}
+                {currentMovementType && currentMovementType === 'inventory' && (
+                    <>
+                        <Box mb={2}>
+                            <FormControl component="fieldset">
+                                <RadioGroup
+                                    aria-label="inventory type"
+                                    name="inventoryType"
+                                    value={inventoryType}
+                                    onChange={handleInventoryTypeChange}
+                                >
+                                    <FormControlLabel
+                                        value="usable"
+                                        control={<Radio />}
+                                        label={formatMessage(
+                                            MESSAGES.usableVialsIn,
+                                        )}
+                                    />
+                                    <FormControlLabel
+                                        value="unusable"
+                                        control={<Radio />}
+                                        label={formatMessage(
+                                            MESSAGES.unusableVialsIn,
+                                        )}
+                                    />
+                                </RadioGroup>
+                            </FormControl>
+                        </Box>
+                        <Box mb={2}>
+                            <Field
+                                label={formatMessage(
+                                    inventoryType === 'usable'
+                                        ? MESSAGES.usableVialsIn
+                                        : MESSAGES.unusableVialsIn,
+                                )}
+                                name={
+                                    inventoryType === 'usable'
+                                        ? 'usable_vials'
+                                        : 'unusable_vials'
+                                }
+                                component={NumberInput}
+                                required
+                            />
+                        </Box>
+                    </>
+                )}
                 <Field
                     label={formatMessage(MESSAGES.comment)}
                     name="comment"

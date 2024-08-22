@@ -1,18 +1,18 @@
 /* eslint-disable camelcase */
-import React, { useMemo } from 'react';
-import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import EditIcon from '@mui/icons-material/Edit';
-import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
-import MESSAGES from '../../messages';
+import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import React, { useMemo } from 'react';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import { EditFormA } from '../Modals/CreateEditFormA';
-import { Vaccine } from '../../../../../constants/types';
-import { EditDestruction } from '../Modals/CreateEditDestruction';
-import { EditIncident } from '../Modals/CreateEditIncident';
-import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasPermission } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { STOCK_MANAGEMENT_WRITE } from '../../../../../constants/permissions';
+import { Vaccine } from '../../../../../constants/types';
+import MESSAGES from '../../messages';
+import { EditDestruction } from '../Modals/CreateEditDestruction';
+import { EditFormA } from '../Modals/CreateEditFormA';
+import { EditIncident } from '../Modals/CreateEditIncident';
 
 import {
     useDeleteDestruction,
@@ -219,6 +219,12 @@ export const useIncidentTableColumns = (
                               MESSAGES[settings.row.original.stock_correction],
                           )
                         : textPlaceholder,
+            },
+            {
+                Header: formatMessage(MESSAGES.title),
+                accessor: 'title',
+                id: 'title',
+                sortable: true,
             },
             {
                 Header: formatMessage(MESSAGES.incident_report_received_by_rrt),

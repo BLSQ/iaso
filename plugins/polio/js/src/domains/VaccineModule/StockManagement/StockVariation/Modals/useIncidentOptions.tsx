@@ -64,10 +64,10 @@ export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
                 label: formatMessage(MESSAGES[BROKEN]),
                 value: BROKEN,
             },
-            {
-                label: formatMessage(MESSAGES[OTHER]),
-                value: OTHER,
-            },
+            // {
+            //     label: formatMessage(MESSAGES[OTHER]),
+            //     value: OTHER,
+            // },
             {
                 label: formatMessage(MESSAGES[UNREADABLE_LABEL]),
                 value: UNREADABLE_LABEL,

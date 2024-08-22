@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { ReactElement, useMemo } from 'react';
 import {
     Column,
     IconButton,
@@ -18,6 +18,8 @@ import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/compon
 import { useDeleteVrf } from '../hooks/api/vrf';
 import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { POLIO_SUPPLY_CHAIN_WRITE } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import { SupplyChainList } from '../types';
+import { ColumnCell } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
 export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -46,8 +48,10 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.poNumbers),
                 accessor: 'po_numbers',
-                Cell: settings => {
-                    const poNumbers = settings.row.original?.po_numbers ?? '';
+                Cell: ({
+                    row: { original },
+                }: ColumnCell<SupplyChainList>): ReactElement => {
+                    const poNumbers = original?.po_numbers ?? '';
                     const poNumbersList = poNumbers.split(',');
                     return (
                         <>
@@ -69,6 +73,19 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 },
             },
             {
+                Header: formatMessage(MESSAGES.dosesRequested),
+                accessor: 'quantities_ordered_in_doses',
+                Cell: ({
+                    row: { original },
+                }: ColumnCell<SupplyChainList>): ReactElement => {
+                    return (
+                        <NumberCell
+                            value={original.quantities_ordered_in_doses}
+                        />
+                    );
+                },
+            },
+            {
                 Header: formatMessage(MESSAGES.startDate),
                 accessor: 'start_date',
                 sortable: true,
@@ -83,9 +100,11 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.dosesShipped),
                 accessor: 'doses_shipped',
-                Cell: settings => (
-                    <NumberCell value={settings.row.original.doses_shipped} />
-                ),
+                Cell: ({
+                    row: { original },
+                }: ColumnCell<SupplyChainList>): ReactElement => {
+                    return <NumberCell value={original.doses_shipped} />;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.estimatedDateOfArrival),
@@ -103,21 +122,21 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
                 sortable: false,
-                Cell: settings => {
+                Cell: ({
+                    row: { original },
+                }: ColumnCell<SupplyChainList>): ReactElement => {
                     return (
                         <>
                             <IconButton
                                 icon="edit"
                                 overrideIcon={EditIcon}
                                 tooltipMessage={MESSAGES.edit}
-                                url={`/${baseUrls.vaccineSupplyChainDetails}/id/${settings.row.original.id}`}
+                                url={`/${baseUrls.vaccineSupplyChainDetails}/id/${original.id}`}
                             />
                             <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}
                                 message={MESSAGES.deleteVRFWarning}
-                                onConfirm={() =>
-                                    deleteVrf(settings.row.original.id)
-                                }
+                                onConfirm={() => deleteVrf(original.id)}
                             />
                         </>
                     );

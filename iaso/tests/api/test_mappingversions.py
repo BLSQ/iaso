@@ -14,7 +14,9 @@ class FormsVersionAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.maxDiff = None
         star_wars = m.Account.objects.create(name="Star Wars")
+        cls.star_wars = star_wars
         dc = m.Account.objects.create(name="DC Comics")
+        cls.dc = dc
         dc_source = m.DataSource.objects.create(name="Batcave")
         cls.dc_source = dc_source
         dc_version = m.SourceVersion.objects.create(data_source=dc_source, number=1)
@@ -60,14 +62,14 @@ class FormsVersionAPITestCase(APITestCase):
         cls.project.save()
 
     def test_mappingversions_update(self):
-        """PUT /mappingversions/<form_id>: not authorized for now"""
+        """PUT /mappingversions/<mappingversion_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.put(f"/api/mappingversions/33/", data={})
         self.assertJSONResponse(response, 405)
 
     def test_mappingversions_destroy(self):
-        """DELETE /formversions/<form_id>: not authorized for now"""
+        """DELETE /mappingversions/<mappingversion_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f"/api/mappingversions/33/")
@@ -247,6 +249,82 @@ class FormsVersionAPITestCase(APITestCase):
         )
 
         self.assertEqual(resp.json(), {"question_mappings.question_1": "should have a valueType"})
+
+    def test_mappingversions_list_filters_mapping_types(self):
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+
+        self.create_mapping_version(form_version, self.sw_source)
+
+        resp = self.client.get(f"/api/mappingversions/")
+
+        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+
+        resp = self.client.get(f"/api/mappingversions/?mappingTypes=EVENT")
+        self.assertEqual(len(resp.json()["mapping_versions"]), 0)
+
+        resp = self.client.get(f"/api/mappingversions/?mappingTypes=AGGREGATE")
+        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+
+    def test_mappingversions_list_filters_form_id(self):
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+
+        self.create_mapping_version(form_version, self.sw_source)
+
+        resp = self.client.get(f"/api/mappingversions/")
+
+        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+
+        resp = self.client.get(f"/api/mappingversions/?formId={self.form_1.id}")
+        self.assertEqual(len(resp.json()["mapping_versions"]), 0)
+
+        resp = self.client.get(f"/api/mappingversions/?formId={self.form_2.id}")
+        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+
+    def test_mappingversions_list_filters_org_unit_type_ids(self):
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+
+        other_org_unit_type = m.OrgUnitType.objects.create(name="Sith Council", short_name="Cnc")
+
+        self.create_mapping_version(form_version, self.sw_source)
+
+        resp = self.client.get(f"/api/mappingversions/")
+
+        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+
+        resp = self.client.get(f"/api/mappingversions/?orgUnitTypeIds={self.sith_council.id}")
+        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+
+        resp = self.client.get(f"/api/mappingversions/?orgUnitTypeIds={other_org_unit_type.id}")
+        self.assertEqual(len(resp.json()["mapping_versions"]), 0)
+
+        resp = self.client.get(f"/api/mappingversions/?orgUnitTypeIds={other_org_unit_type.id},{self.sith_council.id}")
+        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+
+    def test_mappingversions_list_filters_project_ids(self):
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+
+        self.create_mapping_version(form_version, self.sw_source)
+
+        other_project = m.Project.objects.create(
+            name="Fly me to the moon", app_id="stars.empire.flymetothemoon", account=self.dc
+        )
+
+        resp = self.client.get(f"/api/mappingversions/")
+
+        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+
+        resp = self.client.get(f"/api/mappingversions/?projectsIds={self.project.id}")
+        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
+
+        resp = self.client.get(f"/api/mappingversions/?projectsIds={other_project.id}")
+        self.assertEqual(len(resp.json()["mapping_versions"]), 0)
+
+        resp = self.client.get(f"/api/mappingversions/?projectsIds={other_project.id},{self.project.id}")
+        self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
     def create_form_version(self):
         with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb") as xls_file:

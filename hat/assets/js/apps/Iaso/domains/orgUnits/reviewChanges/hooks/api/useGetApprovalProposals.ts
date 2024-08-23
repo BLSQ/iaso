@@ -31,6 +31,8 @@ export const useGetApprovalProposals = (
         with_location: params.withLocation,
         projects: params.projectIds,
         payment_status: params.paymentStatus,
+        payment_ids: params.paymentIds,
+        potential_payment_ids: params.potentialPaymentIds,
     };
 
     const url = makeUrlWithParams(apiUrl, apiParams);

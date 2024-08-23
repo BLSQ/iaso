@@ -180,6 +180,8 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'projectIds',
             'paymentStatus',
             ...paginationPathParams,
+            'paymentIds',
+            'potentialPaymentIds',
         ],
     },
     registry: {

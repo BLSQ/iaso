@@ -717,6 +717,8 @@
     "iaso.label.videos": "Vidéos",
     "iaso.label.view": "Visualiser",
     "iaso.label.viewChangeRequestforLot": "Voir les demandes de changement pour ce lot de paiements",
+    "iaso.label.viewChangeRequestsForPayment": "Voir les demandes de changements pour ce paiement",
+    "iaso.label.viewChangeRequestsForPotentialPayment": "Voir les demandes de changements pour ce paiement potentiel",
     "iaso.label.viewChangeRequestsForUser": "Voir les demandes de changement pour cet utilisateur",
     "iaso.label.viewDetails": "Voir les détails",
     "iaso.label.viewOrgUnit": "Voir l'unité d'org.",

@@ -26,6 +26,7 @@ class BulkCreateCsvTestCase(APITestCase):
         "permissions",
         "user_roles",
         "projects",
+        "phone_number",
     ]
 
     @classmethod
@@ -476,6 +477,7 @@ class BulkCreateCsvTestCase(APITestCase):
                 "permissions": "",
                 "user_roles": "",
                 "projects": "",
+                "phone_number": "",
             }
         )
         csv_bytes = csv_str.getvalue().encode()

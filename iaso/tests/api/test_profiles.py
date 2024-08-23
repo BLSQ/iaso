@@ -216,7 +216,8 @@ class ProfileAPITestCase(APITestCase):
             "dhis2_id,"
             "permissions,"
             "user_roles,"
-            "projects\r\n"
+            "projects,"
+            "phone_number\r\n"
         )
 
         expected_csv += "janedoe,,,,,,,,,iaso_forms,,\r\n"
@@ -254,6 +255,7 @@ class ProfileAPITestCase(APITestCase):
                 "permissions",
                 "user_roles",
                 "projects",
+                "phone_number",
             ],
         )
 
@@ -294,6 +296,7 @@ class ProfileAPITestCase(APITestCase):
                 },
                 "user_roles": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
                 "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.id},
+                "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
             },
         )
 

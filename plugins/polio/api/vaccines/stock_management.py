@@ -166,16 +166,28 @@ class VaccineStockCalculator:
                         "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     }
                 )
-            if report.unusable_vials > 0 and (
-                report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.LOSSES
+            if report.usable_vials > 0 and (
+                report.stock_correction == IncidentReport.StockCorrectionChoices.LOSSES
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.RETURN
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.STEALING
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
+            ):
+                results.append(
+                    {
+                        "date": report.date_of_incident_report,
+                        "action": report.stock_correction,
+                        "vials_in": None,
+                        "doses_in": None,
+                        "vials_out": report.usable_vials or 0,
+                        "doses_out": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    }
+                )
+            if report.unusable_vials > 0 and (
+                report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.OTHER
+                # or report.stock_correction == IncidentReport.StockCorrectionChoices.OTHER
             ):
                 results.append(
                     {
@@ -263,7 +275,7 @@ class VaccineStockCalculator:
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.OTHER
+                # or report.stock_correction == IncidentReport.StockCorrectionChoices.OTHER
             ):
                 results.append(
                     {

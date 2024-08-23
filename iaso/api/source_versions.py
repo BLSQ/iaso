@@ -69,7 +69,7 @@ class SourceVersionViewSet(ModelViewSet):
     f"""Data source API
 
     This API is restricted to authenticated users having at least one of the "{permission.MAPPINGS}",
-    "{permission.ORG_UNITS}", and "{permission.LINKS}" permissions
+    "{permission.ORG_UNITS}","{permission.ORG_UNITS_READ}", and "{permission.LINKS}" permissions
 
     GET /api/sourceversions/
     GET /api/sourceversions/<id>
@@ -89,7 +89,7 @@ class SourceVersionViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.MAPPINGS, permission.ORG_UNITS, permission.LINKS),  # type: ignore
+        HasPermission(permission.MAPPINGS, permission.ORG_UNITS, permission.ORG_UNITS_READ, permission.LINKS),  # type: ignore
     ]
 
     serializer_class = SourceVersionSerializer

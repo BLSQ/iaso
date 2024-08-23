@@ -18,6 +18,8 @@ export type ApproveOrgUnitParams = UrlParams & {
     withLocation?: string;
     projectIds?: string;
     paymentStatus?: 'pending' | 'sent' | 'rejected' | 'paid';
+    paymentIds?: string; // comma separated ids
+    potentialPaymentIds?: string; // comma separated ids
 };
 export type Group = {
     id: number;

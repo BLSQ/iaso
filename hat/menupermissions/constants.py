@@ -8,6 +8,7 @@ MODULE_PERMISSIONS = {
     ],
     "DEFAULT": [
         "iaso_org_units",
+        "iaso_org_units_read",
         "iaso_org_unit_types",
         "iaso_org_unit_groups",
         "iaso_sources",
@@ -94,6 +95,7 @@ PERMISSIONS_PRESENTATION = {
     ],
     "org_units": [
         "iaso_org_units",
+        "iaso_org_units_read",
         "iaso_org_unit_types",
         "iaso_org_unit_groups",
         "iaso_sources",

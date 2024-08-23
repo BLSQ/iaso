@@ -194,6 +194,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.viewChangeRequestforLot',
         defaultMessage: 'View change requests for this payment lot',
     },
+    viewChangeRequestsForPotentialPayment: {
+        id: 'iaso.label.viewChangeRequestsForPotentialPayment',
+        defaultMessage: 'View change requests for this potential payment',
+    },
+    viewChangeRequestsForPayment: {
+        id: 'iaso.label.viewChangeRequestsForPayment',
+        defaultMessage: 'View change requests for this payment',
+    },
 });
 
 export default MESSAGES;

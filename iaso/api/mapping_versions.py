@@ -1,5 +1,5 @@
 import typing
-
+from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers, permissions
 
@@ -176,6 +176,10 @@ class MappingVersionsViewSet(ModelViewSet):
     This API is restricted to authenticated users having the "{permission.MAPPINGS}" permission
 
     GET /api/mappingversions/
+        order
+        projectsIds orgUnitTypeIds (comma seperated ids)
+        mappingTypes
+        formId form_id (comma seperated ids)
     GET /api/mappingversions/<id>
     POST /api/mappingversions/
     PATCH /api/mappingversions/<id>
@@ -197,9 +201,33 @@ class MappingVersionsViewSet(ModelViewSet):
             form_version_id__in=FormVersion.objects.filter(form__projects__account=profile.account)
         )
 
-        form_id = self.request.GET.get("form_id")
+        search_term = self.request.GET.get("search") or self.request.GET.get("search")
+        if search_term:
+            queryset = queryset.filter(
+                Q(form_version__version_id__icontains=search_term) | Q(mapping__form__name__icontains=search_term)
+            )
+
+        # keep backward compatibiliy with previous api form_id and formId
+        form_id = self.request.GET.get("form_id") or self.request.GET.get("formId")
         if form_id:
-            queryset = queryset.filter(form_version__form_id=form_id)
+            form_ids = str(form_id).split(",")
+            # todo fix client to not send undefined
+            form_ids = [id for id in form_ids if id != "undefined"]
+            if len(form_ids) > 0:
+                queryset = queryset.filter(form_version__form_id__in=form_ids)
+
+        mapping_types = self.request.GET.get("mappingTypes")
+
+        if mapping_types:
+            queryset = queryset.filter(mapping__mapping_type__in=mapping_types.split(","))
+
+        org_unit_type_ids = self.request.query_params.get("orgUnitTypeIds")
+        if org_unit_type_ids:
+            queryset = queryset.filter(mapping__form__org_unit_types__id__in=org_unit_type_ids.split(","))
+
+        projects_ids = self.request.query_params.get("projectsIds")
+        if projects_ids:
+            queryset = queryset.filter(mapping__form__projects__id__in=projects_ids.split(","))
 
         queryset = queryset.order_by(*orders)
 

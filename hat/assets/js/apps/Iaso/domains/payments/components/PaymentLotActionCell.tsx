@@ -32,11 +32,14 @@ export const PaymentLotActionCell = ({
     const userIds = [
         ...new Set(paymentLot.payments.map(payment => payment.user.id)),
     ].join(',');
+    const paymentIds = [
+        ...new Set(paymentLot.payments.map(payment => payment.id)),
+    ].join(',');
     return (
         <>
             <IconButton
                 icon="remove-red-eye"
-                url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${userIds}`}
+                url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${userIds}/paymentIds/${paymentIds}`}
                 // TODO add correct message
                 tooltipMessage={MESSAGES.viewChangeRequestforLot}
             />

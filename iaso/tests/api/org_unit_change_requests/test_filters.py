@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 from django.contrib.gis.geos import Point
 
 from iaso import models as m
+from iaso.models.payments import PaymentStatuses
 from iaso.test import APITestCase
 
 
@@ -251,3 +252,56 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertIn(m.OrgUnitChangeRequest.Statuses.NEW, result_statuses)
         self.assertIn(m.OrgUnitChangeRequest.Statuses.REJECTED, result_statuses)
         self.assertNotIn(m.OrgUnitChangeRequest.Statuses.APPROVED, result_statuses)
+
+    def test_filter_on_payment_status(self):
+        # Should not show up, because no payment status
+        change_request_new = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="New Request", status=m.OrgUnitChangeRequest.Statuses.NEW
+        )
+
+        # Should show when filtering on "PENDING" status
+        change_request_approved = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="Approved Request", status=m.OrgUnitChangeRequest.Statuses.APPROVED
+        )
+
+        # Should show when filtering on "PENDING" status
+        change_request_with_potential_payment = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Approved Request with Potential Payment",
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+        )
+        potential_payment = m.PotentialPayment.objects.create(user=self.user_with_review_perm)
+        change_request_with_potential_payment.potential_payment = potential_payment
+        change_request_with_potential_payment.save()
+
+        # Should show when filtering on "PAID" status
+
+        change_request_with_payment = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Approved Request with Payment",
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+        )
+        payment = m.Payment.objects.create(user=self.user_with_review_perm, status=PaymentStatuses.PAID.value)
+        change_request_with_payment.payment = payment
+        change_request_with_payment.save()
+        # Authenticate the user
+        self.client.force_authenticate(self.user)
+
+        # Test filter on Pending status
+        response = self.client.get("/api/orgunits/changes/?payment_status=pending")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["results"]), 2)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_approved.id, result_ids)
+        self.assertIn(change_request_with_potential_payment.id, result_ids)
+        self.assertNotIn(change_request_with_payment.id, result_ids)
+        self.assertNotIn(change_request_new.id, result_ids)
+        # Test filter on PAID status
+        response = self.client.get("/api/orgunits/changes/?payment_status=paid")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["results"]), 1)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_with_payment.id, result_ids)
+        self.assertNotIn(change_request_with_potential_payment.id, result_ids)
+        self.assertNotIn(change_request_approved.id, result_ids)
+        self.assertNotIn(change_request_new.id, result_ids)

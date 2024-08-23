@@ -213,7 +213,7 @@ describe('Workflows details', () => {
             cy.get('@firstRow')
                 .find('td')
                 .eq(1)
-                .should('contain', 'Last name = last_name_value');
+                .should('contain', 'Last name [last_name] = last_name_value');
             cy.get('@firstRow').find('td').eq(2).should('contain', 'FORM_2');
             cy.get('@firstRow')
                 .find('td')
@@ -227,7 +227,10 @@ describe('Workflows details', () => {
             cy.get('@secondRow')
                 .find('td')
                 .eq(1)
-                .should('contain', 'Gender = Male AND Entity Group = Group A');
+                .should(
+                    'contain',
+                    'Gender [gender] = Male AND Entity Group [entity_group] = Group A',
+                );
             cy.get('@secondRow').find('td').eq(2).should('contain', 'FORM_3');
             cy.get('@secondRow')
                 .find('td')

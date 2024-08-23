@@ -121,7 +121,7 @@ class VaccineStockCalculator:
 
     def get_list_of_vaccines_received(self):
         """
-        Vaccines received are only those linked to an arrival report. We exclude those found e;g during physical inventory
+        Vaccines received are only those linked to an arrival report. We exclude those found e.g. during physical inventory
         """
         # First find the corresponding VaccineRequestForms
         vrfs = VaccineRequestForm.objects.filter(
@@ -259,7 +259,7 @@ class VaccineStockCalculator:
         return results
 
     def get_list_of_unusable_vials(self):
-        # First get the used viald
+        # First get the used vials
         results = self.get_list_of_used_vials()
 
         # Get all IncidentReports and Destruction reports for the VaccineStock

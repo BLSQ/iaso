@@ -27,6 +27,7 @@ import {
 import { UserCell } from '../../../../components/Cells/UserCell';
 import { colorCodes } from '../Dialogs/ReviewOrgUnitChangesInfos';
 import { ColumnCell } from '../../../../types/general';
+import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
 
 const useColumns = (
     setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>,
@@ -128,6 +129,12 @@ const useColumns = (
                 id: 'created_by__username',
                 accessor: 'created_by',
                 Cell: UserCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.paymentStatus),
+                id: 'payment_status',
+                accessor: 'payment_status',
+                Cell: BreakWordCell,
             },
             {
                 Header: formatMessage(MESSAGES.updated_at),

@@ -37,6 +37,9 @@ import MESSAGES from '../messages';
 
 // HOOKS
 import { useGetOrgUnitsTableColumns } from '../hooks/useGetOrgUnitsTableColumns';
+import { userHasPermission } from '../../users/utils';
+import { ORG_UNITS } from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
 // HOOKS
 
 type Props = {
@@ -54,7 +57,7 @@ export const TableList: FunctionComponent<Props> = ({
     saveMulti,
 }) => {
     const { formatMessage } = useSafeIntl();
-
+    const currentUser = useCurrentUser();
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
     const [selection, setSelection] = useState<Selection<OrgUnit>>(
@@ -69,7 +72,8 @@ export const TableList: FunctionComponent<Props> = ({
     const columns = useGetOrgUnitsTableColumns(searches);
 
     const multiEditDisabled =
-        !selection.selectAll && selection.selectedItems.length === 0;
+        !userHasPermission(ORG_UNITS, currentUser) ||
+        (!selection.selectAll && selection.selectedItems.length === 0);
 
     const handleTableSelection = useCallback(
         (selectionType, items = [], totalCount = 0) => {

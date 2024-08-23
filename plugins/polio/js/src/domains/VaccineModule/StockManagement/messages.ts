@@ -303,10 +303,6 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Are you sure you want to delete this incident report ?',
     },
-    other: {
-        id: 'iaso.label.other',
-        defaultMessage: 'Other',
-    },
     title: {
         id: 'iaso.polio.label.title',
         defaultMessage: 'Title',

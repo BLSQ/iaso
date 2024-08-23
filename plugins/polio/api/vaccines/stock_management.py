@@ -175,7 +175,6 @@ class VaccineStockCalculator:
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.OTHER
             ):
                 results.append(
                     {
@@ -263,7 +262,6 @@ class VaccineStockCalculator:
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.OTHER
             ):
                 results.append(
                     {

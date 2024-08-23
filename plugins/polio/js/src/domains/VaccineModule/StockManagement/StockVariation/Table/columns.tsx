@@ -14,6 +14,7 @@ import { EditDestruction } from '../Modals/CreateEditDestruction';
 import { EditFormA } from '../Modals/CreateEditFormA';
 import { EditIncident } from '../Modals/CreateEditIncident';
 
+import { BreakWordCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/BreakWordCell';
 import {
     useDeleteDestruction,
     useDeleteFormA,
@@ -225,8 +226,7 @@ export const useIncidentTableColumns = (
                 accessor: 'title',
                 id: 'title',
                 sortable: true,
-                Cell: settings =>
-                    settings.row.original.title || textPlaceholder,
+                Cell: BreakWordCell,
             },
             {
                 Header: formatMessage(MESSAGES.incident_report_received_by_rrt),

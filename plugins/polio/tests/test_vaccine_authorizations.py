@@ -658,10 +658,11 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         # test the function itself to check if the content is correct
 
         response = expired_vaccine_authorizations_email_alert(vaccine_auths, mailing_list)
-
-        page_url = f"example.com/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{self.team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
+        domain = settings.DNS_DOMAIN
+        print("DOMAIN", domain)
+        print("BODY", mail.outbox[0].body)
+        page_url = f"{domain}/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{self.team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
         url_is_correct = False
-
         if page_url in mail.outbox[0].body:
             url_is_correct = True
 

@@ -528,7 +528,7 @@ class ETL:
         age = current_record.get("age__int__", None)
         registration_date = current_record.get("registration_date", None)
         calculated_date = None
-        if age_entry is not None and age_entry != "":
+        if (age_entry is not None and age_entry != "") and (age is not None and age != ""):
             beneficiary_age = int(age)
             registered_at = datetime.strptime(registration_date[:10], "%Y-%m-%d").date()
             if age_entry == "years":

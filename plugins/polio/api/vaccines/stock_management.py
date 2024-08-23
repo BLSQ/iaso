@@ -259,7 +259,7 @@ class VaccineStockCalculator:
         return results
 
     def get_list_of_unusable_vials(self):
-        # First get the used viald
+        # First get the used vials
         results = self.get_list_of_used_vials()
 
         # Get all IncidentReports and Destruction reports for the VaccineStock

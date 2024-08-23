@@ -29,7 +29,7 @@ def filter_for_power_bi(queryset: QuerySet) -> QuerySet:
     the last 3 months of data.
 
     However, it seems difficult to compute dynamic queries in Power BI.
-    They can't compute "today - 3 months" and use e.g. `created_at__gte`.
+    They can't compute "today - 3 months" and use `created_at__gte`.
 
     To solve this, we added a `power_bi_limit=true` param that returns only
     the last 3 months of data.
@@ -56,7 +56,7 @@ class ChronogramFilter(django_filters.rest_framework.FilterSet):
         fields = ["search", "country"]
 
     def filter_power_bi_limit(self, queryset: QuerySet, _, value: str) -> QuerySet:
-        if bool(value) is True:
+        if value and value.lower() in ["1", "true"]:
             return filter_for_power_bi(queryset)
         return queryset
 
@@ -72,6 +72,6 @@ class ChronogramTaskFilter(django_filters.rest_framework.FilterSet):
         fields = ["chronogram_id", "period", "status"]
 
     def filter_power_bi_limit(self, queryset: QuerySet, _, value: str) -> QuerySet:
-        if bool(value) is True:
+        if value and value.lower() in ["1", "true"]:
             return filter_for_power_bi(queryset)
         return queryset

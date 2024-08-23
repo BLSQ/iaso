@@ -74,7 +74,7 @@ class VaccineStockCalculator:
 
     def get_total_of_usable_vials(self):
         results = self.get_list_of_usable_vials()
-
+        print('RESULTS', results)
         total_vials_in = 0
         total_doses_in = 0
 

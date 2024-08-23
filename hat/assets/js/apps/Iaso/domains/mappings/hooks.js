@@ -15,8 +15,7 @@ export const useGetMappingVersions = params => {
     if (params.formId) {
         params['form_id'] = params.formId;
     }
-    const safeParams = useApiParams(params, defaultQueryParams);
-    const queryString = new URLSearchParams(safeParams);
+    const queryString = new URLSearchParams(useApiParams(params, defaultQueryParams));
     return useSnackQuery({
         queryKey: ['mappingversions', params],
         queryFn: () =>

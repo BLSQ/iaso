@@ -3,7 +3,7 @@ import React, { useState, FunctionComponent, useCallback } from 'react';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
@@ -16,9 +16,7 @@ import { useGetFormsDropdownOptions } from '../hooks/requests/useGetFormsDropdow
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes';
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-}));
+const useStyles = makeStyles(theme => ({}));
 
 type Params = {
     pageSize: string;

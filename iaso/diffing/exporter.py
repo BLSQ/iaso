@@ -314,6 +314,17 @@ class Exporter:
                                 )
                                 modified = True
                                 self.iaso_logger.info("\t removed : ", diff.org_unit.name, diff.org_unit.id)
+                    if comparison.status == "deleted":
+                        if dhis2_group_contains(dhis2_group, diff.org_unit):
+                            dhis2_group["organisationUnits"] = list(
+                                filter(
+                                    lambda ou: ou["id"] != diff.org_unit.source_ref,
+                                    dhis2_group["organisationUnits"],
+                                )
+                            )
+                            modified = True
+                            self.iaso_logger.info("\t removed : ", diff.org_unit.name, diff.org_unit.id)
+
                 if modified:
                     self.iaso_logger.info("updating ", dhis2_group["id"], dhis2_group["name"])
                     resp = api.put("organisationUnitGroups/" + dhis2_group["id"], dhis2_group)

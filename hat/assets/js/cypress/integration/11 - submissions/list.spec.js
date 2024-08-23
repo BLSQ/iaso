@@ -79,14 +79,14 @@ const newFilters = {
     dateFrom: {
         value: '10032022',
         urlValue: '10-03-2022',
-        apiValue: '2022-03-10 00:00',
+        apiValue: '2022-03-10',
         selector: '[data-test="start-date"] input',
         type: 'text',
     },
     dateTo: {
         value: '10032023',
         urlValue: '10-03-2023',
-        apiValue: '2023-03-10 23:59',
+        apiValue: '2023-03-10',
         selector: '[data-test="end-date"] input',
         type: 'text',
     },
@@ -556,7 +556,7 @@ describe('Submissions', () => {
             cy.get('#ColumnsSelectDrawer-search').type('form');
             cy.get('@selectColumnsList').find('li').should('have.length', 2);
             cy.get('#ColumnsSelectDrawer-search-empty').click();
-            cy.get('@selectColumnsList').find('li').should('have.length', 13);
+            cy.get('@selectColumnsList').find('li').should('have.length', 14);
             const testIsActive = (keyName, withUrl = true) => {
                 cy.get('table').as('table');
                 cy.get('@table').find('thead').find('th').as('thead');

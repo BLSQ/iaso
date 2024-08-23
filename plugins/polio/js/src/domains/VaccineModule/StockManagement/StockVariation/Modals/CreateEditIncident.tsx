@@ -24,6 +24,7 @@ import {
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
 import { useSaveIncident } from '../../hooks/api';
+import { useGetMovementDescription } from '../../hooks/useGetMovementDescription';
 import MESSAGES from '../../messages';
 import { useIncidentOptions } from './useIncidentOptions';
 import { useIncidentValidation } from './validation';
@@ -86,7 +87,7 @@ type Props = {
  * allowing the user to choose between usable and unusable vials for inventory movements,
  * and sending the appropriate values to the API.
  */
-type IncidentReportFieldType =
+export type IncidentReportFieldType =
     | 'plainMovement'
     | 'missingMovement'
     | 'inventory';
@@ -104,6 +105,22 @@ const incidentReportConfig: IncidentReportConfig = {
     vvm_reached_discard_point: 'plainMovement',
     physical_inventory: 'inventory',
 };
+
+const getInitialMovement = incident => {
+    if (!incident) return 0;
+    const movementType = incidentReportConfig[incident.stock_correction];
+    return movementType === 'inventory' ? 0 : incident.usable_vials;
+};
+
+const getMovementLabel = (movementType: IncidentReportFieldType) => {
+    switch (movementType) {
+        case 'plainMovement':
+        case 'missingMovement':
+            return MESSAGES.vialsOut;
+        default:
+            return MESSAGES.movement;
+    }
+};
 export const CreateEditIncident: FunctionComponent<Props> = ({
     incident,
     isOpen,
@@ -115,6 +132,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveIncident();
     const validationSchema = useIncidentValidation();
+    const getMovementDescription = useGetMovementDescription();
 
     const [inventoryType, setInventoryType] = React.useState(() => {
         if (incident && incident.stock_correction === 'physical_inventory') {
@@ -132,12 +150,6 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             0,
         );
     };
-
-    const getInitialMovement = useCallback(() => {
-        if (!incident) return 0;
-        const movementType = incidentReportConfig[incident.stock_correction];
-        return movementType === 'inventory' ? 0 : incident.usable_vials;
-    }, [incident]);
 
     const handleSubmit = useCallback(
         (values: any) => {
@@ -187,7 +199,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             date_of_incident_report: incident?.date_of_incident_report,
             usable_vials: incident?.usable_vials || 0,
             unusable_vials: incident?.unusable_vials || 0,
-            movement: getInitialMovement(),
+            movement: getInitialMovement(incident),
             vaccine_stock: vaccineStockId,
         },
         onSubmit: handleSubmit,
@@ -202,28 +214,6 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
 
     const currentMovementType =
         incidentReportConfig[formik.values.stock_correction];
-    const getMovementDescription = (
-        movementType: IncidentReportFieldType,
-        movement: number,
-    ) => {
-        if (movementType === 'plainMovement') {
-            return formatMessage(MESSAGES.plainMovement, { movement });
-        }
-        if (movementType === 'missingMovement') {
-            return formatMessage(MESSAGES.missingMovement, { movement });
-        }
-        return '';
-    };
-
-    const getMovementLabel = (movementType: IncidentReportFieldType) => {
-        switch (movementType) {
-            case 'plainMovement':
-            case 'missingMovement':
-                return MESSAGES.vialsOut;
-            default:
-                return MESSAGES.movement;
-        }
-    };
 
     return (
         <FormikProvider value={formik}>
@@ -296,7 +286,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         </Typography>
                     </Box>
                 )}
-                {currentMovementType && currentMovementType === 'inventory' && (
+                {currentMovementType === 'inventory' && (
                     <>
                         <Box mb={2}>
                             <FormControl component="fieldset">

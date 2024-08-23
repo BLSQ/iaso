@@ -27,7 +27,8 @@ from iaso.models import Group, OrgUnit
 from iaso.models.base import Account, Task
 from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
-from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
+from iaso.utils.models.soft_deletable import (DefaultSoftDeletableManager,
+                                              SoftDeletableModel)
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -1239,7 +1240,6 @@ class IncidentReport(models.Model):
         PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
         BROKEN = "broken", _("Broken")
         UNREADABLE_LABEL = "unreadable_label", _("Unreadable label")
-        OTHER = "other", _("Other")
 
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
 

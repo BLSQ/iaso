@@ -11,7 +11,6 @@ export const STEALING = 'stealing';
 export const PHYSICAL_INVENTORY = 'physical_inventory';
 export const BROKEN = 'broken';
 export const UNREADABLE_LABEL = 'unreadable_label';
-export const OTHER = 'other';
 // from backend model.
 // class StockCorrectionChoices(models.TextChoices):
 // VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
@@ -29,8 +28,7 @@ type IncidentType =
     | 'physical_inventory'
     | 'broken'
     | 'unreadable_label'
-    | 'return'
-    | 'other';
+    | 'return';
 
 export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
     const { formatMessage } = useSafeIntl();
@@ -64,10 +62,6 @@ export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
                 label: formatMessage(MESSAGES[BROKEN]),
                 value: BROKEN,
             },
-            // {
-            //     label: formatMessage(MESSAGES[OTHER]),
-            //     value: OTHER,
-            // },
             {
                 label: formatMessage(MESSAGES[UNREADABLE_LABEL]),
                 value: UNREADABLE_LABEL,

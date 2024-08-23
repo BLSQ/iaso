@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from rest_framework.test import APIClient
+from django.contrib.sites.models import Site
 
 from beanstalk_worker.services import TestTaskService
 from hat import settings
@@ -658,10 +659,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         # test the function itself to check if the content is correct
 
         response = expired_vaccine_authorizations_email_alert(vaccine_auths, mailing_list)
-
-        page_url = f"example.com/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{self.team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
+        page_url = f"{Site.objects.get_current()}/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{self.team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
         url_is_correct = False
-
         if page_url in mail.outbox[0].body:
             url_is_correct = True
 

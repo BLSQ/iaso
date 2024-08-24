@@ -75,8 +75,14 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
     org_unit_id = serializers.CharField(read_only=True, source="org_unit.id")
     form_version_id = serializers.SerializerMethodField()
 
-    created_at = TimestampField()
-    updated_at = TimestampField()
+    created_at = serializers.SerializerMethodField()
+    updated_at = serializers.SerializerMethodField()
+
+    def get_created_at(self, instance):
+        return instance.source_created_at.timestamp() if instance.source_created_at else None
+
+    def get_updated_at(self, instance):
+        return instance.source_updated_at.timestamp() if instance.source_updated_at else None
 
     def get_form_version_id(self, obj):
         if obj.json is None:

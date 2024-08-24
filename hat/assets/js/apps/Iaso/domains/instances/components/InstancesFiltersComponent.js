@@ -177,7 +177,7 @@ const InstancesFiltersComponent = ({
     const handleFormChange = useCallback(
         (key, value) => {
             // checking only as value can be null or false
-            if (['formIds', 'projectIds'].includes(key)) {
+            if (key === 'formIds') {
                 setFormState('fieldsSearch', null);
                 setFormIds(value ? value.split(',') : undefined);
             }

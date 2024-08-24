@@ -24,6 +24,10 @@ import { Group, OrgUnit, OrgUnitState } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
 import { useGetOrgUnit } from './TreeView/requests';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
+import { ORG_UNITS } from '../../../utils/permissions';
+import { userHasPermission } from '../../users/utils';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
@@ -31,6 +35,17 @@ const useStyles = makeStyles(theme => ({
     },
     marginLeft: {
         marginLeft: `${theme.spacing(2)} !important`,
+    },
+    divAliasWrapper: {
+        position: 'relative',
+    },
+    divAliasOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        cursor: 'not-allowed',
     },
 }));
 
@@ -88,6 +103,8 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             ? `${orgUnitState.parent.value.id}`
             : undefined,
     );
+    const currentUser = useCurrentUser();
+    const hasManagementPermission = userHasPermission(ORG_UNITS, currentUser);
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={4}>
@@ -99,6 +116,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     value={orgUnitState.name.value}
                     errors={orgUnitState.name.errors}
                     label={MESSAGES.name}
+                    disabled={!hasManagementPermission}
                 />
 
                 <InputComponent
@@ -118,6 +136,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         value: t.id,
                     }))}
                     label={MESSAGES.org_unit_type_id}
+                    disabled={!hasManagementPermission}
                 />
                 <InputComponent
                     keyValue="groups"
@@ -136,14 +155,19 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         value: g.id,
                     }))}
                     label={MESSAGES.groups}
+                    disabled={!hasManagementPermission}
                 />
-
-                <InputComponent
-                    keyValue="aliases"
-                    onChange={onChangeInfo}
-                    value={orgUnitState.aliases.value}
-                    type="arrayInput"
-                />
+                <div className={classes.divAliasWrapper}>
+                    <InputComponent
+                        keyValue="aliases"
+                        onChange={onChangeInfo}
+                        value={orgUnitState.aliases.value}
+                        type="arrayInput"
+                    />
+                    {!hasManagementPermission && (
+                        <div className={classes.divAliasOverlay} />
+                    )}
+                </div>
             </Grid>
 
             <Grid item xs={12} md={4}>
@@ -157,6 +181,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     label={MESSAGES.status}
                     loading={isLoadingValidationStatusOptions}
                     options={validationStatusOptions || []}
+                    disabled={!hasManagementPermission}
                 />
                 <InputComponent
                     keyValue="source_ref"
@@ -164,6 +189,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     value={orgUnitState.source_ref.value || ''}
                     onChange={onChangeInfo}
                     errors={orgUnitState.source_ref.errors}
+                    disabled={!hasManagementPermission}
                 />
 
                 <FormControlComponent
@@ -185,48 +211,56 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         source={orgUnit.source_id}
                         initialSelection={parentOrgunit}
                         resetTrigger={resetTrigger}
+                        disabled={!hasManagementPermission}
                     />
                 </FormControlComponent>
                 <DatesRange
                     keyDateFrom="opening_date"
                     keyDateTo="closed_date"
                     onChangeDate={onChangeInfo}
-                    dateFrom={orgUnitState.opening_date.value}
-                    dateTo={orgUnitState.closed_date.value}
+                    dateFrom={
+                        orgUnitState.opening_date.value as string | undefined
+                    }
+                    dateTo={
+                        orgUnitState.closed_date.value as string | undefined
+                    }
                     labelFrom={MESSAGES.openingDate}
                     labelTo={MESSAGES.closingDate}
                     marginTop={0}
+                    disabled={!hasManagementPermission}
                 />
-                <Grid
-                    container
-                    item
-                    xs={12}
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    <Box mt={1}>
-                        {!isNewOrgunit && (
+                <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
+                    <Grid
+                        container
+                        item
+                        xs={12}
+                        justifyContent="flex-end"
+                        alignItems="center"
+                    >
+                        <Box mt={1}>
+                            {!isNewOrgunit && (
+                                <Button
+                                    className={classes.marginLeft}
+                                    disabled={!orgUnitModified}
+                                    variant="contained"
+                                    onClick={() => handleReset()}
+                                >
+                                    {formatMessage(MESSAGES.cancel)}
+                                </Button>
+                            )}
                             <Button
-                                className={classes.marginLeft}
-                                disabled={!orgUnitModified}
+                                id="save-ou"
+                                disabled={isSaveDisabled}
                                 variant="contained"
-                                onClick={() => handleReset()}
+                                className={classes.marginLeft}
+                                color="primary"
+                                onClick={handleSave}
                             >
-                                {formatMessage(MESSAGES.cancel)}
+                                {formatMessage(MESSAGES.save)}
                             </Button>
-                        )}
-                        <Button
-                            id="save-ou"
-                            disabled={isSaveDisabled}
-                            variant="contained"
-                            className={classes.marginLeft}
-                            color="primary"
-                            onClick={handleSave}
-                        >
-                            {formatMessage(MESSAGES.save)}
-                        </Button>
-                    </Box>
-                </Grid>
+                        </Box>
+                    </Grid>
+                </DisplayIfUserHasPerm>
             </Grid>
 
             <Grid item xs={12} md={4}>

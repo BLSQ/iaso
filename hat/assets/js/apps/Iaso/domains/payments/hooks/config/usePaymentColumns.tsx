@@ -99,9 +99,9 @@ export const usePaymentColumns = ({
                         return (
                             <IconButton
                                 icon="remove-red-eye"
-                                url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${settings.row.original.user.id}`}
+                                url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${settings.row.original.user.id}/potentialPaymentIds/${settings.row.original.id}`}
                                 tooltipMessage={
-                                    MESSAGES.viewChangeRequestsForUser
+                                    MESSAGES.viewChangeRequestsForPotentialPayment // change text to payment lot
                                 }
                             />
                         );
@@ -126,21 +126,30 @@ export const usePaymentColumns = ({
                     Cell: settings => {
                         const payment = settings.row.original;
                         return (
-                            <EditPaymentDialog
-                                status={payment.status}
-                                id={payment.id}
-                                iconProps={{}}
-                                user={payment.user}
-                                // if potential is false, then we know we're passing saveStatus
-                                saveStatus={
-                                    saveStatus as UseMutateAsyncFunction<
-                                        any,
-                                        any,
-                                        SavePaymentStatusArgs,
-                                        any
-                                    >
-                                }
-                            />
+                            <>
+                                <IconButton
+                                    icon="remove-red-eye"
+                                    url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${settings.row.original.user.id}/paymentIds/${payment.id}`}
+                                    tooltipMessage={
+                                        MESSAGES.viewChangeRequestsForPayment
+                                    }
+                                />
+                                <EditPaymentDialog
+                                    status={payment.status}
+                                    id={payment.id}
+                                    iconProps={{}}
+                                    user={payment.user}
+                                    // if potential is false, then we know we're passing saveStatus
+                                    saveStatus={
+                                        saveStatus as UseMutateAsyncFunction<
+                                            any,
+                                            any,
+                                            SavePaymentStatusArgs,
+                                            any
+                                        >
+                                    }
+                                />
+                            </>
                         );
                     },
                 },

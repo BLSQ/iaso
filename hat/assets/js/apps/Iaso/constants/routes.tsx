@@ -152,14 +152,14 @@ export const mappingDetailPath = {
 export const orgUnitsPath = {
     baseUrl: baseUrls.orgUnits,
     routerUrl: `${baseUrls.orgUnits}/*`,
-    permissions: [Permission.ORG_UNITS],
+    permissions: [Permission.ORG_UNITS, Permission.ORG_UNITS_READ],
     element: <OrgUnits />,
 };
 
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
     routerUrl: `${baseUrls.orgUnitDetails}/*`,
-    permissions: [Permission.ORG_UNITS],
+    permissions: [Permission.ORG_UNITS, Permission.ORG_UNITS_READ],
     element: <OrgUnitDetail />,
 };
 

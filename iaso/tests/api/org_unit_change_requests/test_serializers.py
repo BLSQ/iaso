@@ -18,6 +18,7 @@ from iaso.api.org_unit_change_requests.serializers import (
     OrgUnitChangeRequestRetrieveSerializer,
 )
 from iaso.models import OrgUnitChangeRequest
+from iaso.models.payments import PaymentStatuses
 from iaso.test import TestCase
 from iaso import models as m
 
@@ -193,10 +194,37 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "created_at": 1696856400.0,
                 "updated_by": None,
                 "updated_at": 1696856400.0,
+                "payment_status": None,
             },
         )
         self.assertCountEqual(serializer.data["requested_fields"], ["new_org_unit_type", "new_location"])
         self.assertCountEqual(serializer.data["approved_fields"], ["new_org_unit_type"])
+
+        # if status is "approved" payment status should be "pending"
+        change_request.status = OrgUnitChangeRequest.Statuses.APPROVED.value
+        change_request.save
+        serializer = OrgUnitChangeRequestListSerializer(change_request)
+        self.assertEqual(serializer.data["payment_status"], PaymentStatuses.PENDING.label)
+
+        # otherwise None
+        change_request.status = OrgUnitChangeRequest.Statuses.NEW.value
+        change_request.save
+        serializer = OrgUnitChangeRequestListSerializer(change_request)
+        self.assertEqual(serializer.data["payment_status"], None)
+
+        # if there's only a potential payment, payment_status should be "pending"
+        potential_payment = m.PotentialPayment.objects.create(user=self.user)
+        change_request.potential_payment = potential_payment
+        change_request.save
+        serializer = OrgUnitChangeRequestListSerializer(change_request)
+        self.assertEqual(serializer.data["payment_status"], PaymentStatuses.PENDING.label)
+
+        # if there's a payment, payment status should be the same as the payment's
+        payment = m.Payment.objects.create(status=PaymentStatuses.PAID.value, user=self.user)
+        change_request.payment = payment
+        change_request.save()
+        serializer = OrgUnitChangeRequestListSerializer(change_request)
+        self.assertEqual(serializer.data["payment_status"], PaymentStatuses.PAID.label)
 
 
 @time_machine.travel("2023-10-13T13:00:00.000Z", tick=False)

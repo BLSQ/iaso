@@ -7,6 +7,7 @@ import {
     ApproveOrgUnitParams,
 } from '../../types';
 import { apiUrl } from '../../constants';
+import { useLocale } from '../../../../app/contexts/LocaleContext';
 
 const getOrgUnitChangeProposals = (url: string) => {
     return getRequest(url) as Promise<OrgUnitChangeRequestsPaginated>;
@@ -15,6 +16,7 @@ const getOrgUnitChangeProposals = (url: string) => {
 export const useGetApprovalProposals = (
     params: ApproveOrgUnitParams,
 ): UseQueryResult<OrgUnitChangeRequestsPaginated, Error> => {
+    const { locale } = useLocale();
     const apiParams = {
         parent_id: params.parent_id,
         groups: params.groups,
@@ -31,11 +33,14 @@ export const useGetApprovalProposals = (
         with_location: params.withLocation,
         projects: params.projectIds,
         payment_status: params.paymentStatus,
+        payment_ids: params.paymentIds,
+        potential_payment_ids: params.potentialPaymentIds,
     };
 
     const url = makeUrlWithParams(apiUrl, apiParams);
     return useSnackQuery({
-        queryKey: ['getApprovalProposals', url],
+        // Including locale in the query key because we need to make a call to update translations coming from the backend
+        queryKey: ['getApprovalProposals', url, locale],
         queryFn: () => getOrgUnitChangeProposals(url),
         options: {
             staleTime: 1000 * 60 * 15, // in MS

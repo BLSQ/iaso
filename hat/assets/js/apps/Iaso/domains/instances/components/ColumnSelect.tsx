@@ -48,6 +48,7 @@ type Props = {
     tableColumns: Column[];
     disabled: boolean;
     instanceMetasFields?: InstanceMetasField[];
+    appId?: string;
     // eslint-disable-next-line no-unused-vars
     getActionCell?: (settings: any) => ReactElement;
 };
@@ -64,6 +65,7 @@ export const ColumnSelect: FunctionComponent<Props> = ({
     tableColumns,
     disabled = false,
     instanceMetasFields,
+    appId,
     getActionCell,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -73,7 +75,7 @@ export const ColumnSelect: FunctionComponent<Props> = ({
     );
     const formId = formIds?.length === 1 ? parseInt(formIds[0], 10) : undefined;
     const redirectToReplace = useRedirectToReplace();
-    const { possibleFields } = useGetPossibleFields(formId);
+    const { possibleFields } = useGetPossibleFields(formId, appId);
 
     const visibleColumns = useInstanceVisibleColumns({
         formDetails,

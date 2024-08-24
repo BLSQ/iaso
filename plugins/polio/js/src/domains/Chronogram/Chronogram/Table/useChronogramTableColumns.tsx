@@ -62,7 +62,8 @@ export const useChronogramTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.labelNumTaskDelayed),
                 id: 'annotated_num_task_delayed',
-                accessor: 'num_task_delayed',
+                Cell: settings =>
+                    `${settings.row.original.num_task_delayed}/${settings.row.original.tasks.length}`,
             },
             {
                 Header: formatMessage(MESSAGES.updatedAt),

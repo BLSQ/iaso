@@ -9,8 +9,8 @@ import omit from 'lodash/omit';
 import { DialogContentText } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
-import { baseUrls } from '../../../constants/urls';
-import { userHasPermission } from '../../users/utils';
+import { baseUrls } from '../../../constants/urls.ts';
+import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import MESSAGES from '../messages';
 import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
@@ -119,7 +119,10 @@ const ActionTableColumnComponent = ({ settings }) => {
 
     const showOrgUnitButton =
         settings.row.original.org_unit &&
-        userHasPermission('iaso_org_units', user) &&
+        userHasOneOfPermissions(
+            [Permission.ORG_UNITS, Permission.ORG_UNITS_READ],
+            user,
+        ) &&
         userHasPermission(Permission.SUBMISSIONS_UPDATE, user);
 
     const confirmCancelTitleMessage = isItLinked => {
@@ -189,25 +192,21 @@ const ActionTableColumnComponent = ({ settings }) => {
             )}
 
             {settings.row.original.is_locked &&
-                userHasPermission(Permission.SUBMISSIONS_UPDATE, user) && (
-                    <>
-                        {settings.row.original.can_user_modify ? (
-                            <IconButtonComponent
-                                url={getUrlInstance(settings)}
-                                overrideIcon={() => (
-                                    <LockIcon color="primary" />
-                                )}
-                                tooltipMessage={MESSAGES.lockedCanModify}
-                            />
-                        ) : (
-                            <IconButtonComponent
-                                url={getUrlInstance(settings)}
-                                overrideIcon={LockIcon}
-                                tooltipMessage={MESSAGES.lockedCannotModify}
-                            />
-                        )}
-                    </>
-                )}
+                userHasPermission(Permission.SUBMISSIONS_UPDATE, user) &&
+                (settings.row.original.can_user_modify ? (
+                    <IconButtonComponent
+                        url={getUrlInstance(settings)}
+                        // eslint-disable-next-line react/no-unstable-nested-components
+                        overrideIcon={() => <LockIcon color="primary" />}
+                        tooltipMessage={MESSAGES.lockedCanModify}
+                    />
+                ) : (
+                    <IconButtonComponent
+                        url={getUrlInstance(settings)}
+                        overrideIcon={LockIcon}
+                        tooltipMessage={MESSAGES.lockedCannotModify}
+                    />
+                ))}
         </section>
     );
 };

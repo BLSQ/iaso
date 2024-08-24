@@ -76,7 +76,19 @@ class AutoChangeRequestForInstanceFormTestCase(APITestCase):
 
         instance = Instance.objects.get(uuid=uuid)
 
-        self.assertEqual(len(instance.orgunitchangerequest_set.all()), 1)
+        self.assertEqual(instance.orgunitchangerequest_set.count(), 1)
+
+        change_request = instance.orgunitchangerequest_set.first()
+        self.assertIsNone(change_request.created_by)
+        self.assertEqual(change_request.new_name, "")
+        self.assertIsNone(change_request.new_org_unit_type)
+        self.assertEqual(change_request.new_groups.count(), 0)
+        self.assertIsNone(change_request.new_location)
+        self.assertIsNone(change_request.new_location_accuracy)
+        self.assertIsNone(change_request.new_opening_date)
+        self.assertIsNone(change_request.new_closed_date)
+        self.assertEqual(change_request.new_reference_instances.count(), 1)
+        self.assertEqual(change_request.requested_fields, ["new_reference_instances"])
 
         # checking if no change request is created for a form with the option activated
         uuid2 = "4b7c3954-f69a-4b99-83b1-db73957b32b9"

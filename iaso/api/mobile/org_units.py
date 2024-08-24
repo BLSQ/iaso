@@ -129,6 +129,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
             and (
                 request.user.has_perm(permission.FORMS)
                 or request.user.has_perm(permission.ORG_UNITS)
+                or request.user.has_perm(permission.ORG_UNITS_READ)
                 or request.user.has_perm(permission.SUBMISSIONS)
             )
         ):

@@ -288,6 +288,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         def get_row(profile: Profile, **_) -> List[Any]:
             org_units = profile.org_units.all().order_by("id")
+
             return [
                 profile.user.username,
                 "",  # Password is left empty on purpose.
@@ -301,6 +302,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 ",".join(item.codename for item in profile.user.user_permissions.all()),
                 ",".join(str(item.pk) for item in profile.user_roles.all().order_by("id")),
                 ",".join(str(item.pk) for item in profile.projects.all().order_by("id")),
+                (f"'{profile.phone_number}'" if profile.phone_number else None),
             ]
 
         filename = "users"

@@ -220,12 +220,12 @@ class ProfileAPITestCase(APITestCase):
             "phone_number\r\n"
         )
 
-        expected_csv += "janedoe,,,,,,,,,iaso_forms,,\r\n"
-        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",FooBarB4z00,,,,,\r\n'
-        expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,\r\n'
-        expected_csv += "jam,,,,,,,en,,iaso_users_managed,,\r\n"
-        expected_csv += "jom,,,,,,,fr,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,,{self.project.id}\r\n"
+        expected_csv += "janedoe,,,,,,,,,iaso_forms,,,\r\n"
+        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",FooBarB4z00,,,,,,\r\n'
+        expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
+        expected_csv += "jam,,,,,,,en,,iaso_users_managed,,,\r\n"
+        expected_csv += "jom,,,,,,,fr,,,,,\r\n"
+        expected_csv += f"jum,,,,,,,,,,,{self.project.id},\r\n"
 
         self.assertEqual(response_csv, expected_csv)
 

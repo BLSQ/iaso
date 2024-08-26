@@ -303,6 +303,47 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Are you sure you want to delete this incident report ?',
     },
+    title: {
+        id: 'iaso.polio.label.title',
+        defaultMessage: 'Title',
+    },
+    comment: {
+        id: 'iaso.polio.label.comment',
+        defaultMessage: 'Comment',
+    },
+    movement: {
+        id: 'iaso.polio.label.movement',
+        defaultMessage: 'Movement',
+    },
+    vialsOut: {
+        id: 'iaso.polio.label.vialsOut',
+        defaultMessage: 'Vials Out',
+    },
+    usableVialsIn: {
+        id: 'iaso.polio.label.usableVialsIn',
+        defaultMessage: 'Usable Vials In',
+    },
+    unusableVialsIn: {
+        id: 'iaso.polio.label.unusableVialsIn',
+        defaultMessage: 'Unusable Vials In',
+    },
+    plainMovement: {
+        id: 'iaso.incident.plainMovement',
+        defaultMessage:
+            'Usable vials out: {movement}, Unusable vials in: {movement}',
+    },
+    missingMovement: {
+        id: 'iaso.incident.missingMovement',
+        defaultMessage: 'Usable vials out: {movement}',
+    },
+    inventoryUsableMovement: {
+        id: 'iaso.incident.inventoryUsableMovement',
+        defaultMessage: 'Usable vials in: {movement}',
+    },
+    inventoryUnusableMovement: {
+        id: 'iaso.incident.inventoryUnusableMovement',
+        defaultMessage: 'Unusable vials in: {movement}',
+    },
 });
 
 export default MESSAGES;

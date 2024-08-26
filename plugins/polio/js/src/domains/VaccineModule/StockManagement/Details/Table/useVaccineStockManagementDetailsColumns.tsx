@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
-import React, { useMemo } from 'react';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import React, { useMemo } from 'react';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import MESSAGES from '../../messages';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
+import MESSAGES from '../../messages';
 
 export const useVaccineStockManagementDetailsColumnsUsable = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -19,6 +19,12 @@ export const useVaccineStockManagementDetailsColumnsUsable = (): Column[] => {
                 Header: formatMessage(MESSAGES.action),
                 accessor: 'action',
                 id: 'action',
+                Cell: settings => {
+                    const { action } = settings.row.original;
+                    return MESSAGES[action]
+                        ? formatMessage(MESSAGES[action])
+                        : action;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.vials_in),

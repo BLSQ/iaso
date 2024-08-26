@@ -5,9 +5,10 @@ import { Optional } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { IMType } from '../constants/types';
 
 const lqasEndpoint = '/api/polio/tasks/refreshlqas/last_run_for_country/';
-const imHHEndpoint = '/api/polio/tasks/refreshim/last_run_for_country/';
-const imOHHEndpoint = '/api/polio/tasks/refreshim/last_run_for_country/';
-const imGlobalEndpoint = '/api/polio/tasks/refreshim/last_run_for_country/';
+const imHHEndpoint = '/api/polio/tasks/refreshim/hh/last_run_for_country/';
+const imOHHEndpoint = '/api/polio/tasks/refreshim/ohh/last_run_for_country/';
+const imGlobalEndpoint =
+    '/api/polio/tasks/refreshim/hh_ohh/last_run_for_country/';
 
 const getImEndpoint = (imType: IMType): string => {
     switch (imType) {

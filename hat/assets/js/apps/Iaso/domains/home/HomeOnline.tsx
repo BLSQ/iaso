@@ -154,7 +154,7 @@ export const HomeOnline: FunctionComponent = () => {
                             {APP_TITLE !== 'Iaso' && LOGO_PATH && (
                                 <img
                                     alt="logo"
-                                    src={`${staticUrl}${LOGO_PATH}`}
+                                    src={`${window.STATIC_URL}${LOGO_PATH}`}
                                     style={{ width: 150, height: 'auto' }}
                                 />
                             )}

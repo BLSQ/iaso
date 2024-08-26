@@ -1,4 +1,5 @@
 import json
+import mimetypes
 import ntpath
 from time import gmtime, strftime
 from typing import Any, Dict, Union
@@ -6,9 +7,10 @@ from typing import Any, Dict, Union
 import pandas as pd
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
+from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Count, Q, QuerySet, Prefetch
+from django.db.models import Count, Prefetch, Q, QuerySet
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
@@ -37,11 +39,11 @@ from iaso.models import (
 from iaso.utils import timestamp_to_datetime
 
 from ..models.forms import CR_MODE_IF_REFERENCE_FORM
+from ..utils.models.common import get_creator_name
 from . import common
 from .comment import UserSerializerForComment
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, TimestampField, safe_api_import
 from .instance_filters import get_form_from_instance_filters, parse_instance_filters
-from ..utils.models.common import get_creator_name
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -101,9 +103,18 @@ class HasInstancePermission(permissions.BasePermission):
 
 
 class InstanceFileSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     instance_id = serializers.IntegerField()
     file = serializers.FileField(use_url=True)
     created_at = TimestampField(read_only=True)
+    file_type = serializers.SerializerMethodField()
+
+    def get_file_type(self, obj):
+        if obj.file:
+            file_path = default_storage.path(obj.file.name)
+            mime_type, _ = mimetypes.guess_type(file_path)
+            return mime_type
+        return None
 
 
 class OrgUnitNestedSerializer(OrgUnitSerializer):

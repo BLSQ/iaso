@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from iaso.api.common import TimestampField
 from iaso.api.query_params import APP_ID
-from iaso.models import OrgUnit, OrgUnitType, Group
+from iaso.models import Group, OrgUnit, OrgUnitType
 
 
 class TimestampSerializerMixin:
@@ -223,6 +223,7 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
             "groups",
             "creator",
             "projects",
+            "default_image",
         ]
 
 

@@ -1,5 +1,4 @@
-from typing import Any
-from typing import Protocol
+from typing import Any, Protocol
 
 from django import forms as django_forms
 from django.contrib.admin import widgets
@@ -7,11 +6,12 @@ from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.utils.html import format_html_join, format_html
+from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
 
 from iaso.models.json_config import Config  # type: ignore
+
 from .models import (
     Account,
     AccountFeatureFlag,
@@ -45,8 +45,12 @@ from .models import (
     MatchingAlgorithm,
     OrgUnit,
     OrgUnitChangeRequest,
+    OrgUnitReferenceInstance,
     OrgUnitType,
     Page,
+    Payment,
+    PaymentLot,
+    PotentialPayment,
     Profile,
     Project,
     Report,
@@ -61,13 +65,9 @@ from .models import (
     WorkflowChange,
     WorkflowFollowup,
     WorkflowVersion,
-    OrgUnitReferenceInstance,
-    PotentialPayment,
-    Payment,
-    PaymentLot,
 )
 from .models.data_store import JsonDataStore
-from .models.microplanning import Team, Planning, Assignment
+from .models.microplanning import Assignment, Planning, Team
 from .utils.gis import convert_2d_point_to_3d
 
 
@@ -145,7 +145,7 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 @admin.register(OrgUnit)
 @admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):
-    raw_id_fields = ("parent", "reference_instances")
+    raw_id_fields = ("parent", "reference_instances", "default_image")
     list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
@@ -454,9 +454,9 @@ class EntityAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     readonly_fields = ("created_at",)
@@ -624,9 +624,9 @@ class WorkflowAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     def get_queryset(self, request):

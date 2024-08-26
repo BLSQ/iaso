@@ -1,4 +1,5 @@
 import datetime
+import mimetypes
 import operator
 import random
 import re
@@ -22,6 +23,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -1120,7 +1122,8 @@ class Instance(models.Model):
 
     def export(self, launcher=None, force_export=False):
         from iaso.dhis2.datavalue_exporter import DataValueExporter
-        from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
+        from iaso.dhis2.export_request_builder import (ExportRequestBuilder,
+                                                       NothingToExportError)
 
         try:
             export_request = ExportRequestBuilder().build_export_request(
@@ -1347,6 +1350,22 @@ class InstanceFile(models.Model):
 
     def __str__(self):
         return "%s " % (self.name,)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "instance_id": self.instance_id,
+            "file": self.file.url if self.file else None,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "file_type": self.get_file_type(),
+        }
+
+    def get_file_type(self):
+        if self.file:
+            file_path = default_storage.path(self.file.name)
+            mime_type, _ = mimetypes.guess_type(file_path)
+            return mime_type
+        return None
 
 
 class Profile(models.Model):

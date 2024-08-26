@@ -6,7 +6,7 @@ from django.utils.text import slugify
 from django.shortcuts import get_object_or_404
 from gql.transport.requests import RequestsHTTPTransport
 from gql import Client, gql
-from rest_framework import permissions, serializers
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -72,7 +72,10 @@ class TaskSourceViewSet(ModelViewSet):
     PATCH /api/tasks/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.DATA_TASKS, permission.MOBILE_APP_OFFLINE_SETUP)]  # type: ignore
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(permission.DATA_TASKS),
+    ]  # type: ignore
     serializer_class = TaskSerializer
     results_key = "tasks"
     queryset = Task.objects.all()
@@ -82,6 +85,22 @@ class TaskSourceViewSet(ModelViewSet):
         profile = self.request.user.iaso_profile
         order = self.request.query_params.get("order", "created_at").split(",")
         return Task.objects.select_related("launcher").filter(account=profile.account).order_by(*order)
+
+    def get_permissions(self):
+        if self.action == "retrieve":
+            # we handle additional permissions inside the action
+            self.permission_classes = [permissions.IsAuthenticated]
+        return super().get_permissions()
+
+    def retrieve(self, request, *args, **kwargs):
+        task = self.get_object()
+        current_user = request.user
+
+        if current_user.has_perm(permission.DATA_TASKS) or task.launcher == request.user:
+            serializer = self.get_serializer(task)
+            return Response(serializer.data)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
     @action(detail=True, methods=["get"], url_path="presigned-url")
     def generate_presigned_url(self, request, pk=None):

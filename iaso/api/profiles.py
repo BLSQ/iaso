@@ -49,14 +49,20 @@ class HasProfilePermission(permissions.BasePermission):
     def has_permission_over_user(request, pk):
         if request.method == "GET":
             return True
+
         if not pk:
-            raise PermissionDenied(f"User with '{permission.USERS_MANAGED}' cannot create users.")
+            new_user_org_units = request.data.get("org_units", [])
+            if len(new_user_org_units) == 0:
+                raise PermissionDenied(
+                    f"User with '{permission.USERS_MANAGED}' can not create a new user without a location."
+                )
 
         if pk == request.user.id:
             raise PermissionDenied(f"User with '{permission.USERS_MANAGED}' cannot edit their own permissions.")
 
         org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list("id", flat=True)
-        if org_units and len(org_units) > 0:
+
+        if org_units and pk and len(org_units) > 0:
             profile = get_object_or_404(Profile.objects.filter(account=request.user.iaso_profile.account), pk=pk)
             user_managed_org_units = profile.org_units.filter(id__in=org_units).all()
             if not user_managed_org_units or len(user_managed_org_units) == 0:

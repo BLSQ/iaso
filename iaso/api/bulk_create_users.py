@@ -45,8 +45,9 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
 
 class HasUserPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if not request.user.has_perm(permission.USERS_ADMIN):
+        if not (request.user.has_perm(permission.USERS_ADMIN) or request.user.has_perm(permission.USERS_MANAGED)):
             return False
+
         return True
 
 
@@ -103,6 +104,12 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         queryset = BulkCreateUserCsvFile.objects.none()
 
         return queryset
+
+    @staticmethod
+    def has_user_managed_permission(request):
+        if not request.user.has_perm(permission.USERS_ADMIN) and request.user.has_perm(permission.USERS_MANAGED):
+            return True
+        return False
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -196,6 +203,14 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         )
 
                     org_units = row[csv_indexes.index("orgunit")].split(value_splitter)
+                    if self.has_user_managed_permission(request) and len(list(filter(None, org_units))) == 0:
+                        raise serializers.ValidationError(
+                            {
+                                "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
+                                "has to create users with OrgUnits in the file"
+                            }
+                        )
+
                     org_units_source_refs = row[csv_indexes.index("orgunit__source_ref")].split(value_splitter)
                     org_units += org_units_source_refs
 
@@ -204,6 +219,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         if ou.isdigit():
                             try:
                                 ou = OrgUnit.objects.get(id=int(ou))
+                                if self.has_user_managed_permission(request) and ou not in importer_orgunits_hierarchy:
+                                    raise serializers.ValidationError(
+                                        {
+                                            "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
+                                            "has to create users with OrgUnits that are in the its controlled pyramid"
+                                        }
+                                    )
                                 if ou not in importer_access_ou:
                                     raise serializers.ValidationError(
                                         {

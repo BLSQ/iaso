@@ -1,0 +1,468 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-30 12:45+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: api/comment.py:24
+#, python-brace-format
+msgid "Model {value} does not exist."
+msgstr ""
+
+#: api/comment.py:25
+msgid "Invalid value."
+msgstr ""
+
+#: api/enketo.py:123 api/enketo.py:132 api/logs.py:126 api/logs.py:153
+#: api/profiles.py:521 api/profiles.py:641
+msgid "Unauthorized"
+msgstr ""
+
+#: api/enketo.py:151
+msgid ""
+"There are multiple submissions for this period and organizational unit, "
+"please log in the dashboard to fix."
+msgstr ""
+
+#: api/logs.py:119
+msgid ""
+"objectId and contentType parameters are required. contentType Can be one of "
+"iaso.orgunit, iaso.form, iaso.instance"
+msgstr ""
+
+#: api/org_unit_change_requests/filters.py:23
+msgid "Org unit ID"
+msgstr ""
+
+#: api/org_unit_change_requests/filters.py:24
+msgid "Org unit type ID"
+msgstr ""
+
+#: api/org_unit_change_requests/filters.py:25 api/org_unit_tree/filters.py:14
+msgid "Parent ID"
+msgstr ""
+
+#: api/org_unit_change_requests/filters.py:26
+msgid "Groups IDs (comma-separated)"
+msgstr ""
+
+#: api/org_unit_change_requests/filters.py:27
+msgid "Project ID"
+msgstr ""
+
+#: api/org_unit_change_requests/filters.py:30
+msgid "Forms IDs (comma-separated)"
+msgstr ""
+
+#: api/org_unit_change_requests/filters.py:31
+msgid "Users IDs (comma-separated)"
+msgstr ""
+
+#: api/org_unit_change_requests/filters.py:32
+msgid "User roles IDs (comma-separated)"
+msgstr ""
+
+#: api/org_unit_change_requests/filters.py:33
+msgid "With or without location"
+msgstr ""
+
+#: api/org_unit_change_requests/filters.py:34
+msgid "Status (comma-separated)"
+msgstr ""
+
+#: api/org_unit_tree/filters.py:13
+msgid "Ignore empty names"
+msgstr ""
+
+#: api/org_unit_tree/filters.py:15
+msgid "Data source ID"
+msgstr ""
+
+#: api/org_unit_tree/filters.py:17
+msgid "Validation status"
+msgstr ""
+
+#: api/org_units.py:433
+#, python-brace-format
+msgid "Invalid validation status : {validation_status}"
+msgstr ""
+
+#: api/org_units.py:515 api/org_units.py:675
+msgid "You cannot create an Org Unit without a parent"
+msgstr ""
+
+#: api/org_units.py:531 api/org_units.py:683
+msgid "Group must be in the same source version"
+msgstr ""
+
+#: api/org_units.py:595
+msgid "Unauthorized version id"
+msgstr ""
+
+#: api/org_units.py:606
+msgid "Org unit name is required"
+msgstr ""
+
+#: api/org_units.py:631
+msgid "Opening date must be anterior to closed date"
+msgstr ""
+
+#: api/org_units.py:655
+msgid "Can't parse geom"
+msgstr ""
+
+#: api/org_units.py:664
+msgid "Org unit type is required"
+msgstr ""
+
+#: api/org_units.py:669
+msgid "Parent is not in the same version"
+msgstr ""
+
+#: api/payments/views.py:346 api/payments/views.py:377
+msgid "ID"
+msgstr ""
+
+#: api/payments/views.py:347 api/payments/views.py:378
+msgid "Status"
+msgstr ""
+
+#: api/payments/views.py:348 api/payments/views.py:379
+msgid "User ID"
+msgstr ""
+
+#: api/payments/views.py:349 api/payments/views.py:380
+msgid "User Username"
+msgstr ""
+
+#: api/payments/views.py:350 api/payments/views.py:381
+msgid "User Phone"
+msgstr ""
+
+#: api/payments/views.py:351 api/payments/views.py:382
+msgid "User Last Name"
+msgstr ""
+
+#: api/payments/views.py:352 api/payments/views.py:383
+msgid "User First Name"
+msgstr ""
+
+#: api/payments/views.py:353 api/payments/views.py:384
+msgid "Change Requests"
+msgstr ""
+
+#: api/payments/views.py:354 api/payments/views.py:385
+msgid "Total Change Requests Count"
+msgstr ""
+
+#: api/payments/views.py:355 api/payments/views.py:386
+msgid "Org Unit Creation Count"
+msgstr ""
+
+#: api/payments/views.py:356 api/payments/views.py:387
+msgid "Org Unit Change Count"
+msgstr ""
+
+#: api/payments/views.py:359 api/payments/views.py:390
+#, python-format
+msgid "Form: %(name)s"
+msgstr ""
+
+#: api/profiles.py:391 api/profiles.py:581
+msgid "Nom d'utilisateur requis"
+msgstr ""
+
+#: api/profiles.py:398 api/profiles.py:586
+msgid "Nom d'utilisateur existant"
+msgstr ""
+
+#: api/profiles.py:445
+msgid "Both phone number and country code must be provided"
+msgstr ""
+
+#: api/profiles.py:456 tests/api/test_profiles.py:884
+msgid "Invalid phone number"
+msgstr ""
+
+#: api/profiles.py:583
+msgid "Mot de passe requis"
+msgstr ""
+
+#: models/base.py:60
+msgid "Aggregate"
+msgstr ""
+
+#: models/base.py:61
+msgid "Event"
+msgstr ""
+
+#: models/base.py:62
+msgid "Event Tracker"
+msgstr ""
+
+#: models/base.py:63
+msgid "Derived"
+msgstr ""
+
+#: models/base.py:75
+msgid "Queued"
+msgstr ""
+
+#: models/base.py:76
+msgid "Running"
+msgstr ""
+
+#: models/base.py:77
+msgid "Exported"
+msgstr ""
+
+#: models/base.py:78
+msgid "Errored"
+msgstr ""
+
+#: models/base.py:79
+msgid "Skipped"
+msgstr ""
+
+#: models/base.py:80
+msgid "Killed"
+msgstr ""
+
+#: models/base.py:81
+msgid "Success"
+msgstr ""
+
+#: models/base.py:404
+msgid "Polio"
+msgstr ""
+
+#: models/base.py:982
+msgid "The Instance must be linked to a Form."
+msgstr ""
+
+#: models/base.py:984
+msgid "The OrgUnit must be linked to a OrgUnitType."
+msgstr ""
+
+#: models/base.py:986
+msgid "The submission must be an instance of a reference form."
+msgstr ""
+
+#: models/base.py:1475
+msgid "Immediate export of instances to DHIS2"
+msgstr ""
+
+#: models/base.py:1480
+msgid "GPS localization on start of instance on mobile"
+msgstr ""
+
+#: models/base.py:1485
+msgid "Require authentication on mobile"
+msgstr ""
+
+#: models/base.py:1492
+msgid "Mobile: Limit download of orgunit to what the user has access to"
+msgstr ""
+
+#: models/base.py:1500
+msgid ""
+"Saving a form as finalized on mobile triggers an upload attempt immediately "
+"+ everytime network becomes available"
+msgstr ""
+
+#: models/comment.py:21
+msgid "content type"
+msgstr ""
+
+#: models/deduplication.py:20 models/payments.py:9
+msgid "Pending"
+msgstr "En attente"
+
+#: models/deduplication.py:21
+msgid "Validated"
+msgstr ""
+
+#: models/deduplication.py:22
+msgid "Ignored"
+msgstr ""
+
+#: models/deduplication.py:26
+msgid "Duplicate"
+msgstr ""
+
+#: models/deduplication.py:27
+msgid "Cousin"
+msgstr ""
+
+#: models/deduplication.py:28
+msgid "Produced"
+msgstr ""
+
+#: models/device.py:56
+msgid "Car"
+msgstr ""
+
+#: models/device.py:56
+msgid "Foot"
+msgstr ""
+
+#: models/device.py:56
+msgid "Truc"
+msgstr ""
+
+#: models/forms.py:70
+msgid "Day"
+msgstr ""
+
+#: models/forms.py:71
+msgid "Month"
+msgstr ""
+
+#: models/forms.py:72
+msgid "Quarter"
+msgstr ""
+
+#: models/forms.py:73
+msgid "Six-month"
+msgstr ""
+
+#: models/forms.py:74
+msgid "Year"
+msgstr ""
+
+#: models/forms.py:78
+msgid "No change request"
+msgstr ""
+
+#: models/forms.py:79
+msgid "Create change request if form is reference form"
+msgstr ""
+
+#: models/org_unit.py:117
+msgid "Country"
+msgstr ""
+
+#: models/org_unit.py:118
+msgid "Region"
+msgstr ""
+
+#: models/org_unit.py:119
+msgid "District"
+msgstr ""
+
+#: models/org_unit.py:120
+msgid "Health Facility"
+msgstr ""
+
+#: models/org_unit.py:264
+msgid "new"
+msgstr ""
+
+#: models/org_unit.py:265
+msgid "valid"
+msgstr ""
+
+#: models/org_unit.py:266
+msgid "rejected"
+msgstr ""
+
+#: models/org_unit.py:612
+msgid "Org Unit Creation"
+msgstr ""
+
+#: models/org_unit.py:613
+msgid "Org Unit Change"
+msgstr ""
+
+#: models/org_unit.py:616 models/payments.py:57
+msgid "New"
+msgstr "Nouveau"
+
+#: models/org_unit.py:617 models/payments.py:11
+msgid "Rejected"
+msgstr "Rejeté"
+
+#: models/org_unit.py:618
+msgid "Approved"
+msgstr "Approuvé"
+
+#: models/org_unit.py:687
+msgid "Org unit change request"
+msgstr ""
+
+#: models/pages.py:13
+msgid "Raw html"
+msgstr ""
+
+#: models/pages.py:14
+msgid "Text"
+msgstr ""
+
+#: models/pages.py:15
+msgid "Iframe"
+msgstr ""
+
+#: models/pages.py:16
+msgid "PowerBI report"
+msgstr ""
+
+#: models/payments.py:10 models/payments.py:58
+msgid "Sent"
+msgstr "Envoyé"
+
+#: models/payments.py:12 models/payments.py:59
+msgid "Paid"
+msgstr "Payé"
+
+#: models/payments.py:61
+msgid "Partially Paid"
+msgstr "Partiellement payé"
+
+#: tasks/copy_version.py:40 tasks/export_mobile_app_setup_for_user.py:52
+#: tasks/process_mobile_bulk_upload.py:47
+msgid "Starting"
+msgstr ""
+
+#: tasks/copy_version.py:65
+msgid "Copying groups"
+msgstr ""
+
+#: tasks/copy_version.py:106
+msgid "Copying org units"
+msgstr ""
+
+#: tasks/copy_version.py:120
+msgid "Fixing parents"
+msgstr ""
+
+#: utils/serializer/id_or_uuid_field.py:13
+msgid "This field is required."
+msgstr ""
+
+#: utils/serializer/id_or_uuid_field.py:14
+#, python-brace-format
+msgid "Invalid pk or uuid \"{pk_value}\" - object does not exist."
+msgstr ""
+
+#: utils/serializer/id_or_uuid_field.py:15
+#, python-brace-format
+msgid "Incorrect type. Expected pk or uuid value, received {data_type}."
+msgstr ""
+
+#: utils/serializer/three_dim_point_field.py:19
+msgid "Enter a valid location."
+msgstr ""

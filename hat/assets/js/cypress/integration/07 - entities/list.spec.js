@@ -250,7 +250,7 @@ describe('Entities', () => {
         testTablerender({
             baseUrl,
             rows: 20,
-            columns: 5,
+            columns: 6,
             apiKey: 'entities',
             withVisit: false,
         });

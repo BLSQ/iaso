@@ -2,11 +2,12 @@ import uuid
 
 from rest_framework import serializers
 from django.contrib.auth.models import User
-
+from django.utils.translation import gettext as _
 from hat.audit.audit_logger import AuditLogger
 from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API, Modification
 from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
+from iaso.models.payments import PaymentStatuses
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 from iaso.api.common import TimestampField
@@ -140,10 +141,14 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     org_unit_type_id = serializers.IntegerField(source="org_unit.org_unit_type.id", allow_null=True)
     org_unit_type_name = serializers.CharField(source="org_unit.org_unit_type.name", allow_null=True)
     groups = serializers.SerializerMethodField(method_name="get_current_org_unit_groups")
+    projects = serializers.SerializerMethodField(method_name="get_current_org_unit_type_projects")
     created_by = UserNestedSerializer()
     updated_by = UserNestedSerializer()
     created_at = TimestampField()
     updated_at = TimestampField()
+    payment_status = serializers.SerializerMethodField(
+        method_name="get_payment_status", allow_null=True, read_only=True
+    )
 
     class Meta:
         model = OrgUnitChangeRequest
@@ -160,6 +165,7 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "org_unit_type_name",
             "status",
             "groups",
+            "projects",
             "requested_fields",
             "approved_fields",
             "rejection_comment",
@@ -167,10 +173,26 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_by",
             "updated_at",
+            "payment_status",
         ]
 
     def get_current_org_unit_groups(self, obj: OrgUnitChangeRequest):
         return [{"id": group.id, "name": group.name} for group in obj.org_unit.groups.all()]
+
+    def get_current_org_unit_type_projects(self, obj: OrgUnitChangeRequest):
+        return [{"id": project.id, "name": project.name} for project in obj.org_unit.org_unit_type.projects.all()]
+
+    def get_payment_status(self, obj: OrgUnitChangeRequest):
+        payment = obj.payment
+        if payment is not None:
+            return payment.get_status_display()
+        potential_payment = obj.potential_payment
+        if potential_payment is not None:
+            return str(_(PaymentStatuses.PENDING.label))
+        status = obj.status
+        if status == OrgUnitChangeRequest.Statuses.APPROVED.value:
+            return str(_(PaymentStatuses.PENDING.label))
+        return None
 
 
 class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):

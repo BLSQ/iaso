@@ -11,10 +11,11 @@ export const useChronogramTaskSchema = () => {
             .string()
             .trim()
             .required(formatMessage(MESSAGES.validationFieldRequired)),
-        description: yup
+        description_en: yup
             .string()
             .trim()
             .required(formatMessage(MESSAGES.validationFieldRequired)),
+        description_fr: yup.string().trim(),
         start_offset_in_days: yup
             .number()
             .integer()

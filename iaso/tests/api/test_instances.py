@@ -10,6 +10,8 @@ from django.contrib.gis.geos import Point
 from django.core.files import File
 from django.utils import timezone
 from django.utils.timezone import now
+from rest_framework import status
+
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.audit.models import Modification
 from iaso import models as m
@@ -958,6 +960,7 @@ class InstancesAPITestCase(APITestCase):
             self.instance_1.source_updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             "yoda (Yo Da)",
             "READY",
+            "",  # entity UUID
             "Coruscant Jedi Council",
             f"{self.jedi_council_corruscant.id}",
             "jedi_council_corruscant_ref",
@@ -1013,6 +1016,7 @@ class InstancesAPITestCase(APITestCase):
             sourceless_instance.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             "yoda (Yo Da)",
             "READY",
+            "",  # entity UUID
             "Coruscant Jedi Council",
             f"{self.jedi_council_corruscant.id}",
             "jedi_council_corruscant_ref",
@@ -1023,6 +1027,15 @@ class InstancesAPITestCase(APITestCase):
         ]
         # Make sure the export is using the default created/updated_at if there is no source
         self.assertEqual(row_to_test, expected_row)
+
+    def test_submissions_list_in_csv_format_error_no_form(self):
+        # Make sure IA-3275 is fixed by sending a 400 instead of letting the backend crash
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/instances/?limit=20&order=org_unit__name&page=1&showDeleted=false&org_unit_status=VALID&csv=true",
+            headers={"Content-Type": "text/csv"},
+        )
+        self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_user_restriction(self):
         full = self.create_user_with_profile(username="full", account=self.star_wars, permissions=["iaso_submissions"])

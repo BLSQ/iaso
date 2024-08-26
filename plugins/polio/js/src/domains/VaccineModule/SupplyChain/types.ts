@@ -69,6 +69,22 @@ export type SupplyChainFormData = {
     changedTabs: TabValue[];
 };
 
+export type SupplyChainList = {
+    id: number;
+    country: { name: string; id: number };
+    created_at: string;
+    doses_shipped: number;
+    end_date: string;
+    obr_name: string;
+    po_numbers: string;
+    quantities_ordered_in_doses: number;
+    rounds: { id: number; number: number }[];
+    start_date: string;
+    updated_at: string;
+    vaccine_type: string;
+    var: string;
+};
+
 export type ParsedSettledPromise<T> = {
     status: 'fulfilled' | 'rejected';
     value: T; // if success: api response, if failure: error message

@@ -16,8 +16,17 @@ export type ApproveOrgUnitParams = UrlParams & {
     userIds?: string;
     userRoles?: string;
     withLocation?: string;
+    projectIds?: string;
+    paymentStatus?: 'pending' | 'sent' | 'rejected' | 'paid';
+    paymentIds?: string; // comma separated ids
+    potentialPaymentIds?: string; // comma separated ids
 };
 export type Group = {
+    id: number;
+    name: string;
+};
+
+export type Project = {
     id: number;
     name: string;
 };
@@ -50,6 +59,7 @@ export type OrgUnitChangeRequest = {
     org_unit_validation_status: OrgUnitStatus;
     status: ChangeRequestValidationStatus;
     groups: Group[];
+    projects: Project[];
     requested_fields: string;
     approved_fields: string[];
     rejection_comment?: string;
@@ -57,6 +67,8 @@ export type OrgUnitChangeRequest = {
     created_at: number;
     updated_by: NestedUser;
     updated_at: number;
+    org_unit_parent_id?: number;
+    org_unit_parent_name?: string;
 };
 export type OrgUnitChangeRequests = Array<OrgUnitChangeRequest>;
 

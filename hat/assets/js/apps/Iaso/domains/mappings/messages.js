@@ -209,6 +209,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.label.update',
         defaultMessage: 'Update',
     },
+    orgUnitsTypes: {
+        id: 'iaso.label.orgUnitsTypes',
+        defaultMessage: 'Org unit types',
+    },
+    projects: {
+        id: 'iaso.label.projects',
+        defaultMessage: 'Projects',
+    },
+    forms: {
+        id: 'iaso.label.forms',
+        defaultMessage: 'Forms',
+    },
+    search: {
+        id: 'iaso.search',
+        defaultMessage: 'Search',
+    },
 });
 
 export default MESSAGES;

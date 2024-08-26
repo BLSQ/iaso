@@ -25,6 +25,15 @@ export const usersTableColumns = ({
     exportMobileSetup,
 }) => [
     {
+        Header: formatMessage(MESSAGES.projects),
+        id: 'projects',
+        accessor: 'projects',
+        sortable: false,
+        Cell: settings =>
+            settings.value?.map(project => project.name).join(', ') ||
+            textPlaceholder,
+    },
+    {
         Header: formatMessage(MESSAGES.userName),
         id: 'user__username',
         accessor: 'user_name',
@@ -38,15 +47,6 @@ export const usersTableColumns = ({
         Header: formatMessage(MESSAGES.lastName),
         id: 'user__last_name',
         accessor: 'last_name',
-    },
-    {
-        Header: formatMessage(MESSAGES.projects),
-        id: 'projects',
-        accessor: 'projects',
-        sortable: false,
-        Cell: settings =>
-            settings.value?.map(project => project.name).join(', ') ||
-            textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.email),

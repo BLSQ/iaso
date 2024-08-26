@@ -4,7 +4,6 @@ from itertools import groupby
 from operator import itemgetter
 from ...common import ETL
 import logging
-from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +20,9 @@ class PBWG:
             logger.info(
                 f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
             )
+            instance["journey"] = self.journeyMapper(instance["visits"])
             beneficiary = Beneficiary()
-            if instance["entity_id"] not in existing_beneficiaries:
+            if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
                 beneficiary.gender = ""
                 beneficiary.entity_id = instance["entity_id"]
                 if instance.get("birth_date") is not None:
@@ -30,25 +30,22 @@ class PBWG:
                     beneficiary.save()
                     logger.info(f"Created new beneficiary")
             else:
-                beneficiary = Beneficiary.objects.get(entity_id=instance["entity_id"])
-
-            instance["journey"] = self.journeyMapper(instance["visits"])
+                beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
 
             logger.info("Retrieving journey linked to beneficiary")
 
             for journey_instance in instance["journey"]:
-                if len(journey_instance["visits"]) > 0 and journey_instance.get("nutrition_programme") is not None:
-                    if journey_instance.get("admission_criteria") is not None:
-                        journey = self.save_journey(beneficiary, journey_instance)
-                        visits = ETL().save_visit(journey_instance["visits"], journey)
-                        logger.info(f"Inserted {len(visits)} Visits")
+                if len(journey_instance["visits"]) > 0:
+                    journey = self.save_journey(beneficiary, journey_instance)
+                    visits = ETL().save_visit(journey_instance["visits"], journey)
+                    logger.info(f"Inserted {len(visits)} Visits")
 
-                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
-                        admission_step = grouped_steps[0]
-                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
+                    grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
+                    admission_step = grouped_steps[0]
+                    followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
 
-                        steps = ETL().save_steps(visits, followUpVisits)
-                        logger.info(f"Inserted {len(steps)} Steps")
+                    steps = ETL().save_steps(visits, followUpVisits)
+                    logger.info(f"Inserted {len(steps)} Steps")
                 else:
                     logger.info("No new journey")
             logger.info(
@@ -59,12 +56,13 @@ class PBWG:
         journey = Journey()
         journey.beneficiary = beneficiary
         journey.programme_type = "PLW"
-        journey.admission_criteria = record["admission_criteria"]
+        journey.admission_criteria = record.get("admission_criteria", None)
         journey.admission_type = record.get("admission_type", None)
-        journey.nutrition_programme = record["nutrition_programme"]
+        journey.nutrition_programme = record.get("nutrition_programme", None)
         journey.exit_type = record.get("exit_type", None)
         journey.instance_id = record.get("instance_id", None)
         journey.start_date = record.get("start_date", None)
+        journey.end_date = record.get("end_date", None)
 
         if record.get("exit_type", None) is not None and record.get("exit_type", None) != "":
             journey.duration = record.get("duration", None)
@@ -76,8 +74,12 @@ class PBWG:
     def journeyMapper(self, visits):
         journey = []
         current_journey = {"visits": [], "steps": []}
+        anthropometric_visit_forms = [
+            "wfp_coda_pbwg_luctating_followup_anthro",
+            "wfp_coda_pbwg_followup_anthro",
+        ]
 
-        for visit in visits:
+        for index, visit in enumerate(visits):
             if visit:
                 if visit.get("duration", None) is not None and visit.get("duration", None) != "":
                     current_journey["duration"] = visit.get("duration")
@@ -85,46 +87,9 @@ class PBWG:
                 if visit["form_id"] == "wfp_coda_pbwg_registration":
                     current_journey["nutrition_programme"] = visit.get("physiology_status", None)
 
-                anthropometric_visit_forms = [
-                    "wfp_coda_pbwg_luctating_followup_anthro",
-                    "wfp_coda_pbwg_followup_anthro",
-                ]
                 current_journey = ETL().journey_Formatter(
-                    visit,
-                    "wfp_coda_pbwg_anthropometric",
-                    anthropometric_visit_forms,
-                    current_journey,
+                    visit, "wfp_coda_pbwg_anthropometric", anthropometric_visit_forms, current_journey, visits, index
                 )
-
-                if visit["form_id"] in ["wfp_coda_pbwg_assistance", "wfp_coda_pbwg_assistance_followup"]:
-                    next_visit_date = ""
-                    next_visit_days = 0
-                    nextSecondVisitDate = ""
-                    if (
-                        visit.get("next_visit__date__", None) is not None
-                        and visit.get("next_visit__date__", None) != ""
-                    ):
-                        next_visit_date = visit.get("next_visit__date__", None)
-                    elif (
-                        visit.get("new_next_visit__date__", None) is not None
-                        and visit.get("new_next_visit__date__", None) != ""
-                    ):
-                        next_visit_date = visit.get("new_next_visit__date__", None)
-
-                    if visit.get("next_visit_days", None) is not None and visit.get("next_visit_days", None) != "":
-                        next_visit_days = visit.get("next_visit_days", None)
-                        if next_visit_date is not None and next_visit_date != "":
-                            nextSecondVisitDate = datetime.strptime(
-                                next_visit_date[:10], "%Y-%m-%d"
-                            ).date() + timedelta(days=int(next_visit_days))
-
-                    missed_followup_visit = ETL().missed_followup_visit(
-                        visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
-                    )
-
-                    if current_journey.get("exit_type", None) is None and missed_followup_visit > 1:
-                        current_journey["exit_type"] = "defaulter"
-
                 current_journey["steps"].append(visit)
         journey.append(current_journey)
         return journey
@@ -144,13 +109,24 @@ class PBWG:
 
                 instances[i]["program"] = ETL().program_mapper(current_record)
                 if current_record is not None and current_record != None:
-                    if current_record.get("actual_birthday__date__") is not None:
+                    if (
+                        current_record.get("actual_birthday__date__") is not None
+                        and current_record.get("actual_birthday__date__", None) != ""
+                    ):
                         birth_date = current_record.get("actual_birthday__date__", None)
                         instances[i]["birth_date"] = birth_date[:10]
-
-                    if current_record.get("actual_birthday") is not None:
+                    elif (
+                        current_record.get("actual_birthday") is not None
+                        and current_record.get("actual_birthday", None) != ""
+                    ):
                         birth_date = current_record.get("actual_birthday", None)
                         instances[i]["birth_date"] = birth_date[:10]
+                    elif (
+                        current_record.get("age_entry", None) is not None
+                        and current_record.get("age_entry", None) != ""
+                    ):
+                        calculated_date = ETL().calculate_birth_date(current_record)
+                        instances[i]["birth_date"] = calculated_date
 
                     if current_record.get("last_name") is not None:
                         instances[i]["last_name"] = current_record.get("last_name", "")
@@ -161,7 +137,7 @@ class PBWG:
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
-                    visit_date = visit.get("_visit_date", visit.get("visit_date", visit.get("created_at")))
+                    visit_date = visit.get("source_created_at", visit.get("_visit_date", visit.get("visit_date", None)))
                     if form_id == "wfp_coda_pbwg_anthropometric":
                         initial_date = visit_date
 
@@ -177,4 +153,9 @@ class PBWG:
                     current_record["form_id"] = form_id
                     instances[i]["visits"].append(current_record)
             i = i + 1
-        return instances
+        return list(
+            filter(
+                lambda instance: (instance.get("visits") and len(instance.get("visits")) > 1),
+                instances,
+            )
+        )

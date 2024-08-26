@@ -47,6 +47,7 @@ type Params = {
     entityTypes?: string;
     entityTypeIds?: string;
     locationLimit?: string;
+    groups?: string;
 };
 
 export const Beneficiaries: FunctionComponent = () => {

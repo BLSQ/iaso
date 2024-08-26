@@ -8,6 +8,7 @@ import { PaymentLot } from '../types';
 import { useMarkPaymentsAsSent } from '../hooks/requests/useSavePaymentLot';
 import MESSAGES from '../messages';
 import { EditPaymentLotDialog } from './EditPaymentLot/EditPaymentLotDialog';
+import { baseUrls } from '../../../constants/urls';
 
 interface ActionCellProps<T> {
     row: {
@@ -28,9 +29,21 @@ export const PaymentLotActionCell = ({
     const disableButtons =
         paymentLot.task?.status === 'QUEUED' ||
         paymentLot.task?.status === 'RUNNING';
-
+    const userIds = [
+        ...new Set(paymentLot.payments.map(payment => payment.user.id)),
+    ].join(',');
+    const paymentIds = [
+        ...new Set(paymentLot.payments.map(payment => payment.id)),
+    ].join(',');
     return (
         <>
+            <IconButton
+                icon="remove-red-eye"
+                url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${userIds}/paymentIds/${paymentIds}`}
+                // TODO add correct message
+                tooltipMessage={MESSAGES.viewChangeRequestforLot}
+            />
+
             {paymentLot.status === 'new' && (
                 <IconButton
                     tooltipMessage={MESSAGES.mark_as_sent}

@@ -1,8 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+
+
+class PaymentStatuses(models.TextChoices):
+    PENDING = "pending", _("Pending")
+    SENT = "sent", _("Sent")
+    REJECTED = "rejected", _("Rejected")
+    PAID = "paid", _("Paid")
 
 
 class Payment(models.Model):
@@ -11,13 +16,7 @@ class Payment(models.Model):
     User is the user that will receive the payment for the change request he did
     """
 
-    class Statuses(models.TextChoices):
-        PENDING = "pending", _("Pending")
-        SENT = "sent", _("Sent")
-        REJECTED = "rejected", _("Rejected")
-        PAID = "paid", _("Paid")
-
-    status = models.CharField(choices=Statuses.choices, default=Statuses.PENDING, max_length=40)
+    status = models.CharField(choices=PaymentStatuses.choices, default=PaymentStatuses.PENDING, max_length=40)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="payment")
     created_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="payment_created_set"
@@ -77,8 +76,8 @@ class PaymentLot(models.Model):
         if not payments.exists():
             return self.Statuses.NEW
         total_payments = payments.count()
-        paid_payments = payments.filter(status=Payment.Statuses.PAID).count()
-        sent_payments = payments.filter(status=Payment.Statuses.SENT).count()
+        paid_payments = payments.filter(status=PaymentStatuses.PAID).count()
+        sent_payments = payments.filter(status=PaymentStatuses.SENT).count()
 
         if paid_payments == total_payments:
             return self.Statuses.PAID

@@ -13,16 +13,50 @@ import { Task } from '../../../../../../../hat/assets/js/apps/Iaso/domains/tasks
 import { useGetLatestLQASIMUpdate } from '../../../hooks/useGetLatestLQASIMUpdate';
 import { useCreateTask } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/taskMonitor';
 import MESSAGES from '../../../constants/messages';
+import { IMType } from '../../../constants/types';
 
 type Props = {
     countryId?: string;
-    isLqas: boolean;
+    imType?: IMType;
 };
 
 const LQAS_TASK_ENDPOINT = '/api/polio/tasks/refreshlqas/';
 const LQAS_CONFIG_SLUG = 'lqas-pipeline-config';
-const IM_TASK_ENDPOINT = '/api/polio/tasks/refreshim/';
-const IM_CONFIG_SLUG = 'im-pipeline-config';
+const IM_HH_TASK_ENDPOINT = '/api/polio/tasks/refreshim/hh/';
+const IM_HH_CONFIG_SLUG = 'im_hh-pipeline-config';
+const IM_OHH_TASK_ENDPOINT = '/api/polio/tasks/refreshim/ohh/';
+const IM_OHH_CONFIG_SLUG = 'im_ohh-pipeline-config';
+const IM_HH_OHH_TASK_ENDPOINT = '/api/polio/tasks/refreshim/hh_ohh/';
+const IM_HH_OHH_CONFIG_SLUG = 'im_hh_ohh-pipeline-config';
+
+const getImEndpoint = (imType: IMType): string => {
+    switch (imType) {
+        case 'imHH':
+            return IM_HH_TASK_ENDPOINT;
+        case 'imOHH':
+            return IM_OHH_TASK_ENDPOINT;
+        case 'imGlobal':
+            return IM_HH_OHH_TASK_ENDPOINT;
+        default:
+            console.warn(
+                `Expected IM type to be "imHH", "imOHH" or "imGlobal", got ${imType}`,
+            );
+            return '';
+    }
+};
+
+const getImConfigSlug = (imType: IMType): string => {
+    switch (imType) {
+        case 'imHH':
+            return IM_HH_CONFIG_SLUG;
+        case 'imOHH':
+            return IM_OHH_CONFIG_SLUG;
+        case 'imGlobal':
+            return IM_HH_OHH_CONFIG_SLUG;
+        default:
+            return '';
+    }
+};
 
 const useLastUpdate = (
     lastUpdate: Task<any>,
@@ -50,10 +84,10 @@ const useLastUpdate = (
 
 export const RefreshLqasIMData: FunctionComponent<Props> = ({
     countryId,
-    isLqas,
+    imType,
 }) => {
-    const taskUrl = isLqas ? LQAS_TASK_ENDPOINT : IM_TASK_ENDPOINT;
-    const slug = isLqas ? LQAS_CONFIG_SLUG : IM_CONFIG_SLUG;
+    const taskUrl = !imType ? LQAS_TASK_ENDPOINT : getImEndpoint(imType);
+    const slug = !imType ? LQAS_CONFIG_SLUG : getImConfigSlug(imType);
     const { formatMessage } = useSafeIntl();
     const [lastTaskStatus, setlastTaskStatus] = useState<string | undefined>();
     const queryClient = useQueryClient();
@@ -61,8 +95,8 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
         endpoint: taskUrl,
     });
     const { data: latestManualRefresh } = useGetLatestLQASIMUpdate(
-        isLqas,
         countryId,
+        imType,
     );
 
     const { message: lastUpdate, updateStatus } =
@@ -87,7 +121,7 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
     }, [lastTaskStatus, latestManualRefresh?.status, queryClient]);
 
     const disableButton = Boolean(latestManualRefresh?.status === 'RUNNING'); // TODO make enum with statuses
-    const buttonText = isLqas
+    const buttonText = !imType
         ? formatMessage(MESSAGES.refreshLqasData)
         : formatMessage(MESSAGES.refreshIMData);
     if (!countryId) return null;

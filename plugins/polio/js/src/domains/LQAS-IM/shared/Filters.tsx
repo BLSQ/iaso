@@ -20,6 +20,7 @@ import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesO
 import { RefreshLqasIMData } from './RefreshLqasIMData';
 import { baseUrls } from '../../../constants/urls';
 import { POLIO_ADMIN } from '../../../constants/permissions';
+import { IMType } from '../../../constants/types';
 
 export type Params = {
     campaign: string | undefined;
@@ -37,7 +38,7 @@ type Props = {
     campaigns: any[];
     campaignsFetching: boolean;
     params: Params;
-    imType?: 'imGlobal' | 'imHH' | 'imOHH';
+    imType?: IMType;
 };
 
 const getCurrentUrl = (imType?: 'imGlobal' | 'imHH' | 'imOHH'): string => {
@@ -62,7 +63,6 @@ export const Filters: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
-    const isLqas = !imType;
     const currentUrl = getCurrentUrl(imType);
     const [filters, setFilters] = useState<FiltersState>({
         campaign: params?.campaign,
@@ -71,7 +71,7 @@ export const Filters: FunctionComponent<Props> = ({
     const { campaign, country } = params;
 
     const { data: countriesOptions, isFetching: countriesLoading } =
-        useGetLqasImCountriesOptions(isLqas);
+        useGetLqasImCountriesOptions();
 
     const dropDownOptions = useMemo(() => {
         const displayedCampaigns = country
@@ -146,7 +146,7 @@ export const Filters: FunctionComponent<Props> = ({
                 <DisplayIfUserHasPerm permissions={[POLIO_ADMIN]}>
                     <Grid item md={campaignLink ? 3 : 4}>
                         <RefreshLqasIMData
-                            isLqas={isLqas}
+                            imType={imType}
                             countryId={country}
                         />
                     </Grid>

@@ -15,6 +15,7 @@ import * as Permission from '../../utils/permissions.ts';
 import PermissionSwitch from './components/PermissionSwitch.tsx';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
 import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 
 export const usersTableColumns = ({
     formatMessage,
@@ -92,17 +93,17 @@ export const usersTableColumns = ({
                             }
                         />
                     )}
-                {userHasPermission(
-                    Permission.MOBILE_APP_OFFLINE_SETUP,
-                    currentUser,
-                ) && (
+
+                <DisplayIfUserHasPerm
+                    permissions={[Permission.MOBILE_APP_OFFLINE_SETUP]}
+                >
                     <ExportMobileAppSetupDialog
                         selectedUser={settings.row.original}
                         titleMessage={MESSAGES.exportMobileAppTitle}
                         params={params}
                         onCreateExport={exportMobileSetup}
                     />
-                )}
+                </DisplayIfUserHasPerm>
             </section>
         ),
     },

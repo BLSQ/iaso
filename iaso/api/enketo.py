@@ -364,6 +364,7 @@ class EnketoSubmissionAPIView(APIView):
             instance.file = main_file
             instance.name = instance.form.name
             instance.json = {}
+            instance.source_updated_at = timezone.now()
             instance.save()
 
             # copy-pasted from the "create" code

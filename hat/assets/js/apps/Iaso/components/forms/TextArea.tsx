@@ -28,6 +28,7 @@ const useStyles = makeStyles(theme => ({
         color: theme.palette.primary.main,
     },
     inputLabel: {
+        // @ts-ignore
         ...commonStyles.inputLabel,
         left: 4,
         backgroundColor: 'white',
@@ -45,7 +46,6 @@ const useStyles = makeStyles(theme => ({
         borderRadius: 5,
         fontSize: 16,
         fontFamily: '"Roboto", "Arial", sans-serif',
-        // @ts-ignore
         border: `1px solid rgba(0, 0, 0, 0.23)`,
         '&:hover': {
             border: `1px solid rgba(0, 0, 0, 0.87)`,

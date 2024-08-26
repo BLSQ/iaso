@@ -7,7 +7,6 @@ import React, {
 import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-// @ts-ignore
 import { commonStyles, DatePicker, useSafeIntl } from 'bluesquare-components';
 import Typography from '@mui/material/Typography';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -32,6 +31,7 @@ import {
     QUARTERS_RANGE,
     SEMESTERS,
     SEMESTERS_RANGE,
+    NO_PERIOD,
 } from '../constants';
 import MESSAGES from '../messages';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -180,7 +180,9 @@ const PeriodPicker: FunctionComponent<Props> = ({
                     </FormLabel>
 
                     <Grid container spacing={2}>
-                        {periodType !== PERIOD_TYPE_PLACEHOLDER && (
+                        {![PERIOD_TYPE_PLACEHOLDER, NO_PERIOD].includes(
+                            periodType as string,
+                        ) && (
                             <Grid
                                 item
                                 sm={periodType === PERIOD_TYPE_YEAR ? 12 : 6}
@@ -199,7 +201,9 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                 />
                             </Grid>
                         )}
-                        {periodType === PERIOD_TYPE_PLACEHOLDER && (
+                        {[PERIOD_TYPE_PLACEHOLDER, NO_PERIOD].includes(
+                            periodType as string,
+                        ) && (
                             <Grid item>
                                 <Typography className={classes.legend}>
                                     {message}

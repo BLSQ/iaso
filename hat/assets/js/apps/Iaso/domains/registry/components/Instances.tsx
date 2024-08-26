@@ -191,7 +191,8 @@ export const Instances: FunctionComponent<Props> = ({
                                             xlsxUrl={`${apiUrl}&xlsx=true`}
                                             disabled={
                                                 isFetchingList ||
-                                                data?.count === 0
+                                                data?.count === 0 ||
+                                                !formIds
                                             }
                                         />
                                     </Box>
@@ -235,7 +236,6 @@ export const Instances: FunctionComponent<Props> = ({
                                 </Box>
                             </Grid>
                         </Grid>
-                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
                             baseUrl={baseUrls.registry}

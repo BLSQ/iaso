@@ -8,6 +8,7 @@ MODULE_PERMISSIONS = {
     ],
     "DEFAULT": [
         "iaso_org_units",
+        "iaso_org_units_read",
         "iaso_org_unit_types",
         "iaso_org_unit_groups",
         "iaso_sources",
@@ -38,6 +39,8 @@ MODULE_PERMISSIONS = {
         "iaso_polio",
         "iaso_polio_budget_admin",
         "iaso_polio_budget",
+        "iaso_polio_chronogram",
+        "iaso_polio_chronogram_restricted_write",
         "iaso_polio_vaccine_supply_chain_read",
         "iaso_polio_vaccine_supply_chain_write",
         "iaso_polio_vaccine_stock_management_read",
@@ -92,6 +95,7 @@ PERMISSIONS_PRESENTATION = {
     ],
     "org_units": [
         "iaso_org_units",
+        "iaso_org_units_read",
         "iaso_org_unit_types",
         "iaso_org_unit_groups",
         "iaso_sources",
@@ -118,6 +122,8 @@ PERMISSIONS_PRESENTATION = {
         "iaso_polio",
         "iaso_polio_budget_admin",
         "iaso_polio_budget",
+        "iaso_polio_chronogram",
+        "iaso_polio_chronogram_restricted_write",
         "iaso_polio_vaccine_supply_chain_read",
         "iaso_polio_vaccine_supply_chain_write",
         "iaso_polio_vaccine_stock_management_read",

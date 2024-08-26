@@ -28,12 +28,17 @@ import {
     STOCK_MANAGEMENT_READ,
     SUPPLYCHAIN_READ,
     SUPPLYCHAIN_WRITE,
+    CHRONOGRAM,
+    CHRONOGRAM_RESTRICTED_WRITE,
 } from './permissions';
 import {
     AnonymousRoutePath,
     RoutePath,
 } from '../../../../../hat/assets/js/apps/Iaso/constants/routes';
 import { Notifications } from '../domains/Notifications';
+import { Chronogram } from '../domains/Chronogram/Chronogram';
+import { ChronogramTemplateTask } from '../domains/Chronogram/ChronogramTemplateTask';
+import { ChronogramDetails } from '../domains/Chronogram/ChronogramDetails';
 
 // We store the path in a variable so we can import it and use its permissions
 export const campaignsPath: RoutePath = {
@@ -191,6 +196,27 @@ export const reasonsForDelayConfigPath: RoutePath = {
     permissions: [POLIO_ADMIN],
 };
 
+export const chronogramPath: RoutePath = {
+    baseUrl: baseUrls.chronogram,
+    routerUrl: `${baseUrls.chronogram}/*`,
+    element: <Chronogram />,
+    permissions: [CHRONOGRAM, CHRONOGRAM_RESTRICTED_WRITE],
+};
+
+export const chronogramTemplateTaskPath: RoutePath = {
+    baseUrl: baseUrls.chronogramTemplateTask,
+    routerUrl: `${baseUrls.chronogramTemplateTask}/*`,
+    element: <ChronogramTemplateTask />,
+    permissions: [CHRONOGRAM],
+};
+
+export const chronogramDetailsPath: RoutePath = {
+    baseUrl: baseUrls.chronogramDetails,
+    routerUrl: `${baseUrls.chronogramDetails}/*`,
+    element: <ChronogramDetails />,
+    permissions: [CHRONOGRAM, CHRONOGRAM_RESTRICTED_WRITE],
+};
+
 export const routes: (RoutePath | AnonymousRoutePath)[] = [
     campaignsPath,
     campaignHistoryPath,
@@ -214,4 +240,7 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     notificationPath,
     countryConfigPath,
     reasonsForDelayConfigPath,
+    chronogramPath,
+    chronogramTemplateTaskPath,
+    chronogramDetailsPath,
 ];

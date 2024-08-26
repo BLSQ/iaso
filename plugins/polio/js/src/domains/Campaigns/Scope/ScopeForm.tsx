@@ -2,7 +2,6 @@
 import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useDebounce } from 'use-debounce';
-// @ts-ignore
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab } from '@mui/material';
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';

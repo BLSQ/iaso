@@ -102,6 +102,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'modificationDateTo',
             'sentDateFrom',
             'sentDateTo',
+            'projectIds',
         ],
     },
     instanceDetail: {
@@ -118,7 +119,15 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     mappings: {
         url: 'forms/mappings',
-        params: ['accountId', 'formId', ...paginationPathParams],
+        params: [
+            'accountId', 
+            'formId', 
+            'mappingTypes',
+            'orgUnitTypeIds',
+            'projectsIds',
+            'search', 
+            ...paginationPathParams
+        ],
     },
     mappingDetail: {
         url: 'forms/mapping',
@@ -168,7 +177,11 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'userIds',
             'userRoles',
             'withLocation',
+            'projectIds',
+            'paymentStatus',
             ...paginationPathParams,
+            'paymentIds',
+            'potentialPaymentIds',
         ],
     },
     registry: {
@@ -244,6 +257,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'showDirectCompleteness',
             'teamsIds',
             'userIds',
+            'projectIds',
         ],
     },
     modules: {
@@ -276,7 +290,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     sources: {
         url: 'orgunits/sources/list',
-        params: ['accountId', ...paginationPathParams],
+        params: ['accountId', 'projectIds', ...paginationPathParams],
     },
     sourceDetails: {
         url: 'orgunits/source/details',
@@ -296,7 +310,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     orgUnitTypes: {
         url: 'orgunits/types',
-        params: ['accountId', 'search', ...paginationPathParams],
+        params: ['accountId', 'search', 'projectIds', ...paginationPathParams],
     },
     entities: {
         url: 'entities/list',
@@ -311,6 +325,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'submitterTeamId',
             'entityTypeIds',
             'locationLimit',
+            'groups',
             ...paginationPathParams,
         ],
     },
@@ -374,7 +389,14 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     teams: {
         url: 'settings/teams',
-        params: ['accountId', 'search', ...paginationPathParams],
+        params: [
+            'accountId',
+            'search',
+            'managers',
+            'types',
+            'projects',
+            ...paginationPathParams,
+        ],
     },
     storages: {
         url: 'storages',

@@ -67,6 +67,7 @@ export type CalendarParams = {
     orgUnitGroups?: string;
     currentDate?: string;
     periodType?: PeriodType;
+    notShowTest?: string;
 };
 
 export type CalendarData = {

@@ -6,8 +6,6 @@ import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
 import { Button } from '@mui/material';
 import Info from '@mui/icons-material/InfoOutlined';
-
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';

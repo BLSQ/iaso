@@ -3,7 +3,7 @@ import { Column } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { useLinksTableColumns } from '../config';
 import { useValidateLink } from '../hooks/useValidateLink';
-import LinksDetails from './LinksDetailsComponent';
+import { linkDetailsSubComponent } from './LinkDetails';
 
 type Props = {
     baseUrl: string;
@@ -45,15 +45,7 @@ export const LinksTable: FunctionComponent<Props> = ({
                 loading,
                 expanded,
                 onExpandedChange: newExpanded => setExpanded(newExpanded),
-                SubComponent: link =>
-                    link ? (
-                        <LinksDetails
-                            // @ts-ignore
-                            linkId={link.id}
-                            validated={link.validated}
-                            validateLink={() => validateLink(link)}
-                        />
-                    ) : null,
+                SubComponent: linkDetailsSubComponent,
             }}
         />
     );

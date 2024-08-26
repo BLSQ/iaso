@@ -1,4 +1,3 @@
-// @ts-ignore
 import { Alert } from '@mui/lab';
 import { Snackbar } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';

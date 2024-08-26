@@ -1,8 +1,8 @@
 import json
-import typing
 from copy import deepcopy
 from datetime import datetime
 from time import gmtime, strftime
+from typing import Dict, List, Union
 
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
@@ -31,13 +31,30 @@ from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 
 
 # noinspection PyMethodMayBeStatic
+
+
+class HasCreateOrUnitPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        if not request.user.has_perm(permission.ORG_UNITS):
+            return False
+
+        return True
+
+
 class HasOrgUnitPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
+        if obj.version.data_source.public and request.method == "GET":
+            return True
+
         if not (
             request.user.is_authenticated
             and (
                 request.user.has_perm(permission.FORMS)
                 or request.user.has_perm(permission.ORG_UNITS)
+                or request.user.has_perm(permission.ORG_UNITS_READ)
                 or request.user.has_perm(permission.SUBMISSIONS)
                 or request.user.has_perm(permission.REGISTRY_WRITE)
                 or request.user.has_perm(permission.REGISTRY_READ)
@@ -46,8 +63,10 @@ class HasOrgUnitPermission(permissions.BasePermission):
         ):
             return False
 
-        if obj.version.data_source.read_only and request.method != "GET":
+        read_only = request.user.has_perm(permission.ORG_UNITS_READ) and not request.user.has_perm(permission.ORG_UNITS)
+        if (read_only or obj.version.data_source.read_only) and request.method != "GET":
             return False
+
         # TODO: can be handled with get_queryset()
         user_account = request.user.iaso_profile.account
         projects = obj.version.data_source.projects.all()
@@ -560,7 +579,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             return Response(errors, status=400)
 
-    def get_date(self, date: str) -> typing.Union[datetime.date, None]:
+    def get_date(self, date: str) -> Union[datetime.date, None]:
         date_input_formats = ["%d-%m-%Y", "%d/%m/%Y"]
         for date_input_format in date_input_formats:
             try:
@@ -569,7 +588,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 pass
         return None
 
-    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
+    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasCreateOrUnitPermission])
     def create_org_unit(self, request):
         """This endpoint is used by the React frontend"""
         errors = []
@@ -735,7 +754,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(res)
 
 
-def import_data(org_units, user, app_id):
+def import_data(org_units: List[Dict], user, app_id):
     new_org_units = []
     project = Project.objects.get_for_user_and_app_id(user, app_id)
     if project.account.default_version.data_source.read_only:
@@ -775,15 +794,8 @@ def import_data(org_units, user, app_id):
 
             t = org_unit.get("created_at", None)
             if t:
-                org_unit_db.created_at = timestamp_to_utc_datetime(int(t))
-            else:
-                org_unit_db.created_at = org_unit.get("created_at", None)
+                org_unit_db.source_created_at = timestamp_to_utc_datetime(int(t))
 
-            t = org_unit.get("updated_at", None)
-            if t:
-                org_unit_db.updated_at = timestamp_to_utc_datetime(int(t))
-            else:
-                org_unit_db.updated_at = org_unit.get("created_at", None)
             if not user.is_anonymous:
                 org_unit_db.creator = user
             org_unit_db.source = "API"

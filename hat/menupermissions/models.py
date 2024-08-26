@@ -39,6 +39,7 @@ _LINKS = "iaso_links"
 _MAPPINGS = "iaso_mappings"
 _MODULES = "iaso_modules"
 _ORG_UNITS = "iaso_org_units"
+_ORG_UNITS_READ = "iaso_org_units_read"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
 _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
 _ORG_UNITS_CHANGE_REQUEST_REVIEW = "iaso_org_unit_change_request_review"
@@ -67,6 +68,8 @@ _POLIO = "iaso_polio"
 _POLIO_BUDGET = "iaso_polio_budget"
 _POLIO_BUDGET_ADMIN = "iaso_polio_budget_admin"
 _POLIO_CONFIG = "iaso_polio_config"
+_POLIO_CHRONOGRAM = "iaso_polio_chronogram"
+_POLIO_CHRONOGRAM_RESTRICTED_WRITE = "iaso_polio_chronogram_restricted_write"
 _POLIO_NOTIFICATIONS = "iaso_polio_notifications"
 _POLIO_VACCINE_AUTHORIZATIONS_ADMIN = "iaso_polio_vaccine_authorizations_admin"
 _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = "iaso_polio_vaccine_authorizations_read_only"
@@ -128,6 +131,7 @@ LINKS = _PREFIX + _LINKS
 MAPPINGS = _PREFIX + _MAPPINGS
 MODULES = _PREFIX + _MODULES
 ORG_UNITS = _PREFIX + _ORG_UNITS
+ORG_UNITS_READ = _PREFIX + _ORG_UNITS_READ
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
 ORG_UNITS_CHANGE_REQUEST_REVIEW = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_REVIEW
@@ -139,6 +143,8 @@ PLANNING_READ = _PREFIX + _PLANNING_READ
 POLIO = _PREFIX + _POLIO
 POLIO_BUDGET = _PREFIX + _POLIO_BUDGET
 POLIO_BUDGET_ADMIN = _PREFIX + _POLIO_BUDGET_ADMIN
+POLIO_CHRONOGRAM = _PREFIX + _POLIO_CHRONOGRAM
+POLIO_CHRONOGRAM_RESTRICTED_WRITE = _PREFIX + _POLIO_CHRONOGRAM_RESTRICTED_WRITE
 POLIO_CONFIG = _PREFIX + _POLIO_CONFIG
 POLIO_NOTIFICATIONS = _PREFIX + _POLIO_NOTIFICATIONS
 POLIO_VACCINE_AUTHORIZATIONS_ADMIN = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_ADMIN
@@ -232,6 +238,7 @@ class CustomPermissionSupport(models.Model):
             (_MODULES, _("modules")),
             (_COMPLETENESS, _("Complétude des données")),
             (_ORG_UNITS, _("Unités d'organisations")),
+            (_ORG_UNITS_READ, _("Lire les unités d'organisations")),
             (_REGISTRY_WRITE, _("Editer le Registre")),
             (_REGISTRY_READ, _("Lire le Registre")),
             (_LINKS, _("Correspondances sources")),
@@ -269,6 +276,8 @@ class CustomPermissionSupport(models.Model):
             # Polio
             (_POLIO, _("Polio")),
             (_POLIO_CONFIG, _("Polio config")),
+            (_POLIO_CHRONOGRAM, _("Polio chronogram")),
+            (_POLIO_CHRONOGRAM_RESTRICTED_WRITE, _("Polio chronogram user (restricted write)")),
             (_POLIO_NOTIFICATIONS, _("Polio notifications")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
             (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),

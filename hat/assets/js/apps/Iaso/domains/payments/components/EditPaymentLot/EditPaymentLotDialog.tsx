@@ -180,7 +180,6 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
             </Box>
             <Box sx={localStyles.table}>
                 {/* <Divider /> */}
-                {/* @ts-ignore */}
                 <Paper elevation={2}>
                     <Box my={2} mr={2}>
                         <Grid container spacing={2} justifyContent="flex-end">

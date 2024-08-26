@@ -4,6 +4,8 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
 
+export const baseUrl = baseUrls.mappings;
+
 const safePercent = (a, b) => {
     if (b === 0) {
         return '-';
@@ -11,7 +13,7 @@ const safePercent = (a, b) => {
     return (100 * (a / b)).toFixed(2);
 };
 
-const mappingsTableColumns = formatMessage => [
+export const mappingsTableColumns = formatMessage => [
     {
         Header: formatMessage(MESSAGES.actions),
         accessor: 'actions',
@@ -73,4 +75,3 @@ const mappingsTableColumns = formatMessage => [
         Cell: DateTimeCell,
     },
 ];
-export default mappingsTableColumns;

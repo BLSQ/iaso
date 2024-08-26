@@ -113,7 +113,31 @@ class VaccineStockManagementAPITestCase(APITestCase):
             stock_correction=pm.IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
             date_of_incident_report=cls.now - datetime.timedelta(days=4),
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=3),
-            unusable_vials=1,
+            unusable_vials=1,  # 1 vial will be moved from usable to unusable
+            usable_vials=0,
+        )
+        cls.incident_report = pm.IncidentReport.objects.create(
+            vaccine_stock=cls.vaccine_stock,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.BROKEN,
+            date_of_incident_report=cls.now - datetime.timedelta(days=5),
+            incident_report_received_by_rrt=cls.now - datetime.timedelta(days=4),
+            unusable_vials=0,
+            usable_vials=1,
+        )
+        cls.incident_report = pm.IncidentReport.objects.create(
+            vaccine_stock=cls.vaccine_stock,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            date_of_incident_report=cls.now - datetime.timedelta(days=6),
+            incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
+            unusable_vials=0,
+            usable_vials=16,
+        )
+        cls.incident_report = pm.IncidentReport.objects.create(
+            vaccine_stock=cls.vaccine_stock,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            date_of_incident_report=cls.now - datetime.timedelta(days=6),
+            incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
+            unusable_vials=20,
             usable_vials=0,
         )
 
@@ -135,12 +159,13 @@ class VaccineStockManagementAPITestCase(APITestCase):
         results = response.json()["results"]
         self.assertEqual(len(results), 1)
         stock = results[0]
+        print("stock", stock)
         self.assertEqual(stock["country_name"], "Testland")
         self.assertEqual(stock["vaccine_type"], pm.VACCINES[0][0])
         self.assertEqual(stock["vials_received"], 20)  # 400 doses / 20 doses per vial
         self.assertEqual(stock["vials_used"], 10)
-        self.assertEqual(stock["stock_of_usable_vials"], 10)  # 20 received - 10 used
-        self.assertEqual(stock["stock_of_unusable_vials"], 1)  # 1 incident
+        self.assertEqual(stock["stock_of_usable_vials"], 22)  # 20 received - 13 used + 15 found in inventory
+        self.assertEqual(stock["stock_of_unusable_vials"], 28)
         self.assertEqual(stock["vials_destroyed"], 3)  # 3 destroyed
 
     def test_usable_vials_endpoint(self):
@@ -178,14 +203,33 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "required": ["results"],
         }
 
-        # Check that we have 4 entries in the results array
-        self.assertEqual(len(data["results"]), 4)
+        # Check that we have 6 entries in the results array
+        self.assertEqual(len(data["results"]), 6)
 
         # Validate the response data against the schema
         try:
             jsonschema.validate(instance=data, schema=usable_vials_schema)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
+
+        self.assertEqual(data["results"][0]["vials_in"], 20)
+        self.assertEqual(data["results"][0]["doses_in"], 400)
+        self.assertEqual(data["results"][0]["type"], "vaccine_arrival_report")  # From arrival report
+        self.assertEqual(data["results"][1]["vials_out"], 10)
+        self.assertEqual(data["results"][1]["doses_out"], 200)
+        self.assertEqual(data["results"][1]["type"], "outgoing_stock_movement")  # Outgoing movement (form A)
+        self.assertEqual(data["results"][2]["vials_out"], 2)
+        self.assertEqual(data["results"][2]["doses_out"], 40)
+        self.assertEqual(data["results"][2]["type"], "outgoing_stock_movement")  # missing vials (form A)
+        self.assertEqual(data["results"][3]["vials_in"], 16)
+        self.assertEqual(data["results"][3]["doses_in"], 320)
+        self.assertEqual(data["results"][3]["type"], "incident_report")  # Physical inventory
+        self.assertEqual(data["results"][4]["vials_out"], 1)
+        self.assertEqual(data["results"][4]["doses_out"], 20)
+        self.assertEqual(data["results"][4]["type"], "incident_report")  # Broken
+        self.assertEqual(data["results"][5]["vials_out"], 1)
+        self.assertEqual(data["results"][5]["doses_out"], 20)
+        self.assertEqual(data["results"][5]["type"], "incident_report")  # Expiry date
 
     def test_unusable_vials_endpoint(self):
         # Authenticate and make request to the API
@@ -229,7 +273,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             self.fail(msg=str(ex))
 
         # Check that the response contains the expected number of unusable vials entries
-        self.assertEqual(len(data["results"]), 3)
+        self.assertEqual(len(data["results"]), 4)
 
         self.assertEqual(data["results"][0]["vials_in"], 10)
         self.assertEqual(data["results"][0]["doses_in"], 200)
@@ -240,6 +284,9 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(data["results"][2]["vials_in"], 1)
         self.assertEqual(data["results"][2]["doses_in"], 20)
         self.assertEqual(data["results"][2]["type"], "incident_report")
+        self.assertEqual(data["results"][3]["vials_in"], 20)
+        self.assertEqual(data["results"][3]["doses_in"], 400)
+        self.assertEqual(data["results"][3]["type"], "incident_report")
 
     def test_summary_endpoint(self):
         # Authenticate as a user with read/write permissions
@@ -284,10 +331,10 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # Check that the values match what is expected
         self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
-        self.assertEqual(data["total_usable_vials"], 10)
-        self.assertEqual(data["total_unusable_vials"], 1)
-        self.assertEqual(data["total_usable_doses"], 200)
-        self.assertEqual(data["total_unusable_doses"], 20)
+        self.assertEqual(data["total_usable_vials"], 22)
+        self.assertEqual(data["total_unusable_vials"], 28)
+        self.assertEqual(data["total_usable_doses"], 440)
+        self.assertEqual(data["total_unusable_doses"], 560)
 
     def test_delete(self):
         self.client.force_authenticate(self.user_rw_perms)

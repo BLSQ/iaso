@@ -372,8 +372,12 @@ class EnketoAPITestCase(APITestCase):
         self.setUpMockEnketo()
         self.form_1.single_per_period = True
         self.form_1.save()
-        self.create_form_instance(form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant)
-        self.create_form_instance(form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant)
+        self.create_form_instance(
+            form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant, project=None
+        )
+        self.create_form_instance(
+            form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant, project=None
+        )
 
         data = {
             "period": "202001",
@@ -405,7 +409,9 @@ class EnketoAPITestCase(APITestCase):
         self.setUpMockEnketo()
         self.form_1.single_per_period = True
         self.form_1.save()
-        instance = self.create_form_instance(form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant)
+        instance = self.create_form_instance(
+            form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant, project=None
+        )
         instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
         instance.save()
 
@@ -434,7 +440,9 @@ class EnketoAPITestCase(APITestCase):
         self.setUpMockEnketo()
         self.form_1.single_per_period = False
         self.form_1.save()
-        instance = self.create_form_instance(form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant)
+        instance = self.create_form_instance(
+            form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant, project=None
+        )
         instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
         instance.save()
         old_count = Instance.objects.count()
@@ -464,10 +472,14 @@ class EnketoAPITestCase(APITestCase):
         self.setUpMockEnketo()
         self.form_1.single_per_period = False
         self.form_1.save()
-        instance = self.create_form_instance(form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant)
+        instance = self.create_form_instance(
+            form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant, project=None
+        )
         instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
         instance.save()
-        instance = self.create_form_instance(form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant)
+        instance = self.create_form_instance(
+            form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant, project=None
+        )
         instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
         instance.save()
         old_count = Instance.objects.count()

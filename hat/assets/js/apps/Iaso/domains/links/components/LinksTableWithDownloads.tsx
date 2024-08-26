@@ -66,7 +66,6 @@ export const LinksTableWithDownloads: FunctionComponent<Props> = ({
 
     return (
         <>
-            {/* @ts-ignore */}
             <Box mb={2}>{children}</Box>
             {displayDownloadButtons && (
                 <Grid container justifyContent="flex-end">

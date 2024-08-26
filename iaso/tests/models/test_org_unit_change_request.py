@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from hat.audit.models import Modification
 from iaso import models as m
+from iaso.models.deduplication import ValidationStatus
 from iaso.test import TestCase
 
 
@@ -105,6 +106,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         self.assertEqual(str(change_request.uuid), kwargs["uuid"])
         self.assertEqual(change_request.org_unit, self.org_unit)
+        self.assertEqual(change_request.kind, change_request.Kind.ORG_UNIT_CREATION)
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
         self.assertEqual(change_request.updated_at, self.DT)
@@ -137,6 +139,17 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         change_request.org_unit.save()
         change_request.save()
         self.assertEqual(change_request.old_name, "Hôpital Général")
+
+    def test_kind(self):
+        self.org_unit.validation_status = self.org_unit.VALIDATION_VALID
+        self.org_unit.save()
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit)
+        self.assertEqual(change_request.kind, change_request.Kind.ORG_UNIT_CHANGE)
+
+        self.org_unit.validation_status = self.org_unit.VALIDATION_NEW
+        self.org_unit.save()
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit)
+        self.assertEqual(change_request.kind, change_request.Kind.ORG_UNIT_CREATION)
 
     def test_clean_approved_fields(self):
         approved_fields = ["new_name", "foo"]
@@ -211,6 +224,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         # Change request.
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+        self.assertEqual(change_request.kind, change_request.Kind.ORG_UNIT_CREATION)
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.updated_at, self.DT)
         self.assertEqual(change_request.updated_by, self.user)
@@ -261,6 +275,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         # Change request.
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+        self.assertEqual(change_request.kind, change_request.Kind.ORG_UNIT_CREATION)
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.updated_at, self.DT)
         self.assertEqual(change_request.updated_by, self.user)

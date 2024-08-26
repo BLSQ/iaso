@@ -127,6 +127,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'Manage organisation units and pyramids, including uploading of geo data (GPS coordinates and shapes), and groups',
     },
+    iaso_org_units_read: {
+        id: 'iaso.permissions.orgUnits_read',
+        defaultMessage: 'Organisation units - Read',
+    },
+    iaso_org_units_read_tooltip: {
+        id: 'iaso.permissions.tooltip.orgUnits_read',
+        defaultMessage: 'See and read organisation units and pyramids',
+    },
     iaso_submissions: {
         id: 'iaso.permissions.submissions',
         defaultMessage: 'Submissions - Read only',
@@ -549,6 +557,22 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_forms_stats_tooltip: {
         id: 'iaso.permissions.iaso_forms_stats_tooltip',
         defaultMessage: 'See statistics of number forms submissions',
+    },
+    iaso_polio_chronogram: {
+        id: 'iaso.permissions.iaso_polio_chronogram',
+        defaultMessage: 'Polio chronogram - Read and Write',
+    },
+    iaso_polio_chronogram_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_polio_chronogram',
+        defaultMessage: 'Manage polio chronogram - Read and Write',
+    },
+    iaso_polio_chronogram_restricted_write: {
+        id: 'iaso.permissions.iaso_polio_chronogram_restricted_write',
+        defaultMessage: 'Polio chronogram user - Restricted Write',
+    },
+    iaso_polio_chronogram_restricted_write_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_polio_chronogram_restricted_write',
+        defaultMessage: 'Manage polio chronogram - Restricted Write',
     },
 });
 

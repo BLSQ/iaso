@@ -57,7 +57,6 @@ export const Projects: FunctionComponent = () => {
                         }}
                     />
                 </Grid>
-                {/* @ts-ignore */}
                 <Table
                     data={data?.projects ?? []}
                     pages={data?.pages ?? 1}

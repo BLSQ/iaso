@@ -1,7 +1,7 @@
 from .models import *
 from iaso.models import *
-import datetime
-from datetime import date
+from datetime import datetime, timedelta, date
+from dateutil.relativedelta import *
 
 
 class ETL:
@@ -18,10 +18,11 @@ class ETL:
 
     def retrieve_entities(self):
         steps_id = ETL().steps_to_exclude()
-        updated_at = datetime.date(2023, 7, 10)
+        updated_at = date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__name=self.type)
-            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330])
+            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226, 254,315, 424, 430, 431, 408, 19, 230, 359])
+            # .filter(entity__id__in=[230, 359, 254])
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)
@@ -39,8 +40,12 @@ class ETL:
                 "updated_at",
                 "form",
                 "entity__deleted_at",
+                "source_created_at",
             )
-            .order_by("created_at", "entity_id")
+            .order_by(
+                "entity_id",
+                "source_created_at",
+            )
         )
         return beneficiaries
 
@@ -69,19 +74,28 @@ class ETL:
     def program_mapper(self, visit):
         program = None
         if visit:
-            if visit.get("programme") is not None and visit.get("programme") != "NONE":
-                program = visit.get("programme")
+            if visit.get("programme") is not None:
+                if visit.get("programme") != "NONE":
+                    program = visit.get("programme")
+                else:
+                    program = ""
+            elif visit.get("_programme") is not None:
+                if visit.get("_programme") != "NONE":
+                    program = visit.get("_programme")
+                else:
+                    program = ""
             elif visit.get("program") is not None:
                 if visit.get("program") == "NONE":
-                    program = "TSFP"
-                elif visit.get("program") != "NONE":
-                    program = visit.get("program")
+                    if visit.get("previous_discharge_program", None) is not None:
+                        program = visit.get("previous_discharge_program", None)
+                    elif visit.get("program") != "NONE":
+                        program = visit.get("program")
+                    else:
+                        program = ""
             elif visit.get("program_two") is not None and visit.get("program_two") != "NONE":
                 program = visit.get("program_two", None)
             elif visit.get("discharge_program") is not None and visit.get("discharge_program") != "NONE":
                 program = visit.get("discharge_program")
-            elif visit.get("_programme") is not None and visit.get("_programme") != "NONE":
-                program = visit.get("_programme")
             elif visit.get("new_programme") is not None and visit.get("new_programme") != "NONE":
                 program = visit.get("new_programme")
             elif (
@@ -133,7 +147,9 @@ class ETL:
 
     def exit_type(self, visit):
         exit_type = None
-        if (visit.get("new_programme") is not None and visit.get("new_programme") == "TSFP") and (
+        if visit.get("new_programme", None) is not None and visit.get("new_programme", None) == "NONE":
+            exit_type = visit.get("reason_for_not_continuing", None)
+        elif (visit.get("new_programme") is not None and visit.get("new_programme") == "TSFP") and (
             visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1"
         ):
             exit_type = "transfer_to_tsfp"
@@ -181,6 +197,8 @@ class ETL:
     def exit_type_converter(self, exit_type):
         if exit_type == "dismissedduetocheating":
             return "dismissed_due_to_cheating"
+        if exit_type == "dismissal":
+            return "dismissed_due_to_cheating"
         elif exit_type == "transferredout":
             return "transferred_out"
         elif exit_type == "voluntarywithdrawal":
@@ -195,6 +213,10 @@ class ETL:
             return "referred_from_tsfp_mam"
         elif admission_type == "referred_from_sc_itp":
             return "referred_from_sc"
+        elif admission_type == "returned_from_sc":
+            return "referred_from_sc"
+        elif admission_type == "returnee":
+            return "returned_referral"
         else:
             return admission_type
 
@@ -216,7 +238,70 @@ class ETL:
         followUp_steps.insert(0, admission)
         return followUp_steps
 
-    def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey):
+    def exit_by_defaulter(self, visits, visit, anthropometric_visit_forms):
+        exit = None
+        next_visit_date = ""
+        next_visit_days = 0
+        nextSecondVisitDate = ""
+        missed_followup_visit = 0
+        if visit["form_id"] in [
+            "child_assistance_follow_up",
+            "child_assistance_admission",
+            "wfp_coda_pbwg_assistance",
+            "wfp_coda_pbwg_assistance_followup",
+        ]:
+            if visit.get("next_visit__date__", None) is not None and visit.get("next_visit__date__", None) != "":
+                next_visit_date = visit.get("next_visit__date__", None)
+            elif (
+                visit.get("new_next_visit__date__", None) is not None
+                and visit.get("new_next_visit__date__", None) != ""
+            ):
+                next_visit_date = visit.get("new_next_visit__date__", None)
+
+            if visit.get("next_visit_days", None) is not None and visit.get("next_visit_days", None) != "":
+                next_visit_days = visit.get("next_visit_days", None)
+            elif (
+                visit.get("number_of_days__int__", None) is not None and visit.get("number_of_days__int__", None) != ""
+            ):
+                next_visit_days = visit.get("number_of_days__int__", None)
+            elif (
+                visit.get("OTP_next_visit", None) is not None
+                and visit.get("OTP_next_visit", None) != ""
+                and visit.get("OTP_next_visit") != "--"
+            ):
+                next_visit_days = visit.get("OTP_next_visit", None)
+            elif (
+                visit.get("TSFP_next_visit", None) is not None
+                and visit.get("TSFP_next_visit", None) != ""
+                and visit.get("TSFP_next_visit") != "--"
+            ):
+                next_visit_days = visit.get("TSFP_next_visit", None)
+            elif (
+                visit.get("tsfp_next_visit", None) is not None
+                and visit.get("tsfp_next_visit", None) != ""
+                and visit.get("tsfp_next_visit") != "--"
+            ):
+                next_visit_days = visit.get("tsfp_next_visit", None)
+            elif (
+                visit.get("otp_next_visit", None) is not None
+                and visit.get("otp_next_visit", None) != ""
+                and visit.get("otp_next_visit") != "--"
+            ):
+                next_visit_days = visit.get("otp_next_visit", None)
+
+            if next_visit_date is not None and next_visit_date != "":
+                nextSecondVisitDate = datetime.strptime(next_visit_date[:10], "%Y-%m-%d").date() + timedelta(
+                    days=int(next_visit_days) + 1
+                )
+            missed_followup_visit = self.missed_followup_visit(
+                visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
+            )
+        if missed_followup_visit > 0 and next_visit_date != "" and nextSecondVisitDate != "":
+            exit = {"exit_type": "defaulter", "end_date": nextSecondVisitDate}
+        return exit
+
+    def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey, visits, index):
+        default_anthropometric_followup_forms = followup_forms
         if visit["form_id"] == anthropometric_visit_form:
             current_journey["instance_id"] = visit.get("instance_id", None)
             current_journey["start_date"] = visit.get("start_date", None)
@@ -230,20 +315,41 @@ class ETL:
             current_journey["admission_type"] = self.admission_type(visit)
             current_journey["programme_type"] = self.program_mapper(visit)
             current_journey["org_unit_id"] = visit.get("org_unit_id")
+            current_journey["visits"].append(visit)
+        followup_forms.append(anthropometric_visit_form)
+        exit = None
 
         if visit["form_id"] in followup_forms:
-            end_date = visit.get("end_date", visit.get("created_at", ""))
+            end_date = visit.get("end_date", visit.get("source_created_at", ""))
             current_journey["end_date"] = (
-                end_date if end_date is not None else visit.get("created_at", None).strftime("%Y-%m-%d")
+                end_date if end_date is not None else visit.get("source_created_at", None).strftime("%Y-%m-%d")
             )
             current_journey["discharge_weight"] = visit.get("discharge_weight", None)
             current_journey["weight_difference"] = visit.get("weight_difference", None)
             current_journey["exit_type"] = self.exit_type(visit)
 
-        followup_forms.append(anthropometric_visit_form)
-        if visit["form_id"] in followup_forms:
-            current_journey["visits"].append(visit)
+        """ Check if it's first followup visit, in order to calculate the defaulter case based on the number of days defined in the assistance
+        admission form(previous form) and next visit date in the antropometric followup visit form.
+        When it's Anthropometric admission form, it means we still in the admission visit(visit 0).
+        Otherwise, it's Anthropometric followup form which is a start of first follow up visit(visit 1) """
+        if visit["form_id"] in default_anthropometric_followup_forms:
+            index = index - 1
+            exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
+        else:
+            exit = self.exit_by_defaulter(visits, visit, followup_forms)
 
+        if (
+            exit is not None
+            and current_journey.get("exit_type", None) is None
+            and current_journey.get("start_date") is not None
+        ):
+            current_journey["exit_type"] = exit["exit_type"]
+            current_journey["end_date"] = exit["end_date"]
+            duration = (
+                datetime.strptime(datetime.strftime(exit["end_date"], "%Y-%m-%d"), "%Y-%m-%d")
+                - datetime.strptime(current_journey["start_date"], "%Y-%m-%d")
+            ).days
+            current_journey["duration"] = duration
         return current_journey
 
     def assistance_to_step(self, assistance, visit, instance_id):
@@ -359,7 +465,7 @@ class ETL:
         visit_number = 0
         for current_visit in visits:
             visit = Visit()
-            visit.date = current_visit["date"]
+            visit.date = current_visit.get("date", None)
             visit.number = visit_number
             visit.journey = journey
             orgUnit = OrgUnit.objects.get(id=current_visit["org_unit_id"])
@@ -395,10 +501,10 @@ class ETL:
             if visit["form_id"] in formIds:
                 if visit.get("visit_date") is not None:
                     currentVisitDate = visit.get("visit_date", None)[:10]
-                elif visit.get("date", None) is not None:
-                    currentVisitDate = visit.get("date", None)[:10]
                 elif visit.get("_visit_date", None) is not None:
                     currentVisitDate = visit.get("_visit_date", None)[:10]
+                elif visit.get("date", None) is not None:
+                    currentVisitDate = visit.get("date", None)[:10]
 
                 today = date.today().strftime("%Y-%m-%d")
                 if next_visit__date__ == "" and secondNextVisitDate == "":
@@ -416,3 +522,17 @@ class ETL:
                 ):
                     count_missed_visit = count_missed_visit + 1
         return count_missed_visit
+
+    def calculate_birth_date(self, current_record):
+        age_entry = current_record.get("age_entry", None)
+        age = current_record.get("age__int__", None)
+        registration_date = current_record.get("registration_date", None)
+        calculated_date = None
+        if (age_entry is not None and age_entry != "") and (age is not None and age != ""):
+            beneficiary_age = int(age)
+            registered_at = datetime.strptime(registration_date[:10], "%Y-%m-%d").date()
+            if age_entry == "years":
+                calculated_date = registered_at - relativedelta(years=beneficiary_age)
+            elif age_entry == "months":
+                calculated_date = registered_at - relativedelta(months=beneficiary_age)
+        return calculated_date

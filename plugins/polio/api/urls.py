@@ -1,10 +1,16 @@
 from rest_framework import routers
 
+# TOFIX: Still haven't understood the exact problem but this should be
+# the first import to avoid some 'BudgetProcess' errors in tests:
+# `AttributeError: 'str' object has no attribute '_meta'`
+from plugins.polio.budget.api import BudgetProcessViewSet, BudgetStepViewSet, WorkflowViewSet
+
 from plugins.polio.api.campaigns.campaign_groups import CampaignGroupViewSet
 from plugins.polio.api.campaigns.campaigns import CampaignViewSet
 from plugins.polio.api.campaigns.subactivities import SubActivityViewSet
 from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
 from iaso.api.config import ConfigViewSet
+from plugins.polio.api.chronogram.views import ChronogramViewSet, ChronogramTaskViewSet, ChronogramTemplateTaskViewSet
 from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
 from plugins.polio.api.dashboards.forma import FormAStocksViewSet
 from plugins.polio.api.dashboards.forma import FormAStocksViewSetV2
@@ -29,7 +35,6 @@ from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayViewSet
 from plugins.polio.api.rounds.round import RoundViewSet
 from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryViewset
 from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizationViewSet
-from plugins.polio.budget.api import BudgetProcessViewSet, BudgetStepViewSet, WorkflowViewSet
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 from plugins.polio.api.vaccines.supply_chain import (
     VaccineRequestFormViewSet,
@@ -53,6 +58,11 @@ router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaigns_subactivities", SubActivityViewSet, basename="campaigns_subactivities")
+router.register(r"polio/chronograms/tasks", ChronogramTaskViewSet, basename="chronograms_tasks")
+router.register(
+    r"polio/chronograms/template_tasks", ChronogramTemplateTaskViewSet, basename="chronograms_template_tasks"
+)
+router.register(r"polio/chronograms", ChronogramViewSet, basename="chronograms")
 router.register(r"polio/budget", BudgetProcessViewSet, basename="BudgetProcess")
 router.register(r"polio/budgetsteps", BudgetStepViewSet, basename="BudgetStep")
 router.register(r"polio/workflow", WorkflowViewSet, basename="BudgetWorkflow")

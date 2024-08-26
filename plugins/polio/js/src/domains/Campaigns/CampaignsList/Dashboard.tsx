@@ -82,14 +82,11 @@ export const Dashboard: FunctionComponent = () => {
                 <Box mb={2}>
                     <DashboardButtons exportToCSV={exportToCSV} />
                 </Box>
-                {/* @ts-ignore */}
                 <TableWithDeepLink
                     data={campaigns?.campaigns ?? []}
                     count={campaigns?.count}
                     pages={campaigns?.pages}
                     params={apiParams}
-                    // type of `accessor` should be changed to accept a FunctionComponent
-                    // @ts-ignore
                     columns={columns}
                     baseUrl={baseUrl}
                     marginTop={false}

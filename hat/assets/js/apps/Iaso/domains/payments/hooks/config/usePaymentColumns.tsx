@@ -1,4 +1,9 @@
-import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
+import {
+    Column,
+    IconButton,
+    IntlFormatMessage,
+    useSafeIntl,
+} from 'bluesquare-components';
 import React, { useMemo } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { textPlaceholder } from '../../../../constants/uiConstants';
@@ -6,6 +11,7 @@ import { EditPaymentDialog } from '../../components/EditPaymentLot/EditPaymentDi
 import MESSAGES from '../../messages';
 import { PaymentLot, PotentialPayment } from '../../types';
 import { SavePaymentStatusArgs } from '../requests/useSavePaymentStatus';
+import { baseUrls } from '../../../../constants/urls';
 
 export const usePaymentColumns = ({
     potential = true,
@@ -81,6 +87,28 @@ export const usePaymentColumns = ({
             },
             //  TODO: we should add user phone number here
         ];
+
+        if (potential) {
+            return columns.concat([
+                {
+                    Header: formatMessage(MESSAGES.actions),
+                    id: 'action',
+                    accessor: 'action',
+                    sortable: false,
+                    Cell: settings => {
+                        return (
+                            <IconButton
+                                icon="remove-red-eye"
+                                url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${settings.row.original.user.id}/potentialPaymentIds/${settings.row.original.id}`}
+                                tooltipMessage={
+                                    MESSAGES.viewChangeRequestsForPotentialPayment // change text to payment lot
+                                }
+                            />
+                        );
+                    },
+                },
+            ]);
+        }
         if (!potential) {
             return columns.concat([
                 {
@@ -98,21 +126,30 @@ export const usePaymentColumns = ({
                     Cell: settings => {
                         const payment = settings.row.original;
                         return (
-                            <EditPaymentDialog
-                                status={payment.status}
-                                id={payment.id}
-                                iconProps={{}}
-                                user={payment.user}
-                                // if potential is false, then we know we're passing saveStatus
-                                saveStatus={
-                                    saveStatus as UseMutateAsyncFunction<
-                                        any,
-                                        any,
-                                        SavePaymentStatusArgs,
-                                        any
-                                    >
-                                }
-                            />
+                            <>
+                                <IconButton
+                                    icon="remove-red-eye"
+                                    url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${settings.row.original.user.id}/paymentIds/${payment.id}`}
+                                    tooltipMessage={
+                                        MESSAGES.viewChangeRequestsForPayment
+                                    }
+                                />
+                                <EditPaymentDialog
+                                    status={payment.status}
+                                    id={payment.id}
+                                    iconProps={{}}
+                                    user={payment.user}
+                                    // if potential is false, then we know we're passing saveStatus
+                                    saveStatus={
+                                        saveStatus as UseMutateAsyncFunction<
+                                            any,
+                                            any,
+                                            SavePaymentStatusArgs,
+                                            any
+                                        >
+                                    }
+                                />
+                            </>
                         );
                     },
                 },

@@ -37,6 +37,9 @@ export const STOCK_MANAGEMENT = `${VACCINE_MODULE}/stockmanagement`;
 export const STOCK_MANAGEMENT_DETAILS = `${STOCK_MANAGEMENT}/details`;
 export const STOCK_VARIATION = `${STOCK_MANAGEMENT}/variation`;
 export const NOTIFICATIONS_BASE_URL = 'polio/notifications';
+export const CHRONOGRAM_BASE_URL = 'polio/chronogram';
+export const CHRONOGRAM_TEMPLATE_TASK = `${CHRONOGRAM_BASE_URL}/templateTask`;
+export const CHRONOGRAM_DETAILS = `${CHRONOGRAM_BASE_URL}/details`;
 
 export const campaignParams = [
     'countries',
@@ -49,6 +52,7 @@ export const campaignParams = [
     'campaignGroups',
     'show_test',
     'filterLaunched',
+    'notShowTest',
 ];
 
 export const polioRouteConfigs: Record<string, RouteConfig> = {
@@ -232,6 +236,30 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'date_of_onset_before',
         ],
     },
+    chronogram: {
+        url: CHRONOGRAM_BASE_URL,
+        params: [
+            ...paginationPathParams,
+            'limit',
+            'search',
+            'country',
+            'on_time',
+        ],
+    },
+    chronogramTemplateTask: {
+        url: CHRONOGRAM_TEMPLATE_TASK,
+        params: [...paginationPathParams, 'limit'],
+    },
+    chronogramDetails: {
+        url: CHRONOGRAM_DETAILS,
+        params: [
+            ...paginationPathParams,
+            'chronogram_id',
+            'limit',
+            'period',
+            'status',
+        ],
+    },
 };
 
 export type PolioBaseUrls = {
@@ -257,6 +285,9 @@ export type PolioBaseUrls = {
     reasonsForDelayConfig: string;
     embeddedCalendar: string;
     notification: string;
+    chronogram: string;
+    chronogramTemplateTask: string;
+    chronogramDetails: string;
 };
 export const baseUrls = extractUrls(polioRouteConfigs) as PolioBaseUrls;
 export const baseParams = extractParams(polioRouteConfigs);

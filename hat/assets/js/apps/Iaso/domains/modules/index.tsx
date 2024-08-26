@@ -41,7 +41,6 @@ export const Modules: FunctionComponent = () => {
                     </Grid>
                 </Grid>
                 <ModulesFilters params={params} />
-                {/* @ts-ignore */}
                 <TableWithDeepLink
                     marginTop={false}
                     data={data?.results ?? []}

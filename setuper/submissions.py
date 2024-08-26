@@ -25,3 +25,16 @@ def org_unit_gps_point(org_unit):
 
 def submission_org_unit_gps_point(org_unit):
     return f"{org_unit['latitude']} {org_unit['longitude']} {org_unit['altitude']}"
+
+
+def picture_by_org_unit_type_name(org_unit_type_name):
+    picture_name = ""
+    if org_unit_type_name == "Country/Pays - COUN":
+        picture_name = "Ministry of health.webp"
+    elif org_unit_type_name == "Region/Région - REG":
+        picture_name = "Regional health authority.webp"
+    elif org_unit_type_name == "District/Zone de santé - DIST":
+        picture_name = "health district.webp"
+    elif org_unit_type_name == "Health area/Aire de santé - AREA":
+        picture_name = "health area.webp"
+    return picture_name

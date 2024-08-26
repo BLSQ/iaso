@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, Q, QuerySet, Prefetch
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
@@ -34,14 +34,14 @@ from iaso.models import (
     OrgUnitChangeRequest,
     Project,
 )
-from iaso.models.org_unit import OrgUnitReferenceInstance
 from iaso.utils import timestamp_to_datetime
 
-from ..models.forms import CR_MODE_IF_REFERENCE_FORM, CR_MODE_NONE
+from ..models.forms import CR_MODE_IF_REFERENCE_FORM
 from . import common
 from .comment import UserSerializerForComment
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, TimestampField, safe_api_import
 from .instance_filters import get_form_from_instance_filters, parse_instance_filters
+from ..utils.models.common import get_creator_name
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -192,6 +192,7 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Date de modification", "width": 20},
             {"title": "Créé par", "width": 20},
             {"title": "Status", "width": 20},
+            {"title": "Entité", "width": 20},
             {"title": "Org unit", "width": 20},
             {"title": "Org unit id", "width": 20},
             {"title": "Référence externe", "width": 20},
@@ -209,12 +210,11 @@ class InstancesViewSet(viewsets.ViewSet):
             filename = "%s-%s" % (filename, form.id)
             if form.correlatable:
                 columns.append({"title": "correlation id", "width": 20})
+        else:
+            return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
 
         sub_columns = ["" for __ in columns]
-        # TODO: Check the logic here, it's going to fail in any case if there is no form
-        # Don't know what we are trying to achieve exactly
-        # The type ignore is obviously wrong since the type can be null, but the frontend always send forms.
-        latest_form_version = form.latest_version  # type: ignore
+        latest_form_version = form.latest_version
         questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
         if form and latest_form_version:
             file_content_template = questions_by_name
@@ -235,53 +235,88 @@ class InstancesViewSet(viewsets.ViewSet):
         filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
         def get_row(instance, **kwargs):
-            idict = instance.as_dict_with_parents()
-            created_at = timestamp_to_datetime(idict.get("created_at"))
-            updated_at = timestamp_to_datetime(idict.get("updated_at"))
-            org_unit = idict.get("org_unit")
-            file_content = idict.get("file_content")
+            created_at_timestamp = (
+                instance.source_created_at.timestamp()
+                if instance.source_created_at
+                else instance.created_at.timestamp()
+            )
+            updated_at_timestamp = (
+                instance.source_updated_at.timestamp()
+                if instance.source_updated_at
+                else instance.updated_at.timestamp()
+            )
+            org_unit = instance.org_unit
+            file_content = instance.get_and_save_json_of_xml()
 
             instance_values = [
-                idict.get("id"),
+                instance.id,
                 file_content.get("_version") if file_content else None,
-                idict.get("export_id"),
-                idict.get("latitude"),
-                idict.get("longitude"),
-                idict.get("altitude"),
-                idict.get("accuracy"),
-                idict.get("period"),
-                created_at,
-                updated_at,
-                idict.get("created_by"),
-                idict.get("status"),
-                org_unit.get("name") if org_unit else None,
-                org_unit.get("id") if org_unit else None,
-                org_unit.get("source_ref") if org_unit else None,
+                instance.export_id,
+                instance.location.y if instance.location else None,
+                instance.location.x if instance.location else None,
+                instance.location.z if instance.location else None,
+                instance.accuracy,
+                instance.period,
+                timestamp_to_datetime(created_at_timestamp),
+                timestamp_to_datetime(updated_at_timestamp),
+                get_creator_name(instance.created_by) if instance.created_by else None,
+                instance.status,
+                # Special format for UUID to stay consistent with other UUIDs coming from file_content_template
+                f"uuid:{instance.entity.uuid}" if instance.entity else None,
+                instance.org_unit.name,
+                instance.org_unit.id,
+                instance.org_unit.source_ref,
             ]
 
-            parent = org_unit["parent"] if org_unit else None
+            parent = org_unit.parent
             for i in range(4):
                 if parent:
-                    instance_values.append(parent["name"])
-                    parent = parent["parent"]
+                    instance_values.append(parent.name)
+                    parent = parent.parent
                 else:
                     instance_values.append("")
             if instance.form.correlatable:
                 instance_values.append(instance.correlation_id)
 
             for k in file_content_template:
-                v = idict["file_content"].get(k, None)
+                v = file_content.get(k, None)
                 if type(v) is list:
                     instance_values.append(json.dumps(v))
                 else:
                     instance_values.append(v)
             return instance_values
 
-        queryset.prefetch_related("org_unit__parent__parent__parent__parent").prefetch_related(
-            "org_unit__parent__parent__parent"
-        ).prefetch_related("org_unit__parent__parent").prefetch_related("org_unit__parent").prefetch_related("org_unit")
-
         response: Union[HttpResponse, StreamingHttpResponse]
+
+        queryset = queryset.prefetch_related("created_by", "entity", "form_version__form")
+        queryset = queryset.prefetch_related(
+            Prefetch("org_unit", queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"))
+        )
+        queryset = queryset.prefetch_related(
+            Prefetch(
+                "org_unit__parent",
+                queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"),
+            )
+        )
+        queryset = queryset.prefetch_related(
+            Prefetch(
+                "org_unit__parent__parent",
+                queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"),
+            )
+        )
+        queryset = queryset.prefetch_related(
+            Prefetch(
+                "org_unit__parent__parent__parent",
+                queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"),
+            )
+        )
+        queryset = queryset.prefetch_related(
+            Prefetch(
+                "org_unit__parent__parent__parent__parent",
+                queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"),
+            )
+        )
+
         if file_format == FileFormatEnum.XLSX:
             filename = filename + ".xlsx"
             response = HttpResponse(
@@ -321,8 +356,6 @@ class InstancesViewSet(viewsets.ViewSet):
         # 2. Prepare queryset (common part between searches and exports)
         queryset = self.get_queryset()
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
-        queryset = queryset.prefetch_related("org_unit__org_unit_type")
-        queryset = queryset.prefetch_related("org_unit__version__data_source")
         queryset = queryset.prefetch_related("form")
         queryset = queryset.prefetch_related("created_by")
         queryset = queryset.for_filters(**filters)
@@ -342,6 +375,7 @@ class InstancesViewSet(viewsets.ViewSet):
         if not file_export:
             queryset = queryset.prefetch_related("org_unit__reference_instances")
             queryset = queryset.prefetch_related("org_unit__org_unit_type__reference_forms")
+            queryset = queryset.prefetch_related("org_unit__version__data_source")
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)
@@ -444,14 +478,19 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response({"res": "ok"})
 
     def retrieve(self, request, pk=None):
-        self.get_queryset().prefetch_related(
-            "instance_locks",
-            "instance_locks__top_org_unit",
-            "instance_locks__user",
-            "org_unit__reference_instances",
-            "org_unit__org_unit_type__reference_forms",
+        queryset = (
+            self.get_queryset()
+            .prefetch_related(
+                "instancelock_set",
+                "instancelock_set__top_org_unit",
+                "instancelock_set__locked_by",
+                "instancelock_set__unlocked_by",
+                "org_unit__reference_instances",
+                "org_unit__org_unit_type__reference_forms",
+            )
+            .with_status()
         )
-        instance: Instance = get_object_or_404(self.get_queryset(), pk=pk)
+        instance: Instance = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, instance)
         all_instance_locks = instance.instancelock_set.all()
 
@@ -546,19 +585,19 @@ class InstancesViewSet(viewsets.ViewSet):
         )
 
     QUERY = """
-    select DATE_TRUNC('month', iaso_instance.created_at) as month,
+    select DATE_TRUNC('month', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)) as month,
            (select name from iaso_form where id = iaso_instance.form_id) as form_name,
            iaso_instance.form_id,
            count(*)                        as value
     from iaso_instance
     left join iaso_form on (iaso_form.id = iaso_instance.form_id)
-    where iaso_instance.created_at > '2019-01-01'
+    where COALESCE(iaso_instance.source_created_at, iaso_instance.created_at) > '2019-01-01'
       and project_id = ANY (%s)
       and iaso_instance.form_id is not null
       and iaso_instance.deleted =  false
       and iaso_form.deleted_at is null
-    group by DATE_TRUNC('month', iaso_instance.created_at), iaso_instance.form_id
-    order by DATE_TRUNC('month', iaso_instance.created_at)"""
+    group by DATE_TRUNC('month', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)), iaso_instance.form_id
+    order by DATE_TRUNC('month', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at))"""
 
     @action(detail=False)
     def stats(self, request):
@@ -586,15 +625,15 @@ class InstancesViewSet(viewsets.ViewSet):
         projects = request.user.iaso_profile.account.project_set.all()
         projects_ids = list(projects.values_list("id", flat=True))
         QUERY = """
-        select DATE_TRUNC('day', iaso_instance.created_at) as period,
+        select DATE_TRUNC('day', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)) as period,
         count(*)                        as value
         from iaso_instance
         left join iaso_form on (iaso_form.id = iaso_instance.form_id)
-        where iaso_instance.created_at > now() - interval '2700 days'
+        where COALESCE(iaso_instance.source_created_at, iaso_instance.created_at) > now() - interval '2700 days'
         and project_id = ANY (%s)
         and iaso_instance.deleted = false
         and iaso_form.deleted_at is null
-        group by DATE_TRUNC('day', iaso_instance.created_at)
+        group by DATE_TRUNC('day', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at))
         order by 1"""
         df = pd.read_sql_query(QUERY, connection, params=[projects_ids])
         df["total"] = df["value"].cumsum()
@@ -648,12 +687,12 @@ def import_data(instances, user, app_id):
                 entity.save()
 
         created_at_ts = instance_data.get("created_at", None)
-        instance.created_at = timestamp_to_utc_datetime(int(created_at_ts)) if created_at_ts is not None else None
+        if created_at_ts:
+            instance.source_created_at = timestamp_to_utc_datetime(int(created_at_ts))
 
         updated_at_ts = instance_data.get("updated_at", None)
-        instance.updated_at = (
-            timestamp_to_utc_datetime(int(updated_at_ts)) if updated_at_ts is not None else instance.created_at
-        )
+        if updated_at_ts:
+            instance.source_updated_at = timestamp_to_utc_datetime(int(updated_at_ts))
 
         latitude = instance_data.get("latitude", None)
         longitude = instance_data.get("longitude", None)
@@ -667,9 +706,12 @@ def import_data(instances, user, app_id):
             if instance.form in instance.org_unit.org_unit_type.reference_forms.all():
                 oucr = OrgUnitChangeRequest()
                 oucr.org_unit = instance.org_unit
+                if user and not user.is_anonymous:
+                    oucr.created_by = user
                 previous_reference_instances = list(instance.org_unit.reference_instances.all())
                 new_reference_instances = list(filter(lambda i: i.form != instance.form, previous_reference_instances))
                 new_reference_instances.append(instance)
                 oucr.save()
                 oucr.new_reference_instances.set(new_reference_instances)
+                oucr.requested_fields = ["new_reference_instances"]
                 oucr.save()

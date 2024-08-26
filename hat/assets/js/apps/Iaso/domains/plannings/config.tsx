@@ -33,6 +33,18 @@ export const usePlanningColumns = (
                 id: 'name',
             },
             {
+                Header: formatMessage(MESSAGES.project),
+                accessor: 'project__name',
+                id: 'project__name',
+                Cell: settings => settings.row.original.project_details.name,
+            },
+            {
+                Header: formatMessage(MESSAGES.orgUnit),
+                accessor: 'org_unit__name',
+                id: 'org_unit__name',
+                Cell: settings => settings.row.original.org_unit_details.name,
+            },
+            {
                 Header: formatMessage(MESSAGES.startDate),
                 accessor: 'started_at',
                 id: 'started_at',

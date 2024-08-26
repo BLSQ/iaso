@@ -89,6 +89,7 @@ export type Form = {
     label_keys: string[];
     possible_fields: PossibleField[];
     legend_threshold: ScaleThreshold;
+    has_mappings: boolean;
 };
 
 export type FormDescriptor = {

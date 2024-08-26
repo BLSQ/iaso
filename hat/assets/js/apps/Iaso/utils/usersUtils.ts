@@ -16,6 +16,7 @@ export type Profile = {
     color?: string;
     phone_number?: string | null;
     country_code?: string | null;
+    projects?: Project[];
 };
 
 export type DataSource = {

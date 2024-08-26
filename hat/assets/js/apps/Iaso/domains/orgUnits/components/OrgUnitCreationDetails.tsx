@@ -3,12 +3,7 @@ import React, { FunctionComponent, ReactNode } from 'react';
 import { Table, TableBody, TableRow, TableCell } from '@mui/material';
 import GpsFixedIcon from '@mui/icons-material/GpsFixed';
 import GpsOffIcon from '@mui/icons-material/GpsOff';
-import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
-    LoadingSpinner,
-} from 'bluesquare-components';
+import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { OrgUnit } from '../types/orgUnit';
 import { useCurrentUser } from '../../../utils/usersUtils';

@@ -23,7 +23,6 @@ import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
 import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
 import OrgUnitTypeFilterComponent from '../../../../forms/components/OrgUnitTypeFilterComponent';
 import SourcesFilterComponent from '../../SourcesFilterComponent';
-import InnerDrawer from '../../../../../components/nav/InnerDrawer';
 import { MapLegend } from '../../../../../components/maps/MapLegend';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 import setDrawMessages from '../../../../../utils/map/drawMapMessages';
@@ -49,6 +48,8 @@ import tiles from '../../../../../constants/mapTiles';
 import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
 import * as Permission from '../../../../../utils/permissions';
 import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
+import { InnerDrawer } from '../../../../../components/nav/InnerDrawer/Index';
+import { userHasPermission } from '../../../../users/utils';
 
 export const zoom = 5;
 export const padding = [75, 75];
@@ -382,6 +383,12 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         latitude: [],
         longitude: [],
     });
+
+    const hasEditPermission = userHasPermission(
+        Permission.ORG_UNITS,
+        currentUser,
+    );
+
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -437,32 +444,38 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     </>
                 }
                 editOptionComponent={
-                    <EditOrgUnitOptionComponent
-                        orgUnit={currentOrgUnit}
-                        canEditLocation={state.canEditLocation.value}
-                        canEditCatchment={state.canEditCatchment.value}
-                        locationState={state.location.value}
-                        catchmentState={state.catchment.value}
-                        toggleEditShape={keyValue => toggleEditShape(keyValue)}
-                        toggleDeleteShape={keyValue =>
-                            toggleDeleteShape(keyValue)
-                        }
-                        isCreatingMarker={isCreatingMarker}
-                        toggleAddShape={keyValue => toggleAddShape(keyValue)}
-                        toggleAddMarker={() => {
-                            setIsCreatingMarker(!isCreatingMarker);
-                            state.locationGroup.value.toggleDrawMarker(
-                                !isCreatingMarker,
-                            );
-                        }}
-                        addShape={shapeType => addShape(shapeType)}
-                        onChangeLocation={latLong => {
-                            setIsCreatingMarker(false);
-                            onChangeLocation(latLong);
-                        }}
-                        errorsCoordinates={errorsCoordinates}
-                        setErrorsCoordinates={setErrorsCoordinates}
-                    />
+                    hasEditPermission && (
+                        <EditOrgUnitOptionComponent
+                            orgUnit={currentOrgUnit}
+                            canEditLocation={state.canEditLocation.value}
+                            canEditCatchment={state.canEditCatchment.value}
+                            locationState={state.location.value}
+                            catchmentState={state.catchment.value}
+                            toggleEditShape={keyValue =>
+                                toggleEditShape(keyValue)
+                            }
+                            toggleDeleteShape={keyValue =>
+                                toggleDeleteShape(keyValue)
+                            }
+                            isCreatingMarker={isCreatingMarker}
+                            toggleAddShape={keyValue =>
+                                toggleAddShape(keyValue)
+                            }
+                            toggleAddMarker={() => {
+                                setIsCreatingMarker(!isCreatingMarker);
+                                state.locationGroup.value.toggleDrawMarker(
+                                    !isCreatingMarker,
+                                );
+                            }}
+                            addShape={shapeType => addShape(shapeType)}
+                            onChangeLocation={latLong => {
+                                setIsCreatingMarker(false);
+                                onChangeLocation(latLong);
+                            }}
+                            errorsCoordinates={errorsCoordinates}
+                            setErrorsCoordinates={setErrorsCoordinates}
+                        />
+                    )
                 }
                 commentsOptionComponent={
                     <OrgUnitsMapComments

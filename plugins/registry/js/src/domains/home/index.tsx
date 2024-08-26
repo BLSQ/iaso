@@ -17,7 +17,6 @@ import { primaryColor, secondaryColor, styles } from './styles';
 
 export const Home = () => {
     const { formatMessage } = useSafeIntl();
-    const staticUrl = window.STATIC_URL ?? '/static/';
     useEffect(() => {
         const link = document.createElement('link');
         link.href =
@@ -44,7 +43,7 @@ export const Home = () => {
                             <Box sx={styles.logoContainer}>
                                 <Box sx={styles.logo}>
                                     <img
-                                        src={`${staticUrl}${logo}`}
+                                        src={`${window.STATIC_URL}${logo}`}
                                         alt="logo"
                                     />
                                 </Box>
@@ -135,7 +134,7 @@ export const Home = () => {
                                 >
                                     <Box sx={styles.footerBoxImage}>
                                         <img
-                                            src={`${staticUrl}${enabelLogo}`}
+                                            src={`${window.STATIC_URL}${enabelLogo}`}
                                             alt="logo-enabel"
                                         />
                                     </Box>
@@ -147,7 +146,7 @@ export const Home = () => {
                                 >
                                     <Box sx={styles.footerBoxImage}>
                                         <img
-                                            src={`${staticUrl}${blsqLogo}`}
+                                            src={`${window.STATIC_URL}${blsqLogo}`}
                                             alt="logo-blsq"
                                         />
                                     </Box>
@@ -166,7 +165,7 @@ export const Home = () => {
                                 >
                                     <Box sx={styles.footerBoxImage}>
                                         <img
-                                            src={`${staticUrl}${datavizLogo}`}
+                                            src={`${window.STATIC_URL}${datavizLogo}`}
                                             alt="logo-dataviz"
                                         />
                                     </Box>
@@ -178,7 +177,7 @@ export const Home = () => {
                                 >
                                     <Box sx={styles.footerBoxImage}>
                                         <img
-                                            src={`${staticUrl}${dhis2Logo}`}
+                                            src={`${window.STATIC_URL}${dhis2Logo}`}
                                             alt="logo-dhis2"
                                         />
                                     </Box>

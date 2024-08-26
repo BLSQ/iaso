@@ -63,7 +63,25 @@ export type PaginationParams = {
 declare global {
     interface Window {
         STATIC_URL?: string;
+        IASO_VERSION?: string;
     }
 }
 
 export type ColumnCell<T> = { row: { original: T; index: number } };
+
+export type OptionsResponse = {
+    name: string;
+    renders: string[];
+    parses: string[];
+    actions: {
+        POST: Record<
+            string,
+            {
+                type: 'integer' | 'field' | 'string' | 'choice';
+                required: boolean;
+                read_only: boolean;
+                choices: { value: string; display_name: string }[];
+            }
+        >;
+    };
+};

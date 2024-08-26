@@ -59,14 +59,6 @@ export const fetchInstanceDetail = instanceId =>
             console.error('Error while fetching instance detail:', error);
         });
 
-export const fetchLinkDetail = linkId =>
-    getRequest(`/api/links/${linkId}`)
-        .then(linkDetail => linkDetail)
-        .catch(error => {
-            openSnackBar(errorSnackBar('fetchLinkDetailError', null, error));
-            console.error('Error while fetching link detail:', error);
-        });
-
 export const createForm = formData =>
     postRequest('/api/forms/', formData).catch(error => {
         openSnackBar(errorSnackBar('createFormError', null, error));

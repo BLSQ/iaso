@@ -3,22 +3,25 @@ import logging
 from datetime import date, datetime
 from functools import wraps
 from traceback import format_exc
-
+from rest_framework.exceptions import ValidationError
 import pytz
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import ProtectedError, Q
 from django.http import HttpResponse
 from django.utils.timezone import make_aware
+from django.utils.translation import gettext as _
 from rest_framework import compat, exceptions, filters, pagination, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
+from rest_framework.viewsets import ModelViewSet as BaseModelViewSet, ViewSet
 from rest_framework_csv.renderers import CSVRenderer
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from hat.api_import.models import APIImport
 from iaso.models import OrgUnit, OrgUnitType
+from iaso.models.payments import PaymentStatuses
 
 
 logger = logging.getLogger(__name__)
@@ -173,8 +176,13 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
     """
 
     def __init__(self, *args, **kwargs):
+        # Avoid a `KeyError: 'context'` error for nested serializers.
+        request = kwargs.get("context", {}).get("request")
+        if not request:
+            return super().__init__(*args, **kwargs)
+
         # Don't pass the 'fields' arg up to the superclass
-        requested_fields = kwargs["context"]["request"].query_params.get("fields", kwargs.pop("fields", ":default"))
+        requested_fields = request.query_params.get("fields", kwargs.pop("fields", ":default"))
         if requested_fields == ":all":
             fields = self.Meta.fields
         elif requested_fields == ":default":
@@ -448,3 +456,36 @@ class Custom403Exception(APIException):
 
     status_code = 403
     default_detail = "Forbidden"
+
+
+def parse_comma_separated_numeric_values(value: str, field_name: str) -> list:
+    """
+    Parses a comma-separated string of numeric values and returns a list of integers.
+    Raises a ValidationError if the input is not valid.
+    """
+    ids = [val for val in value.split(",") if val.isnumeric()]
+    if not ids:
+        raise ValidationError({field_name: ["Invalid value."]})
+    return [int(val) for val in ids]
+
+
+class DropdownOptionsSerializer(serializers.Serializer):
+    value = serializers.CharField()
+    label = serializers.CharField()
+
+
+class DropdownOptionsListViewSet(ViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    http_method_names = ["get"]
+    # default value
+    serializer = DropdownOptionsSerializer
+    # default value. Should be a models.TextChoices
+    choices = PaymentStatuses
+
+    def get_status_choices(self):
+        return [{"value": choice.value, "label": str(_(choice.label))} for choice in self.choices]
+
+    def list(self, request):
+        status_choices = self.get_status_choices()
+        serializer = self.serializer(status_choices, many=True)
+        return Response(serializer.data)

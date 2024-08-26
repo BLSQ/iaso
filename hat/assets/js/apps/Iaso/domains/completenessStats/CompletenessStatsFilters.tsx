@@ -27,7 +27,7 @@ import PeriodPicker from '../periods/components/PeriodPicker';
 import { useGetPlanningsOptions } from '../plannings/hooks/requests/useGetPlannings';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
-import { PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
+import { NO_PERIOD, PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
 import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
 import { InputWithInfos } from '../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../types/utils';
@@ -36,6 +36,7 @@ import { AsyncSelect } from '../../components/forms/AsyncSelect';
 import { getUsersDropDown } from '../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../instances/hooks/useGetProfilesDropdown';
 import { PLANNING_READ, PLANNING_WRITE } from '../../utils/permissions';
+import { useGetProjectsDropdownOptions } from '../projects/hooks/requests';
 
 type Props = {
     params: UrlParams & any;
@@ -84,7 +85,8 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     const { data: groups, isFetching: isFetchingGroups } = useGetGroups({});
 
     const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
-
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
     // React to org unit type filtering, if the type is not available anymore
     // we remove it
     useEffect(() => {
@@ -124,9 +126,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 .map(f => f.original.period_type)
                 .filter(periodType_ => Boolean(periodType_));
             const uniqPeriods = uniq(periods);
-            return uniqPeriods && uniqPeriods[0]
-                ? uniqPeriods[0]
-                : PERIOD_TYPE_PLACEHOLDER;
+            return uniqPeriods && uniqPeriods[0] ? uniqPeriods[0] : NO_PERIOD;
         }
         return PERIOD_TYPE_PLACEHOLDER;
     }, [filters, forms]);
@@ -155,15 +155,33 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         },
         [handleChange],
     );
+    const messages = {
+        [PERIOD_TYPE_PLACEHOLDER]: MESSAGES.periodPlaceHolder,
+        [NO_PERIOD]: MESSAGES.noPeriodPlaceHolder,
+    };
+    const periodTypePlaceHolder = messages[periodType]
+        ? formatMessage(messages[periodType])
+        : undefined;
 
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
     } = useGetValidationStatus();
+
     return (
         <>
             <Grid container spacing={2}>
                 <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="projectIds"
+                        onChange={handleChangeForm}
+                        value={filters.projectIds}
+                        type="select"
+                        options={allProjects}
+                        label={MESSAGES.projects}
+                        loading={isFetchingProjects}
+                        multi
+                    />
                     <InputWithInfos infos={formatMessage(MESSAGES.formsInfos)}>
                         <InputComponent
                             type="select"
@@ -177,11 +195,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         />
                     </InputWithInfos>
                     <PeriodPicker
-                        message={
-                            periodType === PERIOD_TYPE_PLACEHOLDER
-                                ? formatMessage(MESSAGES.periodPlaceHolder)
-                                : undefined
-                        }
+                        message={periodTypePlaceHolder}
                         periodType={periodType}
                         title={formatMessage(MESSAGES.period)}
                         onChange={v => handleChange('period', v)}
@@ -199,6 +213,16 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         label={MESSAGES.group}
                         options={groups}
                         loading={isFetchingGroups}
+                    />
+                    <InputComponent
+                        type="select"
+                        onChange={handleChange}
+                        keyValue="orgUnitTypeIds"
+                        multi
+                        label={MESSAGES.orgUnitTypeGroupBy}
+                        value={filters.orgUnitTypeIds}
+                        loading={fetchingTypes}
+                        options={orgUnitTypes ?? []}
                     />
                     <DisplayIfUserHasPerm
                         permissions={[PLANNING_READ, PLANNING_WRITE]}
@@ -238,16 +262,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 </Grid>
 
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        onChange={handleChange}
-                        keyValue="orgUnitTypeIds"
-                        multi
-                        label={MESSAGES.orgUnitTypeGroupBy}
-                        value={filters.orgUnitTypeIds}
-                        loading={fetchingTypes}
-                        options={orgUnitTypes ?? []}
-                    />
                     <Box mt={2}>
                         <AsyncSelect
                             keyValue="userIds"

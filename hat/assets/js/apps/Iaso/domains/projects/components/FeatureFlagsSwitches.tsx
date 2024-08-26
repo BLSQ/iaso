@@ -62,7 +62,6 @@ export const FeatureFlagsSwitches: React.FunctionComponent<Props> = ({
     return (
         <Box className={classes.container}>
             {isLoading && <LoadingSpinner />}
-            {/* @ts-ignore */}
             <Table
                 columns={columns}
                 data={featureFlags}

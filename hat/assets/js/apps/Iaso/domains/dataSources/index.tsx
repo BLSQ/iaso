@@ -1,9 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { AddButton, commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    AddButton,
+    commonStyles,
+    useSafeIntl,
+    ErrorBoundary,
+} from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import TopBar from '../../components/nav/TopBarComponent';
-import { ErrorBoundary } from './components/ErrorBoundary';
 import { useDefaultSourceVersion } from './utils';
 import { DataSourceDialogComponent } from './components/DataSourceDialogComponent';
 import { baseUrls } from '../../constants/urls';
@@ -14,6 +18,7 @@ import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetDataSources } from './useGetDataSources';
+import { Filters } from './components/Filters';
 
 const baseUrl = baseUrls.sources;
 const defaultOrder = 'name';
@@ -31,11 +36,12 @@ const DataSources: FunctionComponent = () => {
         page?: string;
         pageSize?: string;
         order?: string;
+        projectIds?: string;
     };
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const defaultSourceVersion = useDefaultSourceVersion();
-    const columns = useDataSourcesTableColumns(defaultSourceVersion);
+    const columns: any = useDataSourcesTableColumns(defaultSourceVersion);
     const { data, isFetching: loading } = useGetDataSources(params);
 
     return (
@@ -46,6 +52,7 @@ const DataSources: FunctionComponent = () => {
             />
             <ErrorBoundary>
                 <Box className={classes.containerFullHeightNoTabPadded}>
+                    <Filters params={params} baseUrl={baseUrl} />
                     <DisplayIfUserHasPerm permissions={[SOURCE_WRITE]}>
                         <Box
                             display="inline-flex"
@@ -69,8 +76,6 @@ const DataSources: FunctionComponent = () => {
                         data={data?.sources ?? []}
                         count={data?.count ?? 0}
                         pages={data?.pages ?? 0}
-                        // The TS type should accept a function as accessor
-                        // @ts-ignore
                         columns={columns}
                         defaultSorted={[{ id: defaultOrder, desc: false }]}
                         extraProps={{

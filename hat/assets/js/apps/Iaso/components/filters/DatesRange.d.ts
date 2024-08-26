@@ -1,10 +1,10 @@
 // DatesRange.d.ts
 import { ComponentType } from 'react';
-import { IntlShape } from 'react-intl';
 
 interface DatesRangeProps {
     dateFrom?: string;
     dateTo?: string;
+    // eslint-disable-next-line no-unused-vars
     onChangeDate: (key: string, value: any) => void;
     labelTo?: { id: string; defaultMessage: string };
     labelFrom?: { id: string; defaultMessage: string };
@@ -19,6 +19,7 @@ interface DatesRangeProps {
     marginTop?: number;
     dateFromRequired?: boolean;
     dateToRequired?: boolean;
+    disabled?: boolean;
 }
 
 declare const DatesRange: ComponentType<DatesRangeProps>;

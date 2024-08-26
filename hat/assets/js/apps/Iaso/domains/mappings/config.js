@@ -15,23 +15,6 @@ const safePercent = (a, b) => {
 
 export const mappingsTableColumns = formatMessage => [
     {
-        Header: formatMessage(MESSAGES.actions),
-        accessor: 'actions',
-        resizable: false,
-        sortable: false,
-        width: 150,
-        Cell: settings => (
-            <section>
-                <IconButtonComponent
-                    url={`/${baseUrls.mappingDetail}/mappingVersionId/${settings.row.original.id}`}
-                    icon="remove-red-eye"
-                    tooltipMessage={MESSAGES.view}
-                    location={`/${baseUrls.mappings}`}
-                />
-            </section>
-        ),
-    },
-    {
         Header: formatMessage(MESSAGES.name),
         id: 'form_version__form__name',
         accessor: row => row.form_version.form.name,
@@ -73,5 +56,22 @@ export const mappingsTableColumns = formatMessage => [
         Header: formatMessage(MESSAGES.updatedAt),
         accessor: 'updated_at',
         Cell: DateTimeCell,
+    },
+    {
+        Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
+        resizable: false,
+        sortable: false,
+        width: 150,
+        Cell: settings => (
+            <section>
+                <IconButtonComponent
+                    url={`/${baseUrls.mappingDetail}/mappingVersionId/${settings.row.original.id}`}
+                    icon="remove-red-eye"
+                    tooltipMessage={MESSAGES.view}
+                    location={`/${baseUrls.mappings}`}
+                />
+            </section>
+        ),
     },
 ];

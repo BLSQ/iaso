@@ -84,7 +84,8 @@ class Exporter:
         if task:
             task.report_progress_and_stop_if_killed(progress_message="Updating groups", progress_value=3, end_value=3)
         self.iaso_logger.ok("   ------ Modified groups----")
-        self.update_groups(api, diffs, fields)
+        self.update_groups_with_groupsets(api, diffs, fields)
+        self.update_groups_without_groupsets(api, diffs, fields)
 
     def create_missings(self, api, diffs: List[Diff], task=None):
         to_create_diffs = list(filter(lambda x: x.status == "new", diffs))
@@ -265,7 +266,7 @@ class Exporter:
         if comparison.after:
             payload["parent"] = {"id": comparison.after}
 
-    def update_groups(self, api, diffs: List[Diff], fields):
+    def update_groups_with_groupsets(self, api, diffs: List[Diff], fields):
         support_by_update_fields = [field for field in fields if field.startswith("groupset:")]
         to_update_diffs = list(
             filter(
@@ -330,3 +331,65 @@ class Exporter:
                     resp = api.put("organisationUnitGroups/" + dhis2_group["id"], dhis2_group)
                     self.iaso_logger.info("updated  ", dhis2_group["id"], dhis2_group["name"], resp, resp.json())
         return
+
+    def update_groups_without_groupsets(self, api, diffs: List[Diff], fields):
+        support_by_update_fields = [field for field in fields if field.startswith("group:")]
+        to_update_diffs = list(
+            filter(
+                lambda x: (x.status == "modified" or x.status == "new")
+                and x.are_fields_modified(support_by_update_fields),
+                diffs,
+            )
+        )
+
+        self.iaso_logger.info("orgunits with groups to change ", len(to_update_diffs))
+        if len(to_update_diffs) == 0:
+            self.iaso_logger.ok("nothing to update in the groups")
+            return
+
+        group_field_types = as_field_types(support_by_update_fields)
+
+        for group_field_type in group_field_types:
+            self.iaso_logger.info("---", group_field_type.group_ref, group_field_type.group_name)
+            dhis2_groups = api.get(
+                "organisationUnitGroups",
+                params={
+                    "fields": ":all",
+                    "filter": "id:eq:" + group_field_type.group_ref,
+                    "paging": "false",
+                },
+            ).json()["organisationUnitGroups"]
+
+            for dhis2_group in dhis2_groups:
+                modified = False
+                for diff in to_update_diffs:
+                    comparison = diff.comparison(group_field_type.field_name)
+                    if comparison.status == "new" or comparison.status == "modified":
+                        tokeep = [group["id"] for group in comparison.after if group["id"] == dhis2_group["id"]]
+                        if len(tokeep) > 0:
+                            if not dhis2_group_contains(dhis2_group, diff.org_unit):
+                                dhis2_group["organisationUnits"].append({"id": diff.org_unit.source_ref})
+                                modified = True
+                        else:
+                            if dhis2_group_contains(dhis2_group, diff.org_unit):
+                                dhis2_group["organisationUnits"] = list(
+                                    filter(
+                                        lambda ou: ou["id"] != diff.org_unit.source_ref,
+                                        dhis2_group["organisationUnits"],
+                                    )
+                                )
+                                modified = True
+                    if comparison.status == "deleted":
+                        if dhis2_group_contains(dhis2_group, diff.org_unit):
+                            dhis2_group["organisationUnits"] = list(
+                                filter(
+                                    lambda ou: ou["id"] != diff.org_unit.source_ref,
+                                    dhis2_group["organisationUnits"],
+                                )
+                            )
+                            modified = True
+
+                if modified:
+                    self.iaso_logger.info("updating ", dhis2_group["id"], dhis2_group["name"])
+                    resp = api.put("organisationUnitGroups/" + dhis2_group["id"], dhis2_group)
+                    self.iaso_logger.info("updated  ", dhis2_group["id"], dhis2_group["name"], resp, resp.json())

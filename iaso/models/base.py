@@ -991,11 +991,11 @@ class Instance(models.Model):
 
     @property
     def source_created_at_with_fallback(self):
-        return self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp()
+        return self.source_created_at if self.source_created_at else self.created_at
 
     @property
     def source_updated_at_with_fallback(self):
-        return self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp()
+        return self.source_updated_at if self.source_updated_at else self.updated_at
 
     def flag_reference_instance(self, org_unit: "OrgUnit") -> "OrgUnitReferenceInstance":
         if not self.form:
@@ -1158,8 +1158,8 @@ class Instance(models.Model):
             "id": self.id,
             "form_id": self.form_id,
             "form_name": self.form.name if self.form else None,
-            "created_at": self.source_created_at_with_fallback,
-            "updated_at": self.source_updated_at_with_fallback,
+            "created_at": self.source_created_at_with_fallback.timestamp(),
+            "updated_at": self.source_updated_at_with_fallback.timestamp(),
             "org_unit": self.org_unit.as_dict() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -1196,8 +1196,8 @@ class Instance(models.Model):
             "file_url": self.file.url if self.file else None,
             "id": self.id,
             "form_id": self.form_id,
-            "created_at": self.source_created_at_with_fallback,
-            "updated_at": self.source_updated_at_with_fallback,
+            "created_at": self.source_created_at_with_fallback.timestamp(),
+            "updated_at": self.source_updated_at_with_fallback.timestamp(),
             "created_by": get_creator_name(self.created_by) if self.created_by else None,
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
@@ -1229,8 +1229,8 @@ class Instance(models.Model):
             "form_version_id": self.form_version.id if self.form_version else None,
             "form_name": self.form.name,
             "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
-            "created_at": self.source_created_at_with_fallback,
-            "updated_at": self.source_updated_at_with_fallback,
+            "created_at": self.source_created_at_with_fallback.timestamp(),
+            "updated_at": self.source_updated_at_with_fallback.timestamp(),
             "org_unit": self.org_unit.as_dict_with_parents(light=False, light_parents=False) if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -1289,8 +1289,8 @@ class Instance(models.Model):
         return {
             "id": self.id,
             "file_url": self.file.url if self.file else None,
-            "created_at": self.source_created_at_with_fallback,
-            "updated_at": self.source_updated_at_with_fallback,
+            "created_at": self.source_created_at_with_fallback.timestamp(),
+            "updated_at": self.source_updated_at_with_fallback.timestamp(),
             "period": self.period,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,

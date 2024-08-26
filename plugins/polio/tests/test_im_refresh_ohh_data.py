@@ -1,20 +1,15 @@
 from datetime import datetime
-import json
 from iaso import models as m
 from iaso.test import APITestCase
 from iaso.models.base import RUNNING, KILLED, SUCCESS, SKIPPED
-
-from iaso.models.json_config import Config
 from unittest.mock import patch
-
-from plugins.polio.tasks.api.refresh_im_data import RefreshIMDataViewset
-from plugins.polio.tasks.api.refresh_lqas_im_data import IM_CONFIG_SLUG
+from plugins.polio.tasks.api.refresh_im_data import IM_OHH_CONFIG_SLUG, RefreshIMOutOfHouseholdDataViewset
 
 
-class RefreshLQASDataTestCase(APITestCase):
+class RefreshIMOutOfHouseholdDataTestCase(APITestCase):
     @classmethod
     def setUp(cls):
-        cls.url = "/api/polio/tasks/refreshim/"
+        cls.url = "/api/polio/tasks/refreshim/ohh/"
         cls.action_url = f"{cls.url}last_run_for_country/"
         cls.account = account = m.Account.objects.create(name="test account")
         cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
@@ -51,7 +46,7 @@ class RefreshLQASDataTestCase(APITestCase):
             status=RUNNING,
             account=account,
             launcher=cls.user,
-            name=IM_CONFIG_SLUG,
+            name=IM_OHH_CONFIG_SLUG,
             started_at=datetime.now(),
             external=True,
         )
@@ -68,7 +63,6 @@ class RefreshLQASDataTestCase(APITestCase):
             "pipeline_version": 1,
             "oh_pipeline_target": "staging",
         }
-        cls.lqas_config = Config.objects.create(slug=IM_CONFIG_SLUG, content=cls.json_config)
 
     def mock_openhexa_call_success(self, slug=None, config=None, id_field=None, task_id=None):
         return SUCCESS
@@ -95,13 +89,13 @@ class RefreshLQASDataTestCase(APITestCase):
             data={
                 "id_field": {"country_id": self.country_org_unit.id},
                 "config": {"country_id": self.country_org_unit.id},
-                "slug": IM_CONFIG_SLUG,
+                "slug": IM_OHH_CONFIG_SLUG,
             },
         )
         jr = self.assertJSONResponse(response, 403)
         self.assertEqual({"detail": "You do not have permission to perform this action."}, jr)
 
-    @patch.object(RefreshIMDataViewset, "launch_task", mock_openhexa_call_running)
+    @patch.object(RefreshIMOutOfHouseholdDataViewset, "launch_task", mock_openhexa_call_running)
     def test_create_external_task(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(
@@ -110,16 +104,16 @@ class RefreshLQASDataTestCase(APITestCase):
             data={
                 "id_field": {"country_id": self.country_org_unit.id},
                 "config": {"country_id": self.country_org_unit.id},
-                "slug": IM_CONFIG_SLUG,
+                "slug": IM_OHH_CONFIG_SLUG,
             },
         )
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
         self.assertEqual(task["status"], RUNNING)
         self.assertEqual(task["launcher"]["username"], self.user.username)
-        self.assertEqual(task["name"], f"{IM_CONFIG_SLUG}-{self.country_org_unit.id}")
+        self.assertEqual(task["name"], f"{IM_OHH_CONFIG_SLUG}-{self.country_org_unit.id}")
 
-    @patch.object(RefreshIMDataViewset, "launch_task", mock_openhexa_call_skipped)
+    @patch.object(RefreshIMOutOfHouseholdDataViewset, "launch_task", mock_openhexa_call_skipped)
     def test_create_external_task_pipeline_already_running(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(
@@ -128,16 +122,16 @@ class RefreshLQASDataTestCase(APITestCase):
             data={
                 "id_field": {"country_id": self.country_org_unit.id},
                 "config": {"country_id": self.country_org_unit.id},
-                "slug": IM_CONFIG_SLUG,
+                "slug": IM_OHH_CONFIG_SLUG,
             },
         )
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
         self.assertEqual(task["status"], SKIPPED)
         self.assertEqual(task["launcher"]["username"], self.user.username)
-        self.assertEqual(task["name"], f"{IM_CONFIG_SLUG}-{self.country_org_unit.id}")
+        self.assertEqual(task["name"], f"{IM_OHH_CONFIG_SLUG}-{self.country_org_unit.id}")
 
-    @patch.object(RefreshIMDataViewset, "launch_task", mock_openhexa_call_running)
+    @patch.object(RefreshIMOutOfHouseholdDataViewset, "launch_task", mock_openhexa_call_running)
     def test_patch_external_task(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(
@@ -146,7 +140,7 @@ class RefreshLQASDataTestCase(APITestCase):
             data={
                 "id_field": {"country_id": self.country_org_unit.id},
                 "config": {"country_id": self.country_org_unit.id},
-                "slug": IM_CONFIG_SLUG,
+                "slug": IM_OHH_CONFIG_SLUG,
             },
         )
         response = self.assertJSONResponse(response, 200)
@@ -166,7 +160,7 @@ class RefreshLQASDataTestCase(APITestCase):
         self.assertEqual(task["progress_value"], 21)
         self.assertEqual(task["end_value"], 0)
 
-    @patch.object(RefreshIMDataViewset, "launch_task", mock_openhexa_call_running)
+    @patch.object(RefreshIMOutOfHouseholdDataViewset, "launch_task", mock_openhexa_call_running)
     def test_kill_external_task(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(
@@ -175,7 +169,7 @@ class RefreshLQASDataTestCase(APITestCase):
             data={
                 "id_field": {"country_id": self.country_org_unit.id},
                 "config": {"country_id": self.country_org_unit.id},
-                "slug": IM_CONFIG_SLUG,
+                "slug": IM_OHH_CONFIG_SLUG,
             },
         )
         response = self.assertJSONResponse(response, 200)
@@ -200,6 +194,8 @@ class RefreshLQASDataTestCase(APITestCase):
         response = self.client.get(f"{self.action_url}?country_id={self.country_org_unit.id}")
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
+        print("RESPONSE", response)
+        print("TASK", task)
         self.assertEqual(task["id"], self.task1.id)
         self.assertEqual(task["ended_at"], self.task1.ended_at)
         self.assertEqual(task["status"], self.task1.status)

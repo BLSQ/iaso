@@ -48,7 +48,6 @@ from plugins.polio.api.vaccines.stock_management import (
 
 from plugins.polio.tasks.api.refresh_im_data import (
     RefreshIMAllDataViewset,
-    RefreshIMDataViewset,
     RefreshIMHouseholdDataViewset,
     RefreshIMOutOfHouseholdDataViewset,
 )
@@ -87,8 +86,6 @@ router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="
 router.register(r"polio/rounds", RoundViewSet, basename="rounds")
 router.register(r"polio/reasonsfordelay", ReasonForDelayViewSet, basename="reasonsfordelay")
 router.register(r"polio/tasks/refreshlqas", RefreshLQASDataViewset, basename="refreshlqas")
-# TODO delete
-router.register(r"polio/tasks/refreshim", RefreshIMDataViewset, basename="refreshim")
 router.register(r"polio/tasks/refreshim/hh", RefreshIMHouseholdDataViewset, basename="refreshimhh")
 router.register(r"polio/tasks/refreshim/ohh", RefreshIMOutOfHouseholdDataViewset, basename="refreshimohh")
 router.register(r"polio/tasks/refreshim/hh_ohh", RefreshIMAllDataViewset, basename="refreshimhhohh")

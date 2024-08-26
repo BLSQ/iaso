@@ -79,10 +79,10 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
     updated_at = serializers.SerializerMethodField()
 
     def get_created_at(self, instance):
-        return instance.source_created_at.timestamp() if instance.source_created_at else None
+        return instance.source_created_at.timestamp() if instance.source_created_at else instance.created_at.timestamp()
 
     def get_updated_at(self, instance):
-        return instance.source_updated_at.timestamp() if instance.source_updated_at else None
+        return instance.source_updated_at.timestamp() if instance.source_updated_at else instance.updated_at.timestamp()
 
     def get_form_version_id(self, obj):
         if obj.json is None:

@@ -3,25 +3,30 @@ import { Box, Button, Grid } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
 
+import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 
 import MESSAGES from '../messages';
+import { ChronogramMetaData } from '../../types';
 import { ChronogramParams } from '../types';
+import { CreateChronogramModal } from '../Modals/CreateChronogramModal';
 import { baseUrls } from '../../../../constants/urls';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
-import { CreateChronogramModal } from '../Modals/CreateChronogramModal';
-import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
 type Props = {
     params: ChronogramParams;
+    chronogramMetaData: ChronogramMetaData;
 };
 
 const baseUrl = baseUrls.chronogram;
 
-export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
+export const ChronogramFilters: FunctionComponent<Props> = ({
+    params,
+    chronogramMetaData,
+}) => {
     const { formatMessage } = useSafeIntl();
 
     const { filters, handleSearch, handleChange, filtersUpdated } =
@@ -45,7 +50,7 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid item xs={12} md={3} lg={3}>
                     <InputComponent
                         type="search"
                         keyValue="search"
@@ -55,7 +60,7 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.filterLabelSearch}
                     />
                 </Grid>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid item xs={12} md={3} lg={3}>
                     <InputComponent
                         loading={isFetchingCountries}
                         keyValue="country"
@@ -71,7 +76,18 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.filterLabelCountry}
                     />
                 </Grid>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid item xs={12} md={3} lg={3}>
+                    <InputComponent
+                        keyValue="campaign"
+                        clearable
+                        onChange={handleChange}
+                        value={filters.campaign}
+                        options={chronogramMetaData.campaigns}
+                        type="select"
+                        label={MESSAGES.filterLabelCampaign}
+                    />
+                </Grid>
+                <Grid item xs={12} md={3} lg={3}>
                     <InputComponent
                         type="select"
                         clearable

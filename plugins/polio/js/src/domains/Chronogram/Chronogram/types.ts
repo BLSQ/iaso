@@ -9,6 +9,7 @@ export type ChronogramParams = {
     limit?: string; // API name for "number of results per page".
     pageSize?: string; // TableWithDeepLink name for "number of results per page".
     // Search params.
+    campaign?: string;
     country?: string;
     on_time?: string;
     search?: string;

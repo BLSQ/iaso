@@ -39,6 +39,7 @@ def filter_for_power_bi(queryset: QuerySet) -> QuerySet:
 
 
 class ChronogramFilter(django_filters.rest_framework.FilterSet):
+    campaign = django_filters.CharFilter(field_name="round__campaign__id", label=_("Campaign ID"))
     country = django_filters.ModelMultipleChoiceFilter(
         field_name="round__campaign__country", queryset=countries, label=_("Country")
     )

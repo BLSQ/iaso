@@ -61,6 +61,27 @@ class ChronogramViewSet(viewsets.ModelViewSet):
             .order_by("created_at")
         )
 
+    def options(self, request, *args, **kwargs):
+        """
+        Add custom metadata about the API.
+        """
+        if self.metadata_class is None:
+            return self.http_method_not_allowed(request, *args, **kwargs)
+        data = self.metadata_class().determine_metadata(request, self)
+
+        chronogram_campaigns = (
+            self.get_queryset()
+            .order_by("round__campaign__id")
+            .distinct("round__campaign")
+            .values_list(
+                "round__campaign__id",  # `id` is a UUID.
+                "round__campaign__obr_name",
+            )
+        )
+        data["campaigns_filter_choices"] = [{"value": c[0], "display_name": c[1]} for c in chronogram_campaigns]
+
+        return Response(data, status=status.HTTP_200_OK)
+
     def create(self, request, *args, **kwargs):
         """
         Create a `Chronogram` and populate it with `ChronogramTemplateTask` objects (if any).

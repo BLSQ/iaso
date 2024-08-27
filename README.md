@@ -413,11 +413,11 @@ On the /health/ url you can find listed the Iaso version number, environment, de
 
 Local DHIS2
 -----------
-Experimental. For development if you need a local dhis2 server, you can spin up one in your docker compose by using the `docker/docker compose-dhis2.yml ` configuration file.
+Experimental. For development if you need a local dhis2 server, you can spin up one in your docker compose by using the `docker/docker-compose-dhis2.yml ` configuration file.
 
-Replace your invocations of `docker compose` by `docker compose -f docker-compose.yml -f docker/docker compose-dhis2.yml` you need to specify both config files. e.g. to launch the cluster:
+Replace your invocations of `docker compose` by `docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml` you need to specify both config files. e.g. to launch the cluster:
 ``` bash
-docker compose -f docker-compose.yml -f docker/docker compose-dhis2.yml up
+docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
 ```
 
 The DHIS2 will be available on your computer on http://localhost:8080 and is reachable from Iaso as http://dhis2:8080. The login and password are admin / district. If you use it as an import source do not set a trailing /
@@ -447,7 +447,7 @@ docker compose up dhis2 db_dhis2
 If you want to test the feature with your local dhis2 you can use the following step. This assumes you are running everything in Dockers
 
 0. Launch DHIS2 with iaso within docker compose
-`docker compose -f docker-compose.yml -f docker/docker compose-dhis2.yml up`
+`docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up`
  With the default docker compose setup, iaso is on port 8081 and dhis2 on port 8081 on your machine
 1. These step assume you have loaded your DHIS2 with the play test data, but it's not mandatory. To see how to do it, look at previous section
 2. Configure an Oauth client in DHIS2: open http://localhost:8080/dhis-web-settings/index.html#/oauth2

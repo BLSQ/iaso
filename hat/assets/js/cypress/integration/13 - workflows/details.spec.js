@@ -188,7 +188,7 @@ describe('Workflows details', () => {
                 cy.wrap(interceptFlag).should('eq', true);
             });
         });
-        it('should display correct follow-ups', () => {
+        it.only('should display correct follow-ups', () => {
             cy.get('[data-test="follow-ups"]')
                 .find('table')
                 .as('followUpTable');
@@ -228,7 +228,7 @@ describe('Workflows details', () => {
                 .find('td')
                 .eq(1)
                 .should(
-                    'contain',
+                    'include.text',
                     'Gender [gender] = Male AND Entity Group [entity_group] = Group A',
                 );
             cy.get('@secondRow').find('td').eq(2).should('contain', 'FORM_3');

@@ -359,7 +359,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     profile.org_units.set(org_units_list)
                     # link the auth user to the user role corresponding auth group
                     profile.user.groups.set(user_groups_list)
-                    # link the user profil to the user role.
+                    # link the user profile to the user role.
                     profile.user_roles.set(user_roles_list)
                     profile.projects.set(projects_instance_list)
 

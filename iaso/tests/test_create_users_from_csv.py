@@ -3,8 +3,9 @@ import csv
 
 from django.contrib.auth.models import User, Permission, Group
 from django.core.files.uploadedfile import SimpleUploadedFile
-
+from rest_framework import serializers
 from iaso import models as m
+from iaso.api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from iaso.models import Profile, BulkCreateUserCsvFile, UserRole
 from iaso.test import APITestCase
 from hat.menupermissions.constants import MODULES
@@ -491,3 +492,26 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user.iaso_profile.org_units.count(), 1)
         self.assertEqual(new_user.iaso_profile.org_units.first(), org_unit_a)
         self.assertEqual(org_unit_a.version_id, self.account1.default_version_id)
+
+    def test_valid_phone_number(self):
+        phone_number = "+12345678912"
+        expected_output = "+12345678912"
+        result = BulkCreateUserFromCsvViewSet.validate_phone_number(phone_number)
+        self.assertEqual(result, expected_output)
+
+    def test_invalid_phone_number(self):
+        invalid_phone_number = "+12345"
+
+        with self.assertRaises(serializers.ValidationError) as raisedException:
+            BulkCreateUserFromCsvViewSet.validate_phone_number(invalid_phone_number)
+
+        exception_message = raisedException.exception.detail["error"]
+        self.assertIn(f"Operation aborted. The phone number {invalid_phone_number} is invalid", exception_message)
+
+    def test_number_parse_exception(self):
+        phone_number = "This is not a phone number"
+        with self.assertRaises(serializers.ValidationError) as raisedException:
+            BulkCreateUserFromCsvViewSet.validate_phone_number(phone_number)
+
+        exception_message = raisedException.exception.detail["error"]
+        self.assertIn(f"Operation aborted. This '{phone_number}' is not a phone number", exception_message)

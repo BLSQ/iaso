@@ -382,11 +382,11 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
 
-        data = {"name": "manager"}
-        rep = self.client.post("/api/userroles/", data=data)
+        manager = {"name": "manager"}
+        self.client.post("/api/userroles/", data=manager)
 
-        data = {"name": "area_manager"}
-        self.client.post("/api/userroles/", data=data)
+        area_manager = {"name": "area_manager"}
+        self.client.post("/api/userroles/", data=area_manager)
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_roles.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -399,6 +399,8 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(len(profiles), 5)
         new_user_1 = users.get(username="broly")
         new_user_2 = users.get(username="cyrus")
+        new_user_1_user_role = new_user_1.iaso_profile.user_roles.all()
+        new_user_2_user_roles = new_user_2.iaso_profile.user_roles.all()
         org_unit_ids = [org_unit.id for org_unit in list(new_user_1.iaso_profile.org_units.all())]
         self.assertEqual(new_user_1.email, "biobroly@bluesquarehub.com")
         self.assertEqual(new_user_2.email, "cyruswashington@bluesquarehub.com")
@@ -410,9 +412,15 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
         self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
         self.assertEqual(org_unit_ids, [9999])
-        self.assertEqual(len(new_user_1.iaso_profile.user_roles.all()), 1)
-        self.assertEqual(len(new_user_2.iaso_profile.user_roles.all()), 2)
-
+        self.assertEqual(len(new_user_1_user_role), 1)
+        self.assertEqual(len(new_user_1.groups.all()), 1)
+        self.assertEqual(new_user_1.groups.all().first(), new_user_1_user_role.first().group)
+        self.assertEqual(len(new_user_2_user_roles), 2)
+        self.assertEqual(len(new_user_2.groups.all()), 2)
+        self.assertEqual(
+            [user_role.group for user_role in new_user_2_user_roles],
+            [group for group in new_user_2.groups.all()],
+        )
         self.assertEqual(response.data, {"Accounts created": 2})
 
     def test_create_user_with_projects(self):

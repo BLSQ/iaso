@@ -10,6 +10,7 @@ const FORMS = 'iaso_forms';
 const FORMS_STATS = 'iaso_forms_stats';
 const LINKS = 'iaso_links';
 const MAPPINGS = 'iaso_mappings';
+const MOBILE_APP_OFFLINE_SETUP = 'iaso_mobile_app_offline_setup';
 const ORG_UNIT_GROUPS = 'iaso_org_unit_groups';
 const ORG_UNIT_TYPES = 'iaso_org_unit_types';
 const ORG_UNITS = 'iaso_org_units';
@@ -58,6 +59,7 @@ export {
     FORMS_STATS,
     LINKS,
     MAPPINGS,
+    MOBILE_APP_OFFLINE_SETUP,
     MODULES,
     ORG_UNITS,
     ORG_UNITS_READ,

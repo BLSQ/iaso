@@ -3,13 +3,10 @@ from rest_framework.response import Response
 
 from django.contrib.auth.password_validation import validate_password
 
+from hat.menupermissions import models as permission
+from iaso.api.common import HasPermission
 from iaso.api.tasks import TaskSerializer
 from iaso.tasks.export_mobile_app_setup_for_user import export_mobile_app_setup_for_user
-
-
-class HasPermission(permissions.BasePermission):
-    def has_permission(self, request, _view):
-        return request.user.is_superuser
 
 
 class ExportMobileSetupSerializer(serializers.Serializer):
@@ -24,7 +21,10 @@ class ExportMobileSetupSerializer(serializers.Serializer):
 class ExportMobileSetupViewSet(viewsets.ViewSet):
     """Export mobile app setup"""
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(permission.MOBILE_APP_OFFLINE_SETUP),
+    ]
 
     def create(self, request):
         serializer = ExportMobileSetupSerializer(data=request.data)

@@ -43,8 +43,8 @@ class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
 
 
 class ReferenceInstancesSerializer(serializers.ModelSerializer):
-    created_at = TimestampField()
-    updated_at = TimestampField()
+    created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
+    updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
 
     class Meta:
         model = Instance

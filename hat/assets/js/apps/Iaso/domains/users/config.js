@@ -9,12 +9,13 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog.tsx';
 import { EditUsersDialog } from './components/UsersDialog.tsx';
 import MESSAGES from './messages';
-import { userHasPermission } from './utils';
+import { userHasOneOfPermissions } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';
 import PermissionSwitch from './components/PermissionSwitch.tsx';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
 import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 
 export const usersTableColumns = ({
     formatMessage,
@@ -82,7 +83,10 @@ export const usersTableColumns = ({
                     saveProfile={saveProfile}
                 />
                 {currentUser.id !== settings.row.original.id &&
-                    userHasPermission(Permission.USERS_ADMIN, currentUser) && (
+                    userHasOneOfPermissions(
+                        [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
+                        currentUser,
+                    ) && (
                         <DeleteDialog
                             disabled={settings.row.original.instances_count > 0}
                             titleMessage={MESSAGES.deleteUserTitle}
@@ -92,14 +96,17 @@ export const usersTableColumns = ({
                             }
                         />
                     )}
-                {currentUser.is_superuser && (
+
+                <DisplayIfUserHasPerm
+                    permissions={[Permission.MOBILE_APP_OFFLINE_SETUP]}
+                >
                     <ExportMobileAppSetupDialog
                         selectedUser={settings.row.original}
                         titleMessage={MESSAGES.exportMobileAppTitle}
                         params={params}
                         onCreateExport={exportMobileSetup}
                     />
-                )}
+                </DisplayIfUserHasPerm>
             </section>
         ),
     },

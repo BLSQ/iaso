@@ -22,6 +22,7 @@ MODULE_PERMISSIONS = {
         "iaso_user_roles",
         "iaso_teams",
         "iaso_modules",
+        "iaso_mobile_app_offline_setup",
     ],
     "DHIS2_MAPPING": ["iaso_mappings"],
     "EMBEDDED_LINKS": ["iaso_pages", "iaso_page_write"],
@@ -141,5 +142,6 @@ PERMISSIONS_PRESENTATION = {
         "iaso_user_roles",
         "iaso_teams",
         "iaso_modules",
+        "iaso_mobile_app_offline_setup",
     ],
 }

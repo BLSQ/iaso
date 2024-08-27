@@ -10,6 +10,7 @@ import { LinkToForm } from '../forms/components/LinkToForm.tsx';
 import { OrgUnitLabel } from '../orgUnits/components/OrgUnitLabel.tsx';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { LinkToPlanning } from '../plannings/components/LinkToPlanning.tsx';
+import { usePrettyPeriod } from '../periods/utils';
 import MESSAGES from './messages';
 
 export const INSTANCE_STATUS_READY = 'READY';
@@ -24,6 +25,11 @@ export const INSTANCE_STATUSES = [
 
 export const REFERENCE_FLAG_CODE = 'flag';
 export const REFERENCE_UNFLAG_CODE = 'unflag';
+
+const PrettyPeriod = ({ value }) => {
+    const formatPeriod = usePrettyPeriod();
+    return formatPeriod(value);
+};
 
 export const INSTANCE_METAS_FIELDS = [
     {
@@ -93,6 +99,13 @@ export const INSTANCE_METAS_FIELDS = [
         },
     },
     {
+        key: 'source_created_at',
+        active: false,
+        render: value => displayDateFromTimestamp(value),
+        tableOrder: 7,
+        type: 'info',
+    },
+    {
         key: 'updated_at',
         render: value => displayDateFromTimestamp(value),
         active: true,
@@ -147,6 +160,13 @@ export const INSTANCE_METAS_FIELDS = [
         active: true,
         tableOrder: 5,
         type: 'location',
+    },
+    {
+        key: 'period',
+        render: value => <PrettyPeriod value={value} />,
+        tableOrder: 6,
+        active: true,
+        type: 'info',
     },
     {
         key: 'status',

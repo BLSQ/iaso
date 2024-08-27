@@ -234,7 +234,7 @@ describe('Submissions', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.instances.length,
-            columns: 7,
+            columns: 8,
             withVisit: false,
             apiKey: 'instances',
         });
@@ -254,7 +254,7 @@ describe('Submissions', () => {
         describe('Action columns', () => {
             it('should display correct amount of buttons', () => {
                 cy.wait('@getSubmissions').then(() => {
-                    getActionCol(5);
+                    getActionCol(6);
                     cy.get('@actionCol')
                         .find('button')
                         .should('have.length', 2);
@@ -263,7 +263,7 @@ describe('Submissions', () => {
             // This test is flakey
             it('buttons should link to submission', () => {
                 cy.wait('@getSubmissions').then(() => {
-                    getActionCol(5);
+                    getActionCol(6);
                     cy.get('@actionCol')
                         .find('button')
                         .eq(0)
@@ -277,7 +277,7 @@ describe('Submissions', () => {
             });
             it('buttons should link to linked org unit', () => {
                 cy.wait('@getSubmissions').then(() => {
-                    getActionCol(5);
+                    getActionCol(6);
                     cy.get('@actionCol')
                         .find('button')
                         .eq(1)
@@ -316,7 +316,7 @@ describe('Submissions', () => {
                         order: 'org_unit__name',
                     },
                     {
-                        colIndex: 4,
+                        colIndex: 5,
                         order: 'status',
                     },
                 ];

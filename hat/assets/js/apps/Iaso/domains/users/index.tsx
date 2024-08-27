@@ -42,9 +42,9 @@ import { Selection } from '../orgUnits/types/selection';
 import { Profile } from '../teams/types/profile';
 import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
 import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
-import { userHasPermission } from './utils';
 import * as Permission from '../../utils/permissions';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 
 const baseUrl = baseUrls.users;
 
@@ -129,7 +129,12 @@ export const Users: FunctionComponent = () => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {multiActionPopupOpen && 'SHOW MODALE'}
                 <Filters baseUrl={baseUrl} params={params} />
-                {userHasPermission(Permission.USERS_ADMIN, currentUser) && (
+                <DisplayIfUserHasPerm
+                    permissions={[
+                        Permission.USERS_ADMIN,
+                        Permission.USERS_MANAGEMENT,
+                    ]}
+                >
                     <Grid
                         container
                         spacing={0}
@@ -155,7 +160,7 @@ export const Users: FunctionComponent = () => {
                             disabled={isLoading}
                         />
                     </Grid>
-                )}
+                </DisplayIfUserHasPerm>
                 <Table
                     data={data?.profiles ?? []}
                     pages={data?.pages ?? 1}

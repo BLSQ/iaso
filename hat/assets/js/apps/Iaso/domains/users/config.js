@@ -9,7 +9,7 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog.tsx';
 import { EditUsersDialog } from './components/UsersDialog.tsx';
 import MESSAGES from './messages';
-import { userHasPermission } from './utils';
+import { userHasOneOfPermissions } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';
 import PermissionSwitch from './components/PermissionSwitch.tsx';
@@ -83,7 +83,10 @@ export const usersTableColumns = ({
                     saveProfile={saveProfile}
                 />
                 {currentUser.id !== settings.row.original.id &&
-                    userHasPermission(Permission.USERS_ADMIN, currentUser) && (
+                    userHasOneOfPermissions(
+                        [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
+                        currentUser,
+                    ) && (
                         <DeleteDialog
                             disabled={settings.row.original.instances_count > 0}
                             titleMessage={MESSAGES.deleteUserTitle}

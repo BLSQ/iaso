@@ -393,6 +393,24 @@ class ChronogramViewSetTestCase(APITestCase):
                 },
             )
 
+    def test_options_ok(self):
+        self.client.force_authenticate(self.user)
+
+        with self.assertNumQueries(4):
+            response = self.client.options("/api/polio/chronograms/")
+            self.assertJSONResponse(response, 200)
+
+        self.assertIn("campaigns_filter_choices", response.data)
+        self.assertEqual(
+            response.data["campaigns_filter_choices"],
+            [
+                {
+                    "value": str(self.campaign.id),
+                    "display_name": self.campaign.obr_name,
+                }
+            ],
+        )
+
     def test_get_all_fields_ok(self):
         self.client.force_authenticate(self.user)
 

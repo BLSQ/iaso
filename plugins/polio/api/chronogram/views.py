@@ -78,7 +78,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
                 "round__campaign__obr_name",
             )
         )
-        data["campaigns_filter_choices"] = [{"value": c[0], "display_name": c[1]} for c in chronogram_campaigns]
+        data["campaigns_filter_choices"] = [{"value": str(c[0]), "display_name": c[1]} for c in chronogram_campaigns]
 
         return Response(data, status=status.HTTP_200_OK)
 

@@ -162,6 +162,17 @@ class CommandTests(TestCase):
                 json=self.fixture_json("organisationUnitGroups-" + uid),
                 status=200,
             )
+
+        for uid in ["RpbiCJpIYEj", "w1Atoz18PCL", "gzcv65VyaGq"]:
+            responses.add(
+                responses.GET,
+                "https://play.dhis2.org/2.30/api/organisationUnitGroups.json?fields=%3Aall&filter=id:eq:"
+                + uid
+                + "&paging=false",
+                json=self.fixture_json("organisationUnitGroups-" + uid),
+                status=200,
+            )
+
         for group_id in ["f25dqv3Y7Z0"]:
             responses.add(
                 responses.PUT,

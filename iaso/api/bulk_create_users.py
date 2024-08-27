@@ -223,7 +223,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                     raise serializers.ValidationError(
                                         {
                                             "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
-                                            "has to create users with OrgUnits that are in the its controlled pyramid"
+                                            "has to create users with OrgUnits that are in its controlled pyramid"
                                         }
                                     )
                                 if ou not in importer_access_ou:

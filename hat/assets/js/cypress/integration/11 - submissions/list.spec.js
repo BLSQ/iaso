@@ -556,7 +556,7 @@ describe('Submissions', () => {
             cy.get('#ColumnsSelectDrawer-search').type('form');
             cy.get('@selectColumnsList').find('li').should('have.length', 2);
             cy.get('#ColumnsSelectDrawer-search-empty').click();
-            cy.get('@selectColumnsList').find('li').should('have.length', 14);
+            cy.get('@selectColumnsList').find('li').should('have.length', 15);
             const testIsActive = (keyName, withUrl = true) => {
                 cy.get('table').as('table');
                 cy.get('@table').find('thead').find('th').as('thead');

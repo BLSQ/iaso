@@ -13,7 +13,7 @@ import { ChronogramMetaData } from '../types';
 import { ChronogramParams } from './types';
 import { ChronogramTable } from './Table/ChronogramTable';
 import { defaultParams } from '../constants';
-import { useOptionChronogram } from '../api/useOptionChronogramTask';
+import { useOptionChronogram } from '../api/useOptionChronogram';
 import { useStyles } from '../../../styles/theme';
 
 export const Chronogram: FunctionComponent = () => {

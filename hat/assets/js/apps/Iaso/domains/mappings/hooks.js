@@ -3,25 +3,19 @@ import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 import { useRedirectToReplace } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls.ts';
+import { useApiParams } from '../../hooks/useApiParams';
 
 const defaultTimes = {
     staleTime: 1000 * 60 * 15, // in MS
     cacheTime: 1000 * 60 * 5,
 };
-
+const defaultQueryParams = {
+};
 export const useGetMappingVersions = params => {
-    const queryParams = {
-        order: params.order,
-        limit: params.pageSize,
-        page: params.page,
-    };
-
     if (params.formId) {
-        queryParams['form_id'] = params.formId;
+        params['form_id'] = params.formId;
     }
-
-    const queryString = new URLSearchParams(queryParams);
-
+    const queryString = new URLSearchParams(useApiParams(params, defaultQueryParams));
     return useSnackQuery({
         queryKey: ['mappingversions', params],
         queryFn: () =>
@@ -79,7 +73,7 @@ export const useGetMappingVersionDetail = mappingVersionId => {
 
 export const useApplyUpdate = () => {
     return useSnackMutation({
-        mutationFn: ({mappingVersionId, payload}) => {
+        mutationFn: ({ mappingVersionId, payload }) => {
             return patchRequest(
                 `/api/mappingversions/${mappingVersionId}/`,
                 payload,

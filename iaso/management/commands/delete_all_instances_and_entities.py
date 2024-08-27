@@ -24,32 +24,32 @@ class Command(BaseCommand):
 
     def delete_resources(self, description, query, options):
         if options["dry-run"]:
-            print(description, query.count())
+            self.stdout.write(f"{description} {query.count()}")
         else:
-            print(description, query.delete())
+            self.stdout.write(f"{description} {query.delete()}")
 
     def handle(self, *args, **options):
         account_id = options.get("account_id")
         if account_id is None:
-            print("Missing argument: No account id provided via --account")
-            print("Available accounts:")
+            self.stdout.write("Missing argument: No account id provided via --account")
+            self.stdout.write("Available accounts:")
             for account in Account.objects.order_by("id").all():
-                print(f"\t{account.name}: id {account.id}")
+                self.stdout.write(f"\t{account.name}: id {account.id}")
             exit()
 
         if options["dry-run"]:
-            print("NOTE: Running as --dry-run, not changing db")
+            self.stdout.write("NOTE: Running as --dry-run, not changing db")
 
         account = Account.objects.get(pk=account_id)
         project_ids = list(account.project_set.values_list("id", flat=True))
 
         with transaction.atomic():
-            print("--------------")
-            print(f"Deleting all form submissions and entities for account {account.name}")
-            print("--------------")
-            print()
+            self.stdout.write("--------------")
+            self.stdout.write(f"Deleting all form submissions and entities for account {account.name}")
+            self.stdout.write("--------------")
+            self.stdout.write()
 
-            print("Deleting form submissions...")
+            self.stdout.write("Deleting form submissions...")
             instances_to_delete = Instance.objects.filter(form__projects__id__in=project_ids)
             entities_to_delete = Entity.objects_include_deleted.filter(account=account)
 
@@ -62,17 +62,17 @@ class Command(BaseCommand):
                 # Need to set foreign key relation to NULL to avoid ProtectedError
                 entities_to_delete.update(attributes_id=None)
             self.delete_resources("\tinstances", instances_to_delete, options)
-            print("DONE.")
+            self.stdout.write("DONE.")
 
-            print("Deleting entities...")
+            self.stdout.write("Deleting entities...")
             self.delete_resources(
                 "\tEntities",
                 entities_to_delete,
                 options,
             )
-            print("DONE.")
+            self.stdout.write("DONE.")
 
-            print("Deleting storages...")
+            self.stdout.write("Deleting storages...")
             storages_to_delete = StorageDevice.objects.filter(account=account)
             self.delete_resources(
                 "\tStorageLogEntry",
@@ -80,4 +80,4 @@ class Command(BaseCommand):
                 options,
             )
             self.delete_resources("\tStorageDevice", storages_to_delete, options)
-            print("DONE.")
+            self.stdout.write("DONE.")

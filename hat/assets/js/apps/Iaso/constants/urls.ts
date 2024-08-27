@@ -119,7 +119,15 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     mappings: {
         url: 'forms/mappings',
-        params: ['accountId', 'formId', ...paginationPathParams],
+        params: [
+            'accountId', 
+            'formId', 
+            'mappingTypes',
+            'orgUnitTypeIds',
+            'projectsIds',
+            'search', 
+            ...paginationPathParams
+        ],
     },
     mappingDetail: {
         url: 'forms/mapping',
@@ -172,6 +180,8 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'projectIds',
             'paymentStatus',
             ...paginationPathParams,
+            'paymentIds',
+            'potentialPaymentIds',
         ],
     },
     registry: {

@@ -32,6 +32,10 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     status = django_filters.CharFilter(method="filter_status", label=_("Status (comma-separated)"))
     projects = django_filters.CharFilter(method="filter_projects", label=_("Projects IDs (comma-separated)"))
     payment_status = django_filters.CharFilter(method="filter_payment_status", label=_("Payment status"))
+    payment_ids = django_filters.CharFilter(method="filter_payments", label=_("Payment IDs (comma-separated)"))
+    potential_payment_ids = django_filters.CharFilter(
+        method="filter_potential_payments", label=_("Potential Payment IDs (comma-separated)")
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -115,7 +119,20 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
                 f"Expected payment status to be one of {','.join(PaymentStatuses.values)}, got {value}"
             )
         if value == PaymentStatuses.PENDING:
-            pending_filter = Q(payment__isnull=True) | Q(payment__status=PaymentStatuses.PENDING)
+            pending_filter = (
+                Q(payment__isnull=True)
+                & (Q(potential_payment__isnull=False) | Q(status=OrgUnitChangeRequest.Statuses.APPROVED.value))
+            ) | Q(payment__status=PaymentStatuses.PENDING)
             return queryset.filter(pending_filter)
         else:
             return queryset.filter(payment__status=value)
+
+    # This filter is used when redirecting from potential payments to see related change requests. It is not otherwise visible in the UI
+    def filter_potential_payments(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
+        potential_payment_ids = parse_comma_separated_numeric_values(value, name)
+        return queryset.filter(potential_payment__in=potential_payment_ids)
+
+    # This filter is used when redirecting from payment lots to see related change requests. It is not otherwise visible in the UI
+    def filter_payments(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
+        payment_ids = parse_comma_separated_numeric_values(value, name)
+        return queryset.filter(payment__in=payment_ids)

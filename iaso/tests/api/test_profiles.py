@@ -58,6 +58,7 @@ class ProfileAPITestCase(APITestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref=None,
         )
+
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,
             version=sw_version_1,
@@ -111,6 +112,12 @@ class ProfileAPITestCase(APITestCase):
         )
         cls.jom = cls.create_user_with_profile(username="jom", account=cls.ghi, permissions=[], language="fr")
         cls.jum = cls.create_user_with_profile(username="jum", account=cls.ghi, permissions=[], projects=[cls.project])
+        cls.user_managed_geo_limit = cls.create_user_with_profile(
+            username="managedGeoLimit",
+            account=cls.ghi,
+            permissions=[permission._USERS_MANAGED],
+            org_units=[cls.jedi_council_corruscant],
+        )
 
     def test_can_delete_dhis2_id(self):
         self.client.force_authenticate(self.john)
@@ -192,7 +199,7 @@ class ProfileAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response.json(), 6)
+        self.assertValidProfileListData(response.json(), 7)
 
     def test_profile_list_export_as_csv(self):
         self.john.iaso_profile.org_units.set([self.jedi_squad_1, self.jedi_council_corruscant])
@@ -221,11 +228,12 @@ class ProfileAPITestCase(APITestCase):
         )
 
         expected_csv += "janedoe,,,,,,,,,iaso_forms,,,\r\n"
-        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",FooBarB4z00,,,,,,\r\n'
+        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,,\r\n'
         expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
         expected_csv += "jam,,,,,,,en,,iaso_users_managed,,,\r\n"
         expected_csv += "jom,,,,,,,fr,,,,,\r\n"
         expected_csv += f"jum,,,,,,,,,,,{self.project.id},\r\n"
+        expected_csv += f"managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,iaso_users_managed,,,\r\n"
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -260,32 +268,35 @@ class ProfileAPITestCase(APITestCase):
         )
 
         data_dict = excel_data.replace({np.nan: None}).to_dict()
+
         self.assertDictEqual(
             data_dict,
             {
-                "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum"},
-                "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
-                "email": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
-                "first_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
-                "last_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},
+                "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+                "email": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+                "first_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+                "last_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "orgunit": {
                     0: None,
-                    1: f"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",
+                    1: f"{self.jedi_squad_1.id},{self.jedi_council_corruscant.id}",
                     2: None,
                     3: None,
                     4: None,
                     5: None,
+                    6: f"{self.jedi_council_corruscant.id}",
                 },
                 "orgunit__source_ref": {
                     0: None,
-                    1: "FooBarB4z00",
+                    1: self.jedi_council_corruscant.source_ref,
                     2: None,
                     3: None,
                     4: None,
                     5: None,
+                    6: self.jedi_council_corruscant.source_ref,
                 },
-                "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None},
-                "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
+                "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "permissions": {
                     0: "iaso_forms",
                     1: None,
@@ -293,10 +304,11 @@ class ProfileAPITestCase(APITestCase):
                     3: "iaso_users_managed",
                     4: None,
                     5: None,
+                    6: "iaso_users_managed",
                 },
-                "user_roles": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
-                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.id},
-                "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "user_roles": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.id, 6: None},
+                "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             },
         )
 
@@ -305,42 +317,42 @@ class ProfileAPITestCase(APITestCase):
         self.client.force_authenticate(self.jim)
         response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response.json(), 6)
+        self.assertValidProfileListData(response.json(), 7)
 
     def test_profile_list_superuser_ok(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
         response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response.json(), 6)
+        self.assertValidProfileListData(response.json(), 7)
 
     def test_profile_list_user_manager_ok(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.jam)
         response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response.json(), 6)
+        self.assertValidProfileListData(response.json(), 7)
 
     def test_profile_list_managed_user_only_superuser(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
         response = self.client.get("/api/profiles/?managedUsersOnly=true")
         self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response.json(), 6)
+        self.assertValidProfileListData(response.json(), 7)
 
     def test_profile_list_managed_user_only_user_admin(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
         response = self.client.get("/api/profiles/?managedUsersOnly=true")
         self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response.json(), 6)
+        self.assertValidProfileListData(response.json(), 7)
 
     def test_profile_list_managed_user_only_user_manager_no_org_unit(self):
         """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.jam)
         response = self.client.get("/api/profiles/?managedUsersOnly=true")
         self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response.json(), 5)
+        self.assertValidProfileListData(response.json(), 6)
 
     def test_profile_list_managed_user_only_user_manager_with_org_unit(self):
         """GET /profiles/ with auth (superuser)"""
@@ -349,7 +361,7 @@ class ProfileAPITestCase(APITestCase):
         self.client.force_authenticate(self.jam)
         response = self.client.get("/api/profiles/?managedUsersOnly=true")
         self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response.json(), 1)
+        self.assertValidProfileListData(response.json(), 2)
 
     def test_profile_list_managed_user_only_user_regular_user(self):
         """GET /profiles/ with auth (superuser)"""
@@ -554,6 +566,58 @@ class ProfileAPITestCase(APITestCase):
         response_data = response.json()
         self.assertEqual(response_data["errorKey"], "password")
 
+    def test_create_profile_with_managed_geo_limit(self):
+        self.client.force_authenticate(self.user_managed_geo_limit)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "email": "unittest_last_name",
+            "org_units": [{"id": self.jedi_council_corruscant_child.id}],
+            "user_permissions": ["iaso_forms"],
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+
+        self.assertValidProfileData(response_data)
+        self.assertEqual(response_data["user_name"], "unittest_user_name")
+        self.assertEqual(response_data["is_superuser"], False)
+
+        profile = m.Profile.objects.get(pk=response_data["id"])
+        user = profile.user
+        self.assertEqual(user.username, data["user_name"])
+        self.assertEqual(user.first_name, data["first_name"])
+
+        self.assertEqual(m.User.objects.filter(username=data["user_name"]).count(), 1)
+        self.assertEqual(profile.account, self.ghi)
+
+        self.assertQuerySetEqual(
+            user.user_permissions.all(),
+            ["<Permission: menupermissions | custom permission support | Formulaires>"],
+            transform=repr,
+        )
+        org_units = profile.org_units.all()
+        self.assertEqual(org_units.count(), 1)
+        self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
+
+    def test_create_profile_without_org_unit_with_managed_geo_limit(self):
+        self.client.force_authenticate(self.user_managed_geo_limit)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "email": "unittest_last_name",
+            "user_permissions": ["iaso_forms"],
+        }
+        response = self.client.post("/api/profiles/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 403)
+
     def assertValidProfileData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)
         self.assertHasField(project_data, "first_name", str)
@@ -642,7 +706,7 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
-        self.assertEqual(len(response.json()["profiles"]), 1)
+        self.assertEqual(len(response.json()["profiles"]), 2)
 
     def test_search_user_by_org_units_type(self):
         self.client.force_authenticate(self.jane)
@@ -652,7 +716,7 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
-        self.assertEqual(len(response.json()["profiles"]), 1)
+        self.assertEqual(len(response.json()["profiles"]), 2)
 
     def test_search_user_by_children_ou(self):
         self.client.force_authenticate(self.jane)
@@ -664,7 +728,7 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
-        self.assertEqual(len(response.json()["profiles"]), 1)
+        self.assertEqual(len(response.json()["profiles"]), 2)
 
     def test_search_user_by_parent_ou(self):
         self.client.force_authenticate(self.jane)
@@ -675,7 +739,7 @@ class ProfileAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
-        self.assertEqual(len(response.json()["profiles"]), 1)
+        self.assertEqual(len(response.json()["profiles"]), 2)
 
     def test_search_by_ids(self):
         self.client.force_authenticate(self.jane)

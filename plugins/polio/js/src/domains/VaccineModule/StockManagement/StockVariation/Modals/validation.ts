@@ -15,8 +15,8 @@ yup.addMethod(
                 const valuesArray = Array.isArray(value)
                     ? value
                     : value
-                        .split(',')
-                        .map((v: string | number) => `${v}`.trim());
+                          .split(',')
+                          .map((v: string | number) => `${v}`.trim());
                 const hasOtherChar = valuesArray.some(v => !regexp.test(v));
                 if (hasOtherChar) {
                     errorMessage = formatMessage(MESSAGES.lotNumberError);
@@ -131,6 +131,13 @@ export const useIncidentValidation = () => {
             .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
+        movement: yup
+            .number()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         usable_vials: yup
             .number()
             .required(formatMessage(MESSAGES.requiredField))

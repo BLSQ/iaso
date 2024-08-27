@@ -390,7 +390,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             # Check if the number is valid
             if not phonenumbers.is_valid_number(parsed_number):
                 raise serializers.ValidationError(
-                    {"error": f"Operation aborted. The phone number {phone_number} is invalide"}
+                    {"error": f"Operation aborted. The phone number {phone_number} is invalid"}
                 )
 
             return phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)

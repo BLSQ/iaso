@@ -316,7 +316,7 @@ describe('Submissions', () => {
                         order: 'org_unit__name',
                     },
                     {
-                        colIndex: 4,
+                        colIndex: 5,
                         order: 'status',
                     },
                 ];
@@ -556,7 +556,7 @@ describe('Submissions', () => {
             cy.get('#ColumnsSelectDrawer-search').type('form');
             cy.get('@selectColumnsList').find('li').should('have.length', 2);
             cy.get('#ColumnsSelectDrawer-search-empty').click();
-            cy.get('@selectColumnsList').find('li').should('have.length', 13);
+            cy.get('@selectColumnsList').find('li').should('have.length', 14);
             const testIsActive = (keyName, withUrl = true) => {
                 cy.get('table').as('table');
                 cy.get('@table').find('thead').find('th').as('thead');

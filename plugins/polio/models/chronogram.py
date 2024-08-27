@@ -145,9 +145,7 @@ class ChronogramTask(SoftDeletableModel):
     description = TranslatedField(models.TextField(max_length=300), {"fr": {"blank": True}})
     start_offset_in_days = models.IntegerField(default=0)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.PENDING)
-    user_in_charge = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="chronogram_tasks"
-    )
+    user_in_charge = models.CharField(max_length=255, blank=True)
     comment = models.TextField(max_length=300, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     created_by = models.ForeignKey(

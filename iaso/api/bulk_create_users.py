@@ -105,9 +105,16 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         return queryset
 
+    @staticmethod
+    def has_user_managed_permission(request):
+        if not request.user.has_perm(permission.USERS_ADMIN) and request.user.has_perm(permission.USERS_MANAGED):
+            return True
+        return False
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         user_created_count = 0
+        has_geo_limit = self.has_user_managed_permission(request)
         if request.FILES:
             # Retrieve and check the validity and format of the CSV File
             try:
@@ -197,6 +204,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         )
 
                     org_units = row[csv_indexes.index("orgunit")].split(value_splitter)
+                    if has_geo_limit and len(list(filter(None, org_units))) == 0:
+                        raise serializers.ValidationError(
+                            {
+                                "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
+                                "has to create users with OrgUnits in the file"
+                            }
+                        )
 
                     org_units_source_refs = row[csv_indexes.index("orgunit__source_ref")].split(value_splitter)
                     org_units += org_units_source_refs
@@ -206,6 +220,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         if ou.isdigit():
                             try:
                                 ou = OrgUnit.objects.get(id=int(ou))
+                                if has_geo_limit and ou not in importer_orgunits_hierarchy:
+                                    raise serializers.ValidationError(
+                                        {
+                                            "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
+                                            "has to create users with OrgUnits that are in the its controlled pyramid"
+                                        }
+                                    )
                                 if ou not in importer_access_ou:
                                     raise serializers.ValidationError(
                                         {

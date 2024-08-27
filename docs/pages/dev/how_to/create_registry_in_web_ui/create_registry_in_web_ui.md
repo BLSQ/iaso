@@ -30,7 +30,7 @@ Children should also be visible, location (point or shape) is not mandatory.
 - Using the filters, search for a form, doesn't need to be a specific one
 - For each children of the main org unit, create a submission
 
-Note: To be able to create submissions, Enketo needs to be running. This can be done with the following command: `docker compose -f docker-compose.yml -f docker/docker compose-enketo.yml up`
+Note: To be able to create submissions, Enketo needs to be running. This can be done with the following command: `docker compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up`
 
 
 ## 5. Test registry page

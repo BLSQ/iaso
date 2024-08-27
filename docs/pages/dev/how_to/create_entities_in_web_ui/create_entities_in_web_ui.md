@@ -31,7 +31,7 @@ Repeat as needed
 - Using the filters, search for the reference form(s) that were created in the previous step
 - For each form, create a submission
 
-Note: To be able to create submissions, Enketo needs to be running. This can be done with the following command: `docker compose -f docker-compose.yml -f docker/docker compose-enketo.yml up`
+Note: To be able to create submissions, Enketo needs to be running. This can be done with the following command: `docker compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up`
 
 ## 5. Create `Entities` with the Django admin
 

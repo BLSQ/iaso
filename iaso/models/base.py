@@ -40,6 +40,7 @@ from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.utils import extract_form_version_id, flat_parse_xml_soup
+from iaso.utils.file_utils import get_file_type
 
 from .. import periods
 from ..utils.jsonlogic import jsonlogic_to_q
@@ -1121,8 +1122,7 @@ class Instance(models.Model):
 
     def export(self, launcher=None, force_export=False):
         from iaso.dhis2.datavalue_exporter import DataValueExporter
-        from iaso.dhis2.export_request_builder import (ExportRequestBuilder,
-                                                       NothingToExportError)
+        from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
 
         try:
             export_request = ExportRequestBuilder().build_export_request(
@@ -1337,15 +1337,8 @@ class InstanceFile(models.Model):
             "instance_id": self.instance_id,
             "file": self.file.url if self.file else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
-            "file_type": self.get_file_type(),
+            "file_type": get_file_type(self.file),
         }
-
-    def get_file_type(self):
-        if self.file:
-            file_path = default_storage.path(self.file.name)
-            mime_type, _ = mimetypes.guess_type(file_path)
-            return mime_type
-        return None
 
 
 class Profile(models.Model):

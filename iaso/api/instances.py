@@ -37,6 +37,7 @@ from iaso.models import (
     Project,
 )
 from iaso.utils import timestamp_to_datetime
+from iaso.utils.file_utils import get_file_type
 
 from ..models.forms import CR_MODE_IF_REFERENCE_FORM
 from ..utils.models.common import get_creator_name
@@ -110,11 +111,7 @@ class InstanceFileSerializer(serializers.Serializer):
     file_type = serializers.SerializerMethodField()
 
     def get_file_type(self, obj):
-        if obj.file:
-            file_path = default_storage.path(obj.file.name)
-            mime_type, _ = mimetypes.guess_type(file_path)
-            return mime_type
-        return None
+        return get_file_type(obj.file)
 
 
 class OrgUnitNestedSerializer(OrgUnitSerializer):

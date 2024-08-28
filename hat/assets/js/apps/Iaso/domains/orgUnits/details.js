@@ -15,6 +15,7 @@ import { useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
+    FILES_PREFIX,
     FORMS_PREFIX,
     LINKS_PREFIX,
     OU_CHILDREN_PREFIX,
@@ -22,6 +23,7 @@ import {
 } from '../../constants/urls.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { fetchAssociatedOrgUnits } from '../../utils/requests';
+import { FilesTable } from '../forms/components/FilesTable';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
 import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
@@ -30,6 +32,7 @@ import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments
 import { OrgUnitChildren } from './details/Children/OrgUnitChildren.tsx';
 import { OrgUnitLinks } from './details/Links/OrgUnitLinks.tsx';
 import { Logs } from './history/LogsComponent.tsx';
+import { wktToGeoJSON } from './history/LogValue.tsx';
 import {
     useOrgUnitDetailData,
     useOrgUnitTabParams,
@@ -42,7 +45,6 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
-import { wktToGeoJSON } from './history/LogValue.tsx';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -96,6 +98,7 @@ const tabs = [
     'links',
     'history',
     'forms',
+    'files',
     'comments',
 ];
 
@@ -474,6 +477,26 @@ const OrgUnitDetail = () => {
                                         goToRevision={goToRevision}
                                     />
                                 </div>
+                            )}
+                            {params.tab === 'files' && (
+                                <Box
+                                    className={
+                                        classes.containerFullHeightNoTabPadded
+                                    }
+                                    data-test="files-tab"
+                                >
+                                    <FilesTable
+                                        baseUrl={baseUrl}
+                                        params={formParams}
+                                        defaultPageSize={10}
+                                        paramsPrefix={FILES_PREFIX}
+                                        tableDefaults={{
+                                            order: 'name',
+                                            limit: 10,
+                                            page: 1,
+                                        }}
+                                    />
+                                </Box>
                             )}
                             {params.tab === 'forms' && (
                                 <Box

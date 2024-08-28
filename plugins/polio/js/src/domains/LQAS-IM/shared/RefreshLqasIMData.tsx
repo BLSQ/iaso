@@ -28,6 +28,9 @@ const IM_OHH_TASK_ENDPOINT = '/api/polio/tasks/refreshim/ohh/';
 const IM_OHH_CONFIG_SLUG = 'im_ohh-pipeline-config';
 const IM_HH_OHH_TASK_ENDPOINT = '/api/polio/tasks/refreshim/hh_ohh/';
 const IM_HH_OHH_CONFIG_SLUG = 'im_hh_ohh-pipeline-config';
+const IM_HH_API_PARAM = 'HH';
+const IM_OHH_API_PARAM = 'OHH';
+const IM_HH_OHH_API_PARAM = 'HH_OHH';
 
 const getImEndpoint = (imType: IMType): string => {
     switch (imType) {
@@ -53,6 +56,19 @@ const getImConfigSlug = (imType: IMType): string => {
             return IM_OHH_CONFIG_SLUG;
         case 'imGlobal':
             return IM_HH_OHH_CONFIG_SLUG;
+        default:
+            return '';
+    }
+};
+
+const getPipelineParam = (imType: IMType): string => {
+    switch (imType) {
+        case 'imHH':
+            return IM_HH_API_PARAM;
+        case 'imOHH':
+            return IM_OHH_API_PARAM;
+        case 'imGlobal':
+            return IM_HH_OHH_API_PARAM;
         default:
             return '';
     }
@@ -104,7 +120,7 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
     const launchRefresh = useCallback(() => {
         const config: any = {};
         if (imType) {
-            config.im_type = imType;
+            config.im_type = getPipelineParam(imType);
         }
         if (countryId) {
             config.country_id = parseInt(countryId, 10);

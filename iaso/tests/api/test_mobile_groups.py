@@ -11,19 +11,11 @@ class MobileGroupsAPITestCase(APITestCase):
         cls.now = now()
 
         cls.data_source = m.DataSource.objects.create(name="Default source")
-        cls.source_version_1 = m.SourceVersion.objects.create(
-            data_source=cls.data_source, number=1
-        )
-        cls.source_version_2 = m.SourceVersion.objects.create(
-            data_source=cls.data_source, number=2
-        )
+        cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.source_version_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
 
-        account_nigeria = m.Account.objects.create(
-            name="Nigeria", default_version=cls.source_version_2
-        )
-        account_cameroon = m.Account.objects.create(
-            name="Cameroon", default_version=cls.source_version_1
-        )
+        account_nigeria = m.Account.objects.create(name="Nigeria", default_version=cls.source_version_2)
+        account_cameroon = m.Account.objects.create(name="Cameroon", default_version=cls.source_version_1)
 
         cls.user_nigeria = cls.create_user_with_profile(
             username="user_nigeria",
@@ -47,15 +39,9 @@ class MobileGroupsAPITestCase(APITestCase):
             account=account_cameroon,
         )
 
-        cls.group_nigeria_1 = m.Group.objects.create(
-            name="Hospitals", source_version=cls.source_version_1
-        )
-        cls.group_nigeria_2 = m.Group.objects.create(
-            name="Villages", source_version=cls.source_version_2
-        )
-        cls.group_cameroon = m.Group.objects.create(
-            name="North", source_version=cls.source_version_1
-        )
+        cls.group_nigeria_1 = m.Group.objects.create(name="Hospitals", source_version=cls.source_version_1)
+        cls.group_nigeria_2 = m.Group.objects.create(name="Villages", source_version=cls.source_version_2)
+        cls.group_cameroon = m.Group.objects.create(name="North", source_version=cls.source_version_1)
 
     def test_api_mobile_groups_list_without_app_id(self):
         """GET /api/mobile/groups/ without app_id"""
@@ -71,9 +57,7 @@ class MobileGroupsAPITestCase(APITestCase):
         """GET /api/mobile/groups/ with app_id"""
 
         # Groups with `source_version_1`.
-        response = self.client.get(
-            "/api/mobile/groups/", {APP_ID: self.project_cameroon.app_id}
-        )
+        response = self.client.get("/api/mobile/groups/", {APP_ID: self.project_cameroon.app_id})
         self.assertJSONResponse(response, 200)
         self.assertEqual(len(response.data), 2)
         expected_data = [
@@ -84,14 +68,10 @@ class MobileGroupsAPITestCase(APITestCase):
 
         # Groups with `source_version_2`.
         ## Without all versions
-        response = self.client.get(
-            "/api/mobile/groups/", {APP_ID: self.project_nigeria.app_id}
-        )
+        response = self.client.get("/api/mobile/groups/", {APP_ID: self.project_nigeria.app_id})
         self.assertJSONResponse(response, 200)
         self.assertEqual(len(response.data), 1)
-        expected_data = [
-            {"id": self.group_nigeria_2.pk, "name": "Villages", "erased": False}
-        ]
+        expected_data = [{"id": self.group_nigeria_2.pk, "name": "Villages", "erased": False}]
         self.assertCountEqual(response.data, expected_data)
 
         ## With all versions

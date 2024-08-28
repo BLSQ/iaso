@@ -102,14 +102,19 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
     const { message: lastUpdate, updateStatus } =
         useLastUpdate(latestManualRefresh);
     const launchRefresh = useCallback(() => {
+        const config: any = {};
+        if (imType) {
+            config.im_type = imType;
+        }
         if (countryId) {
+            config.country_id = parseInt(countryId, 10);
             createRefreshTask({
-                config: { country_id: parseInt(countryId, 10) },
+                config,
                 slug,
                 id_field: { country_id: parseInt(countryId, 10) },
             });
         }
-    }, [countryId, createRefreshTask, slug]);
+    }, [countryId, createRefreshTask, slug, imType]);
 
     useEffect(() => {
         if (lastTaskStatus !== latestManualRefresh?.status) {

@@ -1,4 +1,5 @@
-from typing import Any, Protocol
+from typing import Any
+from typing import Protocol
 
 from django import forms as django_forms
 from django.contrib.admin import widgets
@@ -6,12 +7,11 @@ from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.utils.html import format_html, format_html_join
+from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
 
 from iaso.models.json_config import Config  # type: ignore
-
 from .models import (
     Account,
     AccountFeatureFlag,
@@ -45,6 +45,7 @@ from .models import (
     MatchingAlgorithm,
     OrgUnit,
     OrgUnitChangeRequest,
+    OrgUnitChangeRequestConfiguration,
     OrgUnitReferenceInstance,
     OrgUnitType,
     Page,
@@ -65,9 +66,13 @@ from .models import (
     WorkflowChange,
     WorkflowFollowup,
     WorkflowVersion,
+    OrgUnitReferenceInstance,
+    PotentialPayment,
+    Payment,
+    PaymentLot,
 )
 from .models.data_store import JsonDataStore
-from .models.microplanning import Assignment, Planning, Team
+from .models.microplanning import Team, Planning, Assignment
 from .utils.gis import convert_2d_point_to_3d
 
 
@@ -145,7 +150,7 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 @admin.register(OrgUnit)
 @admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):
-    raw_id_fields = ("parent", "reference_instances", "default_image")
+    raw_id_fields = ("parent", "reference_instances")
     list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
@@ -875,3 +880,4 @@ admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
 admin.site.register(UserRole)
+admin.site.register(OrgUnitChangeRequestConfiguration)

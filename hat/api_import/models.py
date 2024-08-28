@@ -8,6 +8,7 @@ IMPORT_TYPE = (
     ("orgUnit", "Org Unit"),
     ("instance", "Form instance"),
     ("bulk", "Bulk Org Units and Instances"),
+    ("storageLog", "Storage logs"),
 )
 
 

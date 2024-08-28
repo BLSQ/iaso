@@ -57,7 +57,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
             .filter(round_id__in=rounds_ids)
             .select_related("round__campaign", "created_by", "updated_by")
             .prefetch_related(Prefetch("tasks", queryset=ChronogramTask.objects.valid()))
-            .prefetch_related("tasks__user_in_charge", "tasks__created_by", "tasks__updated_by")
+            .prefetch_related("tasks__created_by", "tasks__updated_by")
             .order_by("created_at")
         )
 
@@ -130,7 +130,7 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
         return (
             ChronogramTask.objects.valid()
             .filter(chronogram__round__campaign__in=campaigns)
-            .select_related("chronogram__round", "user_in_charge", "created_by", "updated_by")
+            .select_related("chronogram__round", "created_by", "updated_by")
             .order_by("created_at")
         )
 

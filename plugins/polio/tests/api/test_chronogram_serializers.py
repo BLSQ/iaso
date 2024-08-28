@@ -51,7 +51,7 @@ class ChronogramTaskSerializerTestCase(TestCase):
             description_en="Ordering markers",
             description_fr="Assurer la commande des marqueurs",
             start_offset_in_days=0,
-            user_in_charge=cls.user,
+            user_in_charge="John Doe",
             comment="Comment",
         )
 
@@ -73,7 +73,7 @@ class ChronogramTaskSerializerTestCase(TestCase):
                     "deadline_date": "2024-06-27",
                     "status": "PENDING",
                     "get_status_display": "Not started",
-                    "user_in_charge": {"id": self.user.id, "username": "test", "full_name": "John Doe"},
+                    "user_in_charge": "John Doe",
                     "delay_in_days": 0,
                     "comment": "Comment",
                     "created_at": "2024-06-27T14:00:00Z",
@@ -98,7 +98,7 @@ class ChronogramTaskSerializerTestCase(TestCase):
                     "deadline_date": "2024-06-27",
                     "status": "PENDING",
                     "get_status_display": "Pas commencé",
-                    "user_in_charge": {"id": self.user.id, "username": "test", "full_name": "John Doe"},
+                    "user_in_charge": "John Doe",
                     "delay_in_days": 0,
                     "comment": "Comment",
                     "created_at": "2024-06-27T14:00:00Z",
@@ -116,7 +116,7 @@ class ChronogramTaskSerializerTestCase(TestCase):
             "description_fr": "Foo FR",
             "start_offset_in_days": 0,
             "status": ChronogramTask.Status.IN_PROGRESS,
-            "user_in_charge": self.user.pk,
+            "user_in_charge": "John Doe",
             "delay_in_days": 0,
             "comment": "Comment",
         }
@@ -131,7 +131,7 @@ class ChronogramTaskSerializerTestCase(TestCase):
         self.assertEqual(chronogram_task.description_fr, "Foo FR")
         self.assertEqual(chronogram_task.start_offset_in_days, 0)
         self.assertEqual(chronogram_task.status, "IN_PROGRESS")
-        self.assertEqual(chronogram_task.user_in_charge, self.user)
+        self.assertEqual(chronogram_task.user_in_charge, "John Doe")
         self.assertEqual(chronogram_task.comment, "Comment")
         self.assertEqual(chronogram_task.created_by, self.user)
         self.assertEqual(chronogram_task.created_at, TODAY)

@@ -332,7 +332,7 @@ class SubActivityAdmin(admin.ModelAdmin):
 class ChronogramTaskAdminInline(admin.StackedInline):
     model = ChronogramTask
     extra = 0
-    raw_id_fields = ("user_in_charge", "created_by", "updated_by")
+    raw_id_fields = ("created_by", "updated_by")
     readonly_fields = (
         "created_at",
         "created_by",
@@ -342,12 +342,7 @@ class ChronogramTaskAdminInline(admin.StackedInline):
     )
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .valid()
-            .select_related("chronogram__round", "user_in_charge", "created_by", "updated_by")
-        )
+        return super().get_queryset(request).valid().select_related("chronogram__round", "created_by", "updated_by")
 
 
 @admin.register(Chronogram)

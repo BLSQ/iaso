@@ -133,7 +133,7 @@ export const useDestructionTableColumns = (
     return useMemo(() => {
         const columns = [
             {
-                Header: formatMessage(MESSAGES.action),
+                Header: formatMessage(MESSAGES.title),
                 accessor: 'action',
                 id: 'action',
                 sortable: true,

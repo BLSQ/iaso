@@ -80,7 +80,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
             >
                 <Box mb={2} mt={2}>
                     <Field
-                        label={formatMessage(MESSAGES.action)}
+                        label={formatMessage(MESSAGES.title)}
                         name="action"
                         component={TextInput}
                         required

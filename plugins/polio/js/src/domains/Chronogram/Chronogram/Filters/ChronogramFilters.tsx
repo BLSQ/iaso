@@ -10,27 +10,26 @@ import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/co
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 
 import MESSAGES from '../messages';
-import { ChronogramMetaData } from '../../types';
 import { ChronogramParams } from '../types';
 import { CreateChronogramModal } from '../Modals/CreateChronogramModal';
 import { baseUrls } from '../../../../constants/urls';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
+import { useOptionChronogram } from '../../api/useOptionChronogram';
 
 type Props = {
     params: ChronogramParams;
-    chronogramMetaData: ChronogramMetaData;
 };
 
 const baseUrl = baseUrls.chronogram;
 
-export const ChronogramFilters: FunctionComponent<Props> = ({
-    params,
-    chronogramMetaData,
-}) => {
+export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
 
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
+
+    const { data: chronogramMetaData, isFetching: isFetchingMetaData } =
+        useOptionChronogram();
 
     const { data, isFetchingCountriesData: isFetchingCountries } =
         useGetCountries();
@@ -78,11 +77,12 @@ export const ChronogramFilters: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid item xs={12} md={3} lg={3}>
                     <InputComponent
+                        loading={isFetchingMetaData}
                         keyValue="campaign"
                         clearable
                         onChange={handleChange}
                         value={filters.campaign}
-                        options={chronogramMetaData.campaigns}
+                        options={chronogramMetaData?.campaigns}
                         type="select"
                         label={MESSAGES.filterLabelCampaign}
                     />

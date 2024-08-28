@@ -26,9 +26,7 @@ class MobileGroupSerializer(serializers.ModelSerializer):
         return obj.source_version.id != self.source_version
 
     @staticmethod
-    def include_source_version(
-        context: Dict[str, Any], source_version: SourceVersion
-    ) -> Dict[str, Any]:
+    def include_source_version(context: Dict[str, Any], source_version: SourceVersion) -> Dict[str, Any]:
         context["source_version"] = source_version.id
         return context
 
@@ -84,27 +82,17 @@ class MobileGroupsViewSet(ListModelMixin, GenericViewSet):
 
     def get_serializer_context(self) -> Dict[str, Any]:
         context = super().get_serializer_context()
-        return self.serializer_class.include_source_version(
-            context, self.get_project().account.default_version
-        )
+        return self.serializer_class.include_source_version(context, self.get_project().account.default_version)
 
     def get_project(self):
-        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(
-            raise_exception=True
-        )
-        project_qs = Project.objects.select_related(
-            "account__default_version__data_source"
-        )
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
+        project_qs = Project.objects.select_related("account__default_version__data_source")
         return get_object_or_404(project_qs, app_id=app_id)
 
     def get_queryset(self) -> QuerySet:
         objects = Group.objects
         if self.request.query_params.get(SHOW_DELETED) != "true":
-            objects = objects.filter(
-                source_version=self.get_project().account.default_version
-            )
+            objects = objects.filter(source_version=self.get_project().account.default_version)
         else:
-            objects = objects.filter(
-                source_version__data_source=self.get_project().account.default_version.data_source
-            )
+            objects = objects.filter(source_version__data_source=self.get_project().account.default_version.data_source)
         return objects

@@ -71,8 +71,8 @@ class ChronogramViewSet(viewsets.ModelViewSet):
 
         chronogram_campaigns = (
             self.get_queryset()
-            .order_by("round__campaign__id")
-            .distinct("round__campaign")
+            .order_by("round__campaign__obr_name")
+            .distinct("round__campaign__obr_name")
             .values_list(
                 "round__campaign__id",  # `id` is a UUID.
                 "round__campaign__obr_name",

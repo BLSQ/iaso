@@ -313,6 +313,10 @@ class OrgUnit(TreeModel):
             models.Index(fields=["source_created_at"]),
         ]
 
+    @property
+    def source_created_at_with_fallback(self):
+        return self.source_created_at if self.source_created_at else self.created_at
+
     def root(self):
         if self.path is not None and len(self.path) > 1:
             return self.ancestors().exclude(id=self.id).first()
@@ -390,7 +394,7 @@ class OrgUnit(TreeModel):
             "id": self.id,
             "p": self.parent_id,
             "out": self.org_unit_type_id,
-            "c_a": self.source_created_at.timestamp() if self.source_created_at else None,
+            "c_a": self.source_created_at_with_fallback.timestamp(),
             "lat": self.location.y if self.location else None,
             "lon": self.location.x if self.location else None,
             "alt": self.location.z if self.location else None,
@@ -404,7 +408,7 @@ class OrgUnit(TreeModel):
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
             "validation_status": self.validation_status if self.org_unit_type else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "created_at": self.source_created_at_with_fallback.timestamp(),
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -424,7 +428,7 @@ class OrgUnit(TreeModel):
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
             "org_unit_type_depth": self.org_unit_type.depth if self.org_unit_type else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "created_at": self.source_created_at_with_fallback.timestamp(),
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "validation_status": self.validation_status,
@@ -463,7 +467,7 @@ class OrgUnit(TreeModel):
                 else None
             ),
             "org_unit_type_id": self.org_unit_type_id,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "created_at": self.source_created_at_with_fallback.timestamp(),
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "latitude": self.location.y if self.location else None,

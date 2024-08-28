@@ -28,6 +28,7 @@ from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import Count, Exists, FilteredRelation, OuterRef, Q
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -720,26 +721,28 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         status=None,
         instance_id=None,
         search=None,
-        from_date=None,
-        to_date=None,
+        created_from=None,
+        created_to=None,
         show_deleted=None,
         entity_id=None,
         user_ids=None,
-        modification_date_from=None,
-        modification_date_to=None,
-        sent_date_from=None,
-        sent_date_to=None,
+        modification_from=None,
+        modification_to=None,
+        sent_from=None,
+        sent_to=None,
         json_content=None,
         planning_ids=None,
         project_ids=None,
         only_reference=None,
     ):
         queryset = self
-        if from_date:
-            queryset = queryset.filter(created_at__gte=from_date)
 
-        if to_date:
-            queryset = queryset.filter(created_at__lte=to_date)
+        if created_from or created_to:
+            queryset = queryset.annotate(creation_timestamp=Coalesce("source_created_at", "created_at"))
+            if created_from:
+                queryset = queryset.filter(creation_timestamp__gte=created_from)
+            if created_to:
+                queryset = queryset.filter(creation_timestamp__lte=created_to)
 
         if period_ids:
             if isinstance(period_ids, str):
@@ -834,27 +837,15 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         # add status annotation
         queryset = queryset.with_status()
 
-        def range_from(date: datetime.date):
-            return (
-                datetime.datetime.combine(date, datetime.time.min),
-                datetime.datetime.max,
-            )
+        if modification_from:
+            queryset = queryset.filter(updated_at__gte=modification_from)
+        if modification_to:
+            queryset = queryset.filter(updated_at__lte=modification_to)
 
-        def range_to(date: datetime.date):
-            return (
-                datetime.datetime.min,
-                datetime.datetime.combine(date, datetime.time.max),
-            )
-
-        if modification_date_from:
-            queryset = queryset.filter(updated_at__range=range_from(modification_date_from))
-        if modification_date_to:
-            queryset = queryset.filter(updated_at__range=range_to(modification_date_to))
-
-        if sent_date_from:
-            queryset = queryset.filter(created_at__range=range_from(sent_date_from))
-        if sent_date_to:
-            queryset = queryset.filter(created_at__range=range_to(sent_date_to))
+        if sent_from:
+            queryset = queryset.filter(created_at__gte=sent_from)
+        if sent_to:
+            queryset = queryset.filter(created_at__lte=sent_to)
 
         if status:
             statuses = status.split(",")
@@ -990,6 +981,14 @@ class Instance(models.Model):
         if not self.org_unit:
             return False
         return self.org_unit.reference_instances.filter(orgunitreferenceinstance__instance=self).exists()
+
+    @property
+    def source_created_at_with_fallback(self):
+        return self.source_created_at if self.source_created_at else self.created_at
+
+    @property
+    def source_updated_at_with_fallback(self):
+        return self.source_updated_at if self.source_updated_at else self.updated_at
 
     def flag_reference_instance(self, org_unit: "OrgUnit") -> "OrgUnitReferenceInstance":
         if not self.form:
@@ -1153,8 +1152,10 @@ class Instance(models.Model):
             "id": self.id,
             "form_id": self.form_id,
             "form_name": self.form.name if self.form else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
-            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
+            "created_at": self.created_at.timestamp(),
+            "updated_at": self.updated_at.timestamp(),
+            "source_created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "source_updated_at": self.source_updated_at.timestamp() if self.source_updated_at else None,
             "org_unit": self.org_unit.as_dict() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -1181,29 +1182,6 @@ class Instance(models.Model):
         dict["form_descriptor"] = form_version.get_or_save_form_descriptor() if form_version is not None else None
         return dict
 
-    def as_dict_with_parents(self):
-        file_content = self.get_and_save_json_of_xml()
-        return {
-            "uuid": self.uuid,
-            "export_id": self.export_id,
-            "file_name": self.file_name,
-            "file_content": file_content,
-            "file_url": self.file.url if self.file else None,
-            "id": self.id,
-            "form_id": self.form_id,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
-            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
-            "created_by": get_creator_name(self.created_by) if self.created_by else None,
-            "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
-            "latitude": self.location.y if self.location else None,
-            "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
-            "accuracy": self.accuracy,
-            "period": self.period,
-            "status": getattr(self, "status", None),
-            "correlation_id": self.correlation_id,
-        }
-
     def as_full_model(self, with_entity=False):
         file_content = self.get_and_save_json_of_xml()
         form_version = self.get_form_version()
@@ -1224,8 +1202,10 @@ class Instance(models.Model):
             "form_version_id": self.form_version.id if self.form_version else None,
             "form_name": self.form.name,
             "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
-            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
+            "created_at": self.created_at.timestamp(),
+            "updated_at": self.updated_at.timestamp(),
+            "source_created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "source_updated_at": self.source_updated_at.timestamp() if self.source_updated_at else None,
             "org_unit": self.org_unit.as_dict_with_parents(light=False, light_parents=False) if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -1284,8 +1264,8 @@ class Instance(models.Model):
         return {
             "id": self.id,
             "file_url": self.file.url if self.file else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
-            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
+            "created_at": self.source_created_at_with_fallback.timestamp(),
+            "updated_at": self.source_updated_at_with_fallback.timestamp(),
             "period": self.period,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,

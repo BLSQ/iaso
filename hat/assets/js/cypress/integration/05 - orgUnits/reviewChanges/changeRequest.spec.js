@@ -1,16 +1,16 @@
 /// <reference types="cypress" />
 import moment from 'moment';
-import superUser from '../../../fixtures/profiles/me/superuser.json';
-import listFixture from '../../../fixtures/orgunits/changes/orgUnitChanges.json';
-import page2 from '../../../fixtures/orgunits/changes/orgUnitChanges-page2.json';
 import emptyFixture from '../../../fixtures/orgunits/changes/empty.json';
-import { testTablerender } from '../../../support/testTableRender';
-import { testPagination } from '../../../support/testPagination';
-import { testTableSort } from '../../../support/testTableSort';
-import { testPageFilters } from '../../../support/testPageFilters';
-import userRoles from '../../../fixtures/userRoles/list.json';
+import page2 from '../../../fixtures/orgunits/changes/orgUnitChanges-page2.json';
+import listFixture from '../../../fixtures/orgunits/changes/orgUnitChanges.json';
 import orgUnits from '../../../fixtures/orgunits/list.json';
 import orgUnitTypes from '../../../fixtures/orgunittypes/list.json';
+import superUser from '../../../fixtures/profiles/me/superuser.json';
+import userRoles from '../../../fixtures/userRoles/list.json';
+import { testPageFilters } from '../../../support/testPageFilters';
+import { testPagination } from '../../../support/testPagination';
+import { testTablerender } from '../../../support/testTableRender';
+import { testTableSort } from '../../../support/testTableSort';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/changeRequest`;
@@ -96,7 +96,7 @@ const newFilters = {
 const openDialogForChangeRequestIndex = index => {
     table = cy.get('table');
     row = table.find('tbody').find('tr').eq(index);
-    const actionCol = row.find('td').eq(10);
+    const actionCol = row.find('td').eq(11);
     const editButton = actionCol.find('button').first();
     editButton.click();
     cy.get('#approve-orgunit-changes-dialog').should('be.visible');
@@ -187,10 +187,10 @@ const testRowContent = (index, changeRequest = listFixture.results[index]) => {
         .eq(7)
         .should('contain', changeRequest.created_by.username);
 
-    cy.get('@row').find('td').eq(8).should('contain', changeRequestUpdatedAt);
+    cy.get('@row').find('td').eq(9).should('contain', changeRequestUpdatedAt);
     cy.get('@row')
         .find('td')
-        .eq(9)
+        .eq(10)
         .should('contain', changeRequest.updated_by.username);
 };
 
@@ -231,7 +231,7 @@ describe('Organisations changes', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.results.length,
-            columns: 11,
+            columns: 12,
             withVisit: false,
             apiKey: 'orgunits/changes',
         });
@@ -255,7 +255,7 @@ describe('Organisations changes', () => {
         describe('Action columns', () => {
             it('should display correct amount of buttons', () => {
                 cy.wait('@getOrgUnitChanges').then(() => {
-                    getActionCol(10);
+                    getActionCol(11);
                     cy.get('@actionCol')
                         .find('button')
                         .should('have.length', 1);
@@ -390,10 +390,14 @@ describe('Organisations changes', () => {
                     },
                     {
                         colIndex: 8,
-                        order: 'updated_at',
+                        order: 'payment_status',
                     },
                     {
                         colIndex: 9,
+                        order: 'updated_at',
+                    },
+                    {
+                        colIndex: 10,
                         order: 'updated_by__username',
                     },
                 ];

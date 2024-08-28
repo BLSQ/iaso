@@ -246,16 +246,8 @@ class InstancesViewSet(viewsets.ViewSet):
         filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
         def get_row(instance, **kwargs):
-            created_at_timestamp = (
-                instance.source_created_at.timestamp()
-                if instance.source_created_at
-                else instance.created_at.timestamp()
-            )
-            updated_at_timestamp = (
-                instance.source_updated_at.timestamp()
-                if instance.source_updated_at
-                else instance.updated_at.timestamp()
-            )
+            created_at_timestamp = instance.source_created_at_with_fallback.timestamp()
+            updated_at_timestamp = instance.source_updated_at_with_fallback.timestamp()
             org_unit = instance.org_unit
             file_content = instance.get_and_save_json_of_xml()
 

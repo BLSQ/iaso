@@ -232,7 +232,7 @@ class ProfileAPITestCase(APITestCase):
         expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
         expected_csv += "jam,,,,,,,en,,iaso_users_managed,,,\r\n"
         expected_csv += "jom,,,,,,,fr,,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,,{self.project.id},\r\n"
+        expected_csv += f"jum,,,,,,,,,,,{self.project.name},\r\n"
         expected_csv += f"managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,iaso_users_managed,,,\r\n"
 
         self.assertEqual(response_csv, expected_csv)
@@ -307,7 +307,7 @@ class ProfileAPITestCase(APITestCase):
                     6: "iaso_users_managed",
                 },
                 "user_roles": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.id, 6: None},
+                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
                 "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             },
         )

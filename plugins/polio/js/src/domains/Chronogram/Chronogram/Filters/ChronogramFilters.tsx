@@ -79,6 +79,7 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                     <InputComponent
                         loading={isFetchingMetaData}
                         keyValue="campaign"
+                        multi
                         clearable
                         onChange={handleChange}
                         value={filters.campaign}

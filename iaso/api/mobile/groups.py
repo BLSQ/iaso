@@ -1,5 +1,4 @@
-from typing import Dict, Any
-
+from django.db.models import Q, ExpressionWrapper, BooleanField, Value
 from django.db.models.query import QuerySet
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -12,25 +11,11 @@ from rest_framework.viewsets import GenericViewSet
 
 from iaso.api.query_params import APP_ID, SHOW_DELETED
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import Group, Project, SourceVersion
+from iaso.models import Group, Project
 
 
 class MobileGroupSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.source_version = kwargs["context"].get("source_version")
-
-    erased = serializers.SerializerMethodField()
-
-    def get_erased(self, obj: Group):
-        return obj.source_version.id != self.source_version
-
-    @staticmethod
-    def include_source_version(
-        context: Dict[str, Any], source_version: SourceVersion
-    ) -> Dict[str, Any]:
-        context["source_version"] = source_version.id
-        return context
+    erased = serializers.BooleanField(read_only=True, source="annotated_erased")
 
     class Meta:
         model = Group
@@ -82,29 +67,23 @@ class MobileGroupsViewSet(ListModelMixin, GenericViewSet):
     def list(self, request: Request, *args, **kwargs) -> Response:
         return super().list(request, *args, **kwargs)
 
-    def get_serializer_context(self) -> Dict[str, Any]:
-        context = super().get_serializer_context()
-        return self.serializer_class.include_source_version(
-            context, self.get_project().account.default_version
-        )
-
     def get_project(self):
-        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(
-            raise_exception=True
-        )
-        project_qs = Project.objects.select_related(
-            "account__default_version__data_source"
-        )
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
+        project_qs = Project.objects.select_related("account__default_version__data_source")
         return get_object_or_404(project_qs, app_id=app_id)
 
     def get_queryset(self) -> QuerySet:
         objects = Group.objects
         if self.request.query_params.get(SHOW_DELETED) != "true":
-            objects = objects.filter(
-                source_version=self.get_project().account.default_version
+            objects = objects.filter(source_version=self.get_project().account.default_version).annotate(
+                annotated_erased=Value(False, output_field=BooleanField())
             )
         else:
             objects = objects.filter(
                 source_version__data_source=self.get_project().account.default_version.data_source
+            ).annotate(
+                annotated_erased=ExpressionWrapper(
+                    ~Q(source_version=self.get_project().account.default_version), output_field=BooleanField()
+                )
             )
         return objects

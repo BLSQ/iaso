@@ -377,7 +377,7 @@ class ChronogramViewSetTestCase(APITestCase):
     def test_get_ok(self):
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(7):
             response = self.client.get(f"/api/polio/chronograms/{self.chronogram.pk}/")
             self.assertJSONResponse(response, 200)
             self.assertEqual(
@@ -393,10 +393,28 @@ class ChronogramViewSetTestCase(APITestCase):
                 },
             )
 
+    def test_options_ok(self):
+        self.client.force_authenticate(self.user)
+
+        with self.assertNumQueries(4):
+            response = self.client.options("/api/polio/chronograms/")
+            self.assertJSONResponse(response, 200)
+
+        self.assertIn("campaigns_filter_choices", response.data)
+        self.assertEqual(
+            response.data["campaigns_filter_choices"],
+            [
+                {
+                    "value": str(self.campaign.id),
+                    "display_name": self.campaign.obr_name,
+                }
+            ],
+        )
+
     def test_get_all_fields_ok(self):
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(7):
             response = self.client.get(f"/api/polio/chronograms/{self.chronogram.pk}/?fields=:all")
             self.assertJSONResponse(response, 200)
             self.assertEqual(len(response.data["tasks"]), 3)

@@ -53,6 +53,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.chronogram.label.campaign_obr_name',
         defaultMessage: 'Campaign',
     },
+    filterLabelCampaign: {
+        id: 'iaso.polio.chronogram.filter.label.campaign',
+        defaultMessage: 'Campaign',
+    },
     filterLabelCountry: {
         id: 'iaso.polio.chronogram.filter.label.country',
         defaultMessage: 'Country',

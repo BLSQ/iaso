@@ -3,6 +3,7 @@ import { Box, Button, Grid } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
 
+import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
@@ -10,10 +11,10 @@ import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/
 
 import MESSAGES from '../messages';
 import { ChronogramParams } from '../types';
+import { CreateChronogramModal } from '../Modals/CreateChronogramModal';
 import { baseUrls } from '../../../../constants/urls';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
-import { CreateChronogramModal } from '../Modals/CreateChronogramModal';
-import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import { useOptionChronogram } from '../../api/useOptionChronogram';
 
 type Props = {
     params: ChronogramParams;
@@ -26,6 +27,9 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
 
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
+
+    const { data: chronogramMetaData, isFetching: isFetchingMetaData } =
+        useOptionChronogram();
 
     const { data, isFetchingCountriesData: isFetchingCountries } =
         useGetCountries();
@@ -45,7 +49,7 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid item xs={12} md={3} lg={3}>
                     <InputComponent
                         type="search"
                         keyValue="search"
@@ -55,7 +59,7 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.filterLabelSearch}
                     />
                 </Grid>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid item xs={12} md={3} lg={3}>
                     <InputComponent
                         loading={isFetchingCountries}
                         keyValue="country"
@@ -71,7 +75,20 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.filterLabelCountry}
                     />
                 </Grid>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid item xs={12} md={3} lg={3}>
+                    <InputComponent
+                        loading={isFetchingMetaData}
+                        keyValue="campaign"
+                        multi
+                        clearable
+                        onChange={handleChange}
+                        value={filters.campaign}
+                        options={chronogramMetaData?.campaigns}
+                        type="select"
+                        label={MESSAGES.filterLabelCampaign}
+                    />
+                </Grid>
+                <Grid item xs={12} md={3} lg={3}>
                     <InputComponent
                         type="select"
                         clearable

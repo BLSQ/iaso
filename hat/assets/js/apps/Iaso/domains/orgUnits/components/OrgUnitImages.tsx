@@ -11,6 +11,7 @@ import { OrgUnit } from '../types/orgUnit';
 type Props = {
     params: Record<string, any>;
     orgUnit?: OrgUnit;
+    isFetchingDetail: boolean;
 };
 
 const ExtraInfos: FunctionComponent<{ file: ShortFile }> = ({ file }) => {
@@ -26,10 +27,13 @@ const ExtraInfos: FunctionComponent<{ file: ShortFile }> = ({ file }) => {
 export const OrgUnitImages: FunctionComponent<Props> = ({
     params,
     orgUnit,
+    isFetchingDetail,
 }) => {
     const [viewerIsOpen, setViewerIsOpen] = useState<boolean>(false);
 
-    const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
+    const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit(null, [
+        'currentOrgUnit',
+    ]);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const { data: files, isLoading: isLoadingFiles } = useGetImages({
         orgUnitId: params.orgUnitId,
@@ -48,7 +52,7 @@ export const OrgUnitImages: FunctionComponent<Props> = ({
         (file: ShortFile) => <ExtraInfos file={file} />,
         [],
     );
-    const isLoading = savingOu || isLoadingFiles;
+    const isLoading = savingOu || isLoadingFiles || isFetchingDetail;
     const isDefaultImage = useCallback(
         (imageId: number) => {
             return imageId === orgUnit?.default_image?.id;

@@ -300,8 +300,8 @@ class OrgUnit(TreeModel):
     opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
     objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
-    default_image: "InstanceFile" = models.ForeignKey(
-        "InstanceFile", on_delete=models.SET_NULL, null=True, blank=True, related_name="default_for_org_units"
+    default_image = models.ForeignKey(
+        "iaso.InstanceFile", on_delete=models.SET_NULL, null=True, blank=True, related_name="default_for_org_units"
     )
 
     class Meta:

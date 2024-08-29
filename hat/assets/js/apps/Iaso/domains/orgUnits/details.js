@@ -486,7 +486,8 @@ const OrgUnitDetail = () => {
                                 >
                                     <OrgUnitImages
                                         params={params}
-                                        orgUnit={currentOrgUnit}
+                                        orgUnit={originalOrgUnit}
+                                        isFetchingDetail={isFetchingDetail}
                                     />
                                 </Box>
                             )}

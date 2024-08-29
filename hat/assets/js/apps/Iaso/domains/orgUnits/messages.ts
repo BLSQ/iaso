@@ -577,6 +577,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.options.label.default',
         defaultMessage: 'default',
     },
+    noResult: {
+        id: 'iaso.label.noOptions',
+        defaultMessage: 'No result found',
+    },
 });
 
 export default MESSAGES;

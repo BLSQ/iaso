@@ -1,12 +1,15 @@
-import { Box, Typography } from '@mui/material';
-import { LoadingSpinner } from 'bluesquare-components';
+import { Paper } from '@mui/material';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
+import { SxStyles } from '../../../types/general';
 import { useGetImages } from '../../forms/hooks/useGetImages';
 import { ShortFile } from '../../instances/types/instance';
 import { useSaveOrgUnit } from '../hooks';
+import MESSAGES from '../messages';
 import { OrgUnit } from '../types/orgUnit';
+import { ImageInfos } from './ImageInfos';
 
 type Props = {
     params: Record<string, any>;
@@ -14,14 +17,12 @@ type Props = {
     isFetchingDetail: boolean;
 };
 
-const ExtraInfos: FunctionComponent<{ file: ShortFile }> = ({ file }) => {
-    return (
-        <Box>
-            <Typography variant="body2" color="primary">
-                {file?.file_type}
-            </Typography>
-        </Box>
-    );
+const styles: SxStyles = {
+    noResult: {
+        padding: theme => theme.spacing(2),
+        textAlign: 'center',
+        backgroundColor: 'rgba(0,0,0,0.03)',
+    },
 };
 
 export const OrgUnitImages: FunctionComponent<Props> = ({
@@ -30,7 +31,7 @@ export const OrgUnitImages: FunctionComponent<Props> = ({
     isFetchingDetail,
 }) => {
     const [viewerIsOpen, setViewerIsOpen] = useState<boolean>(false);
-
+    const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit(null, [
         'currentOrgUnit',
     ]);
@@ -47,12 +48,6 @@ export const OrgUnitImages: FunctionComponent<Props> = ({
         setCurrentImageIndex(0);
         setViewerIsOpen(false);
     };
-
-    const getExtraInfos = useCallback(
-        (file: ShortFile) => <ExtraInfos file={file} />,
-        [],
-    );
-    const isLoading = savingOu || isLoadingFiles || isFetchingDetail;
     const isDefaultImage = useCallback(
         (imageId: number) => {
             return imageId === orgUnit?.default_image?.id;
@@ -69,10 +64,27 @@ export const OrgUnitImages: FunctionComponent<Props> = ({
         [saveOu, params.orgUnitId, isDefaultImage],
     );
 
+    const isLoading = savingOu || isLoadingFiles || isFetchingDetail;
+    const getExtraInfos = useCallback(
+        (file: ShortFile) => (
+            <ImageInfos
+                file={file}
+                onImageFavoriteClick={handleImageFavoriteClick}
+                isDefaultImage={isDefaultImage}
+                isLoading={isLoading}
+            />
+        ),
+        [handleImageFavoriteClick, isDefaultImage, isLoading],
+    );
+
     return (
         <>
             {isLoading && <LoadingSpinner />}
-            {!isLoadingFiles && files?.length === 0 && 'NO IMAGES'}
+            {!isLoadingFiles && files?.length === 0 && (
+                <Paper sx={styles.noResult} elevation={2}>
+                    {formatMessage(MESSAGES.noResult)}
+                </Paper>
+            )}
             {!isLoadingFiles && (
                 <LazyImagesList
                     imageList={files ?? []}

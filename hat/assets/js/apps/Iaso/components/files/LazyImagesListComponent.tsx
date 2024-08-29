@@ -1,11 +1,10 @@
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { Box, Grid, IconButton } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { LazyImage, LoadingSpinner } from 'bluesquare-components';
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { ShortFile } from '../../domains/instances/types/instance';
 import { getFileName } from '../../utils/filesUtils';
+import { FavButton } from './FavButton';
 
 const styles = {
     imageItem: {
@@ -79,34 +78,15 @@ const LazyImagesList: FunctionComponent<Props> = ({
                                     >
                                         {onImageFavoriteClick &&
                                             isDefaultImage && (
-                                                <IconButton
-                                                    color="primary"
-                                                    sx={{
-                                                        position: 'absolute',
-                                                        top: 8,
-                                                        right: 8,
-                                                        backgroundColor:
-                                                            'rgba(255, 255, 255, 0.7)',
-                                                        boxShadow:
-                                                            '0 0 10px rgba(0, 0, 0, 0.2)',
-                                                        '&:hover': {
-                                                            backgroundColor:
-                                                                'rgba(255, 255, 255, 0.9)',
-                                                        },
-                                                    }}
-                                                    onClick={() =>
-                                                        onImageFavoriteClick(
-                                                            file.itemId,
-                                                        )
+                                                <FavButton
+                                                    file={file}
+                                                    onImageFavoriteClick={
+                                                        onImageFavoriteClick
                                                     }
-                                                >
-                                                    {!isDefaultImage(
-                                                        file.itemId,
-                                                    ) && <FavoriteBorderIcon />}
-                                                    {isDefaultImage(
-                                                        file.itemId,
-                                                    ) && <FavoriteIcon />}
-                                                </IconButton>
+                                                    isDefaultImage={
+                                                        isDefaultImage
+                                                    }
+                                                />
                                             )}
                                         <Box
                                             onClick={() => onImageClick(index)}

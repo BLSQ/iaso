@@ -29,9 +29,13 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         cls.ou_type_rock_pokemons = m.OrgUnitType.objects.create(name="Rock Pokemons")
         cls.ou_type_water_pokemons = m.OrgUnitType.objects.create(name="Water Pokemons")
 
-        cls.group_ash_pokemons = m.Group.objects.create(name="Ash's Pokemons")
-        cls.group_misty_pokemons = m.Group.objects.create(name="Misty's Pokemons")
-        cls.group_brock_pokemons = m.Group.objects.create(name="Brock's Pokemons")
+        cls.group_set_ash_pokemons = m.GroupSet.objects.create(name="Ash's Pokemons")
+        cls.group_set_misty_pokemons = m.GroupSet.objects.create(name="Misty's Pokemons")
+        cls.group_set_brock_pokemons = m.GroupSet.objects.create(name="Brock's Pokemons")
+
+        cls.group_season_1 = m.Group.objects.create(name="Season 1")
+        cls.group_season_2 = m.Group.objects.create(name="Season 2")
+        cls.group_season_3 = m.Group.objects.create(name="Season 3")
 
         cls.org_unit_charizard = m.OrgUnit.objects.create(
             name="Charizard",
@@ -50,9 +54,13 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         cls.form_water_gun = m.Form.objects.create(name="Form Water Gun")
         cls.form_rock_throw = m.Form.objects.create(name="Form Rock Throw")
 
-        cls.org_unit_charizard.groups.set([cls.group_ash_pokemons])
-        cls.org_unit_onix.groups.set([cls.group_brock_pokemons])
-        cls.org_unit_starmie.groups.set([cls.group_misty_pokemons])
+        cls.org_unit_charizard.groups.set([cls.group_season_1])
+        cls.org_unit_onix.groups.set([cls.group_season_2])
+        cls.org_unit_starmie.groups.set([cls.group_season_3])
+
+        cls.group_set_brock_pokemons.groups.set([cls.group_season_1, cls.group_season_2])
+        cls.group_set_ash_pokemons.groups.set([cls.group_season_2, cls.group_season_3])
+        cls.group_set_misty_pokemons.groups.set([cls.group_season_1, cls.group_season_3])
 
     @time_machine.travel(DT, tick=False)
     def test_create_happy_path(self):
@@ -74,7 +82,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         oucrc.full_clean()
         oucrc.save()
         oucrc.possible_parent_type_ids.set([self.ou_type_fire_pokemons, self.ou_type_water_pokemons])
-        oucrc.possible_group_ids.set([self.group_ash_pokemons, self.group_misty_pokemons])
+        oucrc.possible_group_set_ids.set([self.group_set_ash_pokemons, self.group_set_misty_pokemons])
         oucrc.editable_reference_form_ids.set([self.form_ember, self.form_water_gun])
         oucrc.refresh_from_db()
 
@@ -90,7 +98,9 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         self.assertCountEqual(
             oucrc.possible_parent_type_ids.all(), [self.ou_type_fire_pokemons, self.ou_type_water_pokemons]
         )
-        self.assertCountEqual(oucrc.possible_group_ids.all(), [self.group_ash_pokemons, self.group_misty_pokemons])
+        self.assertCountEqual(
+            oucrc.possible_group_set_ids.all(), [self.group_set_ash_pokemons, self.group_set_misty_pokemons]
+        )
         self.assertCountEqual(oucrc.editable_reference_form_ids.all(), [self.form_ember, self.form_water_gun])
 
     def test_create_without_any_data_restriction(self):
@@ -112,7 +122,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         self.assertCountEqual(oucrc.editable_fields, kwargs["editable_fields"])
         self.assertEqual(oucrc.created_by, self.user_misty)
         self.assertFalse(oucrc.possible_parent_type_ids.exists())
-        self.assertFalse(oucrc.possible_group_ids.exists())
+        self.assertFalse(oucrc.possible_group_set_ids.exists())
         self.assertFalse(oucrc.editable_reference_form_ids.exists())
 
     def test_create_error_same_project_and_orgunit_type(self):

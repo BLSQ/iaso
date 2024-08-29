@@ -1,14 +1,14 @@
 import datetime
 from collections import OrderedDict
 from unittest import mock
-from django.test import TestCase
 
 import pytz
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from django.test import TestCase
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID
-from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, AppIdSerializer
+from iaso.api.serializers import AppIdSerializer, OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer
 from iaso.test import APITestCase
 
 
@@ -140,6 +140,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "aliases": None,
                 "created_at": 1522800000.0,
                 "creator": None,
+                "default_image": None,
                 "groups": [
                     OrderedDict(
                         [
@@ -241,6 +242,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "longitude": 4.0,
                 "altitude": 100.0,
                 "creator": None,
+                "default_image": None,
                 "projects": [],
             },
         )

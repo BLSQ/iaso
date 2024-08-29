@@ -20,11 +20,11 @@ const styles = {
 };
 const MESSAGES = defineMessages({
     setAsDefault: {
-        id: 'iaso.orgUnit.setAsDefaultImage',
+        id: 'iaso.orgUnits.setAsDefaultImage',
         defaultMessage: 'Set as default image',
     },
     removeAsDefault: {
-        id: 'iaso.orgUnit.removeAsDefaultImage',
+        id: 'iaso.orgUnits.removeAsDefaultImage',
         defaultMessage: 'Remove as default image',
     },
 });

@@ -823,8 +823,8 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
     possible_parent_type_ids = models.ManyToManyField(
         OrgUnitType, related_name="org_unit_change_request_configurations", blank=True
     )
-    possible_group_ids = models.ManyToManyField(
-        "Group", related_name="org_unit_change_request_configurations", blank=True
+    possible_group_set_ids = models.ManyToManyField(
+        "GroupSet", related_name="org_unit_change_request_configurations", blank=True
     )
     editable_reference_form_ids = models.ManyToManyField(
         "Form", related_name="org_unit_change_request_configurations", blank=True

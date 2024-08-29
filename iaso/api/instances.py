@@ -10,7 +10,7 @@ from django.contrib.gis.geos import Point
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Count, Prefetch, Q, QuerySet
+from django.db.models import Count, F, Func, Prefetch, Q, QuerySet
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
@@ -172,8 +172,15 @@ class InstancesViewSet(viewsets.ViewSet):
     def attachments(self, request):
         instances = self.get_queryset()
         filters = parse_instance_filters(request.GET)
-        instances = instances.for_filters(**filters)
-        queryset = InstanceFile.objects.filter(instance__in=instances)
+        instances = instances.for_filters(**filters)  # Annotate queryset with file extension
+        queryset = InstanceFile.objects.filter(instance__in=instances).annotate(
+            file_extension=Func(F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')")
+        )
+
+        image_only = request.GET.get("image_only", "false").lower() == "true"
+        if image_only:
+            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff"]
+            queryset = queryset.filter(file_extension__in=image_extensions)
 
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)

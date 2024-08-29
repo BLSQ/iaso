@@ -15,7 +15,6 @@ import { useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
-    FILES_PREFIX,
     FORMS_PREFIX,
     LINKS_PREFIX,
     OU_CHILDREN_PREFIX,
@@ -23,10 +22,10 @@ import {
 } from '../../constants/urls.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { fetchAssociatedOrgUnits } from '../../utils/requests';
-import { FilesTable } from '../forms/components/FilesTable';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
 import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
+import { OrgUnitImages } from './components/OrgUnitImages.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
 import { OrgUnitChildren } from './details/Children/OrgUnitChildren.tsx';
@@ -98,7 +97,7 @@ const tabs = [
     'links',
     'history',
     'forms',
-    'files',
+    'images',
     'comments',
 ];
 
@@ -478,23 +477,16 @@ const OrgUnitDetail = () => {
                                     />
                                 </div>
                             )}
-                            {params.tab === 'files' && (
+                            {params.tab === 'images' && (
                                 <Box
                                     className={
                                         classes.containerFullHeightNoTabPadded
                                     }
-                                    data-test="files-tab"
+                                    data-test="image-tab"
                                 >
-                                    <FilesTable
-                                        baseUrl={baseUrl}
-                                        params={formParams}
-                                        defaultPageSize={10}
-                                        paramsPrefix={FILES_PREFIX}
-                                        tableDefaults={{
-                                            order: 'name',
-                                            limit: 10,
-                                            page: 1,
-                                        }}
+                                    <OrgUnitImages
+                                        params={params}
+                                        orgUnit={currentOrgUnit}
                                     />
                                 </Box>
                             )}

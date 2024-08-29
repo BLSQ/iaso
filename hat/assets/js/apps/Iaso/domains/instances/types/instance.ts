@@ -16,7 +16,17 @@ export type ShortFile = {
     itemId: number;
     createdAt: number;
     path: string;
+    file_type?: MimeType;
 };
+
+export type File = {
+    id: number;
+    instance_id: number;
+    file: string;
+    created_at: number;
+    file_type: MimeType;
+};
+
 export type Instance = {
     uuid: string;
     id: number;
@@ -89,6 +99,7 @@ export type FileContent = {
 export interface PaginatedInstances extends Pagination {
     instances: Instance[];
 }
+
 export type MimeType =
     // Text
     | 'text/plain'

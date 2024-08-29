@@ -2,7 +2,8 @@ import csv
 import io
 
 import pandas as pd
-from django.contrib.auth.models import User, Permission
+import phonenumbers
+from django.contrib.auth.models import User, Permission, Group
 from django.contrib.auth.password_validation import validate_password
 from django.core import validators
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
@@ -33,6 +34,7 @@ BULK_CREATE_USER_COLUMNS_LIST = [
     "permissions",
     "user_roles",
     "projects",
+    "phone_number",
 ]
 
 
@@ -45,8 +47,9 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
 
 class HasUserPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if not request.user.has_perm(permission.USERS_ADMIN):
+        if not (request.user.has_perm(permission.USERS_ADMIN) or request.user.has_perm(permission.USERS_MANAGED)):
             return False
+
         return True
 
 
@@ -104,9 +107,16 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         return queryset
 
+    @staticmethod
+    def has_user_managed_permission(request):
+        if not request.user.has_perm(permission.USERS_ADMIN) and request.user.has_perm(permission.USERS_MANAGED):
+            return True
+        return False
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         user_created_count = 0
+        has_geo_limit = self.has_user_managed_permission(request)
         if request.FILES:
             # Retrieve and check the validity and format of the CSV File
             try:
@@ -158,6 +168,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     )
                 org_units_list = set()
                 user_roles_list = []
+                user_groups_list = []
                 projects_instance_list = []
                 if i > 0:
                     email_address = True if row[csv_indexes.index("email")] else None
@@ -196,6 +207,14 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         )
 
                     org_units = row[csv_indexes.index("orgunit")].split(value_splitter)
+                    if has_geo_limit and len(list(filter(None, org_units))) == 0:
+                        raise serializers.ValidationError(
+                            {
+                                "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
+                                "has to create users with OrgUnits in the file"
+                            }
+                        )
+
                     org_units_source_refs = row[csv_indexes.index("orgunit__source_ref")].split(value_splitter)
                     org_units += org_units_source_refs
 
@@ -204,6 +223,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         if ou.isdigit():
                             try:
                                 ou = OrgUnit.objects.get(id=int(ou))
+                                if has_geo_limit and ou not in importer_orgunits_hierarchy:
+                                    raise serializers.ValidationError(
+                                        {
+                                            "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
+                                            "has to create users with OrgUnits that are in the its controlled pyramid"
+                                        }
+                                    )
                                 if ou not in importer_access_ou:
                                     raise serializers.ValidationError(
                                         {
@@ -291,6 +317,10 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         group__name=f"{importer_account.id}_{role}",
                                     )
                                     user_roles_list.append(role_instance)
+                                    # get the user group linked to the userrole
+                                    user_group_item = Group.objects.get(pk=role_instance.group.id)
+                                    user_groups_list.append(user_group_item)
+
                                 except ObjectDoesNotExist:
                                     raise serializers.ValidationError(
                                         {
@@ -344,9 +374,18 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         profile.language = language
                     else:
                         profile.language = "fr"
+
+                    if row[csv_indexes.index("phone_number")]:
+                        phone_number = row[csv_indexes.index("phone_number")]
+                        profile.phone_number = self.validate_phone_number(phone_number)
+
                     profile.org_units.set(org_units_list)
+                    # link the auth user to the user role corresponding auth group
+                    profile.user.groups.set(user_groups_list)
+                    # link the user profile to the user role.
                     profile.user_roles.set(user_roles_list)
                     profile.projects.set(projects_instance_list)
+
                     csv_file = pd.read_csv(io.BytesIO(csv_str.getvalue().encode()), delimiter=delimiter)
                     csv_file.at[i - 1, "password"] = None
                     csv_file = csv_file.to_csv(path_or_buf=None, index=False)
@@ -365,6 +404,23 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         account_modules = current_account.modules if current_account.modules else []
         # Get and return all permissions linked to the modules
         return account_module_permissions(account_modules)
+
+    @staticmethod
+    def validate_phone_number(phone_number):
+        try:
+            # Parse phone number
+            parsed_number = phonenumbers.parse(phone_number, None)
+            # Check if the number is valid
+            if not phonenumbers.is_valid_number(parsed_number):
+                raise serializers.ValidationError(
+                    {"error": f"Operation aborted. The phone number {phone_number} is invalid"}
+                )
+
+            return phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
+        except phonenumbers.NumberParseException as e:
+            raise serializers.ValidationError(
+                {"error": f"Operation aborted. This '{phone_number}' is not a phone number"}
+            )
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=False, methods=["get"], url_path="getsample")

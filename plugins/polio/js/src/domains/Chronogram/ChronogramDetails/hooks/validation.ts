@@ -24,7 +24,7 @@ export const useChronogramTaskSchema = () => {
             .string()
             .trim()
             .required(formatMessage(MESSAGES.validationFieldRequired)),
-        user_in_charge: yup.number().nullable(),
+        user_in_charge: yup.string().trim().nullable(),
         comment: yup.string().trim(),
     });
 };

@@ -229,8 +229,8 @@ export const useBeneficiariesDetailsColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.created_at),
-                id: 'created_at',
-                accessor: 'created_at',
+                id: 'source_created_at',
+                accessor: 'source_created_at',
                 Cell: DateTimeCell,
             },
             {

@@ -3,7 +3,6 @@ import datetime as dt
 from datetime import timedelta
 
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -18,7 +17,7 @@ from plugins.polio.settings import NOPV2_VACCINE_TEAM_NAME
 
 logger = getLogger(__name__)
 
-vaccine_dashboard_link = Site.objects.get_current()
+vaccine_dashboard_link = settings.DNS_DOMAIN
 
 
 def vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list):

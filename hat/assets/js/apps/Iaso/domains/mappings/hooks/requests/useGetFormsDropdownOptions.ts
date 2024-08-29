@@ -17,7 +17,7 @@ const getForms = params => {
 };
 
 export const tableDefaults = {
-    order: 'updated_at',
+    order: 'name',
     limit: 50,
     page: 1,
 };

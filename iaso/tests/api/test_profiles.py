@@ -223,16 +223,17 @@ class ProfileAPITestCase(APITestCase):
             "dhis2_id,"
             "permissions,"
             "user_roles,"
-            "projects\r\n"
+            "projects,"
+            "phone_number\r\n"
         )
 
-        expected_csv += "janedoe,,,,,,,,,iaso_forms,,\r\n"
-        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,\r\n'
-        expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,\r\n'
-        expected_csv += "jam,,,,,,,en,,iaso_users_managed,,\r\n"
-        expected_csv += "jom,,,,,,,fr,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,,{self.project.id}\r\n"
-        expected_csv += f"managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,iaso_users_managed,,\r\n"
+        expected_csv += "janedoe,,,,,,,,,iaso_forms,,,\r\n"
+        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,,\r\n'
+        expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
+        expected_csv += "jam,,,,,,,en,,iaso_users_managed,,,\r\n"
+        expected_csv += "jom,,,,,,,fr,,,,,\r\n"
+        expected_csv += f"jum,,,,,,,,,,,{self.project.id},\r\n"
+        expected_csv += f"managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,iaso_users_managed,,,\r\n"
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -262,6 +263,7 @@ class ProfileAPITestCase(APITestCase):
                 "permissions",
                 "user_roles",
                 "projects",
+                "phone_number",
             ],
         )
 
@@ -306,6 +308,7 @@ class ProfileAPITestCase(APITestCase):
                 },
                 "user_roles": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.id, 6: None},
+                "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             },
         )
 

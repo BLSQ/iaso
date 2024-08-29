@@ -11,7 +11,18 @@ import pytz
 from django.http import StreamingHttpResponse
 from django.utils import timezone
 
-from iaso.models import Account, Form, MONTH, Instance, OrgUnit, Entity, EntityType, StorageDevice, StorageLogEntry
+from hat.api_import.models import APIImport
+from iaso.models import (
+    Account,
+    Form,
+    MONTH,
+    Instance,
+    OrgUnit,
+    Entity,
+    EntityType,
+    StorageDevice,
+    StorageLogEntry,
+)
 from iaso.test import APITestCase
 
 MOCK_DATE = datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
@@ -300,7 +311,14 @@ class StorageAPITestCase(APITestCase):
             }
         ]
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
-        self.assertEqual(response.status_code, 400)
+
+        # Returns a 201 anyways and stores an APIImport with has_problem=True
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(APIImport.objects.filter(import_type="storageLog").count(), 1)
+        api_import = APIImport.objects.filter(import_type="storageLog").first()
+        self.assertTrue(api_import.has_problem)
+        self.assertIn("Invalid storage type", api_import.exception)
+
         # Also make sure nothing was added to the database
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 
@@ -322,7 +340,14 @@ class StorageAPITestCase(APITestCase):
             }
         ]
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
-        self.assertEqual(response.status_code, 400)
+
+        # Returns a 201 anyways and stores an APIImport with has_problem=True
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(APIImport.objects.filter(import_type="storageLog").count(), 1)
+        api_import = APIImport.objects.filter(import_type="storageLog").first()
+        self.assertTrue(api_import.has_problem)
+        self.assertIn("Invalid operation type", api_import.exception)
+
         # Also make sure nothing was added to the database
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 
@@ -344,7 +369,14 @@ class StorageAPITestCase(APITestCase):
             }
         ]
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
-        self.assertEqual(response.status_code, 400)
+
+        # Returns a 201 anyways and stores an APIImport with has_problem=True
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(APIImport.objects.filter(import_type="storageLog").count(), 1)
+        api_import = APIImport.objects.filter(import_type="storageLog").first()
+        self.assertTrue(api_import.has_problem)
+        self.assertIn("OrgUnit.DoesNotExist", api_import.exception)
+
         # Also make sure nothing was added to the database
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 
@@ -366,7 +398,14 @@ class StorageAPITestCase(APITestCase):
             }
         ]
         response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
-        self.assertEqual(response.status_code, 400)
+
+        # Returns a 201 anyways and stores an APIImport with has_problem=True
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(APIImport.objects.filter(import_type="storageLog").count(), 1)
+        api_import = APIImport.objects.filter(import_type="storageLog").first()
+        self.assertTrue(api_import.has_problem)
+        self.assertIn("Entity.DoesNotExist", api_import.exception)
+
         # Also make sure nothing was added to the database
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 

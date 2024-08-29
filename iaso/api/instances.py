@@ -172,7 +172,7 @@ class InstancesViewSet(viewsets.ViewSet):
     def attachments(self, request):
         instances = self.get_queryset()
         filters = parse_instance_filters(request.GET)
-        instances = instances.for_filters(**filters)  # Annotate queryset with file extension
+        instances = instances.for_filters(**filters)
         queryset = InstanceFile.objects.filter(instance__in=instances).annotate(
             file_extension=Func(F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')")
         )

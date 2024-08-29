@@ -1,5 +1,5 @@
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import StarRateIcon from '@mui/icons-material/StarRate';
 import { IconButton, Tooltip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
@@ -54,8 +54,8 @@ export const FavButton: FunctionComponent<Props> = ({
                 sx={styles.favButton}
                 onClick={() => onImageFavoriteClick(file.itemId)}
             >
-                {!isDefault && <FavoriteBorderIcon />}
-                {isDefault && <FavoriteIcon />}
+                {!isDefault && <StarBorderIcon />}
+                {isDefault && <StarRateIcon />}
             </IconButton>
         </Tooltip>
     );

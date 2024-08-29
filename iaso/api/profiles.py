@@ -294,6 +294,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         def get_row(profile: Profile, **_) -> List[Any]:
             org_units = profile.org_units.all().order_by("id")
+
             return [
                 profile.user.username,
                 "",  # Password is left empty on purpose.
@@ -307,6 +308,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 ",".join(item.codename for item in profile.user.user_permissions.all()),
                 ",".join(str(item.pk) for item in profile.user_roles.all().order_by("id")),
                 ",".join(str(item.pk) for item in profile.projects.all().order_by("id")),
+                (f"'{profile.phone_number}'" if profile.phone_number else None),
             ]
 
         filename = "users"
@@ -453,7 +455,6 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if phone_number and country_code:
             number = PhoneNumber.from_string(phone_number, region=country_code.upper())
-
             if number and number.is_valid():
                 return number
             else:
@@ -650,6 +651,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         if dhis2_id == "":
             dhis2_id = None
         profile.dhis2_id = dhis2_id
+
+        phone_number = self.extract_phone_number(request)
+        if phone_number is not None:
+            profile.phone_number = phone_number
+
         profile.save()
 
         # send an email invitation to new user when the send_email_invitation checkbox has been checked

@@ -242,6 +242,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
             'limit',
             'search',
+            'campaign',
             'country',
             'on_time',
         ],

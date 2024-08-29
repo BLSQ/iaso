@@ -54,7 +54,7 @@ class ChronogramTaskViewSetTestCase(APITestCase):
             description_en="Ordering markers",
             description_fr="Assurer la commande des marqueurs",
             start_offset_in_days=0,
-            user_in_charge=cls.user,
+            user_in_charge="John Doe",
             comment="Comment",
         )
 
@@ -82,7 +82,7 @@ class ChronogramTaskViewSetTestCase(APITestCase):
             "description_fr": "Baz FR",
             "start_offset_in_days": 0,
             "status": ChronogramTask.Status.IN_PROGRESS,
-            "user_in_charge": self.user.pk,
+            "user_in_charge": "John Doe",
             "comment": "Comment",
         }
         response = self.client.post("/api/polio/chronograms/tasks/", data=data, format="json")
@@ -93,7 +93,7 @@ class ChronogramTaskViewSetTestCase(APITestCase):
         self.assertEqual(chronogram_task.description_en, "Baz EN")
         self.assertEqual(chronogram_task.description_fr, "Baz FR")
         self.assertEqual(chronogram_task.start_offset_in_days, 0)
-        self.assertEqual(chronogram_task.user_in_charge, self.user)
+        self.assertEqual(chronogram_task.user_in_charge, "John Doe")
         self.assertEqual(chronogram_task.comment, "Comment")
         self.assertEqual(chronogram_task.created_by, self.user)
         self.assertEqual(chronogram_task.created_at, TODAY)
@@ -345,7 +345,7 @@ class ChronogramViewSetTestCase(APITestCase):
             description_en="Foo EN",
             description_fr="Foo FR",
             start_offset_in_days=0,
-            user_in_charge=cls.user,
+            user_in_charge="John Doe",
         )
         ChronogramTask.objects.create(
             period=Period.DURING,
@@ -353,7 +353,7 @@ class ChronogramViewSetTestCase(APITestCase):
             description_en="Bar EN",
             description_fr="Bar FR",
             start_offset_in_days=0,
-            user_in_charge=cls.user,
+            user_in_charge="John Doe",
         )
         ChronogramTask.objects.create(
             period=Period.AFTER,
@@ -361,7 +361,7 @@ class ChronogramViewSetTestCase(APITestCase):
             description_en="Baz EN",
             description_fr="BaZ FR",
             start_offset_in_days=0,
-            user_in_charge=cls.user,
+            user_in_charge="John Doe",
         )
 
     def test_get_without_auth(self):
@@ -392,6 +392,24 @@ class ChronogramViewSetTestCase(APITestCase):
                     "percentage_of_completion": {"BEFORE": 0, "DURING": 0, "AFTER": 0},
                 },
             )
+
+    def test_options_ok(self):
+        self.client.force_authenticate(self.user)
+
+        with self.assertNumQueries(4):
+            response = self.client.options("/api/polio/chronograms/")
+            self.assertJSONResponse(response, 200)
+
+        self.assertIn("campaigns_filter_choices", response.data)
+        self.assertEqual(
+            response.data["campaigns_filter_choices"],
+            [
+                {
+                    "value": str(self.campaign.id),
+                    "display_name": self.campaign.obr_name,
+                }
+            ],
+        )
 
     def test_get_all_fields_ok(self):
         self.client.force_authenticate(self.user)

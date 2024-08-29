@@ -16,7 +16,7 @@ import { ChronogramTemplateTaskParams } from './types';
 import { ChronogramTemplateTaskTable } from './Table/ChronogramTemplateTaskTable';
 import { CreateChronogramTemplateTaskModal } from './Modals/ChronogramTemplateTaskCreateEditModal';
 import { defaultParams } from '../constants';
-import { useOptionChronogramTask } from '../api/useOptionChronogramTask';
+import { useOptionChronogramTask } from '../api/useOptionChronogram';
 
 export const ChronogramTemplateTask: FunctionComponent = () => {
     const params = useParamsObject(

@@ -115,11 +115,15 @@ const MESSAGES = defineMessages({
     },
     created_at: {
         id: 'iaso.instance.created_at',
-        defaultMessage: 'Created',
+        defaultMessage: 'Created in Iaso',
     },
     updated_at: {
-        id: 'iaso.instance.updated_at',
+        id: 'iaso.instance.last_sync_at',
         defaultMessage: 'Updated',
+    },
+    source_created_at: {
+        id: 'iaso.instance.source_created_at',
+        defaultMessage: 'Created on device',
     },
     last_modified_by: {
         id: 'iaso.instance.last_modified_by',

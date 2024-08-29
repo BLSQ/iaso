@@ -22,9 +22,7 @@ class TaskSerializerSerializerTestCase(TestCase):
         data_source = m.DataSource.objects.create(name="Data source")
         version = m.SourceVersion.objects.create(number=1, data_source=data_source)
         account = m.Account.objects.create(name="Account", default_version=version)
-        user = cls.create_user_with_profile(
-            username="user", account=account, permissions=["iaso_sources", "iaso_data_tasks"]
-        )
+        user = cls.create_user_with_profile(username="user", account=account, permissions=["iaso_data_tasks"])
 
         cls.task = m.Task.objects.create(
             progress_value=1,
@@ -123,9 +121,7 @@ class IasoTasksTestCase(APITestCase):
         source.projects.add(cls.project)
         m.OrgUnit.objects.create(version=old_version, name="Myagi", org_unit_type=org_unit_type, source_ref="nomercy")
         cls.source = source
-        cls.johnny = cls.create_user_with_profile(
-            username="johnny", account=account, permissions=["iaso_sources", "iaso_data_tasks"]
-        )
+        cls.johnny = cls.create_user_with_profile(username="johnny", account=account, permissions=["iaso_data_tasks"])
         cls.miguel = cls.create_user_with_profile(username="miguel", account=account, permissions=[])
 
     def test_tasks_user_without_permissions_access(self):
@@ -135,7 +131,7 @@ class IasoTasksTestCase(APITestCase):
 
     def test_tasks_user_can_access(self):
         """
-        Both permissions iaso_sources and iaso_data_tasks are required to access tasks.
+        Permission iaso_data_tasks is required to access tasks.
         """
         self.client.force_authenticate(self.johnny)
 
@@ -155,3 +151,27 @@ class IasoTasksTestCase(APITestCase):
         self.assertEqual(response.json()["tasks"][0]["id"], task.id)
         self.assertEqual(response.json()["tasks"][0]["end_value"], 1)
         self.assertEqual(response.json()["tasks"][0]["launcher"]["username"], "johnny")
+
+    def test_user_without_tasks_permission_can_only_access_own_tasks(self):
+        """
+        A user can access a task they launched themselves
+        """
+        self.client.force_authenticate(self.miguel)
+
+        task_by_miguel = m.Task.objects.create(
+            account=self.miguel.iaso_profile.account,
+            launcher=self.miguel,
+        )
+        response = self.client.get(f"/api/tasks/{task_by_miguel.id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["id"], task_by_miguel.id)
+
+        """
+        But not one launched by someone else
+        """
+        task_by_johnny = m.Task.objects.create(
+            account=self.johnny.iaso_profile.account,
+            launcher=self.johnny,
+        )
+        response = self.client.get(f"/api/tasks/{task_by_johnny.id}/")
+        self.assertEqual(response.status_code, 403)

@@ -87,11 +87,6 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "get_status_display": {"read_only": True},
         }
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation["user_in_charge"] = UserNestedSerializer(instance.user_in_charge, read_only=True).data
-        return representation
-
 
 class ChronogramSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
     campaign_obr_name = serializers.CharField(source="round.campaign.obr_name")

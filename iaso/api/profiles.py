@@ -49,14 +49,20 @@ class HasProfilePermission(permissions.BasePermission):
     def has_permission_over_user(request, pk):
         if request.method == "GET":
             return True
+
         if not pk:
-            raise PermissionDenied(f"User with '{permission.USERS_MANAGED}' cannot create users.")
+            new_user_org_units = request.data.get("org_units", [])
+            if len(new_user_org_units) == 0:
+                raise PermissionDenied(
+                    f"User with '{permission.USERS_MANAGED}' can not create a new user without a location."
+                )
 
         if pk == request.user.id:
             raise PermissionDenied(f"User with '{permission.USERS_MANAGED}' cannot edit their own permissions.")
 
         org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list("id", flat=True)
-        if org_units and len(org_units) > 0:
+
+        if org_units and pk and len(org_units) > 0:
             profile = get_object_or_404(Profile.objects.filter(account=request.user.iaso_profile.account), pk=pk)
             user_managed_org_units = profile.org_units.filter(id__in=org_units).all()
             if not user_managed_org_units or len(user_managed_org_units) == 0:
@@ -288,6 +294,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         def get_row(profile: Profile, **_) -> List[Any]:
             org_units = profile.org_units.all().order_by("id")
+
             return [
                 profile.user.username,
                 "",  # Password is left empty on purpose.
@@ -301,6 +308,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 ",".join(item.codename for item in profile.user.user_permissions.all()),
                 ",".join(str(item.pk) for item in profile.user_roles.all().order_by("id")),
                 ",".join(str(item.pk) for item in profile.projects.all().order_by("id")),
+                (f"'{profile.phone_number}'" if profile.phone_number else None),
             ]
 
         filename = "users"
@@ -447,7 +455,6 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if phone_number and country_code:
             number = PhoneNumber.from_string(phone_number, region=country_code.upper())
-
             if number and number.is_valid():
                 return number
             else:
@@ -644,6 +651,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         if dhis2_id == "":
             dhis2_id = None
         profile.dhis2_id = dhis2_id
+
+        phone_number = self.extract_phone_number(request)
+        if phone_number is not None:
+            profile.phone_number = phone_number
+
         profile.save()
 
         # send an email invitation to new user when the send_email_invitation checkbox has been checked

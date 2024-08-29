@@ -8,6 +8,7 @@ from typing import Any, List, Union
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
 from django.db.models import Exists, Max, OuterRef, Q
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -163,12 +164,14 @@ class EntityViewSet(ModelViewSet):
             date_from_dt = datetime.datetime.strptime(date_from, "%Y-%m-%d") if date_from else datetime.datetime.min
             date_to_dt = datetime.datetime.strptime(date_to, "%Y-%m-%d") if date_to else datetime.datetime.max
 
-            instances_within_range = Instance.objects.filter(
-                entity=OuterRef("pk"), created_at__gte=date_from_dt, created_at__lte=date_to_dt
+            instances_within_range = Instance.objects.annotate(
+                creation_timestamp=Coalesce("source_created_at", "created_at")
+            ).filter(
+                entity=OuterRef("pk"),
+                creation_timestamp__gte=date_from_dt,
+                creation_timestamp__lte=date_to_dt,
             )
-            queryset = queryset.annotate(has_instance_within_range=Exists(instances_within_range)).filter(
-                has_instance_within_range=True
-            )
+            queryset = queryset.filter(Exists(instances_within_range))
         if show_deleted:
             queryset = queryset.filter(deleted_at__isnull=True)
         if created_by_id:
@@ -240,7 +243,9 @@ class EntityViewSet(ModelViewSet):
         queryset = queryset.order_by(*orders)
 
         # annotate with last instance on Entity, to allow ordering by it
-        entities = queryset.annotate(last_saved_instance=Max("instances__created_at"))
+        entities = queryset.annotate(
+            last_saved_instance=Max(Coalesce("instances__source_created_at", "instances__created_at"))
+        )
         result_list = []
         columns_list: List[Any] = []
 

@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "editable_reference_form_ids",
+                    "editable_reference_forms",
                     models.ManyToManyField(
                         blank=True, related_name="org_unit_change_request_configurations", to="iaso.form"
                     ),
@@ -54,13 +54,13 @@ class Migration(migrations.Migration):
                     models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunittype"),
                 ),
                 (
-                    "possible_group_set_ids",
+                    "possible_group_sets",
                     models.ManyToManyField(
                         blank=True, related_name="org_unit_change_request_configurations", to="iaso.groupset"
                     ),
                 ),
                 (
-                    "possible_parent_type_ids",
+                    "possible_parent_types",
                     models.ManyToManyField(
                         blank=True, related_name="org_unit_change_request_configurations", to="iaso.orgunittype"
                     ),

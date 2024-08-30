@@ -2,10 +2,20 @@ from hat.audit.audit_logger import AuditLogger
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from hat.audit.models import PROFILE_API, Modification
-from iaso.models.base import Profile
+from iaso.models.base import Profile, UserRole
 
 
-# We only ever serialize in one direction :model --> json
+class NestedUserRoleSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserRole
+        fields = ["id", "name"]
+
+    def get_name(self, user_role):
+        return user_role.remove_user_role_name_prefix(user_role.group.name)
+
+
 class NestedUserAuditSerializer(serializers.ModelSerializer):
     user_permissions = serializers.SerializerMethodField()
 
@@ -20,15 +30,11 @@ class NestedUserAuditSerializer(serializers.ModelSerializer):
 
 class ProfileAuditSerializer(serializers.ModelSerializer):
     user = NestedUserAuditSerializer()
-    user_roles = serializers.SerializerMethodField()
+    user_roles = NestedUserRoleSerializer(many=True)
 
     class Meta:
         model = Profile
         fields = ["language", "user", "user_roles", "projects", "phone_number", "dhis2_id", "org_units", "home_page"]
-
-    # TODO optimize DB queries
-    def get_user_roles(self, profile):
-        return [user_role.remove_user_role_name_prefix(user_role.group.name) for user_role in profile.user_roles.all()]
 
 
 class ProfileAuditLogger(AuditLogger):

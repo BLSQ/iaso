@@ -15,7 +15,9 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
+from hat.audit.models import PROFILE_API
 from iaso.api.profiles.audit import ProfileAuditLogger
+from iaso.utils import is_mobile_request
 from phonenumber_field.phonenumber import PhoneNumber
 from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -363,6 +365,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile = get_object_or_404(self.get_queryset(), id=pk)
         audit_logger = ProfileAuditLogger()
         old_data = audit_logger.serialize_instance(profile)
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
         try:
             profile = self.update_user_profile(request, profile)
         except ProfileError as error:
@@ -375,7 +378,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             self.update_password(profile.user, request)
         # TODO adapt exceptions to each case
         except ProfileError as error:
-            audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+            audit_logger.log_modification(
+                instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+            )
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -383,7 +388,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         try:
             self.update_permissions(self, profile.user, request)
         except ProfileError as error:
-            audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+            audit_logger.log_modification(
+                instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+            )
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -391,7 +398,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         try:
             self.update_org_units(profile, request)
         except ProfileError as error:
-            audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+            audit_logger.log_modification(
+                instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+            )
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -399,7 +408,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         try:
             self.update_user_roles(profile, request)
         except ProfileError as error:
-            audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+            audit_logger.log_modification(
+                instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+            )
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -407,13 +418,18 @@ class ProfilesViewSet(viewsets.ViewSet):
         try:
             self.update_projects(profile, request)
         except ProfileError as error:
-            audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+            audit_logger.log_modification(
+                instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+            )
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         profile.save()
-        audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+
+        audit_logger.log_modification(
+            instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+        )
 
         return Response(profile.as_dict())
 
@@ -428,7 +444,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         if "language" in request.data:
             profile.language = request.data["language"]
         profile.save()
-        audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+        source = f"{PROFILE_API}_mobile_me" if is_mobile_request(request) else f"{PROFILE_API}_me"
+        audit_logger.log_modification(
+            instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+        )
         return Response(profile.as_dict())
 
     def update_user_profile(self, request, profile):
@@ -698,7 +717,8 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         profile.save()
         audit_logger = ProfileAuditLogger()
-        audit_logger.log_modification(instance=profile, old_data_dump=None, request_user=request.user)
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
+        audit_logger.log_modification(instance=profile, old_data_dump=None, request_user=request.user, source=source)
 
         # send an email invitation to new user when the send_email_invitation checkbox has been checked
         # and the email adresse has been given
@@ -715,7 +735,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         user = profile.user
         # TODO log after actual deletion
         audit_logger = ProfileAuditLogger()
-        audit_logger.log_hard_deletion(instance=profile, request_user=request.user)
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
+        audit_logger.log_hard_deletion(instance=profile, request_user=request.user, source=source)
         user.delete()
         profile.delete()
         return Response(True)

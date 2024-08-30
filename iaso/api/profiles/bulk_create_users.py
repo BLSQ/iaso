@@ -2,6 +2,7 @@ import csv
 import io
 
 import pandas as pd
+from hat.audit.models import PROFILE_API_BULK
 from iaso.api.profiles.audit import ProfileAuditLogger
 import phonenumbers
 from django.contrib.auth.models import User, Permission, Group
@@ -393,7 +394,12 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     content_file = ContentFile(csv_file.encode("utf-8"))
                     file_instance.file.save(f"{file_instance.id}.csv", content_file)
                     profile.save()
-                    audit_logger.log_modification(instance=profile, old_data_dump=None, request_user=request.user)
+                    audit_logger.log_modification(
+                        instance=profile,
+                        old_data_dump=None,
+                        request_user=request.user,
+                        source=f"{PROFILE_API_BULK}_create",
+                    )
                     user_created_count += 1
                 else:
                     csv_indexes = row

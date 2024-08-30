@@ -20,7 +20,7 @@ from hat.menupermissions.models import CustomPermissionSupport
 
 class TeamAuditLogger(AuditLogger):
     serializer = AuditTeamSerializer
-    default_source = audit_models.PROFILE_API_BULK
+    default_source = f"{audit_models.PROFILE_API_BULK}_update"
 
 
 def update_single_profile_from_bulk(
@@ -130,7 +130,7 @@ def update_single_profile_from_bulk(
     profile.save()
 
     audit_logger.log_modification(
-        instance=profile, old_data_dump=old_data, source=audit_models.PROFILE_API_BULK, request_user=user
+        instance=profile, old_data_dump=old_data, source=f"{audit_models.PROFILE_API_BULK}_update", request_user=user
     )
 
 

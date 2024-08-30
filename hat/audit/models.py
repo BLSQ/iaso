@@ -8,6 +8,7 @@ from django.core import serializers
 from django.db import models
 
 PROFILE_API = "profile_api"
+PROFILE_API_BULK = "profile_api_bulk"
 PASSWORD_API = "password_api"
 PATIENT_API = "patient_api"
 ORG_UNIT_API = "org_unit_api"
@@ -17,7 +18,6 @@ INSTANCE_API = "instance_api"
 FORM_API = "form_api"
 GPKG_IMPORT = "gpkg_import"
 CAMPAIGN_API = "campaign_api"
-PROFILE_API_BULK = "profile_api_bulk"
 PAYMENT_API_BULK = "payment_api_bulk"
 PAYMENT_API = "payment_api"
 PAYMENT_LOT_API = "payment_lot_api"
@@ -86,6 +86,7 @@ class Modification(models.Model):
             "user": self.user.iaso_profile.as_short_dict() if self.user else None,
             "created_at": self.created_at,
         }
+        print(fields)
         if "past_value" in fields:
             dict_list["past_value"] = self.past_value
         if "new_value" in fields:

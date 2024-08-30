@@ -16,14 +16,14 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from phonenumber_field.phonenumber import PhoneNumber
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, status, viewsets, serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
-
+from hat.audit import models as audit_models
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.api.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.models import OrgUnit, Profile, Project, UserRole
 from iaso.utils.module_permissions import account_module_permissions
@@ -70,6 +70,42 @@ class HasProfilePermission(permissions.BasePermission):
                     "The user we are trying to modify is not part of any OrgUnit " "managed by the current user"
                 )
         return True
+
+
+# We only ever serialize in one direction :model --> json
+class NestedUserAuditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "email", "user_permissions"]
+
+
+class ProfileAuditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = "__all__"
+
+    user = NestedUserAuditSerializer()
+
+
+class ProfileAuditLogger:
+    serializer: serializers.ModelSerializer
+    default_source: str
+
+    def serialize_instance(self, instance):
+        "Serialize instance for audit"
+        return [self.serializer(instance).data]
+
+    def log_modification(self, instance, old_data_dump, request_user, source=None):
+        source = source if source else self.default_source
+        if not old_data_dump:
+            old_data_dump = []
+        audit_models.Modification.objects.create(
+            user=request_user,
+            past_value=old_data_dump,
+            new_value=self.serialize_instance(instance),
+            content_object=instance,
+            source=source,
+        )
 
 
 def get_filtered_profiles(

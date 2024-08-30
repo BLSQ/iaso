@@ -5,7 +5,7 @@ from django.contrib.auth.models import User, Permission, Group
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers
 from iaso import models as m
-from iaso.api.bulk_create_users import BulkCreateUserFromCsvViewSet
+from iaso.api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
 from iaso.models import Profile, BulkCreateUserCsvFile, UserRole
 from iaso.test import APITestCase
 from hat.menupermissions.constants import MODULES

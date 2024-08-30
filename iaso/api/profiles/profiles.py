@@ -713,6 +713,9 @@ class ProfilesViewSet(viewsets.ViewSet):
     def delete(self, request, pk=None):
         profile = get_object_or_404(self.get_queryset(), id=pk)
         user = profile.user
+        # TODO log after actual deletion
+        audit_logger = ProfileAuditLogger()
+        audit_logger.log_hard_deletion(instance=profile, request_user=request.user)
         user.delete()
         profile.delete()
         return Response(True)

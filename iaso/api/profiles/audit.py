@@ -50,8 +50,6 @@ class ProfileAuditLogger(AuditLogger):
 
     def log_hard_deletion(self, instance, request_user, source=None):
         source = source if source else self.default_source
-        if not old_data_dump:
-            old_data_dump = []
         Modification.objects.create(
             user=request_user,
             past_value=self.serialize_instance(instance),

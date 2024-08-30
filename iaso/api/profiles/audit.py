@@ -3,6 +3,20 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from hat.audit.models import PROFILE_API, Modification
 from iaso.models.base import Profile, UserRole
+from iaso.models.org_unit import OrgUnit
+from iaso.models.project import Project
+
+
+class NestedOrgUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name"]
+
+
+class NestedProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ["id", "name"]
 
 
 class NestedUserRoleSerializer(serializers.ModelSerializer):
@@ -18,7 +32,6 @@ class NestedUserRoleSerializer(serializers.ModelSerializer):
 
 class NestedUserAuditSerializer(serializers.ModelSerializer):
     user_permissions = serializers.SerializerMethodField()
-    # password_updated = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -29,13 +42,12 @@ class NestedUserAuditSerializer(serializers.ModelSerializer):
     def get_user_permissions(self, user):
         return [permission.codename for permission in user.user_permissions.all()]
 
-    # def get_password_updated(self,user):
-    #     return user.password is not None
-
 
 class ProfileAuditSerializer(serializers.ModelSerializer):
     user = NestedUserAuditSerializer()
     user_roles = NestedUserRoleSerializer(many=True)
+    projects = NestedProjectSerializer(many=True)
+    org_units = NestedOrgUnitSerializer(many=True)
 
     class Meta:
         model = Profile
@@ -46,7 +58,6 @@ class ProfileAuditLogger(AuditLogger):
     serializer = ProfileAuditSerializer
     default_source = PROFILE_API
 
-    # TODO handle password
     def log_modification(self, instance, old_data_dump, request_user, source=None):
         source = source if source else self.default_source
         if not old_data_dump:

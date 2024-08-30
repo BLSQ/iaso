@@ -15,12 +15,11 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
-from hat.audit.audit_logger import AuditLogger
+from iaso.api.profiles.audit import ProfileAuditLogger
 from phonenumber_field.phonenumber import PhoneNumber
-from rest_framework import permissions, status, viewsets, serializers
+from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
-from hat.audit import models as audit_models
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
@@ -71,50 +70,6 @@ class HasProfilePermission(permissions.BasePermission):
                     "The user we are trying to modify is not part of any OrgUnit " "managed by the current user"
                 )
         return True
-
-
-# We only ever serialize in one direction :model --> json
-class NestedUserAuditSerializer(serializers.ModelSerializer):
-    user_permissions = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = ["id", "username", "first_name", "last_name", "email", "user_permissions"]
-
-    # TODO optimize DB queries
-    def get_user_permissions(self, user):
-        return [permission.codename for permission in user.user_permissions.all()]
-
-
-class ProfileAuditSerializer(serializers.ModelSerializer):
-    user = NestedUserAuditSerializer()
-    user_roles = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Profile
-        fields = ["language", "user", "user_roles", "projects", "phone_number", "dhis2_id", "org_units", "home_page"]
-
-    # TODO optimize DB queries
-    def get_user_roles(self, profile):
-        return [user_role.remove_user_role_name_prefix(user_role.group.name) for user_role in profile.user_roles.all()]
-
-
-class ProfileAuditLogger(AuditLogger):
-    serializer = ProfileAuditSerializer
-    default_source = audit_models.PROFILE_API
-
-    # TODO handle password
-    def log_modification(self, instance, old_data_dump, request_user, source=None):
-        source = source if source else self.default_source
-        if not old_data_dump:
-            old_data_dump = []
-        audit_models.Modification.objects.create(
-            user=request_user,
-            past_value=old_data_dump,
-            new_value=self.serialize_instance(instance),
-            content_object=instance,
-            source=source,
-        )
 
 
 def get_filtered_profiles(

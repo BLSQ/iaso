@@ -6,13 +6,14 @@ from django.db import transaction
 from django.db.models import QuerySet
 from hat.audit.audit_logger import AuditLogger
 from iaso.api.microplanning import AuditTeamSerializer
+from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.models.microplanning import Team, TeamType
 from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from iaso.models import Task, Profile, Project, UserRole, OrgUnit
-from iaso.api.profiles.profiles import ProfileAuditLogger, get_filtered_profiles
+from iaso.api.profiles.profiles import get_filtered_profiles
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
 

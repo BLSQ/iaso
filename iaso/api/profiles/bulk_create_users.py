@@ -2,6 +2,7 @@ import csv
 import io
 
 import pandas as pd
+from iaso.api.profiles.audit import ProfileAuditLogger
 import phonenumbers
 from django.contrib.auth.models import User, Permission, Group
 from django.contrib.auth.password_validation import validate_password
@@ -157,7 +158,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             )
             value_splitter = "," if delimiter == "," else "*"
             file_instance.save()
-
+            audit_logger = ProfileAuditLogger()
             for i, row in enumerate(reader):
                 if i > 0 and not set(BULK_CREATE_USER_COLUMNS_LIST).issubset(csv_indexes):
                     missing_elements = set(BULK_CREATE_USER_COLUMNS_LIST) - set(csv_indexes)
@@ -392,6 +393,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     content_file = ContentFile(csv_file.encode("utf-8"))
                     file_instance.file.save(f"{file_instance.id}.csv", content_file)
                     profile.save()
+                    audit_logger.log_modification(instance=profile, old_data_dump=None, request_user=request.user)
                     user_created_count += 1
                 else:
                     csv_indexes = row

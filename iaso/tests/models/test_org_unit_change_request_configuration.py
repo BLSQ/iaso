@@ -2,6 +2,7 @@ import datetime
 
 import time_machine
 from django.core.exceptions import ValidationError
+from uuid import uuid4
 
 from iaso import models as m
 from iaso.test import TestCase
@@ -64,8 +65,9 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
 
     @time_machine.travel(DT, tick=False)
     def test_create_happy_path(self):
+        random_uuid = uuid4()
         kwargs = {
-            "uuid": "018480e4-b0a7-4be8-96b7-d237f131716e",
+            "uuid": str(random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_fire_pokemons,
             "org_units_editable": False,
@@ -86,7 +88,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         oucrc.editable_reference_forms.set([self.form_ember, self.form_water_gun])
         oucrc.refresh_from_db()
 
-        self.assertEqual(str(oucrc.uuid), kwargs["uuid"])
+        self.assertEqual(str(oucrc.uuid), str(random_uuid))
         self.assertEqual(oucrc.project, self.project_johto)
         self.assertEqual(oucrc.org_unit_type, self.ou_type_fire_pokemons)
         self.assertFalse(oucrc.org_units_editable)
@@ -104,8 +106,9 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         self.assertCountEqual(oucrc.editable_reference_forms.all(), [self.form_ember, self.form_water_gun])
 
     def test_create_without_any_data_restriction(self):
+        random_uuid = uuid4()
         kwargs = {
-            "uuid": "1a8e7ebc-be68-4f47-a18f-f6fbda2ee7c8",
+            "uuid": str(random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_water_pokemons,
             "editable_fields": m.OrgUnitChangeRequestConfiguration.LIST_OF_POSSIBLE_EDITABLE_FIELDS,
@@ -115,7 +118,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         oucrc.full_clean()
         oucrc.save()
 
-        self.assertEqual(str(oucrc.uuid), kwargs["uuid"])
+        self.assertEqual(str(oucrc.uuid), str(random_uuid))
         self.assertEqual(oucrc.project, self.project_johto)
         self.assertEqual(oucrc.org_unit_type, self.ou_type_water_pokemons)
         self.assertTrue(oucrc.org_units_editable)
@@ -126,8 +129,9 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         self.assertFalse(oucrc.editable_reference_forms.exists())
 
     def test_create_error_same_project_and_orgunit_type(self):
+        random_uuid = uuid4()
         kwargs_1 = {
-            "uuid": "0ea728d5-1706-4365-a04e-e14fd1a4d008",
+            "uuid": str(random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_rock_pokemons,
             "editable_fields": [],
@@ -137,14 +141,15 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         oucrc_1.full_clean()
         oucrc_1.save()
 
-        self.assertEqual(str(oucrc_1.uuid), kwargs_1["uuid"])
+        self.assertEqual(str(oucrc_1.uuid),  str(random_uuid))
         self.assertEqual(oucrc_1.project, self.project_johto)
         self.assertEqual(oucrc_1.org_unit_type, self.ou_type_rock_pokemons)
         self.assertCountEqual(oucrc_1.editable_fields, kwargs_1["editable_fields"])
         self.assertEqual(oucrc_1.created_by, self.user_brock)
 
+        another_random_uuid = uuid4()
         kwargs_2 = {
-            "uuid": "86a4a5bf-7807-4f82-a3b9-be230f30eb3d",
+            "uuid": str(another_random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_rock_pokemons,
             "editable_fields": ["name"],
@@ -162,8 +167,9 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
 
     def test_create_error_invalid_editable_fields(self):
         pikachu = "PIKACHU"
+        random_uuid = uuid4()
         kwargs = {
-            "uuid": "86a4a5bf-7807-4f82-a3b9-be230f30eb3d",
+            "uuid": str(random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_water_pokemons,
             "editable_fields": ["name", "aliases", pikachu, "groups"],
@@ -176,3 +182,46 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
             oucrc.save()
 
         self.assertIn(f"Value {pikachu} is not a valid choice.", error.exception.messages)
+
+    def test_filtering_for_user(self):
+        # Preparing first OUCRC on default account
+        random_uuid = uuid4()
+        kwargs = {
+            "uuid": str(random_uuid),
+            "project": self.project_johto,
+            "org_unit_type": self.ou_type_water_pokemons,
+            "editable_fields": [],
+            "created_by": self.user_misty,
+        }
+        oucrc = m.OrgUnitChangeRequestConfiguration(**kwargs)
+        oucrc.full_clean()
+        oucrc.save()
+
+        # Setup for second account
+        new_account_digimon = m.Account.objects.create(name="Digimon")
+        new_project_digital_world = m.Project.objects.create(
+            name="Digital World", account=new_account_digimon, app_id="digimon"
+        )
+        new_user_tai_kamiya = self.create_user_with_profile(username="Tai Kamiya", account=new_account_digimon)
+        new_ou_type_dinosaur_digimons = m.OrgUnitType.objects.create(name="Dinosaur Digimons")
+
+        # Preparing a second OUCRC on second account
+        another_random_uuid = uuid4()
+        new_kwargs = {
+            "uuid": str(another_random_uuid),
+            "project": new_project_digital_world,
+            "org_unit_type": new_ou_type_dinosaur_digimons,
+            "editable_fields": [],
+            "created_by": new_user_tai_kamiya,
+        }
+        new_oucrc = m.OrgUnitChangeRequestConfiguration(**new_kwargs)
+        new_oucrc.full_clean()
+        new_oucrc.save()
+
+        oucrcs_from_pokemon = m.OrgUnitChangeRequestConfiguration.objects.filter_for_user(self.user_misty)
+        oucrcs_from_digimon = m.OrgUnitChangeRequestConfiguration.objects.filter_for_user(new_user_tai_kamiya)
+        all_oucrcs = m.OrgUnitChangeRequestConfiguration.objects.all()
+
+        self.assertCountEqual([oucrc], oucrcs_from_pokemon)
+        self.assertCountEqual([new_oucrc], oucrcs_from_digimon)
+        self.assertCountEqual([oucrc, new_oucrc], all_oucrcs)

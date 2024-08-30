@@ -86,7 +86,6 @@ class Modification(models.Model):
             "user": self.user.iaso_profile.as_short_dict() if self.user else None,
             "created_at": self.created_at,
         }
-        print(fields)
         if "past_value" in fields:
             dict_list["past_value"] = self.past_value
         if "new_value" in fields:

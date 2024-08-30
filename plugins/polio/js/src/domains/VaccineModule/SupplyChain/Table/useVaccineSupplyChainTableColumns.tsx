@@ -44,7 +44,42 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 accessor: 'obr_name',
                 sortable: true,
             },
-
+            {
+                Header: formatMessage(MESSAGES.roundNumbers),
+                id: 'rounds',
+                Cell: settings => {
+                    const { rounds } = settings.row.original;
+                    return <span>{rounds.map(r => r.number).join(', ')}</span>;
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.startDate),
+                accessor: 'start_date',
+                sortable: true,
+                Cell: DateCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.dosesRequested),
+                accessor: 'quantities_ordered_in_doses',
+                Cell: ({
+                    row: { original },
+                }: ColumnCell<SupplyChainList>): ReactElement => {
+                    return (
+                        <NumberCell
+                            value={original.quantities_ordered_in_doses}
+                        />
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.dosesShipped),
+                accessor: 'doses_shipped',
+                Cell: ({
+                    row: { original },
+                }: ColumnCell<SupplyChainList>): ReactElement => {
+                    return <NumberCell value={original.doses_shipped} />;
+                },
+            },
             {
                 Header: formatMessage(MESSAGES.poNumbers),
                 accessor: 'po_numbers',
@@ -62,48 +97,6 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                             ))}
                         </>
                     );
-                },
-            },
-            {
-                Header: formatMessage(MESSAGES.roundNumbers),
-                id: 'rounds',
-                Cell: settings => {
-                    const { rounds } = settings.row.original;
-                    return <span>{rounds.map(r => r.number).join(', ')}</span>;
-                },
-            },
-            {
-                Header: formatMessage(MESSAGES.dosesRequested),
-                accessor: 'quantities_ordered_in_doses',
-                Cell: ({
-                    row: { original },
-                }: ColumnCell<SupplyChainList>): ReactElement => {
-                    return (
-                        <NumberCell
-                            value={original.quantities_ordered_in_doses}
-                        />
-                    );
-                },
-            },
-            {
-                Header: formatMessage(MESSAGES.startDate),
-                accessor: 'start_date',
-                sortable: true,
-                Cell: DateCell,
-            },
-            {
-                Header: formatMessage(MESSAGES.endDate),
-                accessor: 'end_date',
-                sortable: true,
-                Cell: DateCell,
-            },
-            {
-                Header: formatMessage(MESSAGES.dosesShipped),
-                accessor: 'doses_shipped',
-                Cell: ({
-                    row: { original },
-                }: ColumnCell<SupplyChainList>): ReactElement => {
-                    return <NumberCell value={original.doses_shipped} />;
                 },
             },
             {

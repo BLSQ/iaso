@@ -1,19 +1,25 @@
-from copy import deepcopy
 from time import time
 from typing import Optional, List
 
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import QuerySet
+from hat.audit.audit_logger import AuditLogger
+from iaso.api.microplanning import AuditTeamSerializer
 from iaso.models.microplanning import Team, TeamType
 from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from iaso.models import Task, Profile, Project, UserRole, OrgUnit
-from iaso.api.profiles.profiles import get_filtered_profiles
+from iaso.api.profiles.profiles import ProfileAuditLogger, get_filtered_profiles
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
+
+
+class TeamAuditLogger(AuditLogger):
+    serializer = AuditTeamSerializer
+    default_source = audit_models.PROFILE_API_BULK
 
 
 def update_single_profile_from_bulk(
@@ -32,7 +38,9 @@ def update_single_profile_from_bulk(
     language: Optional[str],
 ):
     """Used within the context of a bulk operation"""
-    original_copy = deepcopy(profile)
+    # original_copy = deepcopy(profile)
+    audit_logger = ProfileAuditLogger()
+    old_data = audit_logger.serialize_instance(profile)
     account_id = user.iaso_profile.account.id
     if roles_id_added is not None:
         for role_id in roles_id_added:
@@ -70,25 +78,31 @@ def update_single_profile_from_bulk(
     if teams_id_added is not None:
         if not user.has_perm(permission.TEAMS):
             raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot add users to team")
+        team_audit_logger = TeamAuditLogger()
         for team_id in teams_id_added:
             team = Team.objects.get(pk=team_id)
+            old_team = team_audit_logger.serialize_instance(team)
             if (
                 team.manager.iaso_profile.account
                 and team.manager.iaso_profile.account.id == account_id
                 and team.type == TeamType.TEAM_OF_USERS
             ):
                 team.users.add(profile.user)
+                team_audit_logger.log_modification(instance=team, old_data_dump=old_team, request_user=user)
     if teams_id_removed is not None:
         if not user.has_perm(permission.TEAMS):
             raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot remove users to team")
+        team_audit_logger = TeamAuditLogger()
         for team_id in teams_id_removed:
             team = Team.objects.get(pk=team_id)
+            old_team = team_audit_logger.serialize_instance(team)
             if (
                 team.manager.iaso_profile.account
                 and team.manager.iaso_profile.account.id == account_id
                 and team.type == TeamType.TEAM_OF_USERS
             ):
                 team.users.remove(profile.user)
+                team_audit_logger.log_modification(instance=team, old_data_dump=old_team, request_user=user)
 
     if language is not None:
         profile.language = language
@@ -114,7 +128,9 @@ def update_single_profile_from_bulk(
 
     profile.save()
 
-    audit_models.log_modification(original_copy, profile, source=audit_models.PROFILE_API_BULK, user=user)
+    audit_logger.log_modification(
+        instance=profile, old_data_dump=old_data, source=audit_models.PROFILE_API_BULK, request_user=user
+    )
 
 
 @task_decorator(task_name="profiles_bulk_update")

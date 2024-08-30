@@ -820,13 +820,13 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         blank=True,
         help_text="List of fields that can edited in an OrgUnit",
     )
-    possible_parent_type_ids = models.ManyToManyField(
+    possible_parent_types = models.ManyToManyField(
         OrgUnitType, related_name="org_unit_change_request_configurations", blank=True
     )
-    possible_group_set_ids = models.ManyToManyField(
+    possible_group_sets = models.ManyToManyField(
         "GroupSet", related_name="org_unit_change_request_configurations", blank=True
     )
-    editable_reference_form_ids = models.ManyToManyField(
+    editable_reference_forms = models.ManyToManyField(
         "Form", related_name="org_unit_change_request_configurations", blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)

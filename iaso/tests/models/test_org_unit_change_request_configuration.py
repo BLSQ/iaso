@@ -81,9 +81,9 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         oucrc = m.OrgUnitChangeRequestConfiguration(**kwargs)
         oucrc.full_clean()
         oucrc.save()
-        oucrc.possible_parent_type_ids.set([self.ou_type_fire_pokemons, self.ou_type_water_pokemons])
-        oucrc.possible_group_set_ids.set([self.group_set_ash_pokemons, self.group_set_misty_pokemons])
-        oucrc.editable_reference_form_ids.set([self.form_ember, self.form_water_gun])
+        oucrc.possible_parent_types.set([self.ou_type_fire_pokemons, self.ou_type_water_pokemons])
+        oucrc.possible_group_sets.set([self.group_set_ash_pokemons, self.group_set_misty_pokemons])
+        oucrc.editable_reference_forms.set([self.form_ember, self.form_water_gun])
         oucrc.refresh_from_db()
 
         self.assertEqual(str(oucrc.uuid), kwargs["uuid"])
@@ -96,12 +96,12 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         self.assertEqual(oucrc.updated_at, self.DT)
         self.assertIsNone(oucrc.updated_by)
         self.assertCountEqual(
-            oucrc.possible_parent_type_ids.all(), [self.ou_type_fire_pokemons, self.ou_type_water_pokemons]
+            oucrc.possible_parent_types.all(), [self.ou_type_fire_pokemons, self.ou_type_water_pokemons]
         )
         self.assertCountEqual(
-            oucrc.possible_group_set_ids.all(), [self.group_set_ash_pokemons, self.group_set_misty_pokemons]
+            oucrc.possible_group_sets.all(), [self.group_set_ash_pokemons, self.group_set_misty_pokemons]
         )
-        self.assertCountEqual(oucrc.editable_reference_form_ids.all(), [self.form_ember, self.form_water_gun])
+        self.assertCountEqual(oucrc.editable_reference_forms.all(), [self.form_ember, self.form_water_gun])
 
     def test_create_without_any_data_restriction(self):
         kwargs = {
@@ -121,9 +121,9 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         self.assertTrue(oucrc.org_units_editable)
         self.assertCountEqual(oucrc.editable_fields, kwargs["editable_fields"])
         self.assertEqual(oucrc.created_by, self.user_misty)
-        self.assertFalse(oucrc.possible_parent_type_ids.exists())
-        self.assertFalse(oucrc.possible_group_set_ids.exists())
-        self.assertFalse(oucrc.editable_reference_form_ids.exists())
+        self.assertFalse(oucrc.possible_parent_types.exists())
+        self.assertFalse(oucrc.possible_group_sets.exists())
+        self.assertFalse(oucrc.editable_reference_forms.exists())
 
     def test_create_error_same_project_and_orgunit_type(self):
         kwargs_1 = {

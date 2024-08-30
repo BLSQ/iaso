@@ -15,6 +15,7 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
+from hat.audit.audit_logger import AuditLogger
 from phonenumber_field.phonenumber import PhoneNumber
 from rest_framework import permissions, status, viewsets, serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -74,27 +75,35 @@ class HasProfilePermission(permissions.BasePermission):
 
 # We only ever serialize in one direction :model --> json
 class NestedUserAuditSerializer(serializers.ModelSerializer):
+    user_permissions = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = ["id", "username", "first_name", "last_name", "email", "user_permissions"]
 
+    # TODO optimize DB queries
+    def get_user_permissions(self, user):
+        return [permission.codename for permission in user.user_permissions.all()]
+
 
 class ProfileAuditSerializer(serializers.ModelSerializer):
+    user = NestedUserAuditSerializer()
+    user_roles = serializers.SerializerMethodField()
+
     class Meta:
         model = Profile
-        fields = "__all__"
+        fields = ["language", "user", "user_roles", "projects", "phone_number", "dhis2_id", "org_units", "home_page"]
 
-    user = NestedUserAuditSerializer()
+    # TODO optimize DB queries
+    def get_user_roles(self, profile):
+        return [user_role.remove_user_role_name_prefix(user_role.group.name) for user_role in profile.user_roles.all()]
 
 
-class ProfileAuditLogger:
-    serializer: serializers.ModelSerializer
-    default_source: str
+class ProfileAuditLogger(AuditLogger):
+    serializer = ProfileAuditSerializer
+    default_source = audit_models.PROFILE_API
 
-    def serialize_instance(self, instance):
-        "Serialize instance for audit"
-        return [self.serializer(instance).data]
-
+    # TODO handle password
     def log_modification(self, instance, old_data_dump, request_user, source=None):
         source = source if source else self.default_source
         if not old_data_dump:
@@ -396,39 +405,78 @@ class ProfilesViewSet(viewsets.ViewSet):
         if pk == PK_ME:
             return self.update_user_own_profile(request)
 
+        profile = get_object_or_404(self.get_queryset(), id=pk)
+        audit_logger = ProfileAuditLogger()
+        old_data = audit_logger.serialize_instance(profile)
         try:
-            profile = self.update_user_profile(request, pk)
+            profile = self.update_user_profile(request, profile)
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        user = profile.user
 
-        self.update_password(user, request)
-        self.update_permissions(self, user, request)
-
-        self.update_org_units(profile, request)
-        self.update_user_roles(profile, request)
-        self.update_projects(profile, request)
-
+        try:
+            self.update_password(profile.user, request)
+        # TODO adapt exceptions to each case
+        except ProfileError as error:
+            audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+            return JsonResponse(
+                {"errorKey": error.field, "errorMessage": error.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            self.update_permissions(self, profile.user, request)
+        except ProfileError as error:
+            audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+            return JsonResponse(
+                {"errorKey": error.field, "errorMessage": error.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            self.update_org_units(profile, request)
+        except ProfileError as error:
+            audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+            return JsonResponse(
+                {"errorKey": error.field, "errorMessage": error.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            self.update_user_roles(profile, request)
+        except ProfileError as error:
+            audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+            return JsonResponse(
+                {"errorKey": error.field, "errorMessage": error.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            self.update_projects(profile, request)
+        except ProfileError as error:
+            audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
+            return JsonResponse(
+                {"errorKey": error.field, "errorMessage": error.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         profile.save()
+        audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
 
         return Response(profile.as_dict())
 
     @staticmethod
     def update_user_own_profile(request):
+        audit_logger = ProfileAuditLogger()
         # allow user to change his own language
         profile = request.user.iaso_profile
+        old_data = audit_logger.serialize_instance(profile)
         if "home_page" in request.data:
             profile.home_page = request.data["home_page"]
         if "language" in request.data:
             profile.language = request.data["language"]
         profile.save()
+        audit_logger.log_modification(instance=profile, old_data_dump=old_data, request_user=request.user)
         return Response(profile.as_dict())
 
-    def update_user_profile(self, request, pk):
-        profile = get_object_or_404(self.get_queryset(), id=pk)
+    def update_user_profile(self, request, profile):
         username = request.data.get("user_name")
 
         if not username:
@@ -445,6 +493,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.last_name = request.data.get("last_name", "")
         user.username = username
         user.email = request.data.get("email", "")
+        user.save()
 
         phone_number = self.extract_phone_number(request)
 
@@ -693,6 +742,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.phone_number = phone_number
 
         profile.save()
+        audit_logger = ProfileAuditLogger()
+        audit_logger.log_modification(instance=profile, old_data_dump=None, request_user=request.user)
 
         # send an email invitation to new user when the send_email_invitation checkbox has been checked
         # and the email adresse has been given

@@ -17,7 +17,7 @@ import { ChronogramTaskMetaData } from '../types';
 import { ChronogramTasksParams } from './types';
 import { defaultParams } from '../constants';
 import { useGetChronogram } from './api/useGetChronogram';
-import { useOptionChronogramTask } from '../api/useOptionChronogramTask';
+import { useOptionChronogramTask } from '../api/useOptionChronogram';
 
 export const ChronogramDetails: FunctionComponent = () => {
     const params = useParamsObject(

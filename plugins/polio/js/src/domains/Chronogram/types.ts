@@ -11,6 +11,10 @@ export type User = {
     full_name: string;
 };
 
+export type ChronogramMetaData = {
+    campaigns: DropdownOptions[];
+};
+
 export type ChronogramTaskMetaData = {
     period: DropdownOptions[];
     status: DropdownOptions[];

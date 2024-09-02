@@ -1,15 +1,13 @@
 import django_filters
-from rest_framework import permissions, serializers
-from iaso.models import GroupSet, Group, DataSource, SourceVersion
-from ..common import ModelViewSet, TimestampField, HasPermission
+from rest_framework import permissions
+from rest_framework.response import Response
+from rest_framework import filters, status
+from iaso.models import GroupSet
+from ..common import ModelViewSet, HasPermission
 from hat.menupermissions import models as permission
-from iaso.api.query_params import LIMIT, PAGE
-from rest_framework.pagination import PageNumberPagination
 from iaso.api.common import Paginator
 from .serializers import GroupSetSerializer
 from .filters import GroupSetFilter
-
-from rest_framework import filters, status, exceptions
 
 
 class HasGroupsetPermission(permissions.BasePermission):
@@ -33,12 +31,13 @@ class GroupSetsViewSet(ModelViewSet):
 
     This API is restricted to users having the "{permission.ORG_UNITS}", "{permission.ORG_UNITS_READ}" permission
 
-    GET /api/groups/      params : version, dataSource, defaultVersion, search, order
-    GET /api/groups/<id>
-    POST /api/groups/
-    PATCH /api/groups/<id>
-    DELETE /api/groups/<id>
+    GET /api/group_sets/      params : version, dataSource, defaultVersion, search, order
+    GET /api/group_sets/<id>
+    POST /api/group_sets/
+    PATCH /api/group_sets/<id>
+    DELETE /api/group_sets/<id>
     """
+    lookup_field = "id"
 
     permission_classes = [
         permissions.IsAuthenticated,
@@ -52,22 +51,27 @@ class GroupSetsViewSet(ModelViewSet):
 
     serializer_class = GroupSetSerializer
     results_key = "group_sets"
-    http_method_names = ["get"]  # "post", "patch", "delete", "head", "options", "trace"]
+    http_method_names = ["get", "post", "put", "patch", "delete", "head", "options", "trace"]
 
     def pagination_class(self):
         return GroupSetPagination(self.results_key)
 
     def get_queryset(self):
-        if self.request.user.is_anonymous:
-            return GroupSet.objects.none()
+        query_set = (
+            GroupSet.objects.all()
+            .filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+            .prefetch_source_version_details()
+            .prefetch_groups_details()
+        )
 
-        profile = self.request.user.iaso_profile
-        queryset = GroupSet.objects.filter(source_version__data_source__projects__in=profile.account.project_set.all())
-        queryset = queryset.prefetch_related("source_version")
-        queryset = queryset.prefetch_related("source_version__data_source")
+        return query_set
 
-        queryset = queryset.prefetch_related("groups__source_version")
-        queryset = queryset.prefetch_related("groups__source_version__data_source")
-
-        order = self.request.query_params.get("order", "name").split(",")
-        return queryset
+    def create(self, request, *args, **kwargs):
+        """
+        Create a `Groupset`.
+        """
+        serializer = self.get_serializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

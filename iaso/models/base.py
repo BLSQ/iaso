@@ -10,7 +10,7 @@ from io import StringIO
 from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import urlopen
-
+from .project import Project
 import django_cte
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
@@ -21,6 +21,7 @@ from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
@@ -474,6 +475,48 @@ class Group(models.Model):
         return res
 
 
+class GroupSetQuerySet(models.QuerySet):
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
+    ):
+        queryset = self
+        if user and user.is_anonymous and app_id is None:
+            return self.none()
+
+        if user and user.is_authenticated:
+            queryset = queryset.filter(
+                source_version__data_source__projects__in=user.iaso_profile.account.project_set.all()
+            )
+
+        if app_id is not None:
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+
+                queryset = queryset.filter(source_version__data_source__projects__in=[project])
+
+            except Project.DoesNotExist:
+                return self.none()
+
+        return queryset
+
+    def prefetch_source_version_details(self):
+        queryset = self
+        queryset = queryset.prefetch_related("source_version")
+        queryset = queryset.prefetch_related("source_version__data_source")
+        return queryset
+
+    def prefetch_groups_details(self):
+        queryset = self
+        queryset = queryset.prefetch_related("groups__source_version")
+        queryset = queryset.prefetch_related("groups__source_version__data_source")
+        return queryset
+
+
+class GroupSetManager(models.Manager):
+    def get_queryset(self):
+        return GroupSetQuerySet(self.model, using=self._db)
+
+
 class GroupSet(models.Model):
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
@@ -481,6 +524,8 @@ class GroupSet(models.Model):
     groups = models.ManyToManyField(Group, blank=True, related_name="group_sets")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = GroupSetManager()
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)

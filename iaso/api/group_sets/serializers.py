@@ -1,3 +1,5 @@
+import typing
+
 from rest_framework import serializers
 from iaso.models import GroupSet, Group, DataSource, SourceVersion
 from iaso.api.common import TimestampField, DynamicFieldsModelSerializer
@@ -36,6 +38,7 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
             "id",
             "name",
             "source_version",
+            "group_ids",
             "created_at",
             "updated_at",
         ]
@@ -44,12 +47,94 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
             "name",
             "source_version",
             "groups",
+            "group_ids",
             "created_at",
             "updated_at",
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        request = self.context.get("request")
+        # filter on what the user has access to
+        if request:
+            user = request.user
+
+            self.fields["group_ids"].child_relation.queryset = Group.objects.filter_for_user(user)
+
+    def validate(self, attrs: typing.Mapping):
+        group_ids = self.context["request"].data.get("group_ids")
+        if group_ids:
+            # Ensure all provided group_ids are valid and belong to the same source_version
+            groups = Group.objects.filter(id__in=group_ids)
+            target_group_ids = [g.id for g in groups]
+            if len(target_group_ids) != len(group_ids):
+                debug_groups = [f"{g.name} ({g.id})" for g in groups]
+                raise serializers.ValidationError(
+                    detail={"group_ids": f"Some groups do not exist : found {debug_groups} vs {group_ids}."}
+                )
+
+            source_version = self.initial_data.get("source_version_id")
+            # TODO REVIEW : how to find the source_version in case of update/patch ?
+
+            source_ids = list(set([group.source_version_id for group in groups]))
+            if len(source_ids) > 1:
+                raise serializers.ValidationError(
+                    detail={"group_ids": f"Groups do not all belong to the same SourceVersion : {source_ids}."}
+                )
+
+            if len(source_ids) == 1:
+                if source_ids[0] != source_version:
+                    raise serializers.ValidationError(
+                        detail={
+                            "group_ids": f"Groups do not all belong to the same as the groupset : {source_ids} vs {source_version}."
+                        }
+                    )
+
+        return attrs
+
+    def assign_relations(self, group_set):
+        source_version_id = self.context["request"].data.get("source_version_id")
+        if source_version_id:
+            source_version = SourceVersion.objects.get(pk=source_version_id)
+            group_set.source_version = source_version
+            group_set.save()
+
+        group_ids = self.context["request"].data.get("group_ids")
+        if group_ids:
+            # Ensure all provided group_ids are valid and belong to the same source_version
+            groups = Group.objects.filter(id__in=group_ids)
+
+            for g in groups:
+                group_set.groups.add(g)
+
+    def ensure_clean_validated_data(self, validated_data):
+        if "groups" in validated_data:
+            del validated_data["groups"]
+
+    def create(self, validated_data):
+        self.ensure_clean_validated_data(validated_data)
+        group_set = GroupSet.objects.create(**validated_data)
+        self.assign_relations(group_set)
+        return group_set
+
+    def update(self, instance, validated_data):
+        self.ensure_clean_validated_data(validated_data)
+        # patch behaviour
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        self.assign_relations(instance)
+        return instance
+
     source_version = SourceVersionSerializerForGroupset(read_only=True)
     groups = GroupSerializer(many=True, read_only=True)
+
+    # using none() to avoid leaking other project info
+    # see __init__ to filter based on user access
+    group_ids = serializers.PrimaryKeyRelatedField(
+        source="groups", many=True, queryset=Group.objects.none(), required=False, allow_null=True
+    )
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)

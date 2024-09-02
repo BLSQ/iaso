@@ -63,10 +63,13 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
             self.fields["group_ids"].child_relation.queryset = Group.objects.filter_for_user(user)
 
     def validate(self, attrs: typing.Mapping):
+        request = self.context.get("request")
+        user = request.user
+
         group_ids = self.context["request"].data.get("group_ids")
         if group_ids:
             # Ensure all provided group_ids are valid and belong to the same source_version
-            groups = Group.objects.filter(id__in=group_ids)
+            groups = Group.objects.filter_for_user(user).filter(id__in=group_ids)
             target_group_ids = [g.id for g in groups]
             if len(target_group_ids) != len(group_ids):
                 debug_groups = [f"{g.name} ({g.id})" for g in groups]
@@ -75,7 +78,8 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
                 )
 
             source_version = self.initial_data.get("source_version_id")
-            # TODO REVIEW : how to find the source_version in case of update/patch ?
+            if self.instance and source_version is None:
+                source_version = self.instance.source_version.id
 
             source_ids = list(set([group.source_version_id for group in groups]))
             if len(source_ids) > 1:

@@ -122,11 +122,14 @@ class Under5:
             i = i + 1
         return list(
             filter(
-                lambda instance: (instance.get("visits") and len(instance.get("visits")) > 1)
-                and instance.get("gender") is not None
-                and instance.get("birth_date") is not None
-                and instance.get("birth_date") != ""
-                and instance.get("gender") != "",
+                lambda instance: (
+                    instance.get("visits")
+                    and len(instance.get("visits")) > 1
+                    and instance.get("gender") is not None
+                    and instance.get("gender") != ""
+                    and instance.get("birth_date") is not None
+                    and instance.get("birth_date") != ""
+                ),
                 instances,
             )
         )

@@ -19,9 +19,9 @@ API used to create or modify a Change Request configuration.
   "org_unit_type_id": "Int - OrgUnit Type ID",
   "org_units_editable": "Boolean - Whether or not OrgUnits of this OrgUnit Type are editable",
   "editable_fields": ["Array<String> - List of possible fields"],
-  "possible_parent_type_ids": ["Array<Int> - List of possible OrgUnit Type IDs that are allowed as new parent for this OrgUnit Type"],
-  "possible_group_set_ids": ["Array<Int> - List of possible GroupSet IDs for this OrgUnit Type"],
-  "editable_reference_form_ids": ["Array<Int> - List of reference Form ID that can be modified"]
+  "possible_parent_types": ["Array<Int> - List of possible OrgUnit Type IDs that are allowed as new parent for this OrgUnit Type"],
+  "possible_group_sets": ["Array<Int> - List of possible GroupSet IDs for this OrgUnit Type"],
+  "editable_reference_forms": ["Array<Int> - List of reference Form ID that can be modified"]
 }
 ```
 
@@ -34,8 +34,8 @@ API used to create or modify a Change Request configuration.
 - A not nullable field was null or omitted
 - `org_unit_type_id` is not assigned to the given `project_id`
 - One or more `editable_fields` value is unknown
-- One or more `possible_parent_type_ids` is not a suitable for as a prent for the given OrgUnit Type
-- One or more `editable_reference_form_ids` is not a reference form for the given OrgUnit Type
+- One or more `possible_parent_types` is not a suitable for as a parent for the given OrgUnit Type
+- One or more `editable_reference_forms` is not a reference form for the given OrgUnit Type
 
 #### 401 - Unauthorized
 
@@ -49,9 +49,9 @@ API used to create or modify a Change Request configuration.
 
 - `project_id` is not null and doesn't exist
 - `org_unit_type_id` is not null and doesn't exist
-- One or more `possible_parent_type_ids` doesn't exist
-- One or more `possible_group_set_ids` doesn't exist
-- One or more `editable_reference_form_ids` doesn't exist
+- One or more `possible_parent_types` doesn't exist
+- One or more `possible_group_sets` doesn't exist
+- One or more `editable_reference_forms` doesn't exist
 
 
 ## 2 - GET /api/change_requests_configs/
@@ -89,19 +89,19 @@ API used to list all Change Request configurations.
       "org_unit_type_id": "Int - OrgUnit Type ID",
       "org_unit_type_name": "String - OrgUnit Type name",
       "editable_fields": "Array<String> - List of possible fields",
-      "possible_parent_type": [
+      "possible_parent_types": [
         {
         "id": "Int - OrgUnit Type ID",
         "name": "String - OrgUnit Type name"
         }
       ],
-      "possible_group_set_ids": [
+      "possible_group_sets": [
         {
           "id": "Int - Group ID",
           "name": "String - Group name"
         }
       ],
-      "editable_reference_form_ids": [
+      "editable_reference_forms": [
         {
           "id": "Int - Form ID",
           "name": "String - Form name"
@@ -151,19 +151,19 @@ API used to retrieve a Change Request configuration.
   "org_unit_type_name": "String - OrgUnit Type name",
   "org_units_editable": "Boolean - Whether or not OrgUnits of this OrgUnit Type are editable",
   "editable_fields": ["Array<String> - List of possible fields"],
-  "possible_parent_type": [
+  "possible_parent_types": [
     {
     "id": "Int - OrgUnit Type ID",
     "name": "String - OrgUnit Type name"
     }
   ],
-  "possible_group_set_ids": [
+  "possible_group_sets": [
     {
       "id": "Int - Group ID",
       "name": "String - GroupSet name"
     }
   ],
-  "editable_reference_form_ids": [
+  "editable_reference_forms": [
     {
       "id": "Int - Form ID",
       "name": "String - Form name"
@@ -217,9 +217,9 @@ API used to list all Change Request configurations for the mobile app.
       "org_unit_type_id": "Int - OrgUnit Type ID",
       "org_units_editable": "Boolean - Whether or not OrgUnits of this OrgUnit Type are editable",
       "editable_fields": ["Array<String> - List of possible fields"],
-      "possible_parent_type_ids": ["Array<Int> - List of possible OrgUnit Type IDs that are allowed as new parent for this OrgUnit Type"],
-      "possible_group_set_ids": ["Array<Int> - List of possible GroupSet IDs for this OrgUnit Type"],
-      "editable_reference_form_ids": ["Array<Int> - List of reference Form ID that can be modified"]
+      "possible_parent_types": ["Array<Int> - List of possible OrgUnit Type IDs that are allowed as new parent for this OrgUnit Type"],
+      "possible_group_sets": ["Array<Int> - List of possible GroupSet IDs for this OrgUnit Type"],
+      "editable_reference_forms": ["Array<Int> - List of reference Form ID that can be modified"]
     }
   ]
 }

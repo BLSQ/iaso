@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
@@ -6,10 +6,10 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { InstancesPerFormGraph } from '../../components/instancesGraph';
 import MESSAGES from './messages';
 import { InstancesTotalGraph } from '../../components/instancesTotalGraph';
-import { Filters } from './components/formStasts/Filters.tsx';
-import { baseUrls } from '../../constants/urls.ts';
-import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { useGetFormStats } from './hooks/UseGetFormStats.tsx';
+import { Filters } from './components/formStasts/Filters';
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useGetFormStats } from './hooks/UseGetFormStats';
 
 const baseUrl = baseUrls.formsStats;
 
@@ -21,10 +21,12 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const FormsStats = () => {
-    const classes = useStyles();
+type Params = { accountId: string; projectIds?: string };
+
+export const FormsStats: FunctionComponent = () => {
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const params = useParamsObject(baseUrl);
+    const params: Params = useParamsObject(baseUrl);
     const { data: dataStats, isLoading: isLoadingDataStats } = useGetFormStats(
         baseUrl,
         '/api/instances/stats/',
@@ -70,4 +72,3 @@ const FormsStats = () => {
         </>
     );
 };
-export default FormsStats;

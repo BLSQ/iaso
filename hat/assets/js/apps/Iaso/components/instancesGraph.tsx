@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { LoadingSpinner } from 'bluesquare-components';
 import {
     Bar,
@@ -12,12 +12,37 @@ import {
 } from 'recharts';
 import { Typography } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
-import PropTypes from 'prop-types';
 import { getChipColors } from '../constants/chipColors';
 
-export const InstancesPerFormGraph = props => {
-    const { data, isLoading } = props;
+type Data = {
+    index: string;
+    name: string;
+    [key: string]: string | number | null;
+}[];
 
+type Field = {
+    name: string;
+    type: string;
+    freq?: string;
+};
+
+type Schema = {
+    fields: Field[];
+    pandas_version: string;
+    primaryKey: string[];
+};
+
+type Props = {
+    data: {
+        data: Data;
+        schema: Schema;
+    };
+    isLoading: boolean;
+};
+export const InstancesPerFormGraph: FunctionComponent<Props> = ({
+    data,
+    isLoading,
+}) => {
     return (
         <>
             <Typography variant="h5">
@@ -60,11 +85,4 @@ export const InstancesPerFormGraph = props => {
             )}
         </>
     );
-};
-InstancesPerFormGraph.defaultProps = {
-    data: null,
-};
-InstancesPerFormGraph.propTypes = {
-    data: PropTypes.object,
-    isLoading: PropTypes.bool.isRequired,
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import {
     CartesianGrid,
     Line,
@@ -11,10 +11,39 @@ import {
 import { Typography } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
-import PropTypes from 'prop-types';
 
-export const InstancesTotalGraph = props => {
-    const { data, isLoading } = props;
+type Data = {
+    index: number;
+    period: string;
+    value: number;
+    total: number;
+    name: string;
+}[];
+
+type Field = {
+    name: string;
+    type: string;
+    tz?: string;
+};
+
+type Schema = {
+    fields: Field[];
+    pandas_version: string;
+    primaryKey: string[];
+};
+
+type Props = {
+    data: {
+        data: Data;
+        schema: Schema;
+    };
+    isLoading: boolean;
+};
+
+export const InstancesTotalGraph: FunctionComponent<Props> = ({
+    data,
+    isLoading,
+}) => {
     return (
         <>
             <Typography variant="h5">
@@ -46,13 +75,4 @@ export const InstancesTotalGraph = props => {
             )}
         </>
     );
-};
-
-InstancesTotalGraph.defaultProps = {
-    data: null,
-};
-
-InstancesTotalGraph.propTypes = {
-    data: PropTypes.object,
-    isLoading: PropTypes.bool.isRequired,
 };

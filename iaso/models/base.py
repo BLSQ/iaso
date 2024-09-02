@@ -1348,7 +1348,7 @@ class Profile(models.Model):
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
 
-    def as_dict(self):
+    def as_dict(self, small=False):
         user_roles = self.user_roles.all()
         user_group_permissions = list(
             map(lambda permission: permission.split(".")[1], list(self.user.get_group_permissions()))
@@ -1358,27 +1358,49 @@ class Profile(models.Model):
         )
         all_permissions = user_group_permissions + user_permissions
         permissions = list(set(all_permissions))
-        return {
-            "id": self.id,
-            "first_name": self.user.first_name,
-            "user_name": self.user.username,
-            "last_name": self.user.last_name,
-            "email": self.user.email,
-            "account": self.account.as_dict(),
-            "permissions": permissions,
-            "user_permissions": user_permissions,
-            "is_superuser": self.user.is_superuser,
-            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
-            "user_roles": list(role.id for role in user_roles),
-            "user_roles_permissions": list(role.as_dict() for role in user_roles),
-            "language": self.language,
-            "user_id": self.user.id,
-            "dhis2_id": self.dhis2_id,
-            "home_page": self.home_page,
-            "phone_number": self.phone_number.as_e164 if self.phone_number else None,
-            "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
-            "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
-        }
+        if not small:
+            return {
+                "id": self.id,
+                "first_name": self.user.first_name,
+                "user_name": self.user.username,
+                "last_name": self.user.last_name,
+                "email": self.user.email,
+                "account": self.account.as_dict(),
+                "permissions": permissions,
+                "user_permissions": user_permissions,
+                "is_superuser": self.user.is_superuser,
+                "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
+                "user_roles": list(role.id for role in user_roles),
+                "user_roles_permissions": list(role.as_dict() for role in user_roles),
+                "language": self.language,
+                "user_id": self.user.id,
+                "dhis2_id": self.dhis2_id,
+                "home_page": self.home_page,
+                "phone_number": self.phone_number.as_e164 if self.phone_number else None,
+                "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
+                "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
+            }
+        else:
+            return {
+                "id": self.id,
+                "first_name": self.user.first_name,
+                "user_name": self.user.username,
+                "last_name": self.user.last_name,
+                "email": self.user.email,
+                "permissions": permissions,
+                "user_permissions": user_permissions,
+                "is_superuser": self.user.is_superuser,
+                "org_units": [o.as_very_small_dict() for o in self.org_units.all()],
+                "user_roles": list(role.id for role in user_roles),
+                "user_roles_permissions": list(role.as_dict() for role in user_roles),
+                "language": self.language,
+                "user_id": self.user.id,
+                "dhis2_id": self.dhis2_id,
+                "home_page": self.home_page,
+                "phone_number": self.phone_number.as_e164 if self.phone_number else None,
+                "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
+                "projects": [p.as_dict() for p in self.projects.all()],
+            }
 
     def as_short_dict(self):
         return {

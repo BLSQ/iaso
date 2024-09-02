@@ -509,6 +509,17 @@ class OrgUnit(TreeModel):
             res["search_index"] = self.search_index
         return res
 
+    def as_very_small_dict(self):
+        res = {
+            "name": self.name,
+            "id": self.id,
+            "parent_id": self.parent_id,
+            "validation_status": self.validation_status,
+            "parent": self.parent.as_very_small_dict() if self.parent else None,
+            "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
+        }
+        return res
+
     def as_dict_for_csv(self):
         return {
             "name": self.name,

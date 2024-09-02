@@ -106,7 +106,6 @@ class GroupSetsAPITestCase(APITestCase):
         response = self.client.patch(
             url,
             {
-                "source_version_id": self.source_version_1.id,
                 "group_ids": [self.src_1_group_1.id, self.src_1_group_2.id],
             },
             format="json",
@@ -115,6 +114,30 @@ class GroupSetsAPITestCase(APITestCase):
         groupset = GroupSet.objects.all()[0]
         self.assertEqual(groupset.groups.count(), 2)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_delete_groupset_with_valid_groups(self):
+        """
+        Ensure we can create a GroupSet with valid group_ids.
+        """
+
+        self.client.force_authenticate(self.acccount_1_user_1)
+
+        valid_payload = {
+            "name": "New GroupSet",
+            "source_version_id": self.source_version_1.id,
+        }
+        response = self.client.post("/api/group_sets/", valid_payload, format="json")
+
+        groupset = GroupSet.objects.all()[0]
+        self.assertEqual(GroupSet.objects.count(), 1)
+        url = f"/api/group_sets/{groupset.id}/"
+        response = self.client.delete(
+            url,
+            format="json",
+        )
+
+        self.assertEqual(GroupSet.objects.count(), 0)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_create_groupset_with_invalid_groups(self):
         """
@@ -129,7 +152,8 @@ class GroupSetsAPITestCase(APITestCase):
             "group_ids": [self.src_1_group_1.id, self.src_2_group_1.id],
         }
         response = self.client.post("/api/group_sets/", invalid_payload, format="json")
-        print(response.json())
+
+        self.assertIn("Groups do not all belong to the same SourceVersion", response.json()["group_ids"][0])
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(GroupSet.objects.count(), 0)

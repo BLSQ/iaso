@@ -12,14 +12,11 @@ import {
 } from 'recharts';
 import { Typography } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
-import { getRequest } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import PropTypes from 'prop-types';
 import { getChipColors } from '../constants/chipColors';
 
-export const InstancesPerFormGraph = () => {
-    const { data, isLoading } = useSnackQuery(['instances', 'stats'], () =>
-        getRequest('/api/instances/stats/'),
-    );
+export const InstancesPerFormGraph = props => {
+    const { data, isLoading } = props;
 
     return (
         <>
@@ -38,7 +35,7 @@ export const InstancesPerFormGraph = () => {
                         data={data.data}
                         margin={{
                             top: 20,
-                            right: 30,
+                            right: 0,
                             left: 20,
                             bottom: 5,
                         }}
@@ -63,4 +60,11 @@ export const InstancesPerFormGraph = () => {
             )}
         </>
     );
+};
+InstancesPerFormGraph.defaultProps = {
+    data: null,
+};
+InstancesPerFormGraph.propTypes = {
+    data: PropTypes.object,
+    isLoading: PropTypes.bool.isRequired,
 };

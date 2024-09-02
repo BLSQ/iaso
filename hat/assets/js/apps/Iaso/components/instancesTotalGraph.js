@@ -11,14 +11,10 @@ import {
 import { Typography } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { getRequest } from 'Iaso/libs/Api';
+import PropTypes from 'prop-types';
 
-export const InstancesTotalGraph = () => {
-    const { data, isLoading } = useSnackQuery(['instances', 'stats_sum'], () =>
-        getRequest('/api/instances/stats_sum/'),
-    );
-
+export const InstancesTotalGraph = props => {
+    const { data, isLoading } = props;
     return (
         <>
             <Typography variant="h5">
@@ -50,4 +46,13 @@ export const InstancesTotalGraph = () => {
             )}
         </>
     );
+};
+
+InstancesTotalGraph.defaultProps = {
+    data: null,
+};
+
+InstancesTotalGraph.propTypes = {
+    data: PropTypes.object,
+    isLoading: PropTypes.bool.isRequired,
 };

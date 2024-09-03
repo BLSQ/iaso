@@ -4,6 +4,7 @@ from unittest import mock
 
 import pytz
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 
 from iaso import models as m
@@ -128,6 +129,17 @@ class OrgUnitAPITestCase(APITestCase):
 
             cls.create_form_instance(
                 form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
+            )
+            cls.image_file = m.InstanceFile.objects.create(
+                file=SimpleUploadedFile("test_image.jpg", b"file_content", content_type="image/jpeg"),
+                name="test_image.jpg",
+            )
+            cls.org_unit_with_image = m.OrgUnit.objects.create(
+                org_unit_type=cls.jedi_council,
+                version=sw_version_1,
+                name="Jedi Council with Image",
+                validation_status=m.OrgUnit.VALIDATION_VALID,
+                default_image=cls.image_file,  # Assign the InstanceFile here
             )
 
     def test_serialize_search(self):
@@ -324,6 +336,22 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(
             f"{self.yoda.username} ({self.yoda.first_name} {self.yoda.last_name})", response.json().get("creator")
         )
+
+    def test_serialize_search_with_default_image(self):
+        org_unit = self.org_unit_with_image
+        serializer = OrgUnitSearchSerializer(org_unit)
+        serialized_data = serializer.data
+
+        self.assertIsNotNone(serialized_data.get("default_image"))
+        self.assertIsInstance(serialized_data["default_image"], int)
+        self.assertEqual(serialized_data["default_image"], self.image_file.id)
+
+        # Test org unit without default image
+        org_unit_without_image = self.jedi_council_corruscant
+        serializer = OrgUnitSearchSerializer(org_unit_without_image)
+        serialized_data = serializer.data
+
+        self.assertIsNone(serialized_data.get("default_image"))
 
 
 class AppIdSerializerTestCase(TestCase):

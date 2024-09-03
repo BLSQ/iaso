@@ -21,7 +21,7 @@ name_and_id_schema = {
     "required": ["name", "id"],
 }
 
-profile_log_schema = {
+PROFILE_LOG_SCHEMA = {
     "type": "object",
     "properties": {
         "id": {"type": "number"},
@@ -1114,7 +1114,7 @@ class ProfileAPITestCase(APITestCase):
         log = logs[0]
 
         try:
-            jsonschema.validate(instance=log, schema=profile_log_schema)
+            jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
@@ -1160,7 +1160,7 @@ class ProfileAPITestCase(APITestCase):
         log = logs[0]
 
         try:
-            jsonschema.validate(instance=log, schema=profile_log_schema)
+            jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
@@ -1235,7 +1235,7 @@ class ProfileAPITestCase(APITestCase):
         log = logs[0]
 
         try:
-            jsonschema.validate(instance=log, schema=profile_log_schema)
+            jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
@@ -1290,7 +1290,7 @@ class ProfileAPITestCase(APITestCase):
         log = logs[0]
 
         try:
-            jsonschema.validate(instance=log, schema=profile_log_schema)
+            jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 

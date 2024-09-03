@@ -7,8 +7,12 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from iaso.models.orgunit_change_request_configuration.queryset import OrgUnitChangeRequestConfigurationQuerySet
-from iaso.utils.models.soft_deletable import SoftDeletableModel, DefaultSoftDeletableManager, \
-    OnlyDeletedSoftDeletableManager, IncludeDeletedSoftDeletableManager
+from iaso.utils.models.soft_deletable import (
+    SoftDeletableModel,
+    DefaultSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
+)
 
 
 class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
@@ -29,8 +33,11 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         blank=True,
         help_text="List of fields that can edited in an OrgUnit",
     )
+    possible_types = models.ManyToManyField(
+        "OrgUnitType", related_name="org_unit_change_request_configurations_same_level", blank=True
+    )
     possible_parent_types = models.ManyToManyField(
-        "OrgUnitType", related_name="org_unit_change_request_configurations", blank=True
+        "OrgUnitType", related_name="org_unit_change_request_configurations_parent_level", blank=True
     )
     possible_group_sets = models.ManyToManyField(
         "GroupSet", related_name="org_unit_change_request_configurations", blank=True
@@ -58,17 +65,20 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
     # Managers
     objects = DefaultSoftDeletableManager.from_queryset(OrgUnitChangeRequestConfigurationQuerySet)()
     objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(OrgUnitChangeRequestConfigurationQuerySet)()
-    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(OrgUnitChangeRequestConfigurationQuerySet)()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(
+        OrgUnitChangeRequestConfigurationQuerySet
+    )()
 
     LIST_OF_POSSIBLE_EDITABLE_FIELDS = [
         "name",
         "aliases",
-        "parent",
         "org_unit_type",
-        "groups",
         "opening_date",
         "closed_date",
         "location",
+        "group_sets",  # not a direct OrgUnit attribute, available through the OU groups
+        "parent_type",  # not a direct OrgUnit attribute, available through the parent OU
+        "reference_forms",  # not a direct OrgUnit attribute, but initially available through OrgUnitType
     ]
 
     class Meta:

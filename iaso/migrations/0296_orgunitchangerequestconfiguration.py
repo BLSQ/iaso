@@ -62,7 +62,17 @@ class Migration(migrations.Migration):
                 (
                     "possible_parent_types",
                     models.ManyToManyField(
-                        blank=True, related_name="org_unit_change_request_configurations", to="iaso.orgunittype"
+                        blank=True,
+                        related_name="org_unit_change_request_configurations_parent_level",
+                        to="iaso.orgunittype",
+                    ),
+                ),
+                (
+                    "possible_types",
+                    models.ManyToManyField(
+                        blank=True,
+                        related_name="org_unit_change_request_configurations_same_level",
+                        to="iaso.orgunittype",
                     ),
                 ),
                 ("project", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.project")),

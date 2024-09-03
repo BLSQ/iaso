@@ -74,15 +74,16 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
             "editable_fields": [
                 "name",
                 "aliases",
-                "parent",
+                "parent_type",
                 "org_unit_type",
-                "groups",
+                "group_sets",
             ],
             "created_by": self.user_ash_ketchum,
         }
         oucrc = m.OrgUnitChangeRequestConfiguration(**kwargs)
         oucrc.full_clean()
         oucrc.save()
+        oucrc.possible_types.set([self.ou_type_fire_pokemons, self.ou_type_rock_pokemons])
         oucrc.possible_parent_types.set([self.ou_type_fire_pokemons, self.ou_type_water_pokemons])
         oucrc.possible_group_sets.set([self.group_set_ash_pokemons, self.group_set_misty_pokemons])
         oucrc.editable_reference_forms.set([self.form_ember, self.form_water_gun])
@@ -97,6 +98,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         self.assertEqual(oucrc.created_at, self.DT)
         self.assertEqual(oucrc.updated_at, self.DT)
         self.assertIsNone(oucrc.updated_by)
+        self.assertCountEqual(oucrc.possible_types.all(), [self.ou_type_fire_pokemons, self.ou_type_rock_pokemons])
         self.assertCountEqual(
             oucrc.possible_parent_types.all(), [self.ou_type_fire_pokemons, self.ou_type_water_pokemons]
         )
@@ -141,7 +143,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         oucrc_1.full_clean()
         oucrc_1.save()
 
-        self.assertEqual(str(oucrc_1.uuid),  str(random_uuid))
+        self.assertEqual(str(oucrc_1.uuid), str(random_uuid))
         self.assertEqual(oucrc_1.project, self.project_johto)
         self.assertEqual(oucrc_1.org_unit_type, self.ou_type_rock_pokemons)
         self.assertCountEqual(oucrc_1.editable_fields, kwargs_1["editable_fields"])
@@ -172,7 +174,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
             "uuid": str(random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_water_pokemons,
-            "editable_fields": ["name", "aliases", pikachu, "groups"],
+            "editable_fields": ["name", "aliases", pikachu, "group_sets"],
             "created_by": self.user_ash_ketchum,
         }
 

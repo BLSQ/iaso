@@ -235,12 +235,12 @@ class GroupSetsAPITestCase(APITestCase):
     def test_list_groupsets_search_return_dynamic_fields(self):
         record_1, record_2 = self.seed_list()
 
-        resp = self.client.get(f"/api/group_sets/?fields=id&version={self.source_version_1.id}")
-        self.assertEqual(resp.json()["group_sets"], [record_1.id, record_2.id])
+        resp = self.client.get(f"/api/group_sets/?fields=id")
+        self.assertEqual(resp.json()["group_sets"], [{"id": record_1["id"]}, {"id": record_2["id"]}])
 
     def test_list_groupsets_search_return_dynamic_fields_groups(self):
         record_1, record_2 = self.seed_list()
 
         resp = self.client.get(f"/api/group_sets/?fields=id,name,groups&version={self.source_version_1.id}")
         groups_name = [g["name"] for g in resp.json()["group_sets"][0]["groups"]]
-        self.assertEqual(groups_name, [record_1.id, record_2.id])
+        self.assertEqual(groups_name, ["Councils", "Hidden"])

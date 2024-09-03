@@ -512,9 +512,7 @@ class GroupSetQuerySet(models.QuerySet):
         return queryset
 
 
-class GroupSetManager(models.Manager):
-    def get_queryset(self):
-        return GroupSetQuerySet(self.model, using=self._db)
+GroupSetManager = models.Manager.from_queryset(GroupSetQuerySet)
 
 
 class GroupSet(models.Model):

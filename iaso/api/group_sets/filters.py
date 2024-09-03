@@ -35,9 +35,7 @@ class GroupSetFilter(django_filters.rest_framework.FilterSet):
         fields = ["search", "version", "default_version"]
 
     def filter_default_version(self, queryset: QuerySet, _, value: str) -> QuerySet:
-        if value and value.lower() in ["1", "true"]:
-            default_version = value
-            if default_version == "true":
-                queryset = queryset.filter(source_version=self.request.user.iaso_profile.account.default_version)
+        if value == "true":
+            queryset = queryset.filter(source_version=self.request.user.iaso_profile.account.default_version)
 
         return queryset

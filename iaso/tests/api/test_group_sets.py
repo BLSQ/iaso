@@ -30,10 +30,11 @@ class GroupSetsAPITestCase(APITestCase):
         cls.now = now()
 
         cls.data_source = m.DataSource.objects.create(name="Default source")
+        cls.data_source_2 = m.DataSource.objects.create(name="Source 2")
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
-        cls.source_version_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
+        cls.source_version_2 = m.SourceVersion.objects.create(data_source=cls.data_source_2, number=2)
 
-        star_wars = m.Account.objects.create(name="Star Wars", default_version=cls.source_version_2)
+        star_wars = m.Account.objects.create(name="Star Wars", default_version=cls.source_version_1)
         marvel = m.Account.objects.create(name="Marvel")
 
         cls.acccount_1_user_1 = cls.create_user_with_profile(
@@ -60,8 +61,13 @@ class GroupSetsAPITestCase(APITestCase):
         cls.project_1.data_sources.add(cls.data_source)
         cls.project_1.save()
         cls.data_source.account = star_wars
+        cls.data_source.default_version = cls.source_version_1
         cls.data_source.projects.add(cls.project_1)
         cls.data_source.save()
+
+        cls.data_source_2.account = star_wars
+        cls.data_source_2.projects.add(cls.project_1)
+        cls.data_source_2.save()
 
         cls.acccount_1_user_1.iaso_profile.projects.add(cls.project_1)
 
@@ -86,6 +92,26 @@ class GroupSetsAPITestCase(APITestCase):
         self.assertEqual(created_groupset.name, "New GroupSet")
         self.assertEqual(created_groupset.source_version.id, self.source_version_1.id)
         self.assertEqual([x.id for x in created_groupset.groups.all()], [self.src_1_group_1.id, self.src_1_group_2.id])
+
+    def test_create_groupset_with_invalid_groups(self):
+        """
+        Ensure we can create a GroupSet with valid group_ids.
+        """
+
+        self.client.force_authenticate(self.acccount_1_user_1)
+
+        invalid_payload = {
+            "name": "New GroupSet mixing 2 sources",
+            "source_version_id": self.source_version_1.id,
+            "group_ids": [self.src_1_group_1.id, self.src_2_group_1.id],
+        }
+        response = self.client.post("/api/group_sets/", invalid_payload, format="json")
+
+        self.assertIn("Groups do not all belong to the same SourceVersion", response.json()["group_ids"][0])
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(GroupSet.objects.count(), 0)
+        self.assertIn("group_ids", response.data)
 
     def test_update_groupset_with_valid_groups(self):
         """
@@ -139,22 +165,82 @@ class GroupSetsAPITestCase(APITestCase):
         self.assertEqual(GroupSet.objects.count(), 0)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    def test_create_groupset_with_invalid_groups(self):
-        """
-        Ensure we can create a GroupSet with valid group_ids.
-        """
-
+    def seed_list(self):
         self.client.force_authenticate(self.acccount_1_user_1)
 
-        invalid_payload = {
-            "name": "New GroupSet mixing 2 sources",
-            "source_version_id": self.source_version_1.id,
-            "group_ids": [self.src_1_group_1.id, self.src_2_group_1.id],
-        }
-        response = self.client.post("/api/group_sets/", invalid_payload, format="json")
+        resp = self.client.post(
+            "/api/group_sets/",
+            {
+                "name": "New GroupSet src 1",
+                "source_version_id": self.source_version_1.id,
+                "group_ids": [self.src_1_group_1.id, self.src_1_group_2.id],
+            },
+            format="json",
+        )
+        group_set_1 = resp.json()
 
-        self.assertIn("Groups do not all belong to the same SourceVersion", response.json()["group_ids"][0])
+        resp = self.client.post(
+            "/api/group_sets/",
+            {
+                "name": "New GroupSet src 2",
+                "source_version_id": self.source_version_2.id,
+                "group_ids": [self.src_2_group_1.id],
+            },
+            format="json",
+        )
+        group_set_2 = resp.json()
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(GroupSet.objects.count(), 0)
-        self.assertIn("group_ids", response.data)
+        record_1 = {"id": group_set_1["id"], "name": "New GroupSet src 1"}
+        record_2 = {"id": group_set_2["id"], "name": "New GroupSet src 2"}
+
+        return [record_1, record_2]
+
+    def test_list_groupsets_search_all(self):
+        record_1, record_2 = self.seed_list()
+        # Search all
+
+        resp = self.client.get("/api/group_sets/?fields=id,name")
+        self.assertEqual(
+            resp.json()["group_sets"],
+            [
+                record_1,
+                record_2,
+            ],
+        )
+
+    def test_list_groupsets_search_by_name(self):
+        record_1, record_2 = self.seed_list()
+
+        resp = self.client.get("/api/group_sets/?fields=id,name&search=src 1")
+        self.assertEqual(resp.json()["group_sets"], [record_1])
+
+        resp = self.client.get("/api/group_sets/?fields=id,name&search=src")
+        self.assertEqual(resp.json()["group_sets"], [record_1, record_2])
+
+    def test_list_groupsets_search_by_default_version(self):
+        record_1, record_2 = self.seed_list()
+
+        resp = self.client.get("/api/group_sets/?fields=id,name&default_version=true")
+        self.assertEqual(resp.json()["group_sets"], [record_1])
+
+    def test_list_groupsets_search_by_version(self):
+        record_1, record_2 = self.seed_list()
+
+        resp = self.client.get(f"/api/group_sets/?fields=id,name&version={self.source_version_1.id}")
+        self.assertEqual(resp.json()["group_sets"], [record_1])
+
+        resp = self.client.get(f"/api/group_sets/?fields=id,name&version={self.source_version_2.id}")
+        self.assertEqual(resp.json()["group_sets"], [record_2])
+
+    def test_list_groupsets_search_return_dynamic_fields(self):
+        record_1, record_2 = self.seed_list()
+
+        resp = self.client.get(f"/api/group_sets/?fields=id&version={self.source_version_1.id}")
+        self.assertEqual(resp.json()["group_sets"], [record_1.id, record_2.id])
+
+    def test_list_groupsets_search_return_dynamic_fields_groups(self):
+        record_1, record_2 = self.seed_list()
+
+        resp = self.client.get(f"/api/group_sets/?fields=id,name,groups&version={self.source_version_1.id}")
+        groups_name = [g["name"] for g in resp.json()["group_sets"][0]["groups"]]
+        self.assertEqual(groups_name, [record_1.id, record_2.id])

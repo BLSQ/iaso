@@ -59,8 +59,8 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
         # filter on what the user has access to
         if request:
             user = request.user
-
-            self.fields["group_ids"].child_relation.queryset = Group.objects.filter_for_user(user)
+            if "group_ids" in self.fields:
+                self.fields["group_ids"].child_relation.queryset = Group.objects.filter_for_user(user)
 
     def validate(self, attrs: typing.Mapping):
         request = self.context.get("request")

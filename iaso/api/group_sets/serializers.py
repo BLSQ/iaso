@@ -62,9 +62,19 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
             if "group_ids" in self.fields:
                 self.fields["group_ids"].child_relation.queryset = Group.objects.filter_for_user(user)
 
-    def validate(self, attrs: typing.Mapping):
+    def validate(self, attrs: typing.MutableMapping):
+        data = self.context["request"].data
+        if self.context["request"].method == "POST":
+            return self.validate_create(data)
+        else:
+            return data
+
+    def validate_create(self, attrs: typing.Mapping):
         request = self.context.get("request")
         user = request.user
+
+        if self.initial_data.get("source_version_id") is None:
+            raise serializers.ValidationError(detail={"source_version_id": "This field is required."})
 
         group_ids = self.context["request"].data.get("group_ids")
         if group_ids:
@@ -118,6 +128,8 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
     def ensure_clean_validated_data(self, validated_data):
         if "groups" in validated_data:
             del validated_data["groups"]
+        if "group_ids" in validated_data:
+            del validated_data["group_ids"]
 
     def create(self, validated_data):
         self.ensure_clean_validated_data(validated_data)

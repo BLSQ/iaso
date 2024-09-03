@@ -5,7 +5,6 @@ from unittest import mock
 from unittest.mock import patch
 from uuid import uuid4
 
-import pytz
 from django.contrib.gis.geos import Point
 from django.core.files import File
 from django.utils import timezone
@@ -18,10 +17,6 @@ from iaso import models as m
 from iaso.api import query_params as query
 from iaso.models import GroupSet
 from iaso.test import APITestCase
-import csv
-import io
-
-MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
 
 class GroupSetsAPITestCase(APITestCase):
@@ -71,6 +66,10 @@ class GroupSetsAPITestCase(APITestCase):
 
         cls.acccount_1_user_1.iaso_profile.projects.add(cls.project_1)
 
+    def test_authentification_required(self):
+        response = self.client.get("/api/group_sets/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
     def test_create_groupset_with_valid_groups(self):
         """
         Ensure we can create a GroupSet with valid group_ids.
@@ -92,6 +91,33 @@ class GroupSetsAPITestCase(APITestCase):
         self.assertEqual(created_groupset.name, "New GroupSet")
         self.assertEqual(created_groupset.source_version.id, self.source_version_1.id)
         self.assertEqual([x.id for x in created_groupset.groups.all()], [self.src_1_group_1.id, self.src_1_group_2.id])
+
+    def test_create_groupset_with_missing_source_version(self):
+        self.client.force_authenticate(self.acccount_1_user_1)
+
+        invalid_payload = {
+            "name": "New GroupSet without source",
+            "group_ids": [self.src_1_group_1.id],
+        }
+        response = self.client.post("/api/group_sets/", invalid_payload, format="json")
+
+        self.assertIn("This field is required.", response.json()["source_version_id"][0])
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(GroupSet.objects.count(), 0)
+
+    def test_create_groupset_with_missing_name(self):
+        self.client.force_authenticate(self.acccount_1_user_1)
+
+        invalid_payload = {
+            "source_version_id": self.source_version_1.id,
+            "group_ids": [self.src_1_group_1.id],
+        }
+        response = self.client.post("/api/group_sets/", invalid_payload, format="json")
+        self.assertIn("This field is required.", response.json()["name"][0])
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(GroupSet.objects.count(), 0)
 
     def test_create_groupset_with_invalid_groups(self):
         """

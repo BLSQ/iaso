@@ -38,6 +38,7 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
         default_fields = [
             "id",
             "name",
+            "group_belonging",
             "source_version",
             "group_ids",
             "created_at",
@@ -46,6 +47,7 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
         fields = [
             "id",
             "name",
+            "group_belonging",
             "source_version",
             "groups",
             "group_ids",

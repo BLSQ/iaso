@@ -516,10 +516,17 @@ GroupSetManager = models.Manager.from_queryset(GroupSetQuerySet)
 
 
 class GroupSet(models.Model):
+    class GroupBelonging(models.TextChoices):
+        SINGLE = _("SINGLE")
+        MULTIPLE = _("MULTIPLE")
+
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
     source_version = models.ForeignKey(SourceVersion, null=True, blank=True, on_delete=models.CASCADE)
     groups = models.ManyToManyField(Group, blank=True, related_name="group_sets")
+    group_belonging = models.TextField(
+        choices=GroupBelonging.choices, default=GroupBelonging.SINGLE, null=False, blank=False, max_length=10
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

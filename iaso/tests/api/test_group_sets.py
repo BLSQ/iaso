@@ -78,6 +78,31 @@ class GroupSetsAPITestCase(APITestCase):
         created_groupset = GroupSet.objects.last()
         self.assertEqual(created_groupset.name, "New GroupSet")
         self.assertEqual(created_groupset.source_version.id, self.source_version_1.id)
+        self.assertEqual(created_groupset.group_belonging, GroupSet.GroupBelonging.SINGLE)
+        self.assertEqual([x.id for x in created_groupset.groups.all()], [self.src_1_group_1.id, self.src_1_group_2.id])
+
+    def test_create_groupset_with_valid_groups_belonging_multiple(self):
+        """
+        Ensure we can create a GroupSet with valid group_ids.
+        """
+
+        self.client.force_authenticate(self.acccount_1_user_1)
+
+        valid_payload = {
+            "name": "New GroupSet",
+            "group_belonging": "MULTIPLE",
+            "source_version_id": self.source_version_1.id,
+            "group_ids": [self.src_1_group_1.id, self.src_1_group_2.id],
+        }
+        response = self.client.post("/api/group_sets/", valid_payload, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(GroupSet.objects.count(), 1)
+
+        created_groupset = GroupSet.objects.last()
+        self.assertEqual(created_groupset.name, "New GroupSet")
+        self.assertEqual(created_groupset.source_version.id, self.source_version_1.id)
+        self.assertEqual(created_groupset.group_belonging, GroupSet.GroupBelonging.MULTIPLE)
         self.assertEqual([x.id for x in created_groupset.groups.all()], [self.src_1_group_1.id, self.src_1_group_2.id])
 
     def test_create_groupset_with_missing_source_version(self):

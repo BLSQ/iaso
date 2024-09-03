@@ -390,7 +390,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             org_units=org_units,
             user_roles=user_roles_data["user_roles"],
             user_roles_groups=user_roles_data["groups"],
-            projects=projects
+            projects=projects,
         )
 
         audit_logger.log_modification(
@@ -557,7 +557,6 @@ class ProfilesViewSet(viewsets.ViewSet):
             # update session hash if you changed your own password, so you don't get logged out
             # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
             update_session_auth_hash(request, user)
-
 
     def send_email_invitation(self, profile, email_subject, email_message, email_html_message):
         domain = settings.DNS_DOMAIN

@@ -1269,7 +1269,70 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(new_value["language"], new_data["language"])
         self.assertEquals(new_value["home_page"], new_data["home_page"])
         self.assertEquals(len(new_value["org_units"]), 2)
-        # TODO control list content irrespective of order
-        # self.assertIn(new_value["org_units"], self.jedi_council_corruscant)
-        # self.assertIn(new_value["org_units"], self.jedi_squad_1)
+        self.assertIn(
+            {"name": self.jedi_council_corruscant.name, "id": self.jedi_council_corruscant.id}, new_value["org_units"]
+        )
+        self.assertIn({"name": self.jedi_squad_1.name, "id": self.jedi_squad_1.id}, new_value["org_units"])
         self.assertEquals(new_value["user_roles"], [])
+
+    def test_log_on_user_updates_own_profile(self):
+        self.client.force_authenticate(self.jim)
+        new_data = {"language": "fr"}
+        response = self.client.patch(f"/api/profiles/me/", data=new_data, format="json")
+        self.assertJSONResponse(response, 200)
+        # Log as super user to access the logs API
+        self.client.force_authenticate(self.john)
+        response = self.client.get(
+            f"/api/logs/?contentType=iaso.profile&fields=past_value,new_value&objectId={self.jim.iaso_profile.id}"
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        logs = response_data["list"]
+        log = logs[0]
+
+        try:
+            jsonschema.validate(instance=log, schema=profile_log_schema)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        past_value = log["past_value"][0]
+        past_user = past_value["user"]
+        self.assertEquals(past_user["id"], self.jim.id)
+        self.assertEquals(past_user["username"], self.jim.username)
+        self.assertEquals(past_user["first_name"], "")
+        self.assertEquals(past_value["language"], None)
+
+        new_value = log["new_value"][0]
+        new_user = new_value["user"]
+        self.assertEquals(new_user["id"], self.jim.id)
+        self.assertEquals(new_user["username"], self.jim.username)
+        self.assertEquals(new_user["first_name"], "")
+        self.assertEquals(new_value["language"], "fr")
+
+    def test_log_on_partial_update_with_error(self):
+        self.client.force_authenticate(self.user_managed_geo_limit)
+        data = {
+            "user_name": self.user_managed_geo_limit.username,
+            "org_units": [
+                {
+                    "id": f"{self.jedi_council_corruscant.id}",
+                    "name": self.jedi_council_corruscant.name,
+                    "validation_status": self.jedi_council_corruscant.validation_status,
+                    "has_children": False,
+                    "org_unit_type_id": self.jedi_council.id,
+                    "org_unit_type_short_name": "Cnc",
+                },
+                {
+                    "id": f"{self.jedi_squad_1.id}",
+                    "name": self.jedi_squad_1.name,
+                    "validation_status": self.jedi_squad_1.validation_status,
+                    "has_children": False,
+                    "org_unit_type_id": self.jedi_squad.id,
+                    "org_unit_type_short_name": "Jds",
+                },
+            ],
+        }
+
+        response = self.client.patch(
+            f"/api/profiles/{self.user_managed_geo_limit.iaso_profile.id}/", data=data, format="json"
+        )
+        self.assertJSONResponse(response, 403)

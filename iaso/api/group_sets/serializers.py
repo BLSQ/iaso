@@ -98,9 +98,12 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
         return attrs
 
     def assign_relations(self, group_set):
+        request = self.context.get("request")
+        user = request.user
+
         source_version_id = self.context["request"].data.get("source_version_id")
         if source_version_id:
-            source_version = SourceVersion.objects.get(pk=source_version_id)
+            source_version = SourceVersion.objects.filter_for_user(user).get(pk=source_version_id)
             group_set.source_version = source_version
             group_set.save()
 

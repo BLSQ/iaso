@@ -3,6 +3,7 @@ import typing
 from rest_framework import serializers
 from iaso.models import GroupSet, Group, DataSource, SourceVersion
 from iaso.api.common import TimestampField, DynamicFieldsModelSerializer
+from hat.audit import models as audit_models
 
 
 class DataSourceSerializerForGroupset(serializers.ModelSerializer):
@@ -72,12 +73,24 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
     def validate_create_or_update(self, attrs: typing.Mapping):
         request = self.context.get("request")
         user = request.user
+        source_version_id = self.initial_data.get("source_version_id")
+        group_ids = self.context["request"].data.get("group_ids")
 
-        if self.context["request"].method != "PATCH" and self.initial_data.get("source_version_id") is None:
+        if self.context["request"].method != "PATCH" and source_version_id is None:
             # required for creation or update but not patch
             raise serializers.ValidationError(detail={"source_version_id": "This field is required."})
 
-        group_ids = self.context["request"].data.get("group_ids")
+        if source_version_id:
+            source_version = SourceVersion.objects.filter_for_user(user).filter(pk=source_version_id).first()
+            if source_version is None:
+                raise serializers.ValidationError(detail={"source_version_id": "Not found or no access to it."})
+            if group_ids is None and self.instance:
+                source_version_ids = list(set([g.source_version_id for g in self.instance.groups.all()]))
+                if len(source_version_ids) > 0 and source_version not in source_version_ids:
+                    raise serializers.ValidationError(
+                        detail={"source_version_id": "Groups do not belong to the same SourceVersion."}
+                    )
+
         if group_ids:
             # Ensure all provided group_ids are valid and belong to the same source_version
             groups = Group.objects.filter_for_user(user).filter(id__in=group_ids)
@@ -88,9 +101,8 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
                     detail={"group_ids": f"Some groups do not exist : found {debug_groups} vs {group_ids}."}
                 )
 
-            source_version = self.initial_data.get("source_version_id")
-            if self.instance and source_version is None:
-                source_version = self.instance.source_version.id
+            if self.instance and source_version_id is None:
+                source_version_id = self.instance.source_version.id
 
             source_ids = list(set([group.source_version_id for group in groups]))
             if len(source_ids) > 1:
@@ -99,10 +111,10 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
                 )
 
             if len(source_ids) == 1:
-                if source_ids[0] != source_version:
+                if source_ids[0] != source_version_id:
                     raise serializers.ValidationError(
                         detail={
-                            "group_ids": f"Groups do not all belong to the same as the groupset : {source_ids} vs {source_version}."
+                            "group_ids": f"Groups do not all belong to the same as the groupset : {source_ids} vs {source_version_id}."
                         }
                     )
 
@@ -115,8 +127,9 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
         source_version_id = self.context["request"].data.get("source_version_id")
         if source_version_id:
             source_version = SourceVersion.objects.filter_for_user(user).get(pk=source_version_id)
-            group_set.source_version = source_version
-            group_set.save()
+            if source_version:
+                group_set.source_version = source_version
+                group_set.save()
 
         group_ids = self.context["request"].data.get("group_ids")
         if group_ids:
@@ -139,12 +152,20 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
         return group_set
 
     def update(self, instance, validated_data):
+        original_copy = GroupSet.objects.get(pk=instance.id)
+
         self.ensure_clean_validated_data(validated_data)
         # patch behaviour
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
         self.assign_relations(instance)
+
+        request = self.context.get("request")
+        user = request.user
+
+        audit_models.log_modification(original_copy, instance, source=audit_models.GROUP_SET_API, user=user)
+
         return instance
 
     source_version = SourceVersionSerializerForGroupset(read_only=True)

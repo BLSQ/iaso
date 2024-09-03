@@ -4,6 +4,7 @@ from rest_framework import status
 from iaso import models as m
 from iaso.models import GroupSet
 from iaso.test import APITestCase
+from hat.audit.models import Modification
 
 
 class GroupSetsAPITestCase(APITestCase):
@@ -126,13 +127,16 @@ class GroupSetsAPITestCase(APITestCase):
         self.assertEqual(GroupSet.objects.count(), 0)
         self.assertIn("group_ids", response.data)
 
-    def seed_a_group_set(self):
+    def seed_a_group_set(self, with_groups=False):
         self.client.force_authenticate(self.acccount_1_user_1)
 
         valid_payload = {
             "name": "New GroupSet",
             "source_version_id": self.source_version_1.id,
         }
+        if with_groups:
+            valid_payload["group_ids"] = [self.src_1_group_1.id, self.src_1_group_2.id]
+
         response = self.client.post("/api/group_sets/", valid_payload, format="json")
 
         groupset = GroupSet.objects.all()[0]
@@ -141,7 +145,7 @@ class GroupSetsAPITestCase(APITestCase):
 
     def test_patch_groupset_with_valid_groups(self):
         groupset = self.seed_a_group_set()
-
+        modification_count_before = Modification.objects.count()
         self.assertEqual(groupset.groups.count(), 0)
         url = f"/api/group_sets/{groupset.id}/"
         response = self.client.patch(
@@ -152,9 +156,13 @@ class GroupSetsAPITestCase(APITestCase):
             format="json",
         )
 
+        modification_count_after = Modification.objects.count()
+
         groupset = GroupSet.objects.all()[0]
         self.assertEqual(groupset.groups.count(), 2)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(modification_count_before + 1, modification_count_after)
 
     def test_patch_groupset_with_invalid_name_null(self):
         groupset = self.seed_a_group_set()
@@ -182,6 +190,51 @@ class GroupSetsAPITestCase(APITestCase):
             format="json",
         )
         self.assertEqual(response.json(), {"name": ["This field may not be blank."]})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_groupset_with_invalid_version_id(self):
+        groupset = self.seed_a_group_set()
+
+        url = f"/api/group_sets/{groupset.id}/"
+        response = self.client.patch(
+            url,
+            {
+                "source_version_id": 999999999999,
+            },
+            format="json",
+        )
+        self.assertEqual(response.json(), {"source_version_id": ["Not found or no access to it."]})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_groupset_with_invalid_version_id_other_account(self):
+        data_source_other_account = m.DataSource.objects.create(name="Source 3")
+        source_version_other_account = m.SourceVersion.objects.create(data_source=data_source_other_account, number=1)
+
+        groupset = self.seed_a_group_set()
+
+        url = f"/api/group_sets/{groupset.id}/"
+        response = self.client.patch(
+            url,
+            {
+                "source_version_id": source_version_other_account.id,
+            },
+            format="json",
+        )
+        self.assertEqual(response.json(), {"source_version_id": ["Not found or no access to it."]})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_groupset_with_invalid_version_id_same_account_but_different_src_then_groups(self):
+        groupset = self.seed_a_group_set(with_groups=True)
+
+        url = f"/api/group_sets/{groupset.id}/"
+        response = self.client.patch(
+            url,
+            {
+                "source_version_id": self.source_version_2.id,
+            },
+            format="json",
+        )
+        self.assertEqual(response.json(), {"source_version_id": ["Groups do not belong to the same SourceVersion."]})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_patch_groupset_with_invalid_groups(self):

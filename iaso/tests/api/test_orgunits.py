@@ -1,14 +1,14 @@
+import csv
+import io
 import typing
 
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.db import connection
 
 from hat.audit.models import Modification
 from iaso import models as m
-from iaso.models import OrgUnitType, OrgUnit
+from iaso.models import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
-import csv
-import io
 
 
 class OrgUnitAPITestCase(APITestCase):
@@ -1253,3 +1253,33 @@ class OrgUnitAPITestCase(APITestCase):
         # list of all direct children of the jedi_council_endor OU
         ou_ids_list = [self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk]
         self.assertEqual(sorted(ids_in_response), sorted(ou_ids_list))
+
+    def test_edit_org_unit_add_default_image(self):
+        old_ou = self.jedi_council_corruscant
+        self.client.force_authenticate(self.yoda)
+        image = m.InstanceFile.objects.create(file="path/to/image.jpg")
+        response = self.client.patch(
+            f"/api/orgunits/{old_ou.id}/",
+            format="json",
+            data={"default_image": image.id},
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertEqual(ou.default_image.id, image.id)
+
+    def test_edit_org_unit_remove_default_image(self):
+        old_ou = self.jedi_council_corruscant
+        image = m.InstanceFile.objects.create(file="path/to/image.jpg")
+        old_ou.default_image = image
+        old_ou.save()
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/orgunits/{old_ou.id}/",
+            format="json",
+            data={"default_image": None},
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertIsNone(ou.default_image)

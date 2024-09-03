@@ -1,20 +1,7 @@
-import datetime
-import json
-import typing
-from unittest import mock
-from unittest.mock import patch
-from uuid import uuid4
-
-from django.contrib.gis.geos import Point
-from django.core.files import File
-from django.utils import timezone
 from django.utils.timezone import now
 from rest_framework import status
 
-from hat.api.export_utils import timestamp_to_utc_datetime
-from hat.audit.models import Modification
 from iaso import models as m
-from iaso.api import query_params as query
 from iaso.models import GroupSet
 from iaso.test import APITestCase
 
@@ -139,11 +126,7 @@ class GroupSetsAPITestCase(APITestCase):
         self.assertEqual(GroupSet.objects.count(), 0)
         self.assertIn("group_ids", response.data)
 
-    def test_update_groupset_with_valid_groups(self):
-        """
-        Ensure we can create a GroupSet with valid group_ids.
-        """
-
+    def seed_a_group_set(self):
         self.client.force_authenticate(self.acccount_1_user_1)
 
         valid_payload = {
@@ -153,6 +136,12 @@ class GroupSetsAPITestCase(APITestCase):
         response = self.client.post("/api/group_sets/", valid_payload, format="json")
 
         groupset = GroupSet.objects.all()[0]
+
+        return groupset
+
+    def test_patch_groupset_with_valid_groups(self):
+        groupset = self.seed_a_group_set()
+
         self.assertEqual(groupset.groups.count(), 0)
         url = f"/api/group_sets/{groupset.id}/"
         response = self.client.patch(
@@ -167,20 +156,52 @@ class GroupSetsAPITestCase(APITestCase):
         self.assertEqual(groupset.groups.count(), 2)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_patch_groupset_with_invalid_name_null(self):
+        groupset = self.seed_a_group_set()
+
+        url = f"/api/group_sets/{groupset.id}/"
+        response = self.client.patch(
+            url,
+            {
+                "name": None,
+            },
+            format="json",
+        )
+        self.assertEqual(response.json(), {"name": ["This field may not be null."]})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_groupset_with_invalid_name_blank(self):
+        groupset = self.seed_a_group_set()
+
+        url = f"/api/group_sets/{groupset.id}/"
+        response = self.client.patch(
+            url,
+            {
+                "name": "",
+            },
+            format="json",
+        )
+        self.assertEqual(response.json(), {"name": ["This field may not be blank."]})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_groupset_with_invalid_groups(self):
+        groupset = self.seed_a_group_set()
+
+        url = f"/api/group_sets/{groupset.id}/"
+        response = self.client.patch(
+            url,
+            {
+                "group_ids": [self.src_1_group_1.id, self.src_2_group_1.id],
+            },
+            format="json",
+        )
+
+        self.assertIn("Groups do not all belong to the same SourceVersion", response.json()["group_ids"][0])
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_delete_groupset_with_valid_groups(self):
-        """
-        Ensure we can create a GroupSet with valid group_ids.
-        """
+        groupset = self.seed_a_group_set()
 
-        self.client.force_authenticate(self.acccount_1_user_1)
-
-        valid_payload = {
-            "name": "New GroupSet",
-            "source_version_id": self.source_version_1.id,
-        }
-        response = self.client.post("/api/group_sets/", valid_payload, format="json")
-
-        groupset = GroupSet.objects.all()[0]
         self.assertEqual(GroupSet.objects.count(), 1)
         url = f"/api/group_sets/{groupset.id}/"
         response = self.client.delete(

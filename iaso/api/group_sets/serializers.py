@@ -64,16 +64,17 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
 
     def validate(self, attrs: typing.MutableMapping):
         data = self.context["request"].data
-        if self.context["request"].method == "POST":
-            return self.validate_create(data)
+        if self.context["request"].method == "POST" or self.context["request"].method == "PATCH":
+            return self.validate_create_or_update(data)
         else:
             return data
 
-    def validate_create(self, attrs: typing.Mapping):
+    def validate_create_or_update(self, attrs: typing.Mapping):
         request = self.context.get("request")
         user = request.user
 
-        if self.initial_data.get("source_version_id") is None:
+        if self.context["request"].method != "PATCH" and self.initial_data.get("source_version_id") is None:
+            # required for creation or update but not patch
             raise serializers.ValidationError(detail={"source_version_id": "This field is required."})
 
         group_ids = self.context["request"].data.get("group_ids")

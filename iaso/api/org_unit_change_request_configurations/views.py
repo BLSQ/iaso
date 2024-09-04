@@ -31,8 +31,14 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
         print("*** get queryset ***")
         return (
             OrgUnitChangeRequestConfiguration.objects.order_by("id")
-            .select_related("project", "created_by", "updated_by")
-            .prefetch_related("possible_parent_types", "possible_group_sets", "editable_reference_forms")
+            .select_related("project", "org_unit_type", "created_by", "updated_by")
+            .prefetch_related(
+                "possible_types",
+                "possible_parent_types",
+                "possible_group_sets",
+                "editable_reference_forms",
+                "other_groups",
+            )
         )
 
     def get_serializer_class(self):

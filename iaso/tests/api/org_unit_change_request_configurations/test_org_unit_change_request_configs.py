@@ -88,8 +88,18 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             org_unit_type=cls.ou_type_rock_pokemons,
             project=cls.project_johto,
             created_by=cls.user_brock,
-            editable_fields=["org_unit_type", "parent_type", "group_sets", "reference_forms"],
+            editable_fields=["org_unit_type", "parent_type", "group_sets", "reference_forms", "other_groups"],
         )
+
+        cls.other_group_1 = m.Group.objects.create(name="Other group 1")
+        cls.other_group_2 = m.Group.objects.create(name="Other group 2")
+        cls.other_group_3 = m.Group.objects.create(name="Other group 3")
+
+        cls.oucrc_type_water.possible_types.set([cls.ou_type_water_pokemons, cls.ou_type_fire_pokemons])
+        cls.oucrc_type_water.possible_parent_types.set([cls.ou_type_water_pokemons, cls.ou_type_rock_pokemons])
+        cls.oucrc_type_water.possible_group_sets.set([cls.group_set_misty_pokemons])
+        cls.oucrc_type_water.editable_reference_forms.set([cls.form_water_gun])
+        cls.oucrc_type_water.other_groups.set([cls.other_group_1, cls.other_group_3])
 
     def test_list_ok(self):
         self.client.force_authenticate(self.user_ash_ketchum)
@@ -138,6 +148,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(
             len(self.oucrc_type_water.editable_reference_forms.all()), len(result["editable_reference_forms"])
         )
+        self.assertEqual(len(self.oucrc_type_water.possible_group_sets.all()), len(result["possible_group_sets"]))
         self.assertEqual(self.oucrc_type_water.created_by_id, result["created_by"]["id"])
         self.assertIsNone(self.oucrc_type_water.updated_by)
         self.assertEqual(self.oucrc_type_water.created_at.timestamp(), result["created_at"])
@@ -162,6 +173,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "possible_parent_type_ids": [self.ou_type_rock_pokemons.id, self.ou_type_water_pokemons.id],
             "possible_group_set_ids": [self.group_set_brock_pokemons.id],
             "editable_reference_form_ids": [self.form_rock_throw.id],
+            "other_group_ids": [self.other_group_1.id],
         }
         response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -180,6 +192,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertCountEqual(
             oucrc.editable_reference_forms.values_list("id", flat=True), data["editable_reference_form_ids"]
         )
+        self.assertCountEqual(oucrc.other_groups.values_list("id", flat=True), data["other_group_ids"])
         self.assertEqual(oucrc.created_by_id, self.user_brock.id)
         self.assertEqual(oucrc.created_at, self.DT)
         self.assertIsNone(oucrc.updated_by)
@@ -352,6 +365,21 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertContains(response, f"Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
         self.assertIn("editable_reference_form_ids", response.data)
         self.assertEqual("does_not_exist", response.data["editable_reference_form_ids"][0].code)
+
+    def test_create_invalid_other_group_ids(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        new_ou_type = m.OrgUnitType.objects.create(name="new ou type")
+        probably_not_a_valid_id = 1234567890
+        data = {
+            "project_id": self.project_johto.id,
+            "org_unit_type_id": new_ou_type.id,
+            "org_units_editable": False,
+            "other_group_ids": [probably_not_a_valid_id],
+        }
+        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
+        self.assertContains(response, f"Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
+        self.assertIn("other_group_ids", response.data)
+        self.assertEqual("does_not_exist", response.data["other_group_ids"][0].code)
 
     # def test_partial_update_without_perm(self):
     #     self.client.force_authenticate(self.user)

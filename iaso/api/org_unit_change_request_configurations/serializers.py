@@ -11,6 +11,7 @@ from iaso.models import (
     Project,
     GroupSet,
     Form,
+    Group,
 )
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 from iaso.api.common import TimestampField
@@ -35,6 +36,13 @@ class OrgUnitTypeNestedSerializer(serializers.ModelSerializer):
         model = OrgUnitType
         fields = ["id", "name"]
         ref_name = "OrgUnitTypeNestedSerializerForChangeRequestConfiguration"
+
+
+class GroupNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ["id", "name"]
+        ref_name = "GroupNestedSerializerForChangeRequestConfiguration"
 
 
 class GroupSetNestedSerializer(serializers.ModelSerializer):
@@ -127,6 +135,7 @@ class OrgUnitChangeRequestConfigurationRetrieveSerializer(serializers.ModelSeria
     possible_parent_types = OrgUnitTypeNestedSerializer(many=True)
     possible_group_sets = GroupSetNestedSerializer(many=True)
     editable_reference_forms = FormNestedSerializer(many=True)
+    other_groups = GroupNestedSerializer(many=True)
     created_by = UserNestedSerializer()
     updated_by = UserNestedSerializer()
     created_at = TimestampField()
@@ -145,6 +154,7 @@ class OrgUnitChangeRequestConfigurationRetrieveSerializer(serializers.ModelSeria
             "possible_parent_types",
             "possible_group_sets",
             "editable_reference_forms",
+            "other_groups",
             "created_by",
             "created_at",
             "updated_by",
@@ -173,6 +183,9 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(serializers.ModelSerializ
     editable_reference_form_ids = serializers.PrimaryKeyRelatedField(
         source="editable_reference_forms", queryset=Form.objects.all(), many=True, allow_empty=True, required=False
     )
+    other_group_ids = serializers.PrimaryKeyRelatedField(
+        source="other_groups", queryset=Group.objects.all(), many=True, allow_empty=True, required=False
+    )
 
     class Meta:
         model = OrgUnitChangeRequestConfiguration
@@ -187,6 +200,7 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(serializers.ModelSerializ
             "possible_parent_type_ids",
             "possible_group_set_ids",
             "editable_reference_form_ids",
+            "other_group_ids",
         ]
 
     def validate(self, validated_data):

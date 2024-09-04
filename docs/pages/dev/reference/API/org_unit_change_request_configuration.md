@@ -23,7 +23,8 @@ API used to create or modify a Change Request configuration.
   "possible_type_ids": ["Array<Int> - List of possible OrgUnit Type IDs that are allowed as new type for this OrgUnit Type"],
   "possible_parent_type_ids": ["Array<Int> - List of possible OrgUnit Type IDs that are allowed as new parent for this OrgUnit Type"],
   "possible_group_set_ids": ["Array<Int> - List of possible GroupSet IDs for this OrgUnit Type"],
-  "editable_reference_form_ids": ["Array<Int> - List of reference Form ID that can be modified"]
+  "editable_reference_form_ids": ["Array<Int> - List of reference Form ID that can be modified"],
+  "other_group_ids": ["Array<Int> - List of possible Group IDs for this OrgUnit Type"]
 }
 ```
 
@@ -35,7 +36,7 @@ _# Do we return ID/UUID when something is successfully created?_
 
 #### 400 - Bad request
 
-- A not nullable field was null or omitted
+- A non-nullable field was null or omitted
 - `org_unit_type_id` is not assigned to the given `project_id`
 - One or more `editable_fields` value is unknown
 - One or more `possible_parent_type_ids` is not a suitable for as a parent for the given OrgUnit Type
@@ -57,6 +58,7 @@ _# Do we return ID/UUID when something is successfully created?_
 - One or more `possible_parent_type_ids` don't exist
 - One or more `possible_group_set_ids` don't exist
 - One or more `editable_reference_form_ids` don't exist
+- One or more `other_group_ids` don't exist
 
 
 ## 2 - GET /api/orgunits/changes/configs/
@@ -173,7 +175,7 @@ API used to fully retrieve a Change Request configuration.
     ],
     "possible_group_sets": [
         {
-            "id": "Int - Group ID",
+            "id": "Int - GroupSet ID",
             "name": "String - GroupSet name"
         }
     ],
@@ -181,6 +183,12 @@ API used to fully retrieve a Change Request configuration.
         {
             "id": "Int - Form ID",
             "name": "String - Form name"
+        }
+    ],
+    "other_groups": [
+        {
+            "id": "Int - Group ID",
+            "name": "String - Group name"
         }
     ],
     "created_at": "Timestamp",
@@ -246,7 +254,8 @@ API used to list all Change Request configurations for the mobile app.
       "possible_type_ids": ["Array<Int> - List of possible OrgUnit Type IDs that are allowed as new type for this OrgUnit Type"],
       "possible_parent_types": ["Array<Int> - List of possible OrgUnit Type IDs that are allowed as new parent for this OrgUnit Type"],
       "possible_group_sets": ["Array<Int> - List of possible GroupSet IDs for this OrgUnit Type"],
-      "editable_reference_forms": ["Array<Int> - List of reference Form ID that can be modified"]
+      "editable_reference_forms": ["Array<Int> - List of reference Form ID that can be modified"],
+      "other_groups": ["Array<Int> - List of other Group IDs for this OrgUnit Type"]
     }
   ]
 }

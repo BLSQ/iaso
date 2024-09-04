@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                         base_field=models.CharField(blank=True, max_length=30),
                         blank=True,
                         default=list,
-                        help_text="List of fields that can edited in an OrgUnit",
+                        help_text="List of fields that can be edited in an OrgUnit",
                         size=None,
                     ),
                 ),
@@ -52,6 +52,12 @@ class Migration(migrations.Migration):
                 (
                     "org_unit_type",
                     models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunittype"),
+                ),
+                (
+                    "other_groups",
+                    models.ManyToManyField(
+                        blank=True, related_name="org_unit_change_request_configurations", to="iaso.group"
+                    ),
                 ),
                 (
                     "possible_group_sets",

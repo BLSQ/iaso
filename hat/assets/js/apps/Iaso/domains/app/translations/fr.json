@@ -517,6 +517,7 @@
     "iaso.label.geographicalData": "Données géographiques",
     "iaso.label.group": "Groupe",
     "iaso.label.groups": "Groupes",
+    "iaso.label.groupSets": "Ensembles de Groupes",
     "iaso.label.hasGeometry": "Avec données géographique",
     "iaso.label.hasNoGeometryAndGps": "Sans données géographique",
     "iaso.label.history": "Historique",

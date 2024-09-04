@@ -155,6 +155,12 @@ const menuItems = (
                     icon: props => <GroupWork {...props} />,
                 },
                 {
+                    label: formatMessage(MESSAGES.groupSets),
+                    permissions: paths.groupSetsPath.permissions,
+                    key: 'groupSets',
+                    icon: props => <GroupWork {...props} />,
+                },
+                {
                     label: formatMessage(MESSAGES.orgUnitType),
                     permissions: paths.orgUnitTypesPath.permissions,
                     key: 'types',

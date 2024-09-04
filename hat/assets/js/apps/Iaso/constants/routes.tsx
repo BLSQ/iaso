@@ -27,6 +27,7 @@ import { Modules } from '../domains/modules';
 import { OrgUnits } from '../domains/orgUnits';
 import OrgUnitDetail from '../domains/orgUnits/details';
 import Groups from '../domains/orgUnits/groups';
+import GroupSets from '../domains/orgUnits/groupSets';
 import Types from '../domains/orgUnits/orgUnitTypes';
 import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges';
 import Pages from '../domains/pages';
@@ -268,6 +269,13 @@ export const groupsPath = {
     element: <Groups />,
 };
 
+export const groupSetsPath = {
+    baseUrl: baseUrls.groupSets,
+    routerUrl: `${baseUrls.groupSets}/*`,
+    permissions: [Permission.ORG_UNIT_GROUPS],
+    element: <GroupSets />,
+};
+
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
     routerUrl: `${baseUrls.orgUnitTypes}/*`,
@@ -420,6 +428,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     tasksPath,
     devicesPath,
     groupsPath,
+    groupSetsPath,
     orgUnitTypesPath,
     entityTypesPath,
     pagesPath,

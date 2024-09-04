@@ -164,12 +164,22 @@ export const useGetFormAList = (
         formaPageSize: pageSize,
         id: vaccine_stock,
     } = params;
-    const safeParams = useUrlParams({
-        order,
-        page,
-        pageSize,
-        vaccine_stock,
-    } as Partial<UrlParams>);
+
+    console.log(params);
+    const safeParams = useUrlParams(
+        {
+            order,
+            page,
+            pageSize,
+            vaccine_stock,
+        } as Partial<UrlParams>,
+        {
+            order: '-form_a_reception_date',
+        },
+    );
+
+    console.log(safeParams);
+
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({

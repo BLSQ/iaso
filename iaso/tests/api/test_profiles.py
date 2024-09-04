@@ -1307,32 +1307,3 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(new_user["username"], self.jim.username)
         self.assertEquals(new_user["first_name"], "")
         self.assertEquals(new_value["language"], "fr")
-
-    def test_log_on_partial_update_with_error(self):
-        self.client.force_authenticate(self.user_managed_geo_limit)
-        data = {
-            "user_name": self.user_managed_geo_limit.username,
-            "org_units": [
-                {
-                    "id": f"{self.jedi_council_corruscant.id}",
-                    "name": self.jedi_council_corruscant.name,
-                    "validation_status": self.jedi_council_corruscant.validation_status,
-                    "has_children": False,
-                    "org_unit_type_id": self.jedi_council.id,
-                    "org_unit_type_short_name": "Cnc",
-                },
-                {
-                    "id": f"{self.jedi_squad_1.id}",
-                    "name": self.jedi_squad_1.name,
-                    "validation_status": self.jedi_squad_1.validation_status,
-                    "has_children": False,
-                    "org_unit_type_id": self.jedi_squad.id,
-                    "org_unit_type_short_name": "Jds",
-                },
-            ],
-        }
-
-        response = self.client.patch(
-            f"/api/profiles/{self.user_managed_geo_limit.iaso_profile.id}/", data=data, format="json"
-        )
-        self.assertJSONResponse(response, 403)

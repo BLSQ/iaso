@@ -1,7 +1,6 @@
 """JsonLogic(https://jsonlogic.com/)-related utilities."""
 
 import operator
-from functools import reduce
 from typing import Any, Callable, Dict
 
 from django.db.models import Exists, Q, Transform, OuterRef
@@ -53,15 +52,15 @@ def jsonlogic_to_q(
     func = jsonlogic_to_q if recursion_func is None else recursion_func
 
     if "and" in jsonlogic:
-        return reduce(
-            operator.and_,
-            (func(subquery, field_prefix) for subquery in jsonlogic["and"]),
-        )
+        sub_query = Q()
+        for lookup in jsonlogic["and"]:
+            sub_query = operator.and_(sub_query, func(lookup, field_prefix))
+        return sub_query
     elif "or" in jsonlogic:
-        return reduce(
-            operator.or_,
-            (func(subquery, field_prefix) for subquery in jsonlogic["or"]),
-        )
+        sub_query = Q()
+        for lookup in jsonlogic["or"]:
+            sub_query = operator.or_(sub_query, func(lookup, field_prefix))
+        return sub_query
     elif "!" in jsonlogic:
         return ~func(jsonlogic["!"], field_prefix)
 

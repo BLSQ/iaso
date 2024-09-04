@@ -9,7 +9,11 @@ import { InstancesTotalGraph } from '../../components/instancesTotalGraph';
 import { Filters } from './components/formStasts/Filters';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { useGetFormStats } from './hooks/UseGetFormStats';
+import {
+    useGetPerFormStats,
+    useGetFormStatsSum,
+} from './hooks/UseGetFormStats';
+import { FormStatsParams } from './types/formStats';
 
 const baseUrl = baseUrls.formsStats;
 
@@ -21,23 +25,15 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-type Params = { accountId: string; projectIds?: string };
-
 export const FormsStats: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const params: Params = useParamsObject(baseUrl);
-    const { data: dataStats, isLoading: isLoadingDataStats } = useGetFormStats(
-        baseUrl,
-        '/api/instances/stats/',
-        ['instances', 'stats'],
-    );
+    const params: FormStatsParams = useParamsObject(baseUrl);
+    const { data: dataStats, isLoading: isLoadingDataStats } =
+        useGetPerFormStats(params);
 
     const { data: dataStatsSum, isLoading: isLoadingDataStatsSum } =
-        useGetFormStats(baseUrl, '/api/instances/stats_sum/', [
-            'instances',
-            'stats_sum',
-        ]);
+        useGetFormStatsSum(params);
 
     return (
         <>
@@ -47,11 +43,11 @@ export const FormsStats: FunctionComponent = () => {
             />
 
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Grid container spacing={9}>
+                <Grid container spacing={3}>
                     <Grid container item xs={12}>
-                        <Box mx={2} width="100%">
+                        <Grid xs={12} item>
                             <Filters params={params} baseUrl={baseUrl} />
-                        </Box>
+                        </Grid>
                     </Grid>
                     <Grid container item xs={12} spacing={2}>
                         <Grid xs={6} item className={classes.card}>

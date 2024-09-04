@@ -1,42 +1,43 @@
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { makeUrlWithParams } from '../../../libs/utils';
+import { ApiFormStatsParams } from '../types/formStats';
 
 const getFormStats = url => {
     return getRequest(url);
 };
 
-type ApiParams = {
-    project_ids?: string;
-};
-
-const useGetApiParams = (params: {
-    accountId: string;
-    projectIds: string;
-}): ApiParams => ({
-    project_ids: params.projectIds,
-});
-
-export const useGetFormStats = (
-    baseUrl,
+const useGetFormStats = ({
+    params,
     url,
     queryKey,
-): UseQueryResult<any, Error> => {
-    const params = useParamsObject(baseUrl) as {
-        accountId: string;
-        projectIds: string;
-    };
-    const apiParams = useGetApiParams(params);
+}: ApiFormStatsParams): UseQueryResult<any, Error> => {
+    const apiParams = { project_ids: params.projectIds };
     const apiUrl = makeUrlWithParams(url, apiParams);
     return useSnackQuery({
-        queryKey: [queryKey, params],
+        queryKey: [queryKey, apiUrl],
         queryFn: () => getFormStats(apiUrl),
         options: {
             staleTime: 60000,
             cacheTime: 60000,
             keepPreviousData: true,
         },
+    });
+};
+
+export const useGetPerFormStats = params => {
+    return useGetFormStats({
+        params,
+        url: '/api/instances/stats/',
+        queryKey: ['instances', 'stats'],
+    });
+};
+
+export const useGetFormStatsSum = params => {
+    return useGetFormStats({
+        params,
+        url: '/api/instances/stats_sum/',
+        queryKey: ['instances', 'stats_sum'],
     });
 };

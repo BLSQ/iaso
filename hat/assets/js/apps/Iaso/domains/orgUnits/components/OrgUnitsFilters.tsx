@@ -259,7 +259,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
-                <Box mt={4} mb={4}>
+                <Box mt={4} mb={2}>
                     <ColorPicker
                         currentColor={currentColor}
                         onChangeColor={color =>
@@ -267,16 +267,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
-                <InputComponent
-                    type="select"
-                    disabled={isFetchingProjects}
-                    keyValue="project"
-                    onChange={handleChange}
-                    value={!isFetchingProjects && projectId}
-                    label={MESSAGES.project}
-                    options={projects}
-                    loading={isFetchingProjects}
-                />
                 <InputWithInfos infos={formatMessage(MESSAGES.searchParams)}>
                     <InputComponent
                         keyValue="search"
@@ -289,6 +279,16 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         onErrorChange={hasError => setTextSearchError(hasError)}
                     />
                 </InputWithInfos>
+                <InputComponent
+                    type="select"
+                    disabled={isFetchingProjects}
+                    keyValue="project"
+                    onChange={handleChange}
+                    value={!isFetchingProjects && projectId}
+                    label={MESSAGES.project}
+                    options={projects}
+                    loading={isFetchingProjects}
+                />
                 <InputComponent
                     type="select"
                     disabled={isFetchingDataSources}

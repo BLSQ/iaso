@@ -155,7 +155,12 @@ class PBWG:
             i = i + 1
         return list(
             filter(
-                lambda instance: (instance.get("visits") and len(instance.get("visits")) > 1),
+                lambda instance: (
+                    instance.get("visits")
+                    and len(instance.get("visits")) > 1
+                    and instance.get("birth_date") is not None
+                    and instance.get("birth_date") != ""
+                ),
                 instances,
             )
         )

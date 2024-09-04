@@ -145,12 +145,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 raise serializers.ValidationError({"error": f"Operation aborted. Error: {e}"})
             except pd.errors.ParserError as e:
                 raise serializers.ValidationError({"error": f"Invalid CSV File. Error: {e}"})
-
             importer_user = request.user
             importer_account = request.user.iaso_profile.account
-            importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(importer_user)
-            importer_orgunits_hierarchy = OrgUnit.objects.hierarchy(importer_access_ou)
-
+            importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(importer_user).only("id")
             csv_indexes = []
             file_instance = BulkCreateUserCsvFile.objects.create(
                 file=user_csv, created_by=importer_user, account=importer_account
@@ -217,13 +214,12 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
                     org_units_source_refs = row[csv_indexes.index("orgunit__source_ref")].split(value_splitter)
                     org_units += org_units_source_refs
-
                     for ou in list(filter(None, org_units)):
                         ou = ou.strip()
                         if ou.isdigit():
                             try:
                                 ou = OrgUnit.objects.get(id=int(ou))
-                                if has_geo_limit and ou not in importer_orgunits_hierarchy:
+                                if has_geo_limit and ou not in importer_access_ou:
                                     raise serializers.ValidationError(
                                         {
                                             "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
@@ -252,7 +248,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             # due to multiple sequential imports from DHIS2 (this happens a lot). So we must
                             # select the one that matches the "default source version" of the account.
                             org_unit = OrgUnit.objects.filter(
-                                Q(pk__in=importer_orgunits_hierarchy),
+                                Q(pk__in=importer_access_ou),
                                 Q(version_id=importer_account.default_version_id),
                                 Q(name=ou) | Q(source_ref=ou),
                             ).order_by("-version_id")
@@ -272,7 +268,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         "again. Use Orgunit ID instead of name.".format(ou, i + 1)
                                     }
                                 )
-                            if org_unit[0] not in OrgUnit.objects.filter_for_user_and_app_id(importer_user, None):
+                            if org_unit[0] not in importer_access_ou:
                                 raise serializers.ValidationError(
                                     {
                                         "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "

@@ -52,7 +52,7 @@ import {
 import { Popper } from '../../forms/fields/components/Popper';
 import { parseJson } from '../../instances/utils/jsonLogicParse';
 import { useGetAllPossibleFields } from '../../forms/hooks/useGetPossibleFields';
-import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor';
+import { useGetAllFormDescriptors } from '../../forms/fields/hooks/useGetFormDescriptor';
 import { useGetQueryBuilderFieldsForAllForms } from '../../forms/fields/hooks/useGetQueryBuildersFields';
 import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace';
 
@@ -140,7 +140,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
 
     // Load QueryBuilder resources
     const { allPossibleFields } = useGetAllPossibleFields();
-    const { data: formDescriptors } = useGetFormDescriptor();
+    const { data: formDescriptors } = useGetAllFormDescriptors();
     const fields = useGetQueryBuilderFieldsForAllForms(
         formDescriptors,
         allPossibleFields,

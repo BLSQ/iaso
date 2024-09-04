@@ -44,7 +44,10 @@ export const usePossibleFields = (
     }, [form?.possible_fields, isFetchingForm]);
 };
 
-export const useGetPossibleFields = (formId?: number, appId?: string): Result => {
+export const useGetPossibleFields = (
+    formId?: number,
+    appId?: string,
+): Result => {
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         formId,
         Boolean(formId),
@@ -59,7 +62,7 @@ export const useAllPossibleFields = (
     allForms: Form[] = [],
 ): AllResults => {
     return useMemo(() => {
-        let allPossibleFields: PossibleFieldsForForm[] = [];
+        const allPossibleFields: PossibleFieldsForForm[] = [];
         allForms.forEach(form => {
             const possibleFields =
                 form?.possible_fields?.map(field => ({
@@ -77,7 +80,7 @@ export const useAllPossibleFields = (
             allPossibleFields,
             isFetchingForms,
         };
-    }, [isFetchingForms]);
+    }, [isFetchingForms, allForms]);
 };
 
 export const useGetAllPossibleFields = (): AllResults => {

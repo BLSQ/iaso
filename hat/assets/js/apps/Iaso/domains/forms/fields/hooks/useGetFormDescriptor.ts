@@ -12,8 +12,16 @@ type FormVersionsList = {
 };
 
 const getVersion = (formId: number | undefined): Promise<FormVersionsList> => {
-    return getRequest(`/api/formversions/?form_id=&fields=descriptor`);
+    return getRequest(`/api/formversions/?form_id=${formId}&fields=descriptor`);
 };
+
+const processResult = (
+    data: FormVersionsList | undefined,
+): FormDescriptor[] | undefined => {
+    if (!data) return data;
+    return data.form_versions?.map(version => version.descriptor);
+};
+
 export const useGetFormDescriptor = (
     formId?: number,
 ): UseQueryResult<FormDescriptor[] | undefined, Error> => {
@@ -25,13 +33,21 @@ export const useGetFormDescriptor = (
         queryKey,
         queryFn: () => getVersion(formId),
         options: {
-            // enabled: Boolean(formId), TODO
-            select: (
-                data: FormVersionsList | undefined,
-            ): FormDescriptor[] | undefined => {
-                if (!data) return data;
-                return data.form_versions?.map(version => version.descriptor);
-            },
+            enabled: Boolean(formId),
+            select: data => processResult(data),
+        },
+    });
+};
+
+export const useGetAllFormDescriptors = (): UseQueryResult<
+    FormDescriptor[] | undefined,
+    Error
+> => {
+    return useSnackQuery({
+        queryKey: ['instanceDescriptors'],
+        queryFn: () => getRequest('/api/formversions/?fields=descriptor'),
+        options: {
+            select: data => processResult(data),
         },
     });
 };

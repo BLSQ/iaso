@@ -6,7 +6,6 @@ import { getRequest } from '../../../../../libs/Api';
 import { Form, PossibleField } from '../../../../forms/types/forms';
 import { usePossibleFields } from '../../../../forms/hooks/useGetPossibleFields';
 
-
 export const useGetForm = (
     formId: number | undefined,
     enabled: boolean,
@@ -37,10 +36,9 @@ export const useGetForms = (
     enabled: boolean,
     fields?: string[] | undefined,
 ): UseQueryResult<Form[], Error> => {
-    let url = '/api/forms/?fields=id,name,latest_form_version';
-    if (fields) {
-        url += `,${fields.join(',')}`;
-    }
+    const apiUrl = '/api/forms/?fields=id,name,latest_form_version';
+    const url = fields ? `${apiUrl},${fields.join(',')}` : apiUrl;
+
     return useSnackQuery({
         queryKey: ['forms'],
         queryFn: () => getRequest(url),

@@ -63,6 +63,10 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         cls.group_set_ash_pokemons.groups.set([cls.group_season_2, cls.group_season_3])
         cls.group_set_misty_pokemons.groups.set([cls.group_season_1, cls.group_season_3])
 
+        cls.other_group_1 = m.Group.objects.create(name="Other group 1")
+        cls.other_group_2 = m.Group.objects.create(name="Other group 2")
+        cls.other_group_3 = m.Group.objects.create(name="Other group 3")
+
     @time_machine.travel(DT, tick=False)
     def test_create_happy_path(self):
         random_uuid = uuid4()
@@ -87,6 +91,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         oucrc.possible_parent_types.set([self.ou_type_fire_pokemons, self.ou_type_water_pokemons])
         oucrc.possible_group_sets.set([self.group_set_ash_pokemons, self.group_set_misty_pokemons])
         oucrc.editable_reference_forms.set([self.form_ember, self.form_water_gun])
+        oucrc.other_groups.set([self.other_group_1])
         oucrc.refresh_from_db()
 
         self.assertEqual(str(oucrc.uuid), str(random_uuid))
@@ -106,6 +111,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
             oucrc.possible_group_sets.all(), [self.group_set_ash_pokemons, self.group_set_misty_pokemons]
         )
         self.assertCountEqual(oucrc.editable_reference_forms.all(), [self.form_ember, self.form_water_gun])
+        self.assertCountEqual(oucrc.other_groups.all(), [self.other_group_1])
 
     def test_create_without_any_data_restriction(self):
         random_uuid = uuid4()
@@ -129,6 +135,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         self.assertFalse(oucrc.possible_parent_types.exists())
         self.assertFalse(oucrc.possible_group_sets.exists())
         self.assertFalse(oucrc.editable_reference_forms.exists())
+        self.assertFalse(oucrc.other_groups.exists())
 
     def test_create_error_same_project_and_orgunit_type(self):
         random_uuid = uuid4()

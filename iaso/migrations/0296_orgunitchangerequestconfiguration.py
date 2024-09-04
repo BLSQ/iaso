@@ -54,6 +54,12 @@ class Migration(migrations.Migration):
                     models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunittype"),
                 ),
                 (
+                    "other_groups",
+                    models.ManyToManyField(
+                        blank=True, related_name="org_unit_change_request_configurations", to="iaso.group"
+                    ),
+                ),
+                (
                     "possible_group_sets",
                     models.ManyToManyField(
                         blank=True, related_name="org_unit_change_request_configurations", to="iaso.groupset"

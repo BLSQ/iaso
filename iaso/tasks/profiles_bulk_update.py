@@ -43,6 +43,19 @@ def update_single_profile_from_bulk(
     audit_logger = ProfileAuditLogger()
     old_data = audit_logger.serialize_instance(profile)
     account_id = user.iaso_profile.account.id
+    roles_to_be_added = []
+    roles_to_be_removed = []
+    projects_to_be_added = []
+    projects_to_be_removed = []
+    org_units_to_be_added = []
+    org_units_to_be_removed = []
+    # Raise if necessary and prepare values to be updated
+    if teams_id_added is not None:
+        if not user.has_perm(permission.TEAMS):
+            raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot add users to team")
+    if teams_id_removed is not None:
+        if not user.has_perm(permission.TEAMS):
+            raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot remove users to team")
     if roles_id_added is not None:
         for role_id in roles_id_added:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
@@ -50,12 +63,17 @@ def update_single_profile_from_bulk(
                 if not user.has_perm(permission.USERS_ADMIN):
                     for p in role.group.permissions.all():
                         CustomPermissionSupport.assert_right_to_assign(user, p.codename)
-                role.iaso_profile.add(profile)
+                # role.iaso_profile.add(profile)
+                roles_to_be_added.append(role)
     if roles_id_removed is not None:
         for role_id in roles_id_removed:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
             if role.account.id == account_id:
-                role.iaso_profile.remove(profile)
+                if not user.has_perm(permission.USERS_ADMIN):
+                    for p in role.group.permissions.all():
+                        CustomPermissionSupport.assert_right_to_assign(user, p.codename)
+                # role.iaso_profile.remove(profile)
+                roles_to_be_removed.append(role)
 
     if projects_ids_added is not None:
         if not user.has_perm(permission.USERS_ADMIN):
@@ -65,7 +83,8 @@ def update_single_profile_from_bulk(
         for project_id in projects_ids_added:
             project = Project.objects.get(pk=project_id)
             if project.account and project.account.id == account_id:
-                project.iaso_profile.add(profile)
+                # project.iaso_profile.add(profile)
+                projects_to_be_added.append(project)
     if projects_ids_removed is not None:
         if not user.has_perm(permission.USERS_ADMIN):
             raise PermissionDenied(
@@ -74,11 +93,31 @@ def update_single_profile_from_bulk(
         for project_id in projects_ids_removed:
             project = Project.objects.get(pk=project_id)
             if project.account and project.account.id == account_id:
-                project.iaso_profile.remove(profile)
+                # project.iaso_profile.remove(profile)
+                projects_to_be_removed.append(project)
 
+    if location_ids_added is not None:
+        for location_id in location_ids_added:
+            if managed_org_units and len(managed_org_units) > 0 and location_id not in managed_org_units:
+                raise PermissionDenied(
+                    f"User with permission {permission.USERS_MANAGED} cannot change OrgUnits outside of their own "
+                    f"health pyramid"
+                )
+            org_unit = OrgUnit.objects.get(pk=location_id)
+            # org_unit.iaso_profile.add(profile)
+            org_units_to_be_added.append(org_unit)
+    if location_ids_removed is not None:
+        for location_id in location_ids_removed:
+            if managed_org_units and len(managed_org_units) > 0 and location_id not in managed_org_units:
+                raise PermissionDenied(
+                    f"User with permission {permission.USERS_MANAGED} cannot change OrgUnits outside of their own "
+                    f"health pyramid"
+                )
+            org_unit = OrgUnit.objects.get(pk=location_id)
+            # org_unit.iaso_profile.remove(profile)
+            org_units_to_be_removed.append(org_unit)
+    # Update
     if teams_id_added is not None:
-        if not user.has_perm(permission.TEAMS):
-            raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot add users to team")
         team_audit_logger = TeamAuditLogger()
         for team_id in teams_id_added:
             team = Team.objects.get(pk=team_id)
@@ -91,8 +130,6 @@ def update_single_profile_from_bulk(
                 team.users.add(profile.user)
                 team_audit_logger.log_modification(instance=team, old_data_dump=old_team, request_user=user)
     if teams_id_removed is not None:
-        if not user.has_perm(permission.TEAMS):
-            raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot remove users to team")
         team_audit_logger = TeamAuditLogger()
         for team_id in teams_id_removed:
             team = Team.objects.get(pk=team_id)
@@ -104,27 +141,25 @@ def update_single_profile_from_bulk(
             ):
                 team.users.remove(profile.user)
                 team_audit_logger.log_modification(instance=team, old_data_dump=old_team, request_user=user)
-
     if language is not None:
         profile.language = language
-
-    if location_ids_added is not None:
-        for location_id in location_ids_added:
-            if managed_org_units and len(managed_org_units) > 0 and location_id not in managed_org_units:
-                raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change OrgUnits outside of their own "
-                    f"health pyramid"
-                )
-            org_unit = OrgUnit.objects.get(pk=location_id)
+    if len(roles_to_be_added) > 0:
+        for role in roles_to_be_added:
+            role.iaso_profile.add(profile)
+    if len(roles_to_be_removed) > 0:
+        for role in roles_to_be_removed:
+            role.iaso_profile.remove(profile)
+    if len(projects_to_be_added) > 0:
+        for project in projects_to_be_added:
+            project.iaso_profile.add(profile)
+    if len(projects_to_be_removed) > 0:
+        for project in projects_to_be_removed:
+            project.iaso_profile.remove(profile)
+    if len(org_units_to_be_added) > 0:
+        for org_unit in org_units_to_be_added:
             org_unit.iaso_profile.add(profile)
-    if location_ids_removed is not None:
-        for location_id in location_ids_removed:
-            if managed_org_units and len(managed_org_units) > 0 and location_id not in managed_org_units:
-                raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change OrgUnits outside of their own "
-                    f"health pyramid"
-                )
-            org_unit = OrgUnit.objects.get(pk=location_id)
+    if len(org_units_to_be_removed) > 0:
+        for org_unit in org_units_to_be_removed:
             org_unit.iaso_profile.remove(profile)
 
     profile.save()

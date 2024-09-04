@@ -68,6 +68,7 @@ class GroupSetsAPITestCase(APITestCase):
         valid_payload = {
             "name": "New GroupSet",
             "source_version_id": self.source_version_1.id,
+            "source_ref": "Bpx0589u8y0",
             "group_ids": [self.src_1_group_1.id, self.src_1_group_2.id],
         }
         response = self.client.post("/api/group_sets/", valid_payload, format="json")
@@ -77,6 +78,7 @@ class GroupSetsAPITestCase(APITestCase):
 
         created_groupset = GroupSet.objects.last()
         self.assertEqual(created_groupset.name, "New GroupSet")
+        self.assertEqual(created_groupset.source_ref, valid_payload["source_ref"])
         self.assertEqual(created_groupset.source_version.id, self.source_version_1.id)
         self.assertEqual(created_groupset.group_belonging, GroupSet.GroupBelonging.SINGLE)
         self.assertEqual([x.id for x in created_groupset.groups.all()], [self.src_1_group_1.id, self.src_1_group_2.id])

@@ -165,7 +165,6 @@ export const useGetFormAList = (
         id: vaccine_stock,
     } = params;
 
-    console.log(params);
     const safeParams = useUrlParams(
         {
             order,
@@ -175,10 +174,9 @@ export const useGetFormAList = (
         } as Partial<UrlParams>,
         {
             order: '-form_a_reception_date',
+            pageSize: 20,
         },
     );
-
-    console.log(safeParams);
 
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
@@ -202,12 +200,18 @@ export const useGetDestructionList = (
         destructionPageSize: pageSize,
         id: vaccine_stock,
     } = params;
-    const safeParams = useUrlParams({
-        order,
-        page,
-        pageSize,
-        vaccine_stock,
-    } as Partial<UrlParams>);
+    const safeParams = useUrlParams(
+        {
+            order,
+            page,
+            pageSize,
+            vaccine_stock,
+        } as Partial<UrlParams>,
+        {
+            order: '-rrt_destruction_report_reception_date',
+            pageSize: 20,
+        },
+    );
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
@@ -230,12 +234,18 @@ export const useGetIncidentList = (
         incidentPageSize: pageSize,
         id: vaccine_stock,
     } = params;
-    const safeParams = useUrlParams({
-        order,
-        page,
-        pageSize,
-        vaccine_stock,
-    } as Partial<UrlParams>);
+    const safeParams = useUrlParams(
+        {
+            order,
+            page,
+            pageSize,
+            vaccine_stock,
+        } as Partial<UrlParams>,
+        {
+            order: '-incident_report_received_by_rrt',
+            pageSize: 20,
+        },
+    );
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({

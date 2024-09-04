@@ -259,7 +259,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
-                <Box mt={4} mb={4}>
+                <Box mt={4} mb={2}>
                     <ColorPicker
                         currentColor={currentColor}
                         onChangeColor={color =>

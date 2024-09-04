@@ -45,6 +45,7 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
     editable_reference_forms = models.ManyToManyField(
         "Form", related_name="org_unit_change_request_configurations", blank=True
     )
+    other_groups = models.ManyToManyField("Group", related_name="org_unit_change_request_configurations", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         User,
@@ -79,6 +80,7 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         "group_sets",  # not a direct OrgUnit attribute, available through the OU groups
         "parent_type",  # not a direct OrgUnit attribute, available through the parent OU
         "reference_forms",  # not a direct OrgUnit attribute, but initially available through OrgUnitType
+        "other_groups",  # Groups which are not part of a GroupSet
     ]
 
     class Meta:

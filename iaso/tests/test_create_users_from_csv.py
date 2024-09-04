@@ -575,7 +575,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.account1.modules = self.MODULES
         self.account1.save()
         self.account1.refresh_from_db()
-
+        # Manually adding user roles to avoid messing with other tests
         manager = {"name": "manager"}
         self.client.post("/api/userroles/", data=manager)
 

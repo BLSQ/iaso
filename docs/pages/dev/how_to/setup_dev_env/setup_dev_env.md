@@ -1,14 +1,14 @@
 # Setup a dev environment
 
 
-A running local instance for development can be spun up via docker-compose which will install and
+A running local instance for development can be spun up via docker compose which will install and
 configure all deps in separate container. As such your computer should only need:
 
 -   [git](https://git-scm.com/)
 -   [docker](https://docs.docker.com/engine/installation/)
--   [docker-compose](https://docs.docker.com/compose/)
+-   [docker compose](https://docs.docker.com/compose/)
 
-If docker-compose give you trouble, make sure it can connect to the
+If docker compose give you trouble, make sure it can connect to the
 __docker daemon__.
 
 If you use an Apple Silicon Mac, ensure `export DOCKER_DEFAULT_PLATFORM=linux/amd64` is set.
@@ -39,19 +39,19 @@ All the commands here need to be run in the project directory in which the repos
 This will build and download the containers.
 
 ``` {.sourceCode .bash}
-docker-compose build
+docker compose build
 ```
 
 ### 3. Start the database
 
 ``` {.sourceCode .bash}
-docker-compose up db
+docker compose up db
 ```
 
 ### 4. Run migrations
 
 ``` {.sourceCode .bash}
-docker-compose run --rm iaso manage migrate
+docker compose run --rm iaso manage migrate
 ```
 If you get a message saying that the database iaso does not exist, you can connect to your postgres instance using 
 ```
@@ -67,7 +67,7 @@ to create the missing database.
 To start all the containers (backend, frontend, db)
 
 ``` {.sourceCode .bash}
-docker-compose up
+docker compose up
 ```
 
 The web server will be reachable at `http://localhost:8081`.
@@ -80,7 +80,7 @@ To login to the app or the Django admin, a superuser needs to be created
 with:
 
 ``` {.sourceCode .bash}
-docker-compose exec iaso ./manage.py createsuperuser
+docker compose exec iaso ./manage.py createsuperuser
 ```
 
 You can now login in the admin at `http://localhost:8081/admin`.
@@ -93,7 +93,7 @@ through the Django admin or loaded via fixtures.
 To create the initial account, project and profile, do the following:
 
 ``` {.sourceCode .bash}
-docker-compose exec iaso ./manage.py create_and_import_data
+docker compose exec iaso ./manage.py create_and_import_data
 ```
 
 You can now login on `http://localhost:8081` but still need to import your own data.
@@ -105,7 +105,7 @@ An alternative to this and the following steps is to [import data from DHIS2](#1
 Run the following command to create a form:
 
 ``` {.sourceCode .bash}
-docker-compose exec iaso ./manage.py create_form
+docker compose exec iaso ./manage.py create_form
 ```
 
 At this point, if you want to edit forms directly on your machine using
@@ -127,7 +127,7 @@ You can now start to develop additional features on Iaso!
 Alternatively or in addition to steps 7-8, you can import data from the DHIS2 demo server (play.dhis2.org):
 
 ``` {.sourceCode .bash}
-docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.35.3
+docker compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.35.3
 ```
 
 The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. OrgUnit types are not
@@ -144,9 +144,9 @@ Log in to  <http://127.0.0.1:8081/dashboard> with :
 
 To submit and edit existing form submission from the browser, an Enketo service is needed. 
 
-To enable the Enketo editor in your local environment, include the additional docker compose configuration file for Enketo. Do so by invoking docker-compose with both files.
+To enable the Enketo editor in your local environment, include the additional docker compose configuration file for Enketo. Do so by invoking docker compose with both files.
 ```
-docker-compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up
+docker compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up
 ```
 
 No additional configuration is needed. The first time the docker image is launched, it will download dependencies and do a build witch may take a few minutes. Subsequents launches are faster.
@@ -161,24 +161,24 @@ To seed your DB with typical example forms editable by Enketo, see [import data 
 
 To create a copy of your iaso database in a file (dump) you can use:
 ```
-docker-compose exec db pg_dump -U postgres iaso  -Fc > iaso.dump
+docker compose exec db pg_dump -U postgres iaso  -Fc > iaso.dump
 ```
 
 The dumpfile will be created on your host. The `-Fc` meant it will use an optimised Postgres format (which take less place). If you want the plain sql command use `-Fp`
 
 ### 13. Restore database from dump
 
-0. Ensure the database server is running but not the rest. Close your docker-compose, ensure it is down with `docker-compose down`
-1. Launch the database server with `docker-compose up db` 
+0. Ensure the database server is running but not the rest. Close your docker compose, ensure it is down with `docker compose down`
+1. Launch the database server with `docker compose up db` 
 2. Choose a name for you database. In this example  it will be `iaso5`
-   You can list existing databases using `docker-compose exec db psql -U postgres -l`
-3. Create the database `docker-compose exec db psql -U postgres -c "create database iaso5"`
+   You can list existing databases using `docker compose exec db psql -U postgres -l`
+3. Create the database `docker compose exec db psql -U postgres -c "create database iaso5"`
 4. Restore the dump file to put the data in your database
 ```
-cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --no-owner /dev/stdin
+cat iaso.dump | docker compose exec -T db pg_restore -U postgres -d iaso5 -Fc --no-owner /dev/stdin
 ```
 5. Edit your `.env` file to use to this database in the `RDS_DB_NAME` settings.
-6. Start Iaso. Cut your docker-compose (see 0) and relaunch it fully. Warning: Modification in your .env file are not taken into account unless you entirely stop your docker-compose
+6. Start Iaso. Cut your docker compose (see 0) and relaunch it fully. Warning: Modification in your .env file are not taken into account unless you entirely stop your docker compose
 
 
 ### 14. Health
@@ -187,11 +187,11 @@ On the /health/ url you can find listed the Iaso version number, environment, de
 
 ### 15. Set up a local DHIS2 server
 -----------
-Experimental. For development if you need a local dhis2 server, you can spin up one in your docker-compose by using the `docker/docker-compose-dhis2.yml ` configuration file.
+Experimental. For development if you need a local dhis2 server, you can spin up one in your docker compose by using the `docker/docker-compose-dhis2.yml ` configuration file.
 
-Replace your invocations of `docker-compose` by `docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml` you need to specify both config files. e.g to launch the cluster:
+Replace your invocations of `docker compose` by `docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml` you need to specify both config files. e.g to launch the cluster:
 ```
-docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
+docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
 ```
 
 The DHIS2 will be available on your computer on http://localhost:8080 and is reachable from Iaso as http://dhis2:8080. The login and password are admin / district. If you use it as an import source do not set a trailing /
@@ -208,20 +208,20 @@ Download the file, stop all the docker, remove the postgres database directory, 
 
 ```
 wget https://databases.dhis2.org/sierra-leone/2.36.4/dhis2-db-sierra-leone.sql.gz
-docker-compose down
+docker compose down
 sudo rm ../pgdata-dhis2 -r
-docker-compose up db_dhis2
-zcat dhis2-db-sierra-leone.sql.gz| docker-compose exec -T db_dhis2 psql -U dhis dhis2 -f /dev/stdin
-docker-compose up
+docker compose up db_dhis2
+zcat dhis2-db-sierra-leone.sql.gz| docker compose exec -T db_dhis2 psql -U dhis dhis2 -f /dev/stdin
+docker compose up
 cd Projects/blsq/iaso
-docker-compose up dhis2 db_dhis2
+docker compose up dhis2 db_dhis2
 ```
 
 ### 17. Set up Single Sign On (SSO) with a local DHIS2
 If you want to test the feature with your local dhis2 you can use the following step. This assume you are running everything in Docker containers
 
 0. Launch DHIS2 with iaso within docker compose
-`docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up`
+`docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up`
  With the default docker compose setup, iaso is on port 8081 and dhis2 on port 8081 on your machine
 1. These step assume you have loaded your DHIS2 with the play test data but it's not mandatory. To see how to do it, look at previous section
 2. Configure an Oauth client in DHIS2: open http://localhost:8080/dhis-web-settings/index.html#/oauth2
@@ -336,7 +336,7 @@ To do so:
  * place the repository in the parent repository of Iaso `../bluesquare-components/`
  * install the dependency for bluesquare-component by running npm install in its directory
  * set the environment variable `LIVE_COMPONENTS=true`
- * start your docker-compose
+ * start your docker compose
 
 ```
 cd ..
@@ -344,7 +344,7 @@ git clone git@github.com:BLSQ/bluesquare-components.git
 cd  bluesquare-components
 npm install
 cd ../iaso
-LIVE_COMPONENTS=true docker-compose up
+LIVE_COMPONENTS=true docker compose up
 ```
 
 This way the page will reload automatically if you make a change to the bluesquare-components code.
@@ -357,7 +357,7 @@ If you encounter any problem, first check that your repo is on the correct branc
 
 In local development, you can run a worker for background tasks by using the command:
 ```
-docker-compose run iaso manage tasks_worker
+docker compose run iaso manage tasks_worker
 ```
 
 Alternatively, you can call the url `tasks/run_all` which will run all the pending tasks in queue.

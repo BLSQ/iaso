@@ -213,5 +213,5 @@ This way doesn't require the task worker to be running.
 - Either use the preparedness sheet linked in the ticket, or generate a new one
 - If generating a new one: delete data in several cells
 - Call the url  `/tasks/launch_task/plugins.polio.tasks.weekly_email.send_email/polio_cron_task_user/`
-- in the terminal launch the task worker **tasks_worker**, run`docker-compose run iaso manage tasks_worker`
+- in the terminal launch the task worker **tasks_worker**, run`docker compose run iaso manage tasks_worker`
 - The output should show you an email with no errors (see screenshot). Such emails are printed out in the console, but not sent. If the list of errors is not empty, there's a bug in this PR.

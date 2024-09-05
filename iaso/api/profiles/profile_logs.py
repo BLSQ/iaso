@@ -19,6 +19,7 @@ from iaso.api.common import Paginator
 class ProfileLogsListPagination(Paginator):
     page_size = 20
 
+
 class ProfileLogsListFilter(django_filters.rest_framework.FilterSet):
     class Meta:
         model = Modification

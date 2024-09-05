@@ -1343,6 +1343,8 @@
     "iaso.users.exportMobileAppViewTasks": "La fermeture de cette fenêtre n'interrompt pas l'exportation du fichier. Vous pouvez trouver toutes les tâches et leur état d'avancement sur la page des tâches.",
     "iaso.users.filter.searchUser": "Rechercher un utilisateur",
     "iaso.users.history.labels.dateModified": "Date de modification",
+    "iaso.users.history.labels.modifiedAfter": "Modifié après",
+    "iaso.users.history.labels.modifiedBefore": "Modifié avant",
     "iaso.users.history.labels.newLocation": "Nouvelle localisation",
     "iaso.users.history.labels.pastLocation": "Ancienne localisation",
     "iaso.users.homePageInfos": "Copier/coller l'url après \"dashboard/\"",

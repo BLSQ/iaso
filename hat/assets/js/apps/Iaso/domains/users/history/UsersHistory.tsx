@@ -29,19 +29,13 @@ export const UsersHistory: FunctionComponent = () => {
                     marginTop={false}
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
-                    // defaultSorted={[{ id: 'user__last_name', desc: false }]}
                     columns={columns}
                     count={data?.count ?? 0}
                     baseUrl={baseUrls.usersHistory}
                     params={params}
                     extraProps={{ loading: isFetching }}
-                    // multiSelect
-                    // selection={selection}
-                    // selectionActions={[]}
-                    //  @ts-ignore
-                    // setTableSelection={(selectionType, items, totalCount) =>
-                    //     handleTableSelection(selectionType, items, totalCount)
-                    // }
+                    columnSelectorEnabled
+                    columnSelectorButtonType="button"
                 />
             </Box>
         </>

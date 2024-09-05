@@ -1344,6 +1344,8 @@
     "iaso.users.exportMobileAppViewTasks": "Closing this window does not interrupt the document export. You can find all tasks and their progress on the tasks page.",
     "iaso.users.filter.searchUser": "Search user",
     "iaso.users.history.labels.dateModified": "Date modified",
+    "iaso.users.history.labels.modifiedAfter": "Modified after",
+    "iaso.users.history.labels.modifiedBefore": "Modified before",
     "iaso.users.history.labels.newLocation": "New location",
     "iaso.users.history.labels.pastLocation": "Past location",
     "iaso.users.homePageInfos": "Copy/paste the url after \"dashboard/\"",

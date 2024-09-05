@@ -47,6 +47,7 @@ import { Details as WorkflowDetails } from '../domains/workflows/details';
 import { SHOW_PAGES } from '../utils/featureFlags';
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
+import { UsersHistory } from '../domains/users/history/UsersHistory';
 
 export type RoutePath = {
     baseUrl: string;
@@ -217,6 +218,13 @@ export const usersPath = {
     routerUrl: `${baseUrls.users}/*`,
     permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
     element: <Users />,
+};
+
+export const userHistoryPath = {
+    baseUrl: baseUrls.userHistory,
+    routerUrl: `${baseUrls.userHistory}/*`,
+    permissions: [Permission.USERS_ADMIN],
+    element: <UsersHistory />,
 };
 
 export const userRolesPath = {
@@ -413,6 +421,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     completenessPath,
     completenessStatsPath,
     usersPath,
+    userHistoryPath,
     userRolesPath,
     projectsPath,
     dataSourcesPath,

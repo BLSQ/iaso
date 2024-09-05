@@ -220,9 +220,9 @@ export const usersPath = {
     element: <Users />,
 };
 
-export const userHistoryPath = {
-    baseUrl: baseUrls.userHistory,
-    routerUrl: `${baseUrls.userHistory}/*`,
+export const usersHistoryPath = {
+    baseUrl: baseUrls.usersHistory,
+    routerUrl: `${baseUrls.usersHistory}/*`,
     permissions: [Permission.USERS_ADMIN],
     element: <UsersHistory />,
 };
@@ -421,7 +421,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     completenessPath,
     completenessStatsPath,
     usersPath,
-    userHistoryPath,
+    usersHistoryPath,
     userRolesPath,
     projectsPath,
     dataSourcesPath,

@@ -280,13 +280,15 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
-    userHistory: {
-        url: 'settings/userHistory',
+    usersHistory: {
+        url: 'settings/usersHistory',
         params: [
             'accountId',
             'org_unit_id',
             'modified_by',
             'user_ids',
+            'created_at_before',
+            'created_at_after',
             ...paginationPathParams,
         ],
     },
@@ -539,7 +541,7 @@ type IasoBaseUrls = {
     completenessStats: string;
     modules: string;
     users: string;
-    userHistory: string;
+    usersHistory: string;
     userRoles: string;
     projects: string;
     sources: string;

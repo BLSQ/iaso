@@ -294,8 +294,8 @@ const menuItems = (
                 },
                 {
                     label: formatMessage(MESSAGES.users),
-                    key: 'userHistory',
-                    permissions: paths.userHistoryPath.permissions,
+                    key: 'usersHistory',
+                    permissions: paths.usersHistoryPath.permissions,
                     icon: props => <HistoryIcon {...props} />,
                 },
                 {

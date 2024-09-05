@@ -14,6 +14,7 @@ from django.db.models.query import QuerySet
 from django.db.models import Q
 from django.conf import settings
 from iaso.api.common import Paginator
+from iaso.models.org_unit import OrgUnit
 
 
 class ProfileLogsListPagination(Paginator):
@@ -53,6 +54,12 @@ class ProfileLogsListFilter(django_filters.rest_framework.FilterSet):
         self.form.fields["created_at"].fields[-1].input_formats = settings.API_DATE_INPUT_FORMATS
 
 
+
+class NestedOrgUnitForListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name"]
+
 class NestedUserForListSerializer(serializers.ModelSerializer):
     user_id = serializers.SerializerMethodField(read_only=True)
 
@@ -91,13 +98,24 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
         past_value = modification.past_value
         if not past_value:
             return []
-        return past_value[0].get("org_units", [])
+        org_unit_ids = past_value[0].get("org_units", None)
+        if not org_unit_ids:
+            return []
+        org_units = OrgUnit.objects.filter(pk__in=org_unit_ids)
+        serializer =  NestedOrgUnitForListSerializer(org_units,many=True)
+        return serializer.data
 
     def get_new_location(self, modification):
         new_value = modification.new_value
         if not new_value:
             return []
-        return new_value[0].get("org_units", [])
+        org_unit_ids = new_value[0].get("org_units", None)
+        if not org_unit_ids:
+            return []
+        org_units = OrgUnit.objects.filter(pk__in=org_unit_ids)
+        serializer = NestedOrgUnitForListSerializer(org_units,many=True)
+    
+        return serializer.data
 
     def get_fields_modified(self, modification):
         # field_diffs doesn't work

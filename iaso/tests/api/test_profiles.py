@@ -93,7 +93,7 @@ PROFILE_LOG_SCHEMA = {
                     "language": {"type": ["string", "null"]},
                     "home_page": {"type": ["string", "null"]},
                     "projects": {"type": "array", "items": name_and_id_schema},
-                    "org_units": {"type": "array", "items": name_and_id_schema},
+                    "org_units": {"type": "array", "items": {"type": "number"}},
                     "user_roles": {"type": "array", "items": name_and_id_schema},
                     "phone_number": {"type": ["string", "null"]},
                 },

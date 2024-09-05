@@ -13,7 +13,11 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models.query import QuerySet
 from django.db.models import Q
 from django.conf import settings
+from iaso.api.common import Paginator
 
+
+class ProfileLogsListPagination(Paginator):
+    page_size = 20
 
 class ProfileLogsListFilter(django_filters.rest_framework.FilterSet):
     class Meta:
@@ -70,7 +74,7 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Modification
-        fields = ["user", "modified_by", "past_location", "new_location", "created_at"]
+        fields = ["user", "modified_by", "past_location", "new_location", "created_at", "fields_modified"]
 
     def get_modified_by(self, modification):
         return {"id": modification.user.iaso_profile.id, **NestedUserForListSerializer(modification.user).data}
@@ -96,7 +100,7 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
 
     def get_fields_modified(self, modification):
         # field_diffs doesn't work
-        pass
+        return []
 
 
 class ProfileLogRetrieveSerializer(serializers.ModelSerializer):
@@ -112,6 +116,7 @@ class ProfileLogsViewset(ModelViewSet):
         django_filters.rest_framework.DjangoFilterBackend,
     ]
     filterset_class = ProfileLogsListFilter
+    pagination_class = ProfileLogsListPagination
     # ordering_fields = [
     #     "name",
     #     "created_at",

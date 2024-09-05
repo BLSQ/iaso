@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import {
     CartesianGrid,
     Line,
@@ -11,14 +11,39 @@ import {
 import { Typography } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { getRequest } from 'Iaso/libs/Api';
 
-export const InstancesTotalGraph = () => {
-    const { data, isLoading } = useSnackQuery(['instances', 'stats_sum'], () =>
-        getRequest('/api/instances/stats_sum/'),
-    );
+type Data = {
+    index: number;
+    period: string;
+    value: number;
+    total: number;
+    name: string;
+}[];
 
+type Field = {
+    name: string;
+    type: string;
+    tz?: string;
+};
+
+type Schema = {
+    fields: Field[];
+    pandas_version: string;
+    primaryKey: string[];
+};
+
+type Props = {
+    data: {
+        data: Data;
+        schema: Schema;
+    };
+    isLoading: boolean;
+};
+
+export const InstancesTotalGraph: FunctionComponent<Props> = ({
+    data,
+    isLoading,
+}) => {
     return (
         <>
             <Typography variant="h5">

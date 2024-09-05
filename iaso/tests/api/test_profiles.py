@@ -64,7 +64,7 @@ PROFILE_LOG_SCHEMA = {
                     "language": {"type": ["string", "null"]},
                     "home_page": {"type": ["string", "null"]},
                     "projects": {"type": "array", "items": name_and_id_schema},
-                    "org_units": {"type": "array", "items": name_and_id_schema},
+                    "org_units": {"type": "array", "items": {"type": "number"}},
                     "user_roles": {"type": "array", "items": name_and_id_schema},
                     "phone_number": {"type": ["string", "null"]},
                 },
@@ -1135,7 +1135,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(new_profile["home_page"], data["home_page"])
         self.assertEquals(new_profile["phone_number"], f'+{data["phone_number"]}')
         self.assertEquals(len(new_profile["org_units"]), 1)
-        self.assertEquals(new_profile["org_units"][0]["id"], self.jedi_council_corruscant.id)
+        self.assertEquals(new_profile["org_units"][0], self.jedi_council_corruscant.id)
         self.assertEquals(len(new_profile["user_roles"]), 1)
         self.assertEquals(new_profile["user_roles"][0]["id"], self.user_role.id)
         self.assertEquals(len(new_profile["projects"]), 1)
@@ -1180,7 +1180,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(past_profile["home_page"], data["home_page"])
         self.assertEquals(past_profile["phone_number"], f'+{data["phone_number"]}')
         self.assertEquals(len(past_profile["org_units"]), 1)
-        self.assertEquals(past_profile["org_units"][0]["id"], self.jedi_council_corruscant.id)
+        self.assertEquals(past_profile["org_units"][0], self.jedi_council_corruscant.id)
         self.assertEquals(len(past_profile["user_roles"]), 1)
         self.assertEquals(past_profile["user_roles"][0]["id"], self.user_role.id)
         self.assertEquals(len(past_profile["projects"]), 1)
@@ -1254,7 +1254,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(past_value["home_page"], data["home_page"])
         self.assertEquals(past_value["phone_number"], f'+{data["phone_number"]}')
         self.assertEquals(len(past_value["org_units"]), 1)
-        self.assertEquals(past_value["org_units"][0]["id"], self.jedi_council_corruscant.id)
+        self.assertEquals(past_value["org_units"][0], self.jedi_council_corruscant.id)
         self.assertEquals(len(past_value["user_roles"]), 1)
         self.assertEquals(past_value["user_roles"][0]["id"], self.user_role.id)
         self.assertEquals(len(past_value["projects"]), 1)
@@ -1269,10 +1269,8 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(new_value["language"], new_data["language"])
         self.assertEquals(new_value["home_page"], new_data["home_page"])
         self.assertEquals(len(new_value["org_units"]), 2)
-        self.assertIn(
-            {"name": self.jedi_council_corruscant.name, "id": self.jedi_council_corruscant.id}, new_value["org_units"]
-        )
-        self.assertIn({"name": self.jedi_squad_1.name, "id": self.jedi_squad_1.id}, new_value["org_units"])
+        self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
+        self.assertIn(self.jedi_squad_1.id, new_value["org_units"])
         self.assertEquals(new_value["user_roles"], [])
 
     def test_log_on_user_updates_own_profile(self):

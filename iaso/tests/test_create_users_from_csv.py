@@ -621,5 +621,5 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEquals(new_value["language"], "fr")
         self.assertEquals(new_value["dhis2_id"], "dhis2_id_3")
         self.assertEquals(len(new_value["org_units"]), 2)
-        self.assertIn({"name": self.org_unit3.name, "id": self.org_unit3.id}, new_value["org_units"])
-        self.assertIn({"name": self.org_unit2.name, "id": self.org_unit2.id}, new_value["org_units"])
+        self.assertIn(self.org_unit3.id, new_value["org_units"])
+        self.assertIn(self.org_unit2.id, new_value["org_units"])

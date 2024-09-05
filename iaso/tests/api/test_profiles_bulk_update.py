@@ -798,7 +798,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             past_value["phone_number"], self.luke.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
         self.assertEquals(len(past_value["org_units"]), 1)
-        self.assertEquals(past_value["org_units"][0]["id"], self.jedi_council_endor.id)
+        self.assertEquals(past_value["org_units"][0], self.jedi_council_endor.id)
         self.assertEquals(len(past_value["user_roles"]), 1)
         self.assertEquals(past_value["user_roles"][0]["id"], self.user_role_2.id)
         self.assertEquals(len(past_value["projects"]), 1)
@@ -820,7 +820,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             past_value["phone_number"], self.luke.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
         self.assertEquals(len(new_value["org_units"]), 1)
-        self.assertEquals(new_value["org_units"][0]["id"], self.jedi_council_corruscant.id)
+        self.assertEquals(new_value["org_units"][0], self.jedi_council_corruscant.id)
         self.assertEquals(len(new_value["user_roles"]), 1)
         self.assertEquals(new_value["user_roles"][0]["id"], self.user_role.id)
         self.assertEquals(len(new_value["projects"]), 1)
@@ -855,7 +855,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             past_value["phone_number"], self.chewie.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
         self.assertEquals(len(past_value["org_units"]), 1)
-        self.assertEquals(past_value["org_units"][0]["id"], self.jedi_council_endor.id)
+        self.assertEquals(past_value["org_units"][0], self.jedi_council_endor.id)
         self.assertEquals(len(past_value["user_roles"]), 1)
         self.assertEquals(past_value["user_roles"][0]["id"], self.user_role_2.id)
         self.assertEquals(len(past_value["projects"]), 1)
@@ -873,11 +873,10 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEquals(new_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
         self.assertEquals(new_value["language"], "fr")
         self.assertEquals(new_value["home_page"], self.chewie.iaso_profile.home_page)
-        self.assertEquals(
-            past_value["phone_number"], self.chewie.iaso_profile.phone_number
-        )  # expected to be null/empty. If there was a value we should add a plus for the value logged
+        # expected to be null/empty. If there was a value we should add a plus for the value logged
+        self.assertEquals(past_value["phone_number"], self.chewie.iaso_profile.phone_number)
         self.assertEquals(len(new_value["org_units"]), 1)
-        self.assertEquals(new_value["org_units"][0]["id"], self.jedi_council_corruscant.id)
+        self.assertEquals(new_value["org_units"][0], self.jedi_council_corruscant.id)
         self.assertEquals(len(new_value["user_roles"]), 1)
         self.assertEquals(new_value["user_roles"][0]["id"], self.user_role.id)
         self.assertEquals(len(new_value["projects"]), 1)

@@ -7,12 +7,6 @@ from iaso.models.org_unit import OrgUnit
 from iaso.models.project import Project
 
 
-class NestedOrgUnitSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrgUnit
-        fields = ["id", "name"]
-
-
 class NestedProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
@@ -47,7 +41,6 @@ class ProfileAuditSerializer(serializers.ModelSerializer):
     user = NestedUserAuditSerializer()
     user_roles = NestedUserRoleSerializer(many=True)
     projects = NestedProjectSerializer(many=True)
-    org_units = NestedOrgUnitSerializer(many=True)
 
     class Meta:
         model = Profile

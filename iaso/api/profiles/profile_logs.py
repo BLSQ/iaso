@@ -159,20 +159,10 @@ class ProfileLogsViewset(ModelViewSet):
         request_user = self.request.user
 
         queryset = (
-            (
-                Modification.objects.select_related("user")
-                .filter(content_type__app_label="iaso")
-                .filter(content_type__model="profile")
-            )
+            Modification.objects.select_related("user")
+            .filter(content_type__app_label="iaso")
+            .filter(content_type__model="profile")
             .filter(user__iaso_profile__account=request_user.iaso_profile.account)
-            .annotate(
-                profile_id=Cast(F("object_id"), IntegerField()),
-                profile_name=Subquery(
-                    Profile.objects.select_related("user")
-                    .filter(id=OuterRef("profile_id"))
-                    .values("user__username")[:1]
-                ),
-            )
         )
 
         if "created_at" in order:
@@ -182,9 +172,9 @@ class ProfileLogsViewset(ModelViewSet):
         if order == "-modified_by":
             queryset = queryset.order_by("-user__username")
         if order == "user":
-            queryset = queryset.order_by("profile_name")
+            queryset = queryset.order_by("new_value__0__user__username")
         if order == "-user":
-            queryset = queryset.order_by("-profile_name")
+            queryset = queryset.order_by("-new_value__0__user__username")
 
         return queryset
 

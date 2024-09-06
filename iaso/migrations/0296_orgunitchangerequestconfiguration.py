@@ -60,7 +60,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "possible_group_sets",
+                    "group_sets",
                     models.ManyToManyField(
                         blank=True, related_name="org_unit_change_request_configurations", to="iaso.groupset"
                     ),

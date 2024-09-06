@@ -39,9 +39,7 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
     possible_parent_types = models.ManyToManyField(
         "OrgUnitType", related_name="org_unit_change_request_configurations_parent_level", blank=True
     )
-    possible_group_sets = models.ManyToManyField(
-        "GroupSet", related_name="org_unit_change_request_configurations", blank=True
-    )
+    group_sets = models.ManyToManyField("GroupSet", related_name="org_unit_change_request_configurations", blank=True)
     editable_reference_forms = models.ManyToManyField(
         "Form", related_name="org_unit_change_request_configurations", blank=True
     )
@@ -77,7 +75,6 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         "opening_date",
         "closed_date",
         "location",
-        "group_sets",  # not a direct OrgUnit attribute, available through the OU groups
         "parent_type",  # not a direct OrgUnit attribute, available through the parent OU
         "reference_forms",  # not a direct OrgUnit attribute, but initially available through OrgUnitType
         "other_groups",  # Groups which are not part of a GroupSet

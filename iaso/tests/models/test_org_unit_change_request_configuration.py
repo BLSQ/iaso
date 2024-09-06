@@ -80,7 +80,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
                 "aliases",
                 "parent_type",
                 "org_unit_type",
-                "group_sets",
+                "opening_date",
             ],
             "created_by": self.user_ash_ketchum,
         }
@@ -89,7 +89,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         oucrc.save()
         oucrc.possible_types.set([self.ou_type_fire_pokemons, self.ou_type_rock_pokemons])
         oucrc.possible_parent_types.set([self.ou_type_fire_pokemons, self.ou_type_water_pokemons])
-        oucrc.possible_group_sets.set([self.group_set_ash_pokemons, self.group_set_misty_pokemons])
+        oucrc.group_sets.set([self.group_set_ash_pokemons, self.group_set_misty_pokemons])
         oucrc.editable_reference_forms.set([self.form_ember, self.form_water_gun])
         oucrc.other_groups.set([self.other_group_1])
         oucrc.refresh_from_db()
@@ -107,9 +107,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         self.assertCountEqual(
             oucrc.possible_parent_types.all(), [self.ou_type_fire_pokemons, self.ou_type_water_pokemons]
         )
-        self.assertCountEqual(
-            oucrc.possible_group_sets.all(), [self.group_set_ash_pokemons, self.group_set_misty_pokemons]
-        )
+        self.assertCountEqual(oucrc.group_sets.all(), [self.group_set_ash_pokemons, self.group_set_misty_pokemons])
         self.assertCountEqual(oucrc.editable_reference_forms.all(), [self.form_ember, self.form_water_gun])
         self.assertCountEqual(oucrc.other_groups.all(), [self.other_group_1])
 
@@ -133,7 +131,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         self.assertCountEqual(oucrc.editable_fields, kwargs["editable_fields"])
         self.assertEqual(oucrc.created_by, self.user_misty)
         self.assertFalse(oucrc.possible_parent_types.exists())
-        self.assertFalse(oucrc.possible_group_sets.exists())
+        self.assertFalse(oucrc.group_sets.exists())
         self.assertFalse(oucrc.editable_reference_forms.exists())
         self.assertFalse(oucrc.other_groups.exists())
 
@@ -181,7 +179,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
             "uuid": str(random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_water_pokemons,
-            "editable_fields": ["name", "aliases", pikachu, "group_sets"],
+            "editable_fields": ["name", "aliases", pikachu, "other_groups"],
             "created_by": self.user_ash_ketchum,
         }
 

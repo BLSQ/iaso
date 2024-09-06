@@ -1,4 +1,8 @@
-import React, { IconButton, useSafeIntl } from 'bluesquare-components';
+import React, {
+    Expander,
+    IconButton,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { useMemo } from 'react';
 import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
@@ -65,21 +69,11 @@ export const useUsersHistoryColumns = () => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.actions),
-                id: 'action',
-                accessor: 'action',
-                sortable: false,
-                Cell: settings => {
-                    return (
-                        <IconButton
-                            icon="remove-red-eye"
-                            url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${settings.row.original.user.id}/potentialPaymentIds/${settings.row.original.id}`}
-                            tooltipMessage={
-                                MESSAGES.viewChangeRequestsForPotentialPayment // change text to payment lot
-                            }
-                        />
-                    );
-                },
+                Header: '', // This is to please the tS compiler
+                expander: true,
+                accessor: 'expander',
+                width: 65,
+                Expander,
             },
         ];
     }, [formatMessage]);

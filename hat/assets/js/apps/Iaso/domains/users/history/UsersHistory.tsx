@@ -9,6 +9,7 @@ import { UsersHistoryFilters } from './UsersHistoryFilters';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { useGetUsersHistory } from '../hooks/useGetUsersHistory';
 import { useUsersHistoryColumns } from './useUsersHistoryColumns';
+import { LogsDetails } from '../../orgUnits/history/LogsDetails';
 
 const tableDefaults = {
     page: 1,
@@ -41,9 +42,20 @@ export const UsersHistory: FunctionComponent = () => {
                     extraProps={{
                         loading: isFetching,
                         defaultPageSize: data?.limit ?? tableDefaults.limit,
+                        // eslint-disable-next-line react/no-unstable-nested-components
+                        SubComponent: log => {
+                            console.log('log', log);
+                            return log ? (
+                                <LogsDetails
+                                    logId={log.id}
+                                    goToRevision={() => null}
+                                    showButtons={false}
+                                />
+                            ) : null;
+                        },
                     }}
-                    columnSelectorEnabled
-                    columnSelectorButtonType="button"
+                    // columnSelectorEnabled
+                    // columnSelectorButtonType="button"
                 />
             </Box>
         </>

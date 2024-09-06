@@ -359,6 +359,38 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Phone number',
         id: 'iaso.users.phoneNumber',
     },
+    usersHistory: {
+        defaultMessage: 'Users history',
+        id: 'iaso.users.usersHistory',
+    },
+    modifiedBy: {
+        id: 'iaso.labels.modifiedBy',
+        defaultMessage: 'Modified by',
+    },
+    fieldsModified: {
+        id: 'iaso.labels.fieldsModified',
+        defaultMessage: 'Fields modified',
+    },
+    newLocation: {
+        id: 'iaso.users.history.labels.newLocation',
+        defaultMessage: 'New location',
+    },
+    pastLocation: {
+        id: 'iaso.users.history.labels.pastLocation',
+        defaultMessage: 'Past location',
+    },
+    dateModified: {
+        id: 'iaso.users.history.labels.dateModified',
+        defaultMessage: 'Date modified',
+    },
+    modifiedBefore: {
+        id: 'iaso.users.history.labels.modifiedBefore',
+        defaultMessage: 'Modified before',
+    },
+    modifiedAfter: {
+        id: 'iaso.users.history.labels.modifiedAfter',
+        defaultMessage: 'Modified after',
+    },
 });
 
 export default MESSAGES;

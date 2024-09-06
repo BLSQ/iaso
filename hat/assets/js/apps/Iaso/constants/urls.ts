@@ -120,13 +120,13 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     mappings: {
         url: 'forms/mappings',
         params: [
-            'accountId', 
-            'formId', 
+            'accountId',
+            'formId',
             'mappingTypes',
             'orgUnitTypeIds',
             'projectsIds',
-            'search', 
-            ...paginationPathParams
+            'search',
+            ...paginationPathParams,
         ],
     },
     mappingDetail: {
@@ -277,6 +277,18 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'projectsIds',
             'userRoles',
             'teamsIds',
+            ...paginationPathParams,
+        ],
+    },
+    usersHistory: {
+        url: 'settings/usersHistory',
+        params: [
+            'accountId',
+            'org_unit_id',
+            'modified_by',
+            'user_ids',
+            'created_at_before',
+            'created_at_after',
             ...paginationPathParams,
         ],
     },
@@ -529,6 +541,7 @@ type IasoBaseUrls = {
     completenessStats: string;
     modules: string;
     users: string;
+    usersHistory: string;
     userRoles: string;
     projects: string;
     sources: string;

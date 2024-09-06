@@ -22,11 +22,13 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     goToRevision: any;
     logId: string | number;
+    showButtons?: boolean;
 };
 
 export const LogsDetails: FunctionComponent<Props> = ({
     goToRevision,
     logId,
+    showButtons = false,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
@@ -44,6 +46,7 @@ export const LogsDetails: FunctionComponent<Props> = ({
                                     log={log.past_value}
                                     compareLog={log.new_value}
                                     goToRevision={goToRevision}
+                                    showButtons={showButtons}
                                 />
                             </Grid>
                             <Grid item xs={6}>
@@ -53,6 +56,7 @@ export const LogsDetails: FunctionComponent<Props> = ({
                                     compareLog={log.past_value}
                                     goToRevision={goToRevision}
                                     isNewValue
+                                    showButtons={showButtons}
                                 />
                             </Grid>
                         </Grid>

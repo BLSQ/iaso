@@ -16,6 +16,10 @@ from django.conf import settings
 from iaso.api.common import Paginator
 from iaso.models.org_unit import OrgUnit
 
+from django.db.models.functions import Cast
+from django.db.models import F, Func, Value, CharField, IntegerField, OuterRef, Subquery
+from django.db.models.functions import Coalesce
+
 
 class ProfileLogsListPagination(Paginator):
     page_size = 20
@@ -128,6 +132,13 @@ class ProfileLogRetrieveSerializer(serializers.ModelSerializer):
         fields = ["id", "created_at", "user", "source", "new_value", "past_value", "object_id", "content_type"]
 
 
+# Define a function to extract the username from the JSONField
+class JSONExtract(Func):
+    function = "JSONB_EXTRACT_PATH_TEXT"
+    template = "%(function)s(%(expressions)s)"
+    output_field = CharField()
+
+
 class ProfileLogsViewset(ModelViewSet):
     permission_classes = [HasPermission(permission.USERS_ADMIN)]
     filter_backends = [
@@ -136,14 +147,7 @@ class ProfileLogsViewset(ModelViewSet):
     ]
     filterset_class = ProfileLogsListFilter
     pagination_class = ProfileLogsListPagination
-    # ordering_fields = [
-    #     "name",
-    #     "created_at",
-    #     "created_by__username",
-    #     "status",
-    #     "change_requests_count",
-    #     "payments_count",
-    # ]
+    ordering_fields = ["created_at"]
 
     # ordering = ["updated_at"]
     # TODO custom ordering
@@ -151,11 +155,38 @@ class ProfileLogsViewset(ModelViewSet):
     http_method_names = ["get"]
 
     def get_queryset(self):
-        # TODO add further restrictions based in request user
-        query_set = Modification.objects.filter(content_type__app_label="iaso").filter(content_type__model="profile")
-        print("QUERYSET", query_set.count())
-        return query_set
-        # return Modification.objects.all()
+        order = self.request.query_params.get("order")
+        request_user = self.request.user
+
+        queryset = (
+            (
+                Modification.objects.select_related("user")
+                .filter(content_type__app_label="iaso")
+                .filter(content_type__model="profile")
+            )
+            .filter(user__iaso_profile__account=request_user.iaso_profile.account)
+            .annotate(
+                profile_id=Cast(F("object_id"), IntegerField()),
+                profile_name=Subquery(
+                    Profile.objects.select_related("user")
+                    .filter(id=OuterRef("profile_id"))
+                    .values("user__username")[:1]
+                ),
+            )
+        )
+
+        if "created_at" in order:
+            queryset = queryset.order_by(order)
+        if order == "modified_by":
+            queryset = queryset.order_by("user__username")
+        if order == "-modified_by":
+            queryset = queryset.order_by("-user__username")
+        if order == "user":
+            queryset = queryset.order_by("profile_name")
+        if order == "-user":
+            queryset = queryset.order_by("-profile_name")
+
+        return queryset
 
     def get_serializer_class(self):
         if hasattr(self, "action") and self.action == "list":

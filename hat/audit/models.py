@@ -54,7 +54,7 @@ class Modification(models.Model):
     past_value = models.JSONField(encoder=IasoJsonEncoder)
     new_value = models.JSONField(encoder=IasoJsonEncoder)
     source = models.TextField()
-    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

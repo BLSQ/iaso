@@ -133,7 +133,7 @@ class OrgUnitChangeRequestConfigurationRetrieveSerializer(serializers.ModelSeria
     org_units_editable = serializers.BooleanField()
     possible_types = OrgUnitTypeNestedSerializer(many=True)
     possible_parent_types = OrgUnitTypeNestedSerializer(many=True)
-    possible_group_sets = GroupSetNestedSerializer(many=True)
+    group_sets = GroupSetNestedSerializer(many=True)
     editable_reference_forms = FormNestedSerializer(many=True)
     other_groups = GroupNestedSerializer(many=True)
     created_by = UserNestedSerializer()
@@ -152,7 +152,7 @@ class OrgUnitChangeRequestConfigurationRetrieveSerializer(serializers.ModelSeria
             "editable_fields",
             "possible_types",
             "possible_parent_types",
-            "possible_group_sets",
+            "group_sets",
             "editable_reference_forms",
             "other_groups",
             "created_by",
@@ -177,8 +177,8 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(serializers.ModelSerializ
     possible_parent_type_ids = serializers.PrimaryKeyRelatedField(
         source="possible_parent_types", queryset=OrgUnitType.objects.all(), many=True, allow_empty=True, required=False
     )
-    possible_group_set_ids = serializers.PrimaryKeyRelatedField(
-        source="possible_group_sets", queryset=GroupSet.objects.all(), many=True, allow_empty=True, required=False
+    group_set_ids = serializers.PrimaryKeyRelatedField(
+        source="group_sets", queryset=GroupSet.objects.all(), many=True, allow_empty=True, required=False
     )
     editable_reference_form_ids = serializers.PrimaryKeyRelatedField(
         source="editable_reference_forms", queryset=Form.objects.all(), many=True, allow_empty=True, required=False
@@ -198,7 +198,7 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(serializers.ModelSerializ
             "editable_fields",
             "possible_type_ids",
             "possible_parent_type_ids",
-            "possible_group_set_ids",
+            "group_set_ids",
             "editable_reference_form_ids",
             "other_group_ids",
         ]

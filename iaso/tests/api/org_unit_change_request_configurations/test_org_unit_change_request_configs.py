@@ -97,7 +97,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         cls.oucrc_type_water.possible_types.set([cls.ou_type_water_pokemons, cls.ou_type_fire_pokemons])
         cls.oucrc_type_water.possible_parent_types.set([cls.ou_type_water_pokemons, cls.ou_type_rock_pokemons])
-        cls.oucrc_type_water.possible_group_sets.set([cls.group_set_misty_pokemons])
+        cls.oucrc_type_water.group_sets.set([cls.group_set_misty_pokemons])
         cls.oucrc_type_water.editable_reference_forms.set([cls.form_water_gun])
         cls.oucrc_type_water.other_groups.set([cls.other_group_1, cls.other_group_3])
 
@@ -144,11 +144,11 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertCountEqual(self.oucrc_type_water.editable_fields, result["editable_fields"])
         self.assertEqual(len(self.oucrc_type_water.possible_types.all()), len(result["possible_types"]))
         self.assertEqual(len(self.oucrc_type_water.possible_parent_types.all()), len(result["possible_parent_types"]))
-        self.assertEqual(len(self.oucrc_type_water.possible_group_sets.all()), len(result["possible_group_sets"]))
+        self.assertEqual(len(self.oucrc_type_water.group_sets.all()), len(result["group_sets"]))
         self.assertEqual(
             len(self.oucrc_type_water.editable_reference_forms.all()), len(result["editable_reference_forms"])
         )
-        self.assertEqual(len(self.oucrc_type_water.possible_group_sets.all()), len(result["possible_group_sets"]))
+        self.assertEqual(len(self.oucrc_type_water.group_sets.all()), len(result["group_sets"]))
         self.assertEqual(self.oucrc_type_water.created_by_id, result["created_by"]["id"])
         self.assertIsNone(self.oucrc_type_water.updated_by)
         self.assertEqual(self.oucrc_type_water.created_at.timestamp(), result["created_at"])
@@ -171,7 +171,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "editable_fields": ["name", "location", "aliases"],
             "possible_type_ids": [self.ou_type_rock_pokemons.id, self.ou_type_fire_pokemons.id],
             "possible_parent_type_ids": [self.ou_type_rock_pokemons.id, self.ou_type_water_pokemons.id],
-            "possible_group_set_ids": [self.group_set_brock_pokemons.id],
+            "group_set_ids": [self.group_set_brock_pokemons.id],
             "editable_reference_form_ids": [self.form_rock_throw.id],
             "other_group_ids": [self.other_group_1.id],
         }
@@ -188,7 +188,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertCountEqual(
             oucrc.possible_parent_types.values_list("id", flat=True), data["possible_parent_type_ids"]
         )
-        self.assertCountEqual(oucrc.possible_group_sets.values_list("id", flat=True), data["possible_group_set_ids"])
+        self.assertCountEqual(oucrc.group_sets.values_list("id", flat=True), data["group_set_ids"])
         self.assertCountEqual(
             oucrc.editable_reference_forms.values_list("id", flat=True), data["editable_reference_form_ids"]
         )
@@ -299,7 +299,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "project_id": self.project_johto.id,
             "org_unit_type_id": new_ou_type.id,
             "org_units_editable": False,
-            "editable_fields": ["group_sets", "reference_forms", pikachu],
+            "editable_fields": ["aliases", "reference_forms", pikachu],
         }
         response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
         self.assertContains(
@@ -336,7 +336,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertIn("possible_parent_type_ids", response.data)
         self.assertEqual("does_not_exist", response.data["possible_parent_type_ids"][0].code)
 
-    def test_create_invalid_possible_group_set_ids(self):
+    def test_create_invalid_group_set_ids(self):
         self.client.force_authenticate(self.user_misty)
         new_ou_type = m.OrgUnitType.objects.create(name="new ou type")
         probably_not_a_valid_id = 1234567890
@@ -344,12 +344,12 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "project_id": self.project_johto.id,
             "org_unit_type_id": new_ou_type.id,
             "org_units_editable": False,
-            "possible_group_set_ids": [probably_not_a_valid_id],
+            "group_set_ids": [probably_not_a_valid_id],
         }
         response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
         self.assertContains(response, f"Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
-        self.assertIn("possible_group_set_ids", response.data)
-        self.assertEqual("does_not_exist", response.data["possible_group_set_ids"][0].code)
+        self.assertIn("group_set_ids", response.data)
+        self.assertEqual("does_not_exist", response.data["group_set_ids"][0].code)
 
     def test_create_invalid_editable_reference_form_ids(self):
         self.client.force_authenticate(self.user_brock)

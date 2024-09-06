@@ -1,4 +1,4 @@
-import { useSafeIntl } from 'bluesquare-components';
+import React, { IconButton, useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
 import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
@@ -62,6 +62,23 @@ export const useUsersHistoryColumns = () => {
                 accessor: 'modified_by',
                 Cell: settings => {
                     return getDisplayName(settings.row.original.modified_by);
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                id: 'action',
+                accessor: 'action',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <IconButton
+                            icon="remove-red-eye"
+                            url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${settings.row.original.user.id}/potentialPaymentIds/${settings.row.original.id}`}
+                            tooltipMessage={
+                                MESSAGES.viewChangeRequestsForPotentialPayment // change text to payment lot
+                            }
+                        />
+                    );
                 },
             },
         ];

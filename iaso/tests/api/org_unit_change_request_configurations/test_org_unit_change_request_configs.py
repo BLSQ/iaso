@@ -168,7 +168,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "project_id": self.project_johto.id,
             "org_unit_type_id": new_ou_type.id,
             "org_units_editable": False,
-            "editable_fields": ["name", "location", "aliases"],
+            "editable_fields": m.OrgUnitChangeRequestConfiguration.LIST_OF_POSSIBLE_EDITABLE_FIELDS,
             "possible_type_ids": [self.ou_type_rock_pokemons.id, self.ou_type_fire_pokemons.id],
             "possible_parent_type_ids": [self.ou_type_rock_pokemons.id, self.ou_type_water_pokemons.id],
             "group_set_ids": [self.group_set_brock_pokemons.id],
@@ -299,7 +299,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "project_id": self.project_johto.id,
             "org_unit_type_id": new_ou_type.id,
             "org_units_editable": False,
-            "editable_fields": ["aliases", "reference_forms", pikachu],
+            "editable_fields": ["aliases", "name", pikachu],
         }
         response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
         self.assertContains(

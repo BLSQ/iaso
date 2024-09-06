@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                         base_field=models.CharField(blank=True, max_length=30),
                         blank=True,
                         default=list,
-                        help_text="List of fields that can edited in an OrgUnit",
+                        help_text="List of fields that can be edited in an OrgUnit",
                         size=None,
                     ),
                 ),

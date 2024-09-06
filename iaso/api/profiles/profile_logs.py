@@ -86,7 +86,7 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Modification
-        fields = ["user", "modified_by", "past_location", "new_location", "created_at", "fields_modified"]
+        fields = ["id", "user", "modified_by", "past_location", "new_location", "created_at", "fields_modified"]
 
     def get_modified_by(self, modification):
         return {"id": modification.user.iaso_profile.id, **NestedUserForListSerializer(modification.user).data}
@@ -155,7 +155,7 @@ class ProfileLogsViewset(ModelViewSet):
     http_method_names = ["get"]
 
     def get_queryset(self):
-        order = self.request.query_params.get("order")
+        order = self.request.query_params.get("order", "-created_at")
         request_user = self.request.user
 
         queryset = (

@@ -253,7 +253,9 @@ API used to list all Change Request configurations for the mobile app.
       "possible_parent_types": ["Array<Int> - List of possible OrgUnit Type IDs that are allowed as new parent for this OrgUnit Type"],
       "group_sets": ["Array<Int> - List of GroupSet IDs for this OrgUnit Type"],
       "editable_reference_forms": ["Array<Int> - List of reference Form ID that can be modified"],
-      "other_groups": ["Array<Int> - List of other Group IDs for this OrgUnit Type"]
+      "other_groups": ["Array<Int> - List of other Group IDs for this OrgUnit Type"],
+      "created_at": "Timestamp",
+      "updated_at": "Timestamp"
     }
   ]
 }

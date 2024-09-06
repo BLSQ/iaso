@@ -78,8 +78,6 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
             "editable_fields": [
                 "name",
                 "aliases",
-                "parent_type",
-                "org_unit_type",
                 "opening_date",
             ],
             "created_by": self.user_ash_ketchum,
@@ -179,7 +177,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
             "uuid": str(random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_water_pokemons,
-            "editable_fields": ["name", "aliases", pikachu, "other_groups"],
+            "editable_fields": ["name", "aliases", pikachu],
             "created_by": self.user_ash_ketchum,
         }
 

@@ -35,7 +35,7 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
             .prefetch_related(
                 "possible_types",
                 "possible_parent_types",
-                "possible_group_sets",
+                "group_sets",
                 "editable_reference_forms",
                 "other_groups",
             )

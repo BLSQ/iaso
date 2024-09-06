@@ -68,16 +68,14 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         OrgUnitChangeRequestConfigurationQuerySet
     )()
 
+    # Only the non-relationship fields since an ID present in any relationship
+    # means that the field is editable by the user
     LIST_OF_POSSIBLE_EDITABLE_FIELDS = [
         "name",
         "aliases",
-        "org_unit_type",
         "opening_date",
         "closed_date",
         "location",
-        "parent_type",  # not a direct OrgUnit attribute, available through the parent OU
-        "reference_forms",  # not a direct OrgUnit attribute, but initially available through OrgUnitType
-        "other_groups",  # Groups which are not part of a GroupSet
     ]
 
     class Meta:

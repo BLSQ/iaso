@@ -26,6 +26,7 @@ export const useUsersHistoryColumns = () => {
                 Header: formatMessage(MESSAGES.pastLocation),
                 id: 'past_location',
                 accessor: 'past_location',
+                sortable: false,
                 // TODO handle text overflow
                 Cell: settings => {
                     // type definition not flexible enough
@@ -39,6 +40,7 @@ export const useUsersHistoryColumns = () => {
                 Header: formatMessage(MESSAGES.newLocation),
                 id: 'new_location',
                 accessor: 'new_location',
+                sortable: false,
                 // TODO handle text overflow
                 Cell: settings => {
                     // type definition not flexible enough
@@ -52,6 +54,7 @@ export const useUsersHistoryColumns = () => {
                 Header: formatMessage(MESSAGES.fieldsModified),
                 id: 'fields_modified',
                 accessor: 'fields_modified',
+                sortable: false,
             },
             {
                 Header: formatMessage(MESSAGES.modifiedBy),

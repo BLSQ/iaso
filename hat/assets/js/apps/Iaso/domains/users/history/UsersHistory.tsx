@@ -10,13 +10,18 @@ import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink'
 import { useGetUsersHistory } from '../hooks/useGetUsersHistory';
 import { useUsersHistoryColumns } from './useUsersHistoryColumns';
 
+const tableDefaults = {
+    page: 1,
+    limit: 20,
+    order: '-created_at',
+};
+
 export const UsersHistory: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.usersHistory);
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const columns = useUsersHistoryColumns();
     const { data, isFetching } = useGetUsersHistory(params);
-
     return (
         <>
             <TopBar
@@ -33,7 +38,10 @@ export const UsersHistory: FunctionComponent = () => {
                     count={data?.count ?? 0}
                     baseUrl={baseUrls.usersHistory}
                     params={params}
-                    extraProps={{ loading: isFetching }}
+                    extraProps={{
+                        loading: isFetching,
+                        defaultPageSize: data?.limit ?? tableDefaults.limit,
+                    }}
                     columnSelectorEnabled
                     columnSelectorButtonType="button"
                 />

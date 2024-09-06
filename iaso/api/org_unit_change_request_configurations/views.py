@@ -24,7 +24,7 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
         "updated_by__username",
     ]
     # http_method_names = ["get", "options", "patch", "post", "head", "trace"]
-    http_method_names = ["get", "options", "post"]
+    http_method_names = ["get", "post", "options", "trace", "head"]
     pagination_class = OrgUnitChangeRequestConfigurationPagination
 
     def get_queryset(self):

@@ -31,7 +31,7 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         models.CharField(max_length=30, blank=True),
         default=list,
         blank=True,
-        help_text="List of fields that can edited in an OrgUnit",
+        help_text="List of fields that can be edited in an OrgUnit",
     )
     possible_types = models.ManyToManyField(
         "OrgUnitType", related_name="org_unit_change_request_configurations_same_level", blank=True

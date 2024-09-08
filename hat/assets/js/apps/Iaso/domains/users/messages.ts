@@ -391,6 +391,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.history.labels.modifiedAfter',
         defaultMessage: 'Modified after',
     },
+    before: {
+        id: 'iaso.label.before',
+        defaultMessage: 'Before',
+    },
+    after: {
+        id: 'iaso.label.after',
+        defaultMessage: 'After',
+    },
+    created: {
+        id: 'iaso.label.created',
+        defaultMessage: 'Creation',
+    },
 });
 
 export default MESSAGES;

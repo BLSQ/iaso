@@ -9,7 +9,7 @@ import { UsersHistoryFilters } from './UsersHistoryFilters';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { useGetUsersHistory } from '../hooks/useGetUsersHistory';
 import { useUsersHistoryColumns } from './useUsersHistoryColumns';
-import { LogsDetails } from '../../orgUnits/history/LogsDetails';
+import { UserHistoryLogDetails } from './UserHistoryLogDetails';
 
 const tableDefaults = {
     page: 1,
@@ -44,13 +44,8 @@ export const UsersHistory: FunctionComponent = () => {
                         defaultPageSize: data?.limit ?? tableDefaults.limit,
                         // eslint-disable-next-line react/no-unstable-nested-components
                         SubComponent: log => {
-                            console.log('log', log);
                             return log ? (
-                                <LogsDetails
-                                    logId={log.id}
-                                    goToRevision={() => null}
-                                    showButtons={false}
-                                />
+                                <UserHistoryLogDetails logId={log.id} />
                             ) : null;
                         },
                     }}

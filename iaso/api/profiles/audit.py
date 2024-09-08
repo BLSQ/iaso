@@ -8,7 +8,6 @@ from iaso.models.project import Project
 from django.utils import timezone
 
 
-
 class NestedOrgUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnit
@@ -47,8 +46,9 @@ class NestedUserAuditSerializer(serializers.ModelSerializer):
         return [permission.codename for permission in user.user_permissions.all()]
 
     # TODO delete this method when user soft delete is implemented
-    def get_deleted_at(self,user):
+    def get_deleted_at(self, user):
         return None
+
 
 class ProfileAuditSerializer(serializers.ModelSerializer):
     user = NestedUserAuditSerializer()
@@ -60,11 +60,22 @@ class ProfileAuditSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ["language", "user", "user_roles", "projects", "phone_number", "dhis2_id", "org_units", "home_page", "deleted_at"]
-    
+        fields = [
+            "language",
+            "user",
+            "user_roles",
+            "projects",
+            "phone_number",
+            "dhis2_id",
+            "org_units",
+            "home_page",
+            "deleted_at",
+        ]
+
     # TODO delete this method when user soft delete is implemented
-    def get_deleted_at(self,profile):
+    def get_deleted_at(self, profile):
         return None
+
 
 class ProfileAuditLogger(AuditLogger):
     serializer = ProfileAuditSerializer
@@ -96,11 +107,11 @@ class ProfileAuditLogger(AuditLogger):
         del past_value[0]["user"]["password"]
         new_value = self.serialize_instance(instance)
         del new_value[0]["user"]["password"]
-        now = timezone.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-        new_value[0]["user"]["deleted_at"]=now
-        new_value[0]["deleted_at"]=now
+        now = timezone.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        new_value[0]["user"]["deleted_at"] = now
+        new_value[0]["deleted_at"] = now
         new_value[0]["user"]["password_updated"] = False
-       
+
         Modification.objects.create(
             user=request_user,
             past_value=past_value,

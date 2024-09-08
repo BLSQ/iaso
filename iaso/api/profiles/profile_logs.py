@@ -117,9 +117,10 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
         past_value = modification.past_value
         if not past_value:
             return []
-        org_unit_ids = past_value[0].get("org_units", None)
-        if not org_unit_ids:
+        past_org_units = past_value[0].get("org_units", None)
+        if not past_org_units:
             return []
+        org_unit_ids = [ou.id for ou in past_org_units]
         org_units = OrgUnit.objects.filter(pk__in=org_unit_ids)
         serializer = NestedOrgUnitForListSerializer(org_units, many=True)
         return serializer.data
@@ -128,9 +129,10 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
         new_value = modification.new_value
         if not new_value:
             return []
-        org_unit_ids = new_value[0].get("org_units", None)
-        if not org_unit_ids:
+        new_org_units = new_value[0].get("org_units", None)
+        if not new_org_units:
             return []
+        org_unit_ids = [ou.id for ou in new_org_units]
         org_units = OrgUnit.objects.filter(pk__in=org_unit_ids)
         serializer = NestedOrgUnitForListSerializer(org_units, many=True)
 

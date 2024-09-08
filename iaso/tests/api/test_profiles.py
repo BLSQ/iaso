@@ -48,29 +48,36 @@ PROFILE_LOG_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "user": {
+                    "pk": {"type": "number"},
+                    "fields": {
                         "type": "object",
                         "properties": {
-                            "id": {"type": "number"},
-                            "first_name": {"type": ["string", "null"]},
-                            "last_name": {"type": ["string", "null"]},
-                            "username": {"type": ["string", "null"]},
-                            "email": {"type": ["string", "null"]},
-                            "user_permissions": {"type": "array", "items": {"type": "string"}},
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {"type": "number"},
+                                    "first_name": {"type": ["string", "null"]},
+                                    "last_name": {"type": ["string", "null"]},
+                                    "username": {"type": ["string", "null"]},
+                                    "email": {"type": ["string", "null"]},
+                                    "user_permissions": {"type": "array", "items": {"type": "string"}},
+                                    "deleted_at": {"type": ["string", "null"]},
+                                },
+                                "required": ["id", "username"],
+                            },
+                            "account": {"type": "number"},
+                            "dhis2_id": {"type": ["string", "null"]},
+                            "language": {"type": ["string", "null"]},
+                            "home_page": {"type": ["string", "null"]},
+                            "projects": {"type": "array", "items": {"type": "number"}},
+                            "org_units": {"type": "array", "items": {"type": "number"}},
+                            "user_roles": {"type": "array", "items": {"type": "number"}},
+                            "phone_number": {"type": ["string", "null"]},
                             "deleted_at": {"type": ["string", "null"]},
                         },
-                        "required": ["id", "username"],
+                        "required": ["user"],
                     },
-                    "dhis2_id": {"type": ["string", "null"]},
-                    "language": {"type": ["string", "null"]},
-                    "home_page": {"type": ["string", "null"]},
-                    "projects": {"type": "array", "items": name_and_id_schema},
-                    "org_units": {"type": "array", "items": name_and_id_schema},
-                    "user_roles": {"type": "array", "items": name_and_id_schema},
-                    "phone_number": {"type": ["string", "null"]},
-                    "deleted_at": {"type": ["string", "null"]},
                 },
-                "required": ["user"],
             },
         },
         "new_value": {
@@ -78,30 +85,37 @@ PROFILE_LOG_SCHEMA = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "user": {
+                    "pk": {"type": "number"},
+                    "fields": {
                         "type": "object",
                         "properties": {
-                            "id": {"type": "number"},
-                            "first_name": {"type": ["string", "null"]},
-                            "last_name": {"type": ["string", "null"]},
-                            "username": {"type": "string"},
-                            "email": {"type": ["string", "null"]},
-                            "user_permissions": {"type": "array", "items": {"type": "string"}},
-                            "password_updated": {"type": "boolean"},
+                            "user": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {"type": "number"},
+                                    "first_name": {"type": ["string", "null"]},
+                                    "last_name": {"type": ["string", "null"]},
+                                    "username": {"type": ["string", "null"]},
+                                    "email": {"type": ["string", "null"]},
+                                    "user_permissions": {"type": "array", "items": {"type": "string"}},
+                                    "password_updated": {"type": "boolean"},
+                                    "deleted_at": {"type": ["string", "null"]},
+                                },
+                                "required": ["id", "username"],
+                            },
+                            "account": {"type": "number"},
+                            "dhis2_id": {"type": ["string", "null"]},
+                            "language": {"type": ["string", "null"]},
+                            "home_page": {"type": ["string", "null"]},
+                            "projects": {"type": "array", "items": {"type": "number"}},
+                            "org_units": {"type": "array", "items": {"type": "number"}},
+                            "user_roles": {"type": "array", "items": {"type": "number"}},
+                            "phone_number": {"type": ["string", "null"]},
                             "deleted_at": {"type": ["string", "null"]},
                         },
-                        "required": ["id", "username", "password_updated"],
+                        "required": ["user"],
                     },
-                    "dhis2_id": {"type": ["string", "null"]},
-                    "language": {"type": ["string", "null"]},
-                    "home_page": {"type": ["string", "null"]},
-                    "projects": {"type": "array", "items": name_and_id_schema},
-                    "org_units": {"type": "array", "items": name_and_id_schema},
-                    "user_roles": {"type": "array", "items": name_and_id_schema},
-                    "phone_number": {"type": ["string", "null"]},
-                    "deleted_at": {"type": ["string", "null"]},
                 },
-                "required": ["user"],
             },
         },
     },
@@ -1123,7 +1137,7 @@ class ProfileAPITestCase(APITestCase):
             self.fail(msg=str(ex))
 
         self.assertEquals(log["past_value"], [])
-        new_profile = log["new_value"][0]
+        new_profile = log["new_value"][0]["fields"]
         new_user = new_profile["user"]
         self.assertEquals(new_user["id"], new_user_id)
         self.assertEquals(new_user["username"], data["user_name"])
@@ -1139,11 +1153,11 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(new_profile["home_page"], data["home_page"])
         self.assertEquals(new_profile["phone_number"], f'+{data["phone_number"]}')
         self.assertEquals(len(new_profile["org_units"]), 1)
-        self.assertEquals(new_profile["org_units"][0]["id"], self.jedi_council_corruscant.id)
+        self.assertIn(self.jedi_council_corruscant.id, new_profile["org_units"])
         self.assertEquals(len(new_profile["user_roles"]), 1)
-        self.assertEquals(new_profile["user_roles"][0]["id"], self.user_role.id)
+        self.assertIn(self.user_role.id, new_profile["user_roles"])
         self.assertEquals(len(new_profile["projects"]), 1)
-        self.assertEquals(new_profile["projects"][0]["id"], self.project.id)
+        self.assertIn(self.project.id, new_profile["projects"])
 
     def test_log_on_user_delete(self):
         self.client.force_authenticate(self.john)
@@ -1168,7 +1182,7 @@ class ProfileAPITestCase(APITestCase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
-        new_profile = log["new_value"][0]
+        new_profile = log["new_value"][0]["fields"]
         new_user = new_profile["user"]
         self.assertEquals(new_user["id"], new_user_id)
         self.assertEquals(new_user["username"], data["user_name"])
@@ -1185,14 +1199,14 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(new_profile["home_page"], data["home_page"])
         self.assertEquals(new_profile["phone_number"], f'+{data["phone_number"]}')
         self.assertEquals(len(new_profile["org_units"]), 1)
-        self.assertEquals(new_profile["org_units"][0]["id"], self.jedi_council_corruscant.id)
+        self.assertIn(self.jedi_council_corruscant.id, new_profile["org_units"])
         self.assertEquals(len(new_profile["user_roles"]), 1)
-        self.assertEquals(new_profile["user_roles"][0]["id"], self.user_role.id)
+        self.assertIn(self.user_role.id, new_profile["user_roles"])
         self.assertEquals(len(new_profile["projects"]), 1)
-        self.assertEquals(new_profile["projects"][0]["id"], self.project.id)
+        self.assertIn(self.project.id, new_profile["projects"])
         self.assertIsNotNone(new_profile["deleted_at"])
 
-        past_profile = log["past_value"][0]
+        past_profile = log["past_value"][0]["fields"]
         past_user = past_profile["user"]
         self.assertEquals(past_user["id"], new_user_id)
         self.assertEquals(past_user["username"], data["user_name"])
@@ -1208,11 +1222,11 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(past_profile["home_page"], data["home_page"])
         self.assertEquals(past_profile["phone_number"], f'+{data["phone_number"]}')
         self.assertEquals(len(past_profile["org_units"]), 1)
-        self.assertEquals(past_profile["org_units"][0]["id"], self.jedi_council_corruscant.id)
+        self.assertIn(self.jedi_council_corruscant.id, past_profile["org_units"])
         self.assertEquals(len(past_profile["user_roles"]), 1)
-        self.assertEquals(past_profile["user_roles"][0]["id"], self.user_role.id)
+        self.assertIn(self.user_role.id, past_profile["user_roles"])
         self.assertEquals(len(past_profile["projects"]), 1)
-        self.assertEquals(past_profile["projects"][0]["id"], self.project.id)
+        self.assertIn(self.project.id, past_profile["projects"])
         self.assertIsNone(past_profile["deleted_at"])
 
     def test_log_on_user_update(self):
@@ -1268,7 +1282,7 @@ class ProfileAPITestCase(APITestCase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
-        past_value = log["past_value"][0]
+        past_value = log["past_value"][0]["fields"]
         past_user = past_value["user"]
         self.assertEquals(past_user["id"], new_user_id)
         self.assertEquals(past_user["username"], data["user_name"])
@@ -1283,13 +1297,16 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(past_value["home_page"], data["home_page"])
         self.assertEquals(past_value["phone_number"], f'+{data["phone_number"]}')
         self.assertEquals(len(past_value["org_units"]), 1)
-        self.assertEquals(past_value["org_units"][0]["id"], self.jedi_council_corruscant.id)
+        self.assertIn(
+            self.jedi_council_corruscant.id,
+            past_value["org_units"],
+        )
         self.assertEquals(len(past_value["user_roles"]), 1)
-        self.assertEquals(past_value["user_roles"][0]["id"], self.user_role.id)
+        self.assertIn(self.user_role.id, past_value["user_roles"])
         self.assertEquals(len(past_value["projects"]), 1)
-        self.assertEquals(past_value["projects"][0]["id"], self.project.id)
+        self.assertIn(self.project.id, past_value["projects"])
 
-        new_value = log["new_value"][0]
+        new_value = log["new_value"][0]["fields"]
         new_user = new_value["user"]
         self.assertTrue(new_user["password_updated"])
         self.assertEquals(len(new_user["user_permissions"]), 2)
@@ -1298,10 +1315,8 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(new_value["language"], new_data["language"])
         self.assertEquals(new_value["home_page"], new_data["home_page"])
         self.assertEquals(len(new_value["org_units"]), 2)
-        self.assertIn(
-            {"name": self.jedi_council_corruscant.name, "id": self.jedi_council_corruscant.id}, new_value["org_units"]
-        )
-        self.assertIn({"name": self.jedi_squad_1.name, "id": self.jedi_squad_1.id}, new_value["org_units"])
+        self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
+        self.assertIn(self.jedi_squad_1.id, new_value["org_units"])
         self.assertEquals(new_value["user_roles"], [])
 
     def test_log_on_user_updates_own_profile(self):
@@ -1323,14 +1338,14 @@ class ProfileAPITestCase(APITestCase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
-        past_value = log["past_value"][0]
+        past_value = log["past_value"][0]["fields"]
         past_user = past_value["user"]
         self.assertEquals(past_user["id"], self.jim.id)
         self.assertEquals(past_user["username"], self.jim.username)
         self.assertEquals(past_user["first_name"], "")
         self.assertEquals(past_value["language"], None)
 
-        new_value = log["new_value"][0]
+        new_value = log["new_value"][0]["fields"]
         new_user = new_value["user"]
         self.assertEquals(new_user["id"], self.jim.id)
         self.assertEquals(new_user["username"], self.jim.username)

@@ -121,7 +121,7 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
         if not past_org_units:
             return []
         # If there's no OU id, it means it's an old log that only saved the id
-        org_unit_ids = [ou.get("id",ou) for ou in past_org_units]
+        org_unit_ids = [ou.get("id", ou) for ou in past_org_units]
         org_units = OrgUnit.objects.filter(pk__in=org_unit_ids)
         serializer = NestedOrgUnitForListSerializer(org_units, many=True)
         return serializer.data
@@ -134,7 +134,7 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
         if not new_org_units:
             return []
         # If there's no OU id, it means it's an old log that only saved the id
-        org_unit_ids = [ou.get("id",ou) for ou in new_org_units]
+        org_unit_ids = [ou.get("id", ou) for ou in new_org_units]
         org_units = OrgUnit.objects.filter(pk__in=org_unit_ids)
         serializer = NestedOrgUnitForListSerializer(org_units, many=True)
 

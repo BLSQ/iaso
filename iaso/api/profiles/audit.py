@@ -5,6 +5,8 @@ from hat.audit.models import PROFILE_API, Modification
 from iaso.models.base import Profile, UserRole
 from iaso.models.org_unit import OrgUnit
 from iaso.models.project import Project
+from django.utils import timezone
+
 
 
 class NestedOrgUnitSerializer(serializers.ModelSerializer):
@@ -32,27 +34,37 @@ class NestedUserRoleSerializer(serializers.ModelSerializer):
 
 class NestedUserAuditSerializer(serializers.ModelSerializer):
     user_permissions = serializers.SerializerMethodField()
+    # TODO remopve this line when soft delete implemented
+    deleted_at = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         # We're serializing the password to be able to determine if it has been changed. but we remove them before saving the log itself
         # DO NOT reuse this serializer if you're going to send the payload to the front-end
-        fields = ["id", "username", "first_name", "last_name", "email", "user_permissions", "password"]
+        fields = ["id", "username", "first_name", "last_name", "email", "user_permissions", "password", "deleted_at"]
 
     def get_user_permissions(self, user):
         return [permission.codename for permission in user.user_permissions.all()]
 
+    # TODO delete this method when user soft delete is implemented
+    def get_deleted_at(self,user):
+        return None
 
 class ProfileAuditSerializer(serializers.ModelSerializer):
     user = NestedUserAuditSerializer()
     user_roles = NestedUserRoleSerializer(many=True)
     projects = NestedProjectSerializer(many=True)
     org_units = NestedOrgUnitSerializer(many=True)
+    # TODO remopve this line when soft delete implemented
+    deleted_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
-        fields = ["language", "user", "user_roles", "projects", "phone_number", "dhis2_id", "org_units", "home_page"]
-
+        fields = ["language", "user", "user_roles", "projects", "phone_number", "dhis2_id", "org_units", "home_page", "deleted_at"]
+    
+    # TODO delete this method when user soft delete is implemented
+    def get_deleted_at(self,profile):
+        return None
 
 class ProfileAuditLogger(AuditLogger):
     serializer = ProfileAuditSerializer
@@ -82,10 +94,17 @@ class ProfileAuditLogger(AuditLogger):
         source = source if source else self.default_source
         past_value = self.serialize_instance(instance)
         del past_value[0]["user"]["password"]
+        new_value = self.serialize_instance(instance)
+        del new_value[0]["user"]["password"]
+        now = timezone.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+        new_value[0]["user"]["deleted_at"]=now
+        new_value[0]["deleted_at"]=now
+        new_value[0]["user"]["password_updated"] = False
+       
         Modification.objects.create(
             user=request_user,
             past_value=past_value,
-            new_value=[],
+            new_value=new_value,
             content_object=instance,
             source=source,
         )

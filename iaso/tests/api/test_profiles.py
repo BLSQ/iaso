@@ -57,6 +57,7 @@ PROFILE_LOG_SCHEMA = {
                             "username": {"type": ["string", "null"]},
                             "email": {"type": ["string", "null"]},
                             "user_permissions": {"type": "array", "items": {"type": "string"}},
+                            "deleted_at": {"type": ["string", "null"]},
                         },
                         "required": ["id", "username"],
                     },
@@ -67,6 +68,7 @@ PROFILE_LOG_SCHEMA = {
                     "org_units": {"type": "array", "items": name_and_id_schema},
                     "user_roles": {"type": "array", "items": name_and_id_schema},
                     "phone_number": {"type": ["string", "null"]},
+                    "deleted_at": {"type": ["string", "null"]},
                 },
                 "required": ["user"],
             },
@@ -86,6 +88,7 @@ PROFILE_LOG_SCHEMA = {
                             "email": {"type": ["string", "null"]},
                             "user_permissions": {"type": "array", "items": {"type": "string"}},
                             "password_updated": {"type": "boolean"},
+                            "deleted_at": {"type": ["string", "null"]},
                         },
                         "required": ["id", "username", "password_updated"],
                     },
@@ -96,6 +99,7 @@ PROFILE_LOG_SCHEMA = {
                     "org_units": {"type": "array", "items": name_and_id_schema},
                     "user_roles": {"type": "array", "items": name_and_id_schema},
                     "phone_number": {"type": ["string", "null"]},
+                    "deleted_at": {"type": ["string", "null"]},
                 },
                 "required": ["user"],
             },
@@ -1164,7 +1168,30 @@ class ProfileAPITestCase(APITestCase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
-        self.assertEquals(log["new_value"], [])
+        new_profile = log["new_value"][0]
+        new_user = new_profile["user"]
+        self.assertEquals(new_user["id"], new_user_id)
+        self.assertEquals(new_user["username"], data["user_name"])
+        self.assertEquals(new_user["first_name"], data["first_name"])
+        self.assertEquals(new_user["last_name"], data["last_name"])
+        self.assertEquals(new_user["email"], data["email"])
+        self.assertEquals(len(new_user["user_permissions"]), 1)
+        self.assertEquals(new_user["user_permissions"], data["user_permissions"])
+        self.assertIsNotNone(new_user["deleted_at"])
+        self.assertFalse(new_user["password_updated"])
+
+        self.assertEquals(new_profile["dhis2_id"], data["dhis2_id"])
+        self.assertEquals(new_profile["language"], data["language"])
+        self.assertEquals(new_profile["home_page"], data["home_page"])
+        self.assertEquals(new_profile["phone_number"], f'+{data["phone_number"]}')
+        self.assertEquals(len(new_profile["org_units"]), 1)
+        self.assertEquals(new_profile["org_units"][0]["id"], self.jedi_council_corruscant.id)
+        self.assertEquals(len(new_profile["user_roles"]), 1)
+        self.assertEquals(new_profile["user_roles"][0]["id"], self.user_role.id)
+        self.assertEquals(len(new_profile["projects"]), 1)
+        self.assertEquals(new_profile["projects"][0]["id"], self.project.id)
+        self.assertIsNotNone(new_profile["deleted_at"])
+
         past_profile = log["past_value"][0]
         past_user = past_profile["user"]
         self.assertEquals(past_user["id"], new_user_id)
@@ -1174,6 +1201,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(past_user["email"], data["email"])
         self.assertEquals(len(past_user["user_permissions"]), 1)
         self.assertEquals(past_user["user_permissions"], data["user_permissions"])
+        self.assertIsNone(past_user["deleted_at"])
 
         self.assertEquals(past_profile["dhis2_id"], data["dhis2_id"])
         self.assertEquals(past_profile["language"], data["language"])
@@ -1185,6 +1213,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(past_profile["user_roles"][0]["id"], self.user_role.id)
         self.assertEquals(len(past_profile["projects"]), 1)
         self.assertEquals(past_profile["projects"][0]["id"], self.project.id)
+        self.assertIsNone(past_profile["deleted_at"])
 
     def test_log_on_user_update(self):
         self.client.force_authenticate(self.john)

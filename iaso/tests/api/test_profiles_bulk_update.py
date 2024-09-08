@@ -782,7 +782,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
         # past value
-        past_value = log["past_value"][0]
+        past_value = log["past_value"][0]["fields"]
         past_user = past_value["user"]
         self.assertEquals(past_user["id"], self.luke.id)
         self.assertEquals(past_user["username"], self.luke.username)
@@ -798,13 +798,13 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             past_value["phone_number"], self.luke.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
         self.assertEquals(len(past_value["org_units"]), 1)
-        self.assertEquals(past_value["org_units"][0], self.jedi_council_endor.id)
+        self.assertIn(self.jedi_council_endor.id, past_value["org_units"])
         self.assertEquals(len(past_value["user_roles"]), 1)
-        self.assertEquals(past_value["user_roles"][0]["id"], self.user_role_2.id)
+        self.assertIn(self.user_role_2.id, past_value["user_roles"])
         self.assertEquals(len(past_value["projects"]), 1)
-        self.assertEquals(past_value["projects"][0]["id"], self.project_2.id)
+        self.assertIn(self.project_2.id, past_value["projects"])
         # New value
-        new_value = log["new_value"][0]
+        new_value = log["new_value"][0]["fields"]
         new_user = new_value["user"]
         self.assertEquals(new_user["id"], self.luke.id)
         self.assertEquals(new_user["username"], self.luke.username)
@@ -820,11 +820,11 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             past_value["phone_number"], self.luke.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
         self.assertEquals(len(new_value["org_units"]), 1)
-        self.assertEquals(new_value["org_units"][0], self.jedi_council_corruscant.id)
+        self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
         self.assertEquals(len(new_value["user_roles"]), 1)
-        self.assertEquals(new_value["user_roles"][0]["id"], self.user_role.id)
+        self.assertIn(self.user_role.id, new_value["user_roles"])
         self.assertEquals(len(new_value["projects"]), 1)
-        self.assertEquals(new_value["projects"][0]["id"], self.project.id)
+        self.assertIn(self.project.id, new_value["projects"])
 
         # Check that chewie profile is updated
         response = self.client.get(
@@ -839,7 +839,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
         # past value
-        past_value = log["past_value"][0]
+        past_value = log["past_value"][0]["fields"]
         past_user = past_value["user"]
         self.assertEquals(past_user["id"], self.chewie.id)
         self.assertEquals(past_user["username"], self.chewie.username)
@@ -855,13 +855,13 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             past_value["phone_number"], self.chewie.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
         self.assertEquals(len(past_value["org_units"]), 1)
-        self.assertEquals(past_value["org_units"][0], self.jedi_council_endor.id)
+        self.assertIn(self.jedi_council_endor.id, past_value["org_units"])
         self.assertEquals(len(past_value["user_roles"]), 1)
-        self.assertEquals(past_value["user_roles"][0]["id"], self.user_role_2.id)
+        self.assertIn(self.user_role_2.id, past_value["user_roles"])
         self.assertEquals(len(past_value["projects"]), 1)
-        self.assertEquals(past_value["projects"][0]["id"], self.project_2.id)
+        self.assertIn(self.project_2.id, past_value["projects"])
         # New value
-        new_value = log["new_value"][0]
+        new_value = log["new_value"][0]["fields"]
         new_user = new_value["user"]
         self.assertEquals(new_user["id"], self.chewie.id)
         self.assertEquals(new_user["username"], self.chewie.username)
@@ -876,11 +876,11 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         # expected to be null/empty. If there was a value we should add a plus for the value logged
         self.assertEquals(past_value["phone_number"], self.chewie.iaso_profile.phone_number)
         self.assertEquals(len(new_value["org_units"]), 1)
-        self.assertEquals(new_value["org_units"][0], self.jedi_council_corruscant.id)
+        self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
         self.assertEquals(len(new_value["user_roles"]), 1)
-        self.assertEquals(new_value["user_roles"][0]["id"], self.user_role.id)
+        self.assertIn(self.user_role.id, new_value["user_roles"])
         self.assertEquals(len(new_value["projects"]), 1)
-        self.assertEquals(new_value["projects"][0]["id"], self.project.id)
+        self.assertIn(self.project.id, new_value["projects"])
         # Check that team 1 is updated
         response = self.client.get(
             f"/api/logs/?contentType=iaso.team&fields=past_value,new_value&objectId={self.team_1.pk}"

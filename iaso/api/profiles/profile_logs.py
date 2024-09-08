@@ -16,13 +16,26 @@ from django.conf import settings
 from iaso.api.common import Paginator
 from iaso.models.org_unit import OrgUnit
 
+from django.db.models import F, Func, Value, CharField, JSONField, IntegerField
 from django.db.models.functions import Cast
-from django.db.models import F, Func, Value, CharField, IntegerField, OuterRef, Subquery
-from django.db.models.functions import Coalesce
 
 
 class ProfileLogsListPagination(Paginator):
     page_size = 20
+
+
+# Define a custom function to extract book ids from JSONField
+class JSONExtractBookID(Func):
+    function = "jsonb_extract_path_text"
+    template = "%(function)s(%(expressions)s)"
+    output_field = CharField()
+
+
+# Define another function to handle array elements
+class JSONArrayElements(Func):
+    function = "jsonb_array_elements"
+    template = "%(function)s(%(expressions)s)"
+    output_field = JSONField()
 
 
 class ProfileLogsListFilter(django_filters.rest_framework.FilterSet):
@@ -34,7 +47,6 @@ class ProfileLogsListFilter(django_filters.rest_framework.FilterSet):
     user_ids = django_filters.CharFilter(method="filter_user_ids", label=_("User IDs"))
     modified_by = django_filters.CharFilter(method="filter_modified_by", label=_("Modified by"))
     org_unit_id = django_filters.CharFilter(method="filter_org_unit_id", label=_("Location"))
-    # TODO add date filters
     created_at = django_filters.DateFromToRangeFilter()
 
     def filter_user_ids(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
@@ -48,9 +60,12 @@ class ProfileLogsListFilter(django_filters.rest_framework.FilterSet):
         return queryset.filter(user__id__in=user_ids)
 
     def filter_org_unit_id(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        return queryset.filter(
-            Q(past_value__0__org_units__contains=int(value)) | Q(new_value__0__org_units__contains=int(value))
-        )
+        return queryset.annotate(
+            past_org_units=JSONArrayElements(F("past_value__0__org_units")),
+            past_org_unit_ids=Cast(JSONExtractBookID(F("past_org_units"), Value("id")), output_field=IntegerField()),
+            new_org_units=JSONArrayElements(F("new_value__0__org_units")),
+            new_org_unit_ids=Cast(JSONExtractBookID(F("new_org_units"), Value("id")), output_field=IntegerField()),
+        ).filter(Q(past_org_unit_ids=int(value)) | Q(new_org_unit_ids=int(value)))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

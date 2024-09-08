@@ -60,12 +60,10 @@ class ProfileLogsListFilter(django_filters.rest_framework.FilterSet):
         return queryset.filter(user__id__in=user_ids)
 
     def filter_org_unit_id(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        return queryset.annotate(
-            past_org_units=JSONArrayElements(F("past_value__0__org_units")),
-            past_org_unit_ids=Cast(JSONExtractBookID(F("past_org_units"), Value("id")), output_field=IntegerField()),
-            new_org_units=JSONArrayElements(F("new_value__0__org_units")),
-            new_org_unit_ids=Cast(JSONExtractBookID(F("new_org_units"), Value("id")), output_field=IntegerField()),
-        ).filter(Q(past_org_unit_ids=int(value)) | Q(new_org_unit_ids=int(value)))
+        return queryset.filter(
+            Q(past_value__0__fields__org_units__contains=int(value))
+            | Q(new_value__0__fields__org_units__contains=int(value))
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -117,11 +115,9 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
         past_value = modification.past_value
         if not past_value:
             return []
-        past_org_units = past_value[0].get("org_units", None)
-        if not past_org_units:
+        org_unit_ids = past_value[0]["fields"].get("org_units", None)
+        if not org_unit_ids:
             return []
-        # If there's no OU id, it means it's an old log that only saved the id
-        org_unit_ids = [ou.get("id", ou) for ou in past_org_units]
         org_units = OrgUnit.objects.filter(pk__in=org_unit_ids)
         serializer = NestedOrgUnitForListSerializer(org_units, many=True)
         return serializer.data
@@ -130,11 +126,9 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
         new_value = modification.new_value
         if not new_value:
             return []
-        new_org_units = new_value[0].get("org_units", None)
-        if not new_org_units:
+        org_unit_ids = new_value[0]["fields"].get("org_units", None)
+        if not org_unit_ids:
             return []
-        # If there's no OU id, it means it's an old log that only saved the id
-        org_unit_ids = [ou.get("id", ou) for ou in new_org_units]
         org_units = OrgUnit.objects.filter(pk__in=org_unit_ids)
         serializer = NestedOrgUnitForListSerializer(org_units, many=True)
 
@@ -191,9 +185,9 @@ class ProfileLogsViewset(ModelViewSet):
         if order == "-modified_by":
             queryset = queryset.order_by("-user__username")
         if order == "user":
-            queryset = queryset.order_by("new_value__0__user__username")
+            queryset = queryset.order_by("new_value__0__fields__user__username")
         if order == "-user":
-            queryset = queryset.order_by("-new_value__0__user__username")
+            queryset = queryset.order_by("-new_value__0__fields__user__username")
 
         return queryset
 

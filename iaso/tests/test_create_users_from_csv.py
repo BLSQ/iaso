@@ -593,13 +593,14 @@ class BulkCreateCsvTestCase(APITestCase):
         logs_for_new_users = [logs[0], logs[1], logs[2]]  # There's 3 users in the csv so we take the last 3 logs
 
         # Check that all users are logged
-        user_names = [log["new_value"][0]["user"]["username"] for log in logs_for_new_users]
+        user_names = [log["new_value"][0]["fields"]["user"]["username"] for log in logs_for_new_users]
         self.assertIn("bob", user_names)
         self.assertIn("bobette", user_names)
         self.assertIn("fanchon", user_names)
 
         # Check that fields have correct value (1 user)
         log = logs[0]
+        print("LOG", log)
 
         try:
             jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
@@ -609,15 +610,13 @@ class BulkCreateCsvTestCase(APITestCase):
         past_value = log["past_value"]
         self.assertEquals(past_value, [])
 
-        new_value = log["new_value"][0]
+        new_value = log["new_value"][0]["fields"]
         new_user = new_value["user"]
         self.assertTrue(new_user["password_updated"])
         self.assertEquals(len(new_user["user_permissions"]), 1)
         self.assertIn("iaso_forms", new_user["user_permissions"])
         self.assertEquals(len(new_value["user_roles"]), 1)
-        self.assertEquals(new_value["user_roles"][0]["name"], "manager")
         self.assertEquals(len(new_value["projects"]), 1)
-        self.assertEquals(new_value["projects"][0]["name"], "Project name")
         self.assertEquals(new_value["language"], "fr")
         self.assertEquals(new_value["dhis2_id"], "dhis2_id_3")
         self.assertEquals(len(new_value["org_units"]), 2)

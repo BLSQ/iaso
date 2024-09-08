@@ -783,13 +783,12 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             self.fail(msg=str(ex))
         # past value
         past_value = log["past_value"][0]["fields"]
-        past_user = past_value["user"]
-        self.assertEquals(past_user["id"], self.luke.id)
-        self.assertEquals(past_user["username"], self.luke.username)
-        self.assertEquals(past_user["first_name"], self.luke.first_name)
-        self.assertEquals(past_user["last_name"], self.luke.last_name)
-        self.assertEquals(past_user["email"], self.luke.email)
-        self.assertEquals(len(past_user["user_permissions"]), 1)
+        self.assertEquals(past_value["user"], self.luke.id)
+        self.assertEquals(past_value["username"], self.luke.username)
+        self.assertEquals(past_value["first_name"], self.luke.first_name)
+        self.assertEquals(past_value["last_name"], self.luke.last_name)
+        self.assertEquals(past_value["email"], self.luke.email)
+        self.assertEquals(len(past_value["user_permissions"]), 1)
 
         self.assertEquals(past_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
         self.assertEquals(past_value["language"], "en")
@@ -805,13 +804,12 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertIn(self.project_2.id, past_value["projects"])
         # New value
         new_value = log["new_value"][0]["fields"]
-        new_user = new_value["user"]
-        self.assertEquals(new_user["id"], self.luke.id)
-        self.assertEquals(new_user["username"], self.luke.username)
-        self.assertEquals(new_user["first_name"], self.luke.first_name)
-        self.assertEquals(new_user["last_name"], self.luke.last_name)
-        self.assertEquals(new_user["email"], self.luke.email)
-        self.assertEquals(len(new_user["user_permissions"]), 1)
+        self.assertEquals(new_value["user"], self.luke.id)
+        self.assertEquals(new_value["username"], self.luke.username)
+        self.assertEquals(new_value["first_name"], self.luke.first_name)
+        self.assertEquals(new_value["last_name"], self.luke.last_name)
+        self.assertEquals(new_value["email"], self.luke.email)
+        self.assertEquals(len(new_value["user_permissions"]), 1)
 
         self.assertEquals(new_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
         self.assertEquals(new_value["language"], "fr")
@@ -840,13 +838,12 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             self.fail(msg=str(ex))
         # past value
         past_value = log["past_value"][0]["fields"]
-        past_user = past_value["user"]
-        self.assertEquals(past_user["id"], self.chewie.id)
-        self.assertEquals(past_user["username"], self.chewie.username)
-        self.assertEquals(past_user["first_name"], self.chewie.first_name)
-        self.assertEquals(past_user["last_name"], self.chewie.last_name)
-        self.assertEquals(past_user["email"], self.chewie.email)
-        self.assertEquals(len(past_user["user_permissions"]), 1)
+        self.assertEquals(past_value["user"], self.chewie.id)
+        self.assertEquals(past_value["username"], self.chewie.username)
+        self.assertEquals(past_value["first_name"], self.chewie.first_name)
+        self.assertEquals(past_value["last_name"], self.chewie.last_name)
+        self.assertEquals(past_value["email"], self.chewie.email)
+        self.assertEquals(len(past_value["user_permissions"]), 1)
 
         self.assertEquals(past_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
         self.assertEquals(past_value["language"], "en")
@@ -862,13 +859,12 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertIn(self.project_2.id, past_value["projects"])
         # New value
         new_value = log["new_value"][0]["fields"]
-        new_user = new_value["user"]
-        self.assertEquals(new_user["id"], self.chewie.id)
-        self.assertEquals(new_user["username"], self.chewie.username)
-        self.assertEquals(new_user["first_name"], self.chewie.first_name)
-        self.assertEquals(new_user["last_name"], self.chewie.last_name)
-        self.assertEquals(new_user["email"], self.chewie.email)
-        self.assertEquals(len(new_user["user_permissions"]), 1)
+        self.assertEquals(new_value["user"], self.chewie.id)
+        self.assertEquals(new_value["username"], self.chewie.username)
+        self.assertEquals(new_value["first_name"], self.chewie.first_name)
+        self.assertEquals(new_value["last_name"], self.chewie.last_name)
+        self.assertEquals(new_value["email"], self.chewie.email)
+        self.assertEquals(len(new_value["user_permissions"]), 1)
 
         self.assertEquals(new_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
         self.assertEquals(new_value["language"], "fr")

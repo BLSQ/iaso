@@ -52,19 +52,13 @@ PROFILE_LOG_SCHEMA = {
                     "fields": {
                         "type": "object",
                         "properties": {
-                            "user": {
-                                "type": "object",
-                                "properties": {
-                                    "id": {"type": "number"},
-                                    "first_name": {"type": ["string", "null"]},
-                                    "last_name": {"type": ["string", "null"]},
-                                    "username": {"type": ["string", "null"]},
-                                    "email": {"type": ["string", "null"]},
-                                    "user_permissions": {"type": "array", "items": {"type": "string"}},
-                                    "deleted_at": {"type": ["string", "null"]},
-                                },
-                                "required": ["id", "username"],
-                            },
+                            "user": {"type": "number"},
+                            "first_name": {"type": ["string", "null"]},
+                            "last_name": {"type": ["string", "null"]},
+                            "username": {"type": ["string", "null"]},
+                            "email": {"type": ["string", "null"]},
+                            "user_permissions": {"type": "array", "items": {"type": "string"}},
+                            "deleted_at": {"type": ["string", "null"]},
                             "account": {"type": "number"},
                             "dhis2_id": {"type": ["string", "null"]},
                             "language": {"type": ["string", "null"]},
@@ -75,7 +69,7 @@ PROFILE_LOG_SCHEMA = {
                             "phone_number": {"type": ["string", "null"]},
                             "deleted_at": {"type": ["string", "null"]},
                         },
-                        "required": ["user"],
+                        "required": ["user", "account"],
                     },
                 },
             },
@@ -89,20 +83,14 @@ PROFILE_LOG_SCHEMA = {
                     "fields": {
                         "type": "object",
                         "properties": {
-                            "user": {
-                                "type": "object",
-                                "properties": {
-                                    "id": {"type": "number"},
-                                    "first_name": {"type": ["string", "null"]},
-                                    "last_name": {"type": ["string", "null"]},
-                                    "username": {"type": ["string", "null"]},
-                                    "email": {"type": ["string", "null"]},
-                                    "user_permissions": {"type": "array", "items": {"type": "string"}},
-                                    "password_updated": {"type": "boolean"},
-                                    "deleted_at": {"type": ["string", "null"]},
-                                },
-                                "required": ["id", "username"],
-                            },
+                            "user": {"type": "number"},
+                            "first_name": {"type": ["string", "null"]},
+                            "last_name": {"type": ["string", "null"]},
+                            "username": {"type": ["string", "null"]},
+                            "email": {"type": ["string", "null"]},
+                            "user_permissions": {"type": "array", "items": {"type": "string"}},
+                            "password_updated": {"type": "boolean"},
+                            "deleted_at": {"type": ["string", "null"]},
                             "account": {"type": "number"},
                             "dhis2_id": {"type": ["string", "null"]},
                             "language": {"type": ["string", "null"]},
@@ -1138,15 +1126,14 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEquals(log["past_value"], [])
         new_profile = log["new_value"][0]["fields"]
-        new_user = new_profile["user"]
-        self.assertEquals(new_user["id"], new_user_id)
-        self.assertEquals(new_user["username"], data["user_name"])
-        self.assertEquals(new_user["first_name"], data["first_name"])
-        self.assertEquals(new_user["last_name"], data["last_name"])
-        self.assertEquals(new_user["email"], data["email"])
-        self.assertEquals(len(new_user["user_permissions"]), 1)
-        self.assertEquals(new_user["user_permissions"], data["user_permissions"])
-        self.assertTrue(new_user["password_updated"])
+        self.assertEquals(new_profile["user"], new_user_id)
+        self.assertEquals(new_profile["username"], data["user_name"])
+        self.assertEquals(new_profile["first_name"], data["first_name"])
+        self.assertEquals(new_profile["last_name"], data["last_name"])
+        self.assertEquals(new_profile["email"], data["email"])
+        self.assertEquals(len(new_profile["user_permissions"]), 1)
+        self.assertEquals(new_profile["user_permissions"], data["user_permissions"])
+        self.assertTrue(new_profile["password_updated"])
 
         self.assertEquals(new_profile["dhis2_id"], data["dhis2_id"])
         self.assertEquals(new_profile["language"], data["language"])
@@ -1183,16 +1170,15 @@ class ProfileAPITestCase(APITestCase):
             self.fail(msg=str(ex))
 
         new_profile = log["new_value"][0]["fields"]
-        new_user = new_profile["user"]
-        self.assertEquals(new_user["id"], new_user_id)
-        self.assertEquals(new_user["username"], data["user_name"])
-        self.assertEquals(new_user["first_name"], data["first_name"])
-        self.assertEquals(new_user["last_name"], data["last_name"])
-        self.assertEquals(new_user["email"], data["email"])
-        self.assertEquals(len(new_user["user_permissions"]), 1)
-        self.assertEquals(new_user["user_permissions"], data["user_permissions"])
-        self.assertIsNotNone(new_user["deleted_at"])
-        self.assertFalse(new_user["password_updated"])
+        self.assertEquals(new_profile["user"], new_user_id)
+        self.assertEquals(new_profile["username"], data["user_name"])
+        self.assertEquals(new_profile["first_name"], data["first_name"])
+        self.assertEquals(new_profile["last_name"], data["last_name"])
+        self.assertEquals(new_profile["email"], data["email"])
+        self.assertEquals(len(new_profile["user_permissions"]), 1)
+        self.assertEquals(new_profile["user_permissions"], data["user_permissions"])
+        self.assertIsNotNone(new_profile["deleted_at"])
+        self.assertFalse(new_profile["password_updated"])
 
         self.assertEquals(new_profile["dhis2_id"], data["dhis2_id"])
         self.assertEquals(new_profile["language"], data["language"])
@@ -1207,15 +1193,14 @@ class ProfileAPITestCase(APITestCase):
         self.assertIsNotNone(new_profile["deleted_at"])
 
         past_profile = log["past_value"][0]["fields"]
-        past_user = past_profile["user"]
-        self.assertEquals(past_user["id"], new_user_id)
-        self.assertEquals(past_user["username"], data["user_name"])
-        self.assertEquals(past_user["first_name"], data["first_name"])
-        self.assertEquals(past_user["last_name"], data["last_name"])
-        self.assertEquals(past_user["email"], data["email"])
-        self.assertEquals(len(past_user["user_permissions"]), 1)
-        self.assertEquals(past_user["user_permissions"], data["user_permissions"])
-        self.assertIsNone(past_user["deleted_at"])
+        self.assertEquals(past_profile["user"], new_user_id)
+        self.assertEquals(past_profile["username"], data["user_name"])
+        self.assertEquals(past_profile["first_name"], data["first_name"])
+        self.assertEquals(past_profile["last_name"], data["last_name"])
+        self.assertEquals(past_profile["email"], data["email"])
+        self.assertEquals(len(past_profile["user_permissions"]), 1)
+        self.assertEquals(past_profile["user_permissions"], data["user_permissions"])
+        self.assertIsNone(past_profile["deleted_at"])
 
         self.assertEquals(past_profile["dhis2_id"], data["dhis2_id"])
         self.assertEquals(past_profile["language"], data["language"])
@@ -1283,14 +1268,13 @@ class ProfileAPITestCase(APITestCase):
             self.fail(msg=str(ex))
 
         past_value = log["past_value"][0]["fields"]
-        past_user = past_value["user"]
-        self.assertEquals(past_user["id"], new_user_id)
-        self.assertEquals(past_user["username"], data["user_name"])
-        self.assertEquals(past_user["first_name"], data["first_name"])
-        self.assertEquals(past_user["last_name"], data["last_name"])
-        self.assertEquals(past_user["email"], data["email"])
-        self.assertEquals(len(past_user["user_permissions"]), 1)
-        self.assertEquals(past_user["user_permissions"], data["user_permissions"])
+        self.assertEquals(past_value["user"], new_user_id)
+        self.assertEquals(past_value["username"], data["user_name"])
+        self.assertEquals(past_value["first_name"], data["first_name"])
+        self.assertEquals(past_value["last_name"], data["last_name"])
+        self.assertEquals(past_value["email"], data["email"])
+        self.assertEquals(len(past_value["user_permissions"]), 1)
+        self.assertEquals(past_value["user_permissions"], data["user_permissions"])
 
         self.assertEquals(past_value["dhis2_id"], data["dhis2_id"])
         self.assertEquals(past_value["language"], data["language"])
@@ -1307,11 +1291,10 @@ class ProfileAPITestCase(APITestCase):
         self.assertIn(self.project.id, past_value["projects"])
 
         new_value = log["new_value"][0]["fields"]
-        new_user = new_value["user"]
-        self.assertTrue(new_user["password_updated"])
-        self.assertEquals(len(new_user["user_permissions"]), 2)
-        self.assertIn("iaso_forms", new_user["user_permissions"])
-        self.assertIn("iaso_org_units_read", new_user["user_permissions"])
+        self.assertTrue(new_value["password_updated"])
+        self.assertEquals(len(new_value["user_permissions"]), 2)
+        self.assertIn("iaso_forms", new_value["user_permissions"])
+        self.assertIn("iaso_org_units_read", new_value["user_permissions"])
         self.assertEquals(new_value["language"], new_data["language"])
         self.assertEquals(new_value["home_page"], new_data["home_page"])
         self.assertEquals(len(new_value["org_units"]), 2)
@@ -1339,15 +1322,13 @@ class ProfileAPITestCase(APITestCase):
             self.fail(msg=str(ex))
 
         past_value = log["past_value"][0]["fields"]
-        past_user = past_value["user"]
-        self.assertEquals(past_user["id"], self.jim.id)
-        self.assertEquals(past_user["username"], self.jim.username)
-        self.assertEquals(past_user["first_name"], "")
+        self.assertEquals(past_value["user"], self.jim.id)
+        self.assertEquals(past_value["username"], self.jim.username)
+        self.assertEquals(past_value["first_name"], "")
         self.assertEquals(past_value["language"], None)
 
         new_value = log["new_value"][0]["fields"]
-        new_user = new_value["user"]
-        self.assertEquals(new_user["id"], self.jim.id)
-        self.assertEquals(new_user["username"], self.jim.username)
-        self.assertEquals(new_user["first_name"], "")
+        self.assertEquals(new_value["user"], self.jim.id)
+        self.assertEquals(new_value["username"], self.jim.username)
+        self.assertEquals(new_value["first_name"], "")
         self.assertEquals(new_value["language"], "fr")

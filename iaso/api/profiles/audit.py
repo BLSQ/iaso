@@ -50,8 +50,15 @@ class NestedUserAuditSerializer(serializers.ModelSerializer):
         return None
 
 
+# THIS SERIALIZER SHOULD ONLY BE USED WITH PROFILEAUDITLOGGER
 class ProfileAuditFieldsSerializer(serializers.ModelSerializer):
-    user = NestedUserAuditSerializer()
+    user = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    email = serializers.SerializerMethodField()
+    user_permissions = serializers.SerializerMethodField()
+    password = serializers.SerializerMethodField()
     # user_roles = NestedUserRoleSerializer(many=True)
     # projects = NestedProjectSerializer(many=True)
     # org_units = NestedOrgUnitSerializer(many=True)
@@ -64,7 +71,15 @@ class ProfileAuditFieldsSerializer(serializers.ModelSerializer):
             "account",
             "language",
             "user",
+            "email",
+            "first_name",
+            "last_name",
+            "username",
             "user_roles",
+            "user_permissions",
+            # We're serializing the password to be able to determine if it has been changed. but we remove them before saving the log itself
+            # THIS SERIALIZER SHOULD ONLY BE USED WITH PROFILEAUDITLOGGER
+            "password",
             "projects",
             "phone_number",
             "dhis2_id",
@@ -76,6 +91,29 @@ class ProfileAuditFieldsSerializer(serializers.ModelSerializer):
     # TODO delete this method when user soft delete is implemented
     def get_deleted_at(self, profile):
         return None
+
+    def get_user(self, profile):
+        return profile.user.pk
+
+    def get_email(self, profile):
+        return profile.user.email
+
+    def get_username(self, profile):
+        return profile.user.username
+
+    def get_first_name(self, profile):
+        return profile.user.first_name
+
+    def get_last_name(self, profile):
+        return profile.user.last_name
+
+    def get_user_permissions(self, profile):
+        return [permission.codename for permission in profile.user.user_permissions.all()]
+
+    # THIS SERIALIZER SHOULD ONLY BE USED WITH PROFILEAUDITLOGGER
+    # The logger will compare the old and new password then delete the field and return a boolean indicating whether the password changed or not
+    def get_password(self, profile):
+        return profile.user.password
 
 
 class ProfileAuditSerializer(serializers.ModelSerializer):
@@ -99,14 +137,12 @@ class ProfileAuditLogger(AuditLogger):
             old_data_dump = []
         new_value = self.serialize_instance(instance)
         password_updated = (
-            old_data_dump[0]["fields"]["user"]["password"] != new_value[0]["fields"]["user"]["password"]
-            if old_data_dump
-            else True
+            old_data_dump[0]["fields"]["password"] != new_value[0]["fields"]["password"] if old_data_dump else True
         )
         if old_data_dump:
-            del old_data_dump[0]["fields"]["user"]["password"]
-        del new_value[0]["fields"]["user"]["password"]
-        new_value[0]["fields"]["user"]["password_updated"] = password_updated
+            del old_data_dump[0]["fields"]["password"]
+        del new_value[0]["fields"]["password"]
+        new_value[0]["fields"]["password_updated"] = password_updated
         Modification.objects.create(
             user=request_user,
             past_value=old_data_dump,
@@ -118,13 +154,13 @@ class ProfileAuditLogger(AuditLogger):
     def log_hard_deletion(self, instance, request_user, source=None):
         source = source if source else self.default_source
         past_value = self.serialize_instance(instance)
-        del past_value[0]["fields"]["user"]["password"]
+        del past_value[0]["fields"]["password"]
         new_value = self.serialize_instance(instance)
-        del new_value[0]["fields"]["user"]["password"]
+        del new_value[0]["fields"]["password"]
         now = timezone.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        new_value[0]["fields"]["user"]["deleted_at"] = now
         new_value[0]["fields"]["deleted_at"] = now
-        new_value[0]["fields"]["user"]["password_updated"] = False
+        new_value[0]["fields"]["deleted_at"] = now
+        new_value[0]["fields"]["password_updated"] = False
 
         Modification.objects.create(
             user=request_user,

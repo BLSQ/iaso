@@ -24,20 +24,6 @@ class ProfileLogsListPagination(Paginator):
     page_size = 20
 
 
-# Define a custom function to extract book ids from JSONField
-class JSONExtractBookID(Func):
-    function = "jsonb_extract_path_text"
-    template = "%(function)s(%(expressions)s)"
-    output_field = CharField()
-
-
-# Define another function to handle array elements
-class JSONArrayElements(Func):
-    function = "jsonb_array_elements"
-    template = "%(function)s(%(expressions)s)"
-    output_field = JSONField()
-
-
 class ProfileLogsListFilter(django_filters.rest_framework.FilterSet):
     class Meta:
         model = Modification
@@ -135,21 +121,29 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_fields_modified(self, modification):
-        # field_diffs doesn't work
-        return []
+        diffs = modification.field_diffs()
+        if not modification.past_value:
+            return ["new_user_created"]
+        # password updated will always be in the added dict because it's never present on past value
+        password_updated = diffs["added"].get("password_updated", None)
+        if password_updated:
+            if password_updated.get("after", False):
+                diffs["added"]["password"] = password_updated
+            del diffs["added"]["password_updated"]
+
+        added = list(diffs["added"].keys())
+        removed = list(diffs["removed"].keys())
+        modified = list(diffs["modified"].keys())
+        result = list(set(removed + added + modified))
+        result.sort()
+        # filter user and account because these can't be modified
+        return [key for key in result if key != "user" and key != "account"]
 
 
 class ProfileLogRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Modification
         fields = ["id", "created_at", "user", "source", "new_value", "past_value", "object_id", "content_type"]
-
-
-# Define a function to extract the username from the JSONField
-class JSONExtract(Func):
-    function = "JSONB_EXTRACT_PATH_TEXT"
-    template = "%(function)s(%(expressions)s)"
-    output_field = CharField()
 
 
 class ProfileLogsViewset(ModelViewSet):
@@ -161,9 +155,6 @@ class ProfileLogsViewset(ModelViewSet):
     filterset_class = ProfileLogsListFilter
     pagination_class = ProfileLogsListPagination
     ordering_fields = ["created_at"]
-
-    # ordering = ["updated_at"]
-    # TODO custom ordering
 
     http_method_names = ["get"]
 
@@ -194,6 +185,4 @@ class ProfileLogsViewset(ModelViewSet):
     def get_serializer_class(self):
         if hasattr(self, "action") and self.action == "list":
             return ProfileLogListSerializer
-        if hasattr(self, "action") and self.action == "retrieve":
-            return ProfileLogRetrieveSerializer
         return super().get_serializer_class()

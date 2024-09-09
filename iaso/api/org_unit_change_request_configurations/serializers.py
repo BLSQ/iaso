@@ -221,43 +221,63 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(serializers.ModelSerializ
         return validated_data
 
 
-# class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
-#     """
-#     Used to approve or reject one `OrgUnitChangeRequest`.
-#     """
-#
-#     class Meta:
-#         model = OrgUnitChangeRequest
-#         fields = [
-#             "status",
-#             "approved_fields",
-#             "rejection_comment",
-#         ]
-#
-#     def validate_status(self, value):
-#         approved = OrgUnitChangeRequest.Statuses.APPROVED
-#         rejected = OrgUnitChangeRequest.Statuses.REJECTED
-#         if value not in [approved, rejected]:
-#             raise serializers.ValidationError(f"Must be `{approved}` or `{rejected}`.")
-#         return value
-#
-#     def validate(self, validated_data):
-#         instance = OrgUnitChangeRequest(**validated_data)
-#         instance.clean()
-#
-#         status = validated_data.get("status")
-#         approved_fields = validated_data.get("approved_fields")
-#         rejection_comment = validated_data.get("rejection_comment")
-#
-#         if status == OrgUnitChangeRequest.Statuses.REJECTED and not rejection_comment:
-#             raise serializers.ValidationError("A `rejection_comment` must be provided.")
-#
-#         if status == OrgUnitChangeRequest.Statuses.APPROVED and not approved_fields:
-#             raise serializers.ValidationError("At least one `approved_fields` must be provided.")
-#
-#         return validated_data
-#
-#
+class OrgUnitChangeRequestConfigurationUpdateSerializer(serializers.ModelSerializer):
+    """
+    Used to update a single `OrgUnitChangeRequestConfiguration` instance.
+    """
+
+    possible_type_ids = serializers.PrimaryKeyRelatedField(
+        source="possible_types", queryset=OrgUnitType.objects.all(), many=True, allow_empty=True, required=False
+    )
+    possible_parent_type_ids = serializers.PrimaryKeyRelatedField(
+        source="possible_parent_types", queryset=OrgUnitType.objects.all(), many=True, allow_empty=True, required=False
+    )
+    group_set_ids = serializers.PrimaryKeyRelatedField(
+        source="group_sets", queryset=GroupSet.objects.all(), many=True, allow_empty=True, required=False
+    )
+    editable_reference_form_ids = serializers.PrimaryKeyRelatedField(
+        source="editable_reference_forms", queryset=Form.objects.all(), many=True, allow_empty=True, required=False
+    )
+    other_group_ids = serializers.PrimaryKeyRelatedField(
+        source="other_groups", queryset=Group.objects.all(), many=True, allow_empty=True, required=False
+    )
+
+    class Meta:
+        model = OrgUnitChangeRequestConfiguration
+        fields = [
+            "org_units_editable",
+            "editable_fields",
+            "possible_type_ids",
+            "possible_parent_type_ids",
+            "group_set_ids",
+            "editable_reference_form_ids",
+            "other_group_ids",
+        ]
+
+    def validate_editable_fields(self, value):
+        for field in value:
+            if field not in OrgUnitChangeRequestConfiguration.LIST_OF_POSSIBLE_EDITABLE_FIELDS:
+                raise serializers.ValidationError(f"Value {field} is not a valid choice.")
+        return value
+
+    # Filtering for all relations will be done in another ticket
+    # def validate_possible_types(self, value):
+    #     pass
+    # def validate_possible_parent_types(self, value):
+    #     pass
+    # def validate_group_sets(self, value):
+    #     pass
+    # def validate_editable_reference_forms(self, value):
+    #     pass
+    # def validate_other_groups(self, value):
+    #     pass
+
+    def validate(self, validated_data):
+        request = self.context.get("request")
+        validated_data["updated_by"] = request.user
+        return validated_data
+
+
 # class AuditOrgUnitChangeRequestConfigurationSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = OrgUnitChangeRequestConfiguration

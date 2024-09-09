@@ -21,8 +21,7 @@ type Params = {
     order: string;
     page: string;
     search?: string;
-    formId?: string;
-    mappingType?: string;
+    sourceVersion: string;
     projectsIds?: string;
 };
 
@@ -34,8 +33,7 @@ const makeVersionsDropDown = sourceVersions => {
     if (sourceVersions == undefined) {
         return [];
     }
-    console.log(sourceVersions);
-    debugger;
+
     const existingVersions =
         sourceVersions
             .map(sourceVersion => {
@@ -56,7 +54,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params, withPagination: false });
+        useFilterState({ baseUrl, params, withPagination: true });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
 
     const { data: allProjects, isFetching: isFetchingProjects } =
@@ -96,6 +94,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     type="select"
                     options={sourceVersionsDropDown}
                     label={MESSAGES.sourceVersion}
+                    loading={areSourceVersionsLoading}
                     blockForbiddenChars
                     onEnterPressed={handleSearch}
                     onErrorChange={setTextSearchError}

@@ -259,8 +259,20 @@ class ProfilesViewSet(viewsets.ViewSet):
             ids=ids,
         )
 
-        queryset = queryset.prefetch_related("user")
-
+        queryset = queryset.prefetch_related(
+            "user",
+            "user_roles",
+            "org_units",
+            "org_units__version",
+            "org_units__version__data_source",
+            "org_units__parent",
+            "org_units__parent__parent",
+            "org_units__parent__parent__parent",
+            "org_units__org_unit_type",
+            "org_units__parent__org_unit_type",
+            "org_units__parent__parent__org_unit_type",
+            "projects",
+        )
         if request.GET.get("csv"):
             return self.list_export(queryset=queryset, file_format=FileFormatEnum.CSV)
         if request.GET.get("xlsx"):
@@ -276,7 +288,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["profiles"] = map(lambda x: x.as_dict(), page.object_list)
+            res["profiles"] = map(lambda x: x.as_dict(small=True), page.object_list)
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset

@@ -54,6 +54,17 @@ export const useUsersHistoryColumns = () => {
                 id: 'fields_modified',
                 accessor: 'fields_modified',
                 sortable: false,
+                Cell: settings => {
+                    return BreakWordCell({
+                        value: settings.row.original.fields_modified
+                            .map(field =>
+                                MESSAGES[field]
+                                    ? formatMessage(MESSAGES[field])
+                                    : field,
+                            )
+                            .join(', '),
+                    });
+                },
             },
             {
                 Header: formatMessage(MESSAGES.modifiedBy),

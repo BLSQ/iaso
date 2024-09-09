@@ -468,6 +468,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.deleted_at',
         defaultMessage: 'Deleted',
     },
+    new_user_created: {
+        id: 'iaso.users.label.new_user_created',
+        defaultMessage: 'New user created',
+    },
 });
 
 export default MESSAGES;

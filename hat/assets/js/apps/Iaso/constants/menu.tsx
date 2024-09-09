@@ -288,15 +288,23 @@ const menuItems = (
                 },
                 {
                     label: formatMessage(MESSAGES.users),
-                    key: 'users',
+                    key: '',
                     permissions: paths.usersPath.permissions,
                     icon: props => <SupervisorAccount {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.users),
-                    key: 'usersHistory',
-                    permissions: paths.usersHistoryPath.permissions,
-                    icon: props => <HistoryIcon {...props} />,
+                    subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.management),
+                            key: 'users',
+                            permissions: paths.usersPath.permissions,
+                            icon: props => <Settings {...props} />,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.history),
+                            key: 'usersHistory',
+                            permissions: paths.usersHistoryPath.permissions,
+                            icon: props => <HistoryIcon {...props} />,
+                        },
+                    ],
                 },
                 {
                     label: formatMessage(MESSAGES.userRoles),

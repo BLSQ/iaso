@@ -560,6 +560,7 @@
     "iaso.label.locationField": "Nom du champ \"location\"",
     "iaso.label.login": "Se connecter",
     "iaso.label.longitude": "Longitude",
+    "iaso.label.management": "Gestion",
     "iaso.label.map": "Carte",
     "iaso.label.map.legend": "Légende",
     "iaso.label.mappingType.aggregate": "Domaine aggrégée",

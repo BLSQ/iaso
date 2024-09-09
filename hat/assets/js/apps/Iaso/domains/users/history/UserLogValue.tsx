@@ -38,12 +38,16 @@ export const UserLogValue: FunctionComponent<Props> = ({ fieldKey, value }) => {
             case 'org_units':
                 return (
                     <>
-                        {(value as Array<number>).map(orgUnitId => {
+                        {(value as Array<number>).map((orgUnitId, index) => {
                             return (
                                 <LinkToOrgUnit
                                     key={orgUnitId}
                                     orgUnit={{
-                                        name: `${orgUnitId}`,
+                                        name:
+                                            index ===
+                                            (value as Array<number>).length - 1
+                                                ? `${orgUnitId}`
+                                                : `${orgUnitId}, `,
                                         id: orgUnitId as number,
                                     }}
                                 />

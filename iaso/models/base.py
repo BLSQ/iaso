@@ -1371,7 +1371,6 @@ class Profile(models.Model):
         all_permissions = user_group_permissions + user_permissions
         permissions = list(set(all_permissions))
         if not small:
-            print("not small")
             return {
                 "id": self.id,
                 "first_name": self.user.first_name,

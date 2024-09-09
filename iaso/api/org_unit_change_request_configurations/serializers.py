@@ -208,6 +208,16 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(serializers.ModelSerializ
         request = self.context.get("request")
         user = request.user
 
+        # Making sure that there is no soft-deleted OUCRC with the same project_id and org_unit_type_id
+        project_id = validated_data["project"].id
+        org_unit_type_id = validated_data["org_unit_type"].id
+        if OrgUnitChangeRequestConfiguration.objects_include_deleted.filter(
+            project_id=project_id, org_unit_type_id=org_unit_type_id
+        ).exists():
+            raise serializers.ValidationError(
+                f"There is already a configuration for this project_id ({project_id}) and org_unit_type_id ({org_unit_type_id}).)"
+            )
+
         # Making sure the editable_fields values are correct
         editable_fields_set = set()
         for field in validated_data["editable_fields"]:

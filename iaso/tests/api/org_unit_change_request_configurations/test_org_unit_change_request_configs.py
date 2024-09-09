@@ -458,7 +458,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_update_unknown_config(self):
+    def test_update_invalid_id(self):
         self.client.force_authenticate(self.user_ash_ketchum)
         data = {
             "org_units_editable": True,
@@ -495,8 +495,53 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
     def test_update_unknown_other_groups(self):
         self.make_patch_api_call_with_non_existing_id_in_attribute(attribute_name="other_group_ids")
 
-    # + Test for updating groupsets or groups, but there are updates in groupsets between creation and update
+    # + Test for updating groupsets or groups, but there were updates in groupsets between OUCRC creation and update
     # -> what should happen? error? cleanup without telling the user?
+
+    # *** Testing DELETE endpoint ***
+    def test_delete_ok(self):
+        oucrcs_before_deletion = m.OrgUnitChangeRequestConfiguration.objects.count()
+        self.client.force_authenticate(self.user_ash_ketchum)
+        response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        oucrcs_after_deletion = m.OrgUnitChangeRequestConfiguration.objects.count()
+        self.assertEqual(oucrcs_before_deletion, oucrcs_after_deletion + 1)
+
+        soft_deleted_oucrc = m.OrgUnitChangeRequestConfiguration.objects_only_deleted.get(id=self.oucrc_type_fire.id)
+        self.assertIsNotNone(soft_deleted_oucrc.deleted_at)
+
+    def test_delete_without_auth(self):
+        response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_delete_invalid_id(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        probably_not_a_valid_id = 1234567890
+        response = self.client.delete(f"{self.OUCRC_API_URL}{probably_not_a_valid_id}/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_error_deleting_and_recreating(self):
+        # I'm not sure that we want this behavior, but that's what is implemented at the moment.
+
+        # First, let's delete the existing OUCRC
+        self.client.force_authenticate(self.user_ash_ketchum)
+        response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Then let's create a new OUCRC with the same project_id and org_unit_type_id as the one that was deleted
+        # We don't care about the other parameters
+        data = {
+            "project_id": self.project_johto.id,
+            "org_unit_type_id": self.ou_type_fire_pokemons.id,
+            "org_units_editable": False,
+        }
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
+        self.assertContains(
+            response,
+            f"There is already a configuration for this project_id ({self.project_johto.id}) and org_unit_type_id ({self.ou_type_fire_pokemons.id}).",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
 
     # def test_update_should_be_forbidden(self):
     #     self.client.force_authenticate(self.user_with_review_perm)

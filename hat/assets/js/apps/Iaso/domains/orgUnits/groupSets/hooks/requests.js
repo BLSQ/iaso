@@ -17,10 +17,14 @@ export const useGetGroupSets = params => {
     if (params.search) {
         newParams.search = params.search;
     }
+
+    if (params.sourceVersion) {
+        newParams.version = params.sourceVersion
+    }
     const searchParams = new URLSearchParams(newParams);
     return useSnackQuery(
         ['group_sets', newParams],
-        () => getRequest(`/api/group_sets/?${searchParams.toString()}`),
+        () => getRequest(`/api/group_sets/?${searchParams.toString()}&fields=id,name,groups,created_at,updated_at`),
         undefined,
         {
             // using this here to avoid multiple identical calls

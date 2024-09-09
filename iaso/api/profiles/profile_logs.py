@@ -36,13 +36,11 @@ class ProfileLogsListFilter(django_filters.rest_framework.FilterSet):
     created_at = django_filters.DateFromToRangeFilter()
 
     def filter_user_ids(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        # object_id is tored as string in Modification
         user_ids = [user_id for user_id in parse_comma_separated_numeric_values(value, name)]
         # There's always a new_value, even on delete
         return queryset.filter(new_value__0__fields__user__in=user_ids)
 
     def filter_modified_by(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        # object_id is stored as string in Modification
         user_ids = parse_comma_separated_numeric_values(value, name)
         return queryset.filter(user__id__in=user_ids)
 

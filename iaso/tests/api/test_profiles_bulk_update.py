@@ -844,6 +844,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEquals(past_value["last_name"], self.chewie.last_name)
         self.assertEquals(past_value["email"], self.chewie.email)
         self.assertEquals(len(past_value["user_permissions"]), 1)
+        self.assertNotIn("password", past_value.keys())
 
         self.assertEquals(past_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
         self.assertEquals(past_value["language"], "en")
@@ -865,6 +866,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEquals(new_value["last_name"], self.chewie.last_name)
         self.assertEquals(new_value["email"], self.chewie.email)
         self.assertEquals(len(new_value["user_permissions"]), 1)
+        self.assertNotIn("password", new_value.keys())
 
         self.assertEquals(new_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
         self.assertEquals(new_value["language"], "fr")

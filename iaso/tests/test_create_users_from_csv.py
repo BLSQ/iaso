@@ -611,6 +611,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         new_value = log["new_value"][0]["fields"]
         self.assertTrue(new_value["password_updated"])
+        self.assertNotIn("password", new_value.keys())
         self.assertEquals(len(new_value["user_permissions"]), 1)
         self.assertIn("iaso_forms", new_value["user_permissions"])
         self.assertEquals(len(new_value["user_roles"]), 1)

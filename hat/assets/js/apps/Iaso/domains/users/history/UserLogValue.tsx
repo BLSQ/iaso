@@ -1,7 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-// import moment from 'moment';
-// import { makeStyles } from '@mui/styles';
 import MESSAGES from '../messages';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import { LinkTo } from '../../../components/nav/LinkTo';
@@ -16,16 +14,7 @@ type Props = {
     value?: string | number | boolean | Array<string> | Array<number>;
 };
 
-// const styles = theme => ({
-//     cellMap: {
-//         margin: -theme.spacing(2),
-//     },
-// });
-
-// const useStyles = makeStyles(styles);
-
 export const UserLogValue: FunctionComponent<Props> = ({ fieldKey, value }) => {
-    // const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
 

@@ -38,7 +38,7 @@ def public_url_for_enketo(request: HttpRequest, path):
 
     resolved_path = request.build_absolute_uri(path)
 
-    # This hack allow it to work in the docker-compose environment, where the server name from outside the container
+    # This hack allow it to work in the docker compose environment, where the server name from outside the container
     # network are not the same that in the inside.
     if enketo_settings().get("ENKETO_DEV"):
         resolved_path = resolved_path.replace("localhost:8081", "iaso:8081")

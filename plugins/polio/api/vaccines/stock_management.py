@@ -418,16 +418,20 @@ class VaccineStockSubitemBase(ModelViewSet):
 
     def get_queryset(self):
         vaccine_stock_id = self.request.query_params.get("vaccine_stock")
+        order = self.request.query_params.get("order")
 
         if self.model_class is None:
             raise NotImplementedError("model_class must be defined")
 
-        if vaccine_stock_id is None:
-            return self.model_class.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
-        else:
-            return self.model_class.objects.filter(
-                vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
-            )
+        queryset = self.model_class.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
+
+        if vaccine_stock_id is not None:
+            queryset = queryset.filter(vaccine_stock=vaccine_stock_id)
+
+        if order:
+            queryset = queryset.order_by(order)
+
+        return queryset
 
 
 class OutgoingStockMovementSerializer(serializers.ModelSerializer):

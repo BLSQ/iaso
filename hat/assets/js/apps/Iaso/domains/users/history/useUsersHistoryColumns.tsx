@@ -14,7 +14,7 @@ export const useUsersHistoryColumns = () => {
                 id: 'user',
                 accessor: 'user',
                 Cell: settings => {
-                    return getDisplayName(settings.row.original.modified_by);
+                    return getDisplayName(settings.row.original.user);
                 },
             },
             {

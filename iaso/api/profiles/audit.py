@@ -8,29 +8,6 @@ from iaso.models.project import Project
 from django.utils import timezone
 
 
-# class NestedOrgUnitSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = OrgUnit
-#         fields = ["id", "name"]
-
-
-# class NestedProjectSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Project
-#         fields = ["id", "name"]
-
-
-# class NestedUserRoleSerializer(serializers.ModelSerializer):
-#     name = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = UserRole
-#         fields = ["id", "name"]
-
-#     def get_name(self, user_role):
-#         return user_role.remove_user_role_name_prefix(user_role.group.name)
-
-
 class NestedUserAuditSerializer(serializers.ModelSerializer):
     user_permissions = serializers.SerializerMethodField()
     # TODO remove this line when soft delete implemented
@@ -59,9 +36,6 @@ class ProfileAuditFieldsSerializer(serializers.ModelSerializer):
     email = serializers.SerializerMethodField()
     user_permissions = serializers.SerializerMethodField()
     password = serializers.SerializerMethodField()
-    # user_roles = NestedUserRoleSerializer(many=True)
-    # projects = NestedProjectSerializer(many=True)
-    # org_units = NestedOrgUnitSerializer(many=True)
     # TODO remove this line when soft delete implemented
     deleted_at = serializers.SerializerMethodField()
 

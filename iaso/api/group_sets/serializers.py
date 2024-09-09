@@ -57,6 +57,18 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
             "updated_at",
         ]
 
+    source_version = SourceVersionSerializerForGroupset(read_only=True)
+    groups = GroupSerializer(many=True, read_only=True)
+
+    # using none() to avoid leaking other project info
+    # see __init__ to filter based on user access
+    group_ids = serializers.PrimaryKeyRelatedField(
+        source="groups", many=True, queryset=Group.objects.none(), required=False, allow_null=True
+    )
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -171,15 +183,3 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
         audit_models.log_modification(original_copy, instance, source=audit_models.GROUP_SET_API, user=user)
 
         return instance
-
-    source_version = SourceVersionSerializerForGroupset(read_only=True)
-    groups = GroupSerializer(many=True, read_only=True)
-
-    # using none() to avoid leaking other project info
-    # see __init__ to filter based on user access
-    group_ids = serializers.PrimaryKeyRelatedField(
-        source="groups", many=True, queryset=Group.objects.none(), required=False, allow_null=True
-    )
-
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)

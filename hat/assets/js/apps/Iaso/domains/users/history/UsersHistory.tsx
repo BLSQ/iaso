@@ -10,7 +10,6 @@ import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink'
 import { useGetUsersHistory } from '../hooks/useGetUsersHistory';
 import { useUsersHistoryColumns } from './useUsersHistoryColumns';
 import { UserHistoryLogDetails } from './UserHistoryLogDetails';
-import { LogsDetails } from '../../orgUnits/history/LogsDetails';
 
 const tableDefaults = {
     page: 1,
@@ -46,15 +45,12 @@ export const UsersHistory: FunctionComponent = () => {
                         // eslint-disable-next-line react/no-unstable-nested-components
                         SubComponent: log => {
                             return log ? (
-                                <LogsDetails
-                                    logId={log.id}
-                                    goToRevision={() => null}
-                                />
+                                <UserHistoryLogDetails logId={log.id} />
                             ) : null;
                         },
                     }}
-                    // columnSelectorEnabled
-                    // columnSelectorButtonType="button"
+                    columnSelectorEnabled
+                    columnSelectorButtonType="button"
                 />
             </Box>
         </>

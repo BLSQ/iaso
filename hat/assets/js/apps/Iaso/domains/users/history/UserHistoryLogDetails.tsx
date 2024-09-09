@@ -38,14 +38,19 @@ export const UserHistoryLogDetails: FunctionComponent<Props> = ({ logId }) => {
                                 <UserLogCompare
                                     title={formatMessage(MESSAGES.before)}
                                     log={log.past_value}
-                                    otherLog={log.new_value}
+                                    compareLog={log.new_value}
                                 />
                             </Grid>
                             <Grid item xs={6}>
+                                {log.new_value[0].deleted_at && (
+                                    <h4 className="margin-bottom">
+                                        {formatMessage(MESSAGES.deleted_at)}
+                                    </h4>
+                                )}
                                 <UserLogCompare
                                     title={formatMessage(MESSAGES.after)}
                                     log={log.new_value}
-                                    otherLog={log.past_value}
+                                    compareLog={log.past_value}
                                 />
                             </Grid>
                         </Grid>
@@ -60,7 +65,7 @@ export const UserHistoryLogDetails: FunctionComponent<Props> = ({ logId }) => {
                                     </h4>
                                     <UserLogCompare
                                         log={log.new_value}
-                                        otherLog={log.past_value}
+                                        compareLog={log.past_value}
                                     />
                                 </Grid>
                             </Grid>

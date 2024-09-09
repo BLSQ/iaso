@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent } from 'react';
 import {
     Table,
     TableBody,
@@ -15,11 +15,9 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import ValueWithErrorBoundary from '../../orgUnits/history/ValueWithErrorBoundary';
 import { MESSAGES as LOG_MESSAGES } from '../../orgUnits/history/messages';
 import MESSAGES from '../messages';
-// import { User } from '../../../utils/usersUtils';
-import { NameAndId } from '../../../types/utils';
+import { UserLogValueWithErrorBoundary } from './UserLogValueWithErrorBoundary';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -47,14 +45,17 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const getArrayfields = objectItem =>
-    Object.keys(objectItem).map(fieldKey => ({
-        fieldKey,
-        value: objectItem[fieldKey],
-    }));
+    Object.keys(objectItem)
+        .filter(fieldKey => fieldKey !== 'user' && fieldKey !== 'account')
+        .map(fieldKey => ({
+            fieldKey,
+            value: objectItem[fieldKey],
+        }));
 
 type LogValue = {
-    user: {
-        id: number;
+    pk: number;
+    fields: {
+        user: number;
         email: string;
         username: string;
         first_name: string;
@@ -63,8 +64,8 @@ type LogValue = {
         language: 'fr' | 'en';
         phone_number: string;
         org_units: number[];
-        projects: NameAndId[];
-        user_roles: NameAndId[];
+        projects: number[];
+        user_roles: number[];
         home_page: string | null;
         user_permissions: string[];
     };
@@ -73,137 +74,121 @@ type NewLogValue = LogValue & {
     password_updated?: boolean;
 };
 
-// type UserLog = {
-//     id: number;
-//     content_type: string;
-//     object_id: string; // profile id as string
-//     source: string;
-//     created_at: string; // date time
-//     user: User;
-//     past_value: LogValue[];
-//     new_value: NewLogValue[];
-// };
-
 type Props = {
-    log: LogValue | NewLogValue;
-    otherLog: LogValue | NewLogValue;
+    log: (LogValue | NewLogValue)[];
+    compareLog: (LogValue | NewLogValue)[];
     title?: string;
 };
 
 export const UserLogCompare: FunctionComponent<Props> = ({
     log,
-    otherLog,
+    compareLog,
     title,
 }) => {
     const [showAllFields, setShowAllFields] = React.useState(false);
     const classes: Record<string, string> = useStyles();
+    const differenceArray: any[] = [];
     const { formatMessage } = useSafeIntl();
 
-    // const diffFields = Object.fromEntries(
-    //     Object.entries(log.fields).filter(
-    //         ([key, value]) => !isEqual(value, otherLog && otherLog.fields[key]),
-    //     ),
-    // );
-    const logKeys = useMemo(() => Object.keys(log), [log]);
-
-    const diffFields: any = useMemo(() => {
-        const result = {};
-        logKeys.forEach(logKey => {
-            if (logKey !== 'password_updated') {
-                const logValue = log[logKey];
-                const otherLogValue = otherLog[logKey];
-                if (!isEqual(logValue, otherLogValue)) {
-                    result[logKey] = true;
-                } else {
-                    result[logKey] = false;
-                }
-            }
-        });
-        return result;
-    }, [log, logKeys, otherLog]);
-
-    const diffKeys: any[] = useMemo(
-        () => Object.keys(diffFields),
-        [diffFields],
-    );
-
-    const fields = useMemo(() => {
-        return showAllFields ? getArrayfields(log) : getArrayfields(diffFields);
-    }, [diffFields, log, showAllFields]);
-
-    const noDiff = showAllFields ? logKeys.length === 0 : diffKeys.length === 0;
-
     return (
-        <Paper className={classes.paper}>
-            <Grid container spacing={0} className={classes.seeAll}>
-                <Grid
-                    container
-                    item
-                    xs={6}
-                    justifyContent="flex-start"
-                    alignItems="center"
-                >
-                    <Typography variant="h6" component="h6" color="primary">
-                        {title}
-                    </Typography>
-                </Grid>
-                <Grid
-                    container
-                    item
-                    xs={6}
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    <Tooltip
-                        title={formatMessage(
-                            showAllFields
-                                ? LOG_MESSAGES.seeChanges
-                                : LOG_MESSAGES.seeAll,
-                        )}
-                    >
-                        <IconButton
-                            className={classes.deleteIcon}
-                            color="inherit"
-                            onClick={() => setShowAllFields(!showAllFields)}
-                        >
-                            {showAllFields ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                    </Tooltip>
-                </Grid>
-            </Grid>
-            {noDiff && formatMessage(LOG_MESSAGES.noDifference)}
-            <Table className={classes.table}>
-                <TableBody>
-                    {fields.map(({ fieldKey, value }) => (
-                        <TableRow key={fieldKey}>
-                            <TableCell className={classes.cell}>
-                                {MESSAGES[fieldKey]
-                                    ? formatMessage(MESSAGES[fieldKey])
-                                    : fieldKey}
-                            </TableCell>
-                            <TableCell
-                                className={
-                                    showAllFields && diffFields[fieldKey]
-                                        ? classes.isDifferent
-                                        : undefined
-                                }
-                            >
-                                <ValueWithErrorBoundary
-                                    fieldKey={fieldKey}
-                                    value={value}
-                                />
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+        <>
+            {log.map((l, i) => {
+                const otherLog = compareLog[i];
 
-            <Grid
-                container
-                spacing={2}
-                alignItems="center"
-                justifyContent="center"
-            />
-        </Paper>
+                const diffFields = Object.fromEntries(
+                    Object.entries(l.fields).filter(
+                        ([key, value]) =>
+                            !isEqual(value, otherLog && otherLog.fields[key]),
+                    ),
+                );
+
+                differenceArray[i] = diffFields;
+                const showFields = showAllFields ? l.fields : diffFields;
+                const fields = getArrayfields(showFields);
+
+                return (
+                    <Paper className={classes.paper} key={l.pk}>
+                        <Grid container spacing={0} className={classes.seeAll}>
+                            <Grid
+                                container
+                                item
+                                xs={6}
+                                justifyContent="flex-start"
+                                alignItems="center"
+                            >
+                                <Typography
+                                    variant="h6"
+                                    component="h6"
+                                    color="primary"
+                                >
+                                    {title}
+                                </Typography>
+                            </Grid>
+                            <Grid
+                                container
+                                item
+                                xs={6}
+                                justifyContent="flex-end"
+                                alignItems="center"
+                            >
+                                <Tooltip
+                                    title={formatMessage(
+                                        showAllFields
+                                            ? LOG_MESSAGES.seeChanges
+                                            : LOG_MESSAGES.seeAll,
+                                    )}
+                                >
+                                    <IconButton
+                                        className={classes.deleteIcon}
+                                        color="inherit"
+                                        onClick={() =>
+                                            setShowAllFields(!showAllFields)
+                                        }
+                                    >
+                                        {showAllFields ? (
+                                            <VisibilityOff />
+                                        ) : (
+                                            <Visibility />
+                                        )}
+                                    </IconButton>
+                                </Tooltip>
+                            </Grid>
+                        </Grid>
+                        {fields.length === 0 &&
+                            formatMessage(LOG_MESSAGES.noDifference)}
+                        <Table className={classes.table}>
+                            <TableBody>
+                                {fields.map(({ fieldKey, value }) => (
+                                    <TableRow key={fieldKey}>
+                                        <TableCell className={classes.cell}>
+                                            {MESSAGES[fieldKey]
+                                                ? formatMessage(
+                                                      MESSAGES[fieldKey],
+                                                  )
+                                                : fieldKey}
+                                        </TableCell>
+                                        <TableCell
+                                            className={
+                                                showAllFields &&
+                                                diffFields[fieldKey]
+                                                    ? classes.isDifferent
+                                                    : undefined
+                                            }
+                                        >
+                                            <UserLogValueWithErrorBoundary
+                                                // ts compiler gets confused with class component
+                                                // @ts-ignore
+                                                fieldKey={fieldKey}
+                                                value={value ?? ''}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </Paper>
+                );
+            })}
+        </>
     );
 };

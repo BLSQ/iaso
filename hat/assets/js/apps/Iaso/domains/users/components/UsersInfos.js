@@ -9,7 +9,7 @@ import { APP_LOCALES } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../messages.ts';
 import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 
 const UsersInfos = ({

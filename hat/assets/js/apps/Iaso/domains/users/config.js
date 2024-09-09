@@ -8,7 +8,7 @@ import React, { useMemo } from 'react';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog.tsx';
 import { EditUsersDialog } from './components/UsersDialog.tsx';
-import MESSAGES from './messages';
+import MESSAGES from './messages.ts';
 import { userHasOneOfPermissions } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';

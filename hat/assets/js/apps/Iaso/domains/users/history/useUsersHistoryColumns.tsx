@@ -1,12 +1,9 @@
-import React, {
-    Expander,
-    IconButton,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { Expander, useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
 import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
 import getDisplayName from '../../../utils/usersUtils';
+import { BreakWordCell } from '../../../components/Cells/BreakWordCell';
 
 export const useUsersHistoryColumns = () => {
     const { formatMessage } = useSafeIntl();
@@ -31,13 +28,12 @@ export const useUsersHistoryColumns = () => {
                 id: 'past_location',
                 accessor: 'past_location',
                 sortable: false,
-                // TODO handle text overflow
                 Cell: settings => {
-                    // type definition not flexible enough
-                    // @ts-ignore
-                    return settings.row.original.past_location
-                        .map(location => location.name)
-                        .join(', ');
+                    return BreakWordCell({
+                        value: settings.row.original.past_location
+                            .map(location => location.name)
+                            .join(', '),
+                    });
                 },
             },
             {
@@ -45,13 +41,12 @@ export const useUsersHistoryColumns = () => {
                 id: 'new_location',
                 accessor: 'new_location',
                 sortable: false,
-                // TODO handle text overflow
                 Cell: settings => {
-                    // type definition not flexible enough
-                    // @ts-ignore
-                    return settings.row.original.new_location
-                        .map(location => location.name)
-                        .join(', ');
+                    return BreakWordCell({
+                        value: settings.row.original.new_location
+                            .map(location => location.name)
+                            .join(', '),
+                    });
                 },
             },
             {

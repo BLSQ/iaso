@@ -13,11 +13,23 @@ const MESSAGES = defineMessages({
         defaultMessage: 'User name',
         id: 'iaso.label.userName',
     },
+    username: {
+        defaultMessage: 'User name',
+        id: 'iaso.label.userName',
+    },
     firstName: {
         defaultMessage: 'First name',
         id: 'iaso.label.firstName',
     },
     lastName: {
+        defaultMessage: 'Last name',
+        id: 'iaso.label.lastName',
+    },
+    first_name: {
+        defaultMessage: 'First name',
+        id: 'iaso.label.firstName',
+    },
+    last_name: {
         defaultMessage: 'Last name',
         id: 'iaso.label.lastName',
     },
@@ -105,6 +117,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'User roles',
         id: 'iaso.users.dialog.userRoles',
     },
+    user_roles: {
+        defaultMessage: 'User roles',
+        id: 'iaso.users.dialog.userRoles',
+    },
     searchUser: {
         id: 'iaso.users.filter.searchUser',
         defaultMessage: 'Search user',
@@ -140,6 +156,10 @@ const MESSAGES = defineMessages({
     },
 
     homePage: {
+        defaultMessage: 'Home page',
+        id: 'iaso.users.label.homePage',
+    },
+    home_page: {
         defaultMessage: 'Home page',
         id: 'iaso.users.label.homePage',
     },
@@ -313,6 +333,7 @@ const MESSAGES = defineMessages({
     },
     exportMobileAppBodyWarning: {
         defaultMessage:
+            // eslint-disable-next-line max-len
             'Caution: This file will contain sensitive information, for this reason the exported file will be encrypted. Please choose a password of at least 8 characters to encrypt the file. You will need to provide this password when setting up the mobile application.',
         id: 'iaso.users.exportMobileAppBodyWarning',
     },
@@ -359,6 +380,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Phone number',
         id: 'iaso.users.phoneNumber',
     },
+    phone_number: {
+        defaultMessage: 'Phone number',
+        id: 'iaso.users.phoneNumber',
+    },
     usersHistory: {
         defaultMessage: 'Users history',
         id: 'iaso.users.usersHistory',
@@ -402,6 +427,46 @@ const MESSAGES = defineMessages({
     created: {
         id: 'iaso.label.created',
         defaultMessage: 'Creation',
+    },
+    renderError: {
+        id: 'iaso.label.renderError',
+        defaultMessage: 'Error rendering value',
+    },
+    yes: {
+        defaultMessage: 'Yes',
+        id: 'iaso.label.yes',
+    },
+    no: {
+        defaultMessage: 'No',
+        id: 'iaso.label.no',
+    },
+    fr: {
+        defaultMessage: 'French',
+        id: 'iaso.users.label.french',
+    },
+    en: {
+        defaultMessage: 'English',
+        id: 'iaso.users.label.english',
+    },
+    language: {
+        defaultMessage: 'Language',
+        id: 'iaso.users.dialog.locale',
+    },
+    user_permissions: {
+        defaultMessage: 'User permissions',
+        id: 'iaso.users.userPermissions',
+    },
+    org_units: {
+        defaultMessage: 'Location',
+        id: 'iaso.map.location',
+    },
+    password_updated: {
+        defaultMessage: 'Password updated',
+        id: 'iaso.users.label.password_updated',
+    },
+    deleted_at: {
+        id: 'iaso.forms.deleted_at',
+        defaultMessage: 'Deleted',
     },
 });
 

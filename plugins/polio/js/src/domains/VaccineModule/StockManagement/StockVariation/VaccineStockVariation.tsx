@@ -48,7 +48,9 @@ const baseUrl = baseUrls.stockVariation;
 type VaccineStockVariationParams = Partial<UrlParams> & StockVariationParams;
 
 export const VaccineStockVariation: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as VaccineStockVariationParams;
+    const params = useParamsObject(
+        baseUrl,
+    ) as unknown as VaccineStockVariationParams;
     const goBack = useGoBack(
         `${baseUrls.stockManagementDetails}/id/${params.id}`,
         true,
@@ -183,7 +185,7 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                 isFetching={isFetchingDestructions}
                                 defaultSorted={[
                                     {
-                                        id: 'destruction_reception_rrt',
+                                        id: 'rrt_destruction_report_reception_date',
                                         desc: true,
                                     },
                                 ]}

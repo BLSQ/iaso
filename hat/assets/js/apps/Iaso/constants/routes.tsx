@@ -15,7 +15,7 @@ import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
-import FormsStats from '../domains/forms/stats';
+import { FormsStats } from '../domains/forms/stats';
 import Instances from '../domains/instances';
 import CompareSubmissions from '../domains/instances/compare';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';

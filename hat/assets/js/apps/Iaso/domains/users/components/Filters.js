@@ -124,6 +124,16 @@ const Filters = ({ baseUrl, params }) => {
         <Grid container spacing={2}>
             <Grid item xs={12} md={3}>
                 <InputComponent
+                    keyValue="search"
+                    onChange={handleChange}
+                    value={filters.search}
+                    type="search"
+                    label={MESSAGES.search}
+                    onEnterPressed={handleSearch}
+                    onErrorChange={setTextSearchError}
+                    blockForbiddenChars
+                />
+                <InputComponent
                     keyValue="projectsIds"
                     onChange={handleChange}
                     value={filters.projectsIds}
@@ -146,6 +156,8 @@ const Filters = ({ baseUrl, params }) => {
                     loading={isFetching}
                     onEnterPressed={handleSearchPerms}
                 />
+            </Grid>
+            <Grid item xs={12} md={3}>
                 <InputComponent
                     keyValue="userRoles"
                     onChange={handleChange}
@@ -157,18 +169,7 @@ const Filters = ({ baseUrl, params }) => {
                     loading={isFetchingUserRoles}
                     onEnterPressed={handleSearchUserRoles}
                 />
-            </Grid>
-            <Grid item xs={12} md={3}>
-                <InputComponent
-                    keyValue="search"
-                    onChange={handleChange}
-                    value={filters.search}
-                    type="search"
-                    label={MESSAGES.search}
-                    onEnterPressed={handleSearch}
-                    onErrorChange={setTextSearchError}
-                    blockForbiddenChars
-                />
+
                 <InputComponent
                     keyValue="teamsIds"
                     onChange={handleChange}

@@ -285,7 +285,8 @@ class ProfileAPITestCase(APITestCase):
         """GET /profiles/ with auth (user has read only permissions)"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get("/api/profiles/")
+        with self.assertNumQueries(10):
+            response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
         profile_url = "/api/profiles/%s/" % self.jane.iaso_profile.id
         response = self.client.get(profile_url)

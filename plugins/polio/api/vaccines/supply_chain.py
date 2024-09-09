@@ -400,7 +400,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
 
     # comma separated list of all
     def get_po_numbers(self, obj):
-        pre_alerts = obj.vaccineprealert_set.all()
+        pre_alerts = obj.vaccineprealert_set.all().order_by("-estimated_arrival_time")
         if not pre_alerts:
             return ""
         return ", ".join([pre_alert.po_number for pre_alert in pre_alerts])
@@ -422,14 +422,14 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
 
     # Comma Separated List of all estimated arrival times
     def get_eta(self, obj):
-        pre_alerts = obj.vaccineprealert_set.all()
+        pre_alerts = obj.vaccineprealert_set.all().order_by("-estimated_arrival_time")
         if not pre_alerts:
             return ""
         return ", ".join([str(pre_alert.estimated_arrival_time) for pre_alert in pre_alerts])
 
     # Comma Separated List of all arrival report dates
     def get_var(self, obj):
-        arrival_reports = obj.vaccinearrivalreport_set.all()
+        arrival_reports = obj.vaccinearrivalreport_set.all().order_by("-arrival_report_date")
         if not arrival_reports:
             return ""
         return ", ".join([str(report.arrival_report_date) for report in arrival_reports])

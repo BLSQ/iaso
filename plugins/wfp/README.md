@@ -26,7 +26,7 @@ Both have default value of `redis://localhost:6379`
   plugins.wfp.tasks.generate_random_data
 ```
 
-7. Run python test `docker-compose run iaso manage test -k ETL`
+7. Run python test `docker compose run iaso manage test -k ETL`
 
 
 Once the ETL has run, users having access to the admin interface can also use the 

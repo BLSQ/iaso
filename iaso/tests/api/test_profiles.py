@@ -1125,6 +1125,7 @@ class ProfileAPITestCase(APITestCase):
             self.fail(msg=str(ex))
 
         self.assertEquals(log["past_value"], [])
+        self.assertEquals(log["new_value"][0]["pk"], new_profile_id)
         new_profile = log["new_value"][0]["fields"]
         self.assertEquals(new_profile["user"], new_user_id)
         self.assertEquals(new_profile["username"], data["user_name"])
@@ -1134,6 +1135,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(len(new_profile["user_permissions"]), 1)
         self.assertEquals(new_profile["user_permissions"], data["user_permissions"])
         self.assertTrue(new_profile["password_updated"])
+        self.assertNotIn("password", new_profile.keys())
 
         self.assertEquals(new_profile["dhis2_id"], data["dhis2_id"])
         self.assertEquals(new_profile["language"], data["language"])
@@ -1169,6 +1171,7 @@ class ProfileAPITestCase(APITestCase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
+        self.assertEquals(log["new_value"][0]["pk"], new_profile_id)
         new_profile = log["new_value"][0]["fields"]
         self.assertEquals(new_profile["user"], new_user_id)
         self.assertEquals(new_profile["username"], data["user_name"])
@@ -1179,6 +1182,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(new_profile["user_permissions"], data["user_permissions"])
         self.assertIsNotNone(new_profile["deleted_at"])
         self.assertFalse(new_profile["password_updated"])
+        self.assertNotIn("password", new_profile.keys())
 
         self.assertEquals(new_profile["dhis2_id"], data["dhis2_id"])
         self.assertEquals(new_profile["language"], data["language"])
@@ -1192,6 +1196,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertIn(self.project.id, new_profile["projects"])
         self.assertIsNotNone(new_profile["deleted_at"])
 
+        self.assertEquals(log["past_value"][0]["pk"], new_profile_id)
         past_profile = log["past_value"][0]["fields"]
         self.assertEquals(past_profile["user"], new_user_id)
         self.assertEquals(past_profile["username"], data["user_name"])
@@ -1201,6 +1206,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(len(past_profile["user_permissions"]), 1)
         self.assertEquals(past_profile["user_permissions"], data["user_permissions"])
         self.assertIsNone(past_profile["deleted_at"])
+        self.assertNotIn("password", past_profile.keys())
 
         self.assertEquals(past_profile["dhis2_id"], data["dhis2_id"])
         self.assertEquals(past_profile["language"], data["language"])
@@ -1266,7 +1272,7 @@ class ProfileAPITestCase(APITestCase):
             jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
-
+        self.assertEquals(log["past_value"][0]["pk"], new_profile_id)
         past_value = log["past_value"][0]["fields"]
         self.assertEquals(past_value["user"], new_user_id)
         self.assertEquals(past_value["username"], data["user_name"])
@@ -1275,6 +1281,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(past_value["email"], data["email"])
         self.assertEquals(len(past_value["user_permissions"]), 1)
         self.assertEquals(past_value["user_permissions"], data["user_permissions"])
+        self.assertNotIn("password", past_value.keys())
 
         self.assertEquals(past_value["dhis2_id"], data["dhis2_id"])
         self.assertEquals(past_value["language"], data["language"])
@@ -1289,9 +1296,10 @@ class ProfileAPITestCase(APITestCase):
         self.assertIn(self.user_role.id, past_value["user_roles"])
         self.assertEquals(len(past_value["projects"]), 1)
         self.assertIn(self.project.id, past_value["projects"])
-
+        self.assertEquals(log["new_value"][0]["pk"], new_profile_id)
         new_value = log["new_value"][0]["fields"]
         self.assertTrue(new_value["password_updated"])
+        self.assertNotIn("password", new_value.keys())
         self.assertEquals(len(new_value["user_permissions"]), 2)
         self.assertIn("iaso_forms", new_value["user_permissions"])
         self.assertIn("iaso_org_units_read", new_value["user_permissions"])
@@ -1321,14 +1329,18 @@ class ProfileAPITestCase(APITestCase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
+        self.assertEquals(log["past_value"][0]["pk"], self.jim.iaso_profile.id)
         past_value = log["past_value"][0]["fields"]
         self.assertEquals(past_value["user"], self.jim.id)
         self.assertEquals(past_value["username"], self.jim.username)
         self.assertEquals(past_value["first_name"], "")
         self.assertEquals(past_value["language"], None)
+        self.assertNotIn("password", past_value.keys())
 
+        self.assertEquals(log["new_value"][0]["pk"], self.jim.iaso_profile.id)
         new_value = log["new_value"][0]["fields"]
         self.assertEquals(new_value["user"], self.jim.id)
         self.assertEquals(new_value["username"], self.jim.username)
         self.assertEquals(new_value["first_name"], "")
         self.assertEquals(new_value["language"], "fr")
+        self.assertNotIn("password", new_value.keys())

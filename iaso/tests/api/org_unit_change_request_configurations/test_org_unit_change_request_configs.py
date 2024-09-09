@@ -23,6 +23,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
     """
 
     DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+    OUCRC_API_URL = "/api/orgunits/changes/configs/"
 
     @classmethod
     def setUpTestData(cls):
@@ -88,7 +89,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             org_unit_type=cls.ou_type_rock_pokemons,
             project=cls.project_johto,
             created_by=cls.user_brock,
-            editable_fields=["org_unit_type", "parent_type", "group_sets", "reference_forms", "other_groups"],
+            editable_fields=["name", "aliases", "location"],
         )
 
         cls.other_group_1 = m.Group.objects.create(name="Other group 1")
@@ -101,6 +102,38 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         cls.oucrc_type_water.editable_reference_forms.set([cls.form_water_gun])
         cls.oucrc_type_water.other_groups.set([cls.other_group_1, cls.other_group_3])
 
+    # *** utility methods for testing ***
+    def create_new_org_unit_type(self, new_name=None):
+        return m.OrgUnitType.objects.create(name=new_name)
+
+    def make_patch_api_call_with_non_existing_id_in_attribute(self, attribute_name):
+        self._make_api_call_with_non_existing_id_in_attribute(attribute_name, "patch")
+
+    def make_post_api_call_with_non_existing_id_in_attribute(self, attribute_name, additional_data={}):
+        self._make_api_call_with_non_existing_id_in_attribute(attribute_name, "post", additional_data)
+
+    def _make_api_call_with_non_existing_id_in_attribute(self, attribute_name, method, additional_data={}):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        probably_not_a_valid_id = 1234567890
+        data = {
+            **additional_data,
+            attribute_name: [probably_not_a_valid_id],
+        }
+
+        if method == "post":
+            response = self.client.post(f"{self.OUCRC_API_URL}", data=data, format="json")
+        elif method == "patch":
+            response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", data=data, format="json")
+        else:
+            raise ValueError("Method must be either 'post' or 'patch'")
+
+        self.assertContains(response, probably_not_a_valid_id, status_code=status.HTTP_400_BAD_REQUEST)
+
+        result = response.json()
+        self.assertIn(attribute_name, result)
+        self.assertIn(str(probably_not_a_valid_id), result[attribute_name][0])
+
+    # *** Testing list GET endpoint ***
     def test_list_ok(self):
         self.client.force_authenticate(self.user_ash_ketchum)
 
@@ -120,17 +153,20 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         #  10. PREFETCH OrgUnitChangeRequest.old_reference_instances
         #  11. PREFETCH OrgUnitChangeRequest.{new/old}_reference_instances__form
         #  12. PREFETCH OrgUnitChangeRequest.org_unit_type.projects
-        response = self.client.get("/api/orgunits/changes/configs/")
+        response = self.client.get(self.OUCRC_API_URL)
         self.assertJSONResponse(response, status.HTTP_200_OK)
         self.assertEqual(3, len(response.data["results"]))
 
     def test_list_without_auth(self):
-        response = self.client.get("/api/orgunits/changes/configs/")
+        response = self.client.get(self.OUCRC_API_URL)
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
+    # list with filters?
+
+    # *** Testing retrieve GET endpoint ***
     def test_retrieve_ok(self):
         self.client.force_authenticate(self.user_misty)
-        response = self.client.get(f"/api/orgunits/changes/configs/{self.oucrc_type_water.id}/")
+        response = self.client.get(f"{self.OUCRC_API_URL}{self.oucrc_type_water.id}/")
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         result = response.data
@@ -155,14 +191,21 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(self.oucrc_type_water.updated_at.timestamp(), result["updated_at"])
 
     def test_retrieve_without_auth(self):
-        response = self.client.get(f"/api/orgunits/changes/configs/{self.oucrc_type_fire.id}/")
+        response = self.client.get(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/")
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
+    def test_retrieve_invalid_id(self):
+        probably_not_a_valid_id = 1234567890
+        self.client.force_authenticate(self.user_misty)
+        response = self.client.get(f"{self.OUCRC_API_URL}{probably_not_a_valid_id}/")
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+
+    # *** Testing create POST endpoint ***
     @time_machine.travel(DT, tick=False)
     def test_create_happy_path(self):
         self.client.force_authenticate(self.user_brock)
         random_uuid = uuid.uuid4()
-        new_ou_type = m.OrgUnitType.objects.create(name="new ou type")
+        new_ou_type = self.create_new_org_unit_type("new ou type")
         data = {
             "uuid": random_uuid,
             "project_id": self.project_johto.id,
@@ -175,7 +218,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "editable_reference_form_ids": [self.form_rock_throw.id],
             "other_group_ids": [self.other_group_1.id],
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         oucrc = m.OrgUnitChangeRequestConfiguration.objects.get(uuid=random_uuid)
@@ -219,14 +262,14 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
     #
     def test_create_without_auth(self):
         random_uuid = uuid.uuid4()
-        new_ou_type = m.OrgUnitType.objects.create(name="new ou type")
+        new_ou_type = self.create_new_org_unit_type("new ou type")
         data = {
             "uuid": random_uuid,
             "project_id": self.project_johto.id,
             "org_unit_type_id": new_ou_type.id,
             "org_units_editable": False,
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
     #
@@ -249,7 +292,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "org_unit_type_id": self.ou_type_fire_pokemons.id,
             "org_units_editable": False,
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertContains(
             response,
             "The fields project_id, org_unit_type_id must make a unique set.",
@@ -262,10 +305,12 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "org_unit_type_id": self.ou_type_water_pokemons.id,
             "org_units_editable": False,
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertContains(response, "This field is required.", status_code=status.HTTP_400_BAD_REQUEST)
-        self.assertIn("project_id", response.data)
-        self.assertEqual("required", response.data["project_id"][0].code)
+
+        result = response.json()
+        self.assertIn("project_id", result)
+        self.assertIn("required", result["project_id"][0])
 
     def test_create_missing_org_unit_type_id(self):
         self.client.force_authenticate(self.user_brock)
@@ -273,10 +318,12 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "project_id": self.project_johto.id,
             "org_units_editable": False,
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertContains(response, "This field is required.", status_code=status.HTTP_400_BAD_REQUEST)
-        self.assertIn("org_unit_type_id", response.data)
-        self.assertEqual("required", response.data["org_unit_type_id"][0].code)
+
+        result = response.json()
+        self.assertIn("org_unit_type_id", result)
+        self.assertIn("required", result["org_unit_type_id"][0])
 
     def test_create_invalid_org_unit_type_id(self):
         self.client.force_authenticate(self.user_ash_ketchum)
@@ -286,118 +333,171 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "org_unit_type_id": probably_not_a_valid_id,
             "org_units_editable": False,
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertContains(response, f"Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
-        self.assertIn("org_unit_type_id", response.data)
-        self.assertEqual("does_not_exist", response.data["org_unit_type_id"][0].code)
+
+        result = response.json()
+        self.assertIn("org_unit_type_id", result)
+        self.assertIn(str(probably_not_a_valid_id), result["org_unit_type_id"][0])
 
     def test_create_invalid_editable_fields(self):
         self.client.force_authenticate(self.user_misty)
         pikachu = "PIKACHU"
-        new_ou_type = m.OrgUnitType.objects.create(name="new ou type")
+        new_ou_type = self.create_new_org_unit_type("new ou type")
         data = {
             "project_id": self.project_johto.id,
             "org_unit_type_id": new_ou_type.id,
             "org_units_editable": False,
             "editable_fields": ["aliases", "name", pikachu],
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertContains(
             response, f"The field '{pikachu}' is not a valid editable field.", status_code=status.HTTP_400_BAD_REQUEST
         )
 
     def test_create_invalid_possible_type_ids(self):
-        self.client.force_authenticate(self.user_brock)
-        new_ou_type = m.OrgUnitType.objects.create(name="new ou type")
-        probably_not_a_valid_id = 1234567890
+        new_org_unit_type = self.create_new_org_unit_type("new org unit type")
         data = {
-            "project_id": self.project_johto.id,
-            "org_unit_type_id": new_ou_type.id,
-            "org_units_editable": False,
-            "possible_type_ids": [probably_not_a_valid_id],
+            "org_unit_type_id": new_org_unit_type.id,
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
-        self.assertContains(response, f"Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
-        self.assertIn("possible_type_ids", response.data)
-        self.assertEqual("does_not_exist", response.data["possible_type_ids"][0].code)
+        self.make_post_api_call_with_non_existing_id_in_attribute(
+            attribute_name="possible_type_ids", additional_data=data
+        )
 
     def test_create_invalid_possible_parent_type_ids(self):
-        self.client.force_authenticate(self.user_ash_ketchum)
-        new_ou_type = m.OrgUnitType.objects.create(name="new ou type")
-        probably_not_a_valid_id = 1234567890
+        new_org_unit_type = self.create_new_org_unit_type("new org unit type")
         data = {
-            "project_id": self.project_johto.id,
-            "org_unit_type_id": new_ou_type.id,
-            "org_units_editable": False,
-            "possible_parent_type_ids": [probably_not_a_valid_id],
+            "org_unit_type_id": new_org_unit_type.id,
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
-        self.assertContains(response, f"Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
-        self.assertIn("possible_parent_type_ids", response.data)
-        self.assertEqual("does_not_exist", response.data["possible_parent_type_ids"][0].code)
+        self.make_post_api_call_with_non_existing_id_in_attribute(
+            attribute_name="possible_parent_type_ids", additional_data=data
+        )
 
     def test_create_invalid_group_set_ids(self):
-        self.client.force_authenticate(self.user_misty)
-        new_ou_type = m.OrgUnitType.objects.create(name="new ou type")
-        probably_not_a_valid_id = 1234567890
+        new_org_unit_type = self.create_new_org_unit_type("new org unit type")
         data = {
-            "project_id": self.project_johto.id,
-            "org_unit_type_id": new_ou_type.id,
-            "org_units_editable": False,
-            "group_set_ids": [probably_not_a_valid_id],
+            "org_unit_type_id": new_org_unit_type.id,
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
-        self.assertContains(response, f"Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
-        self.assertIn("group_set_ids", response.data)
-        self.assertEqual("does_not_exist", response.data["group_set_ids"][0].code)
+        self.make_post_api_call_with_non_existing_id_in_attribute(attribute_name="group_set_ids", additional_data=data)
 
     def test_create_invalid_editable_reference_form_ids(self):
-        self.client.force_authenticate(self.user_brock)
-        new_ou_type = m.OrgUnitType.objects.create(name="new ou type")
-        probably_not_a_valid_id = 1234567890
+        new_org_unit_type = self.create_new_org_unit_type("new org unit type")
         data = {
-            "project_id": self.project_johto.id,
-            "org_unit_type_id": new_ou_type.id,
-            "org_units_editable": False,
-            "editable_reference_form_ids": [probably_not_a_valid_id],
+            "org_unit_type_id": new_org_unit_type.id,
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
-        self.assertContains(response, f"Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
-        self.assertIn("editable_reference_form_ids", response.data)
-        self.assertEqual("does_not_exist", response.data["editable_reference_form_ids"][0].code)
+        self.make_post_api_call_with_non_existing_id_in_attribute(
+            attribute_name="editable_reference_form_ids", additional_data=data
+        )
 
     def test_create_invalid_other_group_ids(self):
-        self.client.force_authenticate(self.user_ash_ketchum)
-        new_ou_type = m.OrgUnitType.objects.create(name="new ou type")
-        probably_not_a_valid_id = 1234567890
+        new_org_unit_type = self.create_new_org_unit_type("new org unit type")
         data = {
-            "project_id": self.project_johto.id,
-            "org_unit_type_id": new_ou_type.id,
-            "org_units_editable": False,
-            "other_group_ids": [probably_not_a_valid_id],
+            "org_unit_type_id": new_org_unit_type.id,
         }
-        response = self.client.post("/api/orgunits/changes/configs/", data=data, format="json")
-        self.assertContains(response, f"Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
-        self.assertIn("other_group_ids", response.data)
-        self.assertEqual("does_not_exist", response.data["other_group_ids"][0].code)
+        self.make_post_api_call_with_non_existing_id_in_attribute(
+            attribute_name="other_group_ids", additional_data=data
+        )
 
-    # def test_partial_update_without_perm(self):
-    #     self.client.force_authenticate(self.user)
-    #
-    #     kwargs = {
-    #         "status": m.OrgUnitChangeRequest.Statuses.NEW,
-    #         "org_unit": self.org_unit,
-    #         "new_name": "Foo",
-    #     }
-    #     change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
-    #
-    #     data = {
-    #         "status": change_request.Statuses.REJECTED,
-    #         "rejection_comment": "Not good enough.",
-    #     }
-    #     response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-    #     self.assertEqual(response.status_code, 403)
-    #
+    # *** Testing update PATCH endpoint ***
+    def test_update_full(self):
+        # Changing all the possible fields of this OUCRC
+        self.client.force_authenticate(self.user_misty)
+        data = {
+            "org_units_editable": True,
+            "editable_fields": m.OrgUnitChangeRequestConfiguration.LIST_OF_POSSIBLE_EDITABLE_FIELDS,
+            "possible_type_ids": [
+                self.ou_type_water_pokemons.id,
+                self.ou_type_fire_pokemons.id,
+                self.ou_type_rock_pokemons.id,
+            ],
+            "possible_parent_type_ids": [self.ou_type_water_pokemons.id, self.ou_type_rock_pokemons.id],
+            "group_set_ids": [self.group_set_misty_pokemons.id],
+            "editable_reference_form_ids": [self.form_water_gun.id, self.form_rock_throw.id],
+            "other_group_ids": [self.other_group_1.id, self.other_group_2.id, self.other_group_3.id],
+        }
+        response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_water.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.oucrc_type_water.refresh_from_db()
+        oucrc = self.oucrc_type_water
+        self.assertTrue(oucrc.org_units_editable)
+        self.assertCountEqual(oucrc.editable_fields, data["editable_fields"])
+        self.assertCountEqual(oucrc.possible_types.values_list("id", flat=True), data["possible_type_ids"])
+        self.assertCountEqual(
+            oucrc.possible_parent_types.values_list("id", flat=True), data["possible_parent_type_ids"]
+        )
+        self.assertCountEqual(oucrc.group_sets.values_list("id", flat=True), data["group_set_ids"])
+        self.assertCountEqual(
+            oucrc.editable_reference_forms.values_list("id", flat=True), data["editable_reference_form_ids"]
+        )
+        self.assertCountEqual(oucrc.other_groups.values_list("id", flat=True), data["other_group_ids"])
+        self.assertEqual(oucrc.updated_by, self.user_misty)
+        self.assertNotEqual(oucrc.created_by, oucrc.updated_at)
+
+    def test_update_partial(self):
+        # Changing only some fields of this OUCRC
+        self.client.force_authenticate(self.user_brock)
+        data = {
+            "editable_fields": ["name"],
+            "other_group_ids": [self.other_group_1.id, self.other_group_2.id, self.other_group_3.id],
+        }
+        response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_rock.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.oucrc_type_rock.refresh_from_db()
+        oucrc = self.oucrc_type_rock
+        self.assertCountEqual(oucrc.editable_fields, data["editable_fields"])
+        self.assertCountEqual(oucrc.other_groups.values_list("id", flat=True), data["other_group_ids"])
+        self.assertEqual(oucrc.updated_by, self.user_brock)
+        self.assertNotEqual(oucrc.created_by, oucrc.updated_at)
+
+    def test_update_without_auth(self):
+        data = {
+            "org_units_editable": False,
+        }
+        response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_update_unknown_config(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        data = {
+            "org_units_editable": True,
+        }
+        probably_not_a_valid_id = 1234567890
+        response = self.client.patch(f"{self.OUCRC_API_URL}{probably_not_a_valid_id}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_invalid_editable_fields(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        pikachu = "PIKACHU"
+        data = {
+            "editable_fields": ["name", "aliases", pikachu, "closed_date"],
+        }
+        response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", data=data, format="json")
+        self.assertContains(response, pikachu, status_code=status.HTTP_400_BAD_REQUEST)
+
+        result = response.json()
+        self.assertIn("editable_fields", result)
+        self.assertIn(pikachu, result["editable_fields"][0])
+
+    def test_update_unknown_possible_types(self):
+        self.make_patch_api_call_with_non_existing_id_in_attribute(attribute_name="possible_type_ids")
+
+    def test_update_unknown_possible_parent_types(self):
+        self.make_patch_api_call_with_non_existing_id_in_attribute(attribute_name="possible_parent_type_ids")
+
+    def test_update_unknown_group_sets(self):
+        self.make_patch_api_call_with_non_existing_id_in_attribute(attribute_name="group_set_ids")
+
+    def test_update_unknown_editable_reference_forms(self):
+        self.make_patch_api_call_with_non_existing_id_in_attribute(attribute_name="editable_reference_form_ids")
+
+    def test_update_unknown_other_groups(self):
+        self.make_patch_api_call_with_non_existing_id_in_attribute(attribute_name="other_group_ids")
+
+    # + Test for updating groupsets or groups, but there are updates in groupsets between creation and update
+    # -> what should happen? error? cleanup without telling the user?
+
     # def test_update_should_be_forbidden(self):
     #     self.client.force_authenticate(self.user_with_review_perm)
     #     change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")

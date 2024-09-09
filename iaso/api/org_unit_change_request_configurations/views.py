@@ -6,6 +6,7 @@ from iaso.api.org_unit_change_request_configurations.serializers import (
     OrgUnitChangeRequestConfigurationListSerializer,
     OrgUnitChangeRequestConfigurationRetrieveSerializer,
     OrgUnitChangeRequestConfigurationWriteSerializer,
+    OrgUnitChangeRequestConfigurationUpdateSerializer,
 )
 from iaso.models import OrgUnitChangeRequestConfiguration
 
@@ -24,7 +25,7 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
         "updated_by__username",
     ]
     # http_method_names = ["get", "options", "patch", "post", "head", "trace"]
-    http_method_names = ["get", "post", "options", "trace", "head"]
+    http_method_names = ["get", "post", "patch", "options", "trace", "head"]
     pagination_class = OrgUnitChangeRequestConfigurationPagination
 
     def get_queryset(self):
@@ -49,5 +50,5 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
             return OrgUnitChangeRequestConfigurationListSerializer
         if self.action == "retrieve":
             return OrgUnitChangeRequestConfigurationRetrieveSerializer
-        # if self.action == "partial_update":
-        #     return OrgUnitChangeRequestReviewSerializer
+        if self.action == "partial_update":
+            return OrgUnitChangeRequestConfigurationUpdateSerializer

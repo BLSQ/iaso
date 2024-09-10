@@ -25,6 +25,7 @@ const makeGroupsQueryParams = ({
     return '';
 };
 
+
 export const useGetGroups = ({
     dataSourceId,
     sourceVersionId,
@@ -56,10 +57,14 @@ export const useGetGroups = ({
     });
 };
 
+// TODO CODE REVIEW
+// don't know why but useGetGroupDropdown endpoint
+// version vs sourceVersionId
+
 // Correspondance between the name in the filter object and what the API expect
 const queryParamsMap = new Map([
     ['dataSourceId', 'dataSource'],
-    ['sourceVersionId', 'sourceVersionId'],
+    ['sourceVersionId', 'version'],
     ['blockOfCountries', 'blockOfCountries'],
     ['appId', 'app_id'],
 ]);
@@ -78,7 +83,7 @@ export const useGetGroupDropdown = (
         if (params[keyInJS]) {
             queryParams[keyInApi] = params[keyInJS];
         }
-    });
+    });    
     const urlSearchParams = new URLSearchParams(queryParams);
     const queryString = urlSearchParams.toString();
     return useSnackQuery({

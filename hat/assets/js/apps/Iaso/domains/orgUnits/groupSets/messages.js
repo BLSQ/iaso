@@ -29,17 +29,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.projects',
         defaultMessage: 'Projects',
     },
-
-    groupSet: {
-        id: "iaso.label.groupSet",
-        defaultMessage: "Group Set"
+    groups: {
+        id: 'iaso.label.groups',
+        defaultMessage: 'Groups',
     },
-
+    groupSet: {
+        id: 'iaso.label.groupSet',
+        defaultMessage: 'Group Set',
+    },
     edit: {
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
-    
 });
 
 export default MESSAGES;

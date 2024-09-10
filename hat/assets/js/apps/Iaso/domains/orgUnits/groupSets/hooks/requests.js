@@ -19,17 +19,19 @@ export const useGetGroupSets = params => {
     }
 
     if (params.sourceVersion) {
-        newParams.version = params.sourceVersion
+        newParams.version = params.sourceVersion;
     }
     if (params.projectsIds) {
-        newParams.project_ids = params.projectsIds
+        newParams.project_ids = params.projectsIds;
     }
-    debugger
-    
+
     const searchParams = new URLSearchParams(newParams);
     return useSnackQuery(
         ['group_sets', newParams],
-        () => getRequest(`/api/group_sets/?${searchParams.toString()}&fields=id,name,groups,created_at,updated_at`),
+        () =>
+            getRequest(
+                `/api/group_sets/?${searchParams.toString()}&fields=id,name,groups,created_at,updated_at`,
+            ),
         undefined,
         {
             // using this here to avoid multiple identical calls
@@ -38,6 +40,14 @@ export const useGetGroupSets = params => {
     );
 };
 
+export const useGetGroupSet = groupSetId => {
+    return useSnackQuery(
+        ['group_sets', groupSetId],
+        () => getRequest(`/api/group_sets/${groupSetId}/?fields=:all`),
+        undefined,
+        {},
+    );
+};
 export const useSaveGroupSet = () =>
     useSnackMutation(
         body =>

@@ -37,8 +37,11 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         cls.user_brock = cls.create_user_with_profile(username="Brock", account=cls.account_pokemon)
 
         cls.ou_type_fire_pokemons = m.OrgUnitType.objects.create(name="Fire Pokemons")
+        cls.ou_type_fire_pokemons.projects.add(cls.project_johto)
         cls.ou_type_rock_pokemons = m.OrgUnitType.objects.create(name="Rock Pokemons")
+        cls.ou_type_rock_pokemons.projects.add(cls.project_johto)
         cls.ou_type_water_pokemons = m.OrgUnitType.objects.create(name="Water Pokemons")
+        cls.ou_type_water_pokemons.projects.add(cls.project_johto)
 
         cls.group_set_ash_pokemons = m.GroupSet.objects.create(name="Ash's Pokemons")
         cls.group_set_misty_pokemons = m.GroupSet.objects.create(name="Misty's Pokemons")
@@ -542,6 +545,96 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             f"There is already a configuration for this project_id ({self.project_johto.id}) and org_unit_type_id ({self.ou_type_fire_pokemons.id}).",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+
+    # + test for making sure that the user who deleted the OUCRC is stored in updated_by?
+    # or have a field deleted_by?
+
+    def test_check_availability_ok(self):
+        # Preparing a new OrgUnitType in this project - since the 3 OUT already have an OUCRC in setUpTestData
+        new_org_unit_type = self.create_new_org_unit_type("Psychic Pokémons")
+        new_org_unit_type.projects.add(self.project_johto)
+        new_org_unit_type.refresh_from_db()
+
+        self.client.force_authenticate(self.user_ash_ketchum)
+        response = self.client.get(
+            f"{self.OUCRC_API_URL}check_availability/?project_id={self.project_johto.id}", format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        expected = {
+            "id": new_org_unit_type.id,
+            "name": new_org_unit_type.name,
+        }
+        self.assertEqual(response.json(), [expected])
+
+    def test_check_availability_no_result(self):
+        # All the OUCRCs have already been made for this project
+        self.client.force_authenticate(self.user_ash_ketchum)
+        response = self.client.get(
+            f"{self.OUCRC_API_URL}check_availability/?project_id={self.project_johto.id}", format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), [])
+
+    def test_check_availability_no_config_yet(self):
+        # Preparing a new Project and new OrgUnitTypes
+        new_account = m.Account.objects.create(name="New account")
+        new_project = m.Project.objects.create(name="New project", account=new_account, app_id="new")
+        new_user = self.create_user_with_profile(username="New user", account=new_account)
+
+        new_ou_type_1 = self.create_new_org_unit_type("new type 1")
+        new_ou_type_1.projects.add(new_project)
+        new_ou_type_1.refresh_from_db()
+        new_ou_type_2 = self.create_new_org_unit_type("new type 2")
+        new_ou_type_2.projects.add(new_project)
+        new_ou_type_2.refresh_from_db()
+
+        self.client.force_authenticate(new_user)
+        response = self.client.get(
+            f"{self.OUCRC_API_URL}check_availability/?project_id={new_project.id}", format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        expected = [
+            {
+                "id": new_ou_type_1.id,
+                "name": new_ou_type_1.name,
+            },
+            {
+                "id": new_ou_type_2.id,
+                "name": new_ou_type_2.name,
+            },
+        ]
+        self.assertEqual(response.json(), expected)
+
+    def test_check_availability_without_auth(self):
+        response = self.client.get(
+            f"{self.OUCRC_API_URL}check_availability/?project_id={self.project_johto.id}", format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_check_availability_error_missing_parameter(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        response = self.client.get(f"{self.OUCRC_API_URL}check_availability/", format="json")
+        self.assertContains(
+            response,
+            "Parameter project_id is missing",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def test_check_availability_invalid_project_id(self):
+        probably_not_a_valid_id = 1234567890
+        self.client.force_authenticate(self.user_ash_ketchum)
+        response = self.client.get(
+            f"{self.OUCRC_API_URL}check_availability/?project_id={probably_not_a_valid_id}", format="json"
+        )
+        self.assertContains(
+            response,
+            "This project does not exist",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Add a test for checking availability for a project not assigned to the user, once implemented
 
     # def test_update_should_be_forbidden(self):
     #     self.client.force_authenticate(self.user_with_review_perm)

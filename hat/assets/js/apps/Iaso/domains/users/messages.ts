@@ -472,6 +472,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.label.new_user_created',
         defaultMessage: 'New user created',
     },
+    phoneNumberWarning: {
+        id: 'iaso.users.label.phoneNumberWarning',
+        defaultMessage: 'WARNING: Updating phone number',
+    },
+    phoneNumberWarningMessage: {
+        id: 'iaso.users.label.phoneNumberWarningMessage',
+        defaultMessage: 'All phone number updates are logged and archived',
+    },
 });
 
 export default MESSAGES;

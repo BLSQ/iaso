@@ -9,7 +9,6 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
@@ -67,12 +66,13 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const queryClient = useQueryClient();
-    const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
 
     const { user, setFieldValue, setFieldErrors } = useInitialUser(initialData);
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
+    const [openPhoneNumberWarning, setOpenPhoneNumberWarning] =
+        useState<boolean>(false);
     const saveUser = useCallback(() => {
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
@@ -97,7 +97,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     }, [
         closeDialog,
         connectedUser.id,
-        dispatch,
+        queryClient,
         saveProfile,
         setFieldErrors,
         user,
@@ -106,7 +106,11 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const onConfirm = useCallback(() => {
         const userPermissions = user?.user_permissions.value ?? [];
         const userRolesPermissions = user?.user_roles_permissions.value ?? [];
-        if (
+        // If user is not new user and phone number is changed
+        // @ts-ignore
+        if (user.phone_number !== initialData.phone_number && user.id) {
+            setOpenPhoneNumberWarning(true);
+        } else if (
             userPermissions.length > 0 ||
             userRolesPermissions.length > 0 ||
             initialData?.is_superuser
@@ -117,7 +121,10 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         }
     }, [
         initialData?.is_superuser,
+        initialData.phone_number,
         saveUser,
+        user.id,
+        user.phone_number,
         user?.user_permissions.value,
         user?.user_roles_permissions.value,
     ]);
@@ -127,6 +134,14 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 open={openWarning}
                 closeDialog={() => setOpenWarning(false)}
                 onConfirm={saveUser}
+            />
+            {/* Show warning if user updates phone number */}
+            <WarningModal
+                open={openPhoneNumberWarning}
+                closeDialog={() => setOpenPhoneNumberWarning(false)}
+                onConfirm={saveUser}
+                titleMessage={MESSAGES.phoneNumberWarning}
+                bodyMessage={MESSAGES.phoneNumberWarningMessage}
             />
 
             <ConfirmCancelModal

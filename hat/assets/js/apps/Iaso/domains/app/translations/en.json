@@ -1359,6 +1359,8 @@
     "iaso.users.label.new_user_created": "New user created",
     "iaso.users.label.noTypeAssigned": "No org unit type assigned",
     "iaso.users.label.password_updated": "Password updated",
+    "iaso.users.label.phoneNumberWarning": "WARNING: Updating phone number",
+    "iaso.users.label.phoneNumberWarningMessage": "All phone number updates are logged and archived",
     "iaso.users.labels.createUserWithoutPerm": "Save user with no permissions?",
     "iaso.users.multiEditTitle": "Edit selection: {count} user(s)",
     "iaso.users.multiSelectionAction": "Edit selected users",

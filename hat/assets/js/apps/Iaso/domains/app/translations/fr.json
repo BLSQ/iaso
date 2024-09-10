@@ -1358,6 +1358,8 @@
     "iaso.users.label.new_user_created": "Nouvel utilisateur ajouté",
     "iaso.users.label.noTypeAssigned": "Aucun type d'unité d'org assigné",
     "iaso.users.label.password_updated": "Mot de passe mis à jour",
+    "iaso.users.label.phoneNumberWarning": "ATTENTION: Modification du numéro de téléphone",
+    "iaso.users.label.phoneNumberWarningMessage": "Toute modification du numéro de téléphone est sauvegardée et archivée.",
     "iaso.users.labels.createUserWithoutPerm": "Sauvegarder un utilisateur sans permissions?",
     "iaso.users.multiEditTitle": "Editer la selection: {count} utilisateur(s)",
     "iaso.users.multiSelectionAction": "Editer les utilisateurs sélectionnés",

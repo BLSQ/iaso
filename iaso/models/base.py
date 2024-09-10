@@ -44,6 +44,7 @@ from ..utils.jsonlogic import jsonlogic_to_q
 from ..utils.models.common import get_creator_name
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
+from ..utils.emoji import fix_emoji
 
 logger = getLogger(__name__)
 
@@ -1058,8 +1059,10 @@ class Instance(models.Model):
             self.save()
 
     def xml_file_to_json(self, file: typing.IO) -> typing.Dict[str, typing.Any]:
-        copy_io_utf8 = StringIO(file.read().decode("utf-8"))
-        soup = Soup(copy_io_utf8, "xml", from_encoding="utf-8")
+        raw_content = file.read().decode("utf-8")
+        fixed_content = fix_emoji(raw_content).decode("utf-8")
+        copy_io_utf8 = StringIO(fixed_content)
+        soup = Soup(copy_io_utf8, "lxml-xml", from_encoding="utf-8")
 
         form_version_id = extract_form_version_id(soup)
         if form_version_id:

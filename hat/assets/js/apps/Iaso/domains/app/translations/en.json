@@ -812,6 +812,7 @@
     "iaso.modules.registry": "Registry",
     "iaso.modules.status": "Status",
     "iaso.modules.title": "Modules",
+    "iaso.modules.trypelim_project": "Trypelim project",
     "iaso.orgUnits.add": "Search org unit to add",
     "iaso.orgUnits.addForm": "Add form",
     "iaso.orgUnits.addOrgUnitType": "Add org unit type",

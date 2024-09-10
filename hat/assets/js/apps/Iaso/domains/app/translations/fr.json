@@ -812,6 +812,7 @@
     "iaso.modules.registry": "Registre",
     "iaso.modules.status": "Status",
     "iaso.modules.title": "Modules",
+    "iaso.modules.trypelim_project": "Projet Trypelim",
     "iaso.orgUnits.add": "Rechercher une unité d'org. à ajouter",
     "iaso.orgUnits.addForm": "Ajouter un Formulaire",
     "iaso.orgUnits.addOrgUnitType": "Ajouter un type d'unité",
@@ -1442,7 +1443,7 @@
     "trypelim.permissions.management_coordinations": "Coordinations",
     "trypelim.permissions.management_devices": "Devices",
     "trypelim.permissions.management_edit_areas": "Editer aires de santé",
-    "trypelim.permissions.management_edit_shape_areas": "Editer aires shapes",
+    "trypelim.permissions.management_edit_shape_areas": "Editer les contours géographiques des aires de santé",
     "trypelim.permissions.management_health_structures": "Editer structures de santé",
     "trypelim.permissions.management_teams": "Équipes",
     "trypelim.permissions.microplanning": "Microplanification",
@@ -1463,5 +1464,5 @@
     "trypelim.permissions.workzones": "Rayons d'actions",
     "trypelim.permissions.zones": "Zones",
     "trypelim.permissions.zones_edit": "Edit zones",
-    "trypelim.permissions.zones_shapes_edit": "Edit zone shapes"
+    "trypelim.permissions.zones_shapes_edit": "Editer les contours géographiques des zones de santé"
 }

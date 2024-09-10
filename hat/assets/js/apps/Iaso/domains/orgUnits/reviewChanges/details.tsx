@@ -9,8 +9,8 @@ import TopBar from '../../../components/nav/TopBarComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { SxStyles } from '../../../types/general';
-import { ApproveOrgUnitChangesButtons } from './Dialogs/ReviewOrgUnitChangesButtons';
-import { ReviewOrgUnitChangesDialogTitle } from './Dialogs/ReviewOrgUnitChangesDialogTitle';
+import { ApproveOrgUnitChangesButtons } from './Components/ReviewOrgUnitChangesButtons';
+import { ReviewOrgUnitChangesTitle } from './Components/ReviewOrgUnitChangesTitle';
 import { useGetApprovalProposal } from './hooks/api/useGetApprovalProposal';
 import { useSaveChangeRequest } from './hooks/api/useSaveChangeRequest';
 import { useNewFields } from './hooks/useNewFields';
@@ -86,7 +86,7 @@ export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
             />
             <Box sx={styles.container}>
                 {!isFetchingChangeRequest && (
-                    <ReviewOrgUnitChangesDialogTitle
+                    <ReviewOrgUnitChangesTitle
                         titleMessage={titleMessage}
                         changeRequest={changeRequest}
                         isFetchingChangeRequest={isFetchingChangeRequest}

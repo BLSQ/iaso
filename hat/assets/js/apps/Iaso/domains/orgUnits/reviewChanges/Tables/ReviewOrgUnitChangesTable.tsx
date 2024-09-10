@@ -10,7 +10,7 @@ import { baseUrls } from '../../../../constants/urls';
 import { ColumnCell } from '../../../../types/general';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { IconButton } from '../details';
-import { colorCodes } from '../Dialogs/ReviewOrgUnitChangesInfos';
+import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
 import MESSAGES from '../messages';
 import {
     ApproveOrgUnitParams,

@@ -13,7 +13,7 @@ type Props = {
     isFetchingChangeRequest: boolean;
 };
 
-export const ReviewOrgUnitChangesDialogTitle: FunctionComponent<Props> = ({
+export const ReviewOrgUnitChangesTitle: FunctionComponent<Props> = ({
     titleMessage,
     changeRequest,
     isFetchingChangeRequest,

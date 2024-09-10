@@ -8,7 +8,12 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
@@ -52,6 +57,7 @@ type Props = {
     isOpen: boolean;
     closeDialog: () => void;
 };
+
 // Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
 const defaultData: InitialUserData = {};
 const UserDialogComponent: FunctionComponent<Props> = ({
@@ -71,8 +77,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const { user, setFieldValue, setFieldErrors } = useInitialUser(initialData);
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
-    const [openPhoneNumberWarning, setOpenPhoneNumberWarning] =
-        useState<boolean>(false);
     const saveUser = useCallback(() => {
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
@@ -103,45 +107,65 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         user,
     ]);
 
-    const onConfirm = useCallback(() => {
-        const userPermissions = user?.user_permissions.value ?? [];
-        const userRolesPermissions = user?.user_roles_permissions.value ?? [];
-        // If user is not new user and phone number is changed
+    const userPermissions = user?.user_permissions.value ?? [];
+    const userRolesPermissions = user?.user_roles_permissions.value ?? [];
+
+    const isPhoneNumberUpdated =
         // @ts-ignore
-        if (user.phone_number !== initialData.phone_number && user.id) {
-            setOpenPhoneNumberWarning(true);
-        } else if (
-            userPermissions.length > 0 ||
-            userRolesPermissions.length > 0 ||
-            initialData?.is_superuser
+        user.phone_number !== initialData.phone_number && user.id;
+
+    const isUserWithoutPermissions =
+        userPermissions.length === 0 &&
+        userRolesPermissions.length === 0 &&
+        !initialData?.is_superuser;
+
+    const onConfirm = useCallback(() => {
+        if (
+            // If user is not new user and phone number is changed
+            isPhoneNumberUpdated ||
+            isUserWithoutPermissions
         ) {
-            saveUser();
-        } else {
             setOpenWarning(true);
+        } else {
+            saveUser();
         }
-    }, [
-        initialData?.is_superuser,
-        initialData.phone_number,
-        saveUser,
-        user.id,
-        user.phone_number,
-        user?.user_permissions.value,
-        user?.user_roles_permissions.value,
-    ]);
+    }, [isPhoneNumberUpdated, isUserWithoutPermissions, saveUser]);
+
+    const warningTitleMessage = useMemo(() => {
+        if (isPhoneNumberUpdated && isUserWithoutPermissions) {
+            return formatMessage(MESSAGES.permAndPhoneWarningTitle);
+        }
+        if (isPhoneNumberUpdated) {
+            return formatMessage(MESSAGES.phoneNumberWarning);
+        }
+        if (isUserWithoutPermissions) {
+            return formatMessage(MESSAGES.createUserWithoutPerm);
+        }
+        return '';
+    }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
+
+    const warningBodyMessage = useMemo(() => {
+        if (isPhoneNumberUpdated && isUserWithoutPermissions) {
+            return `1/ ${formatMessage(MESSAGES.phoneNumberWarningMessage)}
+            2/ ${formatMessage(MESSAGES.warningModalMessage)}`;
+        }
+        if (isPhoneNumberUpdated) {
+            return formatMessage(MESSAGES.phoneNumberWarningMessage);
+        }
+        if (isUserWithoutPermissions) {
+            return formatMessage(MESSAGES.warningModalMessage);
+        }
+        return '';
+    }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
+
     return (
         <>
             <WarningModal
                 open={openWarning}
                 closeDialog={() => setOpenWarning(false)}
                 onConfirm={saveUser}
-            />
-            {/* Show warning if user updates phone number */}
-            <WarningModal
-                open={openPhoneNumberWarning}
-                closeDialog={() => setOpenPhoneNumberWarning(false)}
-                onConfirm={saveUser}
-                titleMessage={MESSAGES.phoneNumberWarning}
-                bodyMessage={MESSAGES.phoneNumberWarningMessage}
+                titleMessage={warningTitleMessage}
+                bodyMessage={warningBodyMessage}
             />
 
             <ConfirmCancelModal

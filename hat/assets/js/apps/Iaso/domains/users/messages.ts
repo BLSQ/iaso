@@ -480,6 +480,20 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.label.phoneNumberWarningMessage',
         defaultMessage: 'All phone number updates are logged and archived',
     },
+    createUserWithoutPerm: {
+        id: 'iaso.users.labels.createUserWithoutPerm',
+        defaultMessage: 'Save user with no permissions?',
+    },
+    warningModalMessage: {
+        id: 'iaso.users.warningModalMessage',
+        defaultMessage: `You are about to save a user with no permissions. This user will
+        have access to the mobile application but not to the features of the
+        web interface.`,
+    },
+    permAndPhoneWarningTitle: {
+        id: 'iaso.users.permAndPhoneWarningTitle',
+        defaultMessage: 'WARNING: Read before saving',
+    },
 });
 
 export default MESSAGES;

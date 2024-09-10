@@ -1,8 +1,4 @@
-import {
-    ConfirmCancelModal,
-    IntlMessage,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { ConfirmCancelModal } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { Box, Divider, Typography } from '@mui/material';
 import { MESSAGES } from './messages';
@@ -12,24 +8,23 @@ type Props = {
     open: boolean;
     closeDialog: () => void;
     onConfirm: () => void;
-    titleMessage?: IntlMessage;
-    bodyMessage?: IntlMessage;
+    titleMessage?: string;
+    bodyMessage?: string;
 };
 
 export const WarningModal: FunctionComponent<Props> = ({
     open,
     closeDialog,
     onConfirm,
-    titleMessage = MESSAGES.createUserWithoutPerm,
-    bodyMessage = MESSAGES.warningModalMessage,
+    titleMessage = '',
+    bodyMessage = '',
 }) => {
-    const { formatMessage } = useSafeIntl();
     return (
         <ConfirmCancelModal
             open={open}
             id="user-WarningModal"
             dataTestId="user-WarningModal"
-            titleMessage={formatMessage(titleMessage)}
+            titleMessage={titleMessage}
             onClose={noOp}
             closeDialog={closeDialog}
             onConfirm={onConfirm}
@@ -39,7 +34,7 @@ export const WarningModal: FunctionComponent<Props> = ({
         >
             <Divider />
             <Box mt={2}>
-                <Typography>{formatMessage(bodyMessage)}</Typography>
+                <Typography>{bodyMessage}</Typography>
             </Box>
         </ConfirmCancelModal>
     );

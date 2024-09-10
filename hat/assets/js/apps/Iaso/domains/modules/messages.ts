@@ -78,6 +78,10 @@ export const MESSAGES = defineMessages({
         defaultMessage:
             'You can see here the feature modules that are activated for your account. Contact an admin of your instance if you wish to activate additional features.',
     },
+    trypelim_project: {
+        defaultMessage: 'Trypelim project',
+        id: 'iaso.modules.trypelim_project',
+    },
 });
 
 export default MESSAGES;

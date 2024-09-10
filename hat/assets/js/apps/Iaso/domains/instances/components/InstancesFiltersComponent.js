@@ -270,16 +270,6 @@ const InstancesFiltersComponent = ({
             <Grid container spacing={2}>
                 <Grid item xs={12} md={3}>
                     <InputComponent
-                        keyValue="projectIds"
-                        onChange={handleFormChange}
-                        value={formState.projectIds.value || null}
-                        type="select"
-                        options={allProjects}
-                        label={MESSAGES.projects}
-                        loading={isFetchingProjects}
-                        multi
-                    />
-                    <InputComponent
                         keyValue="search"
                         onChange={handleFormChange}
                         value={formState.search.value || ''}
@@ -288,6 +278,16 @@ const InstancesFiltersComponent = ({
                         onEnterPressed={() => handleSearch()}
                         onErrorChange={setTextSearchError}
                         blockForbiddenChars
+                    />
+                    <InputComponent
+                        keyValue="projectIds"
+                        onChange={handleFormChange}
+                        value={formState.projectIds.value || null}
+                        type="select"
+                        options={allProjects}
+                        label={MESSAGES.projects}
+                        loading={isFetchingProjects}
+                        multi
                     />
                     <InputWithInfos
                         infos={formatMessage(

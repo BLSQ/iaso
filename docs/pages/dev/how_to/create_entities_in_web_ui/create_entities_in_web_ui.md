@@ -31,7 +31,7 @@ Repeat as needed
 - Using the filters, search for the reference form(s) that were created in the previous step
 - For each form, create a submission
 
-Note: To be able to create submissions, Enketo needs to be running. This can be done with the following command: `docker-compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up`
+Note: To be able to create submissions, Enketo needs to be running. This can be done with the following command: `docker compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up`
 
 ## 5. Create `Entities` with the Django admin
 
@@ -52,7 +52,7 @@ from django.db import connection
 with connection.cursor() as cursor:
     cursor.execute('CREATE EXTENSION fuzzystrmatch;')
 ```
-Note: To open a python shell in docker: `docker-compose exec iaso ./manage.py shell`
-- In a terminal, launch a task worker: `docker-compose run iaso manage tasks_worker`
+Note: To open a python shell in docker: `docker compose exec iaso ./manage.py shell`
+- In a terminal, launch a task worker: `docker compose run iaso manage tasks_worker`
 - Go to `/api/entityduplicates_analyzes` to launch an algorithm analysis (e.g: inverse)
 - In Iaso web, go to Benefiaries > Duplicates to see if the algorithm matched the duplicates created in previous steps

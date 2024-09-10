@@ -71,7 +71,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParamsWithPrefix('attachments'),
         ],
     },
-    formsStats: { url: 'forms/stats', params: ['accountId'] },
+    formsStats: { url: 'forms/stats', params: ['accountId', 'projectIds'] },
     instances: {
         url: 'forms/submissions',
         params: [

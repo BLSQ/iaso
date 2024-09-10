@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { LoadingSpinner } from 'bluesquare-components';
 import {
     Bar,
@@ -12,15 +12,37 @@ import {
 } from 'recharts';
 import { Typography } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
-import { getRequest } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getChipColors } from '../constants/chipColors';
 
-export const InstancesPerFormGraph = () => {
-    const { data, isLoading } = useSnackQuery(['instances', 'stats'], () =>
-        getRequest('/api/instances/stats/'),
-    );
+type Data = {
+    index: string;
+    name: string;
+    [key: string]: string | number | null;
+}[];
 
+type Field = {
+    name: string;
+    type: string;
+    freq?: string;
+};
+
+type Schema = {
+    fields: Field[];
+    pandas_version: string;
+    primaryKey: string[];
+};
+
+type Props = {
+    data: {
+        data: Data;
+        schema: Schema;
+    };
+    isLoading: boolean;
+};
+export const InstancesPerFormGraph: FunctionComponent<Props> = ({
+    data,
+    isLoading,
+}) => {
     return (
         <>
             <Typography variant="h5">
@@ -38,7 +60,7 @@ export const InstancesPerFormGraph = () => {
                         data={data.data}
                         margin={{
                             top: 20,
-                            right: 30,
+                            right: 0,
                             left: 20,
                             bottom: 5,
                         }}

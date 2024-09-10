@@ -655,3 +655,30 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         # Retrieve the updated VaccineRequestForm and verify the target_population field
         request_form.refresh_from_db()
         self.assertEqual(request_form.target_population, updated_population)
+
+    def test_var_field_ordered_reversely(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Create a VaccineRequestForm instance
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        # Create multiple VaccineArrivalReport instances with different dates
+        dates = ["2024-04-20", "2024-04-19", "2024-04-18"]
+        for date in dates:
+            pm.VaccineArrivalReport.objects.create(
+                request_form=request_form,
+                arrival_report_date=datetime.datetime.strptime(date, "%Y-%m-%d").date(),
+                doses_received=1000,
+            )
+
+        # Make a GET request to the list endpoint with ordering by start_date
+        response = self.client.get(
+            BASE_URL + "?order=-start_date&page=1&limit=20",
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # Verify that the "var" field is a comma-separated list of dates in reverse order
+        expected_var = ", ".join(dates)
+        self.assertEqual(response.data["results"][1]["var"], expected_var)

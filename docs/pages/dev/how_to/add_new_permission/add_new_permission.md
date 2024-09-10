@@ -23,7 +23,7 @@
 
 ## 4. Make and run migration
 
-`docker-compose run --rm iaso manage makemigrations && docker-compose run --rm iaso manage migrate`
+`docker compose run --rm iaso manage makemigrations && docker compose run --rm iaso manage migrate`
 
 
 ## 5. Add the permission in the front-end

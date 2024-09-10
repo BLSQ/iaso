@@ -608,7 +608,13 @@ class InstancesViewSet(viewsets.ViewSet):
 
     @action(detail=False)
     def stats(self, request):
+        project_ids_param = request.GET.get("project_ids", None)
         projects = request.user.iaso_profile.account.project_set.all()
+
+        if project_ids_param:
+            project_ids_array = project_ids_param.split(",")
+            projects = projects.filter(id__in=project_ids_array)
+
         projects_ids = list(projects.values_list("id", flat=True))
 
         df = pd.read_sql_query(self.QUERY, connection, params=[projects_ids])
@@ -629,7 +635,13 @@ class InstancesViewSet(viewsets.ViewSet):
 
     @action(detail=False)
     def stats_sum(self, request):
+        project_ids_param = request.GET.get("project_ids", None)
         projects = request.user.iaso_profile.account.project_set.all()
+
+        if project_ids_param:
+            project_ids_array = project_ids_param.split(",")
+            projects = projects.filter(id__in=project_ids_array)
+
         projects_ids = list(projects.values_list("id", flat=True))
         QUERY = """
         select DATE_TRUNC('day', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)) as period,

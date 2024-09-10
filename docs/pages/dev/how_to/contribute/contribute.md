@@ -22,7 +22,7 @@ if the formatting is respected!
 For the Python backend, we use the Django builtin test framework. Tests can be executed with
 
 ``` {.sourceCode .bash}
-docker-compose exec iaso ./manage.py test
+docker compose exec iaso ./manage.py test
 ```
 
 ### Translations
@@ -54,7 +54,7 @@ change, either in Python or Javascript. If you need reloading for the bluesquare
 
 If you need to restart everything
 ``` {.sourceCode .shell}
-docker-compose stop && docker-compose start
+docker compose stop && docker compose start
 ```
 
 If you encounter problems, you can try to rebuild everything from
@@ -62,13 +62,13 @@ scratch.
 
 ``` {.sourceCode .shell}
 # kill containers
-docker-compose kill
+docker compose kill
 # remove `iaso` container
-docker-compose rm -f iaso
+docker compose rm -f iaso
 # build containers
-docker-compose build
+docker compose build
 # start-up containers
-docker-compose up
+docker compose up
 ```
 
 ### Jupyter Notebook
@@ -84,10 +84,10 @@ python manage.py shell_plus --notebook
 During local development, by default, the Javascript and CSS will be loaded from
 a webpack server with live reloading of the code. To locally test the compiled
 version as it is in production ( minified and with the same compilation option).
-You can launch docker-compose with the `TEST_PROD=true` environment variable
+You can launch docker compose with the `TEST_PROD=true` environment variable
 set.
 
-e.g `TEST_PROD=true docker-compose up`
+e.g `TEST_PROD=true docker compose up`
 
 This can be useful to reproduce production only bugs. Please also test with this
 configuration whenever you modify webpack.prod.js to validate your changes.

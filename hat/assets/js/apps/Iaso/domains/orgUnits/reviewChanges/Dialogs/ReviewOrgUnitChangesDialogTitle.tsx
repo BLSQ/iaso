@@ -1,6 +1,6 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Box, IconButton, Popover } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
+import { Box, IconButton, Popover } from '@mui/material';
+import React, { FunctionComponent, useState } from 'react';
 import { OrgUnitChangeRequestDetails } from '../types';
 import {
     ReviewOrgUnitChangesInfos,
@@ -42,7 +42,13 @@ export const ReviewOrgUnitChangesDialogTitle: FunctionComponent<Props> = ({
             }}
         >
             {titleMessage}
-            <Box sx={{ display: 'inline-block', ml: 2 }}>
+            <Box
+                sx={{
+                    display: 'inline-block',
+                    top: '-2px',
+                    position: 'relative',
+                }}
+            >
                 <IconButton
                     onClick={handleClick}
                     aria-describedby={id}

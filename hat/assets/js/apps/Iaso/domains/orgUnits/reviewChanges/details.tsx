@@ -4,15 +4,13 @@ import {
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, {
-    FunctionComponent,
-    useMemo
-} from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { SxStyles } from '../../../types/general';
 import { ApproveOrgUnitChangesButtons } from './Dialogs/ReviewOrgUnitChangesButtons';
+import { ReviewOrgUnitChangesDialogTitle } from './Dialogs/ReviewOrgUnitChangesDialogTitle';
 import { useGetApprovalProposal } from './hooks/api/useGetApprovalProposal';
 import { useSaveChangeRequest } from './hooks/api/useSaveChangeRequest';
 import { useNewFields } from './hooks/useNewFields';
@@ -79,8 +77,21 @@ export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
 
     return (
         <Box>
-            <TopBar title={titleMessage} goBack={goBack} displayBackButton />
+            <TopBar
+                title={formatMessage(MESSAGES.reviewChangeProposal, {
+                    name: changeRequest?.org_unit.name,
+                })}
+                goBack={goBack}
+                displayBackButton
+            />
             <Box sx={styles.container}>
+                {!isFetchingChangeRequest && (
+                    <ReviewOrgUnitChangesDialogTitle
+                        titleMessage={titleMessage}
+                        changeRequest={changeRequest}
+                        isFetchingChangeRequest={isFetchingChangeRequest}
+                    />
+                )}
                 <Box sx={styles.body}>
                     <ReviewOrgUnitChangesDetailsTable
                         isSaving={isSaving}

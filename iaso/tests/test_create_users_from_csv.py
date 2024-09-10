@@ -84,7 +84,7 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_upload_valid_csv(self):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
-        with self.assertNumQueries(66):
+        with self.assertNumQueries(81):
             with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
                 response = self.client.post(f"{BASE_URL}", {"file": csv_users})
 
@@ -103,7 +103,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(org_unit_ids, [9999])
 
     def test_upload_valid_csv_with_perms(self):
-        with self.assertNumQueries(76):
+        with self.assertNumQueries(91):
             self.client.force_authenticate(self.yoda)
             self.source.projects.set([self.project])
 

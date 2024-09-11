@@ -1,9 +1,8 @@
-import uuid
-
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from iaso.models.orgunit_change_request_configuration.queryset import OrgUnitChangeRequestConfigurationQuerySet
@@ -23,7 +22,6 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
     or restrict the list of possible values for each field.
     """
 
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     project = models.ForeignKey("Project", on_delete=models.PROTECT)
     org_unit_type = models.ForeignKey("OrgUnitType", on_delete=models.PROTECT)
     org_units_editable = models.BooleanField(default=True)  # = is it possible to edit org units of that type
@@ -40,6 +38,7 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         "OrgUnitType", related_name="org_unit_change_request_configurations_parent_level", blank=True
     )
     group_sets = models.ManyToManyField("GroupSet", related_name="org_unit_change_request_configurations", blank=True)
+    # The name below is not clear, but this attribute represents all the Forms for which a new reference instance can be submitted
     editable_reference_forms = models.ManyToManyField(
         "Form", related_name="org_unit_change_request_configurations", blank=True
     )
@@ -84,7 +83,13 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
             models.Index(fields=["project"]),
             models.Index(fields=["org_unit_type"]),
         ]
-        unique_together = ("project", "org_unit_type")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["project", "org_unit_type"],
+                condition=Q(deleted_at__isnull=True),
+                name="unique_project_org_unit_type_if_not_deleted",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"OUCRC ID #{self.id} - Project {self.project_id} - OrgUnit Type {self.org_unit_type_id}"

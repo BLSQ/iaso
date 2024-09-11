@@ -69,12 +69,9 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
 
     @time_machine.travel(DT, tick=False)
     def test_create_happy_path(self):
-        random_uuid = uuid4()
         kwargs = {
-            "uuid": str(random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_fire_pokemons,
-            "org_units_editable": False,
             "editable_fields": [
                 "name",
                 "aliases",
@@ -92,10 +89,9 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         oucrc.other_groups.set([self.other_group_1])
         oucrc.refresh_from_db()
 
-        self.assertEqual(str(oucrc.uuid), str(random_uuid))
         self.assertEqual(oucrc.project, self.project_johto)
         self.assertEqual(oucrc.org_unit_type, self.ou_type_fire_pokemons)
-        self.assertFalse(oucrc.org_units_editable)
+        self.assertTrue(oucrc.org_units_editable)
         self.assertCountEqual(oucrc.editable_fields, kwargs["editable_fields"])
         self.assertEqual(oucrc.created_by, self.user_ash_ketchum)
         self.assertEqual(oucrc.created_at, self.DT)
@@ -109,72 +105,76 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         self.assertCountEqual(oucrc.editable_reference_forms.all(), [self.form_ember, self.form_water_gun])
         self.assertCountEqual(oucrc.other_groups.all(), [self.other_group_1])
 
-    def test_create_without_any_data_restriction(self):
-        random_uuid = uuid4()
+    def test_create_config_preventing_any_data_modification(self):
         kwargs = {
-            "uuid": str(random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_water_pokemons,
-            "editable_fields": m.OrgUnitChangeRequestConfiguration.LIST_OF_POSSIBLE_EDITABLE_FIELDS,
             "created_by": self.user_misty,
+            "editable_fields": [],
+            "org_units_editable": False,
         }
         oucrc = m.OrgUnitChangeRequestConfiguration(**kwargs)
         oucrc.full_clean()
         oucrc.save()
 
-        self.assertEqual(str(oucrc.uuid), str(random_uuid))
         self.assertEqual(oucrc.project, self.project_johto)
         self.assertEqual(oucrc.org_unit_type, self.ou_type_water_pokemons)
-        self.assertTrue(oucrc.org_units_editable)
+        self.assertFalse(oucrc.org_units_editable)
         self.assertCountEqual(oucrc.editable_fields, kwargs["editable_fields"])
         self.assertEqual(oucrc.created_by, self.user_misty)
+        self.assertFalse(oucrc.possible_types.exists())
         self.assertFalse(oucrc.possible_parent_types.exists())
         self.assertFalse(oucrc.group_sets.exists())
         self.assertFalse(oucrc.editable_reference_forms.exists())
         self.assertFalse(oucrc.other_groups.exists())
 
     def test_create_error_same_project_and_orgunit_type(self):
-        random_uuid = uuid4()
-        kwargs_1 = {
-            "uuid": str(random_uuid),
-            "project": self.project_johto,
-            "org_unit_type": self.ou_type_rock_pokemons,
-            "editable_fields": [],
-            "created_by": self.user_brock,
-        }
-        oucrc_1 = m.OrgUnitChangeRequestConfiguration(**kwargs_1)
-        oucrc_1.full_clean()
-        oucrc_1.save()
-
-        self.assertEqual(str(oucrc_1.uuid), str(random_uuid))
-        self.assertEqual(oucrc_1.project, self.project_johto)
-        self.assertEqual(oucrc_1.org_unit_type, self.ou_type_rock_pokemons)
-        self.assertCountEqual(oucrc_1.editable_fields, kwargs_1["editable_fields"])
-        self.assertEqual(oucrc_1.created_by, self.user_brock)
-
-        another_random_uuid = uuid4()
-        kwargs_2 = {
-            "uuid": str(another_random_uuid),
+        kwargs = {
             "project": self.project_johto,
             "org_unit_type": self.ou_type_rock_pokemons,
             "editable_fields": ["name"],
-            "created_by": self.user_ash_ketchum,
+            "created_by": self.user_brock,
         }
-        oucrc_2 = m.OrgUnitChangeRequestConfiguration(**kwargs_2)
+        oucrc_1 = m.OrgUnitChangeRequestConfiguration(**kwargs)
+        oucrc_1.full_clean()
+        oucrc_1.save()
+
+        self.assertEqual(oucrc_1.project, self.project_johto)
+        self.assertEqual(oucrc_1.org_unit_type, self.ou_type_rock_pokemons)
+        self.assertCountEqual(oucrc_1.editable_fields, kwargs["editable_fields"])
+        self.assertEqual(oucrc_1.created_by, self.user_brock)
+
+        oucrc_2 = m.OrgUnitChangeRequestConfiguration(**kwargs)
         with self.assertRaises(ValidationError) as error:
             oucrc_2.full_clean()
             oucrc_2.save()
+            self.assertIn("unique_project_org_unit_type_if_not_deleted", error.exception.messages)
 
-        self.assertIn(
-            "Org unit change request configuration with this Project and Org unit type already exists.",
-            error.exception.messages,
-        )
+    def test_create_config_delete_and_recreate(self):
+        kwargs = {
+            "project": self.project_johto,
+            "org_unit_type": self.ou_type_rock_pokemons,
+            "editable_fields": [],
+            "org_units_editable": False,
+            "created_by": self.user_brock,
+        }
+        oucrc_1 = m.OrgUnitChangeRequestConfiguration(**kwargs)
+        oucrc_1.full_clean()
+        oucrc_1.save()
+        self.assertIsNone(oucrc_1.deleted_at)
+
+        oucrc_1.delete()
+        self.assertIsNotNone(oucrc_1.deleted_at)
+
+        oucrc_2 = m.OrgUnitChangeRequestConfiguration(**kwargs)
+        oucrc_2.full_clean()
+        oucrc_2.save()
+        self.assertEqual(oucrc_1.project_id, oucrc_2.project_id)
+        self.assertEqual(oucrc_1.org_unit_type_id, oucrc_2.org_unit_type_id)
 
     def test_create_error_invalid_editable_fields(self):
         pikachu = "PIKACHU"
-        random_uuid = uuid4()
         kwargs = {
-            "uuid": str(random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_water_pokemons,
             "editable_fields": ["name", "aliases", pikachu],
@@ -190,9 +190,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
 
     def test_filtering_for_user(self):
         # Preparing first OUCRC on default account
-        random_uuid = uuid4()
         kwargs = {
-            "uuid": str(random_uuid),
             "project": self.project_johto,
             "org_unit_type": self.ou_type_water_pokemons,
             "editable_fields": [],
@@ -211,9 +209,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
         new_ou_type_dinosaur_digimons = m.OrgUnitType.objects.create(name="Dinosaur Digimons")
 
         # Preparing a second OUCRC on second account
-        another_random_uuid = uuid4()
         new_kwargs = {
-            "uuid": str(another_random_uuid),
             "project": new_project_digital_world,
             "org_unit_type": new_ou_type_dinosaur_digimons,
             "editable_fields": [],

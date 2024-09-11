@@ -1367,6 +1367,7 @@
     "iaso.users.ouChildrenCheckbox": "Utilisateurs avec accès aux unités d'organisations enfants",
     "iaso.users.ouParentCheckbox": "Utilisateurs avec accès aux unités d'organisations parents",
     "iaso.users.password": "Mot de passe",
+    "iaso.users.permAndPhoneWarningTitle": "WARNING: Veuillez lire ceci avant de sauvegarder",
     "iaso.users.permissions": "Permissions",
     "iaso.users.phoneNumber": "Numéro de téléphone",
     "iaso.users.removeLocations": "Retirer la(les) localisation(s)",

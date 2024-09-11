@@ -1368,6 +1368,7 @@
     "iaso.users.ouChildrenCheckbox": "Users with access to children org unit",
     "iaso.users.ouParentCheckbox": "Users with access to parent org unit",
     "iaso.users.password": "Password",
+    "iaso.users.permAndPhoneWarningTitle": "WARNING: Read before saving",
     "iaso.users.permissions": "Permissions",
     "iaso.users.phoneNumber": "Phone number",
     "iaso.users.removeLocations": "Remove location(s)",

@@ -159,7 +159,9 @@ def import_gpkg_file(filename, project_id, source_name, version_number, validati
     # to our project via the tenant.
     source.projects.add(project_id)
     project = Project.objects.get(id=project_id)
-    import_gpkg_file2(filename, project, source, version_number, validation_status, user=None, description=description)
+    import_gpkg_file2(
+        filename, project, source, version_number, validation_status, user=None, description=descriptionn, task=None
+    )
 
 
 @transaction.atomic
@@ -171,6 +173,7 @@ def import_gpkg_file2(
     validation_status,
     user: Optional[User],
     description,
+    task,
 ):
     if version_number is None:
         last_version = source.versions.all().order_by("number").last()
@@ -217,6 +220,10 @@ def import_gpkg_file2(
     # Layer are OrgUnit's Type
     layers_name = fiona.listlayers(filename)
     for layer_name in layers_name:
+        if task:
+            task.report_progress_and_stop_if_killed(
+                progress_message=f"processing layer : {layer_name} total_org_unit : {total_org_unit}"
+            )
         # layers to import must be named level-{depth}-{name}
         if not layer_name.startswith("level-"):
             continue
@@ -234,6 +241,12 @@ def import_gpkg_file2(
 
             existing_ou = ref_ou.get(ref, None)
             orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group)
+
+            if task and total_org_unit % 500 == 0:
+                task.report_progress_and_stop_if_killed(
+                    progress_message=f"processing layer : {layer_name} {orgunit.name} total_org_unit : {total_org_unit}"
+                )
+
             ref = get_ref(orgunit)  # if ref was null in gpkg
             ref_ou[ref] = orgunit
 
@@ -244,6 +257,10 @@ def import_gpkg_file2(
                 modifications_to_log.append((existing_ou, orgunit))
 
             total_org_unit += 1
+    if task:
+        task.report_progress_and_stop_if_killed(
+            progress_message=f"processing parents : total_org_unit : {total_org_unit}"
+        )
 
     for ref, parent_ref in to_update_with_parent:
         ou = ref_ou[ref]
@@ -253,7 +270,10 @@ def import_gpkg_file2(
         parent_ou = ref_ou[parent_ref] if parent_ref else None
         ou.parent = parent_ou
         ou.save()
-
+    if task:
+        task.report_progress_and_stop_if_killed(
+            progress_message=f"storing log_modifications total_org_unit : {total_org_unit}"
+        )
     for old_ou, new_ou in modifications_to_log:
         # Possible optimisation, crate a bulk update
         audit_models.log_modification(old_ou, new_ou, source=audit_models.GPKG_IMPORT, user=user)

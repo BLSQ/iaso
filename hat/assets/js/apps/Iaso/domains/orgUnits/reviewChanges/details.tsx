@@ -104,7 +104,6 @@ export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
                 </Box>
 
                 <ApproveOrgUnitChangesButtons
-                    closeDialog={goBack}
                     newFields={newFields}
                     isNew={isNew}
                     submitChangeRequest={submitChangeRequest}

@@ -160,7 +160,7 @@ def import_gpkg_file(filename, project_id, source_name, version_number, validati
     source.projects.add(project_id)
     project = Project.objects.get(id=project_id)
     import_gpkg_file2(
-        filename, project, source, version_number, validation_status, user=None, description=descriptionn, task=None
+        filename, project, source, version_number, validation_status, user=None, description=description, task=None
     )
 
 

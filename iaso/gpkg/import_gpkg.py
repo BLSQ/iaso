@@ -259,14 +259,19 @@ def import_gpkg_file2(
             total_org_unit += 1
     if task:
         task.report_progress_and_stop_if_killed(
-            progress_message=f"processing parents : total_org_unit : {total_org_unit}"
+            progress_message=f"processing parents : total_org_unit : {total_org_unit} to_update_with_parent : {len(to_update_with_parent)}"
         )
-
+    parent_count = 0
     for ref, parent_ref in to_update_with_parent:
+        parent_count += 1
         ou = ref_ou[ref]
         if parent_ref and parent_ref not in ref_ou:
             raise ValueError(f"Bad GPKG parent {parent_ref} for {ou} don't exist in input or SourceVersion")
 
+        if task and parent_count % 1000 == 0:
+            task.report_progress_and_stop_if_killed(
+                progress_message=f"processing parent : parent_count : #{parent_count}"
+            )
         parent_ou = ref_ou[parent_ref] if parent_ref else None
         ou.parent = parent_ou
         ou.save()

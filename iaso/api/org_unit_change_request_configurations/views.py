@@ -33,7 +33,6 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet, AuditMixin
     pagination_class = OrgUnitChangeRequestConfigurationPagination
 
     def get_queryset(self):
-        print("*** get queryset ***")
         return (
             OrgUnitChangeRequestConfiguration.objects.order_by("id")
             .select_related("project", "org_unit_type", "created_by", "updated_by")
@@ -47,7 +46,6 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet, AuditMixin
         )
 
     def get_serializer_class(self):
-        print("*** get serializer class ***")
         if self.action == "create":
             return OrgUnitChangeRequestConfigurationWriteSerializer
         if self.action in ["list", "metadata"]:

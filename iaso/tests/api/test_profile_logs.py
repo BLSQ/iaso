@@ -475,7 +475,7 @@ class ProfileLogsTestCase(APITestCase):
 
         """
         self.client.force_authenticate(self.user_with_permission_1)
-        response = self.client.get(f"/api/userlogs/?user_ids={self.edited_user_1.iaso_profile.id}")
+        response = self.client.get(f"/api/userlogs/?user_ids={self.edited_user_1.id}")
         data = self.assertJSONResponse(response, 200)
         self.assertEquals(data["count"], 4)
         try:
@@ -484,7 +484,7 @@ class ProfileLogsTestCase(APITestCase):
             self.fail(msg=str(ex))
 
         response = self.client.get(
-            f"/api/userlogs/?user_ids={self.edited_user_1.iaso_profile.id}&modified_by={self.user_with_permission_1.id}"
+            f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}"
         )
         data = self.assertJSONResponse(response, 200)
         self.assertEquals(data["count"], 2)
@@ -493,9 +493,7 @@ class ProfileLogsTestCase(APITestCase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
-        response = self.client.get(
-            f"/api/userlogs/?user_ids={self.edited_user_1.iaso_profile.id}&org_unit_id={self.org_unit_2.id}"
-        )
+        response = self.client.get(f"/api/userlogs/?user_ids={self.edited_user_1.id}&org_unit_id={self.org_unit_2.id}")
         data = self.assertJSONResponse(response, 200)
         self.assertEquals(data["count"], 2)
         try:
@@ -504,7 +502,7 @@ class ProfileLogsTestCase(APITestCase):
             self.fail(msg=str(ex))
 
         response = self.client.get(
-            f"/api/userlogs/?user_ids={self.edited_user_1.iaso_profile.id}&modified_by={self.user_with_permission_1.id}&created_at_before=2020-02-14"
+            f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}&created_at_before=2020-02-14"
         )
         data = self.assertJSONResponse(response, 200)
         self.assertEquals(data["count"], 1)
@@ -514,7 +512,7 @@ class ProfileLogsTestCase(APITestCase):
             self.fail(msg=str(ex))
 
         response = self.client.get(
-            f"/api/userlogs/?user_ids={self.edited_user_1.iaso_profile.id}&modified_by={self.user_with_permission_1.id}&created_at_after=2020-02-14"
+            f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}&created_at_after=2020-02-14"
         )
         data = self.assertJSONResponse(response, 200)
         self.assertEquals(data["count"], 1)

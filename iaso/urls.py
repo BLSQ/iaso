@@ -65,6 +65,7 @@ from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.groups import MobileGroupsViewSet
+from .api.mobile.group_sets import MobileGroupSetsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
@@ -137,6 +138,7 @@ router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsru
 router.register(r"groups", GroupsViewSet, basename="groups")
 router.register(r"group_sets", GroupSetsViewSet, basename="group_sets")
 router.register(r"mobile/groups", MobileGroupsViewSet, basename="groupsmobile")
+router.register(r"mobile/group_sets", MobileGroupSetsViewSet, basename="groupsetsmobile")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
 router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")

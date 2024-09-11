@@ -261,6 +261,11 @@ def merge_entities(e1: Entity, e2: Entity, merge_def: Dict):
     if e2.attributes is not None:
         e2.attributes.soft_delete()
 
+    e1.merged_to = new_entity
+    e1.save()
+    e2.merged_to = new_entity
+    e2.save()
+
     e1.delete()
     e2.delete()
 

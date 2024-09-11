@@ -2,7 +2,7 @@ import typing
 
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
 from django.db import connection
-
+from iaso.utils.gis import simplify_geom
 from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import OrgUnitType, OrgUnit
@@ -964,6 +964,29 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertQuerySetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
         self.assertEqual(response.data["reference_instances"], [])
+
+    def test_edit_org_unit_partial_update_remove_geojson_geom_simplified_geom_should_be_consistent(self):
+        """Check that if we remove the geojson both simplified_geom and geom are empty"""
+        ou = m.OrgUnit(version=self.sw_version_1)
+        ou.name = "test ou"
+        ou.source_ref = "b"
+        ou.geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
+        ou.simplified_geom = simplify_geom(MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])))
+        ou.save()
+        old_modification_date = ou.updated_at
+        self.client.force_authenticate(self.yoda)
+        data = {"geo_json": None}
+        response = self.client.patch(
+            f"/api/orgunits/{ou.id}/",
+            format="json",
+            data=data,
+        )
+        self.assertJSONResponse(response, 200)
+        ou.refresh_from_db()
+        self.assertGreater(ou.updated_at, old_modification_date)
+        self.assertEqual(ou.name, "test ou")
+        self.assertIsNone(ou.geom)
+        self.assertIsNone(ou.simplified_geom)
 
     def test_edit_org_unit_partial_update_read_permission(self):
         """Check that we can only modify a part of the file with org units read only permission"""

@@ -1,5 +1,7 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.contrib.auth.models import AnonymousUser, User
+import typing
 
 
 class DataSource(models.Model):
@@ -72,12 +74,29 @@ class DataSource(models.Model):
         return {"name": self.name, "id": self.id}
 
 
+class SourceVersionQuerySet(models.QuerySet):
+    def filter_for_user(self, user: typing.Union[User, AnonymousUser, None]):
+        queryset = self
+        if user and user.is_anonymous:
+            return self.none()
+
+        if user and user.is_authenticated:
+            queryset = queryset.filter(data_source__projects__account=user.iaso_profile.account)
+
+        return queryset
+
+
+SourceVersionManager = models.Manager.from_queryset(SourceVersionQuerySet)
+
+
 class SourceVersion(models.Model):
     data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE, related_name="versions")
     number = models.IntegerField()
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = SourceVersionManager()
 
     class Meta:
         constraints = [

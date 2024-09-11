@@ -96,6 +96,7 @@ from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.import_export import export_workflow, import_workflow
 from .api.workflows.mobile import MobileWorkflowViewSet
 from .api.workflows.versions import WorkflowVersionViewSet
+from .api.group_sets.views import GroupSetsViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 
 URL = Union[URLPattern, URLResolver]
@@ -134,6 +135,7 @@ router.register(r"profiles", ProfilesViewSet, basename="profiles")
 router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")
 router.register(r"groups", GroupsViewSet, basename="groups")
+router.register(r"group_sets", GroupSetsViewSet, basename="group_sets")
 router.register(r"mobile/groups", MobileGroupsViewSet, basename="groupsmobile")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
 router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")

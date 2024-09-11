@@ -9,7 +9,7 @@ import iaso.models as m
 # testing on a small subset on your dev env
 #
 #    docker compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.40.4.1
-#    docker-compose run --rm iaso manage fix_submissions_select_multiple
+#    docker compose run --rm iaso manage fix_submissions_select_multiple
 
 
 class Command(BaseCommand):

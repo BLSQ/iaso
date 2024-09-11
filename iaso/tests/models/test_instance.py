@@ -194,6 +194,20 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         instance_with_status = m.Instance.objects.with_status().get(pk=instance.pk)
         self.assertEqual(instance_with_status.status, status)
 
+    def test_xml_to_json_should_contains_emoji(self):
+        self.maxDiff = None
+        instance = m.Instance.objects.create(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_coruscant,
+            file=UploadedFile(open("iaso/tests/fixtures/submission_with_emoji.xml")),
+        )
+        json_instance = instance.get_and_save_json_of_xml()
+
+        self.assertEqual(json_instance["_version"], "2024080903")
+        # assert flattened and  lowered case keys
+        self.assertEqual(json_instance["prevous_muac_color"], "🟡Yellow")
+
     def test_xml_to_json_should_contains_chars_encoding(self):
         instance = m.Instance.objects.create(
             form=self.form_1,

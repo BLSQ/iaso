@@ -23,30 +23,30 @@ Once the script has run, you can log in to your server using the account name as
 
 1. Backup your DB
 
-        docker-compose exec db pg_dump -U postgres iaso  -Fc > ~/Desktop/iaso.dump
+        docker compose exec db pg_dump -U postgres iaso  -Fc > ~/Desktop/iaso.dump
 
 1. Use an empty DB
 
         # Find your Iaso DB.
-        docker-compose exec db psql -U postgres -l
+        docker compose exec db psql -U postgres -l
 
         # Delete your Iaso DB.
-        docker-compose exec db psql -U postgres -c "drop database if exists iaso"
+        docker compose exec db psql -U postgres -c "drop database if exists iaso"
 
         # Create your Iaso DB.
-        docker-compose exec db psql -U postgres -c "create database iaso"
+        docker compose exec db psql -U postgres -c "create database iaso"
 
 1. Run the Django server in a first terminal (this will run DB migrations)
 
-        docker-compose up iaso
+        docker compose up iaso
 
 1. Run a worker in a second terminal
 
-        docker-compose run iaso manage tasks_worker
+        docker compose run iaso manage tasks_worker
 
 1. Create a superuser
 
-        docker-compose exec iaso ./manage.py createsuperuser
+        docker compose exec iaso ./manage.py createsuperuser
 
 1. Prepare the setuper (it requires a local Python 3)
 

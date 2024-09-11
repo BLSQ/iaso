@@ -36,6 +36,7 @@ const useStyles = makeStyles(theme => ({
         // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
+    tableRow: {},
 }));
 
 export const InstanceLogContentBasic: FunctionComponent<Props> = ({
@@ -50,11 +51,7 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
         <Table>
             <TableHead>
                 <TableRow>
-                    <TableCell
-                        width={80}
-                        align="left"
-                        className={classes.tableCellHead}
-                    >
+                    <TableCell align="left" className={classes.tableCellHead}>
                         {formatMessage(MESSAGES.label)}
                     </TableCell>
                     <TableCell align="left" className={classes.tableCellHead}>
@@ -75,12 +72,23 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
 
                         if (
                             question.name !== 'meta' &&
-                            question.name !== 'uuid' &&
+                            question.name !== 'instanceID' &&
                             (fileContent.logA.json[question.name] ||
                                 fileContent.logB.json[question.name])
                         ) {
                             return (
-                                <TableRow key={question.name}>
+                                <TableRow
+                                    key={question.name}
+                                    style={{
+                                        backgroundColor:
+                                            fileContent.logA.json[
+                                                question.name
+                                            ] !==
+                                            fileContent.logB.json[question.name]
+                                                ? 'yellow'
+                                                : undefined,
+                                    }}
+                                >
                                     <TableCell
                                         className={classes.tableCell}
                                         align="left"

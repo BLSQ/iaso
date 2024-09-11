@@ -653,7 +653,13 @@ class InstancesViewSet(viewsets.ViewSet):
         instance = get_object_or_404(Instance, pk=pk)
         log = get_object_or_404(Modification, pk=logId)
         log_dict = log.as_dict()
-        log_dict["possible_fields"] = instance.form_version.possible_fields
+        form_version = instance.form_version
+        possible_fields = []
+
+        if form_version is not None and form_version.possible_fields is not None:
+            possible_fields = form_version.possible_fields
+
+        log_dict["possible_fields"] = possible_fields
         return Response(log_dict)
 
 

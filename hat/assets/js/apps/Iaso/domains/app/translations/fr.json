@@ -319,6 +319,7 @@
     "iaso.groups.dialog.deleteText": "Cette opération est définitive.",
     "iaso.groups.sourceVersion": "Version de la source",
     "iaso.groups.update": "Mettre le groupe à jour",
+    "iaso.groupsets.groupBelonging": "Appartenance aux groupes", 
     "iaso.hospital": "Hôpital",
     "iaso.instance.coordinate": "Coordonnées",
     "iaso.instance.created_at": "Création dans Iaso",

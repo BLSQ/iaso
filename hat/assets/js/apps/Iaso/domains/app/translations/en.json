@@ -319,6 +319,7 @@
     "iaso.groups.dialog.deleteText": "This operation cannot be undone.",
     "iaso.groups.sourceVersion": "Source version",
     "iaso.groups.update": "Update group",
+    "iaso.groupsets.groupBelonging": "Groups belonging", 
     "iaso.hospital": "Hospital",
     "iaso.instance.coordinate": "Coordinates",
     "iaso.instance.created_at": "Created in Iaso",

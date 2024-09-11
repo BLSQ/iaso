@@ -63,7 +63,7 @@ from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.microplanning import AssignmentViewSet, MobilePlanningViewSet, PlanningViewSet, TeamViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
-from .api.mobile.entity import MobileEntityViewSet
+from .api.mobile.entity import MobileEntityViewSet, MobileEntityDeletedViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.groups import MobileGroupsViewSet
 from .api.mobile.group_sets import MobileGroupSetsViewSet
@@ -161,6 +161,7 @@ router.register(r"tasks/create/exportmobilesetup", ExportMobileSetupViewSet, bas
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entities", EntityViewSet, basename="entity")
+router.register(r"mobile/entities/deleted", MobileEntityDeletedViewSet, basename="entitiesdeleted")
 router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytypes", EntityTypeViewSet, basename="entitytype")
 router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="entitytype")

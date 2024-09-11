@@ -4,12 +4,28 @@ import {
     deleteRequest,
     postRequest,
     patchRequest,
+    optionsRequest,
 } from '../../../../libs/Api';
+
+import { UseQueryResult } from 'react-query';
+
+import { GroupSetMetaData } from '../types/GroupSetMetaData';
+import { baseUrl } from '../config';
 
 import MESSAGES from '../messages';
 
+interface GetGroupSetsParams {
+    pageSize?: string;
+    order?: string;
+    limit?: string;
+    page?: string;
+    search?: string;
+    version?: string;
+    project_ids?: string;
+}
+
 export const useGetGroupSets = params => {
-    const newParams = {
+    const newParams: GetGroupSetsParams = {
         limit: params.pageSize || '20',
         order: params.order || 'id',
         page: params.page || '1',
@@ -25,7 +41,9 @@ export const useGetGroupSets = params => {
         newParams.project_ids = params.projectsIds;
     }
 
-    const searchParams = new URLSearchParams(newParams);
+    const searchParams = new URLSearchParams(
+        newParams as Record<string, string>,
+    );
     return useSnackQuery(
         ['group_sets', newParams],
         () =>
@@ -66,3 +84,30 @@ export const useDeleteGroups = () =>
         MESSAGES.deleteError,
         ['group_sets'],
     );
+
+const mapChoices = choices =>
+    choices.map(choice => ({
+        label: choice.display_name,
+        value: choice.value,
+    }));
+
+export const useOptionGroupSet = (): UseQueryResult<GroupSetMetaData, Error> =>
+    useSnackQuery({
+        queryKey: ['optionGroupSet'],
+        queryFn: () => optionsRequest(`/api/group_sets/`),
+        options: {
+            staleTime: 1000 * 60 * 15, // in ms
+            cacheTime: 1000 * 60 * 5,
+            select: data => {
+                debugger;
+                const metadata = data.actions.OPTIONS;
+                const mapped =  {
+                    groupBelonging: mapChoices(
+                        metadata.group_belonging.choices,
+                    ),
+                };
+                debugger;
+                return mapped
+            },
+        },
+    });

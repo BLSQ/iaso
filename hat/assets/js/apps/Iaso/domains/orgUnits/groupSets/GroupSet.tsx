@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
-import { useGetGroupSet } from './hooks/requests';
+import { useGetGroupSet, useOptionGroupSet } from './hooks/requests';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
@@ -37,7 +37,8 @@ const GroupSet = () => {
     const { formatMessage } = useSafeIntl();
     const params = useParamsObject(baseUrl);
     const { data: groupSet, isFetching } = useGetGroupSet(params.groupSetId);
-
+    const { data: groupSetMetaData, isLoading: isFetchingMetaData } =
+        useOptionGroupSet();
     const { data: allSourceVersions, isLoading: areSourceVersionsLoading } =
         useDataSourceVersions();
 
@@ -51,7 +52,7 @@ const GroupSet = () => {
     });
     const goBack = useGoBack(baseUrls.groupSets);
 
-    const isLoading = isFetching || isFetchingGroups;
+    const isLoading = isFetching || isFetchingGroups || isFetchingMetaData;
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -105,6 +106,28 @@ const GroupSet = () => {
                             options={groups}
                             loading={isFetchingGroups}
                             multi
+                        />
+                    </Grid>
+                </Grid>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={4}>
+                        <InputComponent
+                            keyValue="source_ref"
+                            type="text"
+                            value={groupSet?.source_ref || ''}
+                        />
+                    </Grid>
+                </Grid>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={4}>
+                        <InputComponent
+                            keyValue="groups_belonging"
+                            value={groupSet?.group_belonging}
+                            type="select"
+                            label={MESSAGES.group_belonging}
+                            options={groupSetMetaData?.groupBelonging}
+                            loading={isFetchingMetaData}
+                            blockForbiddenChars
                         />
                     </Grid>
                 </Grid>

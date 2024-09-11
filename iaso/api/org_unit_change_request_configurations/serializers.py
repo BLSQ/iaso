@@ -59,40 +59,42 @@ class FormNestedSerializer(serializers.ModelSerializer):
         ref_name = "GroupSetNestedSerializerForChangeRequestConfiguration"
 
 
-# class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
-#     """
-#     Used to list many `OrgUnitChangeRequest` instances for mobile.
-#     """
-#
-#     org_unit_id = serializers.IntegerField(source="org_unit.id")
-#     org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
-#     new_location = ThreeDimPointField()
-#     created_at = TimestampField()
-#     updated_at = TimestampField()
-#     new_reference_instances = ReferenceInstancesSerializer(many=True)
-#
-#     class Meta:
-#         model = OrgUnitChangeRequest
-#         fields = [
-#             "id",
-#             "uuid",
-#             "org_unit_id",
-#             "org_unit_uuid",
-#             "status",
-#             "approved_fields",
-#             "rejection_comment",
-#             "created_at",
-#             "updated_at",
-#             "new_parent_id",
-#             "new_name",
-#             "new_org_unit_type_id",
-#             "new_groups",
-#             "new_location",
-#             "new_location_accuracy",
-#             "new_opening_date",
-#             "new_closed_date",
-#             "new_reference_instances",
-#         ]
+class MobileOrgUnitChangeRequestConfigurationListSerializer(serializers.ModelSerializer):
+    """
+    Used to list many `OrgUnitChangeRequestConfiguration` instances for mobile.
+    """
+
+    org_unit_type_id = serializers.PrimaryKeyRelatedField(source="org_unit_type", queryset=OrgUnitType.objects.none())
+    possible_type_ids = serializers.PrimaryKeyRelatedField(
+        source="possible_types", queryset=OrgUnitType.objects.none(), many=True
+    )
+    possible_parent_type_ids = serializers.PrimaryKeyRelatedField(
+        source="possible_parent_types", queryset=OrgUnitType.objects.none(), many=True
+    )
+    group_set_ids = serializers.PrimaryKeyRelatedField(source="group_sets", queryset=GroupSet.objects.none(), many=True)
+    editable_reference_form_ids = serializers.PrimaryKeyRelatedField(
+        source="editable_reference_forms", queryset=Form.objects.none(), many=True
+    )
+    other_group_ids = serializers.PrimaryKeyRelatedField(
+        source="other_groups", queryset=Group.objects.none(), many=True
+    )
+    created_at = TimestampField()
+    updated_at = TimestampField()
+
+    class Meta:
+        model = OrgUnitChangeRequestConfiguration
+        fields = [
+            "org_unit_type_id",
+            "org_units_editable",
+            "editable_fields",
+            "possible_type_ids",
+            "possible_parent_type_ids",
+            "group_set_ids",
+            "editable_reference_form_ids",
+            "other_group_ids",
+            "created_at",
+            "updated_at",
+        ]
 
 
 class OrgUnitChangeRequestConfigurationListSerializer(serializers.ModelSerializer):

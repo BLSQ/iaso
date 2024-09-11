@@ -72,6 +72,7 @@ from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.modules import ModulesViewSet
 from .api.org_unit_change_request_configurations.views import OrgUnitChangeRequestConfigurationViewSet
+from .api.org_unit_change_request_configurations.views_mobile import MobileOrgUnitChangeRequestConfigurationViewSet
 from .api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
 from .api.org_unit_change_requests.views_mobile import MobileOrgUnitChangeRequestViewSet
 from .api.org_unit_tree.views import OrgUnitTreeViewSet
@@ -106,6 +107,11 @@ URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
 
 router = routers.DefaultRouter()
+router.register(
+    r"mobile/orgunits/changes/configs",
+    MobileOrgUnitChangeRequestConfigurationViewSet,
+    basename="mobileorgunitschangesconfigs",
+)
 router.register(
     r"orgunits/changes/configs", OrgUnitChangeRequestConfigurationViewSet, basename="orgunitschangesconfigs"
 )

@@ -3,6 +3,7 @@ import datetime
 import io
 import json
 import math
+import pytz
 from time import gmtime, strftime
 from typing import Any, List, Union
 
@@ -164,8 +165,15 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(attributes__org_unit__path__descendants=parent.path)
 
         if date_from or date_to:
-            date_from_dt = datetime.datetime.strptime(date_from, "%Y-%m-%d") if date_from else datetime.datetime.min
-            date_to_dt = datetime.datetime.strptime(date_to, "%Y-%m-%d") if date_to else datetime.datetime.max
+            date_from_dt = datetime.datetime.min
+            if date_from:
+                parsed_date = datetime.datetime.strptime(date_from, "%Y-%m-%d")
+                date_from_dt = datetime.datetime.combine(parsed_date, datetime.time.min).replace(tzinfo=pytz.UTC)
+
+            date_to_dt = datetime.datetime.max
+            if date_to:
+                datetime.datetime.strptime(date_to, "%Y-%m-%d")
+                date_to_dt = datetime.datetime.combine(parsed_date, datetime.time.max).replace(tzinfo=pytz.UTC)
 
             instances_within_range = Instance.objects.annotate(
                 creation_timestamp=Coalesce("source_created_at", "created_at")

@@ -33,9 +33,9 @@ class MobileGroupSetSerializer(serializers.ModelSerializer):
 
 
 class MobileGroupSetsViewSet(ListModelMixin, GenericViewSet):
-    """Groups API for Mobile.
+    """Groupsets API for Mobile.
 
-    Allows to retrieve a list of groups from the API.
+    Allows to retrieve a list of groupsets from the API.
 
     Returns a lighter payload adapted for the mobile application.
 

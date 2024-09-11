@@ -36,7 +36,9 @@ const useStyles = makeStyles(theme => ({
         // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
-    tableRow: {},
+    tableCellLabelName: {
+        color: theme.palette.mediumGray.main,
+    },
 }));
 
 export const InstanceLogContentBasic: FunctionComponent<Props> = ({
@@ -93,9 +95,18 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                                         className={classes.tableCell}
                                         align="left"
                                     >
-                                        {fileDescriptor?.children && field
-                                            ? formatLabel(field)
-                                            : question.name}
+                                        <div>
+                                            {fileDescriptor?.children && field
+                                                ? formatLabel(field)
+                                                : question.name}
+                                        </div>
+                                        <div
+                                            className={
+                                                classes.tableCellLabelName
+                                            }
+                                        >
+                                            {question.name}
+                                        </div>
                                     </TableCell>
                                     <TableCell
                                         className={classes.tableCell}

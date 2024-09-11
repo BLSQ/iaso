@@ -1,5 +1,4 @@
 import datetime
-import uuid
 import time_machine
 
 from rest_framework import status
@@ -85,7 +84,6 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
 
         result = response.data
         self.assertEqual(self.oucrc_type_water.id, result["id"])
-        self.assertEqual(str(self.oucrc_type_water.uuid), result["uuid"])
         self.assertEqual(self.oucrc_type_water.project_id, result["project"]["id"])
         self.assertEqual(self.oucrc_type_water.project.name, result["project"]["name"])
         self.assertEqual(self.oucrc_type_water.org_unit_type_id, result["org_unit_type"]["id"])
@@ -118,10 +116,8 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
     @time_machine.travel(DT, tick=False)
     def test_create_happy_path(self):
         self.client.force_authenticate(self.user_brock)
-        random_uuid = uuid.uuid4()
         new_ou_type = self.create_new_org_unit_type("new ou type")
         data = {
-            "uuid": random_uuid,
             "project_id": self.project_johto.id,
             "org_unit_type_id": new_ou_type.id,
             "org_units_editable": False,
@@ -135,8 +131,9 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        oucrc = m.OrgUnitChangeRequestConfiguration.objects.get(uuid=random_uuid)
-        self.assertEqual(oucrc.uuid, random_uuid)
+        oucrc = m.OrgUnitChangeRequestConfiguration.objects.get(
+            project_id=self.project_johto.id, org_unit_type_id=new_ou_type.id
+        )
         self.assertEqual(oucrc.project.id, self.project_johto.id)
         self.assertEqual(oucrc.org_unit_type_id, new_ou_type.id)
         self.assertEqual(oucrc.org_units_editable, False)
@@ -175,10 +172,8 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
     #     self.assertEqual(change_request.requested_fields, ["new_name", "new_org_unit_type"])
     #
     def test_create_without_auth(self):
-        random_uuid = uuid.uuid4()
         new_ou_type = self.create_new_org_unit_type("new ou type")
         data = {
-            "uuid": random_uuid,
             "project_id": self.project_johto.id,
             "org_unit_type_id": new_ou_type.id,
             "org_units_editable": False,
@@ -209,7 +204,7 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertContains(
             response,
-            "The fields project_id, org_unit_type_id must make a unique set.",
+            f"There is already a configuration for this project_id ({self.project_johto.id}) and org_unit_type_id ({self.ou_type_fire_pokemons.id}).",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -435,9 +430,7 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.delete(f"{self.OUCRC_API_URL}{probably_not_a_valid_id}/", format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_error_deleting_and_recreating(self):
-        # I'm not sure that we want this behavior, but that's what is implemented at the moment.
-
+    def test_deleting_and_recreating(self):
         # First, let's delete the existing OUCRC
         self.client.force_authenticate(self.user_ash_ketchum)
         response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
@@ -449,13 +442,15 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
             "project_id": self.project_johto.id,
             "org_unit_type_id": self.ou_type_fire_pokemons.id,
             "org_units_editable": False,
+            "editable_fields": ["name", "opening_date"],
         }
         response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
-        self.assertContains(
-            response,
-            f"There is already a configuration for this project_id ({self.project_johto.id}) and org_unit_type_id ({self.ou_type_fire_pokemons.id}).",
-            status_code=status.HTTP_400_BAD_REQUEST,
-        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        result = response.json()
+        new_oucrc = m.OrgUnitChangeRequestConfiguration.objects.get(id=result["id"])
+        self.assertEqual(new_oucrc.project_id, self.oucrc_type_fire.project_id)
+        self.assertEqual(new_oucrc.org_unit_type_id, self.oucrc_type_fire.org_unit_type_id)
 
     # + test for making sure that the user who deleted the OUCRC is stored in updated_by?
     # or have a field deleted_by?

@@ -1,5 +1,3 @@
-import uuid
-
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
@@ -102,7 +100,6 @@ class OrgUnitChangeRequestConfigurationListSerializer(serializers.ModelSerialize
     Used to list many `OrgUnitChangeRequestConfiguration` instances.
     """
 
-    uuid = serializers.UUIDField()
     project = ProjectNestedSerializer()
     org_unit_type = OrgUnitTypeNestedSerializer()
     created_by = UserNestedSerializer()
@@ -114,7 +111,6 @@ class OrgUnitChangeRequestConfigurationListSerializer(serializers.ModelSerialize
         model = OrgUnitChangeRequestConfiguration
         fields = [
             "id",
-            "uuid",
             "project",
             "org_unit_type",
             "created_by",
@@ -129,7 +125,6 @@ class OrgUnitChangeRequestConfigurationRetrieveSerializer(serializers.ModelSeria
     Used to fully fetch a single `OrgUnitChangeRequestConfiguration` instance.
     """
 
-    uuid = serializers.UUIDField()
     project = ProjectNestedSerializer()
     org_unit_type = OrgUnitTypeNestedSerializer()
     org_units_editable = serializers.BooleanField()
@@ -147,7 +142,6 @@ class OrgUnitChangeRequestConfigurationRetrieveSerializer(serializers.ModelSeria
         model = OrgUnitChangeRequestConfiguration
         fields = [
             "id",
-            "uuid",
             "project",
             "org_unit_type",
             "org_units_editable",
@@ -170,7 +164,6 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(serializers.ModelSerializ
     """
 
     id = serializers.IntegerField(read_only=True)
-    uuid = serializers.UUIDField(required=False, default=uuid.uuid4)
     project_id = IdOrUuidRelatedField(source="project", queryset=Project.objects.all())
     org_unit_type_id = serializers.PrimaryKeyRelatedField(source="org_unit_type", queryset=OrgUnitType.objects.all())
     possible_type_ids = serializers.PrimaryKeyRelatedField(
@@ -193,7 +186,6 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(serializers.ModelSerializ
         model = OrgUnitChangeRequestConfiguration
         fields = [
             "id",
-            "uuid",
             "project_id",
             "org_unit_type_id",
             "org_units_editable",
@@ -213,7 +205,7 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(serializers.ModelSerializ
         # Making sure that there is no soft-deleted OUCRC with the same project_id and org_unit_type_id
         project_id = validated_data["project"].id
         org_unit_type_id = validated_data["org_unit_type"].id
-        if OrgUnitChangeRequestConfiguration.objects_include_deleted.filter(
+        if OrgUnitChangeRequestConfiguration.objects.filter(
             project_id=project_id, org_unit_type_id=org_unit_type_id
         ).exists():
             raise serializers.ValidationError(

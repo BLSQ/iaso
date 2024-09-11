@@ -805,7 +805,7 @@ class ProfileAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
 
-        response = self.client.get(f"/api/profiles/?location={self.jedi_council_corruscant.pk}")
+        response = self.client.get(f"/api/profiles/?location={self.jedi_council_corruscant.pk}&limit=100")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
@@ -815,7 +815,7 @@ class ProfileAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
 
-        response = self.client.get(f"/api/profiles/?orgUnitTypes={self.jedi_council.pk}")
+        response = self.client.get(f"/api/profiles/?orgUnitTypes={self.jedi_council.pk}&limit=100")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
@@ -838,9 +838,10 @@ class ProfileAPITestCase(APITestCase):
         self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
 
         response = self.client.get(
-            f"/api/profiles/?location={self.jedi_council_corruscant_child.pk}&ouParent=true&ouChildren=false"
+            f"/api/profiles/?location={self.jedi_council_corruscant_child.pk}&ouParent=true&ouChildren=false&limit=100"
         )
         self.assertEqual(response.status_code, 200)
+        print(response.json())
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(len(response.json()["profiles"]), 2)
 

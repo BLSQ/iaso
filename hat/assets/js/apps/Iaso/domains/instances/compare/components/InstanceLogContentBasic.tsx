@@ -68,39 +68,39 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
             <TableBody>
                 {fileContent.logA &&
                     fileContent.logB &&
-                    Object.keys(fileContent.logA.json).map(labelKey => {
+                    fileContent?.fields.map(question => {
                         const field = fileDescriptor?.children.find(
-                            child => child.name === labelKey,
+                            child => child.name === question.name,
                         );
 
                         if (
-                            labelKey !== 'meta' &&
-                            labelKey !== 'uuid' &&
-                            (fileContent.logA.json[labelKey] ||
-                                fileContent.logB.json[labelKey])
+                            question.name !== 'meta' &&
+                            question.name !== 'uuid' &&
+                            (fileContent.logA.json[question.name] ||
+                                fileContent.logB.json[question.name])
                         ) {
                             return (
-                                <TableRow key={labelKey}>
+                                <TableRow key={question.name}>
                                     <TableCell
                                         className={classes.tableCell}
                                         align="left"
                                     >
                                         {fileDescriptor?.children && field
                                             ? formatLabel(field)
-                                            : labelKey}
+                                            : question.name}
                                     </TableCell>
                                     <TableCell
                                         className={classes.tableCell}
                                         align="left"
                                     >
                                         {/* TO DO : display section titles for groups */}
-                                        {fileContent?.logA.json[labelKey]}
+                                        {fileContent?.logA.json[question.name]}
                                     </TableCell>
                                     <TableCell
                                         className={classes.tableCell}
                                         align="left"
                                     >
-                                        {fileContent?.logB.json[labelKey]}
+                                        {fileContent?.logB.json[question.name]}
                                     </TableCell>
                                 </TableRow>
                             );

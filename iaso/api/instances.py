@@ -20,7 +20,7 @@ from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
-from hat.audit.models import INSTANCE_API, log_modification
+from hat.audit.models import INSTANCE_API, Modification, log_modification
 from hat.common.utils import queryset_iterator
 from hat.menupermissions import models as permission
 from iaso.api.serializers import OrgUnitSerializer
@@ -644,6 +644,17 @@ class InstancesViewSet(viewsets.ViewSet):
         df["name"] = df["period"].apply(lambda x: x.strftime("%Y-%m-%d"))
         r = df.to_json(orient="table")
         return HttpResponse(r, content_type="application/json")
+
+    @action(detail=True, methods=["get"], url_path=r"instance_logs/(?P<logId>[^/.]+)")
+    def instance_logs(self, request, pk=None, logId=None):
+        """
+        GET /api/instances/<pk>/instance_logs/<logId>/
+        """
+        instance = get_object_or_404(Instance, pk=pk)
+        log = get_object_or_404(Modification, pk=logId)
+        log_dict = log.as_dict()
+        log_dict["possible_fields"] = instance.form_version.possible_fields
+        return Response(log_dict)
 
 
 def import_data(instances, user, app_id):

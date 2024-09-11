@@ -73,6 +73,7 @@ export type InstanceLogData = {
     new_value: NewValue[];
     source: string;
     user: User;
+    possible_fields: Record<string, any>[];
 };
 
 type FormVersions = {
@@ -85,6 +86,7 @@ export type FormDescriptor = {
 export type FileContent = {
     logA: Record<string, any>;
     logB: Record<string, any>;
+    fields: Record<string, any>[];
 };
 export interface PaginatedInstances extends Pagination {
     instances: Instance[];

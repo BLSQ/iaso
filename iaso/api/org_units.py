@@ -452,16 +452,19 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         "errorMessage": _(f"Invalid validation status : {validation_status}"),
                     }
                 )
-
         if "geo_json" in request.data:
             geo_json = request.data["geo_json"]
             geometry = geo_json["features"][0]["geometry"] if geo_json else None
             coordinates = geometry["coordinates"] if geometry else None
             if coordinates:
                 multi_polygon = MultiPolygon(*[Polygon(*coord) for coord in coordinates])
+                # keep geom and simplified geom consistent
+                org_unit.geom = multi_polygon
                 org_unit.simplified_geom = simplify_geom(multi_polygon)
             else:
+                # keep geom and simplified geom consistent
                 org_unit.simplified_geom = None
+                org_unit.geom = None
         elif "simplified_geom" in request.data:
             org_unit.simplified_geom = request.data["simplified_geom"]
 

@@ -16,8 +16,6 @@ from django.conf import settings
 from iaso.api.common import Paginator
 from iaso.models.org_unit import OrgUnit
 
-from django.db.models import F, Func, Value, CharField, JSONField, IntegerField
-from django.db.models.functions import Cast
 
 
 class ProfileLogsListPagination(Paginator):

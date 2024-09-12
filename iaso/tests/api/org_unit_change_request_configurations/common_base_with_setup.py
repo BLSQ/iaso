@@ -78,12 +78,12 @@ class OUCRCAPIBase(APITestCase):
             editable_fields=["name", "aliases", "location"],
         )
 
-        cls.other_group_1 = m.Group.objects.create(name="Other group 1")
-        cls.other_group_2 = m.Group.objects.create(name="Other group 2")
-        cls.other_group_3 = m.Group.objects.create(name="Other group 3")
+        cls.other_group_film_1 = m.Group.objects.create(name="Film 1")
+        cls.other_group_film_2 = m.Group.objects.create(name="Film 2")
+        cls.other_group_film_3 = m.Group.objects.create(name="Film 3")
 
-        cls.oucrc_type_water.possible_types.set([cls.ou_type_water_pokemons, cls.ou_type_fire_pokemons])
-        cls.oucrc_type_water.possible_parent_types.set([cls.ou_type_water_pokemons, cls.ou_type_rock_pokemons])
-        cls.oucrc_type_water.group_sets.set([cls.group_set_misty_pokemons])
-        cls.oucrc_type_water.editable_reference_forms.set([cls.form_water_gun])
-        cls.oucrc_type_water.other_groups.set([cls.other_group_1, cls.other_group_3])
+        cls.oucrc_type_fire.possible_types.set([cls.ou_type_rock_pokemons, cls.ou_type_fire_pokemons])
+        cls.oucrc_type_fire.possible_parent_types.set([cls.ou_type_fire_pokemons, cls.ou_type_rock_pokemons])
+        cls.oucrc_type_fire.group_sets.set([cls.group_set_ash_pokemons])
+        cls.oucrc_type_fire.editable_reference_forms.set([cls.form_ember])
+        cls.oucrc_type_fire.other_groups.set([cls.other_group_film_1, cls.other_group_film_3])

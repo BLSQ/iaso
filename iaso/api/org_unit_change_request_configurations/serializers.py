@@ -1,3 +1,5 @@
+import django.core.serializers
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
@@ -224,6 +226,26 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(serializers.ModelSerializ
 
         return validated_data
 
+    def create(self, validated_data):
+        # Overriding create in order to log the OUCRC creation
+        # Splitting m2m relationships from the rest because you can't just do object.m2m_field = something
+        data_without_m2m_relationships = validated_data
+        m2m_relationships = pop_keys(
+            data_without_m2m_relationships, OrgUnitChangeRequestConfiguration.LIST_OF_M2M_RELATIONSHIPS
+        )
+        new_oucrc = OrgUnitChangeRequestConfiguration.objects.create(**data_without_m2m_relationships)
+        for key, value in m2m_relationships.items():
+            getattr(new_oucrc, key).set(value)
+        new_oucrc.save()
+
+        audit_serializer = OrgUnitChangeRequestConfigurationAuditLogger()
+        audit_serializer.log_modification(
+            instance=new_oucrc,
+            request_user=self.context["request"].user,
+            old_data_dump=[],
+        )
+        return new_oucrc
+
 
 class OrgUnitChangeRequestConfigurationUpdateSerializer(serializers.ModelSerializer):
     """
@@ -281,13 +303,66 @@ class OrgUnitChangeRequestConfigurationUpdateSerializer(serializers.ModelSeriali
         validated_data["updated_by"] = request.user
         return validated_data
 
+    def update(self, instance, validated_data):
+        # Overriding update in order to log the OUCRC creation
+        audit_logger = OrgUnitChangeRequestConfigurationAuditLogger()
+        old_data_dump = audit_logger.serialize_instance(instance)
 
-# class AuditOrgUnitChangeRequestConfigurationSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = OrgUnitChangeRequestConfiguration
-#         fields = "__all__"
+        # Splitting m2m relationships from the rest because you can't just do object.m2m_field = something
+        data_without_m2m_relationships = validated_data
+        m2m_relationships = pop_keys(
+            data_without_m2m_relationships, OrgUnitChangeRequestConfiguration.LIST_OF_M2M_RELATIONSHIPS
+        )
+        for attribute in data_without_m2m_relationships:
+            setattr(instance, attribute, data_without_m2m_relationships[attribute])
+        for key, value in m2m_relationships.items():
+            getattr(instance, key).set(value)
+        instance.save()
+
+        audit_logger.log_modification(
+            instance=instance,
+            request_user=self.context["request"].user,
+            old_data_dump=old_data_dump,
+        )
+        return instance
 
 
-# class OrgUnitChangeRequestAuditLogger(AuditLogger):
-#     serializer = AuditOrgUnitChangeRequestConfigurationSerializer
-#     default_source = ORG_UNIT_CHANGE_REQUEST_CONFIGURATION_API
+class AuditOrgUnitChangeRequestConfigurationSerializer(serializers.ModelSerializer):
+    """
+    This serializer reproduces the behavior of the default Django serializer used in the `log_modification` code.
+    The `fields` field is important because it allows for comparing old/new versions of the object in the logs.
+    The `model` field is not required and was added to reproduce the exact behavior of the Django serializer.
+    """
+
+    fields = serializers.SerializerMethodField(method_name="get_fields_for_audit")
+    model = serializers.SerializerMethodField(method_name="get_model_for_audit")
+
+    class Meta:
+        model = OrgUnitChangeRequestConfiguration
+        fields = ["pk", "model", "fields"]
+
+    def get_fields_for_audit(self, instance):
+        return NestedOrgUnitChangeRequestConfigurationSerializer(instance).data
+
+    def get_model_for_audit(self, instance):
+        content_type = ContentType.objects.get_for_model(instance)
+        return f"{content_type.app_label}.{content_type.model}"
+
+
+class NestedOrgUnitChangeRequestConfigurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnitChangeRequestConfiguration
+        fields = "__all__"
+
+
+class OrgUnitChangeRequestConfigurationAuditLogger(AuditLogger):
+    serializer = AuditOrgUnitChangeRequestConfigurationSerializer
+    default_source = ORG_UNIT_CHANGE_REQUEST_CONFIGURATION_API
+
+
+def pop_keys(dict, keys_to_pop):
+    popped_keys = {}
+    for key in keys_to_pop:
+        if key in dict:
+            popped_keys[key] = dict.pop(key)
+    return popped_keys

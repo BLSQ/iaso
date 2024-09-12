@@ -77,6 +77,15 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         "location",
     ]
 
+    # Used for easily create/update objects in serializers
+    LIST_OF_M2M_RELATIONSHIPS = [
+        "possible_types",
+        "possible_parent_types",
+        "group_sets",
+        "editable_reference_forms",
+        "other_groups",
+    ]
+
     class Meta:
         verbose_name = _("Org unit change request configuration")
         indexes = [

@@ -265,7 +265,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         params: ['accountId', 'search', ...paginationPathParams],
     },
     users: {
-        url: 'settings/users',
+        url: 'settings/users/management',
         params: [
             'accountId',
             'search',
@@ -281,7 +281,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         ],
     },
     usersHistory: {
-        url: 'settings/usersHistory',
+        url: 'settings/users/history',
         params: [
             'accountId',
             'org_unit_id',

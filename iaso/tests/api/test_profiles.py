@@ -220,6 +220,14 @@ class ProfileAPITestCase(APITestCase):
         cls.team1.users.add(cls.jane)
         cls.team2 = Team.objects.create(project=cls.project, name="team2", manager=cls.jim)
         cls.team2.users.add(cls.jim)
+        cls.user_managed_geo_limit.iaso_profile.user_roles.set([cls.user_role, cls.user_role_another_account])
+
+        cls.user_role_name = cls.user_role.group.name.removeprefix(
+            f"{cls.user_managed_geo_limit.iaso_profile.account.pk}_"
+        )
+        cls.user_role_another_account_name = cls.user_role_another_account.group.name.removeprefix(
+            f"{cls.user_managed_geo_limit.iaso_profile.account.pk}_"
+        )
 
     def test_can_delete_dhis2_id(self):
         self.client.force_authenticate(self.john)
@@ -306,7 +314,6 @@ class ProfileAPITestCase(APITestCase):
 
     def test_profile_list_export_as_csv(self):
         self.john.iaso_profile.org_units.set([self.jedi_squad_1, self.jedi_council_corruscant])
-
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?csv=true")
         self.assertEqual(response.status_code, 200)
@@ -335,8 +342,8 @@ class ProfileAPITestCase(APITestCase):
         expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
         expected_csv += "jam,,,,,,,en,,iaso_users_managed,,,\r\n"
         expected_csv += "jom,,,,,,,fr,,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,,{self.project.id},\r\n"
-        expected_csv += f"managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,iaso_users_managed,,,\r\n"
+        expected_csv += f"jum,,,,,,,,,,,{self.project.name},\r\n"
+        expected_csv += f'managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,iaso_users_managed,"{self.user_role_name},{self.user_role_another_account_name}",,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -409,8 +416,16 @@ class ProfileAPITestCase(APITestCase):
                     5: None,
                     6: "iaso_users_managed",
                 },
-                "user_roles": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.id, 6: None},
+                "user_roles": {
+                    0: None,
+                    1: None,
+                    2: None,
+                    3: None,
+                    4: None,
+                    5: None,
+                    6: f"{self.user_role_name},{self.user_role_another_account_name}",
+                },
+                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
                 "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             },
         )

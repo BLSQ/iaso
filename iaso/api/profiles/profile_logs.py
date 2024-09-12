@@ -168,13 +168,13 @@ class ProfileLogsViewset(ModelViewSet):
 
         if "created_at" in order:
             queryset = queryset.order_by(order)
-        if order == "modified_by":
+        elif order == "modified_by":
             queryset = queryset.order_by("user__username")
-        if order == "-modified_by":
+        elif order == "-modified_by":
             queryset = queryset.order_by("-user__username")
-        if order == "user":
+        elif order == "user":
             queryset = queryset.order_by("new_value__0__fields__user__username")
-        if order == "-user":
+        elif order == "-user":
             queryset = queryset.order_by("-new_value__0__fields__user__username")
 
         return queryset

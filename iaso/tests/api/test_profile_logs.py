@@ -129,7 +129,7 @@ class ProfileLogsTestCase(APITestCase):
         date1 = datetime.datetime(2020, 2, 10, 0, 0, 5)
         date2 = datetime.datetime(2020, 2, 15, 0, 0, 5, tzinfo=pytz.UTC)
         # Logs
-        # by user 1 for editabe user 1 with org unit 1 before date
+        # by user 1 for editable user 1 with org unit 1 before date
         with patch("django.utils.timezone.now", lambda: date1):
             cls.log_1 = Modification.objects.create(
                 user=cls.user_with_permission_1,

@@ -197,6 +197,19 @@ const menuItems = (
                         },
                     ],
                 },
+                {
+                    label: formatMessage(MESSAGES.configuration),
+                    key: 'configuration',
+                    icon: props => <Settings {...props} />,
+                    subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.configChangeRequest),
+                            permissions: paths.dataSourcesPath.permissions,
+                            key: CHANGE_REQUEST,
+                            icon: props => <CategoryIcon {...props} />,
+                        },
+                    ],
+                },
             ],
         },
         {

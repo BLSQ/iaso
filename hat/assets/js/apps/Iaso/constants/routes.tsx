@@ -49,6 +49,7 @@ import { SHOW_PAGES } from '../utils/featureFlags';
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
 import { UsersHistory } from '../domains/users/history/UsersHistory';
+import { OrgUnitChangeRequestConfigs } from '../domains/orgUnits/configuration/OrgUnitChangeRequestConfigs';
 
 export type RoutePath = {
     baseUrl: string;
@@ -177,6 +178,13 @@ export const orgUnitChangeRequestDetailPath = {
     routerUrl: `${baseUrls.orgUnitsChangeRequestDetail}/*`,
     permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
     element: <ReviewOrgUnitChangesDetail />,
+};
+
+export const orgUnitsChangeRequestConfiguration = {
+    baseUrl: baseUrls.orgUnitsChangeRequestConfiguration,
+    routerUrl: `${baseUrls.orgUnitsChangeRequestConfiguration}/*`,
+    permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
+    element: <OrgUnitChangeRequestConfigs />,
 };
 
 export const registryPath = {
@@ -457,6 +465,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     workflowsDetailPath,
     orgUnitChangeRequestPath,
     orgUnitChangeRequestDetailPath,
+    orgUnitsChangeRequestConfiguration,
     registryPath,
     modulesPath,
     potentialPaymentsPath,

@@ -205,6 +205,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Management',
         id: 'iaso.label.management',
     },
+    configuration: {
+        defaultMessage: 'Configuration',
+        id: 'iaso.label.configuration',
+    },
+    configChangeRequest: {
+        defaultMessage: 'Config Change Request',
+        id: 'iaso.label.configChangeRequest',
+    },
 });
 
 export default MESSAGES;

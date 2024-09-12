@@ -186,7 +186,7 @@ class MobileEntityViewSet(ModelViewSet):
         if not app_id:
             raise ParseError("app_id is required")
 
-        queryset = get_queryset_for_user_and_app_id(user, app_id).filter(deleted_at__isnull=True)
+        queryset = filter_on_user_and_app_id(Entity.objects, user, app_id)
 
         queryset = filter_for_mobile_entity(queryset, self.request)
 
@@ -202,7 +202,7 @@ class MobileEntityViewSet(ModelViewSet):
 class DeletedMobileEntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Entity
-        fields = ["uuid", "deleted_at", "merged_to_uuid"]
+        fields = ["id", "uuid", "deleted_at", "merged_to_uuid"]
 
     deleted_at = TimestampField()
     merged_to_uuid = serializers.SerializerMethodField()

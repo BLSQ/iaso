@@ -46,6 +46,11 @@ from plugins.polio.api.vaccines.stock_management import (
     IncidentReportViewSet,
 )
 
+from plugins.polio.tasks.api.refresh_im_data import (
+    RefreshIMAllDataViewset,
+    RefreshIMHouseholdDataViewset,
+    RefreshIMOutOfHouseholdDataViewset,
+)
 from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 
 router = routers.SimpleRouter()
@@ -81,6 +86,9 @@ router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="
 router.register(r"polio/rounds", RoundViewSet, basename="rounds")
 router.register(r"polio/reasonsfordelay", ReasonForDelayViewSet, basename="reasonsfordelay")
 router.register(r"polio/tasks/refreshlqas", RefreshLQASDataViewset, basename="refreshlqas")
+router.register(r"polio/tasks/refreshim/hh", RefreshIMHouseholdDataViewset, basename="refreshimhh")
+router.register(r"polio/tasks/refreshim/ohh", RefreshIMOutOfHouseholdDataViewset, basename="refreshimohh")
+router.register(r"polio/tasks/refreshim/hh_ohh", RefreshIMAllDataViewset, basename="refreshimhhohh")
 router.register(r"polio/vaccine/request_forms", VaccineRequestFormViewSet, basename="vaccine_request_forms")
 router.register(r"polio/vaccine/vaccine_stock", VaccineStockManagementViewSet, basename="vaccine_stocks")
 router.register(

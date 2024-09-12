@@ -16,8 +16,6 @@ from django.conf import settings
 from iaso.api.common import Paginator
 from iaso.models.org_unit import OrgUnit
 
-from django.db.models import F, Func, Value, CharField, JSONField, IntegerField
-from django.db.models.functions import Cast
 
 
 class ProfileLogsListPagination(Paginator):
@@ -170,13 +168,13 @@ class ProfileLogsViewset(ModelViewSet):
 
         if "created_at" in order:
             queryset = queryset.order_by(order)
-        if order == "modified_by":
+        elif order == "modified_by":
             queryset = queryset.order_by("user__username")
-        if order == "-modified_by":
+        elif order == "-modified_by":
             queryset = queryset.order_by("-user__username")
-        if order == "user":
+        elif order == "user":
             queryset = queryset.order_by("new_value__0__fields__user__username")
-        if order == "-user":
+        elif order == "-user":
             queryset = queryset.order_by("-new_value__0__fields__user__username")
 
         return queryset

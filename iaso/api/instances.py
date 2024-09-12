@@ -7,7 +7,6 @@ from typing import Any, Dict, Union
 import pandas as pd
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
-from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.db.models import Count, F, Func, Prefetch, Q, QuerySet
@@ -21,21 +20,15 @@ from rest_framework.response import Response
 from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
-from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.api.export_utils import (Echo, generate_xlsx, iter_items,
+                                  timestamp_to_utc_datetime)
 from hat.audit.models import INSTANCE_API, log_modification
 from hat.common.utils import queryset_iterator
 from hat.menupermissions import models as permission
 from iaso.api.serializers import OrgUnitSerializer
-from iaso.models import (
-    Entity,
-    Instance,
-    InstanceFile,
-    InstanceLock,
-    InstanceQuerySet,
-    OrgUnit,
-    OrgUnitChangeRequest,
-    Project,
-)
+from iaso.models import (Entity, Instance, InstanceFile, InstanceLock,
+                         InstanceQuerySet, OrgUnit, OrgUnitChangeRequest,
+                         Project)
 from iaso.utils import timestamp_to_datetime
 from iaso.utils.file_utils import get_file_type
 
@@ -43,8 +36,10 @@ from ..models.forms import CR_MODE_IF_REFERENCE_FORM
 from ..utils.models.common import get_creator_name
 from . import common
 from .comment import UserSerializerForComment
-from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, TimestampField, safe_api_import
-from .instance_filters import get_form_from_instance_filters, parse_instance_filters
+from .common import (CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum,
+                     TimestampField, safe_api_import)
+from .instance_filters import (get_form_from_instance_filters,
+                               parse_instance_filters)
 
 
 class InstanceSerializer(serializers.ModelSerializer):

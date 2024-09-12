@@ -77,7 +77,7 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         "location",
     ]
 
-    # Used for easily create/update objects in serializers
+    # Used to easily create/update objects in serializers
     LIST_OF_M2M_RELATIONSHIPS = [
         "possible_types",
         "possible_parent_types",

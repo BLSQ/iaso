@@ -1464,6 +1464,7 @@ class Profile(models.Model):
                 "user_id": self.user.id,
                 "dhis2_id": self.dhis2_id,
                 "home_page": self.home_page,
+                "organization": self.organization,
                 "phone_number": self.phone_number.as_e164 if self.phone_number else None,
                 "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
                 "projects": [p.as_dict() for p in self.projects.all()],

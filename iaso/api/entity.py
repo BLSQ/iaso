@@ -172,7 +172,7 @@ class EntityViewSet(ModelViewSet):
 
             date_to_dt = datetime.datetime.max
             if date_to:
-                datetime.datetime.strptime(date_to, "%Y-%m-%d")
+                parsed_date = datetime.datetime.strptime(date_to, "%Y-%m-%d")
                 date_to_dt = datetime.datetime.combine(parsed_date, datetime.time.max).replace(tzinfo=pytz.UTC)
 
             instances_within_range = Instance.objects.annotate(

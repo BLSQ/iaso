@@ -111,8 +111,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const userRolesPermissions = user?.user_roles_permissions.value ?? [];
 
     const isPhoneNumberUpdated =
-        // @ts-ignore
-        user.phone_number !== initialData.phone_number && user.id;
+        user.phone_number.value !== initialData.phone_number && user.id;
 
     const isUserWithoutPermissions =
         userPermissions.length === 0 &&

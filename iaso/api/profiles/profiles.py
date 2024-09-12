@@ -482,7 +482,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         if projects is not None:
             if not request_user.has_perm(permission.USERS_ADMIN):
                 raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
+                    f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
                 )
         # This is bit ugly, but it's to maintain the fetaure's behaviour after adding the check in the permission
         if projects is None:

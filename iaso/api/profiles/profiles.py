@@ -531,6 +531,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.phone_number = phone_number
 
         profile.language = request.data.get("language", "")
+        profile.organization = request.data.get("organization", "")
         profile.home_page = request.data.get("home_page", "")
         profile.dhis2_id = request.data.get("dhis2_id", "")
         if profile.dhis2_id == "":
@@ -676,6 +677,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             account=current_account,
             language=request.data.get("language", ""),
             home_page=request.data.get("home_page", ""),
+            organization=request.data.get("organization", ""),
         )
 
         org_units = request.data.get("org_units", [])

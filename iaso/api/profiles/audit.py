@@ -37,6 +37,7 @@ class ProfileAuditSerializer(serializers.ModelSerializer):
                 "language",
                 "user",
                 "email",
+                "organization",
                 "first_name",
                 "last_name",
                 "username",

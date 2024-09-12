@@ -208,6 +208,7 @@ class ProfileLogsTestCase(APITestCase):
                             "last_name": "Baron Cohen",
                             "deleted_at": None,
                             "home_page": "",
+                            "organization": "",
                         },
                     }
                 ],
@@ -231,6 +232,7 @@ class ProfileLogsTestCase(APITestCase):
                             "deleted_at": None,
                             "home_page": "",
                             "password_updated": True,  # Changed
+                            "organization": "Bluesquare",  # Changed
                         },
                     }
                 ],
@@ -540,3 +542,5 @@ class ProfileLogsTestCase(APITestCase):
         new_location = results[0]["new_location"][0]
         self.assertEquals(new_location["name"], self.org_unit_1.name)
         self.assertEquals(new_location["id"], self.org_unit_1.id)
+        fields_modified = results[0]["fields_modified"]
+        self.assertListEqual(fields_modified, ["first_name", "last_name", "organization", "password"])

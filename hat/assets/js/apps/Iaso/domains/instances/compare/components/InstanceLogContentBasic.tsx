@@ -37,7 +37,11 @@ const useStyles = makeStyles(theme => ({
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
     tableCellLabelName: {
+        // @ts-ignore
         color: theme.palette.mediumGray.main,
+    },
+    highlightedRow: {
+        backgroundColor: '#f7eb9c',
     },
 }));
 
@@ -68,28 +72,29 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                 {fileContent.logA &&
                     fileContent.logB &&
                     fileContent?.fields.map(question => {
+                        const isRelevantQuestion = ![
+                            'meta',
+                            'instanceID',
+                        ].includes(question.name);
+                        const hasLogContent =
+                            fileContent.logA.json[question.name] ||
+                            fileContent.logB.json[question.name];
                         const field = fileDescriptor?.children.find(
                             child => child.name === question.name,
                         );
+                        const isValuesDifferent =
+                            fileContent.logA.json[question.name] !==
+                            fileContent.logB.json[question.name];
 
-                        if (
-                            question.name !== 'meta' &&
-                            question.name !== 'instanceID' &&
-                            (fileContent.logA.json[question.name] ||
-                                fileContent.logB.json[question.name])
-                        ) {
+                        if (isRelevantQuestion && hasLogContent) {
                             return (
                                 <TableRow
                                     key={question.name}
-                                    style={{
-                                        backgroundColor:
-                                            fileContent.logA.json[
-                                                question.name
-                                            ] !==
-                                            fileContent.logB.json[question.name]
-                                                ? 'yellow'
-                                                : undefined,
-                                    }}
+                                    className={
+                                        isValuesDifferent
+                                            ? classes.highlightedRow
+                                            : undefined
+                                    }
                                 >
                                     <TableCell
                                         className={classes.tableCell}
@@ -100,13 +105,13 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                                                 ? formatLabel(field)
                                                 : question.name}
                                         </div>
-                                        <div
+                                        <span
                                             className={
                                                 classes.tableCellLabelName
                                             }
                                         >
                                             {question.name}
-                                        </div>
+                                        </span>
                                     </TableCell>
                                     <TableCell
                                         className={classes.tableCell}

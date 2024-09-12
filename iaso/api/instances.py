@@ -645,7 +645,7 @@ class InstancesViewSet(viewsets.ViewSet):
         r = df.to_json(orient="table")
         return HttpResponse(r, content_type="application/json")
 
-    @action(detail=True, methods=["get"], url_path=r"instance_logs/(?P<logId>[^/.]+)")
+    @action(detail=True, methods=["get"], url_path="instance_logs/(?P<logId>[^/.]+)")
     def instance_logs(self, request, pk=None, logId=None):
         """
         GET /api/instances/<pk>/instance_logs/<logId>/
@@ -653,11 +653,11 @@ class InstancesViewSet(viewsets.ViewSet):
         instance = get_object_or_404(Instance, pk=pk)
         log = get_object_or_404(Modification, pk=logId)
         log_dict = log.as_dict()
-        form_version = instance.form_version
-        possible_fields = []
-
-        if form_version is not None and form_version.possible_fields is not None:
-            possible_fields = form_version.possible_fields
+        possible_fields = (
+            instance.form_version.possible_fields
+            if instance.form_version and instance.form_version.possible_fields
+            else []
+        )
 
         log_dict["possible_fields"] = possible_fields
         return Response(log_dict)

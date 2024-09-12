@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-indent */
 import CommentIcon from '@mui/icons-material/Comment';
 import FunctionsIcon from '@mui/icons-material/Functions';
 import { Table, TableBody, TableCell, TableRow, Tooltip } from '@mui/material';
@@ -232,6 +233,7 @@ function FormChild({ descriptor, data, showQuestionKey, showNote, files }) {
             return data[descriptor.name] ? (
                 data[descriptor.name].map((subdata, index) => (
                     <FormGroup
+                        // eslint-disable-next-line react/no-array-index-key
                         key={`repeat-${index}`}
                         descriptor={descriptor}
                         data={subdata}
@@ -239,6 +241,7 @@ function FormChild({ descriptor, data, showQuestionKey, showNote, files }) {
                     />
                 ))
             ) : (
+                // eslint-disable-next-line react/jsx-no-useless-fragment
                 <></>
             );
         case 'group':
@@ -502,8 +505,8 @@ function Label({ descriptor, value, tooltip, showQuestionKey }) {
             {showQuestionKey
                 ? showNameHint && (
                       <div className={classes.tableCellLabelName}>
-                    {descriptor.name}
-                </div>
+                          {descriptor.name}
+                      </div>
                   )
                 : null}
         </div>

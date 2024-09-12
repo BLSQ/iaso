@@ -126,8 +126,9 @@ class ProfileLogsTestCase(APITestCase):
             app_label="iaso",
             model="profile",
         )
-        date1 = datetime.datetime(2020, 2, 10, 0, 0, 5)
+        date1 = datetime.datetime(2020, 2, 10, 0, 0, 5, tzinfo=pytz.UTC)
         date2 = datetime.datetime(2020, 2, 15, 0, 0, 5, tzinfo=pytz.UTC)
+        # date3 = datetime.datetime(2020, 2, 15, 0, 0, 5, tzinfo=pytz.UTC)
         # Logs
         # by user 1 for editabe user 1 with org unit 1 before date
         with patch("django.utils.timezone.now", lambda: date1):
@@ -449,6 +450,11 @@ class ProfileLogsTestCase(APITestCase):
                 ],
             )
 
+    def test_unauthenticated_user(self):
+        """GET /api/userlogs/ anonymous user --> 401"""
+        response = self.client.get("/api/userlogs/")
+        self.assertJSONResponse(response, 401)
+
     def test_user_no_permission(self):
         """GET /api/userlogs/ without USERS_ADMIN permission --> 403"""
         self.client.force_authenticate(self.user_without_permission)
@@ -520,6 +526,7 @@ class ProfileLogsTestCase(APITestCase):
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
+
         results = data["results"]
         self.assertEquals(len(results), 1)
         user = results[0]["user"]
@@ -540,3 +547,16 @@ class ProfileLogsTestCase(APITestCase):
         new_location = results[0]["new_location"][0]
         self.assertEquals(new_location["name"], self.org_unit_1.name)
         self.assertEquals(new_location["id"], self.org_unit_1.id)
+
+        response = self.client.get(
+            f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}&created_at_after=2020-02-14&created_at_before=2020-02-09"
+        )
+        data = self.assertJSONResponse(response, 200)
+        self.assertEquals(data["count"], 0)
+        try:
+            jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        results = data["results"]
+        self.assertEquals(results, [])

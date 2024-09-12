@@ -185,6 +185,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'potentialPaymentIds',
         ],
     },
+    orgUnitsChangeRequestDetail: {
+        url: `${ORG_UNITS_CHANGE_REQUEST}/detail`,
+        params: ['accountId', 'changeRequestId'],
+    },
     registry: {
         url: 'orgunits/registry',
         params: [
@@ -523,6 +527,7 @@ type IasoBaseUrls = {
     orgUnits: string;
     orgUnitDetails: string;
     orgUnitsChangeRequest: string;
+    orgUnitsChangeRequestDetail: string;
     registry: string;
     registryDetail: string;
     links: string;

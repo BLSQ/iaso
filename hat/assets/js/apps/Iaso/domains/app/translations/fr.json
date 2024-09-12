@@ -639,6 +639,7 @@
     "iaso.label.renderError": "Erreur de rendu de la valeur",
     "iaso.label.restore": "Restaurer",
     "iaso.label.resultsLower": "résultat(s)",
+    "iaso.label.reviewChangeProposal": "Propositions de changement pour {name}",
     "iaso.label.reviewChangeProposals": "Examiner les propositions de changement",
     "iaso.label.save": "Sauver",
     "iaso.label.search": "Recherche",

@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { User } from '../../../utils/usersUtils';
-import { OrgunitType } from '../types/orgunitTypes';
 import { OrgUnitStatus, ShortOrgUnit } from '../types/orgUnit';
+import { OrgunitType } from '../types/orgunitTypes';
 
 export type ChangeRequestValidationStatus = 'new' | 'rejected' | 'approved';
 export type ApproveOrgUnitParams = UrlParams & {
@@ -21,6 +21,11 @@ export type ApproveOrgUnitParams = UrlParams & {
     paymentIds?: string; // comma separated ids
     potentialPaymentIds?: string; // comma separated ids
 };
+
+export type OrgUnitChangeRequestDetailParams = UrlParams & {
+    changeRequestId: string;
+};
+
 export type Group = {
     id: number;
     name: string;

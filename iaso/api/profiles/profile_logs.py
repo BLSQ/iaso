@@ -17,7 +17,6 @@ from iaso.api.common import Paginator
 from iaso.models.org_unit import OrgUnit
 
 
-
 class ProfileLogsListPagination(Paginator):
     page_size = 20
 

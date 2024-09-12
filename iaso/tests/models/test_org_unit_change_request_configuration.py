@@ -2,7 +2,6 @@ import datetime
 
 import time_machine
 from django.core.exceptions import ValidationError
-from uuid import uuid4
 
 from iaso import models as m
 from iaso.test import TestCase

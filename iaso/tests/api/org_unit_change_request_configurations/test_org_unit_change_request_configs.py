@@ -5,6 +5,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.tests.api.org_unit_change_request_configurations.common_base_with_setup import OUCRCAPIBase
+from hat.audit.models import Modification
 
 
 class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
@@ -126,7 +127,7 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
             "possible_parent_type_ids": [self.ou_type_rock_pokemons.id, self.ou_type_water_pokemons.id],
             "group_set_ids": [self.group_set_brock_pokemons.id],
             "editable_reference_form_ids": [self.form_rock_throw.id],
-            "other_group_ids": [self.other_group_1.id],
+            "other_group_ids": [self.other_group_film_1.id],
         }
         response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -151,6 +152,14 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertEqual(oucrc.created_at, self.DT)
         self.assertIsNone(oucrc.updated_by)
         self.assertEqual(oucrc.updated_at, self.DT)
+
+        # Checking if the creation was properly logged
+        logs = Modification.objects.filter(object_id=oucrc.id)
+        self.assertEqual(len(logs), 1)
+        logged_oucrc = logs[0]
+        self.assertEqual(logged_oucrc.past_value, [])
+        self.assertEqual(logged_oucrc.created_at, self.DT)
+        self.assertEqual(logged_oucrc.user, self.user_brock)
 
     # @time_machine.travel(DT, tick=False)
     # def test_create_ok_using_uuid_for_project_id(self):
@@ -319,10 +328,14 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
                 self.ou_type_fire_pokemons.id,
                 self.ou_type_rock_pokemons.id,
             ],
-            "possible_parent_type_ids": [self.ou_type_water_pokemons.id, self.ou_type_rock_pokemons.id],
+            "possible_parent_type_ids": [
+                self.ou_type_water_pokemons.id,
+                self.ou_type_rock_pokemons.id,
+                self.ou_type_fire_pokemons.id,
+            ],
             "group_set_ids": [self.group_set_misty_pokemons.id],
             "editable_reference_form_ids": [self.form_water_gun.id, self.form_rock_throw.id],
-            "other_group_ids": [self.other_group_1.id, self.other_group_2.id, self.other_group_3.id],
+            "other_group_ids": [self.other_group_film_1.id, self.other_group_film_2.id, self.other_group_film_3.id],
         }
         response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_water.id}/", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -343,12 +356,29 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertEqual(oucrc.updated_by, self.user_misty)
         self.assertNotEqual(oucrc.created_by, oucrc.updated_at)
 
+        # Checking if the update was properly logged
+        logs = Modification.objects.filter(object_id=oucrc.id)
+        self.assertEqual(len(logs), 1)
+        logged_oucrc = logs[0]
+        self.assertEqual(logged_oucrc.user, self.user_misty)
+        self.assertNotEqual(logged_oucrc.past_value, [])
+
+        diff = logged_oucrc.field_diffs()
+        self.assertIn("org_units_editable", diff["modified"])
+        self.assertIn("editable_fields", diff["modified"])
+        self.assertIn("possible_types", diff["modified"])
+        self.assertIn("possible_parent_types", diff["modified"])
+        self.assertIn("group_sets", diff["modified"])
+        self.assertIn("editable_reference_forms", diff["modified"])
+        self.assertIn("other_groups", diff["modified"])
+        self.assertIn("updated_by", diff["modified"])
+
     def test_update_partial(self):
         # Changing only some fields of this OUCRC
         self.client.force_authenticate(self.user_brock)
         data = {
             "editable_fields": ["name"],
-            "other_group_ids": [self.other_group_1.id, self.other_group_2.id, self.other_group_3.id],
+            "other_group_ids": [self.other_group_film_1.id, self.other_group_film_2.id, self.other_group_film_3.id],
         }
         response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_rock.id}/", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -359,6 +389,23 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertCountEqual(oucrc.other_groups.values_list("id", flat=True), data["other_group_ids"])
         self.assertEqual(oucrc.updated_by, self.user_brock)
         self.assertNotEqual(oucrc.created_by, oucrc.updated_at)
+
+        # Checking if the update was properly logged
+        logs = Modification.objects.filter(object_id=oucrc.id)
+        self.assertEqual(len(logs), 1)
+        logged_oucrc = logs[0]
+        self.assertEqual(logged_oucrc.user, self.user_brock)
+        self.assertNotEqual(logged_oucrc.past_value, [])
+
+        diff = logged_oucrc.field_diffs()
+        self.assertNotIn("org_units_editable", diff["modified"])
+        self.assertIn("editable_fields", diff["modified"])
+        self.assertNotIn("possible_types", diff["modified"])
+        self.assertNotIn("possible_parent_types", diff["modified"])
+        self.assertNotIn("group_sets", diff["modified"])
+        self.assertNotIn("editable_reference_forms", diff["modified"])
+        self.assertIn("other_groups", diff["modified"])
+        self.assertIn("updated_by", diff["modified"])
 
     def test_update_without_auth(self):
         data = {
@@ -419,6 +466,25 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
 
         soft_deleted_oucrc = m.OrgUnitChangeRequestConfiguration.objects_only_deleted.get(id=self.oucrc_type_fire.id)
         self.assertIsNotNone(soft_deleted_oucrc.deleted_at)
+        self.assertEqual(soft_deleted_oucrc.updated_by, self.user_ash_ketchum)
+
+        # Checking if the suppression was properly logged
+        logs = Modification.objects.filter(object_id=self.oucrc_type_fire.id)
+        self.assertEqual(len(logs), 1)
+        logged_oucrc = logs[0]
+        self.assertEqual(logged_oucrc.user, self.user_ash_ketchum)
+        self.assertNotEqual(logged_oucrc.past_value, [])
+
+        diff = logged_oucrc.field_diffs()
+        self.assertNotIn("org_units_editable", diff["modified"])
+        self.assertNotIn("editable_fields", diff["modified"])
+        self.assertNotIn("possible_types", diff["modified"])
+        self.assertNotIn("possible_parent_types", diff["modified"])
+        self.assertNotIn("group_sets", diff["modified"])
+        self.assertNotIn("editable_reference_forms", diff["modified"])
+        self.assertNotIn("other_groups", diff["modified"])
+        self.assertIn("updated_at", diff["modified"])
+        self.assertIn("deleted_at", diff["modified"])
 
     def test_delete_without_auth(self):
         response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
@@ -452,9 +518,7 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertEqual(new_oucrc.project_id, self.oucrc_type_fire.project_id)
         self.assertEqual(new_oucrc.org_unit_type_id, self.oucrc_type_fire.org_unit_type_id)
 
-    # + test for making sure that the user who deleted the OUCRC is stored in updated_by?
-    # or have a field deleted_by?
-
+    # *** Testing GET check_availability endpoint ***
     def test_check_availability_ok(self):
         # Preparing a new OrgUnitType in this project - since the 3 OUT already have an OUCRC in setUpTestData
         new_org_unit_type = self.create_new_org_unit_type("Psychic Pokémons")

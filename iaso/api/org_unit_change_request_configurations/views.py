@@ -1,10 +1,9 @@
 import django_filters
 from django.db.models import Q
-from rest_framework import viewsets, filters, status, serializers
+from rest_framework import viewsets, filters, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.audit.audit_mixin import AuditMixin
 from iaso.api.org_unit_change_request_configurations.pagination import OrgUnitChangeRequestConfigurationPagination
 from iaso.api.org_unit_change_request_configurations.serializers import (
     OrgUnitChangeRequestConfigurationListSerializer,
@@ -12,15 +11,24 @@ from iaso.api.org_unit_change_request_configurations.serializers import (
     OrgUnitChangeRequestConfigurationWriteSerializer,
     OrgUnitChangeRequestConfigurationUpdateSerializer,
     OrgUnitTypeNestedSerializer,
+    OrgUnitChangeRequestConfigurationAuditLogger,
 )
 from iaso.models import OrgUnitChangeRequestConfiguration, OrgUnitType, Project
 
 
-class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet, AuditMixin):
+class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
+    f"""OrgUnitChangeRequestConfiguration API
+
+    GET /api/orgunits/changes/configs
+    GET /api/orgunits/changes/configs/<id>
+    POST /api/orgunits/changes/configs/
+    PATCH /api/orgunits/changes/configs/<id>
+    DELETE /api/orgunits/changes/configs/<id>
+    GET /api/orgunits/changes/configs/check_availability/?project_id=<project_id>
+    """
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     ordering_fields = [
         "id",
-        "uuid",
         "project__name",
         "org_unit_type__name",
         "org_units_editable",
@@ -83,3 +91,19 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet, AuditMixin
 
         serializer = OrgUnitTypeNestedSerializer(available_org_unit_types, many=True)
         return Response(serializer.data)
+
+    def perform_destroy(self, instance):
+        # Overriding perform_destroy in order to log the OUCRC suppression
+        audit_logger = OrgUnitChangeRequestConfigurationAuditLogger()
+        old_data_dump = audit_logger.serialize_instance(instance)
+
+        user = self.request.user
+        instance.updated_by = user
+        instance.delete()
+
+        audit_logger.log_modification(
+            instance=instance,
+            request_user=user,
+            old_data_dump=old_data_dump,
+        )
+        return instance

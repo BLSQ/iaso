@@ -51,25 +51,19 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
     def test_list_ok(self):
         self.client.force_authenticate(self.user_ash_ketchum)
 
-        # with self.assertNumQueries(12):
-        # filter_for_user_and_app_id
-        #   1. SELECT OrgUnit
-        # get_queryset
-        #   2. COUNT(*)
-        #   3. SELECT OrgUnitChangeRequest
-        # prefetch
-        #   4. PREFETCH OrgUnit.groups
-        #   5. PREFETCH OrgUnit.reference_instances
-        #   6. PREFETCH OrgUnit.reference_instances__form
-        #   7. PREFETCH OrgUnitChangeRequest.new_groups
-        #   8. PREFETCH OrgUnitChangeRequest.old_groups
-        #   9. PREFETCH OrgUnitChangeRequest.new_reference_instances
-        #  10. PREFETCH OrgUnitChangeRequest.old_reference_instances
-        #  11. PREFETCH OrgUnitChangeRequest.{new/old}_reference_instances__form
-        #  12. PREFETCH OrgUnitChangeRequest.org_unit_type.projects
-        response = self.client.get(self.OUCRC_API_URL)
-        self.assertJSONResponse(response, status.HTTP_200_OK)
-        self.assertEqual(3, len(response.data["results"]))
+        with self.assertNumQueries(7):
+            # get_queryset
+            #   1. COUNT(*)
+            #   2. SELECT OrgUnitChangeRequestConfiguration
+            # prefetch
+            #  3. PREFETCH OrgUnitChangeRequestConfiguration.possible_types
+            #  4. PREFETCH OrgUnitChangeRequestConfiguration.possible_parent_types
+            #  5. PREFETCH OrgUnitChangeRequestConfiguration.group_sets
+            #  6. PREFETCH OrgUnitChangeRequestConfiguration.editable_reference_forms
+            #  7. PREFETCH OrgUnitChangeRequestConfiguration.other_groups
+            response = self.client.get(self.OUCRC_API_URL)
+            self.assertJSONResponse(response, status.HTTP_200_OK)
+            self.assertEqual(3, len(response.data["results"]))
 
     def test_list_without_auth(self):
         response = self.client.get(self.OUCRC_API_URL)

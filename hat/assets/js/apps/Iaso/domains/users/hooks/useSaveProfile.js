@@ -1,5 +1,5 @@
 import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
-import { postRequest, patchRequest } from 'Iaso/libs/Api';
+import { postRequest, patchRequest } from 'Iaso/libs/Api.ts';
 
 export const useSaveProfile = () =>
     useSnackMutation(
@@ -9,5 +9,5 @@ export const useSaveProfile = () =>
                 : postRequest('/api/profiles/', body),
         undefined,
         undefined,
-        ['profiles'],
+        ['profiles', 'usersHistoryList'],
     );

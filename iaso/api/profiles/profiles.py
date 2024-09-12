@@ -320,8 +320,11 @@ class ProfilesViewSet(viewsets.ViewSet):
                 profile.language,
                 profile.dhis2_id,
                 ",".join(item.codename for item in profile.user.user_permissions.all()),
-                ",".join(str(item.pk) for item in profile.user_roles.all().order_by("id")),
-                ",".join(str(item.pk) for item in profile.projects.all().order_by("id")),
+                ",".join(
+                    item.group.name.removeprefix(f"{profile.account.pk}_")
+                    for item in profile.user_roles.all().order_by("id")
+                ),
+                ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
                 (f"'{profile.phone_number}'" if profile.phone_number else None),
             ]
 
@@ -479,7 +482,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         if projects is not None:
             if not request_user.has_perm(permission.USERS_ADMIN):
                 raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
+                    f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
                 )
         # This is bit ugly, but it's to maintain the fetaure's behaviour after adding the check in the permission
         if projects is None:

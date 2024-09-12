@@ -144,23 +144,29 @@ def update_single_profile_from_bulk(
     if language is not None:
         profile.language = language
     if len(roles_to_be_added) > 0:
-        for role in roles_to_be_added:
-            role.iaso_profile.add(profile)
+        profile.user_roles.add(*roles_to_be_added)
+        # for role in roles_to_be_added:
+        #     role.iaso_profile.add(profile)
     if len(roles_to_be_removed) > 0:
-        for role in roles_to_be_removed:
-            role.iaso_profile.remove(profile)
+        profile.user_roles.remove(*roles_to_be_removed)
+        # for role in roles_to_be_removed:
+        #     role.iaso_profile.remove(profile)
     if len(projects_to_be_added) > 0:
-        for project in projects_to_be_added:
-            project.iaso_profile.add(profile)
+        profile.projects.add(*projects_to_be_added)
+        # for project in projects_to_be_added:
+        #     project.iaso_profile.add(profile)
     if len(projects_to_be_removed) > 0:
-        for project in projects_to_be_removed:
-            project.iaso_profile.remove(profile)
+        profile.projects.remove(*projects_to_be_removed)
+        # for project in projects_to_be_removed:
+        #     project.iaso_profile.remove(profile)
     if len(org_units_to_be_added) > 0:
-        for org_unit in org_units_to_be_added:
-            org_unit.iaso_profile.add(profile)
+        profile.org_units.add(*org_units_to_be_added)
+        # for org_unit in org_units_to_be_added:
+        #     org_unit.iaso_profile.add(profile)
     if len(org_units_to_be_removed) > 0:
-        for org_unit in org_units_to_be_removed:
-            org_unit.iaso_profile.remove(profile)
+        profile.org_units.remove(*org_units_to_be_removed)
+        # for org_unit in org_units_to_be_removed:
+        #     org_unit.iaso_profile.remove(profile)
 
     profile.save()
 

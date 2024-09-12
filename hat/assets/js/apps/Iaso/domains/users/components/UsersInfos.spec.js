@@ -23,7 +23,7 @@ const currentUser = {
     org_units: [],
     language: { value: 'fr', errors: [] },
     dhis2_id: '1',
-    home_page: '/settings/users',
+    home_page: '/settings/users/management',
     projects: [1],
     user_roles: [1],
 };

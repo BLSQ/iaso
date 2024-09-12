@@ -8,88 +8,6 @@ from iaso.models.project import Project
 from django.utils import timezone
 
 
-class NestedUserAuditSerializer(serializers.ModelSerializer):
-    user_permissions = serializers.SerializerMethodField()
-    # TODO remove this line when soft delete implemented
-    deleted_at = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        # We're serializing the password to be able to determine if it has been changed. but we remove them before saving the log itself
-        # DO NOT reuse this serializer if you're going to send the payload to the front-end
-        fields = ["id", "username", "first_name", "last_name", "email", "user_permissions", "password", "deleted_at"]
-
-    def get_user_permissions(self, user):
-        return [permission.codename for permission in user.user_permissions.all()]
-
-    # TODO delete this method when user soft delete is implemented
-    def get_deleted_at(self, user):
-        return None
-
-
-# THIS SERIALIZER SHOULD ONLY BE USED WITH PROFILEAUDITLOGGER
-class ProfileAuditFieldsSerializer(serializers.ModelSerializer):
-    user = serializers.SerializerMethodField()
-    username = serializers.SerializerMethodField()
-    last_name = serializers.SerializerMethodField()
-    first_name = serializers.SerializerMethodField()
-    email = serializers.SerializerMethodField()
-    user_permissions = serializers.SerializerMethodField()
-    password = serializers.SerializerMethodField()
-    # TODO remove this line when soft delete implemented
-    deleted_at = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Profile
-        fields = [
-            "account",
-            "language",
-            "user",
-            "email",
-            "first_name",
-            "last_name",
-            "username",
-            "user_roles",
-            "user_permissions",
-            # We're serializing the password to be able to determine if it has been changed. but we remove them before saving the log itself
-            # THIS SERIALIZER SHOULD ONLY BE USED WITH PROFILEAUDITLOGGER
-            "password",
-            "projects",
-            "phone_number",
-            "dhis2_id",
-            "org_units",
-            "home_page",
-            "deleted_at",
-        ]
-
-    # TODO delete this method when user soft delete is implemented
-    def get_deleted_at(self, profile):
-        return None
-
-    def get_user(self, profile):
-        return profile.user.pk
-
-    def get_email(self, profile):
-        return profile.user.email
-
-    def get_username(self, profile):
-        return profile.user.username
-
-    def get_first_name(self, profile):
-        return profile.user.first_name
-
-    def get_last_name(self, profile):
-        return profile.user.last_name
-
-    def get_user_permissions(self, profile):
-        return [permission.codename for permission in profile.user.user_permissions.all()]
-
-    # THIS SERIALIZER SHOULD ONLY BE USED WITH PROFILEAUDITLOGGER
-    # The logger will compare the old and new password then delete the field and return a boolean indicating whether the password changed or not
-    def get_password(self, profile):
-        return profile.user.password
-
-
 class ProfileAuditSerializer(serializers.ModelSerializer):
     fields = serializers.SerializerMethodField(method_name="get_custom_fields")
 
@@ -98,7 +16,68 @@ class ProfileAuditSerializer(serializers.ModelSerializer):
         fields = ["pk", "fields"]
 
     def get_custom_fields(self, profile):
-        return ProfileAuditFieldsSerializer(profile).data
+        return self.ProfileAuditFieldsSerializer(profile).data
+
+    # This serializer should only be used with ProfileAuditSerializer
+    class ProfileAuditFieldsSerializer(serializers.ModelSerializer):
+        user = serializers.SerializerMethodField()
+        username = serializers.SerializerMethodField()
+        last_name = serializers.SerializerMethodField()
+        first_name = serializers.SerializerMethodField()
+        email = serializers.SerializerMethodField()
+        user_permissions = serializers.SerializerMethodField()
+        password = serializers.SerializerMethodField()
+        # TODO remove this line when soft delete implemented
+        deleted_at = serializers.SerializerMethodField()
+
+        class Meta:
+            model = Profile
+            fields = [
+                "account",
+                "language",
+                "user",
+                "email",
+                "first_name",
+                "last_name",
+                "username",
+                "user_roles",
+                "user_permissions",
+                # We're serializing the password to be able to determine if it has been changed. but we remove them before saving the log itself
+                "password",
+                "projects",
+                "phone_number",
+                "dhis2_id",
+                "org_units",
+                "home_page",
+                "deleted_at",
+            ]
+
+        # TODO delete this method when user soft delete is implemented
+        def get_deleted_at(self, profile):
+            return None
+
+        def get_user(self, profile):
+            return profile.user.pk
+
+        def get_email(self, profile):
+            return profile.user.email
+
+        def get_username(self, profile):
+            return profile.user.username
+
+        def get_first_name(self, profile):
+            return profile.user.first_name
+
+        def get_last_name(self, profile):
+            return profile.user.last_name
+
+        def get_user_permissions(self, profile):
+            return [permission.codename for permission in profile.user.user_permissions.all()]
+
+        # THIS SERIALIZER SHOULD ONLY BE USED WITH PROFILEAUDITLOGGER
+        # The logger will compare the old and new password then delete the field and return a boolean indicating whether the password changed or not
+        def get_password(self, profile):
+            return profile.user.password
 
 
 class ProfileAuditLogger(AuditLogger):

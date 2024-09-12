@@ -327,6 +327,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'entityTypeIds',
             'locationLimit',
             'groups',
+            'fieldsSearch',
             ...paginationPathParams,
         ],
     },

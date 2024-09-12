@@ -1,3 +1,4 @@
+from logging import getLogger
 import math
 import xml.etree.ElementTree as ET
 from copy import deepcopy
@@ -23,6 +24,8 @@ from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
 from iaso.models.deduplication import ValidationStatus  # type: ignore
 from hat.menupermissions import models as permission
+
+logger = getLogger(__name__)
 
 
 class EntityDuplicateNestedFormSerializer(serializers.ModelSerializer):
@@ -163,8 +166,7 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
     try:
         tree = ET.parse(att1.file)
     except Exception as e:
-        print(f"Error parsing xml file {att1.file}")
-        print(e)
+        logger.exception("Error parsing xml file %s: %s", att1.file, e)
         return None
 
     root = tree.getroot()
@@ -176,8 +178,7 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
             if the_field is not None:
                 the_field.text = the_val
         except Exception as e:
-            print(f"Error updating xml field {field_name}")
-            print(e)
+            logger.exception("Error updating xml field %s: %s", field_name, e)
 
     entity_uuid = root.find("entityUuid")
     if entity_uuid is not None:
@@ -212,8 +213,7 @@ def copy_instance(inst: Instance, new_entity: Entity):
     try:
         tree = ET.parse(inst.file)
     except Exception as e:
-        print(f"Error parsing xml file {inst.file}")
-        print(e)
+        logger.exception("Error parsing xml file %s: %s", inst.file, e)
         return None
 
     root = tree.getroot()

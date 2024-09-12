@@ -48,6 +48,10 @@ export const useInitialUser = (
                 value: get(initialData, 'home_page', ''),
                 errors: [],
             },
+            organization: {
+                value: get(initialData, 'organization', ''),
+                errors: [],
+            },
             dhis2_id: {
                 value: get(initialData, 'dhis2_id', ''),
                 errors: [],

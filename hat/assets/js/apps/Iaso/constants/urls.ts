@@ -5,6 +5,7 @@ export const paginationPathParamsWithPrefix = (prefix: string): string[] =>
     paginationPathParams.map(p => `${prefix}${capitalize(p, true)}`);
 
 export const FORMS_PREFIX = 'formsParams';
+export const FILES_PREFIX = 'filesParams';
 export const LINKS_PREFIX = 'linksParams';
 export const LOGS_PREFIX = 'logsParams';
 export const OU_CHILDREN_PREFIX = 'childrenParams';

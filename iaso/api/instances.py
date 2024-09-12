@@ -1,4 +1,5 @@
 import json
+import mimetypes
 import ntpath
 from time import gmtime, strftime
 from typing import Any, Dict, Union
@@ -6,9 +7,10 @@ from typing import Any, Dict, Union
 import pandas as pd
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
+from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Count, Q, QuerySet, Prefetch
+from django.db.models import Count, F, Func, Prefetch, Q, QuerySet
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
@@ -35,13 +37,14 @@ from iaso.models import (
     Project,
 )
 from iaso.utils import timestamp_to_datetime
+from iaso.utils.file_utils import get_file_type
 
 from ..models.forms import CR_MODE_IF_REFERENCE_FORM
+from ..utils.models.common import get_creator_name
 from . import common
 from .comment import UserSerializerForComment
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, TimestampField, safe_api_import
 from .instance_filters import get_form_from_instance_filters, parse_instance_filters
-from ..utils.models.common import get_creator_name
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -101,9 +104,14 @@ class HasInstancePermission(permissions.BasePermission):
 
 
 class InstanceFileSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     instance_id = serializers.IntegerField()
     file = serializers.FileField(use_url=True)
     created_at = TimestampField(read_only=True)
+    file_type = serializers.SerializerMethodField()
+
+    def get_file_type(self, obj):
+        return get_file_type(obj.file)
 
 
 class OrgUnitNestedSerializer(OrgUnitSerializer):
@@ -165,7 +173,14 @@ class InstancesViewSet(viewsets.ViewSet):
         instances = self.get_queryset()
         filters = parse_instance_filters(request.GET)
         instances = instances.for_filters(**filters)
-        queryset = InstanceFile.objects.filter(instance__in=instances)
+        queryset = InstanceFile.objects.filter(instance__in=instances).annotate(
+            file_extension=Func(F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')")
+        )
+
+        image_only = request.GET.get("image_only", "false").lower() == "true"
+        if image_only:
+            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff"]
+            queryset = queryset.filter(file_extension__in=image_extensions)
 
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)

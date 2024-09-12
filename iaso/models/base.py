@@ -1,4 +1,5 @@
 import datetime
+import mimetypes
 import operator
 import random
 import re
@@ -23,6 +24,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -39,6 +41,7 @@ from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.utils import extract_form_version_id, flat_parse_xml_soup
+from iaso.utils.file_utils import get_file_type
 
 from .. import periods
 from ..utils.jsonlogic import jsonlogic_to_q
@@ -1392,6 +1395,15 @@ class InstanceFile(models.Model):
 
     def __str__(self):
         return "%s " % (self.name,)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "instance_id": self.instance_id,
+            "file": self.file.url if self.file else None,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "file_type": get_file_type(self.file),
+        }
 
 
 class Profile(models.Model):

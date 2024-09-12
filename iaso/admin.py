@@ -710,6 +710,7 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
         "old_reference_instances",
         "old_opening_date",
         "old_closed_date",
+        "potential_payment",
     )
     raw_id_fields = (
         "org_unit",
@@ -801,6 +802,19 @@ class ConfigAdmin(admin.ModelAdmin):
 @admin.register(PotentialPayment)
 class PotentialPaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    list_display = ("id", "change_request_ids")
+
+    def change_request_ids(self, obj):
+        change_requests = obj.change_requests.all()
+        if change_requests:
+            return format_html(
+                ", ".join(
+                    f'<a href="/admin/iaso/orgunitchangerequest/{cr.id}/change/">{cr.id}</a>' for cr in change_requests
+                )
+            )
+        return "-"
+
+    change_request_ids.short_description = "Change Request IDs"
 
 
 @admin.register(Payment)

@@ -78,7 +78,7 @@ def safe_api_import(key: str, fallback_status=200):
                 with transaction.atomic():
                     response = f(self, api_import, request, *args, **kwargs)
             except Exception as e:
-                logger.error("Exception" + str(e))  # For logs
+                logger.exception("Exception" + str(e))  # For logs
                 api_import.has_problem = True
                 api_import.exception = format_exc()
                 response = Response({"res": "a problem happened, but your data was saved"}, status=fallback_status)

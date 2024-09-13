@@ -1,5 +1,5 @@
 import json
-import mimetypes
+import logging
 import ntpath
 from time import gmtime, strftime
 from typing import Any, Dict, Union
@@ -44,6 +44,8 @@ from . import common
 from .comment import UserSerializerForComment
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, TimestampField, safe_api_import
 from .instance_filters import get_form_from_instance_filters, parse_instance_filters
+
+logger = logging.getLogger(__name__)
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -712,10 +714,15 @@ def import_data(instances, user, app_id):
         entityUuid = instance_data.get("entityUuid", None)
         entityTypeId = instance_data.get("entityTypeId", None)
         if entityUuid and entityTypeId:
-            entity, created = Entity.objects.get_or_create(
+            entity, created = Entity.objects_include_deleted.get_or_create(
                 uuid=entityUuid, entity_type_id=entityTypeId, account=project.account
             )
             instance.entity = entity
+
+            if entity.deleted_at:
+                logger.info(f"Entity %s was soft-deleted (%s)", entity.uuid, str(entity.deleted_at))
+                instance.deleted = True
+
             # If instance's form is the same as the type reference form, set the instance as reference_instance
             if entity.entity_type.reference_form == instance.form:
                 entity.attributes = instance

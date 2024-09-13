@@ -3,19 +3,16 @@ import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Ias
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
-const getLqasImCountriesOptions = (isLqas: boolean) => {
-    const category = isLqas ? 'lqas' : 'im';
-    return getRequest(
-        `/api/polio/lqasim/countries/?category=${category}&order=name`,
-    );
+const getLqasImCountriesOptions = () => {
+    return getRequest(`/api/polio/lqasim/countries/?order=name`);
 };
 
-export const useGetLqasImCountriesOptions = (
-    isLqas: boolean,
-): UseQueryResult<DropdownOptions<string>[]> => {
+export const useGetLqasImCountriesOptions = (): UseQueryResult<
+    DropdownOptions<string>[]
+> => {
     return useSnackQuery({
-        queryKey: ['lqasimcountries', isLqas],
-        queryFn: () => getLqasImCountriesOptions(isLqas),
+        queryKey: ['lqasimcountries'],
+        queryFn: () => getLqasImCountriesOptions(),
         options: {
             select: data =>
                 (data?.results ?? []).map(result => ({

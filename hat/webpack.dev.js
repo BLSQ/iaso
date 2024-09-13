@@ -8,7 +8,6 @@ const BundleTracker = require('webpack-bundle-tracker');
 // remember to switch in webpack.prod.js and
 // django settings as well
 const LOCALE = 'fr';
-
 // If you launch the dev server with `WEBPACK_HOST=192.168.1.XXX  npm run dev`
 // where 192.168.1.XXX is your local IP address, you can access the dev server
 // from another device on the same network, typically from a mobile device or tablet

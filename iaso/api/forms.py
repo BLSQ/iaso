@@ -172,15 +172,22 @@ class FormSerializer(DynamicFieldsModelSerializer):
                 raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
 
         # If the period type is None, some period-specific fields must have specific values
-        if "period_type" in data and data["period_type"] is None:
+        if "period_type" in data:
             tracker_errors = {}
-            if data["periods_before_allowed"] != 0:
-                tracker_errors["periods_before_allowed"] = "Should be 0"
-            if data["periods_after_allowed"] != 0:
-                tracker_errors["periods_after_allowed"] = "Should be 0"
+            if data["period_type"] is None:
+                if data["periods_before_allowed"] != 0:
+                    tracker_errors["periods_before_allowed"] = "Should be 0 when period type is not specified"
+                if data["periods_after_allowed"] != 0:
+                    tracker_errors["periods_after_allowed"] = "Should be 0 when period type is not specified"
+            else:
+                before = data.get("periods_before_allowed", 0)
+                after = data.get("periods_after_allowed", 0)
+                if before + after < 1:
+                    tracker_errors[
+                        "periods_allowed"
+                    ] = "periods_before_allowed + periods_after_allowed should be greater than or equal to 1"
             if tracker_errors:
                 raise serializers.ValidationError(tracker_errors)
-
         return data
 
     def update(self, form, validated_data):

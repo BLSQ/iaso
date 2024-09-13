@@ -4,17 +4,19 @@ from iaso.api.common import (
     ModelViewSet,
     parse_comma_separated_numeric_values,
 )
+import copy
 from hat.menupermissions import models as permission
 from rest_framework import serializers, filters
 import django_filters
 from django.contrib.auth.models import User
-from iaso.models.base import Profile
+from iaso.models.base import Profile, UserRole
 from django.utils.translation import gettext_lazy as _
 from django.db.models.query import QuerySet
 from django.db.models import Q
 from django.conf import settings
 from iaso.api.common import Paginator
 from iaso.models.org_unit import OrgUnit
+from iaso.models.project import Project
 
 
 class ProfileLogsListPagination(Paginator):
@@ -137,9 +139,51 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
 
 
 class ProfileLogRetrieveSerializer(serializers.ModelSerializer):
+    past_value = serializers.SerializerMethodField(read_only=True)
+    new_value = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Modification
         fields = ["id", "created_at", "user", "source", "new_value", "past_value", "object_id", "content_type"]
+
+    def get_past_value(self, modification):
+        logged_org_units = modification.past_value[0]["fields"]["org_units"]
+        logged_projects = modification.past_value[0]["fields"]["projects"]
+        logged_user_roles = modification.past_value[0]["fields"]["user_roles"]
+
+        org_units_names_and_ids = OrgUnit.objects.filter(id__in=logged_org_units).values("id", "name")
+        projects_names_and_ids = Project.objects.filter(id__in=logged_projects).values("id", "name")
+        user_roles_group_names_and_ids = UserRole.objects.filter(id__in=logged_user_roles).values("id", "group__name")
+
+        user_roles_names_and_ids = [
+            {"id": entry["id"], "name": entry["group__name"]} for entry in user_roles_group_names_and_ids
+        ]
+
+        past_value_copy = copy.deepcopy(modification.past_value)
+        past_value_copy[0]["fields"]["org_units"] = org_units_names_and_ids
+        past_value_copy[0]["fields"]["projects"] = projects_names_and_ids
+        past_value_copy[0]["fields"]["user_roles"] = user_roles_names_and_ids
+
+        return past_value_copy
+
+    def get_new_value(self, modification):
+        logged_org_units = modification.new_value[0]["fields"]["org_units"]
+        logged_projects = modification.new_value[0]["fields"]["projects"]
+        logged_user_roles = modification.new_value[0]["fields"]["user_roles"]
+
+        org_units_names_and_ids = OrgUnit.objects.filter(id__in=logged_org_units).values("id", "name")
+        projects_names_and_ids = Project.objects.filter(id__in=logged_projects).values("id", "name")
+        user_roles_group_names_and_ids = UserRole.objects.filter(id__in=logged_user_roles).values("id", "group__name")
+        user_roles_names_and_ids = [
+            {"id": entry["id"], "name": entry["group__name"]} for entry in user_roles_group_names_and_ids
+        ]
+
+        new_value_copy = copy.deepcopy(modification.new_value)
+        new_value_copy[0]["fields"]["org_units"] = org_units_names_and_ids
+        new_value_copy[0]["fields"]["projects"] = projects_names_and_ids
+        new_value_copy[0]["fields"]["user_roles"] = user_roles_names_and_ids
+
+        return new_value_copy
 
 
 class ProfileLogsViewset(ModelViewSet):
@@ -181,4 +225,6 @@ class ProfileLogsViewset(ModelViewSet):
     def get_serializer_class(self):
         if hasattr(self, "action") and self.action == "list":
             return ProfileLogListSerializer
+        if hasattr(self, "action") and self.action == "retrieve":
+            return ProfileLogRetrieveSerializer
         return super().get_serializer_class()

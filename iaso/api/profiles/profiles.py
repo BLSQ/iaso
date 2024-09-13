@@ -678,7 +678,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             account=current_account,
             language=request.data.get("language", ""),
             home_page=request.data.get("home_page", ""),
-            organization=request.data.get("organization", ""),
+            organization=request.data.get("organization", None),
         )
 
         org_units = request.data.get("org_units", [])

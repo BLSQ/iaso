@@ -139,7 +139,6 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
         },
         [bulkState],
     );
-    console.log('BULK STATE', bulkState.organization);
     const closeAndReset = () => {
         closeDialog();
         setBulkState(initialState);

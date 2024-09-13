@@ -306,17 +306,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     except ValueError:
                         organization = None
                     if organization:
-                        # check if a profile with the same dhis_id already exists
-                        if Profile.objects.filter(organization=organization).count() > 0:
-                            raise serializers.ValidationError(
-                                {
-                                    "error": f"Operation aborted. User with same dhis_2 id already exists at row : { i + 1}. Fix "
-                                    "the error "
-                                    "and try "
-                                    "again"
-                                }
-                            )
-
                         profile.organization = organization
 
                     try:

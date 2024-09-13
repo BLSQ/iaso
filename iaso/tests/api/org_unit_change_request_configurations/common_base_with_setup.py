@@ -7,6 +7,8 @@ class OUCRCAPIBase(APITestCase):
     Test actions on the ViewSet.
     """
 
+    OUCRC_API_URL = "/api/orgunits/changes/configs/"
+
     @classmethod
     def setUpTestData(cls):
         cls.account_pokemon = m.Account.objects.create(name="Pokemon")

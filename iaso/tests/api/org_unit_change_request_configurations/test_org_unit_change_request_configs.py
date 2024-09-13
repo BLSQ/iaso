@@ -14,7 +14,6 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
     """
 
     DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
-    OUCRC_API_URL = "/api/orgunits/changes/configs/"
 
     # *** utility methods for testing ***
     def create_new_org_unit_type(self, new_name=None):
@@ -582,9 +581,10 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.get(f"{self.OUCRC_API_URL}check_availability/", format="json")
         self.assertContains(
             response,
-            "Parameter project_id is missing",
+            "This field is required",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+        self.assertIn("project_id", response.json())
 
     def test_check_availability_invalid_project_id(self):
         probably_not_a_valid_id = 1234567890
@@ -594,9 +594,11 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         )
         self.assertContains(
             response,
-            "This project does not exist",
+            probably_not_a_valid_id,
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+        self.assertIn("project_id", response.json())
+        self.assertIn("does not exist", response.json()["project_id"][0])
 
     # Add a test for checking availability for a project not assigned to the user, once implemented
 

@@ -126,7 +126,21 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
 
         self.client.force_authenticate(self.user_ash_ketchum)
 
-        # Filtering on a project and type -> the result can never be higher than 1 -> not checking it
+        # Filtering on a project and type -> combination is ok (result can never be more than 1)
+        response = self.client.get(
+            f"{self.OUCRC_API_URL}?project_id={new_project_1.id}&org_unit_type_id={self.ou_type_fire_pokemons.id}"
+        )
+        self.assertJSONResponse(response, 200)
+        result = response.json()["results"]
+        self.assertEqual(1, len(result))
+        self.assertEqual(result[0]["id"], new_oucrc_1.id)
+
+        # Filtering on a project and type -> no result
+        new_type = m.OrgUnitType.objects.create(name="New Type")
+        response = self.client.get(f"{self.OUCRC_API_URL}?project_id={new_project_3.id}&org_unit_type_id={new_type.id}")
+        self.assertJSONResponse(response, 200)
+        result = response.json()["results"]
+        self.assertEqual(0, len(result))
 
         # Filtering on a project and a creator -> combination is ok
         response = self.client.get(

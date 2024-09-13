@@ -52,7 +52,7 @@ class ProfileAuditSerializer(serializers.ModelSerializer):
                 "deleted_at",
             ]
 
-        # TODO delete this method when user soft delete is implemented
+        # TODO delete this method when User soft delete is implemented
         def get_deleted_at(self, profile):
             return None
 

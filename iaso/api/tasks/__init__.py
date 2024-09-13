@@ -208,8 +208,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
         return ExternalTaskSerializer
 
     def create(self, request):
-        serializer_class = self.get_serializer_class()
-        serializer = serializer_class(data=request.data, context={"request": request})
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         task = serializer.save()
         data = serializer.validated_data
@@ -249,7 +248,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
             except:
                 logger.exception(f"Bad id_field configuration.Expected non-empty dict, got {id_field}")
                 return ERRORED
-        run_statuses = ["queued", "success", "failed"]
+        run_statuses = ["queued", "success", "failed", "stopped"]
         transport = RequestsHTTPTransport(
             url=openhexa_url,
             verify=True,
@@ -303,7 +302,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
         mutation_input = (
             {"id": pipeline, "versionId": pipeline_version, "config": oh_config}
             if pipeline_version
-            else {"id": pipeline, "config": config}
+            else {"id": pipeline, "config": oh_config}
         )
         try:
             run_mutation = gql(

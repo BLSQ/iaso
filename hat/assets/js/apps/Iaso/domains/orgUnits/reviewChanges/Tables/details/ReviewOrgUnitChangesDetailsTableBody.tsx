@@ -1,6 +1,6 @@
 import { TableBody } from '@mui/material';
 import React, { FunctionComponent } from 'react';
-import { HighlightFields } from '../../Dialogs/HighlightFieldsChanges';
+import { HighlightFields } from '../../Components/HighlightFieldsChanges';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
 import { OrgUnitChangeRequestDetails } from '../../types';
 

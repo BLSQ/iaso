@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 from hat.audit.audit_logger import AuditLogger
 from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_CONFIGURATION_API
+from iaso.api.query_params import PROJECT_ID
 from iaso.models import (
     OrgUnitType,
     OrgUnitChangeRequestConfiguration,
@@ -366,3 +367,22 @@ def pop_keys(dict, keys_to_pop):
         if key in dict:
             popped_keys[key] = dict.pop(key)
     return popped_keys
+
+
+class ProjectIdSerializer(serializers.Serializer):
+    """
+    Serializer for `project_id` when passed in query_params.
+
+    Used to handle parsing and errors:
+
+        serializer = ProjectIdSerializer(data=self.request.query_params)
+        serializer.is_valid(raise_exception=True)
+        project_id = serializer.validated_data["project_id"]
+    """
+
+    project_id = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all(), allow_null=False)
+
+    def get_project_id(self, raise_exception: bool):
+        if not self.is_valid(raise_exception=raise_exception):
+            return None
+        return self.data[PROJECT_ID]

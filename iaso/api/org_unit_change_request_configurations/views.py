@@ -4,6 +4,7 @@ from rest_framework import viewsets, filters, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from iaso.api.org_unit_change_request_configurations.filters import OrgUnitChangeRequestConfigurationListFilter
 from iaso.api.org_unit_change_request_configurations.pagination import OrgUnitChangeRequestConfigurationPagination
 from iaso.api.org_unit_change_request_configurations.serializers import (
     OrgUnitChangeRequestConfigurationListSerializer,
@@ -12,6 +13,7 @@ from iaso.api.org_unit_change_request_configurations.serializers import (
     OrgUnitChangeRequestConfigurationUpdateSerializer,
     OrgUnitTypeNestedSerializer,
     OrgUnitChangeRequestConfigurationAuditLogger,
+    ProjectIdSerializer,
 )
 from iaso.models import OrgUnitChangeRequestConfiguration, OrgUnitType, Project
 
@@ -27,6 +29,7 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
     GET /api/orgunits/changes/configs/check_availability/?project_id=<project_id>
     """
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = OrgUnitChangeRequestConfigurationListFilter
     ordering_fields = [
         "id",
         "project__name",
@@ -69,13 +72,7 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
         if user and user.is_anonymous:
             raise serializers.ValidationError("You must be logged in")
 
-        # Not checking if this is indeed a number -> with django filters?
-        project_id = self.request.query_params.get("project_id")
-        if not project_id:
-            raise serializers.ValidationError("Parameter project_id is missing")
-
-        if not Project.objects.filter(id=project_id).exists():
-            raise serializers.ValidationError("This project does not exist")
+        project_id = ProjectIdSerializer(data=self.request.query_params).get_project_id(raise_exception=True)
 
         # It seems there is currently no constraints on projects, but it will happen in the near future
         # user_projects = user.iaso_profile.projects.all()

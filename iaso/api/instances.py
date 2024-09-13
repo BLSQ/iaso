@@ -720,7 +720,12 @@ def import_data(instances, user, app_id):
             instance.entity = entity
 
             if entity.deleted_at:
-                logger.info(f"Entity %s was soft-deleted (%s)", entity.uuid, str(entity.deleted_at))
+                logger.info(
+                    f"Entity %s is soft-deleted for instance %s %s",
+                    entity.uuid,
+                    instance.uuid,
+                    instance.name,
+                )
                 instance.deleted = True
 
             # If instance's form is the same as the type reference form, set the instance as reference_instance

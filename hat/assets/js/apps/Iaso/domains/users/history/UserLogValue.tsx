@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { makeStyles } from '@mui/styles';
 import MESSAGES from '../messages';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import { LinkTo } from '../../../components/nav/LinkTo';
@@ -8,13 +9,32 @@ import { userHasPermission } from '../utils';
 import { PROJECTS, USER_ROLES } from '../../../utils/permissions';
 import { baseUrls } from '../../../constants/urls';
 import PERMISSIONS_MESSAGES from '../permissionsMessages';
+import { NameAndId } from '../../../types/utils';
+
+const useStyles = makeStyles({
+    isDifferent: {
+        color: 'white !important',
+    },
+});
 
 type Props = {
     fieldKey: string;
-    value?: string | number | boolean | Array<string> | Array<number>;
+    value?:
+        | string
+        | number
+        | boolean
+        | Array<string>
+        | Array<number>
+        | Array<NameAndId>;
+    isDifferent: boolean;
 };
 
-export const UserLogValue: FunctionComponent<Props> = ({ fieldKey, value }) => {
+export const UserLogValue: FunctionComponent<Props> = ({
+    fieldKey,
+    value,
+    isDifferent,
+}) => {
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
 
@@ -38,17 +58,22 @@ export const UserLogValue: FunctionComponent<Props> = ({ fieldKey, value }) => {
             case 'org_units':
                 return (
                     <>
-                        {(value as Array<number>).map((orgUnitId, index) => {
+                        {(value as Array<NameAndId>).map((orgUnit, index) => {
                             return (
                                 <LinkToOrgUnit
-                                    key={orgUnitId}
+                                    key={orgUnit.id}
+                                    className={
+                                        isDifferent
+                                            ? classes.isDifferent
+                                            : undefined
+                                    }
                                     orgUnit={{
                                         name:
                                             index ===
                                             (value as Array<number>).length - 1
-                                                ? `${orgUnitId}`
-                                                : `${orgUnitId}, `,
-                                        id: orgUnitId as number,
+                                                ? `${orgUnit.name}`
+                                                : `${orgUnit.name}, `,
+                                        id: orgUnit.id,
                                     }}
                                 />
                             );
@@ -58,17 +83,27 @@ export const UserLogValue: FunctionComponent<Props> = ({ fieldKey, value }) => {
             case 'user_roles':
                 return (
                     <LinkTo
+                        className={
+                            isDifferent ? classes.isDifferent : undefined
+                        }
                         condition={userHasPermission(USER_ROLES, currentUser)}
                         url={`/${baseUrls.userRoles}`}
-                        text={(value as Array<number>).toString()}
+                        text={(value as Array<NameAndId>)
+                            .map(userRole => userRole.name)
+                            .toString()}
                     />
                 );
             case 'projects':
                 return (
                     <LinkTo
+                        className={
+                            isDifferent ? classes.isDifferent : undefined
+                        }
                         condition={userHasPermission(PROJECTS, currentUser)}
                         url={`/${baseUrls.projects}`}
-                        text={(value as Array<number>).toString()}
+                        text={(value as Array<NameAndId>)
+                            .map(project => project.name)
+                            .toString()}
                     />
                 );
             case 'user_permissions':
@@ -85,9 +120,6 @@ export const UserLogValue: FunctionComponent<Props> = ({ fieldKey, value }) => {
                         ))}
                     </ul>
                 );
-            // case 'updated_at': {
-            //     return moment(value).format('LTS');
-            // }
             default:
                 return value.toString();
         }

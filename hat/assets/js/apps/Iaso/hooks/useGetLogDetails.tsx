@@ -7,7 +7,7 @@ export const useGetLogDetails = (
 ): UseQueryResult<any> => {
     return useSnackQuery({
         queryKey: ['log-details', logId],
-        queryFn: () => getRequest(`/api/logs/${logId}/`),
+        queryFn: () => getRequest(`/api/userlogs/${logId}/`),
         options: {
             keepPreviousData: true,
             staleTime: 60000,

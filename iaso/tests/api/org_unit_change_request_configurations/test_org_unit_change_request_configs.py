@@ -183,18 +183,6 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
-    #
-    # def test_create_without_perm(self):
-    #     self.client.force_authenticate(self.user)
-    #
-    #     unauthorized_org_unit = m.OrgUnit.objects.create()
-    #     data = {
-    #         "org_unit_id": unauthorized_org_unit.id,
-    #         "new_name": "I want this new name",
-    #     }
-    #     response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-    #     self.assertEqual(response.status_code, 403)
-
     def test_create_existing_invalid_oug_unit_type_and_project(self):
         # an OUCRC already exists with this combination of OUType & Project
         self.client.force_authenticate(self.user_ash_ketchum)
@@ -407,6 +395,14 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_update_without_perm(self):
+        self.client.force_authenticate(self.user_without_perms_giovanni)
+        data = {
+            "org_units_editable": False,
+        }
+        response = self.client.post(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_update_invalid_id(self):
         self.client.force_authenticate(self.user_ash_ketchum)
         data = {
@@ -483,6 +479,11 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_delete_without_perm(self):
+        self.client.force_authenticate(self.user_without_perms_giovanni)
+        response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_delete_invalid_id(self):
         self.client.force_authenticate(self.user_ash_ketchum)
         probably_not_a_valid_id = 1234567890
@@ -510,6 +511,16 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         new_oucrc = m.OrgUnitChangeRequestConfiguration.objects.get(id=result["id"])
         self.assertEqual(new_oucrc.project_id, self.oucrc_type_fire.project_id)
         self.assertEqual(new_oucrc.org_unit_type_id, self.oucrc_type_fire.org_unit_type_id)
+
+    def test_error_deleting_already_deleted(self):
+        # First, let's delete the existing OUCRC
+        self.client.force_authenticate(self.user_ash_ketchum)
+        response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Then let's delete it again
+        response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # *** Testing GET check_availability endpoint ***
     def test_check_availability_ok(self):
@@ -543,7 +554,9 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         # Preparing a new Project and new OrgUnitTypes
         new_account = m.Account.objects.create(name="New account")
         new_project = m.Project.objects.create(name="New project", account=new_account, app_id="new")
-        new_user = self.create_user_with_profile(username="New user", account=new_account)
+        new_user = self.create_user_with_profile(
+            username="New user", account=new_account, permissions=["iaso_org_unit_change_request_configurations"]
+        )
 
         new_ou_type_1 = self.create_new_org_unit_type("new type 1")
         new_ou_type_1.projects.add(new_project)
@@ -576,6 +589,13 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_check_availability_without_perm(self):
+        self.client.force_authenticate(self.user_without_perms_giovanni)
+        response = self.client.get(
+            f"{self.OUCRC_API_URL}check_availability/?project_id={self.project_johto.id}", format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_check_availability_error_missing_parameter(self):
         self.client.force_authenticate(self.user_ash_ketchum)
         response = self.client.get(f"{self.OUCRC_API_URL}check_availability/", format="json")
@@ -601,16 +621,3 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertIn("does not exist", response.json()["project_id"][0])
 
     # Add a test for checking availability for a project not assigned to the user, once implemented
-
-    # def test_update_should_be_forbidden(self):
-    #     self.client.force_authenticate(self.user_with_review_perm)
-    #     change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-    #     data = {"new_name": "Baz"}
-    #     response = self.client.put(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-    #     self.assertEqual(response.status_code, 405)
-    #
-    # def test_delete_should_be_forbidden(self):
-    #     self.client.force_authenticate(self.user_with_review_perm)
-    #     change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-    #     response = self.client.delete(f"/api/orgunits/changes/{change_request.pk}/", format="json")
-    #     self.assertEqual(response.status_code, 405)

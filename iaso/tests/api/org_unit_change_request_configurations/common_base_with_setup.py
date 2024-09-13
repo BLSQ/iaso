@@ -17,9 +17,18 @@ class OUCRCAPIBase(APITestCase):
             name="Project Johto", account=cls.account_pokemon, app_id=cls.app_id
         )
 
-        cls.user_ash_ketchum = cls.create_user_with_profile(username="Ash Ketchum", account=cls.account_pokemon)
-        cls.user_misty = cls.create_user_with_profile(username="Misty", account=cls.account_pokemon)
-        cls.user_brock = cls.create_user_with_profile(username="Brock", account=cls.account_pokemon)
+        cls.user_ash_ketchum = cls.create_user_with_profile(
+            username="Ash Ketchum",
+            account=cls.account_pokemon,
+            permissions=["iaso_org_unit_change_request_configurations"],
+        )
+        cls.user_misty = cls.create_user_with_profile(
+            username="Misty", account=cls.account_pokemon, permissions=["iaso_org_unit_change_request_configurations"]
+        )
+        cls.user_brock = cls.create_user_with_profile(
+            username="Brock", account=cls.account_pokemon, permissions=["iaso_org_unit_change_request_configurations"]
+        )
+        cls.user_without_perms_giovanni = cls.create_user_with_profile(username="Giovanni", account=cls.account_pokemon)
 
         cls.ou_type_fire_pokemons = m.OrgUnitType.objects.create(name="Fire Pokemons")
         cls.ou_type_fire_pokemons.projects.add(cls.project_johto)

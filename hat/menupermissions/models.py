@@ -44,6 +44,7 @@ _ORG_UNITS_READ = "iaso_org_units_read"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
 _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
 _ORG_UNITS_CHANGE_REQUEST_REVIEW = "iaso_org_unit_change_request_review"
+_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS = "iaso_org_unit_change_request_configurations"
 _PAGES = "iaso_pages"
 _PAGE_WRITE = "iaso_page_write"
 _PAYMENTS = "iaso_payments"
@@ -139,6 +140,7 @@ ORG_UNITS_READ = _PREFIX + _ORG_UNITS_READ
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
 ORG_UNITS_CHANGE_REQUEST_REVIEW = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_REVIEW
+ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS
 PAYMENTS = _PREFIX + _PAYMENTS
 PAGES = _PREFIX + _PAGES
 PAGE_WRITE = _PREFIX + _PAGE_WRITE
@@ -276,6 +278,7 @@ class CustomPermissionSupport(models.Model):
             (_ORG_UNITS_TYPES, _("Org unit types")),
             (_ORG_UNITS_GROUPS, _("Org unit groups")),
             (_ORG_UNITS_CHANGE_REQUEST_REVIEW, _("Org unit change request review")),
+            (_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS, _("Org unit change request configurations")),
             (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
             (_PAYMENTS, _("Payments page")),

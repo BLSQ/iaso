@@ -5,6 +5,9 @@ from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin
 
 from iaso.api.org_unit_change_request_configurations.pagination import OrgUnitChangeRequestConfigurationPagination
+from iaso.api.org_unit_change_request_configurations.permissions import (
+    HasOrgUnitsChangeRequestConfigurationReadPermission,
+)
 from iaso.api.org_unit_change_request_configurations.serializers import (
     MobileOrgUnitChangeRequestConfigurationListSerializer,
 )
@@ -13,7 +16,7 @@ from iaso.models import OrgUnitChangeRequestConfiguration
 
 
 class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.GenericViewSet):
-    # permission_classes = [HasOrgUnitsChangeRequestPermission]
+    permission_classes = [HasOrgUnitsChangeRequestConfigurationReadPermission]
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     serializer_class = MobileOrgUnitChangeRequestConfigurationListSerializer
     pagination_class = OrgUnitChangeRequestConfigurationPagination

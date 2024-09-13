@@ -1,11 +1,15 @@
 import django_filters
 from django.db.models import Q
 from rest_framework import viewsets, filters, serializers
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
 from rest_framework.response import Response
 
 from iaso.api.org_unit_change_request_configurations.filters import OrgUnitChangeRequestConfigurationListFilter
 from iaso.api.org_unit_change_request_configurations.pagination import OrgUnitChangeRequestConfigurationPagination
+from iaso.api.org_unit_change_request_configurations.permissions import (
+    HasOrgUnitsChangeRequestConfigurationReadPermission,
+    HasOrgUnitsChangeRequestConfigurationFullPermission,
+)
 from iaso.api.org_unit_change_request_configurations.serializers import (
     OrgUnitChangeRequestConfigurationListSerializer,
     OrgUnitChangeRequestConfigurationRetrieveSerializer,
@@ -56,17 +60,24 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
             )
         )
 
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            permission_classes = [HasOrgUnitsChangeRequestConfigurationReadPermission]
+        else:
+            permission_classes = [HasOrgUnitsChangeRequestConfigurationFullPermission]
+        return [permission() for permission in permission_classes]
+
     def get_serializer_class(self):
         if self.action == "create":
             return OrgUnitChangeRequestConfigurationWriteSerializer
-        if self.action in ["list", "metadata"]:
+        if self.action == "list":
             return OrgUnitChangeRequestConfigurationListSerializer
         if self.action == "retrieve":
             return OrgUnitChangeRequestConfigurationRetrieveSerializer
         if self.action == "partial_update":
             return OrgUnitChangeRequestConfigurationUpdateSerializer
 
-    @action(detail=False)
+    @action(detail=False, permission_classes=[HasOrgUnitsChangeRequestConfigurationFullPermission])
     def check_availability(self, request, *args, **kwargs):
         user = request.user
         if user and user.is_anonymous:

@@ -1,3 +1,4 @@
+import datetime
 import os
 import zipfile
 
@@ -53,10 +54,11 @@ class ProcessMobileBulkUploadTest(TestCase):
             import_type="bulk",
             json_body={"file": CATT_TABLET_DIR},
         )
+        self.account = m.Account.objects.first()
         self.task = m.Task.objects.create(
             name="process_mobile_bulk_upload",
             launcher=self.user,
-            account=m.Account.objects.first(),
+            account=self.account,
         )
 
         # Create 2 forms: Registration + CATT
@@ -236,3 +238,82 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Bug with extra .xml files of other form submissions being in the same
         # folder. Make sure they are not processed.
         self.assertEquals(instance_disasi.instancefile_set.count(), 0)
+
+    def test_soft_deleted_entity(self, mock_download_file):
+        # Create soft-deleted entity Disasi with only registration form
+        entity_disasi = m.Entity.objects.create(
+            uuid=DISASI_MAKULO_REGISTRATION,
+            entity_type=self.entity_type,
+            account=self.account,
+            deleted_at=datetime.datetime.now(),
+        )
+        reg_disasi = m.Instance.objects.create(
+            uuid=DISASI_MAKULO_REGISTRATION,
+            form=self.form_registration,
+            deleted=True,
+        )
+        reg_disasi.entity = entity_disasi
+        reg_disasi.save()
+        entity_disasi.attributes = reg_disasi
+        entity_disasi.save()
+
+        # Create the zip file: we create it on the fly to be able to clearly
+        # see the contents in our repo. We then mock the file download method
+        # to return the filepath to this zip.
+        with zipfile.ZipFile(f"/tmp/{CATT_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+
+        mock_download_file.return_value = f"/tmp/{CATT_TABLET_DIR}.zip"
+
+        self.assertEquals(m.Entity.objects.count(), 0)
+        self.assertEquals(m.Instance.objects.exclude(deleted=True).count(), 0)
+        self.assertEquals(m.Instance.objects.filter(deleted=True).count(), 1)
+        self.assertEquals(m.InstanceFile.objects.count(), 0)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        mock_download_file.assert_called_once()
+
+        # check Task status and result
+        self.task.refresh_from_db()
+        self.assertEquals(self.task.status, m.SUCCESS)
+
+        self.api_import.refresh_from_db()
+        self.assertEquals(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        # Org unit was created
+        ou = m.OrgUnit.objects.get(name="New Org Unit")
+        self.assertIsNotNone(ou)
+        self.assertEquals(ou.validation_status, m.OrgUnit.VALIDATION_NEW)
+
+        # Patrice entity was created, new CATT form is added as deleted to Disasi
+        self.assertEquals(m.Entity.objects_only_deleted.count(), 1)
+        self.assertEquals(m.Entity.objects.count(), 1)
+        self.assertEquals(m.Instance.objects.exclude(deleted=True).count(), 2)
+        self.assertEquals(m.Instance.objects.filter(deleted=True).count(), 2)
+        self.assertEquals(m.InstanceFile.objects.count(), 2)
+
+        # Entity 1: Disasi Makulo stays soft-deleted, CATT form is added
+        reg_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
+        self.assertEquals(reg_instance.json.get("_full_name"), "Disasi Makulo")
+        self.assertEquals(reg_instance.entity, entity_disasi)
+        self.assertEquals(reg_instance.instancefile_set.count(), 0)
+
+        catt_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_CATT)
+        self.assertEquals(catt_instance.json.get("result"), "positive")
+        self.assertEquals(catt_instance.entity, entity_disasi)
+        self.assertEquals(catt_instance.instancefile_set.count(), 1)
+        image = catt_instance.instancefile_set.first()
+        self.assertEquals(image.name, "1712326156339.webp")
+
+        # Entity 2: Patrice Akambu is created as before, make sure the image is
+        # duplicated as should be
+        catt_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_CATT)
+        image = catt_instance.instancefile_set.first()
+        self.assertEquals(image.name, "1712326156339.webp")

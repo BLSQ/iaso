@@ -44,6 +44,9 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { userHasPermission } from '../users/utils';
+import { ORG_UNITS } from '../../utils/permissions.ts';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -111,6 +114,8 @@ const OrgUnitDetail = () => {
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
     const redirectToReplace = useRedirectToReplace();
+    const currentUser = useCurrentUser();
+    const showLogButtons = userHasPermission(ORG_UNITS, currentUser);
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
@@ -474,6 +479,7 @@ const OrgUnitDetail = () => {
                                         params={params}
                                         logObjectId={currentOrgUnit.id}
                                         goToRevision={goToRevision}
+                                        showButtons={showLogButtons}
                                     />
                                 </div>
                             )}

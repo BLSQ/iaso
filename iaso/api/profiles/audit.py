@@ -18,7 +18,7 @@ class ProfileAuditSerializer(serializers.ModelSerializer):
     def get_custom_fields(self, profile):
         return self.ProfileAuditFieldsSerializer(profile).data
 
-    # THIS SERIALIZER SHOULD ONLY BE USED WITH PROFILEAUDITLOGGER
+    # This serializer should only be used with ProfileAuditSerializer
     class ProfileAuditFieldsSerializer(serializers.ModelSerializer):
         user = serializers.SerializerMethodField()
         username = serializers.SerializerMethodField()
@@ -43,7 +43,6 @@ class ProfileAuditSerializer(serializers.ModelSerializer):
                 "user_roles",
                 "user_permissions",
                 # We're serializing the password to be able to determine if it has been changed. but we remove them before saving the log itself
-                # THIS SERIALIZER SHOULD ONLY BE USED WITH PROFILEAUDITLOGGER
                 "password",
                 "projects",
                 "phone_number",

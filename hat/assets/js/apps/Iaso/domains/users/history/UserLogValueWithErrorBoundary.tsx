@@ -1,11 +1,10 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { injectIntl } from 'bluesquare-components';
+import { injectIntl, IntlFormatMessage } from 'bluesquare-components';
 import { Typography, Box } from '@mui/material';
 import { withStyles } from '@mui/styles';
 
-import { LogValue } from './LogValue.tsx';
-import MESSAGES from './messages';
+import MESSAGES from '../messages';
+import { UserLogValue } from './UserLogValue';
 
 const styles = theme => ({
     errorContainer: {
@@ -19,9 +18,20 @@ const styles = theme => ({
     },
 });
 
+type Props = {
+    fieldKey: string;
+    value?: string | number | Array<string> | Array<number> | boolean;
+    intl: { formatMessage: IntlFormatMessage };
+    classes: Record<string, string>;
+};
+
+type State = {
+    hasError: boolean;
+};
+
 // Use an errorBoundary so if the value cannot be parsed and crash when rendering
 // we still display the raw value
-class ValueWithErrorBoundary extends React.Component {
+class ValueWithErrorBoundary extends React.Component<Props, State> {
     constructor(props) {
         super(props);
         this.state = { hasError: false };
@@ -50,22 +60,10 @@ class ValueWithErrorBoundary extends React.Component {
                 </Box>
             );
         }
-        return <LogValue fieldKey={fieldKey} value={value} />;
+        return <UserLogValue fieldKey={fieldKey} value={value} />;
     }
 }
-ValueWithErrorBoundary.defaultProps = {
-    value: undefined,
-};
-ValueWithErrorBoundary.propTypes = {
-    value: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number,
-        PropTypes.array,
-        PropTypes.bool,
-    ]),
-    fieldKey: PropTypes.string.isRequired,
-    intl: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
-};
 
-export default withStyles(styles)(injectIntl(ValueWithErrorBoundary));
+export const UserLogValueWithErrorBoundary = withStyles(styles)(
+    injectIntl(ValueWithErrorBoundary),
+);

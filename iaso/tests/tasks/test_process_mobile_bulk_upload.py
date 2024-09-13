@@ -1,5 +1,6 @@
 import datetime
 import os
+import pytz
 import zipfile
 
 from django.contrib.auth.models import User
@@ -245,12 +246,17 @@ class ProcessMobileBulkUploadTest(TestCase):
             uuid=DISASI_MAKULO_REGISTRATION,
             entity_type=self.entity_type,
             account=self.account,
-            deleted_at=datetime.datetime.now(),
+            deleted_at=datetime.datetime.now(pytz.UTC),
         )
+        creation_date = datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC)
         reg_disasi = m.Instance.objects.create(
             uuid=DISASI_MAKULO_REGISTRATION,
             form=self.form_registration,
             deleted=True,
+            file="something.xml",
+            json={"some": "thing"},
+            source_created_at=creation_date,
+            source_updated_at=creation_date,
         )
         reg_disasi.entity = entity_disasi
         reg_disasi.save()
@@ -269,6 +275,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEquals(m.Instance.objects.exclude(deleted=True).count(), 0)
         self.assertEquals(m.Instance.objects.filter(deleted=True).count(), 1)
         self.assertEquals(m.InstanceFile.objects.count(), 0)
+        self.assertEquals(reg_disasi.source_updated_at.date().isoformat(), "2024-04-01")
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,
@@ -299,18 +306,12 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEquals(m.Instance.objects.filter(deleted=True).count(), 2)
         self.assertEquals(m.InstanceFile.objects.count(), 2)
 
-        # Entity 1: Disasi Makulo stays soft-deleted, CATT form is added
-        reg_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
-        self.assertEquals(reg_instance.json.get("_full_name"), "Disasi Makulo")
-        self.assertEquals(reg_instance.entity, entity_disasi)
-        self.assertEquals(reg_instance.instancefile_set.count(), 0)
-
+        # Entity 1: Disasi Makulo stays soft-deleted, registration is updated
+        # and CATT form is added
+        reg_disasi.refresh_from_db()
+        self.assertEquals(reg_disasi.source_updated_at.date().isoformat(), "2024-04-05")
         catt_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_CATT)
-        self.assertEquals(catt_instance.json.get("result"), "positive")
-        self.assertEquals(catt_instance.entity, entity_disasi)
-        self.assertEquals(catt_instance.instancefile_set.count(), 1)
-        image = catt_instance.instancefile_set.first()
-        self.assertEquals(image.name, "1712326156339.webp")
+        self.assertTrue(catt_instance.deleted)
 
         # Entity 2: Patrice Akambu is created as before, make sure the image is
         # duplicated as should be

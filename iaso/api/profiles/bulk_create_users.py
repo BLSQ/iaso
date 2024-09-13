@@ -299,7 +299,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             )
 
                         profile.dhis2_id = dhis2_id
-                        
+
                     # Using try except for organization in case users are being created with an older version of the template
                     try:
                         organization = row[csv_indexes.index("organization")]
@@ -318,7 +318,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             )
 
                         profile.organization = organization
-                        
+
                     try:
                         user_roles = row[csv_indexes.index("user_roles")]
                     except (IndexError, ValueError):

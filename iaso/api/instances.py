@@ -4,6 +4,7 @@ import ntpath
 from time import gmtime, strftime
 from typing import Any, Dict, Union
 
+
 import pandas as pd
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point

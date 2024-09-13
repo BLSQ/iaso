@@ -12,6 +12,7 @@ from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
+
 import django_cte
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
@@ -1186,8 +1187,7 @@ class Instance(models.Model):
 
     def export(self, launcher=None, force_export=False):
         from iaso.dhis2.datavalue_exporter import DataValueExporter
-        from iaso.dhis2.export_request_builder import (ExportRequestBuilder,
-                                                       NothingToExportError)
+        from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
 
         try:
             export_request = ExportRequestBuilder().build_export_request(

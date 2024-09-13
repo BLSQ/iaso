@@ -1,6 +1,5 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
-
 from iaso.api.tasks import TaskSerializer
 from iaso.tasks.profiles_bulk_update import profiles_bulk_update
 from hat.menupermissions import models as permission

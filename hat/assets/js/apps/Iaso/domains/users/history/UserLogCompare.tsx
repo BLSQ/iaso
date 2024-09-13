@@ -101,6 +101,12 @@ export const UserLogCompare: FunctionComponent<Props> = ({
                             !isEqual(value, otherLog && otherLog.fields[key]),
                     ),
                 );
+                if (
+                    (diffFields?.password_updated as unknown as boolean) ===
+                    false
+                ) {
+                    delete diffFields.password_updated;
+                }
 
                 differenceArray[i] = diffFields;
                 const showFields = showAllFields ? l.fields : diffFields;

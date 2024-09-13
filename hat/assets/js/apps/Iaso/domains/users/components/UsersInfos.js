@@ -119,7 +119,7 @@ const UsersInfos = ({
                     <InputComponent
                         keyValue="organization"
                         onChange={(key, value) => setFieldValue(key, value)}
-                        value={currentUser.organization.value}
+                        value={currentUser.organization?.value}
                         errors={currentUser.organization.errors}
                         type="text"
                         label={MESSAGES.organization}

@@ -49,7 +49,7 @@ export const useInitialUser = (
                 errors: [],
             },
             organization: {
-                value: get(initialData, 'organization', ''),
+                value: get(initialData, 'organization', undefined),
                 errors: [],
             },
             dhis2_id: {

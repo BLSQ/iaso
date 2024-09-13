@@ -1,14 +1,24 @@
 import React, { useMemo } from 'react';
 import TopBar from '../../../components/nav/TopBarComponent';
+import { isEqual } from 'lodash';
+
 import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
-import { useGetGroupSet, useOptionGroupSet } from './hooks/requests';
+import {
+    useGetGroupSet,
+    useOptionGroupSet,
+    useSaveGroupSet,
+} from './hooks/requests';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
-import InputComponent from '../../../components/forms/InputComponent';
-import { Grid } from '@mui/material';
 import { useDataSourceVersions } from '../../dataSources/requests';
+import { useGroupSetSchema } from './hooks/validations';
+import { Field, FormikProvider, useFormik } from 'formik';
+import TextInput from '../../pages/components/TextInput';
+import { SingleSelect } from '../../pages/components/SingleSelect';
+import { MultiSelect } from '../../pages/components/MultiSelect';
+import { Box, Button } from '@mui/material';
 
 const baseUrl = baseUrls.groupSetDetail;
 
@@ -36,6 +46,7 @@ const makeVersionsDropDown = sourceVersions => {
 const GroupSet = () => {
     const { formatMessage } = useSafeIntl();
     const params = useParamsObject(baseUrl);
+
     const { data: groupSet, isFetching } = useGetGroupSet(params.groupSetId);
     const { data: groupSetMetaData, isLoading: isFetchingMetaData } =
         useOptionGroupSet();
@@ -51,7 +62,30 @@ const GroupSet = () => {
         sourceVersionId: groupSet?.source_version?.id,
     });
     const goBack = useGoBack(baseUrls.groupSets);
+    const { mutate: confirm } = useSaveGroupSet();
+    const schema = useGroupSetSchema();
 
+    const formik = useFormik({
+        initialValues: {
+            id: groupSet?.id,
+            name: groupSet?.name,
+            source_ref: groupSet?.source_ref,
+            source_version_id: groupSet?.source_version?.id,
+            group_ids: groupSet?.groups ? groupSet.groups.map(g => g.id) : [],
+            group_belonging: groupSet?.group_belonging || 'SINGLE',
+        },
+        enableReinitialize: true,
+        validateOnBlur: true,
+        validationSchema: schema,
+        onSubmit: async values => {
+            confirm(values);
+        },
+    });
+
+    const isFormChanged = !isEqual(formik.values, formik.initialValues);
+    const allowConfirm =
+        !formik.isSubmitting && formik.isValid && isFormChanged;
+    const userHasReadAndWritePerm = true;
     const isLoading = isFetching || isFetchingGroups || isFetchingMetaData;
     return (
         <>
@@ -64,74 +98,64 @@ const GroupSet = () => {
                 displayBackButton={true}
                 goBack={() => goBack()}
             />
-            <div style={{ margin: '20px' }}>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
-                        <InputComponent
-                            keyValue="name"
-                            value={groupSet?.name}
-                            type="text"
-                            label={MESSAGES.name}
-                            loading={isLoading}
-                            blockForbiddenChars
-                        />
-                    </Grid>
-                </Grid>
 
-                <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
-                        <InputComponent
-                            keyValue="sourceVersion"
-                            value={groupSet?.source_version?.id}
-                            type="select"
+            <FormikProvider value={formik}>
+                <div style={{ margin: '20px' }}>
+                    <Box mb={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.name)}
+                            name="name"
+                            component={TextInput}
+                            required
+                            disabled={!userHasReadAndWritePerm}
+                        />
+                    </Box>
+
+                    <Box mb={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.sourceVersion)}
+                            name="source_version_id"
+                            component={SingleSelect}
                             options={sourceVersionsDropDown}
-                            label={MESSAGES.sourceVersion}
-                            loading={areSourceVersionsLoading}
-                            blockForbiddenChars
+                            required
+                            disabled={!userHasReadAndWritePerm}
                         />
-                    </Grid>
-                </Grid>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
-                        <InputComponent
-                            keyValue="groupIds"
-                            type="select"
-                            disabled={isFetchingGroups}
-                            value={
-                                groupSet?.groups
-                                    ? groupSet.groups.map(g => g.id)
-                                    : []
-                            }
-                            label={MESSAGES.groups}
+                    </Box>
+
+                    <Box mb={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.groups)}
+                            name="group_ids"
+                            component={MultiSelect}
                             options={groups}
-                            loading={isFetchingGroups}
-                            multi
+                            required
+                            disabled={!userHasReadAndWritePerm}
                         />
-                    </Grid>
-                </Grid>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
-                        <InputComponent
-                            keyValue="source_ref"
-                            type="text"
-                            value={groupSet?.source_ref || ''}
+                    </Box>
+
+                    <Box mb={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.source_ref)}
+                            name="source_ref"
+                            component={TextInput}
+                            required
+                            disabled={!userHasReadAndWritePerm}
                         />
-                    </Grid>
-                </Grid>
-                <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
-                        <InputComponent
-                            keyValue="groups_belonging"
-                            value={groupSet?.group_belonging}
-                            type="select"
-                            label={MESSAGES.group_belonging}
+                    </Box>
+
+                    <Box mb={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.group_belonging)}
+                            name="group_belonging"
+                            component={SingleSelect}
                             options={groupSetMetaData?.groupBelonging}
-                            loading={isFetchingMetaData}
-                            blockForbiddenChars
+                            required
+                            disabled={!userHasReadAndWritePerm}
                         />
-                    </Grid>
-                </Grid>
-            </div>
+                    </Box>
+                    <Button type="submit" enabled={allowConfirm} onClick={formik.handleSubmit}>Save</Button>
+                </div>
+            </FormikProvider>
         </>
     );
 };

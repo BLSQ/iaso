@@ -137,9 +137,8 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
 
         group_ids = self.context["request"].data.get("group_ids")
         if group_ids:
-            # Ensure all provided group_ids are valid and belong to the same source_version
             groups = Group.objects.filter(id__in=group_ids)
-
+            group_set.groups.clear()
             for g in groups:
                 group_set.groups.add(g)
 

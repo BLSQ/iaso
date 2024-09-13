@@ -7,7 +7,7 @@ import {
     optionsRequest,
 } from '../../../../libs/Api';
 
-import { UseQueryResult } from 'react-query';
+import { UseMutationResult, UseQueryResult } from 'react-query';
 
 import { GroupSetMetaData } from '../types/GroupSetMetaData';
 import { baseUrl } from '../config';
@@ -66,12 +66,17 @@ export const useGetGroupSet = groupSetId => {
         {},
     );
 };
-export const useSaveGroupSet = () =>
+export const useSaveGroupSet = (): UseMutationResult =>
     useSnackMutation(
-        body =>
-            body.id
-                ? patchRequest(`/api/group_sets/${body.id}/`, body)
-                : postRequest('/api/group_sets/', body),
+        body => {
+            body.group_ids = body.group_ids ? body.group_ids.split(',') : [];
+
+            if (body.id) {
+                return patchRequest(`/api/group_sets/${body.id}/`, body);
+            } else {
+                return postRequest('/api/group_sets/', body);
+            }
+        },
         undefined,
         undefined,
         ['group_sets'],
@@ -99,15 +104,13 @@ export const useOptionGroupSet = (): UseQueryResult<GroupSetMetaData, Error> =>
             staleTime: 1000 * 60 * 15, // in ms
             cacheTime: 1000 * 60 * 5,
             select: data => {
-                debugger;
                 const metadata = data.actions.OPTIONS;
-                const mapped =  {
+                const mapped = {
                     groupBelonging: mapChoices(
                         metadata.group_belonging.choices,
                     ),
                 };
-                debugger;
-                return mapped
+                return mapped;
             },
         },
     });

@@ -25,6 +25,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.dataSourceVersion',
         defaultMessage: 'Source version',
     },
+    source_ref: {
+        defaultMessage: 'Source ref',
+        id: 'iaso.orgUnits.sourceRef',
+    },
     projects: {
         id: 'iaso.label.projects',
         defaultMessage: 'Projects',
@@ -52,8 +56,11 @@ const MESSAGES = defineMessages({
     group_belonging: {
         id: 'iaso.groupsets.groupBelonging',
         defaultMessage: 'Groups belonging',
-
-    }
+    },
+    validationFieldRequired: {
+        id: 'iaso.groupsets.validation.field_required',
+        defaultMessage: 'This field is required',
+    },
 });
 
 export default MESSAGES;

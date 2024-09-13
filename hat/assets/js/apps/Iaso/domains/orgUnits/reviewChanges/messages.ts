@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Review change proposals',
         id: 'iaso.label.reviewChangeProposals',
     },
+    reviewChangeProposal: {
+        defaultMessage: 'Change proposals for {name}',
+        id: 'iaso.label.reviewChangeProposal',
+    },
     orgUnitType: {
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',

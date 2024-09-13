@@ -14,7 +14,6 @@ from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import Q, QuerySet
 from django.db.models.expressions import RawSQL
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
@@ -27,7 +26,7 @@ from ..utils.models.common import get_creator_name
 from .project import Project
 
 try:  # for typing
-    from .base import Account, Instance
+    from .base import Account
 except:
     pass
 
@@ -301,6 +300,9 @@ class OrgUnit(TreeModel):
     opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
     objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
+    default_image = models.ForeignKey(
+        "iaso.InstanceFile", on_delete=models.SET_NULL, null=True, blank=True, related_name="default_for_org_units"
+    )
 
     class Meta:
         indexes = [
@@ -475,6 +477,7 @@ class OrgUnit(TreeModel):
             "creator": get_creator_name(self.creator),
             "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
             "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
+            "default_image": self.default_image.as_dict() if self.default_image else None,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]

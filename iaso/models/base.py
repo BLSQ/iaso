@@ -1,4 +1,5 @@
 import datetime
+import mimetypes
 import operator
 import random
 import re
@@ -10,18 +11,18 @@ from io import StringIO
 from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import urlopen
-from .project import Project
+
+
 import django_cte
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
 from django.contrib import auth
 from django.contrib.auth import models as authModels
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
-from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
@@ -39,13 +40,15 @@ from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.utils import extract_form_version_id, flat_parse_xml_soup
+from iaso.utils.file_utils import get_file_type
 
 from .. import periods
+from ..utils.emoji import fix_emoji
 from ..utils.jsonlogic import jsonlogic_to_q
 from ..utils.models.common import get_creator_name
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
-from ..utils.emoji import fix_emoji
+from .project import Project
 
 logger = getLogger(__name__)
 
@@ -1392,6 +1395,15 @@ class InstanceFile(models.Model):
 
     def __str__(self):
         return "%s " % (self.name,)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "instance_id": self.instance_id,
+            "file": self.file.url if self.file else None,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "file_type": get_file_type(self.file),
+        }
 
 
 class Profile(models.Model):

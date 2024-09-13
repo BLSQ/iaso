@@ -253,6 +253,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Group',
         id: 'iaso.label.group',
     },
+    queryBuilder: {
+        id: 'iaso.instance.queryBuilder',
+        defaultMessage: 'Search in submitted fields',
+    },
 });
 
 export default MESSAGES;

@@ -303,6 +303,8 @@ class FormsAPITestCase(APITestCase):
             data={
                 "name": "test form 1",
                 "period_type": "MONTH",
+                "periods_before_allowed": 1,
+                "periods_after_allowed": 0,
                 "project_ids": [self.project_1.id],
                 "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
             },
@@ -315,6 +317,54 @@ class FormsAPITestCase(APITestCase):
         form = m.Form.objects.get(pk=response_data["id"])
         self.assertEqual(1, form.projects.count())
         self.assertEqual(2, form.org_unit_types.count())
+
+    def test_forms_create_ok_without_period_type(self):
+        """POST /forms/ happy path without period type"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/forms/",
+            data={
+                "name": "test form 1",
+                "period_type": None,
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+
+        response_data = response.json()
+        self.assertValidFormData(response_data)
+        form = m.Form.objects.get(pk=response_data["id"])
+        self.assertEqual(1, form.projects.count())
+        self.assertEqual(2, form.org_unit_types.count())
+
+    def test_forms_create_not_ok_with_period_type_and_wrong_period_before_and_after(self):
+        """POST /forms/ with wrong period before and after"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/forms/",
+            data={
+                "name": "test form 1",
+                "period_type": "MONTH",
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+
+        response_data = response.json()
+        self.assertEqual(
+            response_data["periods_allowed"][0],
+            "periods_before_allowed + periods_after_allowed should be greater than or equal to 1",
+        )
 
     def test_forms_create_ok_extended(self):
         """POST /forms/ happy path (more fields)"""
@@ -455,6 +505,8 @@ class FormsAPITestCase(APITestCase):
             data={
                 "name": "test form 1 (updated)",
                 "period_type": "QUARTER",
+                "pperiods_before_allowed": "0",
+                "periods_after_allowed": "1",
                 "single_per_period": True,
                 "device_field": "deviceid",
                 "location_field": "location",

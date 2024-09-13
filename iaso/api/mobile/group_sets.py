@@ -70,11 +70,12 @@ class MobileGroupSetsViewSet(ListModelMixin, GenericViewSet):
         return get_object_or_404(project_qs, app_id=app_id)
 
     def get_queryset(self) -> QuerySet:
-        qs = GroupSet.objects.filter(source_version__data_source=self.get_project().account.default_version.data_source)
+        default_version = self.get_project().account.default_version
+        # limit to the default datasource
+        qs = GroupSet.objects.filter(source_version__data_source=default_version.data_source)
+        # mark as erased if they don't belong to the default version
         qs = qs.annotate(
-            annotated_erased=ExpressionWrapper(
-                ~Q(source_version=self.get_project().account.default_version), output_field=BooleanField()
-            )
+            annotated_erased=ExpressionWrapper(~Q(source_version=default_version), output_field=BooleanField())
         )
 
         return qs

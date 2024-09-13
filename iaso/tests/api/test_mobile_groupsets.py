@@ -13,7 +13,9 @@ class MobileGroupSetsAPITestCase(APITestCase):
         cls.data_source_nig = m.DataSource.objects.create(name="Default source nig")
         cls.data_source_cam = m.DataSource.objects.create(name="Default source cam")
         cls.source_version_1_cam = m.SourceVersion.objects.create(data_source=cls.data_source_cam, number=1)
+
         cls.source_version_2_nig = m.SourceVersion.objects.create(data_source=cls.data_source_nig, number=2)
+        cls.source_version_3_nig = m.SourceVersion.objects.create(data_source=cls.data_source_nig, number=3)
 
         account_cameroon = m.Account.objects.create(name="Cameroon", default_version=cls.source_version_1_cam)
         account_nigeria = m.Account.objects.create(name="Nigeria", default_version=cls.source_version_2_nig)
@@ -50,6 +52,15 @@ class MobileGroupSetsAPITestCase(APITestCase):
         cls.group_set_1_nigeria = m.GroupSet.objects.create(name="contracts", source_version=cls.source_version_2_nig)
         cls.group_set_1_nigeria.groups.add(cls.group_nigeria_1_hospital)
         cls.group_set_1_nigeria.groups.add(cls.group_nigeria_1_healthcenter)
+
+        cls.group_nigeria_2_hospital = m.Group.objects.create(name="Hospitals", source_version=cls.source_version_3_nig)
+        cls.group_nigeria_2_healthcenter = m.Group.objects.create(
+            name="Health Centers", source_version=cls.source_version_3_nig
+        )
+
+        cls.group_set_2_nigeria = m.GroupSet.objects.create(name="contracts", source_version=cls.source_version_3_nig)
+        cls.group_set_2_nigeria.groups.add(cls.group_nigeria_2_hospital)
+        cls.group_set_2_nigeria.groups.add(cls.group_nigeria_2_healthcenter)
 
         cls.group_cameroon_north = m.Group.objects.create(name="North", source_version=cls.source_version_1_cam)
         cls.group_cameroon_south = m.Group.objects.create(name="South", source_version=cls.source_version_1_cam)
@@ -94,7 +105,15 @@ class MobileGroupSetsAPITestCase(APITestCase):
             "erased": False,
         }
 
+        record_nigeria_2 = {
+            "id": self.group_set_2_nigeria.id,
+            "name": "contracts",
+            "group_ids": [self.group_nigeria_2_hospital.id, self.group_nigeria_2_healthcenter.id],
+            "group_belonging": "SINGLE",
+            "erased": True,
+        }
+
         # Groups with `source_version_2`.
         ## Without all versions
         response = self.client.get("/api/mobile/group_sets/", {APP_ID: self.project_nigeria.app_id})
-        self.assertEqual(json.dumps(response.data), json.dumps([record_nigeria]))
+        self.assertEqual(json.dumps(response.data), json.dumps([record_nigeria, record_nigeria_2]))

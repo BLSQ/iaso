@@ -232,20 +232,16 @@ PhotoField.propTypes = {
 function FormChild({ descriptor, data, showQuestionKey, showNote, files }) {
     switch (descriptor.type) {
         case 'repeat':
-            return data[descriptor.name] ? (
-                data[descriptor.name].map((subdata, index) => (
-                    <FormGroup
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={`repeat-${index}`}
-                        descriptor={descriptor}
-                        data={subdata}
-                        showQuestionKey={showQuestionKey}
-                    />
-                ))
-            ) : (
-                // eslint-disable-next-line react/jsx-no-useless-fragment
-                <></>
-            );
+            return data[descriptor.name]
+                ? data[descriptor.name].map(subdata => (
+                      <FormGroup
+                          key={descriptor.name}
+                          descriptor={descriptor}
+                          data={subdata}
+                          showQuestionKey={showQuestionKey}
+                      />
+                  ))
+                : null;
         case 'group':
             return (
                 <FormGroup

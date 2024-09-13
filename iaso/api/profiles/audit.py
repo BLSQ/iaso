@@ -113,7 +113,6 @@ class ProfileAuditLogger(AuditLogger):
         del new_value[0]["fields"]["password"]
         now = timezone.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         new_value[0]["fields"]["deleted_at"] = now
-        new_value[0]["fields"]["deleted_at"] = now
         new_value[0]["fields"]["password_updated"] = False
 
         Modification.objects.create(

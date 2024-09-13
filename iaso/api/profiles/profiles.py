@@ -532,7 +532,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.phone_number = phone_number
 
         profile.language = request.data.get("language", "")
-        profile.organization = request.data.get("organization", "")
+        profile.organization = request.data.get("organization", None)
         profile.home_page = request.data.get("home_page", "")
         profile.dhis2_id = request.data.get("dhis2_id", "")
         if profile.dhis2_id == "":

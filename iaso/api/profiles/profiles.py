@@ -319,6 +319,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 ",".join(item.source_ref for item in org_units if item.source_ref),
                 profile.language,
                 profile.dhis2_id,
+                profile.organization,
                 ",".join(item.codename for item in profile.user.user_permissions.all()),
                 ",".join(
                     item.group.name.removeprefix(f"{profile.account.pk}_")

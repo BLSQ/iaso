@@ -33,6 +33,7 @@ BULK_CREATE_USER_COLUMNS_LIST = [
     "orgunit__source_ref",
     "profile_language",
     "dhis2_id",
+    "organization",
     "permissions",
     "user_roles",
     "projects",
@@ -298,6 +299,26 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             )
 
                         profile.dhis2_id = dhis2_id
+                        
+                    # Using try except for organization in case users are being created with an older version of the template
+                    try:
+                        organization = row[csv_indexes.index("organization")]
+                    except ValueError:
+                        organization = None
+                    if organization:
+                        # check if a profile with the same dhis_id already exists
+                        if Profile.objects.filter(organization=organization).count() > 0:
+                            raise serializers.ValidationError(
+                                {
+                                    "error": f"Operation aborted. User with same dhis_2 id already exists at row : { i + 1}. Fix "
+                                    "the error "
+                                    "and try "
+                                    "again"
+                                }
+                            )
+
+                        profile.organization = organization
+                        
                     try:
                         user_roles = row[csv_indexes.index("user_roles")]
                     except (IndexError, ValueError):

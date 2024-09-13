@@ -333,19 +333,20 @@ class ProfileAPITestCase(APITestCase):
             "orgunit__source_ref,"
             "profile_language,"
             "dhis2_id,"
+            "organization,"
             "permissions,"
             "user_roles,"
             "projects,"
             "phone_number\r\n"
         )
 
-        expected_csv += "janedoe,,,,,,,,,iaso_forms,,,\r\n"
-        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,,\r\n'
-        expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
-        expected_csv += "jam,,,,,,,en,,iaso_users_managed,,,\r\n"
-        expected_csv += "jom,,,,,,,fr,,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,,{self.project.name},\r\n"
-        expected_csv += f'managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,iaso_users_managed,"{self.user_role_name},{self.user_role_another_account_name}",,\r\n'
+        expected_csv += "janedoe,,,,,,,,,,iaso_forms,,,\r\n"
+        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,,,\r\n'
+        expected_csv += 'jim,,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
+        expected_csv += "jam,,,,,,,en,,,iaso_users_managed,,,\r\n"
+        expected_csv += "jom,,,,,,,fr,,,,,,\r\n"
+        expected_csv += f"jum,,,,,,,,,,,,{self.project.name},\r\n"
+        expected_csv += f'managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,,iaso_users_managed,"{self.user_role_name},{self.user_role_another_account_name}",,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -372,6 +373,7 @@ class ProfileAPITestCase(APITestCase):
                 "orgunit__source_ref",
                 "profile_language",
                 "dhis2_id",
+                "organization",
                 "permissions",
                 "user_roles",
                 "projects",
@@ -409,6 +411,7 @@ class ProfileAPITestCase(APITestCase):
                 },
                 "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
                 "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+                "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "permissions": {
                     0: "iaso_forms",
                     1: None,

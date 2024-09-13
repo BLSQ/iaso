@@ -29,6 +29,7 @@ def import_gpkg_task(import_gpkg_id: int, task: Task):
             validation_status="NEW",
             user=user,
             description=ig.description,
+            task=task,
         )
 
         task.report_success(message=f"Imported {total} OrgUnits")

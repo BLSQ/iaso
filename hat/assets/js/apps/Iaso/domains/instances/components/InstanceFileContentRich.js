@@ -197,6 +197,8 @@ const PhotoField = ({ descriptor, data, showQuestionKey, files }) => {
                                 maxWidth: '35vw',
                                 maxHeight: '35vh',
                                 cursor: 'pointer',
+                                width: '100%',
+                                height: 'auto',
                             }}
                             onClick={() => setOpen(true)}
                         />

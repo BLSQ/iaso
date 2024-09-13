@@ -28,7 +28,8 @@ import { OrgUnits } from '../domains/orgUnits';
 import OrgUnitDetail from '../domains/orgUnits/details';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
-import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges';
+import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges';
+import { ReviewOrgUnitChangesDetail } from '../domains/orgUnits/reviewChanges/details';
 import Pages from '../domains/pages';
 import { LotsPayments } from '../domains/payments/LotsPayments';
 import { PotentialPayments } from '../domains/payments/PotentialPayments';
@@ -168,6 +169,13 @@ export const orgUnitChangeRequestPath = {
     routerUrl: `${baseUrls.orgUnitsChangeRequest}/*`,
     permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
     element: <ReviewOrgUnitChanges />,
+};
+
+export const orgUnitChangeRequestDetailPath = {
+    baseUrl: baseUrls.orgUnitsChangeRequestDetail,
+    routerUrl: `${baseUrls.orgUnitsChangeRequestDetail}/*`,
+    permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
+    element: <ReviewOrgUnitChangesDetail />,
 };
 
 export const registryPath = {
@@ -439,6 +447,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     workflowsPath,
     workflowsDetailPath,
     orgUnitChangeRequestPath,
+    orgUnitChangeRequestDetailPath,
     registryPath,
     modulesPath,
     potentialPaymentsPath,

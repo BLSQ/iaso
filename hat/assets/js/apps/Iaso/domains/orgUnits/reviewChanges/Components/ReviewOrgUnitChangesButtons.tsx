@@ -19,7 +19,6 @@ type SubmitChangeRequest = (
 ) => void;
 
 type Props = {
-    closeDialog: () => void;
     newFields: NewOrgUnitField[];
     isNew: boolean;
     isNewOrgUnit: boolean;
@@ -28,7 +27,6 @@ type Props = {
 };
 
 export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
-    closeDialog,
     newFields,
     isNew,
     isNewOrgUnit,
@@ -85,17 +83,6 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                 titleMessage={dialogTitleMessage}
             />
             <Box display="flex" justifyContent="flex-end" m={2}>
-                <Button
-                    onClick={() => {
-                        closeDialog();
-                    }}
-                    color="primary"
-                    data-test="cancel-button"
-                >
-                    {isNew
-                        ? formatMessage(MESSAGES.cancel)
-                        : formatMessage(MESSAGES.close)}
-                </Button>
                 {isNew && (
                     <>
                         <Box pl={1} display="inline-block">

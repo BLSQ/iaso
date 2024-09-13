@@ -107,8 +107,8 @@ type Props = {
     currentIndex: number;
     // eslint-disable-next-line no-unused-vars
     setCurrentIndex?: (index: number) => void;
-    url: string | null;
-    urlLabel: { id: string; defaultMessage: string } | undefined;
+    url?: string | null;
+    urlLabel?: { id: string; defaultMessage: string } | undefined;
     // eslint-disable-next-line no-unused-vars
     getExtraInfos?: (image: ShortFile) => React.ReactNode;
 };
@@ -157,7 +157,6 @@ const ImageGallery: FunctionComponent<Props> = ({
                     </IconButton>
                 )}
                 <IconButton
-                    color="primary"
                     sx={styles.closeButton}
                     onClick={() => closeLightbox()}
                 >

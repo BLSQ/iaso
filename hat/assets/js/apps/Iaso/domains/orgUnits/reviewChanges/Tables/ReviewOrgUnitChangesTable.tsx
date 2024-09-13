@@ -1,37 +1,25 @@
-import React, {
-    FunctionComponent,
-    ReactElement,
-    useState,
-    Dispatch,
-    SetStateAction,
-    useMemo,
-} from 'react';
-import Color from 'color';
-import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
+import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import Color from 'color';
+import React, { FunctionComponent, ReactElement, useMemo } from 'react';
+import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
+import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
+import { UserCell } from '../../../../components/Cells/UserCell';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
-import {
-    OrgUnitChangeRequestsPaginated,
-    ApproveOrgUnitParams,
-    OrgUnitChangeRequest,
-    ChangeRequestValidationStatus,
-} from '../types';
-import MESSAGES from '../messages';
-import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
-import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
-import {
-    ReviewOrgUnitChangesDialog,
-    IconButton,
-} from '../Dialogs/ReviewOrgUnitChangesDialog';
-import { UserCell } from '../../../../components/Cells/UserCell';
-import { colorCodes } from '../Dialogs/ReviewOrgUnitChangesInfos';
 import { ColumnCell } from '../../../../types/general';
-import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
+import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
+import { IconButton } from '../details';
+import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
+import MESSAGES from '../messages';
+import {
+    ApproveOrgUnitParams,
+    ChangeRequestValidationStatus,
+    OrgUnitChangeRequest,
+    OrgUnitChangeRequestsPaginated,
+} from '../types';
 
-const useColumns = (
-    setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>,
-): Column[] => {
+const useColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
         () => [
@@ -154,20 +142,18 @@ const useColumns = (
                 accessor: 'actions',
                 sortable: false,
                 Cell: ({
-                    row: { original: changeRequest, index },
+                    row: { original: changeRequest },
                 }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
                     return (
                         <IconButton
                             changeRequestId={changeRequest.id}
                             status={changeRequest.status}
-                            index={index}
-                            setSelectedChangeRequest={setSelectedChangeRequest}
                         />
                     );
                 },
             },
         ],
-        [formatMessage, setSelectedChangeRequest],
+        [formatMessage],
     );
 };
 
@@ -205,37 +191,21 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     isFetching,
     params,
 }) => {
-    const [selectedChangeRequest, setSelectedChangeRequest] = useState<
-        SelectedChangeRequest | undefined
-    >();
-    const columns = useColumns(setSelectedChangeRequest);
-    const handleCloseDialog = () => {
-        setSelectedChangeRequest(undefined);
-    };
+    const columns = useColumns();
 
     return (
-        <>
-            {/* This dialog is at this level to keep selected request in state and allow further multiaction/pagination feature */}
-            {selectedChangeRequest && (
-                <ReviewOrgUnitChangesDialog
-                    isOpen
-                    selectedChangeRequest={selectedChangeRequest}
-                    closeDialog={handleCloseDialog}
-                />
-            )}
-            <TableWithDeepLink
-                marginTop={false}
-                data={data?.results ?? []}
-                pages={data?.pages ?? 1}
-                defaultSorted={[{ id: 'updated_at', desc: true }]}
-                columns={columns}
-                count={data?.count ?? 0}
-                baseUrl={baseUrl}
-                countOnTop
-                params={params}
-                rowProps={getRowProps}
-                extraProps={{ loading: isFetching, selectedChangeRequest }}
-            />
-        </>
+        <TableWithDeepLink
+            marginTop={false}
+            data={data?.results ?? []}
+            pages={data?.pages ?? 1}
+            defaultSorted={[{ id: 'updated_at', desc: true }]}
+            columns={columns}
+            count={data?.count ?? 0}
+            baseUrl={baseUrl}
+            countOnTop
+            params={params}
+            rowProps={getRowProps}
+            extraProps={{ loading: isFetching }}
+        />
     );
 };

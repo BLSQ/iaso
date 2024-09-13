@@ -1668,7 +1668,8 @@ class UserRole(models.Model):
         }
 
     # This method will remove a given prefix from a string
-    def remove_user_role_name_prefix(self, str):
+    @staticmethod
+    def remove_user_role_name_prefix(str):
         prefix = str.split("_")[0] + "_"
         if str.startswith(prefix):
             return str[len(prefix) :]

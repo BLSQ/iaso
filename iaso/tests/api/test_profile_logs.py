@@ -732,7 +732,8 @@ class ProfileLogsTestCase(APITestCase):
         self.assertEquals(past_value_fields["projects"][0], {"id": self.project_1.id, "name": self.project_1.name})
         self.assertEquals(len(past_value_fields["user_roles"]), 1)
         self.assertEquals(
-            past_value_fields["user_roles"][0], {"id": self.user_role.id, "name": self.user_role.group.name}
+            past_value_fields["user_roles"][0],
+            {"id": self.user_role.id, "name": m.UserRole.remove_user_role_name_prefix(self.user_role.group.name)},
         )
 
         new_value = data["new_value"][0]
@@ -757,5 +758,6 @@ class ProfileLogsTestCase(APITestCase):
         self.assertEquals(new_value_fields["projects"][0], {"id": self.project_1.id, "name": self.project_1.name})
         self.assertEquals(len(new_value_fields["user_roles"]), 1)
         self.assertEquals(
-            new_value_fields["user_roles"][0], {"id": self.user_role.id, "name": self.user_role.group.name}
+            new_value_fields["user_roles"][0],
+            {"id": self.user_role.id, "name": m.UserRole.remove_user_role_name_prefix(self.user_role.group.name)},
         )

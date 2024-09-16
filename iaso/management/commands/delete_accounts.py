@@ -149,7 +149,8 @@ class Command(BaseCommand):
                         )
 
                 for entity in Entity.objects_include_deleted.filter(account=account):
-                    print("Entity attributes", entity.attributes.delete())
+                    if entity and entity.attributes:
+                        print("Entity attributes", entity.attributes.delete())
 
                 print("Entity", Entity.objects_include_deleted.filter(account=account).delete())
 
@@ -481,6 +482,9 @@ class Command(BaseCommand):
         dump_diffs(counts_before, counts_after)
         print("******* Review external credentials left")
         for ext_cred in ExternalCredentials.objects.all():
-            print(ext_cred.url, ext_cred.login, ext_cred.name)
+            print(ext_cred.id, ext_cred.url, ext_cred.login, ext_cred.name)
 
+        print(
+            "\ncredential ids used in datasource\n", list(DataSource.objects.values_list("credentials_id", flat=True))
+        )
         print("Done !")

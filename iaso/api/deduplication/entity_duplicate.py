@@ -194,6 +194,7 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
     new_file_name = f"{slugify(att1.form.name)}_{new_uuid}_merged_{e1.pk}-{e2.pk}.xml"  # type: ignore
     new_attributes = deepcopy(att1)
     new_attributes.uuid = new_uuid  # type: ignore
+    new_attributes.entity_id = None
     new_attributes.file_name = new_file_name
     new_attributes.pk = None
     new_attributes.json = None
@@ -244,15 +245,21 @@ def merge_entities(e1: Entity, e2: Entity, merge_def: Dict):
     new_attributes = merge_attributes(e1, e2, new_entity_uuid, merge_def)
 
     new_entity = Entity.objects.create(
-        name=e1.name, entity_type=e1.entity_type, account=e1.account, attributes=new_attributes, uuid=new_entity_uuid
+        name=e1.name,
+        entity_type=e1.entity_type,
+        account=e1.account,
+        attributes=new_attributes,
+        uuid=new_entity_uuid,
     )
 
     new_entity.save()
+    new_attributes.entity_id = new_entity.id
+    new_attributes.save()
 
-    for inst in e1.instances.all():
+    for inst in e1.instances.exclude(id=e1.attributes_id):
         copy_instance(inst, new_entity)
 
-    for inst in e2.instances.all():
+    for inst in e2.instances.exclude(id=e2.attributes_id):
         copy_instance(inst, new_entity)
 
     if e1.attributes is not None:

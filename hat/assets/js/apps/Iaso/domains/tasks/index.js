@@ -57,6 +57,13 @@ const Tasks = () => {
         ['tasks'],
     );
 
+    const { mutateAsync: relaunchTaskAction } = useSnackMutation(
+        task => patchRequest(`/api/tasks/${task.id}/relaunch/`, task),
+        MESSAGES.patchTaskSuccess,
+        MESSAGES.patchTaskError,
+        ['tasks'],
+    );
+
     const urlParams = {
         limit: params.pageSize ? params.pageSize : 10,
         order: params.order ? params.order : `-${defaultOrder}`,
@@ -79,6 +86,7 @@ const Tasks = () => {
 
     const columns = useTasksTableColumns(
         killTaskAction,
+        relaunchTaskAction,
         hasPolioNotificationsPerm,
     );
 

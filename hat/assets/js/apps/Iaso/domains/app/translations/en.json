@@ -1281,6 +1281,7 @@
     "iaso.tasks.polioNotificationImport.errors": "{count} error(s). The following data couldn't be imported.",
     "iaso.tasks.progress": "Progress",
     "iaso.tasks.queued": "Queued",
+    "iaso.tasks.relaunch": "Relaunch the task",
     "iaso.tasks.running": "Running",
     "iaso.tasks.skipped": "Skipped",
     "iaso.tasks.status": "Name & status",

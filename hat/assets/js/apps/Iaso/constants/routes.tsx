@@ -183,7 +183,7 @@ export const orgUnitChangeRequestDetailPath = {
 export const orgUnitsChangeRequestConfiguration = {
     baseUrl: baseUrls.orgUnitsChangeRequestConfiguration,
     routerUrl: `${baseUrls.orgUnitsChangeRequestConfiguration}/*`,
-    permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
+    permissions: [Permission.ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION],
     element: <OrgUnitChangeRequestConfigs />,
 };
 

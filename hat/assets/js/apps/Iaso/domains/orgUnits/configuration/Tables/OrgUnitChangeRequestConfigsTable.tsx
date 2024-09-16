@@ -92,11 +92,11 @@ type Props = {
 };
 export const baseUrl = baseUrls.orgUnitsChangeRequestConfiguration;
 export const OrgUnitChangeRequestConfigsTable: FunctionComponent<Props> = ({
-                                                                               data,
-                                                                               isFetching,
-                                                                               onEditClicked,
-                                                                               params,
-                                                                           }) => {
+    data,
+    isFetching,
+    onEditClicked,
+    params,
+}) => {
     const columns = useColumns(onEditClicked);
 
     return (

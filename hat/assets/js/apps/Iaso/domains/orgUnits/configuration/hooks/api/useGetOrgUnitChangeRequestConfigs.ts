@@ -35,8 +35,6 @@ export const useGetOrgUnitChangeRequestConfigs = (
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,
-            retryOnMount: false, // If not set to false, the query will retry on mount which will cause an endless loop
-            retry: false, // Will not retry failing query. Has to be used with retryOnMount, to prevent endless loop
         },
     });
 };

@@ -1367,6 +1367,7 @@
     "iaso.users.multiEditTitle": "Editer la selection: {count} utilisateur(s)",
     "iaso.users.multiSelectionAction": "Editer les utilisateurs sélectionnés",
     "iaso.users.newPassword": "Nouveau mot de passe",
+    "iaso.users.organization": "Organisation",
     "iaso.users.ouChildrenCheckbox": "Utilisateurs avec accès aux unités d'organisations enfants",
     "iaso.users.ouParentCheckbox": "Utilisateurs avec accès aux unités d'organisations parents",
     "iaso.users.password": "Mot de passe",

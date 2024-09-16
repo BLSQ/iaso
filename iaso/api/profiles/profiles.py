@@ -319,6 +319,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 ",".join(item.source_ref for item in org_units if item.source_ref),
                 profile.language,
                 profile.dhis2_id,
+                profile.organization,
                 ",".join(item.codename for item in profile.user.user_permissions.all()),
                 ",".join(
                     item.group.name.removeprefix(f"{profile.account.pk}_")
@@ -531,6 +532,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.phone_number = phone_number
 
         profile.language = request.data.get("language", "")
+        profile.organization = request.data.get("organization", None)
         profile.home_page = request.data.get("home_page", "")
         profile.dhis2_id = request.data.get("dhis2_id", "")
         if profile.dhis2_id == "":
@@ -676,6 +678,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             account=current_account,
             language=request.data.get("language", ""),
             home_page=request.data.get("home_page", ""),
+            organization=request.data.get("organization", None),
         )
 
         org_units = request.data.get("org_units", [])

@@ -33,6 +33,7 @@ BULK_CREATE_USER_COLUMNS_LIST = [
     "orgunit__source_ref",
     "profile_language",
     "dhis2_id",
+    "organization",
     "permissions",
     "user_roles",
     "projects",
@@ -298,6 +299,15 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             )
 
                         profile.dhis2_id = dhis2_id
+
+                    # Using try except for organization in case users are being created with an older version of the template
+                    try:
+                        organization = row[csv_indexes.index("organization")]
+                    except ValueError:
+                        organization = None
+                    if organization:
+                        profile.organization = organization
+
                     try:
                         user_roles = row[csv_indexes.index("user_roles")]
                     except (IndexError, ValueError):

@@ -494,6 +494,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.permAndPhoneWarningTitle',
         defaultMessage: 'WARNING: Read before saving',
     },
+    organization: {
+        id: 'iaso.users.organization',
+        defaultMessage: 'Organization',
+    },
 });
 
 export default MESSAGES;

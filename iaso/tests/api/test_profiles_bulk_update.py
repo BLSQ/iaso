@@ -239,6 +239,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             "projects_ids_removed": [self.project_2.pk],
             "roles_id_added": [self.user_role.pk],
             "roles_id_removed": [self.user_role_2.pk],
+            "organization": "Bluesquare",
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -253,6 +254,8 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.chewie.refresh_from_db()
         self.assertEqual(self.luke.iaso_profile.language, "fr")
         self.assertEqual(self.chewie.iaso_profile.language, "fr")
+        self.assertEqual(self.luke.iaso_profile.organization, "Bluesquare")
+        self.assertEqual(self.chewie.iaso_profile.organization, "Bluesquare")
         self.assertIn(
             self.jedi_council_corruscant,
             self.luke.iaso_profile.org_units.all(),

@@ -8,6 +8,7 @@ from iaso.api.common import Paginator
 
 from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField, HasPermission
 from iaso.api.query_params import LIMIT, PAGE
+from iaso.api.serializers import AppIdSerializer
 from iaso.models import Entity, FormVersion, Instance
 from iaso.models.entity import (
     InvalidJsonContentError,
@@ -181,10 +182,7 @@ class MobileEntityViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        app_id = self.request.query_params.get("app_id")
-
-        if not app_id:
-            raise ParseError("app_id is required")
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
 
         queryset = filter_on_user_and_app_id(Entity.objects, user, app_id)
 
@@ -237,12 +235,18 @@ class MobileEntityDeletedViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        app_id = self.request.query_params.get("app_id")
-
-        if not app_id:
-            raise ParseError("app_id is required")
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
 
         queryset = Entity.objects_only_deleted
         queryset = filter_on_user_and_app_id(queryset, user, app_id)
 
-        return queryset.prefetch_related("merged_to").order_by("id")
+        return (
+            queryset.prefetch_related("merged_to")
+            .only(
+                "id",
+                "uuid",
+                "deleted_at",
+                "merged_to_id",
+            )
+            .order_by("id")
+        )

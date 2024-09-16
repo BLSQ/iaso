@@ -1,7 +1,7 @@
-import React, { FunctionComponent, ReactNode, useState } from 'react';
-import { Box, Grid, Tabs, Tab } from '@mui/material';
+import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import MESSAGES from '../messages';
 import { innerDrawerStyles, menuHeight } from './styles';
 
@@ -198,13 +198,17 @@ export const InnerDrawer: FunctionComponent<Props> = ({
                                         {settingsOptionComponent}
                                     </Box>
                                 )}
-                            {footerComponent && activeOption === 'edit' && (
-                                <div
-                                    className={classes.innerDrawerFooterContent}
-                                >
-                                    {footerComponent}
-                                </div>
-                            )}
+                            {footerComponent &&
+                                (activeOption === 'edit' ||
+                                    activeOption === 'filters') && (
+                                    <div
+                                        className={
+                                            classes.innerDrawerFooterContent
+                                        }
+                                    >
+                                        {footerComponent}
+                                    </div>
+                                )}
                         </Box>
                     </Box>
                 </Grid>

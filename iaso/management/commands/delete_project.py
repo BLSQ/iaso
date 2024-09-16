@@ -30,39 +30,6 @@ from iaso.models.device import Device
 from django_sql_dashboard.models import Dashboard
 
 
-def flatten(l):
-    return [item for sublist in l for item in sublist]
-
-
-def fullname(m):
-    if m is None:
-        return ""
-    return m.__module__ + "." + m.__name__
-
-
-def dump_counts():
-    counts = defaultdict()
-    print("******************* COUNTS")
-    for ct in ContentType.objects.all():
-        m = None
-        if ct.model_class():
-            try:
-                m = ct.model_class()
-                count = m._default_manager.count()
-                # print(m.__module__, m.__name__, count)
-                counts[fullname(m)] = count
-            except:
-                # don't know why (abstract model ? missing migration) but I had to add this catch statement
-                # the error raised below :
-                # db_1       | 2022-10-19 08:30:32.838 UTC [153] ERROR:  relation "menupermissions_custompermissionsupport" does not exist at character 35
-                # db_1       | 2022-10-19 08:30:32.838 UTC [153] STATEMENT:  SELECT COUNT(*) AS "__count" FROM "menupermissions_custompermissionsupport"
-                print(fullname(m), "not available")
-
-    print("******************* ")
-
-    return counts
-
-
 class Command(BaseCommand):
     help = "Local hosting delete a project, forms, instances,..."
 

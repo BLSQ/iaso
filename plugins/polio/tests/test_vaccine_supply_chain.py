@@ -691,5 +691,4 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         # Verify that the "var" field is a comma-separated list of dates in reverse order
         expected_var = ",".join(dates)
-        print(response.data["results"])
         self.assertEqual(response.data["results"][1]["var"], expected_var)

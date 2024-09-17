@@ -27,6 +27,11 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     const { data: countriesOptions, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
     const vrfDataComment = vrfData?.comment;
+    const vrfTypeOptions = [
+        { label: 'Normal', value: 'Normal' },
+        { label: 'Missing', value: 'Missing' },
+        { label: 'Not Required', value: 'Not Required' },
+    ];
     const { values, setFieldTouched, setFieldValue } = useFormikContext<any>();
     const {
         campaigns,
@@ -70,6 +75,8 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     useSkipEffectUntilValue(values?.vrf?.campaign, resetOnCampaignChange);
     useSkipEffectUntilValue(values?.vrf?.vaccine_type, resetOnVaccineChange);
 
+    const isNormalType = values?.vrf?.vrf_type === 'Normal';
+
     return (
         <Box className={className} mb={3}>
             <Box mb={2}>
@@ -80,7 +87,21 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
             <Box className={classes.scrollableForm}>
                 <Grid container>
                     <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={2}>
+                            <Field
+                                label={formatMessage(MESSAGES.vrfType)}
+                                name="vrf.vrf_type"
+                                component={SingleSelect}
+                                disabled={false}
+                                required
+                                withMarginTop
+                                isLoading={
+                                    isFetchingCountries || isFetchingDropDowns
+                                }
+                                options={vrfTypeOptions}
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={2}>
                             <Field
                                 label={formatMessage(MESSAGES.country)}
                                 name="vrf.country"
@@ -108,7 +129,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 }
                             />
                         </Grid>
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={2}>
                             <Field
                                 label={formatMessage(MESSAGES.vaccine)}
                                 name="vrf.vaccine_type"
@@ -138,146 +159,164 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                             />
                         </Grid>
                     </Grid>
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
-                            <Box mt={2}>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.date_vrf_signature,
-                                    )}
-                                    name="vrf.date_vrf_signature"
-                                    component={DateInput}
-                                    disabled={false}
-                                />
-                            </Box>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Box mt={2}>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.quantities_ordered_in_doses,
-                                    )}
-                                    name="vrf.quantities_ordered_in_doses"
-                                    component={NumberInput}
-                                    disabled={false}
-                                    required
-                                />
-                            </Box>
-                        </Grid>
+                    {isNormalType && (
+                        <>
+                            <Grid container item xs={12} spacing={2}>
+                                <Grid item xs={6} md={3}>
+                                    <Box mt={2}>
+                                        <Field
+                                            label={formatMessage(
+                                                MESSAGES.date_vrf_signature,
+                                            )}
+                                            name="vrf.date_vrf_signature"
+                                            component={DateInput}
+                                            disabled={false}
+                                        />
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={6} md={3}>
+                                    <Box mt={2}>
+                                        <Field
+                                            label={formatMessage(
+                                                MESSAGES.quantities_ordered_in_doses,
+                                            )}
+                                            name="vrf.quantities_ordered_in_doses"
+                                            component={NumberInput}
+                                            disabled={false}
+                                        />
+                                    </Box>
+                                </Grid>
 
-                        <Grid item xs={6} md={3}>
-                            <Box mt={2}>
-                                <Field
-                                    label={formatMessage(MESSAGES.wastageRatio)}
-                                    name="vrf.wastage_rate_used_on_vrf"
-                                    component={NumberInput}
-                                    disabled={false}
-                                    numberInputOptions={{
-                                        suffix: '%',
-                                        max: 100,
-                                    }}
-                                />
-                            </Box>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Box mt={2}>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.date_vrf_reception,
-                                    )}
-                                    name="vrf.date_vrf_reception"
-                                    component={DateInput}
-                                    disabled={false}
-                                />
-                            </Box>
-                        </Grid>
-                    </Grid>
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(
-                                    MESSAGES.date_vrf_submission_to_orpg,
-                                )}
-                                name="vrf.date_vrf_submission_to_orpg"
-                                component={DateInput}
-                                disabled={false}
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(
-                                    MESSAGES.quantities_approved_by_orpg_in_doses,
-                                )}
-                                name="vrf.quantities_approved_by_orpg_in_doses"
-                                component={NumberInput}
-                                disabled={false}
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(
-                                    MESSAGES.date_rrt_orpg_approval,
-                                )}
-                                name="vrf.date_rrt_orpg_approval"
-                                component={DateInput}
-                                disabled={false}
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.targetPopulation)}
-                                name="vrf.target_population"
-                                component={NumberInput}
-                                disabled={false}
-                            />
-                        </Grid>
-                    </Grid>
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(
-                                    MESSAGES.date_vrf_submission_dg,
-                                )}
-                                name="vrf.date_vrf_submitted_to_dg"
-                                component={DateInput}
-                                disabled={false}
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(
-                                    MESSAGES.quantities_approved_by_dg_in_doses,
-                                )}
-                                name="vrf.quantities_approved_by_dg_in_doses"
-                                component={NumberInput}
-                                disabled={false}
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.date_dg_approval)}
-                                name="vrf.date_dg_approval"
-                                component={DateInput}
-                                disabled={false}
-                            />
-                        </Grid>
-                    </Grid>
-                    <Grid container item xs={12} md={9} lg={6} spacing={2}>
-                        <Grid item xs={12}>
-                            {/* With MUI 5, the spacing isn't taken into account if there's only one <Grid> item
-                              so the <Box> is used to compensate and align the TextArea with the other fields
-                            */}
-                            <Box mr={1}>
-                                <TextArea
-                                    value={values?.vrf?.comment ?? ''}
-                                    // errors={errors.comment ? errors.comment : []}
-                                    label={formatMessage(MESSAGES.comments)}
-                                    onChange={onCommentChange}
-                                    debounceTime={0}
-                                />
-                            </Box>
-                        </Grid>
-                    </Grid>
+                                <Grid item xs={6} md={3}>
+                                    <Box mt={2}>
+                                        <Field
+                                            label={formatMessage(
+                                                MESSAGES.wastageRatio,
+                                            )}
+                                            name="vrf.wastage_rate_used_on_vrf"
+                                            component={NumberInput}
+                                            disabled={false}
+                                            numberInputOptions={{
+                                                suffix: '%',
+                                                max: 100,
+                                            }}
+                                        />
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={6} md={3}>
+                                    <Box mt={2}>
+                                        <Field
+                                            label={formatMessage(
+                                                MESSAGES.date_vrf_reception,
+                                            )}
+                                            name="vrf.date_vrf_reception"
+                                            component={DateInput}
+                                            disabled={false}
+                                        />
+                                    </Box>
+                                </Grid>
+                            </Grid>
+                            <Grid container item xs={12} spacing={2}>
+                                <Grid item xs={6} md={3}>
+                                    <Field
+                                        label={formatMessage(
+                                            MESSAGES.date_vrf_submission_to_orpg,
+                                        )}
+                                        name="vrf.date_vrf_submission_to_orpg"
+                                        component={DateInput}
+                                        disabled={false}
+                                    />
+                                </Grid>
+                                <Grid item xs={6} md={3}>
+                                    <Field
+                                        label={formatMessage(
+                                            MESSAGES.quantities_approved_by_orpg_in_doses,
+                                        )}
+                                        name="vrf.quantities_approved_by_orpg_in_doses"
+                                        component={NumberInput}
+                                        disabled={false}
+                                    />
+                                </Grid>
+                                <Grid item xs={6} md={3}>
+                                    <Field
+                                        label={formatMessage(
+                                            MESSAGES.date_rrt_orpg_approval,
+                                        )}
+                                        name="vrf.date_rrt_orpg_approval"
+                                        component={DateInput}
+                                        disabled={false}
+                                    />
+                                </Grid>
+                                <Grid item xs={6} md={3}>
+                                    <Field
+                                        label={formatMessage(
+                                            MESSAGES.targetPopulation,
+                                        )}
+                                        name="vrf.target_population"
+                                        component={NumberInput}
+                                        disabled={false}
+                                    />
+                                </Grid>
+                            </Grid>
+                            <Grid container item xs={12} spacing={2}>
+                                <Grid item xs={6} md={3}>
+                                    <Field
+                                        label={formatMessage(
+                                            MESSAGES.date_vrf_submission_dg,
+                                        )}
+                                        name="vrf.date_vrf_submitted_to_dg"
+                                        component={DateInput}
+                                        disabled={false}
+                                    />
+                                </Grid>
+                                <Grid item xs={6} md={3}>
+                                    <Field
+                                        label={formatMessage(
+                                            MESSAGES.quantities_approved_by_dg_in_doses,
+                                        )}
+                                        name="vrf.quantities_approved_by_dg_in_doses"
+                                        component={NumberInput}
+                                        disabled={false}
+                                    />
+                                </Grid>
+                                <Grid item xs={6} md={3}>
+                                    <Field
+                                        label={formatMessage(
+                                            MESSAGES.date_dg_approval,
+                                        )}
+                                        name="vrf.date_dg_approval"
+                                        component={DateInput}
+                                        disabled={false}
+                                    />
+                                </Grid>
+                            </Grid>
+                            <Grid
+                                container
+                                item
+                                xs={12}
+                                md={9}
+                                lg={6}
+                                spacing={2}
+                            >
+                                <Grid item xs={12}>
+                                    {/* With MUI 5, the spacing isn't taken into account if there's only one <Grid> item
+                                      so the <Box> is used to compensate and align the TextArea with the other fields
+                                    */}
+                                    <Box mr={1}>
+                                        <TextArea
+                                            value={values?.vrf?.comment ?? ''}
+                                            // errors={errors.comment ? errors.comment : []}
+                                            label={formatMessage(
+                                                MESSAGES.comments,
+                                            )}
+                                            onChange={onCommentChange}
+                                            debounceTime={0}
+                                        />
+                                    </Box>
+                                </Grid>
+                            </Grid>
+                        </>
+                    )}
                 </Grid>
             </Box>
         </Box>

@@ -1,20 +1,17 @@
-from hat.audit.models import Modification
-from iaso.api.common import (
-    HasPermission,
-    ModelViewSet,
-    parse_comma_separated_numeric_values,
-)
 import copy
-from hat.menupermissions import models as permission
-from rest_framework import serializers, filters
+
 import django_filters
-from django.contrib.auth.models import User
-from iaso.models.base import Profile, UserRole
-from django.utils.translation import gettext_lazy as _
-from django.db.models.query import QuerySet
-from django.db.models import Q
 from django.conf import settings
-from iaso.api.common import Paginator
+from django.contrib.auth.models import User
+from django.db.models import Q
+from django.db.models.query import QuerySet
+from django.utils.translation import gettext_lazy as _
+from rest_framework import filters, serializers
+
+from hat.audit.models import Modification
+from hat.menupermissions import models as permission
+from iaso.api.common import HasPermission, ModelViewSet, Paginator, parse_comma_separated_numeric_values
+from iaso.models.base import Profile, UserRole
 from iaso.models.org_unit import OrgUnit
 from iaso.models.project import Project
 
@@ -147,6 +144,8 @@ class ProfileLogRetrieveSerializer(serializers.ModelSerializer):
         fields = ["id", "created_at", "user", "source", "new_value", "past_value", "object_id", "content_type"]
 
     def get_past_value(self, modification):
+        if not modification.past_value:
+            return []
         logged_org_units = modification.past_value[0]["fields"]["org_units"]
         logged_projects = modification.past_value[0]["fields"]["projects"]
         logged_user_roles = modification.past_value[0]["fields"]["user_roles"]

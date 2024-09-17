@@ -1,7 +1,7 @@
 from typing import Any, Protocol
 
 from django import forms as django_forms
-from django.contrib.admin import widgets
+from django.contrib.admin import widgets, RelatedOnlyFieldListFilter
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
@@ -10,6 +10,11 @@ from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
 
+from iaso.utils.admin.custom_filters import (
+    DuplicateUUIDFilter,
+    EntityEmptyAttributesFilter,
+    has_relation_filter_factory,
+)
 from iaso.models.json_config import Config  # type: ignore
 
 from .models import (
@@ -152,6 +157,18 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
     inlines = [
         OrgUnitReferenceInstanceInline,
     ]
+    list_display = (
+        "id",
+        "org_unit_type",
+        "name",
+        "uuid",
+        "parent",
+    )
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.prefetch_related("org_unit_type", "parent__org_unit_type")
+        return queryset
 
 
 @admin.register(OrgUnitType)
@@ -247,8 +264,24 @@ class InstanceFileAdminInline(admin.TabularInline):
 class InstanceAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_unit",)
     search_fields = ("file_name", "uuid")
-    list_display = ("id", "project", "form", "org_unit", "period", "created_at", "deleted")
-    list_filter = ("project", "form", "deleted")
+    list_display = (
+        "id",
+        "uuid",
+        "project",
+        "form",
+        "org_unit",
+        "period",
+        "created_at",
+        "entity",
+        "deleted",
+    )
+    list_filter = (
+        "project",
+        "form",
+        "deleted",
+        DuplicateUUIDFilter,
+        has_relation_filter_factory("Entity ID", "entity_id"),
+    )
     fieldsets = (
         (
             None,
@@ -298,6 +331,16 @@ class InstanceAdmin(admin.GeoModelAdmin):
             obj.location = convert_2d_point_to_3d(obj.location)
 
         super().save_model(request, obj, form, change)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.prefetch_related(
+            "org_unit__org_unit_type",
+            "project",
+            "form",
+            "entity",
+        )
+        return queryset
 
 
 @admin.register(InstanceFile)
@@ -430,6 +473,9 @@ class TaskAdmin(admin.ModelAdmin):
         stack = task.result.get("stack_trace")
         return format_html("<p>{}</p><pre>{}</pre>", task.result.get("message", ""), stack)
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("launcher")
+
 
 @admin.register(SourceVersion)
 @admin_attr_decorator
@@ -454,19 +500,29 @@ class EntityAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     readonly_fields = ("created_at",)
     list_display = (
         "id",
+        "uuid",
+        "entity_type",
         "name",
         "account",
-        "entity_type",
+        "deleted_at",
+        "merged_to",
     )
-    list_filter = ("entity_type", "deleted_at")
+    list_filter = (
+        "account",
+        "entity_type",
+        "deleted_at",
+        has_relation_filter_factory("Attributes ID", "attributes_id"),
+        EntityEmptyAttributesFilter,
+        DuplicateUUIDFilter,
+    )
     raw_id_fields = ("attributes",)
 
     def get_queryset(self, request):
@@ -624,9 +680,9 @@ class WorkflowAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     def get_queryset(self, request):

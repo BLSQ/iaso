@@ -57,6 +57,7 @@ PROFILE_LOG_SCHEMA = {
                             "last_name": {"type": ["string", "null"]},
                             "username": {"type": ["string", "null"]},
                             "email": {"type": ["string", "null"]},
+                            "organization": {"type": ["string", "null"]},
                             "user_permissions": {"type": "array", "items": {"type": "string"}},
                             "deleted_at": {"type": ["string", "null"]},
                             "account": {"type": "number"},
@@ -88,6 +89,7 @@ PROFILE_LOG_SCHEMA = {
                             "last_name": {"type": ["string", "null"]},
                             "username": {"type": ["string", "null"]},
                             "email": {"type": ["string", "null"]},
+                            "organization": {"type": ["string", "null"]},
                             "user_permissions": {"type": "array", "items": {"type": "string"}},
                             "password_updated": {"type": "boolean"},
                             "deleted_at": {"type": ["string", "null"]},
@@ -331,19 +333,20 @@ class ProfileAPITestCase(APITestCase):
             "orgunit__source_ref,"
             "profile_language,"
             "dhis2_id,"
+            "organization,"
             "permissions,"
             "user_roles,"
             "projects,"
             "phone_number\r\n"
         )
 
-        expected_csv += "janedoe,,,,,,,,,iaso_forms,,,\r\n"
-        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,,\r\n'
-        expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
-        expected_csv += "jam,,,,,,,en,,iaso_users_managed,,,\r\n"
-        expected_csv += "jom,,,,,,,fr,,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,,{self.project.name},\r\n"
-        expected_csv += f'managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,iaso_users_managed,"{self.user_role_name},{self.user_role_another_account_name}",,\r\n'
+        expected_csv += "janedoe,,,,,,,,,,iaso_forms,,,\r\n"
+        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,,,\r\n'
+        expected_csv += 'jim,,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
+        expected_csv += "jam,,,,,,,en,,,iaso_users_managed,,,\r\n"
+        expected_csv += "jom,,,,,,,fr,,,,,,\r\n"
+        expected_csv += f"jum,,,,,,,,,,,,{self.project.name},\r\n"
+        expected_csv += f'managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,,iaso_users_managed,"{self.user_role_name},{self.user_role_another_account_name}",,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -370,6 +373,7 @@ class ProfileAPITestCase(APITestCase):
                 "orgunit__source_ref",
                 "profile_language",
                 "dhis2_id",
+                "organization",
                 "permissions",
                 "user_roles",
                 "projects",
@@ -407,6 +411,7 @@ class ProfileAPITestCase(APITestCase):
                 },
                 "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
                 "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+                "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "permissions": {
                     0: "iaso_forms",
                     1: None,
@@ -1071,6 +1076,7 @@ class ProfileAPITestCase(APITestCase):
         first_name = "audit_user_first_name"
         last_name = "audit_user_last_name"
         email = "audit@test.com"
+        organization = "Bluesquare"
         org_units = [
             {
                 "id": f"{self.jedi_council_corruscant.id}",
@@ -1106,6 +1112,7 @@ class ProfileAPITestCase(APITestCase):
             "last_name": last_name,
             "send_email_invitation": send_email_invitation,
             "email": email,
+            "organization": organization,
             "language": language,
             "home_page": home_page,
             "dhis2_id": dhis2_id,
@@ -1149,6 +1156,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEquals(new_profile["first_name"], data["first_name"])
         self.assertEquals(new_profile["last_name"], data["last_name"])
         self.assertEquals(new_profile["email"], data["email"])
+        self.assertEquals(new_profile["organization"], data["organization"])
         self.assertEquals(len(new_profile["user_permissions"]), 1)
         self.assertEquals(new_profile["user_permissions"], data["user_permissions"])
         self.assertTrue(new_profile["password_updated"])
@@ -1270,6 +1278,7 @@ class ProfileAPITestCase(APITestCase):
             "language": "en",
             "password": "yolo",
             "home_page": "/orgunits/list",
+            "organization": "Bluesquare",
             "user_permissions": ["iaso_org_units_read", "iaso_forms"],
             "user_roles": [],
             "user_roles_permissions": [],
@@ -1322,6 +1331,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertIn("iaso_org_units_read", new_value["user_permissions"])
         self.assertEquals(new_value["language"], new_data["language"])
         self.assertEquals(new_value["home_page"], new_data["home_page"])
+        self.assertEquals(new_value["organization"], new_data["organization"])
         self.assertEquals(len(new_value["org_units"]), 2)
         self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
         self.assertIn(self.jedi_squad_1.id, new_value["org_units"])

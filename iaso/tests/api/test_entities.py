@@ -1,4 +1,6 @@
+import datetime
 import json
+import pytz
 import time
 import uuid
 from unittest import mock
@@ -218,7 +220,7 @@ class EntityAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    def test_get_entity_search_filter(self):
+    def test_list_entities_search_filter(self):
         """
         Test the 'search' filter of /api/entities
 
@@ -266,7 +268,65 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
-    def test_get_entity_search_in_instances(self):
+    def test_list_entities_filter_by_date(self):
+        """
+        Test the date filters of /api/entities
+
+        The parameters `date_from` and `date_to` allow filtering on the date of creation*
+        on any of the forms linked to the entity.
+        *The creation on the device with fallback to the DB created_at.
+        """
+        self.client.force_authenticate(self.yoda)
+
+        date1 = datetime.datetime(2024, 9, 12, 0, 0, 5, tzinfo=pytz.UTC)
+        date2 = datetime.datetime(2024, 9, 13, 0, 0, 5, tzinfo=pytz.UTC)
+        date3 = datetime.datetime(2024, 9, 14, 0, 0, 5, tzinfo=pytz.UTC)
+        date1_str = date1.strftime("%Y-%m-%d")
+        date2_str = date2.strftime("%Y-%m-%d")
+        date3_str = date3.strftime("%Y-%m-%d")
+
+        entity_type = EntityType.objects.create(name="ET", reference_form=self.form_1)
+
+        # Create 2 entities: one on date1, one on date2
+        instance1 = Instance.objects.create(form=self.form_1, source_created_at=date1)
+        entity1 = Entity.objects.create(entity_type=entity_type, attributes=instance1, account=self.star_wars)
+        instance1.entity = entity1
+        instance1.save()
+
+        instance2 = Instance.objects.create(form=self.form_1, source_created_at=date2)
+        entity2 = Entity.objects.create(entity_type=entity_type, attributes=instance2, account=self.star_wars)
+        instance2.entity = entity2
+        instance2.save()
+
+        # Search on specific date
+        response = self.client.get(f"/api/entities/?dateFrom={date1_str}&dateTo={date1_str}")
+        self.assertEqual(len(response.json()["result"]), 1)
+        results = response.json()["result"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["id"], entity1.id)
+
+        # Search on date range
+        response = self.client.get(f"/api/entities/?dateFrom={date1_str}&dateTo={date2_str}")
+        results = response.json()["result"]
+        self.assertEqual(len(results), 2)
+        self.assertEqual([r["id"] for r in results], [entity1.id, entity2.id])
+
+        # Search on only from date
+        response = self.client.get(f"/api/entities/?dateFrom={date2_str}")
+        results = response.json()["result"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["id"], entity2.id)
+        response = self.client.get(f"/api/entities/?dateFrom={date3_str}")
+        results = response.json()["result"]
+        self.assertEqual(len(results), 0)
+
+        # Search on only to date
+        response = self.client.get(f"/api/entities/?dateTo={date1_str}")
+        results = response.json()["result"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["id"], entity1.id)
+
+    def test_list_entities_search_in_instances(self):
         """
         Test the 'fields_search' filter of /api/entities
 

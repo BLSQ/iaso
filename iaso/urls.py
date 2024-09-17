@@ -63,9 +63,10 @@ from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.microplanning import AssignmentViewSet, MobilePlanningViewSet, PlanningViewSet, TeamViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
-from .api.mobile.entity import MobileEntityViewSet
+from .api.mobile.entity import MobileEntityViewSet, MobileEntityDeletedViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.groups import MobileGroupsViewSet
+from .api.mobile.group_sets import MobileGroupSetsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
@@ -138,6 +139,7 @@ router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsru
 router.register(r"groups", GroupsViewSet, basename="groups")
 router.register(r"group_sets", GroupSetsViewSet, basename="group_sets")
 router.register(r"mobile/groups", MobileGroupsViewSet, basename="groupsmobile")
+router.register(r"mobile/group_sets", MobileGroupSetsViewSet, basename="groupsetsmobile")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
 router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
@@ -159,6 +161,7 @@ router.register(r"tasks/create/exportmobilesetup", ExportMobileSetupViewSet, bas
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entities", EntityViewSet, basename="entity")
+router.register(r"mobile/entities/deleted", MobileEntityDeletedViewSet, basename="entitiesdeleted")
 router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytypes", EntityTypeViewSet, basename="entitytype")
 router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="entitytype")

@@ -1410,6 +1410,7 @@ class Profile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")
     external_user_id = models.CharField(max_length=512, null=True, blank=True)
+    organization = models.CharField(max_length=512, null=True, blank=True)
     # Each profile/user has access to multiple orgunits. Having access to OU also give access to all its children
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
     language = models.CharField(max_length=512, null=True, blank=True)
@@ -1450,6 +1451,7 @@ class Profile(models.Model):
                 "user_roles": list(role.id for role in user_roles),
                 "user_roles_permissions": list(role.as_dict() for role in user_roles),
                 "language": self.language,
+                "organization": self.organization,
                 "user_id": self.user.id,
                 "dhis2_id": self.dhis2_id,
                 "home_page": self.home_page,
@@ -1474,6 +1476,7 @@ class Profile(models.Model):
                 "user_id": self.user.id,
                 "dhis2_id": self.dhis2_id,
                 "home_page": self.home_page,
+                "organization": self.organization,
                 "phone_number": self.phone_number.as_e164 if self.phone_number else None,
                 "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
                 "projects": [p.as_dict() for p in self.projects.all()],

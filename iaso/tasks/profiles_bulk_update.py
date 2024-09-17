@@ -37,6 +37,7 @@ def update_single_profile_from_bulk(
     location_ids_added: Optional[List[int]],
     location_ids_removed: Optional[List[int]],
     language: Optional[str],
+    organization: Optional[str],
 ):
     """Used within the context of a bulk operation"""
     # original_copy = deepcopy(profile)
@@ -143,30 +144,21 @@ def update_single_profile_from_bulk(
                 team_audit_logger.log_modification(instance=team, old_data_dump=old_team, request_user=user)
     if language is not None:
         profile.language = language
+    if organization is not None:
+        profile.organization = organization
+
     if len(roles_to_be_added) > 0:
         profile.user_roles.add(*roles_to_be_added)
-        # for role in roles_to_be_added:
-        #     role.iaso_profile.add(profile)
     if len(roles_to_be_removed) > 0:
         profile.user_roles.remove(*roles_to_be_removed)
-        # for role in roles_to_be_removed:
-        #     role.iaso_profile.remove(profile)
     if len(projects_to_be_added) > 0:
         profile.projects.add(*projects_to_be_added)
-        # for project in projects_to_be_added:
-        #     project.iaso_profile.add(profile)
     if len(projects_to_be_removed) > 0:
         profile.projects.remove(*projects_to_be_removed)
-        # for project in projects_to_be_removed:
-        #     project.iaso_profile.remove(profile)
     if len(org_units_to_be_added) > 0:
         profile.org_units.add(*org_units_to_be_added)
-        # for org_unit in org_units_to_be_added:
-        #     org_unit.iaso_profile.add(profile)
     if len(org_units_to_be_removed) > 0:
         profile.org_units.remove(*org_units_to_be_removed)
-        # for org_unit in org_units_to_be_removed:
-        #     org_unit.iaso_profile.remove(profile)
 
     profile.save()
 
@@ -189,6 +181,7 @@ def profiles_bulk_update(
     location_ids_added: Optional[List[int]],
     location_ids_removed: Optional[List[int]],
     language: Optional[str],
+    organization: Optional[str],
     search: Optional[str],
     perms: Optional[List[str]],
     location: Optional[str],
@@ -259,6 +252,7 @@ def profiles_bulk_update(
                 location_ids_added=location_ids_added,
                 location_ids_removed=location_ids_removed,
                 language=language,
+                organization=organization,
             )
 
         task.report_success(message="%d modified" % total)

@@ -359,7 +359,7 @@ class ProfileLogsTestCase(APITestCase):
                             "deleted_at": None,
                             "home_page": "",
                             "password_updated": True,  # Changed
-                            "organization": "",
+                            "organization": "Bluesquare",  # Changed
                         },
                     }
                 ],
@@ -683,6 +683,8 @@ class ProfileLogsTestCase(APITestCase):
         new_location = results[0]["new_location"][0]
         self.assertEquals(new_location["name"], self.org_unit_1.name)
         self.assertEquals(new_location["id"], self.org_unit_1.id)
+        fields_modified = results[0]["fields_modified"]
+        self.assertListEqual(fields_modified, ["first_name", "last_name", "organization", "password"])
 
         response = self.client.get(
             f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}&created_at_after=2020-02-14&created_at_before=2020-02-09"

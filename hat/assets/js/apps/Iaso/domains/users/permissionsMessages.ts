@@ -120,7 +120,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_org_units: {
         id: 'iaso.permissions.orgUnits',
-        defaultMessage: 'Organisation units management',
+        defaultMessage: 'Organisation units management - Read and Write',
     },
     iaso_org_units_tooltip: {
         id: 'iaso.permissions.tooltip.orgUnits',
@@ -129,7 +129,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_org_units_read: {
         id: 'iaso.permissions.orgUnits_read',
-        defaultMessage: 'Organisation units - Read',
+        defaultMessage: 'Organisation units management - Read only',
     },
     iaso_org_units_read_tooltip: {
         id: 'iaso.permissions.tooltip.orgUnits_read',
@@ -137,7 +137,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_submissions: {
         id: 'iaso.permissions.submissions',
-        defaultMessage: 'Submissions - Read only',
+        defaultMessage: 'Forms and submissions - Read only',
     },
     iaso_submissions_tooltip: {
         id: 'iaso.permissions.tooltip.submissions',
@@ -154,7 +154,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_update_submission: {
         id: 'iaso.permissions.update_submission',
-        defaultMessage: 'Submissions - Read and Write',
+        defaultMessage: 'Forms and submissions - Read and Write',
     },
     iaso_update_submission_tooltip: {
         id: 'iaso.permissions.tooltip.update_submission',

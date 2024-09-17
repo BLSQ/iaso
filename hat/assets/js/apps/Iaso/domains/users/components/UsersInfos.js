@@ -116,6 +116,14 @@ const UsersInfos = ({
                         type="text"
                         label={MESSAGES.dhis2_id}
                     />
+                    <InputComponent
+                        keyValue="organization"
+                        onChange={(key, value) => setFieldValue(key, value)}
+                        value={currentUser.organization?.value}
+                        errors={currentUser.organization?.errors ?? []}
+                        type="text"
+                        label={MESSAGES.organization}
+                    />
                     <InputWithInfos
                         infos={formatMessage(MESSAGES.homePageInfos)}
                     >

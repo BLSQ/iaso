@@ -61,15 +61,25 @@ export const useGetGroupSets = params => {
 export const useGetGroupSet = groupSetId => {
     return useSnackQuery(
         ['group_sets', groupSetId],
-        () => getRequest(`/api/group_sets/${groupSetId}/?fields=:all`),
-        undefined,
-        {},
+        () => {
+            // if create
+            if (groupSetId == 'new') {
+                return new Promise(resolve => resolve({}));
+            }
+            return getRequest(`/api/group_sets/${groupSetId}/?fields=:all`);
+        },
+       undefined,
+        {
+        },
     );
 };
 export const useSaveGroupSet = (): UseMutationResult =>
     useSnackMutation(
         body => {
-            body.group_ids = body.group_ids ? body.group_ids.split(',') : [];
+            body.group_ids =
+                body.group_ids && !Array.isArray(body.group_ids)
+                    ? body.group_ids.split(',')
+                    : [];
 
             if (body.id) {
                 return patchRequest(`/api/group_sets/${body.id}/`, body);
@@ -82,7 +92,7 @@ export const useSaveGroupSet = (): UseMutationResult =>
         ['group_sets'],
     );
 
-export const useDeleteGroups = () =>
+export const useDeleteGroupSet = () =>
     useSnackMutation(
         body => deleteRequest(`/api/group_sets/${body.id}/`),
         MESSAGES.deleteSuccess,

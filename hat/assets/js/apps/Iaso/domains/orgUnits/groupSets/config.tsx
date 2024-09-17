@@ -8,6 +8,7 @@ import { baseUrls } from '../../../constants/urls';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 
 import * as Permission from '../../../utils/permissions';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 
 export const baseUrl = baseUrls.groupSets;
 
@@ -17,7 +18,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const useGroupSetsTableColumns = (): Column[] => {
+export const useGroupSetsTableColumns = (deleteGroupSet): Column[] => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     return useMemo(
@@ -85,6 +86,14 @@ export const useGroupSetsTableColumns = (): Column[] => {
                                 url={`/${baseUrls.groupSetDetail}/groupSetId/${settings.row.original.id}`}
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
+                            />
+                            <DeleteDialog
+                                keyName="groupSet"
+                                titleMessage={MESSAGES.delete}
+                                message={MESSAGES.deleteWarning}
+                                onConfirm={() =>
+                                    deleteGroupSet(settings.row.original)
+                                }
                             />
                         </DisplayIfUserHasPerm>
                     </section>

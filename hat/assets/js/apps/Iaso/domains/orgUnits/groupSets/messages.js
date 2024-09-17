@@ -13,6 +13,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.updated_at',
         defaultMessage: 'Updated',
     },
+    delete: {
+        id: 'iaso.groupsets.dialog.delete',
+        defaultMessage: 'Are you sure you want to delete this group?',
+    },
+    deleteWarning: {
+        id: 'iaso.groupsets.dialog.deleteText',
+        defaultMessage: 'This operation cannot be undone.',
+    },
     name: {
         id: 'iaso.label.name',
         defaultMessage: 'Name',

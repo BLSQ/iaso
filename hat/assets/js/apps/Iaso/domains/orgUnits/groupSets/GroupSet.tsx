@@ -19,6 +19,7 @@ import TextInput from '../../pages/components/TextInput';
 import { SingleSelect } from '../../pages/components/SingleSelect';
 import { MultiSelect } from '../../pages/components/MultiSelect';
 import { Box, Button } from '@mui/material';
+import { useApiErrorValidation } from '../../../libs/validation';
 
 const baseUrl = baseUrls.groupSetDetail;
 
@@ -61,9 +62,18 @@ const GroupSet = () => {
     const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({
         sourceVersionId: groupSet?.source_version?.id,
     });
+
     const goBack = useGoBack(baseUrls.groupSets);
-    const { mutate: confirm } = useSaveGroupSet();
-    const schema = useGroupSetSchema();
+    const { mutate: saveOrCreate, isSuccess: mutationIsSuccess } =
+        useSaveGroupSet();
+    const {
+        apiErrors,
+        payload,
+        mutation: confirm,
+    } = useApiErrorValidation({
+        mutationFn: saveOrCreate,
+    });
+    const schema = useGroupSetSchema(apiErrors, payload);
 
     const formik = useFormik({
         initialValues: {
@@ -87,13 +97,16 @@ const GroupSet = () => {
         !formik.isSubmitting && formik.isValid && isFormChanged;
     const userHasReadAndWritePerm = true;
     const isLoading = isFetching || isFetchingGroups || isFetchingMetaData;
+    if (mutationIsSuccess) {
+        goBack();
+    }
     return (
         <>
             {isLoading && <LoadingSpinner />}
             <TopBar
                 title={
                     formatMessage(MESSAGES.groupSet) +
-                    (groupSet ? ' - ' + groupSet.name : '')
+                    (groupSet && groupSet.name ? ' - ' + groupSet.name : '')
                 }
                 displayBackButton={true}
                 goBack={() => goBack()}
@@ -128,7 +141,6 @@ const GroupSet = () => {
                             name="group_ids"
                             component={MultiSelect}
                             options={groups}
-                            required
                             disabled={!userHasReadAndWritePerm}
                         />
                     </Box>
@@ -138,7 +150,6 @@ const GroupSet = () => {
                             label={formatMessage(MESSAGES.source_ref)}
                             name="source_ref"
                             component={TextInput}
-                            required
                             disabled={!userHasReadAndWritePerm}
                         />
                     </Box>
@@ -153,7 +164,13 @@ const GroupSet = () => {
                             disabled={!userHasReadAndWritePerm}
                         />
                     </Box>
-                    <Button type="submit" enabled={allowConfirm} onClick={formik.handleSubmit}>Save</Button>
+                    <Button
+                        type="submit"
+                        enabled={allowConfirm}
+                        onClick={formik.handleSubmit}
+                    >
+                        {groupSet?.id == undefined ? 'Create' : 'Save'}
+                    </Button>
                 </div>
             </FormikProvider>
         </>

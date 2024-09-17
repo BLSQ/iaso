@@ -1,11 +1,10 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
     commonStyles,
     Table,
-    AddButton,
     useSafeIntl,
     useRedirectTo,
 } from 'bluesquare-components';
@@ -13,9 +12,14 @@ import TopBar from '../../../components/nav/TopBarComponent';
 import {Filters} from './components/Filters';
 import { useGroupSetsTableColumns } from './config';
 import MESSAGES from './messages';
-import { useGetGroupSets } from './hooks/requests';
+import { useGetGroupSets, useDeleteGroupSet } from './hooks/requests';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { useNavigate } from 'react-router-dom';
+
+import {
+    AddButton as AddButtonComponent,
+} from 'bluesquare-components';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -25,12 +29,17 @@ const GroupSets = () => {
     const params = useParamsObject(baseUrl);
     const redirectTo = useRedirectTo();
     const classes = useStyles();
-    const tableColumns = useGroupSetsTableColumns();
+    const {mutate: deleteGroupSet, isLoading: isDeleting} = useDeleteGroupSet()
+    const tableColumns = useGroupSetsTableColumns(  deleteGroupSet);
     const { formatMessage } = useSafeIntl();
 
     const { data, isFetching } = useGetGroupSets(params);
-
+    const navigate = useNavigate();
     const isLoading = isFetching;
+    const createGroupSet =() => {
+        // how to use the paths ?
+        navigate("/orgunits/groupSet/groupSetId/new")
+    }
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -38,8 +47,18 @@ const GroupSets = () => {
                 title={formatMessage(MESSAGES.groupSets)}
                 displayBackButton={false}
             />
+            
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
+
+                <Box mt={4}>
+                    <Grid container spacing={2} justifyContent="flex-end">
+                    <AddButtonComponent
+                    onClick={createGroupSet}
+                    dataTestId="create-groupset"
+                />
+                    </Grid>
+                </Box>            
 
                 {tableColumns && (
                     <Table

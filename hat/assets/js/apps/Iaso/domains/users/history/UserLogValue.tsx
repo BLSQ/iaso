@@ -1,15 +1,15 @@
-import React, { FunctionComponent } from 'react';
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
-import MESSAGES from '../messages';
-import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import { LinkTo } from '../../../components/nav/LinkTo';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasPermission } from '../utils';
-import { PROJECTS, USER_ROLES } from '../../../utils/permissions';
 import { baseUrls } from '../../../constants/urls';
-import PERMISSIONS_MESSAGES from '../permissionsMessages';
 import { NameAndId } from '../../../types/utils';
+import { PROJECTS, USER_ROLES } from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
+import MESSAGES from '../messages';
+import PERMISSIONS_MESSAGES from '../permissionsMessages';
+import { userHasPermission } from '../utils';
 
 const useStyles = makeStyles({
     isDifferent: {
@@ -56,6 +56,9 @@ export const UserLogValue: FunctionComponent<Props> = ({
                     ? formatMessage(MESSAGES[value as string])
                     : value;
             case 'org_units':
+                if (!value || (value as Array<NameAndId>).length === 0) {
+                    return textPlaceholder;
+                }
                 return (
                     <>
                         {(value as Array<NameAndId>).map((orgUnit, index) => {
@@ -70,7 +73,8 @@ export const UserLogValue: FunctionComponent<Props> = ({
                                     orgUnit={{
                                         name:
                                             index ===
-                                            (value as Array<number>).length - 1
+                                            (value as Array<NameAndId>).length -
+                                                1
                                                 ? `${orgUnit.name}`
                                                 : `${orgUnit.name}, `,
                                         id: orgUnit.id,

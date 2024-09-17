@@ -143,6 +143,16 @@ class ProfileLogRetrieveSerializer(serializers.ModelSerializer):
         model = Modification
         fields = ["id", "created_at", "user", "source", "new_value", "past_value", "object_id", "content_type"]
 
+    def _fetch_and_transform_data(self, org_units, projects, user_roles):
+        org_units_names_and_ids = OrgUnit.objects.filter(id__in=org_units).values("id", "name")
+        projects_names_and_ids = Project.objects.filter(id__in=projects).values("id", "name")
+        user_roles_group_names_and_ids = UserRole.objects.filter(id__in=user_roles).values("id", "group__name")
+        user_roles_names_and_ids = [
+            {"id": entry["id"], "name": UserRole.remove_user_role_name_prefix(entry["group__name"])}
+            for entry in user_roles_group_names_and_ids
+        ]
+        return org_units_names_and_ids, projects_names_and_ids, user_roles_names_and_ids
+
     def get_past_value(self, modification):
         if not modification.past_value:
             return []
@@ -150,19 +160,14 @@ class ProfileLogRetrieveSerializer(serializers.ModelSerializer):
         logged_projects = modification.past_value[0]["fields"]["projects"]
         logged_user_roles = modification.past_value[0]["fields"]["user_roles"]
 
-        org_units_names_and_ids = OrgUnit.objects.filter(id__in=logged_org_units).values("id", "name")
-        projects_names_and_ids = Project.objects.filter(id__in=logged_projects).values("id", "name")
-        user_roles_group_names_and_ids = UserRole.objects.filter(id__in=logged_user_roles).values("id", "group__name")
-
-        user_roles_names_and_ids = [
-            {"id": entry["id"], "name": UserRole.remove_user_role_name_prefix(entry["group__name"])}
-            for entry in user_roles_group_names_and_ids
-        ]
+        org_units, projects, user_roles = self._fetch_and_transform_data(
+            logged_org_units, logged_projects, logged_user_roles
+        )
 
         past_value_copy = copy.deepcopy(modification.past_value)
-        past_value_copy[0]["fields"]["org_units"] = org_units_names_and_ids
-        past_value_copy[0]["fields"]["projects"] = projects_names_and_ids
-        past_value_copy[0]["fields"]["user_roles"] = user_roles_names_and_ids
+        past_value_copy[0]["fields"]["org_units"] = org_units
+        past_value_copy[0]["fields"]["projects"] = projects
+        past_value_copy[0]["fields"]["user_roles"] = user_roles
 
         return past_value_copy
 
@@ -171,17 +176,14 @@ class ProfileLogRetrieveSerializer(serializers.ModelSerializer):
         logged_projects = modification.new_value[0]["fields"]["projects"]
         logged_user_roles = modification.new_value[0]["fields"]["user_roles"]
 
-        org_units_names_and_ids = OrgUnit.objects.filter(id__in=logged_org_units).values("id", "name")
-        projects_names_and_ids = Project.objects.filter(id__in=logged_projects).values("id", "name")
-        user_roles_group_names_and_ids = UserRole.objects.filter(id__in=logged_user_roles).values("id", "group__name")
-        user_roles_names_and_ids = [
-            {"id": entry["id"], "name": UserRole.remove_user_role_name_prefix(entry["group__name"])}
-            for entry in user_roles_group_names_and_ids
-        ]
+        org_units, projects, user_roles = self._fetch_and_transform_data(
+            logged_org_units, logged_projects, logged_user_roles
+        )
+
         new_value_copy = copy.deepcopy(modification.new_value)
-        new_value_copy[0]["fields"]["org_units"] = org_units_names_and_ids
-        new_value_copy[0]["fields"]["projects"] = projects_names_and_ids
-        new_value_copy[0]["fields"]["user_roles"] = user_roles_names_and_ids
+        new_value_copy[0]["fields"]["org_units"] = org_units
+        new_value_copy[0]["fields"]["projects"] = projects
+        new_value_copy[0]["fields"]["user_roles"] = user_roles
 
         return new_value_copy
 

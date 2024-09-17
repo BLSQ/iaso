@@ -663,12 +663,22 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         request_form = pm.VaccineRequestForm.objects.first()
 
         # Create multiple VaccineArrivalReport instances with different dates
+        po_numbers = ["777777-1", "777777-2", "777777-3"]
+
         dates = ["2024-04-20", "2024-04-19", "2024-04-18"]
-        for date in dates:
+        for i, date in enumerate(dates):
             pm.VaccineArrivalReport.objects.create(
                 request_form=request_form,
+                po_number=po_numbers[i],
                 arrival_report_date=datetime.datetime.strptime(date, "%Y-%m-%d").date(),
                 doses_received=1000,
+            )
+            pm.VaccinePreAlert.objects.create(
+                date_pre_alert_reception=datetime.datetime.strptime(date, "%Y-%m-%d").date(),
+                request_form=request_form,
+                po_number=po_numbers[i],
+                estimated_arrival_time=datetime.datetime.strptime(date, "%Y-%m-%d").date(),
+                doses_shipped=100,
             )
 
         # Make a GET request to the list endpoint with ordering by start_date
@@ -680,5 +690,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         # Verify that the "var" field is a comma-separated list of dates in reverse order
-        expected_var = ", ".join(dates)
+        expected_var = ",".join(dates)
+        print(response.data["results"])
         self.assertEqual(response.data["results"][1]["var"], expected_var)

@@ -128,6 +128,9 @@ class TaskSourceViewSet(ModelViewSet):
         current_user = request.user
 
         if current_user.has_perm(permission.DATA_TASKS) or task.launcher == request.user:
+            if task.status != ERRORED:
+                raise serializers.ValidationError({"status": f"You cannot relaunch a task with status {task.status}."})
+
             task.status = QUEUED
             task.launcher = current_user
             task.save()

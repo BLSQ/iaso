@@ -26,10 +26,16 @@ class OUCRCAPIBase(APITestCase):
             permissions=["iaso_org_unit_change_request_configurations"],
         )
         cls.user_misty = cls.create_user_with_profile(
-            username="Misty", account=cls.account_pokemon, permissions=["iaso_org_unit_change_request_configurations"]
+            username="Misty",
+            account=cls.account_pokemon,
+            permissions=["iaso_org_unit_change_request_configurations"],
+            projects=[cls.project_johto],
         )
         cls.user_brock = cls.create_user_with_profile(
-            username="Brock", account=cls.account_pokemon, permissions=["iaso_org_unit_change_request_configurations"]
+            username="Brock",
+            account=cls.account_pokemon,
+            permissions=["iaso_org_unit_change_request_configurations"],
+            projects=[cls.project_johto],
         )
         cls.user_without_perms_giovanni = cls.create_user_with_profile(username="Giovanni", account=cls.account_pokemon)
 

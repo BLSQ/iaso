@@ -725,8 +725,9 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
 
     def test_check_availability_no_config_yet(self):
         # Preparing a new Project and new OrgUnitTypes
-        new_account = m.Account.objects.create(name="New account")
-        new_project = m.Project.objects.create(name="New project", account=new_account, app_id="new")
+        new_project, new_account = self.create_new_project_and_account(
+            project_name="New project", account_name="New account"
+        )
         new_user = self.create_user_with_profile(
             username="New user", account=new_account, permissions=["iaso_org_unit_change_request_configurations"]
         )
@@ -793,4 +794,21 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertIn("project_id", response.json())
         self.assertIn("does not exist", response.json()["project_id"][0])
 
-    # Add a test for checking availability for a project not assigned to the user, once implemented
+    def test_check_availability_with_project_id_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_misty)
+        new_project, _ = self.create_new_project_and_account(project_name="new project", account_name="new account")
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=new_project)
+        # There should be one result since there is no OUCRC for the new project, but the user doesn't have access to it
+        data = {
+            "project_id": new_project.id,
+            "org_unit_type_id": new_org_unit_type.id,
+            "org_units_editable": False,
+        }
+        response = self.client.get(
+            f"{self.OUCRC_API_URL}check_availability/?project_id={new_project.id}", format="json"
+        )
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the Project {new_project.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )

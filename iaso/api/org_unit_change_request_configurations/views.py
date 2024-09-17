@@ -85,10 +85,9 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
 
         project_id = ProjectIdSerializer(data=self.request.query_params).get_project_id(raise_exception=True)
 
-        # It seems there is currently no constraints on projects, but it will happen in the near future
-        # user_projects = user.iaso_profile.projects.all()
-        # if user_projects and project_id not in user_projects:
-        #     raise serializers.ValidationError("You don't have access to this project")
+        user_projects = user.iaso_profile.projects.values_list("id", flat=True)
+        if user_projects and project_id not in user_projects:
+            raise serializers.ValidationError(f"The user doesn't have access to the Project {project_id}")
 
         org_unit_types_in_configs = OrgUnitChangeRequestConfiguration.objects.filter(project_id=project_id).values_list(
             "org_unit_type_id", flat=True

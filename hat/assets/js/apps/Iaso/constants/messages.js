@@ -209,9 +209,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Configuration',
         id: 'iaso.label.configuration',
     },
-    configChangeRequest: {
-        defaultMessage: 'Config Change Request',
-        id: 'iaso.label.configChangeRequest',
+    changeRequestConfig: {
+        defaultMessage: 'Change Request',
+        id: 'iaso.label.changeRequestConfig',
     },
 });
 

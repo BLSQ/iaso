@@ -43,7 +43,7 @@ const MESSAGES = defineMessages({
     },
     orgUnitChangeRequestConfigurations: {
         id: 'iaso.label.orgUnitChangeRequestConfigurations',
-        defaultMessage: 'Configuration - Change requests',
+        defaultMessage: 'Change Requests Configuration',
     },
     orgUnitType: {
         id: 'iaso.label.orgUnitsType',

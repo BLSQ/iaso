@@ -3,8 +3,8 @@ import React, { FunctionComponent, useState } from 'react';
 import { Menu, MenuItem, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { useCurrentUser } from '../../utils/usersUtils';
 import { useSwitchAccount } from '../../hooks/useSwitchAccount';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     accountSwitchButton: {
@@ -27,14 +27,10 @@ export const AccountSwitch: FunctionComponent<Props> = ({
         setAnchorEl(event.currentTarget);
     };
 
-    const { mutateAsync: switchAccount } = useSwitchAccount();
-
-    const handleAccountSwitch = accountId => {
-        console.log('accountId', accountId);
-        switchAccount(accountId);
+    const { mutateAsync: switchAccount } = useSwitchAccount(() => {
         setAnchorEl(null);
         window.location.href = '/';
-    };
+    });
 
     const handleClose = () => {
         setAnchorEl(null);
@@ -62,7 +58,7 @@ export const AccountSwitch: FunctionComponent<Props> = ({
                         <MenuItem
                             key={account.id}
                             selected={account.id === currentUser.account.id}
-                            onClick={() => handleAccountSwitch(account.id)}
+                            onClick={() => switchAccount(account.id)}
                         >
                             {account.name}
                         </MenuItem>
@@ -70,7 +66,6 @@ export const AccountSwitch: FunctionComponent<Props> = ({
                 </Menu>
             </>
         );
-    } else {
-        return null;
     }
+    return null;
 };

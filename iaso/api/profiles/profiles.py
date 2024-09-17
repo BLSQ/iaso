@@ -703,7 +703,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user.set_password(password)
         user.save()
 
-        if existing_user:
+        if main_user:
             TenantUser.objects.create(main_user=main_user, account_user=user)
 
         for permission_codename in permissions:

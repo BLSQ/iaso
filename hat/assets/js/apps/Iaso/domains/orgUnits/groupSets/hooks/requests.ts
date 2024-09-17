@@ -68,19 +68,13 @@ export const useGetGroupSet = groupSetId => {
             }
             return getRequest(`/api/group_sets/${groupSetId}/?fields=:all`);
         },
-       undefined,
-        {
-        },
+        undefined,
+        {},
     );
 };
 export const useSaveGroupSet = (): UseMutationResult =>
     useSnackMutation(
         body => {
-            body.group_ids =
-                body.group_ids && !Array.isArray(body.group_ids)
-                    ? body.group_ids.split(',')
-                    : [];
-
             if (body.id) {
                 return patchRequest(`/api/group_sets/${body.id}/`, body);
             } else {

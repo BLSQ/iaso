@@ -59,10 +59,6 @@ const GroupSet = () => {
         [allSourceVersions, formatMessage],
     );
 
-    const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({
-        sourceVersionId: groupSet?.source_version?.id,
-    });
-
     const goBack = useGoBack(baseUrls.groupSets);
     const { mutate: saveOrCreate, isSuccess: mutationIsSuccess } =
         useSaveGroupSet();
@@ -75,6 +71,7 @@ const GroupSet = () => {
     });
     const schema = useGroupSetSchema(apiErrors, payload);
 
+    const isCreate = groupSet && groupSet?.id == undefined;
     const formik = useFormik({
         initialValues: {
             id: groupSet?.id,
@@ -88,8 +85,12 @@ const GroupSet = () => {
         validateOnBlur: true,
         validationSchema: schema,
         onSubmit: async values => {
-            confirm(values);
+            saveOrCreate(values);
         },
+    });
+
+    const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({
+        sourceVersionId: formik.values.source_version_id,
     });
 
     const isFormChanged = !isEqual(formik.values, formik.initialValues);
@@ -97,7 +98,7 @@ const GroupSet = () => {
         !formik.isSubmitting && formik.isValid && isFormChanged;
     const userHasReadAndWritePerm = true;
     const isLoading = isFetching || isFetchingGroups || isFetchingMetaData;
-    if (mutationIsSuccess) {
+    if (mutationIsSuccess && isCreate) {
         goBack();
     }
     return (
@@ -169,7 +170,7 @@ const GroupSet = () => {
                         enabled={allowConfirm}
                         onClick={formik.handleSubmit}
                     >
-                        {groupSet?.id == undefined ? 'Create' : 'Save'}
+                        {isCreate ? 'Create' : 'Save'}
                     </Button>
                 </div>
             </FormikProvider>

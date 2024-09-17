@@ -115,7 +115,7 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
                 )
 
             if len(source_ids) == 1:
-                if source_ids[0] != source_version_id:
+                if str(source_ids[0]) != str(source_version_id):
                     raise serializers.ValidationError(
                         detail={
                             "group_ids": f"Groups do not all belong to the same as the groupset : {source_ids} vs {source_version_id}."

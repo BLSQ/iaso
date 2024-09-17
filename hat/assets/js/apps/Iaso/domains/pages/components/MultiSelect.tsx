@@ -2,6 +2,7 @@ import { get } from 'lodash';
 import React, { FunctionComponent } from 'react';
 import { DropdownOptions } from '../../../types/utils';
 import InputComponent from '../../../components/forms/InputComponent';
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 export type Option = DropdownOptions<string | number>;
 type Props = {
@@ -51,10 +52,10 @@ export const MultiSelect: FunctionComponent<Props> = ({
             renderTags={renderTags}
             onChange={(keyValue, value) => {
                 if (onChange) {
-                    onChange(keyValue, value);
+                    onChange(keyValue, commaSeparatedIdsToArray(value));
                 } else {
                     form.setFieldTouched(field.name, true);
-                    form.setFieldValue(field.name, value);
+                    form.setFieldValue(field.name, commaSeparatedIdsToArray(value));
                 }
             }}
             errors={hasError ? [get(form.errors, field.name)] : []}

@@ -6,16 +6,11 @@ import MESSAGES from '../messages';
 import { useAPIErrorValidator } from '../../../../libs/validation';
 import { useMemo } from 'react';
 
-function parseArray( value) {
-    return value
-}
-
 export const useGroupSetSchema = (errors, payload) => {
     const { formatMessage } = useSafeIntl();
 
     console.log('debug', errors, payload);
     const apiValidator = useAPIErrorValidator(errors, payload);
-    debugger;
     const schema = useMemo(
         () =>
             yup.object().shape({
@@ -24,7 +19,10 @@ export const useGroupSetSchema = (errors, payload) => {
                     .trim()
                     .required(formatMessage(MESSAGES.validationFieldRequired))
                     .test(apiValidator('name')),
-            //   group_ids: yup.array().transform(parseArray).of(yup.string()).test(apiValidator('group_ids')),
+                group_ids: yup
+                    .array()
+                    .of(yup.number())
+                    .test(apiValidator('group_ids')),
             }),
         [apiValidator],
     );

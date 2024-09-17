@@ -4,7 +4,7 @@ import time_machine
 from django.utils import timezone
 
 from iaso import models as m
-from iaso.models.base import ERRORED
+from iaso.models.base import ERRORED, QUEUED
 from iaso.api.tasks import TaskSerializer
 from iaso.test import APITestCase, TestCase
 
@@ -179,7 +179,7 @@ class IasoTasksTestCase(APITestCase):
         response = self.client.get(f"/api/tasks/{task_by_johnny.id}/")
         self.assertEqual(response.status_code, 403)
 
-    def test_relaunch_own_task(self):
+    def test_relaunch_task(self):
         """
         A user can relaunch a task they launched themselves
         """
@@ -214,3 +214,19 @@ class IasoTasksTestCase(APITestCase):
         )
         response = self.client.get(f"/api/tasks/{task_by_johnny.id}/")
         self.assertEqual(response.status_code, 403)
+
+    def test_relaunch_task_status_fail(self):
+        """
+        A user can relaunch a task only when said task is in status ERRORED
+        """
+        self.client.force_authenticate(self.miguel)
+
+        task_by_miguel = m.Task.objects.create(
+            account=self.miguel.iaso_profile.account,
+            launcher=self.miguel,
+            status=QUEUED,
+        )
+
+        response = self.client.patch(f"/api/tasks/{task_by_miguel.id}/relaunch/")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["status"], "You cannot relaunch a task with status QUEUED.")

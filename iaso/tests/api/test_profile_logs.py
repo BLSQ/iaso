@@ -819,7 +819,7 @@ class ProfileLogsTestCase(APITestCase):
                         "user_roles": [],
                         "language": "",
                         "dhis2_id": "",
-                        "password_updated": False, 
+                        "password_updated": False,
                     },
                 }
             ],

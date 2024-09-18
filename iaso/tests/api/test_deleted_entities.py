@@ -81,7 +81,7 @@ class EntityAPITestCase(APITestCase):
         self.entity2.attributes = instance2
         self.entity2.save()
 
-        new_entity = merge_entities(self.entity1, self.entity2, {})
+        new_entity = merge_entities(self.entity1, self.entity2, {}, self.user)
 
         self.client.force_authenticate(self.user)
 

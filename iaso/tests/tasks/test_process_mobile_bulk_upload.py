@@ -5,11 +5,13 @@ import uuid
 import zipfile
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.test import TestCase
 from unittest import mock
 
 from hat.api_import.models import APIImport
+from hat.audit.models import BULK_UPLOAD, Modification
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
@@ -268,6 +270,18 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Bug with extra .xml files of other form submissions being in the same
         # folder. Make sure they are not processed.
         self.assertEquals(instance_disasi.instancefile_set.count(), 0)
+
+        # Verify we leave an audit trail of the update
+        content_type = ContentType.objects.get_by_natural_key("iaso", "instance")
+        modifications = Modification.objects.filter(
+            object_id=instance_disasi.id,
+            content_type=content_type,
+        )
+        self.assertEquals(len(modifications), 1)
+        modif = modifications[0]
+        self.assertEquals(modif.source, BULK_UPLOAD)
+        self.assertEquals(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
+        self.assertEquals(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-17")
 
     def test_soft_deleted_entity(self, mock_download_file):
         # Create soft-deleted entity Disasi with only registration form

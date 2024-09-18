@@ -124,7 +124,7 @@ const MESSAGES = defineMessages({
     },
     vrfType: {
         id: 'iaso.polio.label.vrfType',
-        defaultMessage: 'VRF Type',
+        defaultMessage: 'Vaccine request form Type',
     },
     saveAll: {
         id: 'iaso.polio.label.saveAll',

@@ -697,6 +697,7 @@
     "iaso.polio.label.VRF": "VRF",
     "iaso.polio.label.VRF_NOT_SIGNED": "VRF not signed",
     "iaso.polio.label.vrfTitle": "Vaccine request form",
+    "iaso.polio.label.vrfType": "Vaccine request form Type",
     "iaso.polio.label.vvm_reached_discard_point": "VM reached discard point",
     "iaso.polio.label.wastageRatio": "Wastage ratio",
     "iaso.polio.label.who": "WHO",

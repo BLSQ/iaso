@@ -80,28 +80,32 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     return (
         <Box className={className} mb={3}>
             <Box mb={2}>
-                <Typography variant="h5">
-                    {formatMessage(MESSAGES.vrfTitle)}
-                </Typography>
+                <Grid container alignItems="center">
+                    <Grid item xs={8}>
+                        <Typography variant="h5">
+                            {formatMessage(MESSAGES.vrfTitle)}
+                        </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                        <Field
+                            label={formatMessage(MESSAGES.vrfType)}
+                            name="vrf.vrf_type"
+                            component={SingleSelect}
+                            disabled={false}
+                            required
+                            withMarginTop
+                            isLoading={
+                                isFetchingCountries || isFetchingDropDowns
+                            }
+                            options={vrfTypeOptions}
+                        />
+                    </Grid>
+                </Grid>
             </Box>
             <Box className={classes.scrollableForm}>
                 <Grid container>
                     <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={2}>
-                            <Field
-                                label={formatMessage(MESSAGES.vrfType)}
-                                name="vrf.vrf_type"
-                                component={SingleSelect}
-                                disabled={false}
-                                required
-                                withMarginTop
-                                isLoading={
-                                    isFetchingCountries || isFetchingDropDowns
-                                }
-                                options={vrfTypeOptions}
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={2}>
+                        <Grid item xs={6} md={3}>
                             <Field
                                 label={formatMessage(MESSAGES.country)}
                                 name="vrf.country"
@@ -129,7 +133,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 }
                             />
                         </Grid>
-                        <Grid item xs={6} md={2}>
+                        <Grid item xs={6} md={3}>
                             <Field
                                 label={formatMessage(MESSAGES.vaccine)}
                                 name="vrf.vaccine_type"

@@ -1,33 +1,7 @@
-import traceback
-import datetime
-from collections import defaultdict
-
-import django
-from django.contrib.auth.models import User
-from django.contrib.sessions.models import Session
-from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
-from django.db import connection
-from django.db.models import Count
-from django.db.models import Q
-from django.db.models import TextField
-from django.db.models.functions import Cast
-
-from hat.audit.models import Modification
-from iaso.models import Account, OrgUnitType, CommentIaso, StoragePassword, StorageDevice, StorageLogEntry
-from iaso.models import BulkCreateUserCsvFile
-from iaso.models import ExportLog, ExportRequest
-from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping, Profile, InstanceFile, InstanceLock
-from iaso.models.base import Task, QUEUED, KILLED
-from iaso.models.entity import Entity, EntityType
+from iaso.models import Account
+from iaso.models.base import Instance, Mapping, InstanceFile
 from iaso.models.forms import Form
-from iaso.models.microplanning import Assignment, Team, Planning
-from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
-from iaso.models.pages import Page
-from iaso.models.project import Project
-from iaso.models.device import Device
-
-from django_sql_dashboard.models import Dashboard
 
 
 class Command(BaseCommand):

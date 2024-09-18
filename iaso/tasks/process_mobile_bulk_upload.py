@@ -9,6 +9,7 @@ and it's executed in a database transaction to avoid data loss.
 """
 
 from datetime import datetime
+from copy import copy
 import json
 import logging
 import ntpath
@@ -25,6 +26,7 @@ from traceback import format_exc
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.api_import.models import APIImport
+from hat.audit.models import BULK_UPLOAD, log_modification
 from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances import import_data as import_instances
 from iaso.api.mobile.org_units import import_data as import_org_units
@@ -138,11 +140,13 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
             str(instance.source_updated_at),
             str(incoming_updated_at),
         )
+        original = copy(instance)
         instance.file = file
         instance.last_modified_by = user
         instance.source_updated_at = incoming_updated_at
         instance.save()
         instance.get_and_save_json_of_xml(force=True, tries=8)
+        log_modification(original, instance, BULK_UPLOAD, user=user)
     else:
         logger.info(
             "\tSkipping form %s (current timestamp %s, incoming %s)",

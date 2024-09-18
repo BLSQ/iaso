@@ -5,6 +5,7 @@ from copy import copy, deepcopy
 from typing import Dict, Optional
 from uuid import UUID, uuid4
 
+from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.db.models import Q
 from django.http import JsonResponse
@@ -241,7 +242,7 @@ def copy_instance(inst: Instance, new_entity: Entity):
     return new_inst
 
 
-def merge_entities(e1: Entity, e2: Entity, merge_def: Dict, current_user):
+def merge_entities(e1: Entity, e2: Entity, merge_def: Dict, current_user: User):
     new_entity_uuid = uuid4()
     new_attributes = merge_attributes(e1, e2, new_entity_uuid, merge_def)
 

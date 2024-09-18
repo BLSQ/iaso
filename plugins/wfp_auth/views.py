@@ -17,6 +17,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.core.mail import EmailMultiAlternatives
 from django.http import HttpRequest, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 from oauthlib.oauth2 import OAuth2Error
@@ -114,7 +115,7 @@ class WFP2Adapter(Auth0OAuth2Adapter):
         uid = extra_data["sub"].lower().strip()
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
         if app_id:
-            account = Project.objects.get(app_id=app_id).account
+            account = get_object_or_404(Project, app_id=app_id).account
         else:
             account = Account.objects.get(name=self.settings["IASO_ACCOUNT_NAME"])
 

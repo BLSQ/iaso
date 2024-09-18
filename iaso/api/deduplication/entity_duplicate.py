@@ -1,7 +1,7 @@
 from logging import getLogger
 import math
 import xml.etree.ElementTree as ET
-from copy import deepcopy
+from copy import copy, deepcopy
 from typing import Dict, Optional
 from uuid import UUID, uuid4
 
@@ -17,6 +17,7 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
 import iaso.api.deduplication.filters as dedup_filters  # type: ignore
 import iaso.models.base as base
 from iaso.api.common import HasPermission, Paginator
@@ -240,7 +241,7 @@ def copy_instance(inst: Instance, new_entity: Entity):
     return new_inst
 
 
-def merge_entities(e1: Entity, e2: Entity, merge_def: Dict):
+def merge_entities(e1: Entity, e2: Entity, merge_def: Dict, current_user):
     new_entity_uuid = uuid4()
     new_attributes = merge_attributes(e1, e2, new_entity_uuid, merge_def)
 
@@ -262,11 +263,16 @@ def merge_entities(e1: Entity, e2: Entity, merge_def: Dict):
     for inst in e2.instances.exclude(id=e2.attributes_id):
         copy_instance(inst, new_entity)
 
-    if e1.attributes is not None:
-        e1.attributes.soft_delete()
-
-    if e2.attributes is not None:
-        e2.attributes.soft_delete()
+    instances_to_soft_delete = [
+        e1.attributes,
+        e2.attributes,
+        *e1.instances.all(),
+        *e2.instances.all(),
+    ]
+    for inst in set(instances_to_soft_delete):  # use set() to remove duplicates
+        original = copy(inst)
+        inst.soft_delete()
+        log_modification(original, inst, ENTITY_DUPLICATE_MERGE, user=current_user)
 
     e1.merged_to = new_entity
     e1.save()
@@ -275,12 +281,6 @@ def merge_entities(e1: Entity, e2: Entity, merge_def: Dict):
 
     e1.delete()
     e2.delete()
-
-    for inst in e1.instances.all():
-        inst.soft_delete()
-
-    for inst in e2.instances.all():
-        inst.soft_delete()
 
     return new_entity
 
@@ -355,7 +355,22 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
             e1 = validated_data["entity1"]
             e2 = validated_data["entity2"]
 
-            new_entity = merge_entities(e1, e2, validated_data["merge"])
+            current_user = self.context.get("request").user
+            new_entity = merge_entities(e1, e2, validated_data["merge"], current_user)
+
+            # Leave audit trail from both entity reference forms to the new merged one
+            log_modification(
+                e1.attributes,
+                new_entity.attributes,
+                ENTITY_DUPLICATE_MERGE,
+                user=current_user,
+            )
+            log_modification(
+                e2.attributes,
+                new_entity.attributes,
+                ENTITY_DUPLICATE_MERGE,
+                user=current_user,
+            )
 
             # needs to add the id of the new entity as metadata to the entity duplicate
             ed.metadata["new_entity_id"] = new_entity.pk

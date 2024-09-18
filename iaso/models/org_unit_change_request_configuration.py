@@ -1,17 +1,27 @@
-from django.contrib.auth.models import User
+import typing
+from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.utils.translation import gettext_lazy as _
 
-from iaso.models.orgunit_change_request_configuration.queryset import OrgUnitChangeRequestConfigurationQuerySet
 from iaso.utils.models.soft_deletable import (
     SoftDeletableModel,
     DefaultSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
     IncludeDeletedSoftDeletableManager,
 )
+
+
+class OrgUnitChangeRequestConfigurationQuerySet(QuerySet):
+    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+        # Authorization & authentication issues will be dealt with later, in another ticket
+        # if not user or not user.is_authenticated:
+        #     raise UserNotAuthError(f"User not Authenticated")
+
+        profile = user.iaso_profile
+        return self.filter(project__account=profile.account)
 
 
 class OrgUnitChangeRequestConfiguration(SoftDeletableModel):

@@ -217,9 +217,6 @@ export const Calendar: FunctionComponent = () => {
                                         </XlsxButton>
                                     </Box>
                                 </Grid>
-                                <DisplayIfUserHasPerm
-                                    permissions={[POLIO, POLIO_ADMIN]}
-                                >
                                     <Grid item>
                                         <Box mb={2} mt={2}>
                                             <ExportCsvModal
@@ -228,7 +225,6 @@ export const Calendar: FunctionComponent = () => {
                                             />
                                         </Box>
                                     </Grid>
-                                </DisplayIfUserHasPerm>
                             </Grid>
                         </>
                     )}

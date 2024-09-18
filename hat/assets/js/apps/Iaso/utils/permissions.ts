@@ -32,6 +32,7 @@ const PROJECTS = 'iaso_projects';
 const REGISTRY_WRITE = 'iaso_registry_write';
 const REGISTRY_READ = 'iaso_registry_read';
 const ORG_UNITS_CHANGE_REQUEST_REVIEW = 'iaso_org_unit_change_request_review';
+const ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION = 'iaso_org_unit_change_request_configurations';
 const SOURCES = 'iaso_sources';
 const SOURCE_WRITE = 'iaso_write_sources';
 const STORAGES = 'iaso_storages';
@@ -64,6 +65,7 @@ export {
     ORG_UNITS,
     ORG_UNITS_READ,
     ORG_UNITS_CHANGE_REQUEST_REVIEW,
+    ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION,
     ORG_UNIT_GROUPS,
     ORG_UNIT_TYPES,
     PAGES,

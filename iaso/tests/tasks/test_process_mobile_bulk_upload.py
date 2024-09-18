@@ -138,7 +138,7 @@ class ProcessMobileBulkUploadTest(TestCase):
 
         # Instances (Submissions) + Entity were created
         self.assertEquals(m.Entity.objects.count(), 2)
-        entity_disasi = m.Entity.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
+        ent_disasi = m.Entity.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
         entity_patrice = m.Entity.objects.get(uuid=PATRICE_AKAMBU_REGISTRATION)
         self.assertEquals(m.Instance.objects.count(), 4)
         self.assertEquals(m.InstanceFile.objects.count(), 2)
@@ -146,12 +146,12 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Entity 1: Disasi Makulo
         reg_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
         self.assertEquals(reg_instance.json.get("_full_name"), "Disasi Makulo")
-        self.assertEquals(reg_instance.entity, entity_disasi)
+        self.assertEquals(reg_instance.entity, ent_disasi)
         self.assertEquals(reg_instance.instancefile_set.count(), 0)
 
         catt_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_CATT)
         self.assertEquals(catt_instance.json.get("result"), "positive")
-        self.assertEquals(catt_instance.entity, entity_disasi)
+        self.assertEquals(catt_instance.entity, ent_disasi)
         self.assertEquals(catt_instance.instancefile_set.count(), 1)
         image = catt_instance.instancefile_set.first()
         self.assertEquals(image.name, "1712326156339.webp")
@@ -287,7 +287,7 @@ class ProcessMobileBulkUploadTest(TestCase):
 
     def test_soft_deleted_entity(self, mock_download_file):
         # Create soft-deleted entity Disasi with only registration form
-        entity_disasi = create_valid_entity_with_registration(
+        ent_disasi = create_valid_entity_with_registration(
             name="Disasi",
             uuid=DISASI_MAKULO_REGISTRATION,
             creation_timestamp=datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC),
@@ -295,7 +295,7 @@ class ProcessMobileBulkUploadTest(TestCase):
             ref_form=self.form_registration,
             deleted=True,
         )
-        reg_disasi = entity_disasi.attributes
+        reg_disasi = ent_disasi.attributes
 
         with zipfile.ZipFile(f"/tmp/{CATT_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
@@ -348,7 +348,7 @@ class ProcessMobileBulkUploadTest(TestCase):
     def test_merged_entity(self, mock_download_file):
         # Setup: Create entity Disasi (with uuid as in bulk upload), along with a
         # duplicate, then merge them.
-        entity_disasi_A = create_valid_entity_with_registration(
+        ent_disasi_A = create_valid_entity_with_registration(
             name="Disasi A",
             uuid=DISASI_MAKULO_REGISTRATION,
             creation_timestamp=datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC),
@@ -356,7 +356,7 @@ class ProcessMobileBulkUploadTest(TestCase):
             ref_form=self.form_registration,
             deleted=False,
         )
-        entity_disasi_B = create_valid_entity_with_registration(
+        ent_disasi_B = create_valid_entity_with_registration(
             name="Disasi B",
             uuid=uuid.uuid4(),
             creation_timestamp=datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC),
@@ -365,9 +365,9 @@ class ProcessMobileBulkUploadTest(TestCase):
             deleted=False,
         )
 
-        entity_disasi_C = merge_entities(entity_disasi_A, entity_disasi_B, {}, self.user)
-        entity_disasi_C.name = "Disasi C"
-        entity_disasi_C.save()
+        ent_disasi_C = merge_entities(ent_disasi_A, ent_disasi_B, {}, self.user)
+        ent_disasi_C.name = "Disasi C"
+        ent_disasi_C.save()
         self.assertEquals(m.Instance.objects.count(), 3)
 
         # Only add data for Disasi to avoid confusion
@@ -382,9 +382,8 @@ class ProcessMobileBulkUploadTest(TestCase):
 
         mock_download_file.return_value = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
 
-        self.assertEquals(entity_disasi_A.attributes.source_updated_at.date().isoformat(), "2024-04-01")
-        self.assertEquals(entity_disasi_B.attributes.source_updated_at.date().isoformat(), "2024-04-01")
-        self.assertEquals(entity_disasi_C.attributes.source_updated_at.date().isoformat(), "2024-04-01")
+        for ent in [ent_disasi_A, ent_disasi_B, ent_disasi_C]:
+            self.assertEquals(ent.attributes.source_updated_at.date().isoformat(), "2024-04-01")
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,
@@ -405,20 +404,20 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Disasi A and B have no changes
         # Disasi C has reg form updated + new CATT form (not deleted)
         self.assertEquals(m.Instance.objects.count(), 4)
-        entity_disasi_A.refresh_from_db()
-        entity_disasi_B.refresh_from_db()
-        entity_disasi_C.refresh_from_db()
+        ent_disasi_A.refresh_from_db()
+        ent_disasi_B.refresh_from_db()
+        ent_disasi_C.refresh_from_db()
 
-        self.assertEquals(entity_disasi_A.instances.count(), 1)
-        self.assertEquals(entity_disasi_A.attributes.source_updated_at.date().isoformat(), "2024-04-05")
+        self.assertEquals(ent_disasi_A.instances.count(), 1)
+        self.assertEquals(ent_disasi_A.attributes.source_updated_at.date().isoformat(), "2024-04-05")
 
-        self.assertEquals(entity_disasi_B.instances.count(), 1)
-        self.assertEquals(entity_disasi_B.attributes.source_updated_at.date().isoformat(), "2024-04-01")
+        self.assertEquals(ent_disasi_B.instances.count(), 1)
+        self.assertEquals(ent_disasi_B.attributes.source_updated_at.date().isoformat(), "2024-04-01")
 
-        self.assertEquals(entity_disasi_C.instances.count(), 2)
-        reg_disasi_C = entity_disasi_C.attributes
+        self.assertEquals(ent_disasi_C.instances.count(), 2)
+        reg_disasi_C = ent_disasi_C.attributes
         self.assertEquals(reg_disasi_C.source_updated_at.date().isoformat(), "2024-04-05")
-        catt_disasi_C = entity_disasi_C.instances.get(form=self.form_catt)
+        catt_disasi_C = ent_disasi_C.instances.get(form=self.form_catt)
         self.assertEquals(catt_disasi_C.uuid, DISASI_MAKULO_CATT)
         self.assertFalse(catt_disasi_C.deleted)
 
@@ -426,6 +425,126 @@ class ProcessMobileBulkUploadTest(TestCase):
         content_type = ContentType.objects.get_by_natural_key("iaso", "instance")
         modifications = Modification.objects.filter(
             object_id=reg_disasi_C.id,
+            content_type=content_type,
+        )
+        self.assertEquals(len(modifications), 1)
+        modif = modifications[0]
+        self.assertEquals(modif.source, BULK_UPLOAD_MERGED_ENTITY)
+        self.assertEquals(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-01")
+        self.assertEquals(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
+
+    def test_double_merged_entity(self, mock_download_file):
+        """
+        When we merge a merged entity, we should still receive the data on the
+        correct (final) entity.
+        """
+        # Setup: Create entity Disasi (with uuid as in bulk upload), along with two
+        # duplicates. Merge Disasi with the first duplicate, then merge that one with
+        # with the second.
+        # A --
+        #     X-- Merged 1 --
+        # B --                X-- Merged 2
+        # C ------------------
+        # Now when we receive data for A, it should end up on Merged 2.
+        ent_disasi_A = create_valid_entity_with_registration(
+            name="Disasi A",
+            uuid=DISASI_MAKULO_REGISTRATION,
+            creation_timestamp=datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC),
+            entity_type=self.entity_type,
+            ref_form=self.form_registration,
+            deleted=False,
+        )
+        ent_disasi_B = create_valid_entity_with_registration(
+            name="Disasi B",
+            uuid=uuid.uuid4(),
+            creation_timestamp=datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC),
+            entity_type=self.entity_type,
+            ref_form=self.form_registration,
+            deleted=False,
+        )
+        ent_disasi_C = create_valid_entity_with_registration(
+            name="Disasi C",
+            uuid=uuid.uuid4(),
+            creation_timestamp=datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC),
+            entity_type=self.entity_type,
+            ref_form=self.form_registration,
+            deleted=False,
+        )
+
+        ent_disasi_merged_1 = merge_entities(ent_disasi_A, ent_disasi_B, {}, self.user)
+        ent_disasi_merged_1.name = "Disasi Merged 1"
+        ent_disasi_merged_1.save()
+
+        # Override the file, had some issues with the generated one and calling the
+        # merge_entities again in the test.
+        attrs = ent_disasi_merged_1.attributes
+        with open("iaso/fixtures/instance_form_1_1.xml", "rb") as f:
+            attrs.file = File(f)
+            attrs.save()
+        ent_disasi_merged_2 = merge_entities(ent_disasi_merged_1, ent_disasi_C, {}, self.user)
+        ent_disasi_merged_2.name = "Disasi Merged 2"
+        ent_disasi_merged_2.save()
+
+        self.assertEquals(m.Instance.objects.count(), 5)
+
+        # Only add data for Disasi to avoid confusion
+        FILES_FOR_ZIP = [
+            DISASI_MAKULO_REGISTRATION,
+            DISASI_MAKULO_CATT,
+            "instances.json",
+            "orgUnits.json",
+        ]
+        with zipfile.ZipFile(f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), FILES_FOR_ZIP)
+
+        mock_download_file.return_value = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+
+        all_entities = [ent_disasi_A, ent_disasi_B, ent_disasi_C, ent_disasi_merged_1, ent_disasi_merged_2]
+        for ent in all_entities:
+            self.assertEquals(ent.attributes.source_updated_at.date().isoformat(), "2024-04-01")
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        mock_download_file.assert_called_once()
+
+        # check Task status and result
+        self.task.refresh_from_db()
+        self.assertEquals(self.task.status, m.SUCCESS)
+        self.api_import.refresh_from_db()
+        self.assertEquals(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        # Disasi A, B, C and Merged 1 have no changes
+        # Disasi Merged 2 has reg form updated + new CATT form (not deleted)
+        self.assertEquals(m.Instance.objects.count(), 6)
+
+        for ent in all_entities:
+            ent.refresh_from_db()
+
+        self.assertEquals(ent_disasi_A.instances.count(), 1)
+        self.assertEquals(ent_disasi_A.attributes.source_updated_at.date().isoformat(), "2024-04-05")
+
+        for ent in [ent_disasi_B, ent_disasi_C, ent_disasi_merged_1]:
+            self.assertEquals(ent.instances.count(), 1)
+            self.assertEquals(ent.attributes.source_updated_at.date().isoformat(), "2024-04-01")
+
+        # ent_disasi_merged_2.refresh_from_db()
+        self.assertEquals(ent_disasi_merged_2.instances.count(), 2)
+        reg_disasi_merged_2 = ent_disasi_merged_2.attributes
+        self.assertEquals(reg_disasi_merged_2.source_updated_at.date().isoformat(), "2024-04-05")
+        catt_disasi_merged_2 = ent_disasi_merged_2.instances.get(form=self.form_catt)
+        self.assertEquals(catt_disasi_merged_2.uuid, DISASI_MAKULO_CATT)
+        self.assertFalse(catt_disasi_merged_2.deleted)
+
+        # Verify we leave an audit trail of the update
+        content_type = ContentType.objects.get_by_natural_key("iaso", "instance")
+        modifications = Modification.objects.filter(
+            object_id=reg_disasi_merged_2.id,
             content_type=content_type,
         )
         self.assertEquals(len(modifications), 1)

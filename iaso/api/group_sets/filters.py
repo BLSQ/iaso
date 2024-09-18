@@ -31,7 +31,7 @@ class GroupSetFilter(django_filters.rest_framework.FilterSet):
     )
 
     project_ids = django_filters.CharFilter(
-        field_name="project_ids", method="filter_default_version", label=_("Limit search to coma seperated project ids")
+        field_name="project_ids", method="filter_project_ids", label=_("Limit search to coma seperated project ids")
     )
 
     class Meta:
@@ -48,3 +48,4 @@ class GroupSetFilter(django_filters.rest_framework.FilterSet):
         projects_ids = value
         if projects_ids:
             queryset = queryset.filter(source_version__data_source__projects__in=projects_ids.split(","))
+        return queryset

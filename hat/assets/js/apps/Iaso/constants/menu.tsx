@@ -54,7 +54,7 @@ import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/reques
 import { DropdownOptions } from '../types/utils';
 import { MenuItem, MenuItems, Plugins } from '../domains/app/types';
 import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
-import { CHANGE_REQUEST } from './urls';
+import { CHANGE_REQUEST, CONFIGURATION } from './urls';
 
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
@@ -194,6 +194,19 @@ const menuItems = (
                                     icon: props => <CompareArrows {...props} />,
                                 },
                             ],
+                        },
+                    ],
+                },
+                {
+                    label: formatMessage(MESSAGES.configuration),
+                    key: CHANGE_REQUEST,
+                    icon: props => <Settings {...props} />,
+                    subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.changeRequestConfig),
+                            permissions: paths.dataSourcesPath.permissions,
+                            key: CONFIGURATION,
+                            icon: props => <CategoryIcon {...props} />,
                         },
                     ],
                 },

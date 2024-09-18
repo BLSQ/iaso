@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Chip } from '@mui/material';
+import ReplayIcon from '@mui/icons-material/Replay';
 import {
     IconButton,
     displayDateFromTimestamp,
@@ -51,6 +52,7 @@ type TaskColumn = Partial<Column> & { expander?: boolean; Expander?: any };
 
 export const useTasksTableColumns = (
     killTaskAction: UseMutateAsyncFunction<any, any, any, any>,
+    relaunchTaskAction: UseMutateAsyncFunction<any, any, any, any>,
     hasPolioNotificationsPerm: boolean,
 ): TaskColumn[] => {
     const { formatMessage } = useSafeIntl();
@@ -171,6 +173,17 @@ export const useTasksTableColumns = (
                                     tooltipMessage={MESSAGES.killTask}
                                 />
                             )}
+                        {settings.row.original.status === 'ERRORED' && (
+                            <IconButton
+                                onClick={() =>
+                                    relaunchTaskAction({
+                                        id: settings.row.original.id,
+                                    })
+                                }
+                                overrideIcon={ReplayIcon}
+                                tooltipMessage={MESSAGES.relaunch}
+                            />
+                        )}
                         {settings.row.original.should_be_killed === true &&
                             settings.row.original.status === 'RUNNING' &&
                             formatMessage(MESSAGES.killSignalSent)}
@@ -195,6 +208,11 @@ export const useTasksTableColumns = (
                 Expander,
             },
         ],
-        [formatMessage, hasPolioNotificationsPerm, killTaskAction],
+        [
+            formatMessage,
+            hasPolioNotificationsPerm,
+            killTaskAction,
+            relaunchTaskAction,
+        ],
     );
 };

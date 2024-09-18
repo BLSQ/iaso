@@ -1,13 +1,16 @@
 import datetime
+from unittest.mock import patch
+
 import jsonschema
 import pytz
+from django.contrib import auth
+from django.contrib.contenttypes.models import ContentType
+
 from hat.audit.models import Modification
-from iaso.test import APITestCase
+from hat.menupermissions import models as permission
 from hat.menupermissions.constants import MODULES
 from iaso import models as m
-from django.contrib.contenttypes.models import ContentType
-from hat.menupermissions import models as permission
-from unittest.mock import patch
+from iaso.test import APITestCase
 
 user_schema = {
     "type": "object",
@@ -63,6 +66,126 @@ PROFILE_LOG_LIST_SCHEMA = {
     "required": ["count", "results", "has_next", "has_previous", "pages", "page", "limit"],
 }
 
+name_and_id = {
+    "type": "object",
+    "properties": {"name": {"type": "string"}, "id": {"type": "number"}},
+    "required": ["name", "id"],
+}
+
+PROFILE_LOG_DETAIL_SCHEMA = {
+    "type": "object",
+    "required": ["id", "object_id", "content_type", "past_value", "new_value"],
+    "properties": {
+        "id": {"type": "number"},
+        "content_type": {"type": "number"},
+        "object_id": {"type": "string"},
+        "past_value": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "pk": {"type": "number"},
+                    "fields": {
+                        "type": "object",
+                        "properties": {
+                            "user": {"type": "number"},
+                            "email": {"type": "string"},
+                            "account": {"type": "number"},
+                            "dhis2_id": {"type": ["string", "null"]},
+                            "language": {"type": ["string", "null"]},
+                            "username": {"type": "string"},
+                            "home_page": {"type": ["string", "null"]},
+                            "organization": {"type": ["string", "null"]},
+                            "last_name": {"type": ["string", "null"]},
+                            "first_name": {"type": ["string", "null"]},
+                            "deleted_at": {"type": ["string", "null"]},
+                            "phone_number": {"type": "string"},
+                            "user_permissions": {"array": {"items": {"type": "string"}, "minContains": 0}},
+                            "org_units": {"array": {"items": {"type": name_and_id}, "minContains": 0}},
+                            "projects": {"array": {"items": {"type": name_and_id}, "minContains": 0}},
+                            "user_roles": {"array": {"items": {"type": name_and_id}, "minContains": 0}},
+                        },
+                        "required": [
+                            "user",
+                            "email",
+                            "account",
+                            "dhis2_id",
+                            "language",
+                            "username",
+                            "home_page",
+                            "organization",
+                            "last_name",
+                            "first_name",
+                            "deleted_at",
+                            "phone_number",
+                            "user_permissions",
+                            "org_units",
+                            "projects",
+                            "user_roles",
+                        ],
+                    },
+                },
+                "required": ["pk", "fields"],
+            },
+            "minContains": 1,
+            "maxContains": 1,
+        },
+        "new_value": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "pk": {"type": "number"},
+                    "fields": {
+                        "type": "object",
+                        "properties": {
+                            "user": {"type": "number"},
+                            "email": {"type": "string"},
+                            "account": {"type": "number"},
+                            "dhis2_id": {"type": ["string", "null"]},
+                            "language": {"type": ["string", "null"]},
+                            "username": {"type": "string"},
+                            "home_page": {"type": ["string", "null"]},
+                            "organization": {"type": ["string", "null"]},
+                            "last_name": {"type": ["string", "null"]},
+                            "first_name": {"type": ["string", "null"]},
+                            "deleted_at": {"type": ["string", "null"]},
+                            "phone_number": {"type": "string"},
+                            "user_permissions": {"array": {"items": {"type": "string"}, "minContains": 0}},
+                            "org_units": {"array": {"items": {"type": name_and_id}, "minContains": 0}},
+                            "projects": {"array": {"items": {"type": name_and_id}, "minContains": 0}},
+                            "user_roles": {"array": {"items": {"type": name_and_id}, "minContains": 0}},
+                            "password_updated": {"type": "boolean"},
+                        },
+                        "required": [
+                            "user",
+                            "email",
+                            "account",
+                            "dhis2_id",
+                            "language",
+                            "username",
+                            "home_page",
+                            "organization",
+                            "last_name",
+                            "first_name",
+                            "deleted_at",
+                            "phone_number",
+                            "user_permissions",
+                            "org_units",
+                            "projects",
+                            "user_roles",
+                            "password_updated",
+                        ],
+                    },
+                },
+                "required": ["pk", "fields"],
+            },
+            "minContains": 1,
+            "maxContains": 1,
+        },
+    },
+}
+
 
 class ProfileLogsTestCase(APITestCase):
     @classmethod
@@ -88,6 +211,9 @@ class ProfileLogsTestCase(APITestCase):
         cls.version_1 = m.SourceVersion.objects.create(data_source=cls.source, number=1)
         cls.account.default_version = cls.version_1
         cls.account.save()
+
+        group = auth.models.Group.objects.create(name="Group1")
+        cls.user_role = m.UserRole.objects.create(group=group, account=cls.account)
 
         cls.org_unit_1 = m.OrgUnit.objects.create(
             org_unit_type=cls.org_unit_type,
@@ -148,7 +274,7 @@ class ProfileLogsTestCase(APITestCase):
                             "language": "fr",
                             "projects": [cls.project_1.id],
                             "org_units": [cls.org_unit_1.id],
-                            "user_roles": [],
+                            "user_roles": [cls.user_role.id],
                             "user_permissions": ["iaso_fictional_permission"],
                             "phone_number": "+32485996633",
                             "username": cls.edited_user_1.username,
@@ -156,6 +282,7 @@ class ProfileLogsTestCase(APITestCase):
                             "last_name": "G",
                             "deleted_at": None,
                             "home_page": "",
+                            "organization": "",
                         },
                     }
                 ],
@@ -169,7 +296,7 @@ class ProfileLogsTestCase(APITestCase):
                             "account": cls.account.id,
                             "language": "fr",
                             "projects": [cls.project_1.id],
-                            "user_roles": [],
+                            "user_roles": [cls.user_role.id],
                             "org_units": [cls.org_unit_1.id],
                             "user_permissions": ["iaso_fictional_permission"],
                             "phone_number": "+32485996633",
@@ -178,6 +305,7 @@ class ProfileLogsTestCase(APITestCase):
                             "last_name": "Baron Cohen",  # Changed
                             "deleted_at": None,
                             "home_page": "",
+                            "organization": "",
                             "password_updated": True,  # Changed
                         },
                     }
@@ -264,6 +392,7 @@ class ProfileLogsTestCase(APITestCase):
                             "last_name": "Baron Cohen",
                             "deleted_at": None,
                             "home_page": "",
+                            "organization": "",
                         },
                     }
                 ],
@@ -287,6 +416,7 @@ class ProfileLogsTestCase(APITestCase):
                             "deleted_at": None,
                             "home_page": "",
                             "password_updated": True,  # Changed
+                            "organization": "",
                         },
                     }
                 ],
@@ -318,6 +448,7 @@ class ProfileLogsTestCase(APITestCase):
                             "last_name": "Cage",
                             "deleted_at": None,
                             "home_page": "",
+                            "organization": "",
                         },
                     }
                 ],
@@ -341,6 +472,7 @@ class ProfileLogsTestCase(APITestCase):
                             "deleted_at": None,
                             "home_page": "",
                             "password_updated": True,  # Changed
+                            "organization": "",
                         },
                     }
                 ],
@@ -371,6 +503,7 @@ class ProfileLogsTestCase(APITestCase):
                             "last_name": "Kahn",
                             "deleted_at": None,
                             "home_page": "",
+                            "organization": "",
                         },
                     }
                 ],
@@ -394,6 +527,7 @@ class ProfileLogsTestCase(APITestCase):
                             "deleted_at": None,
                             "home_page": "",
                             "password_updated": True,  # Changed
+                            "organization": "",
                         },
                     }
                 ],
@@ -424,6 +558,7 @@ class ProfileLogsTestCase(APITestCase):
                             "last_name": "",
                             "deleted_at": None,
                             "home_page": "",
+                            "organization": "",
                         },
                     }
                 ],
@@ -447,6 +582,7 @@ class ProfileLogsTestCase(APITestCase):
                             "deleted_at": None,
                             "home_page": "",
                             "password_updated": False,
+                            "organization": "",
                         },
                     }
                 ],
@@ -564,3 +700,131 @@ class ProfileLogsTestCase(APITestCase):
 
         results = data["results"]
         self.assertEquals(results, [])
+
+    def test_retrieve(self):
+        """GET /api/userlogs/{id} with USERS_ADMIN permission - golden path"""
+        self.client.force_authenticate(self.user_with_permission_1)
+        response = self.client.get(f"/api/userlogs/{self.log_1.id}/")
+        data = self.assertJSONResponse(response, 200)
+        try:
+            jsonschema.validate(instance=data, schema=PROFILE_LOG_DETAIL_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+        self.assertEquals(data["id"], self.log_1.id)
+        self.assertEquals(data["user"], self.log_1.user.id)
+        self.assertEquals(data["source"], self.log_1.source)
+        self.assertEquals(data["object_id"], self.log_1.object_id)
+
+        past_value = data["past_value"][0]
+        self.assertEquals(past_value["pk"], self.log_1.past_value[0]["pk"])
+
+        past_value_fields = past_value["fields"]
+        self.assertEquals(past_value_fields["user"], self.log_1.past_value[0]["fields"]["user"])
+        self.assertEquals(past_value_fields["account"], self.log_1.user.iaso_profile.account.id)
+        self.assertEquals(past_value_fields["email"], self.log_1.past_value[0]["fields"]["email"])
+        self.assertEquals(past_value_fields["username"], self.log_1.past_value[0]["fields"]["username"])
+        self.assertEquals(past_value_fields["first_name"], self.log_1.past_value[0]["fields"]["first_name"])
+        self.assertEquals(past_value_fields["last_name"], self.log_1.past_value[0]["fields"]["last_name"])
+        self.assertEquals(past_value_fields["home_page"], self.log_1.past_value[0]["fields"]["home_page"])
+        self.assertEquals(past_value_fields["organization"], self.log_1.past_value[0]["fields"]["organization"])
+        self.assertEquals(past_value_fields["phone_number"], self.log_1.past_value[0]["fields"]["phone_number"])
+        self.assertEquals(past_value_fields["deleted_at"], self.log_1.past_value[0]["fields"]["deleted_at"])
+        self.assertEquals(past_value_fields["user_permissions"], self.log_1.past_value[0]["fields"]["user_permissions"])
+        self.assertEquals(len(past_value_fields["org_units"]), 1)
+        self.assertEquals(past_value_fields["org_units"][0], {"id": self.org_unit_1.id, "name": self.org_unit_1.name})
+        self.assertEquals(len(past_value_fields["projects"]), 1)
+        self.assertEquals(past_value_fields["projects"][0], {"id": self.project_1.id, "name": self.project_1.name})
+        self.assertEquals(len(past_value_fields["user_roles"]), 1)
+        self.assertEquals(
+            past_value_fields["user_roles"][0],
+            {"id": self.user_role.id, "name": m.UserRole.remove_user_role_name_prefix(self.user_role.group.name)},
+        )
+
+        new_value = data["new_value"][0]
+        self.assertEquals(new_value["pk"], self.log_1.new_value[0]["pk"])
+
+        new_value_fields = new_value["fields"]
+        self.assertEquals(new_value_fields["user"], self.log_1.new_value[0]["fields"]["user"])
+        self.assertEquals(new_value_fields["account"], self.log_1.user.iaso_profile.account.id)
+        self.assertEquals(new_value_fields["email"], self.log_1.new_value[0]["fields"]["email"])
+        self.assertEquals(new_value_fields["username"], self.log_1.new_value[0]["fields"]["username"])
+        self.assertEquals(new_value_fields["first_name"], self.log_1.new_value[0]["fields"]["first_name"])
+        self.assertEquals(new_value_fields["last_name"], self.log_1.new_value[0]["fields"]["last_name"])
+        self.assertEquals(new_value_fields["home_page"], self.log_1.new_value[0]["fields"]["home_page"])
+        self.assertEquals(new_value_fields["organization"], self.log_1.new_value[0]["fields"]["organization"])
+        self.assertEquals(new_value_fields["phone_number"], self.log_1.new_value[0]["fields"]["phone_number"])
+        self.assertEquals(new_value_fields["deleted_at"], self.log_1.new_value[0]["fields"]["deleted_at"])
+        self.assertEquals(new_value_fields["user_permissions"], self.log_1.new_value[0]["fields"]["user_permissions"])
+        self.assertEquals(len(new_value_fields["org_units"]), 1)
+        self.assertEquals(new_value_fields["org_units"][0], {"id": self.org_unit_1.id, "name": self.org_unit_1.name})
+        self.assertEquals(len(new_value_fields["projects"]), 1)
+        self.assertEquals(new_value_fields["projects"][0], {"id": self.project_1.id, "name": self.project_1.name})
+        self.assertEquals(len(new_value_fields["user_roles"]), 1)
+        self.assertEquals(
+            new_value_fields["user_roles"][0],
+            {"id": self.user_role.id, "name": m.UserRole.remove_user_role_name_prefix(self.user_role.group.name)},
+        )
+
+    def test_retrieve_without_update(self):
+        """GET /api/userlogs/{id} for a log without updates should not crash"""
+        self.client.force_authenticate(self.user_with_permission_1)
+
+        # Create a log without updates
+        log_without_update = Modification.objects.create(
+            user=self.user_with_permission_1,
+            object_id=str(self.edited_user_1.iaso_profile.id),
+            source="API",
+            content_type=self.content_type,
+            past_value=[],
+            new_value=[
+                {
+                    "pk": self.edited_user_1.iaso_profile.id,
+                    "fields": {
+                        "user": self.edited_user_1.id,
+                        "account": self.edited_user_1.iaso_profile.account.id,
+                        "email": "",
+                        "username": self.edited_user_1.username,
+                        "first_name": self.edited_user_1.first_name,
+                        "last_name": self.edited_user_1.last_name,
+                        "home_page": "",
+                        "organization": "",
+                        "phone_number": "",
+                        "deleted_at": None,
+                        "user_permissions": [],
+                        "org_units": [],
+                        "projects": [],
+                        "user_roles": [],
+                        "language": "",
+                        "dhis2_id": "",
+                        "password_updated": False,
+                    },
+                }
+            ],
+        )
+
+        response = self.client.get(f"/api/userlogs/{log_without_update.id}/")
+        data = self.assertJSONResponse(response, 200)
+
+        try:
+            jsonschema.validate(instance=data, schema=PROFILE_LOG_DETAIL_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+    def test_retrieve_unauthenticated(self):
+        """GET /api/userlogs/{id} without authentication should return 401"""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(f"/api/userlogs/{self.log_1.id}/")
+        self.assertJSONResponse(response, 401)
+
+    def test_retrieve_without_permission(self):
+        """GET /api/userlogs/{id} without USERS_ADMIN permission should return 403"""
+        self.client.force_authenticate(self.user_without_permission)
+        response = self.client.get(f"/api/userlogs/{self.log_1.id}/")
+        self.assertJSONResponse(response, 403)
+
+    def test_retrieve_unknown_log(self):
+        """GET /api/userlogs/{id} with an unknown log ID should return 404"""
+        self.client.force_authenticate(self.user_with_permission_1)
+        unknown_id = max(Modification.objects.all().values_list("id", flat=True)) + 1
+        response = self.client.get(f"/api/userlogs/{unknown_id}/")
+        self.assertJSONResponse(response, 404)

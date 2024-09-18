@@ -111,7 +111,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const userRolesPermissions = user?.user_roles_permissions.value ?? [];
 
     const isPhoneNumberUpdated =
-        user.phone_number.value !== initialData.phone_number && user.id;
+        user.phone_number.value !== initialData.phone_number && user.id?.value;
 
     const isUserWithoutPermissions =
         userPermissions.length === 0 &&
@@ -231,11 +231,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             allowSendEmailInvitation={allowSendEmailInvitation}
                         />
                     </div>
-                    <div
-                        className={
-                            tab === 'permissions' ? '' : classes.hiddenOpacity
-                        }
-                    >
+                    {tab === 'permissions' && (
                         <PermissionsSwitches
                             isSuperUser={initialData?.is_superuser}
                             currentUser={user}
@@ -246,7 +242,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                                 setFieldValue(key, value)
                             }
                         />
-                    </div>
+                    )}
                     {tab === 'locations' && (
                         <UsersLocations
                             handleChange={ouList =>

@@ -255,7 +255,7 @@ def merge_entities(e1: Entity, e2: Entity, merge_def: Dict, current_user: User):
     )
 
     new_entity.save()
-    new_attributes.entity_id = new_entity.id
+    new_attributes.entity = new_entity
     new_attributes.save()
 
     for inst in e1.instances.exclude(id=e1.attributes_id):

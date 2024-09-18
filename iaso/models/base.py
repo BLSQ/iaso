@@ -1031,7 +1031,7 @@ class Instance(models.Model):
         ]
 
     def __str__(self):
-        return "%s %s" % (self.form, self.name)
+        return "%s %s %s" % (self.id, self.form, self.name)
 
     @property
     def is_instance_of_reference_form(self) -> bool:

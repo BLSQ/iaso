@@ -26,7 +26,7 @@ from traceback import format_exc
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.api_import.models import APIImport
-from hat.audit.models import BULK_UPLOAD, log_modification
+from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, log_modification
 from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances import import_data as import_instances
 from iaso.api.mobile.org_units import import_data as import_org_units
@@ -135,7 +135,7 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
     incoming_updated_at = incoming_updated_at and timestamp_to_utc_datetime(int(incoming_updated_at))
     if incoming_updated_at and incoming_updated_at > instance.source_updated_at:
         logger.info(
-            "\tUpdating form %s (from timestamp %s to %s)",
+            "\tUpdating instance %s (from timestamp %s to %s)",
             instance.uuid,
             str(instance.source_updated_at),
             str(incoming_updated_at),
@@ -147,15 +147,44 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
         instance.save()
         instance.get_and_save_json_of_xml(force=True, tries=8)
         log_modification(original, instance, BULK_UPLOAD, user=user)
+        update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user)
     else:
         logger.info(
-            "\tSkipping form %s (current timestamp %s, incoming %s)",
+            "\tSkipping instance %s (current timestamp %s, incoming %s)",
             instance.uuid,
             str(instance.source_updated_at),
             str(incoming_updated_at),
         )
 
     return instance
+
+
+def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user):
+    """
+    If the form being updated is attached to an entity that's soft deleted because
+    of a merge, then we also update the ref form on the "final" merged entity
+    IF the incoming timestamp is more recent.
+    """
+    entity = instance.entity
+    if not (entity.deleted_at and entity.merged_to):
+        return
+
+    active_entity = entity.merged_to
+    if entity.attributes == instance and incoming_updated_at > active_entity.attributes.source_updated_at:
+        instance_to_update = active_entity.attributes
+        logger.info(
+            "\tUpdating instance %s (from timestamp %s to %s) (merged entity)",
+            instance_to_update.uuid,
+            str(instance_to_update.source_updated_at),
+            str(incoming_updated_at),
+        )
+        original = copy(instance_to_update)
+        instance_to_update.file = file
+        instance_to_update.last_modified_by = user
+        instance_to_update.source_updated_at = incoming_updated_at
+        instance_to_update.save()
+        instance_to_update.get_and_save_json_of_xml(force=True, tries=8)
+        log_modification(original, instance_to_update, BULK_UPLOAD_MERGED_ENTITY, user=user)
 
 
 # Create form attachments for all non-XML files in the form's directory

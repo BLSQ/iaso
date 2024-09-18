@@ -45,6 +45,7 @@ from .models import (
     MatchingAlgorithm,
     OrgUnit,
     OrgUnitChangeRequest,
+    OrgUnitChangeRequestConfiguration,
     OrgUnitReferenceInstance,
     OrgUnitType,
     Page,
@@ -875,3 +876,4 @@ admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
 admin.site.register(UserRole)
+admin.site.register(OrgUnitChangeRequestConfiguration)

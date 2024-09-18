@@ -732,6 +732,8 @@ def import_data(instances, user, app_id):
                 )
                 if entity.merged_to:
                     active_entity = entity.merged_to
+                    while active_entity.deleted_at and active_entity.merged_to:
+                        active_entity = active_entity.merged_to
                     logger.info(
                         f"Adding new instance %s %s to merged entity %s",
                         instance.uuid,

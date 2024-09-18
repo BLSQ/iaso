@@ -170,6 +170,9 @@ def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file,
         return
 
     active_entity = entity.merged_to
+    while active_entity.deleted_at and active_entity.merged_to:
+        active_entity = active_entity.merged_to
+
     if entity.attributes == instance and incoming_updated_at > active_entity.attributes.source_updated_at:
         instance_to_update = active_entity.attributes
         logger.info(

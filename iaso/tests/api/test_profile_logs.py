@@ -744,7 +744,6 @@ class ProfileLogsTestCase(APITestCase):
         self.assertEquals(new_value["pk"], self.log_1.new_value[0]["pk"])
 
         new_value_fields = new_value["fields"]
-        print("NEW FIELDS", new_value_fields)
         self.assertEquals(new_value_fields["user"], self.log_1.new_value[0]["fields"]["user"])
         self.assertEquals(new_value_fields["account"], self.log_1.user.iaso_profile.account.id)
         self.assertEquals(new_value_fields["email"], self.log_1.new_value[0]["fields"]["email"])
@@ -776,29 +775,7 @@ class ProfileLogsTestCase(APITestCase):
             object_id=str(self.edited_user_1.iaso_profile.id),
             source="API",
             content_type=self.content_type,
-            past_value=[
-                {
-                    "pk": self.edited_user_1.iaso_profile.id,
-                    "fields": {
-                        "user": self.edited_user_1.id,
-                        "account": self.edited_user_1.iaso_profile.account.id,
-                        "email": "",
-                        "username": self.edited_user_1.username,
-                        "first_name": self.edited_user_1.first_name,
-                        "last_name": self.edited_user_1.last_name,
-                        "home_page": "",
-                        "organization": "",
-                        "phone_number": "",
-                        "deleted_at": None,
-                        "user_permissions": [],
-                        "org_units": [],
-                        "projects": [],
-                        "user_roles": [],
-                        "language": "",
-                        "dhis2_id": "",
-                    },
-                }
-            ],
+            past_value=[],
             new_value=[
                 {
                     "pk": self.edited_user_1.iaso_profile.id,

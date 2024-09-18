@@ -1,6 +1,7 @@
 import json
 import logging
 import ntpath
+from copy import copy
 from time import gmtime, strftime
 from typing import Any, Dict, Union
 
@@ -517,9 +518,11 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(response)
 
     def delete(self, request, pk=None):
+        original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
-        instance.soft_delete(request.user)
+        instance.soft_delete()
+        log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
     def patch(self, request, pk=None):
@@ -574,10 +577,12 @@ class InstancesViewSet(viewsets.ViewSet):
         try:
             with transaction.atomic():
                 for instance in instances_query.iterator():
+                    original = copy(instance)
                     if is_deletion == True:
-                        instance.soft_delete(request.user)
+                        instance.soft_delete()
                     else:
-                        instance.restore(request.user)
+                        instance.restore()
+                    log_modification(original, instance, INSTANCE_API, user=request.user)
 
         except Exception as e:
             print(f"Error : {e}")

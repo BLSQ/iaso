@@ -24,7 +24,8 @@ from requests import RequestException, HTTPError
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
-from iaso.models import Account, Profile
+from iaso.api.serializers import AppIdSerializer
+from iaso.models import Account, Profile, Project
 from .provider import WFPProvider
 
 logger = getLogger(__name__)
@@ -111,7 +112,11 @@ class WFP2Adapter(Auth0OAuth2Adapter):
             email = extra_data["sub"].lower().strip()
         # the sub is the email, wfp verify it so let's trust this
         uid = extra_data["sub"].lower().strip()
-        account = Account.objects.get(name=self.settings["IASO_ACCOUNT_NAME"])
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
+        if app_id:
+            account = Project.objects.get(app_id=app_id).account
+        else:
+            account = Account.objects.get(name=self.settings["IASO_ACCOUNT_NAME"])
 
         try:
             # user is required, can't use get_or_create

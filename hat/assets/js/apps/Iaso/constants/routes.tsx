@@ -264,7 +264,7 @@ export const devicesPath = {
 };
 
 export const groupsPath = {
-    baseUrl: baseUrls.group,
+    baseUrl: baseUrls.groups,
     routerUrl: `${baseUrls.groups}/*`,
     permissions: [Permission.ORG_UNIT_GROUPS],
     element: <Groups />,

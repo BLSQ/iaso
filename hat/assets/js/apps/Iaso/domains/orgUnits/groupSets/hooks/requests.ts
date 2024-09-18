@@ -45,7 +45,7 @@ export const useGetGroupSets = params => {
         newParams as Record<string, string>,
     );
     return useSnackQuery(
-        ['group_sets', newParams],
+        ['group_sets', searchParams.toString()],
         () =>
             getRequest(
                 `/api/group_sets/?${searchParams.toString()}&fields=id,name,groups,created_at,updated_at`,

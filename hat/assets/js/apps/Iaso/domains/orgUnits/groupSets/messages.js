@@ -61,6 +61,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.delete_successful',
         defaultMessage: 'Deleted successfully',
     },
+    groupSets:  {
+        defaultMessage: 'Group Sets',
+        id: 'iaso.label.groupSets',
+    },
     group_belonging: {
         id: 'iaso.groupsets.groupBelonging',
         defaultMessage: 'Groups belonging',

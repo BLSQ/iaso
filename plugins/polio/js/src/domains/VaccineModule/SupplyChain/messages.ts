@@ -276,7 +276,7 @@ const MESSAGES = defineMessages({
     },
     notAvailableNotNormal: {
         id: 'iaso.polio.form.notAvailableNotNormal',
-        defaultMessage: 'Tabs not available if VRF is not normal',
+        defaultMessage: 'Tab not available if VRF type is not normal',
     },
     arrival_reportsApiSuccess: {
         id: 'iaso.polio.api.arrival_reportsApiSuccess',

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
@@ -27,11 +27,16 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     const { data: countriesOptions, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
     const vrfDataComment = vrfData?.comment;
+
     const vrfTypeOptions = [
-        { label: 'Normal', value: 'Normal' },
-        { label: 'Missing', value: 'Missing' },
-        { label: 'Not Required', value: 'Not Required' },
+        { label: formatMessage(MESSAGES.vrfTypeNormal), value: 'Normal' },
+        { label: formatMessage(MESSAGES.vrfTypeMissing), value: 'Missing' },
+        {
+            label: formatMessage(MESSAGES.vrfTypeNotRequired),
+            value: 'Not Required',
+        },
     ];
+
     const { values, setFieldTouched, setFieldValue } = useFormikContext<any>();
     const {
         campaigns,
@@ -43,6 +48,12 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         values?.vrf?.campaign,
         values?.vrf?.vaccine_type,
     );
+
+    useEffect(() => {
+        if (!values?.vrf?.vrf_type) {
+            setFieldValue('vrf.vrf_type', 'Normal'); // Set your default value here
+        }
+    }, [setFieldValue, values?.vrf?.vrf_type]);
 
     const onCommentChange = useCallback(
         value => {
@@ -80,13 +91,13 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     return (
         <Box className={className} mb={3}>
             <Box mb={2}>
-                <Grid container alignItems="center">
-                    <Grid item xs={8}>
+                <Grid container alignItems="center" spacing={2}>
+                    <Grid item xs={9}>
                         <Typography variant="h5">
                             {formatMessage(MESSAGES.vrfTitle)}
                         </Typography>
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={3}>
                         <Field
                             label={formatMessage(MESSAGES.vrfType)}
                             name="vrf.vrf_type"

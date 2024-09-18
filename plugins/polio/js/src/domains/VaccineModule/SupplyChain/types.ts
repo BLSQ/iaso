@@ -30,6 +30,7 @@ export type VRF = {
     date_dg_approval?: string; // date in string form
     target_population?: number;
     comments?: string;
+    vrf_type: 'Normal' | 'Missing' | 'Not Required';
 };
 
 export type VRFFormData = Omit<VRF, 'rounds'> & {

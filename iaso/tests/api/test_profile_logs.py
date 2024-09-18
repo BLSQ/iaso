@@ -1,14 +1,16 @@
 import datetime
+from unittest.mock import patch
+
 import jsonschema
 import pytz
+from django.contrib import auth
+from django.contrib.contenttypes.models import ContentType
+
 from hat.audit.models import Modification
-from iaso.test import APITestCase
+from hat.menupermissions import models as permission
 from hat.menupermissions.constants import MODULES
 from iaso import models as m
-from django.contrib.contenttypes.models import ContentType
-from hat.menupermissions import models as permission
-from unittest.mock import patch
-from django.contrib import auth
+from iaso.test import APITestCase
 
 user_schema = {
     "type": "object",
@@ -763,3 +765,89 @@ class ProfileLogsTestCase(APITestCase):
             new_value_fields["user_roles"][0],
             {"id": self.user_role.id, "name": m.UserRole.remove_user_role_name_prefix(self.user_role.group.name)},
         )
+
+    def test_retrieve_without_update(self):
+        """GET /api/userlogs/{id} for a log without updates should not crash"""
+        self.client.force_authenticate(self.user_with_permission_1)
+
+        # Create a log without updates
+        log_without_update = Modification.objects.create(
+            user=self.user_with_permission_1,
+            object_id=str(self.edited_user_1.iaso_profile.id),
+            source="API",
+            content_type=self.content_type,
+            past_value=[
+                {
+                    "pk": self.edited_user_1.iaso_profile.id,
+                    "fields": {
+                        "user": self.edited_user_1.id,
+                        "account": self.edited_user_1.iaso_profile.account.id,
+                        "email": "",
+                        "username": self.edited_user_1.username,
+                        "first_name": self.edited_user_1.first_name,
+                        "last_name": self.edited_user_1.last_name,
+                        "home_page": "",
+                        "organization": "",
+                        "phone_number": "",
+                        "deleted_at": None,
+                        "user_permissions": [],
+                        "org_units": [],
+                        "projects": [],
+                        "user_roles": [],
+                        "language": "",
+                        "dhis2_id": "",
+                    },
+                }
+            ],
+            new_value=[
+                {
+                    "pk": self.edited_user_1.iaso_profile.id,
+                    "fields": {
+                        "user": self.edited_user_1.id,
+                        "account": self.edited_user_1.iaso_profile.account.id,
+                        "email": "",
+                        "username": self.edited_user_1.username,
+                        "first_name": self.edited_user_1.first_name,
+                        "last_name": self.edited_user_1.last_name,
+                        "home_page": "",
+                        "organization": "",
+                        "phone_number": "",
+                        "deleted_at": None,
+                        "user_permissions": [],
+                        "org_units": [],
+                        "projects": [],
+                        "user_roles": [],
+                        "language": "",
+                        "dhis2_id": "",
+                        "password_updated": False, 
+                    },
+                }
+            ],
+        )
+
+        response = self.client.get(f"/api/userlogs/{log_without_update.id}/")
+        data = self.assertJSONResponse(response, 200)
+
+        try:
+            jsonschema.validate(instance=data, schema=PROFILE_LOG_DETAIL_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+    def test_retrieve_unauthenticated(self):
+        """GET /api/userlogs/{id} without authentication should return 401"""
+        self.client.force_authenticate(user=None)
+        response = self.client.get(f"/api/userlogs/{self.log_1.id}/")
+        self.assertJSONResponse(response, 401)
+
+    def test_retrieve_without_permission(self):
+        """GET /api/userlogs/{id} without USERS_ADMIN permission should return 403"""
+        self.client.force_authenticate(self.user_without_permission)
+        response = self.client.get(f"/api/userlogs/{self.log_1.id}/")
+        self.assertJSONResponse(response, 403)
+
+    def test_retrieve_unknown_log(self):
+        """GET /api/userlogs/{id} with an unknown log ID should return 404"""
+        self.client.force_authenticate(self.user_with_permission_1)
+        unknown_id = max(Modification.objects.all().values_list("id", flat=True)) + 1
+        response = self.client.get(f"/api/userlogs/{unknown_id}/")
+        self.assertJSONResponse(response, 404)

@@ -722,7 +722,6 @@ def import_data(instances, user, app_id):
             entity, created = Entity.objects_include_deleted.get_or_create(
                 uuid=entityUuid, entity_type_id=entityTypeId, account=project.account
             )
-            instance.entity = entity
 
             if entity.deleted_at:
                 logger.info(
@@ -731,7 +730,19 @@ def import_data(instances, user, app_id):
                     instance.uuid,
                     instance.name,
                 )
-                instance.deleted = True
+                if entity.merged_to:
+                    active_entity = entity.merged_to
+                    logger.info(
+                        f"Adding new instance %s %s to merged entity %s",
+                        instance.uuid,
+                        instance.name,
+                        active_entity.uuid,
+                    )
+                    entity = active_entity
+                else:
+                    instance.deleted = True
+
+            instance.entity = entity
 
             # If instance's form is the same as the type reference form, set the instance as reference_instance
             if entity.entity_type.reference_form == instance.form:

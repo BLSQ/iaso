@@ -157,6 +157,7 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 id: 'userPermission',
                 accessor: 'userPermission',
                 sortable: false,
+                align: 'center',
                 Cell: settings => {
                     return (
                         <PermissionSwitch
@@ -165,6 +166,7 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                             setPermissions={setPermissions}
                             value={settings.row.original.permissionCodeName}
                             permissions={settings.row.original.userPermissions}
+                            type="user"
                         />
                     );
                 },
@@ -180,16 +182,48 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 width: 50,
                 Cell: settings => {
                     if (!settings.row.original.group) {
-                        if (
-                            role.permissions.find(
-                                permission =>
-                                    permission ===
-                                    settings.row.original.permissionCodeName,
-                            )
-                        ) {
-                            return <CheckedIcon style={{ color: 'green' }} />;
+                        if (settings.row.original.readEdit) {
+                            const { read, edit } =
+                                settings.row.original.readEdit;
+                            const permissions = [read, edit];
+
+                            return (
+                                <span
+                                    style={{
+                                        display: 'inline-flex',
+                                        gap: '5px',
+                                    }}
+                                >
+                                    {permissions.map(permission => {
+                                        const hasPermission =
+                                            role.permissions.includes(
+                                                permission,
+                                            );
+                                        return hasPermission ? (
+                                            <CheckedIcon
+                                                key={permission}
+                                                style={{ color: 'green' }}
+                                            />
+                                        ) : (
+                                            <NotCheckedIcon
+                                                key={permission}
+                                                color="disabled"
+                                            />
+                                        );
+                                    })}
+                                </span>
+                            );
                         }
-                        return <NotCheckedIcon color="disabled" />;
+
+                        const hasPermission = role.permissions.includes(
+                            settings.row.original.permissionCodeName,
+                        );
+
+                        return hasPermission ? (
+                            <CheckedIcon style={{ color: 'green' }} />
+                        ) : (
+                            <NotCheckedIcon color="disabled" />
+                        );
                     }
                     return '';
                 },

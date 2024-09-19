@@ -116,6 +116,7 @@ export const useUserPermissionColumns = (
                             setPermissions={setPermissions}
                             value={settings.row.original}
                             permissions={userRolePermissions}
+                            type="userrole"
                         />
                     );
                 },

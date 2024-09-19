@@ -41,6 +41,7 @@ type Row = {
     codename?: string;
     group?: boolean;
     id?: number;
+    readEdit?: { read: string; edit: string }[];
 };
 
 export const PermissionsSwitches: React.FunctionComponent<Props> = ({
@@ -110,6 +111,9 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
                 row.id = permission.id;
                 row.codename = permission.codename;
                 row.name = getPermissionLabel(permission.codename);
+                if (permission.read_edit) {
+                    row.readEdit = permission.read_edit;
+                }
                 grouped_permissions.push(row);
             });
         });

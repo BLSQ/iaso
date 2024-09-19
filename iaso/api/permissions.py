@@ -3,7 +3,7 @@ from operator import itemgetter
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
-from hat.menupermissions.constants import PERMISSIONS_PRESENTATION
+from hat.menupermissions.constants import PERMISSIONS_PRESENTATION, READ_EDIT_PERMISSIONS
 from iaso.utils.module_permissions import account_module_permissions
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
@@ -53,11 +53,26 @@ class PermissionsViewSet(viewsets.ViewSet):
         filtered_permissions = permissions_queryset.filter(codename__in=permission_codenames)
         if not filtered_permissions:
             return None
+        read_edit_permissions = list(READ_EDIT_PERMISSIONS.keys())
+        permissions = []
+        for permission in filtered_permissions:
+            perm = [item for item in read_edit_permissions if permission.codename in item]
+            if perm:
+                perm = perm[0]
+                in_permissions = [item for item in permissions if perm == item["codename"]]
+                if not in_permissions:
+                    permissions.append(
+                        {
+                            "id": permission.id,
+                            "name": _(perm),
+                            "codename": perm,
+                            "read_edit": READ_EDIT_PERMISSIONS[perm],
+                        }
+                    )
+            else:
+                permissions.append({"id": permission.id, "name": _(permission.name), "codename": permission.codename})
 
-        return [
-            {"id": permission.id, "name": _(permission.name), "codename": permission.codename}
-            for permission in filtered_permissions
-        ]
+        return permissions
 
     def queryset(self, request):
         if request.user.has_perm(p.USERS_ADMIN) or request.user.has_perm(p.USERS_MANAGED):

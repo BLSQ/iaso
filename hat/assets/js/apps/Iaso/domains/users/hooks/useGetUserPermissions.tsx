@@ -41,6 +41,9 @@ export const useGetUserPermissions = (
                 row.permission = getPermissionLabel(p.codename);
                 row.userPermissions = userPermissions;
                 row.permissionCodeName = p.codename;
+                if (p.read_edit) {
+                    row.readEdit = p.read_edit;
+                }
 
                 data.push(row);
             });

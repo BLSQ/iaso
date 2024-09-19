@@ -262,7 +262,7 @@ class InstanceFileAdminInline(admin.TabularInline):
 @admin.register(Instance)
 @admin_attr_decorator
 class InstanceAdmin(admin.GeoModelAdmin):
-    raw_id_fields = ("org_unit",)
+    raw_id_fields = ("org_unit", "entity")
     search_fields = ("file_name", "uuid")
     list_display = (
         "id",
@@ -523,7 +523,7 @@ class EntityAdmin(admin.ModelAdmin):
         EntityEmptyAttributesFilter,
         DuplicateUUIDFilter,
     )
-    raw_id_fields = ("attributes",)
+    raw_id_fields = ("attributes", "merged_to")
 
     def get_queryset(self, request):
         return Entity.objects_include_deleted.all()

@@ -13,7 +13,6 @@ import { useSidebar } from '../app/contexts/SideBarContext';
 import { ThemeConfigContext } from '../app/contexts/ThemeConfigContext';
 import { LangSwitch } from './components/LangSwitch';
 import { useHomeButtons } from './hooks/useHomeButtons';
-import { AccountSwitch } from '../../components/nav/AccountSwitch';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -130,9 +129,13 @@ export const HomeOnline: FunctionComponent = () => {
                             version={(window as any).IASO_VERSION}
                         />
                     </Box>
-                    <Box display="flex" justifyContent="center" pl={2}></Box>
-                    <Box p={4} display="flex" alignItems="center">
-                        <AccountSwitch />
+                    <Box
+                        pr={4}
+                        pt={4}
+                        pb={4}
+                        display="flex"
+                        alignItems="center"
+                    >
                         <Box pl={2} display="inline-flex">
                             <LangSwitch />
                         </Box>

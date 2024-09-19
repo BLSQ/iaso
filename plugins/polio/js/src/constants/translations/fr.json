@@ -242,7 +242,7 @@
     "iaso.polio.form.label.virusNotificationDate": "Date de notification virus",
     "iaso.polio.form.label.who_sent_budget": "Budget envoyé par WHO CO",
     "iaso.polio.form.pleaseCreateVrf": "Veuillez créer un VRF pour débloquer ce tab",
-    "iaso.polio.form.notAvailableNotNormal": "Tab non disponible si le type du VRF n'est pas normal",
+    "iaso.polio.form.notAvailableNotNormal": "Disponible uniquement si le VRF est défini comme normal",
     "iaso.polio.form.validator.error.endDateAfterNextStartDate": "La date de fin ne peut être après ou égal à la date de début du round suivant",
     "iaso.polio.form.validator.error.endDateAfterRoundDate": "La date de fin ne peut être après celle du round",
     "iaso.polio.form.validator.error.endDateBeforeRoundStart": "La date de fin ne peut être avant le début du round",

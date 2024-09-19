@@ -10,6 +10,7 @@ import TopBar from '../../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { OrgUnitChangeRequestConfigsFilter } from './Filter/OrgUnitChangeRequestConfigsFilter';
 import { OrgUnitChangeRequestConfigsTable } from './Tables/OrgUnitChangeRequestConfigsTable';
+import { OrgUnitChangeRequestConfigDialog } from './Dialog/OrgUnitChangeRequestConfigDialog';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -24,7 +25,6 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
 
-
     return (
         <div>
             <TopBar
@@ -35,11 +35,10 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <OrgUnitChangeRequestConfigsFilter params={params} />
                 <Box mb={2} display="flex" justifyContent="flex-end">
-                    <AddButton
+                    <OrgUnitChangeRequestConfigDialog
+                        titleMessage={formatMessage(MESSAGES.oucrcCreateModalTitle)}
+                        iconProps={{ disabled: false }}
                         dataTestId="add-org-unit-config-button"
-                        onClick={() => {
-                            // TODO
-                        }}
                     />
                 </Box>
 
@@ -47,7 +46,7 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
                     data={data}
                     isFetching={isFetching}
                     params={params}
-                    onEditClicked={(config) => {
+                    onEditClicked={config => {
                         // TODO
                     }}
                 />

@@ -61,6 +61,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.updated_by',
         defaultMessage: 'Updated by',
     },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close hihi',
+    },
+    oucrcCreateModalTitle: {
+        id: 'iaso.label.oucrcCreateModalTitle',
+        defaultMessage: 'OrgUnit Change Request Configuration - Creation',
+    },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
 });
 
 export default MESSAGES;

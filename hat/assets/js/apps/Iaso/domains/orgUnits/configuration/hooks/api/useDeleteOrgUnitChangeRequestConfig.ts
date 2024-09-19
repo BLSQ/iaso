@@ -5,7 +5,9 @@ import { apiUrl } from '../../constants';
 import { OrgUnitChangeRequestConfig } from '../../types';
 import { deleteRequest } from '../../../../../libs/Api';
 
-const deleteOrgUnitChangeRequestConfigs = (config: OrgUnitChangeRequestConfig) => {
+const deleteOrgUnitChangeRequestConfigs = (
+    config: OrgUnitChangeRequestConfig,
+) => {
     return deleteRequest(`${apiUrl}/${config.id}/`) as Promise<boolean>;
 };
 

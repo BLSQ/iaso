@@ -63,7 +63,11 @@ const MESSAGES = defineMessages({
     },
     close: {
         id: 'iaso.label.close',
-        defaultMessage: 'Close hihi',
+        defaultMessage: 'Close',
+    },
+    next: {
+        id: 'iaso.label.next',
+        defaultMessage: 'Next',
     },
     oucrcCreateModalTitle: {
         id: 'iaso.label.oucrcCreateModalTitle',

@@ -19,7 +19,7 @@ export type VRF = {
     vaccine_type: Vaccine;
     rounds: { number: number }[];
     date_vrf_signature: string; // date in string form
-    quantities_ordered_in_doses: number;
+    quantities_ordered_in_doses?: number;
     wastage_rate_used_on_vrf: number | string;
     date_vrf_reception: string; // date in string form
     date_vrf_submission_orpg?: string; // date in string form

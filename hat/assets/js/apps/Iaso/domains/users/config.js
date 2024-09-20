@@ -4,6 +4,7 @@ import {
 } from '@mui/icons-material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';
+import { Stack, Typography } from '@mui/material';
 
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog.tsx';
@@ -183,10 +184,9 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 Cell: settings => {
                     if (!settings.row.original.group) {
                         if (settings.row.original.readEdit) {
-                            const { read, edit } =
-                                settings.row.original.readEdit;
-                            const permissions = [read, edit];
-
+                            const permissions = Object.entries(
+                                settings.row.original.readEdit,
+                            );
                             return (
                                 <span
                                     style={{
@@ -194,21 +194,29 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                                         gap: '5px',
                                     }}
                                 >
-                                    {permissions.map(permission => {
+                                    {permissions.map(([key, value]) => {
                                         const hasPermission =
-                                            role.permissions.includes(
-                                                permission,
-                                            );
-                                        return hasPermission ? (
-                                            <CheckedIcon
-                                                key={permission}
-                                                style={{ color: 'green' }}
-                                            />
-                                        ) : (
-                                            <NotCheckedIcon
-                                                key={permission}
-                                                color="disabled"
-                                            />
+                                            role.permissions.includes(value);
+                                        return (
+                                            <Stack
+                                                key={key}
+                                                direction="row"
+                                                spacing={1}
+                                                alignItems="center"
+                                            >
+                                                {hasPermission ? (
+                                                    <CheckedIcon
+                                                        style={{
+                                                            color: 'green',
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <NotCheckedIcon color="disabled" />
+                                                )}
+                                                <Typography variant="body1">
+                                                    {key}
+                                                </Typography>
+                                            </Stack>
                                         );
                                     })}
                                 </span>

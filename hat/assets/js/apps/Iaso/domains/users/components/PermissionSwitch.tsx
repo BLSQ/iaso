@@ -40,48 +40,41 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
     const renderCheckbox = (
         permissionCode: string,
         permission: string | Permission,
+        key: string | null,
     ) => (
         <InputComponent
             type="checkbox"
             keyValue={`permission-checkbox-${permissionCode}`}
             value={isChecked(permissionCode)}
             onChange={(_, checked) => handleCheckboxChange(permission, checked)}
-            labelString=""
+            labelString={!key ? '' : key}
             dataTestId="permission-checkbox"
         />
     );
 
     if (!original.group) {
         if (original.readEdit) {
-            const valRead =
-                type === 'user'
-                    ? original.readEdit.read
-                    : {
-                          codename: original.readEdit.read,
-                          id: 0,
-                          name: original.readEdit.read,
-                      };
-
-            const valEdit =
-                type === 'user'
-                    ? original.readEdit.edit
-                    : {
-                          codename: original.readEdit.edit,
-                          id: 0,
-                          name: original.readEdit.edit,
-                      };
-
             return (
                 <div style={{ display: 'inline-flex' }}>
-                    {renderCheckbox(original.readEdit.read, valRead)}
-                    {renderCheckbox(original.readEdit.edit, valEdit)}
+                    {Object.entries(original.readEdit).map(([key]) => {
+                        const val =
+                            type === 'user'
+                                ? original.readEdit[key]
+                                : {
+                                      codename: original.readEdit[key],
+                                      id: 0,
+                                      name: original.readEdit[key],
+                                  };
+
+                        return renderCheckbox(original.readEdit[key], val, key);
+                    })}
                 </div>
             );
         }
 
         return (
             <div style={{ display: 'inline-flex' }}>
-                {renderCheckbox(original[codeName], value)}
+                {renderCheckbox(original[codeName], value, null)}
             </div>
         );
     }

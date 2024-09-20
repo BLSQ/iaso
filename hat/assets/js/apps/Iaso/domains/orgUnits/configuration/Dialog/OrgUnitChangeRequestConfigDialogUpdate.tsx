@@ -1,25 +1,27 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import {
     ConfirmCancelModal,
-    IntlFormatMessage,
+    LoadingSpinner,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { Typography } from '@mui/material';
-import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import { useTranslatedErrors } from '../../../../libs/validation';
 import MESSAGES from '../messages';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { editableFields, editableFieldsForFrontend } from '../constants';
+import { editableFieldsManyToManyFields } from '../constants';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetFormDropdownOptions } from '../hooks/api/useGetFormDropdownOptions';
 import { useSaveOrgUnitChangeRequestConfiguration } from '../hooks/api/useSaveOrgUnitChangeRequestConfiguration';
 import { useOrgUnitsEditableOptions } from '../hooks/useOrgUnitsEditableOptions';
+import { useOrgUnitsEditableFieldsOptions } from '../hooks/useOrgUnitEditableFieldsOptions';
 import { OrgUnitChangeRequestConfiguration } from '../types';
+import { useRetrieveOrgUnitChangeRequestConfig } from '../hooks/api/useRetrieveOrgUnitChangeRequestConfig';
+import { useValidationSchemaOUCRC } from '../hooks/useValidationSchemaOUCRC';
 
 type Props = {
     config: OrgUnitChangeRequestConfiguration;
@@ -27,37 +29,13 @@ type Props = {
     closeDialog: () => void;
 };
 
-const useCreationSchema = () => {
-    const { formatMessage } = useSafeIntl();
-    return Yup.object().shape({
-        projectId: Yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
-        // orgUnitTypeId: Yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
-        orgUnitTypeId: Yup.string().nullable(),
-        orgUnitsEditable: Yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
-        editableFields: Yup.array().of(Yup.string()).nullable(),
-        possibleTypeIds: Yup.array().of(Yup.string()).nullable(),
-        possibleParentTypeIds: Yup.array().of(Yup.string()).nullable(),
-        groupSetIds: Yup.array().of(Yup.string()).nullable(),
-        editableReferenceFormIds: Yup.array().of(Yup.string()).nullable(),
-        otherGroupIds: Yup.array().of(Yup.string()).nullable(),
-    });
-};
-
-const editableFieldsOptions = (formatMessage: IntlFormatMessage) => {
-    return editableFields.map(field => {
-        return {
-            value: field,
-            label: formatMessage(MESSAGES[field]),
-        };
-    });
-};
-
 const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
     config,
     isOpen,
     closeDialog,
 }) => {
-    const creationSchema = useCreationSchema();
+    const { data: fullConfig, isLoading: isLoadingFullConfig } = useRetrieveOrgUnitChangeRequestConfig(config?.id);
+    const configValidationSchema = useValidationSchemaOUCRC();
     const {
         values,
         setFieldValue,
@@ -69,10 +47,9 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
         setFieldTouched,
     } = useFormik({
         initialValues: {
-            projectId: config.projectId,
-            // orgUnitTypeId: config.orgUnitTypeId,
-            orgUnitTypeId: 6,
-            orgUnitsEditable: '',
+            projectId: config.project.id,
+            orgUnitTypeId: config.orgUnitType.id,
+            orgUnitsEditable: undefined,
             editableFields: undefined,
             possibleTypeIds: undefined,
             possibleParentTypeIds: undefined,
@@ -80,18 +57,21 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
             editableReferenceFormIds: undefined,
             otherGroupIds: undefined,
         },
-        validationSchema: creationSchema,
+        validationSchema: configValidationSchema,
         onSubmit: () => {
             console.log('*** onSubmit values = ', values);
+            saveConfig(values);
+            closeDialog();
         },
     });
 
-    const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } = useGetOrgUnitTypesDropdownOptions();
-    const { data: groupOptions, isLoading: isLoadingGroups } = useGetGroupDropdown({});
-    const { data: formOptions, isFetching: isFetchingForms } = useGetFormDropdownOptions();
-    const { data: groupSetOptions, isLoading: isLoadingGroupSets } = useGetGroupDropdown({});
+    const { data: orgUnitTypeOptions } = useGetOrgUnitTypesDropdownOptions();
+    const { data: groupOptions } = useGetGroupDropdown({});
+    const { data: formOptions } = useGetFormDropdownOptions(config.orgUnitType.id);
+    const { data: groupSetOptions } = useGetGroupDropdown({});
     const { mutateAsync: saveConfig } = useSaveOrgUnitChangeRequestConfiguration();
     const orgUnitsEditableOptions = useOrgUnitsEditableOptions();
+    const orgUnitEditableFieldsOptions = useOrgUnitsEditableFieldsOptions();
 
     const { formatMessage } = useSafeIntl();
     const getErrors = useTranslatedErrors({
@@ -103,8 +83,6 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
 
     const onChange = useCallback(
         (keyValue, value) => {
-            console.log('*** update - onChange - keyValue = ', keyValue);
-            console.log('*** update - onChange - value = ', value);
             setFieldTouched(keyValue, true);
             setFieldValue(keyValue, value);
         },
@@ -112,21 +90,25 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
     );
 
     const onChangeEditableFields = useCallback((keyValue, value) => {
-            const split = value.split(',');
-            editableFieldsForFrontend.forEach((field) => {
-                if (!split.includes(field)) {
-                    setFieldValue(field, undefined);
-                }
-            });
+            // if a many-to-many field has some value, but the field is removed from editableFields, we need to clean the field
+            if (value) {
+                const split = value.split(',');
+                editableFieldsManyToManyFields.forEach((field) => {
+                    if (!split.includes(field)) {
+                        setFieldValue(field, undefined);
+                    }
+                });
+            }
             onChange(keyValue, value);
         },
         [onChange, setFieldValue],
     );
 
     const onChangeOrgUnitsEditable = useCallback((keyValue, value) => {
+            // if we say that the org units are no longer editable, we need to clean everything up
             const boolValue = value === 'true';
             if (!boolValue) {
-                editableFieldsForFrontend.forEach((field) => {
+                editableFieldsManyToManyFields.forEach((field) => {
                     setFieldValue(field, undefined);
                 });
                 setFieldValue('editableFields', undefined);
@@ -157,25 +139,18 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
                 config?.id
                     ? MESSAGES.oucrcModalUpdateButton
                     : MESSAGES.oucrcModalCreateButton
-                // ? formatMessage(MESSAGES.oucrcModalUpdateButton)
-                // : formatMessage(MESSAGES.oucrcModalCreateButton)
             }
             onConfirm={() => handleSubmit()}
             onCancel={() => {
                 closeDialog();
             }}
         >
-            <Typography
-                variant="h6"
-                component="h6"
-            >
-                Project: {config.projectId}
+            {isLoadingFullConfig && <LoadingSpinner />}
+            <Typography variant="h6" component="h6">
+                Project: {config.project.name}
             </Typography>
-            <Typography
-                variant="h6"
-                component="h6"
-            >
-                Org Unit Type: {config.orgUnitTypeId}
+            <Typography variant="h6" component="h6">
+                Org Unit Type: {config.orgUnitType.name}
             </Typography>
             <InputComponent
                 type="radio"
@@ -195,69 +170,74 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
                     value={values.editableFields}
                     errors={getErrors('editableFields')}
                     label={MESSAGES.editableFields}
-                    options={editableFieldsOptions(formatMessage)}
+                    options={orgUnitEditableFieldsOptions}
                 />
             )}
-            {values?.editableFields && values.editableFields.includes('possibleTypeIds') && (
-                <InputComponent
-                    type="select"
-                    multi
-                    keyValue="possibleTypeIds"
-                    onChange={onChange}
-                    value={values.possibleTypeIds}
-                    errors={getErrors('possibleTypeIds')}
-                    label={MESSAGES.possibleTypeIds}
-                    options={orgUnitTypeOptions}
-                />
-            )}
-            {values?.editableFields && values.editableFields.includes('possibleParentTypeIds') && (
-                <InputComponent
-                    type="select"
-                    multi
-                    keyValue="possibleParentTypeIds"
-                    onChange={onChange}
-                    value={values.possibleParentTypeIds}
-                    errors={getErrors('possibleParentTypeIds')}
-                    label={MESSAGES.possibleParentTypeIds}
-                    options={orgUnitTypeOptions} // Warning: we should probably filter data here (only what is available in parent/child relationship)
-                />
-            )}
-            {values?.editableFields && values.editableFields.includes('groupSetIds') && (
-                <InputComponent
-                    type="select"
-                    multi
-                    keyValue="groupSetIds"
-                    onChange={onChange}
-                    value={values.groupSetIds}
-                    errors={getErrors('groupSetIds')}
-                    label={MESSAGES.groupSetIds}
-                    options={groupSetOptions} // Warning: no call for groupsets ATM (using groups as placeholder)
-                />
-            )}
-            {values?.editableFields && values.editableFields.includes('editableReferenceFormIds') && (
-                <InputComponent
-                    type="select"
-                    multi
-                    keyValue="editableReferenceFormIds"
-                    onChange={onChange}
-                    value={values.editableReferenceFormIds}
-                    errors={getErrors('editableReferenceFormIds')}
-                    label={MESSAGES.editableReferenceFormIds}
-                    options={formOptions}
-                />
-            )}
-            {values?.editableFields && values.editableFields.includes('otherGroupIds') && (
-                <InputComponent
-                    type="select"
-                    multi
-                    keyValue="otherGroupIds"
-                    onChange={onChange}
-                    value={values.otherGroupIds}
-                    errors={getErrors('otherGroupIds')}
-                    label={MESSAGES.otherGroupIds}
-                    options={groupOptions} // Warning: we should probably filter data here (not in groupsets)
-                />
-            )}
+            {values?.editableFields &&
+                values.editableFields.includes('possibleTypeIds') && (
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="possibleTypeIds"
+                        onChange={onChange}
+                        value={values.possibleTypeIds}
+                        errors={getErrors('possibleTypeIds')}
+                        label={MESSAGES.possibleTypeIds}
+                        options={orgUnitTypeOptions}
+                    />
+                )}
+            {values?.editableFields &&
+                values.editableFields.includes('possibleParentTypeIds') && (
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="possibleParentTypeIds"
+                        onChange={onChange}
+                        value={values.possibleParentTypeIds}
+                        errors={getErrors('possibleParentTypeIds')}
+                        label={MESSAGES.possibleParentTypeIds}
+                        options={orgUnitTypeOptions} // Warning: we should probably filter data here (only what is available in parent/child relationship)
+                    />
+                )}
+            {values?.editableFields &&
+                values.editableFields.includes('groupSetIds') && (
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="groupSetIds"
+                        onChange={onChange}
+                        value={values.groupSetIds}
+                        errors={getErrors('groupSetIds')}
+                        label={MESSAGES.groupSetIds}
+                        options={groupSetOptions} // Warning: no call for groupsets ATM (using groups as placeholder)
+                    />
+                )}
+            {values?.editableFields &&
+                values.editableFields.includes('editableReferenceFormIds') && (
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="editableReferenceFormIds"
+                        onChange={onChange}
+                        value={values.editableReferenceFormIds}
+                        errors={getErrors('editableReferenceFormIds')}
+                        label={MESSAGES.editableReferenceFormIds}
+                        options={formOptions}
+                    />
+                )}
+            {values?.editableFields &&
+                values.editableFields.includes('otherGroupIds') && (
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="otherGroupIds"
+                        onChange={onChange}
+                        value={values.otherGroupIds}
+                        errors={getErrors('otherGroupIds')}
+                        label={MESSAGES.otherGroupIds}
+                        options={groupOptions} // Warning: we should probably filter data here (groups not in groupsets)
+                    />
+                )}
         </ConfirmCancelModal>
     );
 };

@@ -16,7 +16,6 @@ import { OrgUnitChangeRequestConfigsTable } from './Tables/OrgUnitChangeRequestC
 import { OrgUnitChangeRequestConfigDialogCreateFirstStep } from './Dialog/OrgUnitChangeRequestConfigDialogCreateFirstStep';
 import {
     OrgUnitChangeRequestConfigDialogCreateSecondStep,
-    OrgUnitChangeRequestConfigDialogUpdate,
 } from './Dialog/OrgUnitChangeRequestConfigDialogUpdate';
 
 const useStyles = makeStyles(theme => ({
@@ -44,8 +43,6 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
 
-    console.log("*** state isDialogOpen = ", isCreationSecondStepDialogOpen);
-
     return (
         <div>
             <TopBar
@@ -61,7 +58,7 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
                         iconProps={{}}
                         openCreationSecondStepDialog={handleSecondStep}
                     />
-                    {isCreationSecondStepDialogOpen && (
+                    {isCreationSecondStepDialogOpen && config && (
                         <OrgUnitChangeRequestConfigDialogCreateSecondStep
                             isOpen
                             closeDialog={() => {

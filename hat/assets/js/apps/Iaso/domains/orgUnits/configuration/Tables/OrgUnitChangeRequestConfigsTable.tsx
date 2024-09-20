@@ -56,7 +56,6 @@ const useColumns = (
             {
                 Header: formatMessage(MESSAGES.editable_fields),
                 id: 'editable_fields',
-                accessor: row => row.editable_fields.join(', '),
                 width: 600,
             },
             {

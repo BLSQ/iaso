@@ -21,7 +21,7 @@ export const editableFieldsForBackend = [
     'closedDate',
     'location',
 ];
-export const editableFieldsForFrontend = [
+export const editableFieldsManyToManyFields = [
     'possibleTypeIds',
     'possibleParentTypeIds',
     'groupSetIds',

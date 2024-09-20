@@ -7,6 +7,7 @@ import {
 } from 'bluesquare-components';
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
+import { isEqual } from 'lodash';
 import { useTranslatedErrors } from '../../../../libs/validation';
 import MESSAGES from '../messages';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
@@ -14,7 +15,6 @@ import InputComponent from '../../../../components/forms/InputComponent';
 import {
     useGetOUCRCCheckAvailabilityDropdownOptions,
 } from '../hooks/api/useGetOUCRCCheckAvailabilityDropdownOptions';
-import { isEqual } from 'lodash';
 
 type Props = {
     isOpen: boolean;
@@ -27,16 +27,15 @@ const useCreationSchema = () => {
     const { formatMessage } = useSafeIntl();
     return Yup.object().shape({
         projectId: Yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
-        // orgUnitTypeId: Yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
-        orgUnitTypeId: Yup.string().nullable(),
+        orgUnitTypeId: Yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
     });
 };
 
 const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<Props> = ({
-                                                                                       isOpen,
-                                                                                       closeDialog,
-                                                                                       openCreationSecondStepDialog,
-                                                                                   }) => {
+isOpen,
+closeDialog,
+openCreationSecondStepDialog,
+}) => {
     const creationSchema = useCreationSchema();
     const {
         values,
@@ -55,10 +54,10 @@ const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<Props> 
         validationSchema: creationSchema,
         onSubmit: () => {
             const projectOption = allProjects?.find(project =>
-                project.id === values.projectId,
+                `${project.value}` === `${values.projectId}`,
             );
             const orgUnitTypeOption = orgUnitTypeOptions?.find(orgUnitType =>
-                orgUnitType.id === values.orgUnitTypeId,
+                `${orgUnitType.value}` === `${values.orgUnitTypeId}`,
             );
             openCreationSecondStepDialog({
                 project: projectOption ? {
@@ -95,8 +94,7 @@ const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<Props> 
         [setFieldValue, setFieldTouched],
     );
 
-    // const allowConfirm = isValid && !isSubmitting && !isEqual(touched, {});
-    const allowConfirm = true;
+    const allowConfirm = isValid && !isSubmitting && !isEqual(touched, {});
 
     return (
         <ConfirmCancelModal

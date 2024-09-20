@@ -675,40 +675,46 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if not username:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
+        else:
+            existing_user = User.objects.filter(username__iexact=username)
+            if existing_user:
+                return JsonResponse(
+                    {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
+                )
         if not password and not send_email_invitation:
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
-
+        main_user = None
         try:
             existing_user = User.objects.get(username__iexact=username)
-            main_user = None
-            if existing_user:
-                user_in_same_account = (
-                    existing_user.iaso_profile and existing_user.iaso_profile.account == current_account
+            user_in_same_account = False
+            try:
+                if existing_user.iaso_profile and existing_user.iaso_profile.account == current_account:
+                    user_in_same_account = True
+            except User.iaso_profile.RelatedObjectDoesNotExist:
+                # User doesn't have an iaso_profile, so they're not in the same account
+                pass
+
+            if user_in_same_account:
+                return JsonResponse(
+                    {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
                 )
-                if user_in_same_account:
-                    return JsonResponse(
-                        {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
-                    )
-                else:
-                    # TODO: invitation
-                    # TODO what if no iaso_profile?
-                    # TODO what if already main user?
-                    old_username = username
-                    username = f"{username}_{current_account.name.lower().replace(' ', '_')}"
+            else:
+                # TODO: invitation
+                # TODO what if already main user?
+                old_username = username
+                username = f"{username}_{current_account.name.lower().replace(' ', '_')}"
 
-                    # duplicate existing_user into main user and account user
-                    main_user = copy.copy(existing_user)
+                # duplicate existing_user into main user and account user
+                main_user = copy.copy(existing_user)
 
-                    existing_user.username = (
-                        f"{old_username}_{existing_user.iaso_profile.account.name.lower().replace(' ', '_')}"
-                    )
-                    existing_user.set_unusable_password()
-                    existing_user.save()
+                existing_user.username = f"{old_username}_{'unknown' if not hasattr(existing_user, 'iaso_profile') else existing_user.iaso_profile.account.name.lower().replace(' ', '_')}"
+                existing_user.set_unusable_password()
+                existing_user.save()
 
-                    main_user.pk = None
-                    main_user.save()
+                main_user.pk = None
+                main_user.save()
 
-                    TenantUser.objects.create(main_user=main_user, account_user=existing_user)
+                TenantUser.objects.create(main_user=main_user, account_user=existing_user)
         except User.DoesNotExist:
             pass  # no existing user, simply create a new user
 

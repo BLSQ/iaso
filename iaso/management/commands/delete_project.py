@@ -12,12 +12,10 @@ class Command(BaseCommand):
         parser.add_argument("--project-app-id-to-delete", type=str)
 
     def _get_account(self, account_id_to_keep):
-        if account_id_to_keep is None:
-            for account in Account.objects.order_by("id").all():
-                print(account.id, account.name)
-            raise Exception("No account id provided via --account-to-keep")
         for account in Account.objects.order_by("id").all():
             print(account.id, account.name)
+        if account_id_to_keep is None:
+            raise Exception("No account id provided via --account-to-keep")
         account_to_keep = Account.objects.get(pk=account_id_to_keep)
         print("*****")
         print("keeping", account_id_to_keep, account_to_keep)

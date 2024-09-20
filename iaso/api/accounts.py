@@ -1,17 +1,17 @@
 """This api is only there so the default version on an account can be modified"""
 
-from .common import ModelViewSet, HasPermission
-from iaso.models import Account, SourceVersion
-
-from rest_framework import serializers, permissions, status
+from django.contrib.auth import login
+from django.contrib.auth.models import User
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
-from hat.menupermissions import models as permission
-
-from django.contrib.auth.models import User
-from django.contrib.auth import login
 from rest_framework.response import Response
+
+from hat.menupermissions import models as permission
+from iaso.models import Account, SourceVersion
+
+from .common import HasPermission, ModelViewSet
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -59,8 +59,7 @@ class AccountViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        # TODO: How to remove this only for the switch?
-        # HasPermission(permission.SOURCES),  # type: ignore
+        HasPermission(permission.SOURCES),  # type: ignore
         HasAccountPermission,
     ]
     serializer_class = AccountSerializer
@@ -72,6 +71,8 @@ class AccountViewSet(ModelViewSet):
     @action(detail=False, methods=["patch"], url_path="switch")
     def switch(self, request):
         # TODO: Make sure the account_id is present
+        self.permission_classes = [permissions.IsAuthenticated, HasAccountPermission]
+        self.check_permissions(request)
         account_id = request.data.get("account_id", None)
 
         current_user = request.user

@@ -20,88 +20,72 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
     permissions,
     type,
 }) => {
-    if (!settings.row.original.group) {
-        if (settings.row.original.readEdit) {
+    const { original } = settings.row;
+
+    const handleCheckboxChange = (
+        permission: string | Permission,
+        checked: boolean,
+    ) => setPermissions(permission, checked);
+
+    const isChecked = (permissionCode: string) => {
+        return Boolean(
+            permissions.find(up =>
+                typeof up === 'string'
+                    ? up === permissionCode
+                    : up.codename === permissionCode,
+            ),
+        );
+    };
+
+    const renderCheckbox = (
+        permissionCode: string,
+        permission: string | Permission,
+    ) => (
+        <InputComponent
+            type="checkbox"
+            keyValue={`permission-checkbox-${permissionCode}`}
+            value={isChecked(permissionCode)}
+            onChange={(_, checked) => handleCheckboxChange(permission, checked)}
+            labelString=""
+            dataTestId="permission-checkbox"
+        />
+    );
+
+    if (!original.group) {
+        if (original.readEdit) {
             const valRead =
                 type === 'user'
-                    ? settings.row.original.readEdit.read
+                    ? original.readEdit.read
                     : {
-                          codename: settings.row.original.readEdit.read,
+                          codename: original.readEdit.read,
                           id: 0,
-                          name: settings.row.original.readEdit.read,
+                          name: original.readEdit.read,
                       };
+
             const valEdit =
                 type === 'user'
-                    ? settings.row.original.readEdit.edit
+                    ? original.readEdit.edit
                     : {
-                          codename: settings.row.original.readEdit.edit,
+                          codename: original.readEdit.edit,
                           id: 0,
-                          name: settings.row.original.readEdit.edit,
+                          name: original.readEdit.edit,
                       };
+
             return (
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                    }}
-                >
-                    <InputComponent
-                        type="checkbox"
-                        keyValue={`permission-checkbox-${settings.row.original.readEdit.read}`}
-                        value={Boolean(
-                            permissions.find(up => {
-                                return typeof up === 'string'
-                                    ? up === settings.row.original.readEdit.read
-                                    : up.codename ===
-                                          settings.row.original.readEdit.read;
-                            }),
-                        )}
-                        onChange={(_, checked) => {
-                            setPermissions(valRead, checked);
-                        }}
-                        labelString=""
-                        dataTestId="permission-checkbox"
-                    />
-                    <InputComponent
-                        type="checkbox"
-                        keyValue={`permission-checkbox-${settings.row.original.readEdit.edit}`}
-                        value={Boolean(
-                            permissions.find(up => {
-                                return typeof up === 'string'
-                                    ? up === settings.row.original.readEdit.edit
-                                    : up.codename ===
-                                          settings.row.original.readEdit.edit;
-                            }),
-                        )}
-                        onChange={(_, checked) => {
-                            setPermissions(valEdit, checked);
-                        }}
-                        labelString=""
-                        dataTestId="permission-checkbox"
-                    />
+                <div style={{ display: 'inline-flex' }}>
+                    {renderCheckbox(original.readEdit.read, valRead)}
+                    {renderCheckbox(original.readEdit.edit, valEdit)}
                 </div>
             );
         }
+
         return (
-            <InputComponent
-                type="checkbox"
-                keyValue={`permission-checkbox-${settings.row.original[codeName]}`}
-                value={Boolean(
-                    permissions.find(up => {
-                        return typeof up === 'string'
-                            ? up === settings.row.original[codeName]
-                            : up.codename === settings.row.original[codeName];
-                    }),
-                )}
-                onChange={(_, checked) => {
-                    setPermissions(value, checked);
-                }}
-                labelString=""
-                dataTestId="permission-checkbox"
-            />
+            <div style={{ display: 'inline-flex' }}>
+                {renderCheckbox(original[codeName], value)}
+            </div>
         );
     }
+
     return null;
 };
 

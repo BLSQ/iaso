@@ -51,26 +51,34 @@ class PermissionsViewSet(viewsets.ViewSet):
 
     def get_permissions_for_group(self, permissions_queryset, permission_codenames):
         filtered_permissions = permissions_queryset.filter(codename__in=permission_codenames)
+
         if not filtered_permissions:
-            return None
-        read_edit_permissions = list(READ_EDIT_PERMISSIONS.keys())
+            return []
+
+        read_edit_permissions = READ_EDIT_PERMISSIONS.keys()
         permissions = []
+
         for permission in filtered_permissions:
-            perm = [item for item in read_edit_permissions if permission.codename in item]
-            if perm:
-                perm = perm[0]
-                in_permissions = [item for item in permissions if perm == item["codename"]]
-                if not in_permissions:
+            matching_perm = next((perm for perm in read_edit_permissions if permission.codename in perm), None)
+
+            if matching_perm:
+                if not any(p["codename"] == matching_perm for p in permissions):
                     permissions.append(
                         {
                             "id": permission.id,
-                            "name": _(perm),
-                            "codename": perm,
-                            "read_edit": READ_EDIT_PERMISSIONS[perm],
+                            "name": _(matching_perm),
+                            "codename": matching_perm,
+                            "read_edit": READ_EDIT_PERMISSIONS[matching_perm],
                         }
                     )
             else:
-                permissions.append({"id": permission.id, "name": _(permission.name), "codename": permission.codename})
+                permissions.append(
+                    {
+                        "id": permission.id,
+                        "name": _(permission.name),
+                        "codename": permission.codename,
+                    }
+                )
 
         return permissions
 

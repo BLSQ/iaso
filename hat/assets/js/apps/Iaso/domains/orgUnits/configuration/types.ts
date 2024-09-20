@@ -46,16 +46,22 @@ export type OrgUnitChangeRequestConfigListElement = {
 };
 
 export type OrgUnitChangeRequestConfigurationFull = {
-    id?: number;
-    projectId?: number;
-    orgUnitTypeId?: number;
+    id: number;
+    project: Project;
+    orgUnitType: OrgUnitType;
     orgUnitsEditable?: boolean;
     editableFields?: Array<string>;
-    possibleTypeIds?: Array<OrgUnitType>;
-    possibleParentTypeIds?: Array<OrgUnitType>;
-    groupSetIds?: Array<GroupSet>;
-    editableReferenceFormIds?: Array<Form>;
-    otherGroupIds?: Array<Group>;
+    possibleTypes?: Array<OrgUnitType>;
+    possibleParentTypes?: Array<OrgUnitType>;
+    groupSets?: Array<GroupSet>;
+    editableReferenceForms?: Array<Form>;
+    otherGroups?: Array<Group>;
+};
+
+export type OrgUnitChangeRequestConfiguration = {
+    id?: number;
+    project: Project;
+    orgUnitType: OrgUnitType;
 };
 
 export interface OrgUnitChangeRequestConfigsPaginated extends Pagination {

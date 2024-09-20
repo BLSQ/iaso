@@ -4,7 +4,10 @@ import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box } from '@mui/material';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { baseUrls } from '../../../constants/urls';
-import { OrgUnitChangeRequestConfigsParams } from './types';
+import {
+    OrgUnitChangeRequestConfigsParams,
+    OrgUnitChangeRequestConfiguration,
+} from './types';
 import { useGetOrgUnitChangeRequestConfigs } from './hooks/api/useGetOrgUnitChangeRequestConfigs';
 import TopBar from '../../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -28,14 +31,14 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
     const { data, isFetching } = useGetOrgUnitChangeRequestConfigs(params);
     const [isCreationSecondStepDialogOpen, setIsCreationSecondStepDialogOpen] =
         useState<boolean>(false);
-    const [configInCreation, setConfigInCreation] = useState<object>({});
+    const [config, setConfig] = useState<OrgUnitChangeRequestConfiguration>();
 
-    const handleCreationSecondStep = useCallback(
-        (config) => {
-            setConfigInCreation(config);
+    const handleSecondStep = useCallback(
+        (newConfig) => {
+            setConfig(newConfig);
             setIsCreationSecondStepDialogOpen(true);
         },
-        [setIsCreationSecondStepDialogOpen, setConfigInCreation],
+        [setIsCreationSecondStepDialogOpen, setConfig],
     );
 
     const classes: Record<string, string> = useStyles();
@@ -56,24 +59,24 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
 
                     <OrgUnitChangeRequestConfigDialogCreateFirstStep
                         iconProps={{}}
-                        openCreationSecondStepDialog={handleCreationSecondStep}
+                        openCreationSecondStepDialog={handleSecondStep}
                     />
-                    <OrgUnitChangeRequestConfigDialogCreateSecondStep
-                        isOpen={isCreationSecondStepDialogOpen}
-                        closeDialog={() => {
-                            setIsCreationSecondStepDialogOpen(false);
-                        }}
-                        config={configInCreation}
-                    />
+                    {isCreationSecondStepDialogOpen && (
+                        <OrgUnitChangeRequestConfigDialogCreateSecondStep
+                            isOpen
+                            closeDialog={() => {
+                                setIsCreationSecondStepDialogOpen(false);
+                            }}
+                            config={config}
+                        />
+                    )}
                 </Box>
 
                 <OrgUnitChangeRequestConfigsTable
                     data={data}
                     isFetching={isFetching}
                     params={params}
-                    onEditClicked={config => {
-                        // TODO
-                    }}
+                    onEditClicked={handleSecondStep}
                 />
             </Box>
         </div>

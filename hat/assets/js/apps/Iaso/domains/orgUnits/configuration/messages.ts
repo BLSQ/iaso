@@ -121,24 +121,24 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.editableFields',
         defaultMessage: 'Editable Fields',
     },
-    possibleTypes: {
-        id: 'iaso.label.possibleTypes',
+    possibleTypeIds: {
+        id: 'iaso.label.possibleTypeIds',
         defaultMessage: 'Possible New Types',
     },
-    possibleParentTypes: {
-        id: 'iaso.label.possibleParentTypes',
+    possibleParentTypeIds: {
+        id: 'iaso.label.possibleParentTypeIds',
         defaultMessage: 'Possible New Parent Types',
     },
-    groupSets: {
-        id: 'iaso.label.groupSets',
+    groupSetIds: {
+        id: 'iaso.label.groupSetIds',
         defaultMessage: 'Group Sets',
     },
-    editableReferenceForms: {
-        id: 'iaso.label.editableReferenceForms',
+    editableReferenceFormIds: {
+        id: 'iaso.label.editableReferenceFormIds',
         defaultMessage: 'Editable Reference Forms',
     },
-    otherGroups: {
-        id: 'iaso.label.otherGroups',
+    otherGroupIds: {
+        id: 'iaso.label.otherGroupIds',
         defaultMessage: 'Other Groups',
     },
     oucrcModalCreateButton: {

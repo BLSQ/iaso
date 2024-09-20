@@ -33,10 +33,10 @@ const useCreationSchema = () => {
 };
 
 const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<Props> = ({
-    isOpen,
-    closeDialog,
-    openCreationSecondStepDialog,
-}) => {
+                                                                                       isOpen,
+                                                                                       closeDialog,
+                                                                                       openCreationSecondStepDialog,
+                                                                                   }) => {
     const creationSchema = useCreationSchema();
     const {
         values,
@@ -54,7 +54,22 @@ const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<Props> 
         },
         validationSchema: creationSchema,
         onSubmit: () => {
-            openCreationSecondStepDialog(values);
+            const projectOption = allProjects?.find(project =>
+                project.id === values.projectId,
+            );
+            const orgUnitTypeOption = orgUnitTypeOptions?.find(orgUnitType =>
+                orgUnitType.id === values.orgUnitTypeId,
+            );
+            openCreationSecondStepDialog({
+                project: projectOption ? {
+                    id: projectOption.value,
+                    name: projectOption.label,
+                } : undefined,
+                orgUnitType: orgUnitTypeOption ? {
+                    id: orgUnitTypeOption.value,
+                    name: orgUnitTypeOption.label,
+                } : undefined,
+            });
         },
     });
 

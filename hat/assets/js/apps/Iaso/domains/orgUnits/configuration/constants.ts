@@ -7,11 +7,11 @@ export const editableFields = [
     'openingDate',
     'closedDate',
     'location',
-    'possibleTypes',
-    'possibleParentTypes',
-    'groupSets',
-    'editableReferenceForms',
-    'otherGroups',
+    'possibleTypeIds',
+    'possibleParentTypeIds',
+    'groupSetIds',
+    'editableReferenceFormIds',
+    'otherGroupIds',
 ];
 // only these values are allowed by the backend, the others are there to make fields appear
 export const editableFieldsForBackend = [
@@ -20,4 +20,11 @@ export const editableFieldsForBackend = [
     'openingDate',
     'closedDate',
     'location',
+];
+export const editableFieldsForFrontend = [
+    'possibleTypeIds',
+    'possibleParentTypeIds',
+    'groupSetIds',
+    'editableReferenceFormIds',
+    'otherGroupIds',
 ];

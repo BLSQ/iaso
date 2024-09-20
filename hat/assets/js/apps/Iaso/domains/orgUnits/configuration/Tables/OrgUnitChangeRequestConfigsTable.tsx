@@ -11,7 +11,7 @@ import { baseUrls } from '../../../../constants/urls';
 import {
     OrgUnitChangeRequestConfigsPaginated,
     OrgUnitChangeRequestConfigsParams,
-    OrgUnitChangeRequestConfig,
+    OrgUnitChangeRequestConfiguration,
 } from '../types';
 import MESSAGES from '../messages';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
@@ -19,7 +19,7 @@ import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import { ConfirmDeleteModal } from '../Dialog/ConfirmDeleteModal';
 
 const useColumns = (
-    onEditClicked: Dispatch<SetStateAction<OrgUnitChangeRequestConfig>>,
+    onEditClicked: Dispatch<SetStateAction<OrgUnitChangeRequestConfiguration>>,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
     // @ts-ignore
@@ -66,7 +66,13 @@ const useColumns = (
                 sortable: false,
                 Cell: settings => {
                     const handleEdit = useCallback(() => {
-                        onEditClicked(settings.row.original);
+                        const configToUpdate = {
+                            id: settings.row.original.id,
+                            project: settings.row.original.project,
+                            orgUnitType: settings.row.original.org_unit_type,
+                        };
+                        onEditClicked(configToUpdate);
+                        // onEditClicked(settings.row.original);
                     }, [settings.row.original]);
                     return (
                         <>

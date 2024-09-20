@@ -1195,8 +1195,7 @@ class Instance(models.Model):
 
     def export(self, launcher=None, force_export=False):
         from iaso.dhis2.datavalue_exporter import DataValueExporter
-        from iaso.dhis2.export_request_builder import (ExportRequestBuilder,
-                                                       NothingToExportError)
+        from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
 
         try:
             export_request = ExportRequestBuilder().build_export_request(
@@ -1482,9 +1481,8 @@ class Profile(models.Model):
 
     def as_short_dict(self):
         user_infos = self.user
-        if hasattr(self.user, 'tenant_user') and self.user.tenant_user:
+        if hasattr(self.user, "tenant_user") and self.user.tenant_user:
             user_infos = self.user.tenant_user.main_user
-
 
         return {
             "id": self.id,

@@ -1,14 +1,14 @@
 import { UseMutationResult } from 'react-query';
 import { useSnackMutation } from '../../../../../libs/apiHooks';
 
-import { apiUrl } from '../../constants';
-import { OrgUnitChangeRequestConfig } from '../../types';
+import { apiUrlOUCRC } from '../../constants';
+import { OrgUnitChangeRequestConfigurationFull } from '../../types';
 import { deleteRequest } from '../../../../../libs/Api';
 
 const deleteOrgUnitChangeRequestConfigs = (
-    config: OrgUnitChangeRequestConfig,
+    config: OrgUnitChangeRequestConfigurationFull,
 ) => {
-    return deleteRequest(`${apiUrl}/${config.id}/`) as Promise<boolean>;
+    return deleteRequest(`${apiUrlOUCRC}/${config.id}/`) as Promise<boolean>;
 };
 
 export const useDeleteOrgUnitChangeRequestConfig = (): UseMutationResult =>

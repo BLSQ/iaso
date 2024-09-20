@@ -4,7 +4,7 @@ import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 
 import { useLocale } from '../../../../app/contexts/LocaleContext';
-import { apiUrl } from '../../constants';
+import { apiUrlOUCRC } from '../../constants';
 import {
     OrgUnitChangeRequestConfigsPaginated,
     OrgUnitChangeRequestConfigsParams,
@@ -26,7 +26,7 @@ export const useGetOrgUnitChangeRequestConfigs = (
         page: params.page,
     };
 
-    const url = makeUrlWithParams(apiUrl, apiParams);
+    const url = makeUrlWithParams(apiUrlOUCRC, apiParams);
     return useSnackQuery({
         // Including locale in the query key because we need to make a call to update translations coming from the backend
         queryKey: ['getOrgUnitChangeRequestConfigs', url, locale],

@@ -12,28 +12,30 @@ import MESSAGES from '../messages';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import InputComponent from '../../../../components/forms/InputComponent';
 import {
-    useCheckAvailabilityOrgUnitChangeRequestConfigs,
-} from '../hooks/api/useCheckAvailabilityOrgUnitChangeRequestConfigs';
+    useGetOUCRCCheckAvailabilityDropdownOptions,
+} from '../hooks/api/useGetOUCRCCheckAvailabilityDropdownOptions';
 import { isEqual } from 'lodash';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    openUpdateDialog: () => void;
+    // eslint-disable-next-line no-unused-vars
+    openCreationSecondStepDialog: (config: object) => void;
 };
 
 const useCreationSchema = () => {
     const { formatMessage } = useSafeIntl();
     return Yup.object().shape({
         projectId: Yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
-        orgUnitTypeId: Yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
+        // orgUnitTypeId: Yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
+        orgUnitTypeId: Yup.string().nullable(),
     });
 };
 
-const OrgUnitChangeRequestConfigDialogCreate: FunctionComponent<Props> = ({
+const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
-    openUpdateDialog,
+    openCreationSecondStepDialog,
 }) => {
     const creationSchema = useCreationSchema();
     const {
@@ -52,12 +54,9 @@ const OrgUnitChangeRequestConfigDialogCreate: FunctionComponent<Props> = ({
         },
         validationSchema: creationSchema,
         onSubmit: () => {
-            console.log('*** onSubmit values = ', values);
-            openUpdateDialog();
+            openCreationSecondStepDialog(values);
         },
     });
-
-    console.log("*** createDialog - openUpdateDialog = ", openUpdateDialog);
 
     const { formatMessage } = useSafeIntl();
     const getErrors = useTranslatedErrors({
@@ -69,9 +68,9 @@ const OrgUnitChangeRequestConfigDialogCreate: FunctionComponent<Props> = ({
 
     const { data: allProjects, isFetching: isFetchingProjects } = useGetProjectsDropdownOptions();
     const {
-        data: availableOrgUnitTypes,
+        data: orgUnitTypeOptions,
         isFetching: isFetchingOrgUnitTypes,
-    } = useCheckAvailabilityOrgUnitChangeRequestConfigs(values.projectId);
+    } = useGetOUCRCCheckAvailabilityDropdownOptions(values.projectId);
 
     const onChange = useCallback(
         (keyValue, value) => {
@@ -120,7 +119,7 @@ const OrgUnitChangeRequestConfigDialogCreate: FunctionComponent<Props> = ({
                 onChange={onChange}
                 value={values.orgUnitTypeId}
                 label={MESSAGES.orgUnitType}
-                options={availableOrgUnitTypes || []}
+                options={orgUnitTypeOptions || []}
                 errors={getErrors('orgUnitTypeId')}
             />
         </ConfirmCancelModal>
@@ -128,8 +127,8 @@ const OrgUnitChangeRequestConfigDialogCreate: FunctionComponent<Props> = ({
 };
 
 const modalWithButton = makeFullModal(
-    OrgUnitChangeRequestConfigDialogCreate,
+    OrgUnitChangeRequestConfigDialogCreateFirstStep,
     AddButton,
 );
 
-export { modalWithButton as OrgUnitChangeRequestConfigDialogCreate };
+export { modalWithButton as OrgUnitChangeRequestConfigDialogCreateFirstStep };

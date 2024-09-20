@@ -1,14 +1,20 @@
+import requests
+from copy import copy
 from typing import Any, Protocol
 
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django import forms as django_forms
 from django.contrib.admin import widgets, RelatedOnlyFieldListFilter
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import Q
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
+from hat.audit.models import DJANGO_ADMIN, log_modification
 
 from iaso.utils.admin.custom_filters import (
     DuplicateUUIDFilter,
@@ -72,6 +78,7 @@ from .models import (
     WorkflowVersion,
 )
 from .models.data_store import JsonDataStore
+from .models.deduplication import ValidationStatus
 from .models.microplanning import Assignment, Planning, Team
 from .utils.gis import convert_2d_point_to_3d
 
@@ -527,6 +534,37 @@ class EntityAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return Entity.objects_include_deleted.all()
+
+    # Don't allow delete multiple to avoid deletes without side-effects and audit log
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+        return actions
+
+    # Override the Django admin delete action to:
+    # - soft delete the entity
+    # - soft delete its attached form instances
+    # - delete potential EntityDuplicates
+    def delete_view(self, request, object_id, extra_context=None):
+        entity = Entity.objects_include_deleted.get(pk=object_id)
+        entity.delete()  # soft delete
+        instances_to_soft_delete = set([entity.attributes] + list(entity.instances.all()))
+
+        for instance in instances_to_soft_delete:
+            original = copy(instance)
+            instance.soft_delete()
+            log_modification(original, instance, DJANGO_ADMIN, user=request.user)
+
+        EntityDuplicate.objects.filter(
+            (Q(entity1=entity) | Q(entity2=entity)) & Q(validation_status=ValidationStatus.PENDING)
+        ).delete()
+
+        msg = f"Entity {entity.uuid} was soft deleted, along with its {len(instances_to_soft_delete)} instances and pending duplicates"
+        self.message_user(request, msg)
+
+        # redirect to the list view
+        return HttpResponseRedirect(reverse("admin:iaso_entity_changelist"))
 
 
 @admin.register(JsonDataStore)

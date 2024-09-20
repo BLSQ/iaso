@@ -23,6 +23,7 @@ PAYMENT_API_BULK = "payment_api_bulk"
 PAYMENT_API = "payment_api"
 PAYMENT_LOT_API = "payment_lot_api"
 ORG_UNIT_CHANGE_REQUEST_API = "org_unit_change_request_api"
+DJANGO_ADMIN = "django_admin"
 
 
 def dict_compare(d1, d2):

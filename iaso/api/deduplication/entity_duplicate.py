@@ -292,14 +292,17 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
         try:
             entity1 = Entity.objects.get(pk=data["entity1_id"])
         except Entity.DoesNotExist:
+            logger.exception(f"Entity merge failed: entity 1 does not exist: {data}")
             raise serializers.ValidationError("Entity 1 does not exist")
 
         try:
             entity2 = Entity.objects.get(pk=data["entity2_id"])
         except Entity.DoesNotExist:
+            logger.exception(f"Entity merge failed: entity 2 does not exist: {data}")
             raise serializers.ValidationError("Entity 2 does not exist")
 
         if entity1.entity_type != entity2.entity_type:
+            logger.exception(f"Entity merge failed: Entities must be of the same type: {data}")
             raise serializers.ValidationError("Entities must be of the same type")
 
         if data["ignore"] == False:  # merge the duplicates

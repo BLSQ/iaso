@@ -15,7 +15,7 @@ const MESSAGES = defineMessages({
     },
     delete: {
         id: 'iaso.groupsets.dialog.delete',
-        defaultMessage: 'Are you sure you want to delete this group?',
+        defaultMessage: 'Are you sure you want to delete this groupset?',
     },
     deleteWarning: {
         id: 'iaso.groupsets.dialog.deleteText',

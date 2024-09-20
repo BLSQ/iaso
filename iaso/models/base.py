@@ -1522,6 +1522,10 @@ class Profile(models.Model):
 
         user_roles_editable_org_unit_type_ids = self.get_user_roles_editable_org_unit_type_ids()
 
+        user_infos = self.user
+        if hasattr(self.user, "tenant_user") and self.user.tenant_user:
+            user_infos = self.user.tenant_user.main_user
+
         return {
             "id": self.id,
             "first_name": user_infos.first_name,

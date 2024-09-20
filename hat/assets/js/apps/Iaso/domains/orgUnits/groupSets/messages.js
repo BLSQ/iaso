@@ -5,6 +5,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.actions',
         defaultMessage: 'Actions',
     },
+    createButton: {
+        id: "iaso.label.create",
+        default: "Create",
+    },
+    saveButton: {
+        id: "iaso.label.save",
+        default: "Save",
+    },
     created_at: {
         id: 'iaso.label.created_at',
         defaultMessage: 'Created',

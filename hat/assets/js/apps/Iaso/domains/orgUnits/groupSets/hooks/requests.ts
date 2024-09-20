@@ -72,7 +72,7 @@ export const useGetGroupSet = groupSetId => {
         {},
     );
 };
-export const useSaveGroupSet = (): UseMutationResult =>
+export const useSaveGroupSet = (): UseMutationResult<any, any, any, any> =>
     useSnackMutation(
         body => {
             if (body.id) {

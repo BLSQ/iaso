@@ -167,10 +167,13 @@ const GroupSet = () => {
                     </Box>
                     <Button
                         type="submit"
-                        enabled={allowConfirm}
-                        onClick={formik.handleSubmit}
+                        disabled={!allowConfirm}
+                        onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                            event.preventDefault();
+                            formik.handleSubmit();
+                        }}
                     >
-                        {isCreate ? 'Create' : 'Save'}
+                        {formatMessage(isCreate ? MESSAGES.createButton : MESSAGES.saveButton)}
                     </Button>
                 </div>
             </FormikProvider>

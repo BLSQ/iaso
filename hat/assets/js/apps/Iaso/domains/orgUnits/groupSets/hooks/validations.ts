@@ -9,7 +9,6 @@ import { useMemo } from 'react';
 export const useGroupSetSchema = (errors, payload) => {
     const { formatMessage } = useSafeIntl();
 
-    console.log('debug', errors, payload);
     const apiValidator = useAPIErrorValidator(errors, payload);
     const schema = useMemo(
         () =>

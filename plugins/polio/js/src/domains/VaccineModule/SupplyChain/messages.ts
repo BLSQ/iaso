@@ -122,6 +122,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.vrfTitle',
         defaultMessage: 'Vaccine request form',
     },
+    vrfType: {
+        id: 'iaso.polio.label.vrfType',
+        defaultMessage: 'Vaccine request form Type',
+    },
+    vrfTypeNormal: {
+        id: 'iaso.polio.label.vrfTypeNormal',
+        defaultMessage: 'Normal',
+    },
+    vrfTypeMissing: {
+        id: 'iaso.polio.label.vrfTypeMissing',
+        defaultMessage: 'Missing',
+    },
+    vrfTypeNotRequired: {
+        id: 'iaso.polio.label.vrfTypeNotRequired',
+        defaultMessage: 'Not Required',
+    },
     saveAll: {
         id: 'iaso.polio.label.saveAll',
         defaultMessage: 'Save all',
@@ -257,6 +273,10 @@ const MESSAGES = defineMessages({
     pleaseCreateVrf: {
         id: 'iaso.polio.form.pleaseCreateVrf',
         defaultMessage: 'Create VRF to unlock this tab',
+    },
+    notAvailableNotNormal: {
+        id: 'iaso.polio.form.notAvailableNotNormal',
+        defaultMessage: 'Available only if VRF is set as normal',
     },
     arrival_reportsApiSuccess: {
         id: 'iaso.polio.api.arrival_reportsApiSuccess',

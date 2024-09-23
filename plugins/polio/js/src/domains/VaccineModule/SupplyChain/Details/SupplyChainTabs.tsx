@@ -9,7 +9,8 @@ import { TabValue } from '../types';
 
 type Props = {
     tab: TabValue;
-    disabled: boolean;
+    isNew: boolean;
+    isNormal: boolean;
     // eslint-disable-next-line no-unused-vars
     onChangeTab: (_event: any, newTab: TabValue) => void;
 };
@@ -23,9 +24,22 @@ const useStyles = makeStyles(theme => {
 export const SupplyChainTabs: FunctionComponent<Props> = ({
     tab,
     onChangeTab,
-    disabled,
+    isNew,
+    isNormal,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const disabled = isNew || !isNormal;
+
+    const tooltipText = (() => {
+        if (isNew) {
+            return formatMessage(MESSAGES.pleaseCreateVrf);
+        }
+        if (!isNormal) {
+            return formatMessage(MESSAGES.notAvailableNotNormal);
+        }
+        return '';
+    })();
+
     const classes: Record<string, string> = useStyles();
     return (
         <Tabs
@@ -47,7 +61,7 @@ export const SupplyChainTabs: FunctionComponent<Props> = ({
                 hasTabError={false}
                 handleChange={onChangeTab}
                 showIcon={disabled}
-                tooltipMessage={formatMessage(MESSAGES.pleaseCreateVrf)}
+                tooltipMessage={tooltipText}
             />
             <TabWithInfoIcon
                 key={VAR}
@@ -58,7 +72,7 @@ export const SupplyChainTabs: FunctionComponent<Props> = ({
                 hasTabError={false}
                 handleChange={onChangeTab}
                 showIcon={disabled}
-                tooltipMessage={formatMessage(MESSAGES.pleaseCreateVrf)}
+                tooltipMessage={tooltipText}
             />
         </Tabs>
     );

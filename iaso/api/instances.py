@@ -4,7 +4,6 @@ import ntpath
 from time import gmtime, strftime
 from typing import Any, Dict, Union
 
-
 import pandas as pd
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
@@ -179,7 +178,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
         image_only = request.GET.get("image_only", "false").lower() == "true"
         if image_only:
-            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff"]
+            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
             queryset = queryset.filter(file_extension__in=image_extensions)
 
         paginator = common.Paginator()

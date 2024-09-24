@@ -9,7 +9,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
 
     def create_new_project_and_new_oucrc(self, org_unit_type, creator):
         # Prepare new project
-        new_project = m.Project.objects.create(name="New Project")
+        new_project = m.Project.objects.create(name="New Project", account=self.account_pokemon)
         new_oucrc = m.OrgUnitChangeRequestConfiguration.objects.create(
             org_unit_type=org_unit_type,
             project=new_project,

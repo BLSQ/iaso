@@ -5,6 +5,7 @@ export const paginationPathParamsWithPrefix = (prefix: string): string[] =>
     paginationPathParams.map(p => `${prefix}${capitalize(p, true)}`);
 
 export const FORMS_PREFIX = 'formsParams';
+export const FILES_PREFIX = 'filesParams';
 export const LINKS_PREFIX = 'linksParams';
 export const LOGS_PREFIX = 'logsParams';
 export const OU_CHILDREN_PREFIX = 'childrenParams';
@@ -184,6 +185,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'potentialPaymentIds',
         ],
     },
+    orgUnitsChangeRequestDetail: {
+        url: `${ORG_UNITS_CHANGE_REQUEST}/detail`,
+        params: ['accountId', 'changeRequestId'],
+    },
     registry: {
         url: 'orgunits/registry',
         params: [
@@ -265,7 +270,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         params: ['accountId', 'search', ...paginationPathParams],
     },
     users: {
-        url: 'settings/users',
+        url: 'settings/users/management',
         params: [
             'accountId',
             'search',
@@ -277,6 +282,18 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'projectsIds',
             'userRoles',
             'teamsIds',
+            ...paginationPathParams,
+        ],
+    },
+    usersHistory: {
+        url: 'settings/users/history',
+        params: [
+            'accountId',
+            'org_unit_id',
+            'modified_by',
+            'user_ids',
+            'created_at_before',
+            'created_at_after',
             ...paginationPathParams,
         ],
     },
@@ -326,6 +343,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'entityTypeIds',
             'locationLimit',
             'groups',
+            'fieldsSearch',
             ...paginationPathParams,
         ],
     },
@@ -521,6 +539,7 @@ type IasoBaseUrls = {
     orgUnits: string;
     orgUnitDetails: string;
     orgUnitsChangeRequest: string;
+    orgUnitsChangeRequestDetail: string;
     registry: string;
     registryDetail: string;
     links: string;
@@ -529,6 +548,7 @@ type IasoBaseUrls = {
     completenessStats: string;
     modules: string;
     users: string;
+    usersHistory: string;
     userRoles: string;
     projects: string;
     sources: string;

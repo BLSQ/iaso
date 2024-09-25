@@ -1,4 +1,6 @@
+import csv
 import datetime
+import io
 import json
 import typing
 from unittest import mock
@@ -13,14 +15,12 @@ from django.utils.timezone import now
 from rest_framework import status
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from hat.audit.models import Modification
+from hat.audit.models import Modification, INSTANCE_API
 from iaso import models as m
 from iaso.api import query_params as query
+from iaso.models import FormVersion, Instance, InstanceLock
 from iaso.models.microplanning import Planning, Team
-from iaso.models import Instance, InstanceLock, FormVersion
 from iaso.test import APITestCase
-import csv
-import io
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
@@ -571,6 +571,15 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
         self.assertJSONResponse(response, 200)
         self.assertTrue(response.json()["deleted"])
+
+        self.assertEqual(1, Modification.objects.count())
+        modification = Modification.objects.first()
+        self.assertEqual(modification.source, INSTANCE_API)
+        self.assertEqual(modification.user, self.yoda)
+        self.assertEqual(soft_deleted_instance.id, int(modification.object_id))
+        self.assertNotEqual(modification.past_value, modification.new_value)
+        self.assertFalse(modification.past_value[0]["fields"]["deleted"])
+        self.assertTrue(modification.new_value[0]["fields"]["deleted"])
 
     def test_bulk_delete_selected_instance_ids(self):
         """POST /instances/bulkdelete and undelete"""
@@ -1859,3 +1868,44 @@ class InstancesAPITestCase(APITestCase):
                 another_instance.id,
             ],
         )
+
+    def test_attachments_list(self):
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+        attachment1 = m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
+        attachment2 = m.InstanceFile.objects.create(instance=instance, file="test2.pdf")
+
+        response = self.client.get("/api/instances/attachments/")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        self.assertEqual(data[0]["id"], attachment1.id)
+        self.assertEqual(data[1]["id"], attachment2.id)
+
+    def test_attachments_filter_image_only(self):
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+        m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
+        m.InstanceFile.objects.create(instance=instance, file="test2.pdf")
+
+        response = self.client.get("/api/instances/attachments/?image_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 1)
+        self.assertTrue(data[0]["file"].endswith(".jpg"))
+
+    def test_attachments_pagination(self):
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+        for i in range(30):  # Assuming default page size is less than 30
+            m.InstanceFile.objects.create(instance=instance, file=f"test{i}.jpg")
+
+        response = self.client.get("/api/instances/attachments/?limit=30")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data["results"]), 30)
+        self.assertFalse(data["has_next"])
+        self.assertFalse(data["has_previous"])

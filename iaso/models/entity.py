@@ -172,6 +172,7 @@ class Entity(SoftDeletableModel):
         Instance, on_delete=models.PROTECT, help_text="instance", related_name="attributes", blank=True, null=True
     )
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
+    merged_to = models.ForeignKey("self", null=True, blank=True, on_delete=models.PROTECT)
 
     objects = DefaultSoftDeletableManager.from_queryset(EntityQuerySet)()
 

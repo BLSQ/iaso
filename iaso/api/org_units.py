@@ -23,12 +23,11 @@ from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
 from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import DataSource, Form, Group, Instance, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.utils import geojson_queryset
 from iaso.utils.gis import simplify_geom
 
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
-
 
 # noinspection PyMethodMayBeStatic
 
@@ -452,16 +451,19 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         "errorMessage": _(f"Invalid validation status : {validation_status}"),
                     }
                 )
-
         if "geo_json" in request.data:
             geo_json = request.data["geo_json"]
             geometry = geo_json["features"][0]["geometry"] if geo_json else None
             coordinates = geometry["coordinates"] if geometry else None
             if coordinates:
                 multi_polygon = MultiPolygon(*[Polygon(*coord) for coord in coordinates])
+                # keep geom and simplified geom consistent
+                org_unit.geom = multi_polygon
                 org_unit.simplified_geom = simplify_geom(multi_polygon)
             else:
+                # keep geom and simplified geom consistent
                 org_unit.simplified_geom = None
+                org_unit.geom = None
         elif "simplified_geom" in request.data:
             org_unit.simplified_geom = request.data["simplified_geom"]
 
@@ -550,6 +552,22 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
                     continue
                 new_groups.append(temp_group)
+
+        if "default_image" in request.data:
+            default_image_id = request.data["default_image"]
+            if default_image_id is not None:
+                try:
+                    default_image = InstanceFile.objects.get(id=default_image_id)
+                    org_unit.default_image = default_image
+                except InstanceFile.DoesNotExist:
+                    errors.append(
+                        {
+                            "errorKey": "default_image",
+                            "errorMessage": _("InstanceFile with id {} does not exist").format(default_image_id),
+                        }
+                    )
+            else:
+                org_unit.default_image = None
 
         opening_date = request.data.get("opening_date", None)
         org_unit.opening_date = None if not opening_date else self.get_date(opening_date)

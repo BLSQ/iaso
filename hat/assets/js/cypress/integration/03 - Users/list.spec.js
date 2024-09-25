@@ -7,7 +7,7 @@ import superUser from '../../fixtures/profiles/me/superuser.json';
 import { testSearchField } from '../../support/testSearchField';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/settings/users`;
+const baseUrl = `${siteBaseUrl}/dashboard/settings/users/management`;
 
 let interceptFlag = false;
 const orgUnitTreeIndexSearch = 2;

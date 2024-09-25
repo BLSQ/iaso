@@ -76,7 +76,7 @@ class WFP2Adapter(Auth0OAuth2Adapter):
         site_name = current_site.name
         domain = current_site.domain
         profile_url = request.build_absolute_uri(
-            f"/dashboard/settings/users/accountId/1/search/{user.username}/order/user__username/pageSize/20/page/1"
+            f"/dashboard/settings/users/management/accountId/1/search/{user.username}/order/user__username/pageSize/20/page/1"
         )
         context = {
             "new_user": user,

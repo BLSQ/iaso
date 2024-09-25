@@ -23,7 +23,7 @@ const currentUser = {
     org_units: [],
     language: { value: 'fr', errors: [] },
     dhis2_id: '1',
-    home_page: '/settings/users',
+    home_page: '/settings/users/management',
     projects: [1],
     user_roles: [1],
 };
@@ -64,7 +64,7 @@ describe('UsersInfos', () => {
                 target: { value: 'en' },
             });
         }
-        expect(setFieldValue.getCalls().length).to.equal(7);
+        expect(setFieldValue.getCalls().length).to.equal(8);
     });
     it('triggerd callback when changing language', () => {
         const select = component.find(Select).at(0);

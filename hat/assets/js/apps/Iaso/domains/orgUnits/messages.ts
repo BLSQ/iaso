@@ -1,6 +1,14 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    images: {
+        defaultMessage: 'Images',
+        id: 'iaso.label.images',
+    },
+    files: {
+        defaultMessage: 'Files',
+        id: 'iaso.instance.files',
+    },
     create: {
         defaultMessage: 'Create',
         id: 'iaso.label.create',
@@ -568,6 +576,10 @@ const MESSAGES = defineMessages({
     default: {
         id: 'iaso.datasources.options.label.default',
         defaultMessage: 'default',
+    },
+    noResult: {
+        id: 'iaso.label.noOptions',
+        defaultMessage: 'No result found',
     },
 });
 

@@ -65,7 +65,6 @@ const useVrfShape = () => {
         quantities_ordered_in_doses: yup
             .number()
             .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),

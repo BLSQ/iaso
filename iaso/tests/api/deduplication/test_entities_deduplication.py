@@ -513,11 +513,14 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         self.assertEqual(duplicate.validation_status, ValidationStatus.PENDING)
 
-        merged_data = {i: duplicate.entity1.id for i in duplicate.analyze.metadata["fields"]}
+        entity1 = duplicate.entity1
+        entity2 = duplicate.entity2
+
+        merged_data = {i: entity1.id for i in duplicate.analyze.metadata["fields"]}
 
         response = self.client.post(
             f"/api/entityduplicates/",
-            data={"merge": merged_data, "entity1_id": duplicate.entity1.id, "entity2_id": duplicate.entity2.id},
+            data={"merge": merged_data, "entity1_id": entity1.id, "entity2_id": entity2.id},
             format="json",
         )
 
@@ -529,12 +532,20 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertIn("ignored", response_data)
         self.assertIn("new_entity_id", response_data)
 
-        # entity1_id should be the same as duplicate.entity1.id
-        self.assertEqual(response_data["entity1_id"], duplicate.entity1.id)
-        # entity2_id should be the same as duplicate.entity2.id
-        self.assertEqual(response_data["entity2_id"], duplicate.entity2.id)
+        # entity1_id should be the same as entity1.id
+        self.assertEqual(response_data["entity1_id"], entity1.id)
+        # entity2_id should be the same as entity2.id
+        self.assertEqual(response_data["entity2_id"], entity2.id)
         # ignore should be True
         self.assertEqual(response_data["ignored"], False)
+
+        # Verify DB updates were correctly done
+        entity1.refresh_from_db()
+        entity2.refresh_from_db()
+        self.assertIsNotNone(entity1.deleted_at)
+        self.assertIsNotNone(entity2.deleted_at)
+        self.assertEqual(entity1.merged_to_id, response_data["new_entity_id"])
+        self.assertEqual(entity2.merged_to_id, response_data["new_entity_id"])
 
     def test_filter_search_term_ok(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)

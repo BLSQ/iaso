@@ -202,6 +202,8 @@ class MobileFormsAPITestCase(APITestCase):
             data={
                 "name": "test form 1",
                 "period_type": "MONTH",
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 1,
                 "project_ids": [self.project_1.id],
                 "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
             },
@@ -354,6 +356,8 @@ class MobileFormsAPITestCase(APITestCase):
             data={
                 "name": "test form 2 (updated)",
                 "period_type": "QUARTER",
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 1,
                 "single_per_period": True,
                 "device_field": "deviceid",
                 "location_field": "location",

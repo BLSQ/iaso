@@ -197,6 +197,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Payments lots',
         id: 'iaso.payments.lots',
     },
+    history: {
+        defaultMessage: 'History',
+        id: 'iaso.label.history',
+    },
+    management: {
+        defaultMessage: 'Management',
+        id: 'iaso.label.management',
+    },
 });
 
 export default MESSAGES;

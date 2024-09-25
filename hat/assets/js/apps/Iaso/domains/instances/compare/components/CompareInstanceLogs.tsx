@@ -57,12 +57,13 @@ export const CompareInstanceLogs: FunctionComponent = () => {
             isFetching: isInstanceLogBFetching,
             isError: isInstanceLogBError,
         },
-    ] = useGetInstanceLogDetail([params.logA, params.logB]);
+    ] = useGetInstanceLogDetail(instanceId, [params.logA, params.logB]);
 
     const instanceLogContent = useMemo(
         () => ({
             logA: instanceLogA?.new_value[0]?.fields,
             logB: instanceLogB?.new_value[0]?.fields,
+            fields: instanceLogA?.possible_fields,
         }),
         [instanceLogA, instanceLogB],
     );

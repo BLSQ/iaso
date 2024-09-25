@@ -90,6 +90,7 @@ type BulkState = {
     addProjects: string[];
     removeProjects: string[];
     language?: 'en' | 'fr';
+    organization?: string;
     addLocations: OrgUnit[];
     removeLocations: OrgUnit[];
     addTeams: string[];
@@ -102,6 +103,7 @@ const initialState: BulkState = {
     addProjects: [],
     removeProjects: [],
     language: undefined,
+    organization: undefined,
     addLocations: [],
     removeLocations: [],
     addTeams: [],
@@ -262,6 +264,7 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
                         };
                     })}
                 />
+
                 <OrgUnitTreeviewModal
                     toggleOnLabelClick={false}
                     titleMessage={MESSAGES.addLocations}
@@ -287,6 +290,13 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
                     }}
                     multiselect
                     initialSelection={bulkState.removeLocations}
+                />
+                <InputComponent
+                    keyValue="organization"
+                    onChange={handleChange}
+                    value={bulkState.organization}
+                    type="text"
+                    label={MESSAGES.organization}
                 />
             </DialogContent>
             <DialogActions className={classes.action}>

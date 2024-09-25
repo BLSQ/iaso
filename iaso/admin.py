@@ -1,17 +1,28 @@
-from typing import Any
-from typing import Protocol
+import requests
+from copy import copy
+from typing import Any, Protocol
 
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django import forms as django_forms
-from django.contrib.admin import widgets
+from django.contrib.admin import widgets, RelatedOnlyFieldListFilter
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.utils.html import format_html_join, format_html
+from django.db.models import Q
+from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
+from hat.audit.models import DJANGO_ADMIN, log_modification
 
+from iaso.utils.admin.custom_filters import (
+    DuplicateUUIDFilter,
+    EntityEmptyAttributesFilter,
+    has_relation_filter_factory,
+)
 from iaso.models.json_config import Config  # type: ignore
+
 from .models import (
     Account,
     AccountFeatureFlag,
@@ -45,8 +56,12 @@ from .models import (
     MatchingAlgorithm,
     OrgUnit,
     OrgUnitChangeRequest,
+    OrgUnitReferenceInstance,
     OrgUnitType,
     Page,
+    Payment,
+    PaymentLot,
+    PotentialPayment,
     Profile,
     Project,
     Report,
@@ -61,13 +76,10 @@ from .models import (
     WorkflowChange,
     WorkflowFollowup,
     WorkflowVersion,
-    OrgUnitReferenceInstance,
-    PotentialPayment,
-    Payment,
-    PaymentLot,
 )
 from .models.data_store import JsonDataStore
-from .models.microplanning import Team, Planning, Assignment
+from .models.deduplication import ValidationStatus
+from .models.microplanning import Assignment, Planning, Team
 from .utils.gis import convert_2d_point_to_3d
 
 
@@ -145,13 +157,25 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 @admin.register(OrgUnit)
 @admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):
-    raw_id_fields = ("parent", "reference_instances")
+    raw_id_fields = ("parent", "reference_instances", "default_image")
     list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
     inlines = [
         OrgUnitReferenceInstanceInline,
     ]
+    list_display = (
+        "id",
+        "org_unit_type",
+        "name",
+        "uuid",
+        "parent",
+    )
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.prefetch_related("org_unit_type", "parent__org_unit_type")
+        return queryset
 
 
 @admin.register(OrgUnitType)
@@ -245,10 +269,26 @@ class InstanceFileAdminInline(admin.TabularInline):
 @admin.register(Instance)
 @admin_attr_decorator
 class InstanceAdmin(admin.GeoModelAdmin):
-    raw_id_fields = ("org_unit",)
+    raw_id_fields = ("org_unit", "entity")
     search_fields = ("file_name", "uuid")
-    list_display = ("id", "project", "form", "org_unit", "period", "created_at", "deleted")
-    list_filter = ("project", "form", "deleted")
+    list_display = (
+        "id",
+        "uuid",
+        "project",
+        "form",
+        "org_unit",
+        "period",
+        "created_at",
+        "entity",
+        "deleted",
+    )
+    list_filter = (
+        "project",
+        "form",
+        "deleted",
+        DuplicateUUIDFilter,
+        has_relation_filter_factory("Entity ID", "entity_id"),
+    )
     fieldsets = (
         (
             None,
@@ -298,6 +338,16 @@ class InstanceAdmin(admin.GeoModelAdmin):
             obj.location = convert_2d_point_to_3d(obj.location)
 
         super().save_model(request, obj, form, change)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.prefetch_related(
+            "org_unit__org_unit_type",
+            "project",
+            "form",
+            "entity",
+        )
+        return queryset
 
 
 @admin.register(InstanceFile)
@@ -430,6 +480,9 @@ class TaskAdmin(admin.ModelAdmin):
         stack = task.result.get("stack_trace")
         return format_html("<p>{}</p><pre>{}</pre>", task.result.get("message", ""), stack)
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("launcher")
+
 
 @admin.register(SourceVersion)
 @admin_attr_decorator
@@ -462,15 +515,56 @@ class EntityAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
     list_display = (
         "id",
+        "uuid",
+        "entity_type",
         "name",
         "account",
-        "entity_type",
+        "deleted_at",
+        "merged_to",
     )
-    list_filter = ("entity_type", "deleted_at")
-    raw_id_fields = ("attributes",)
+    list_filter = (
+        "account",
+        "entity_type",
+        "deleted_at",
+        has_relation_filter_factory("Attributes ID", "attributes_id"),
+        EntityEmptyAttributesFilter,
+        DuplicateUUIDFilter,
+    )
+    raw_id_fields = ("attributes", "merged_to")
 
     def get_queryset(self, request):
         return Entity.objects_include_deleted.all()
+
+    # Don't allow delete multiple to avoid deletes without side-effects and audit log
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+        return actions
+
+    # Override the Django admin delete action to:
+    # - soft delete the entity
+    # - soft delete its attached form instances
+    # - delete potential EntityDuplicates
+    def delete_view(self, request, object_id, extra_context=None):
+        entity = Entity.objects_include_deleted.get(pk=object_id)
+        entity.delete()  # soft delete
+        instances_to_soft_delete = set([entity.attributes] + list(entity.instances.all()))
+
+        for instance in instances_to_soft_delete:
+            original = copy(instance)
+            instance.soft_delete()
+            log_modification(original, instance, DJANGO_ADMIN, user=request.user)
+
+        EntityDuplicate.objects.filter(
+            (Q(entity1=entity) | Q(entity2=entity)) & Q(validation_status=ValidationStatus.PENDING)
+        ).delete()
+
+        msg = f"Entity {entity.uuid} was soft deleted, along with its {len(instances_to_soft_delete)} instances and pending duplicates"
+        self.message_user(request, msg)
+
+        # redirect to the list view
+        return HttpResponseRedirect(reverse("admin:iaso_entity_changelist"))
 
 
 @admin.register(JsonDataStore)
@@ -710,6 +804,7 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
         "old_reference_instances",
         "old_opening_date",
         "old_closed_date",
+        "potential_payment",
     )
     raw_id_fields = (
         "org_unit",
@@ -801,16 +896,55 @@ class ConfigAdmin(admin.ModelAdmin):
 @admin.register(PotentialPayment)
 class PotentialPaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    list_display = ("id", "change_request_ids")
+
+    def change_request_ids(self, obj):
+        change_requests = obj.change_requests.all()
+        if change_requests:
+            return format_html(
+                ", ".join(
+                    f'<a href="/admin/iaso/orgunitchangerequest/{cr.id}/change/">{cr.id}</a>' for cr in change_requests
+                )
+            )
+        return "-"
+
+    change_request_ids.short_description = "Change Request IDs"
 
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    list_display = ("id", "status", "created_at", "updated_at", "change_request_ids")
+
+    def change_request_ids(self, obj):
+        change_requests = obj.change_requests.all()
+        if change_requests:
+            return format_html(
+                ", ".join(
+                    f'<a href="/admin/iaso/orgunitchangerequest/{cr.id}/change/">{cr.id}</a>' for cr in change_requests
+                )
+            )
+        return "-"
+
+    change_request_ids.short_description = "Change Request IDs"
 
 
 @admin.register(PaymentLot)
 class PaymentLotAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    list_display = ("id", "status", "created_at", "updated_at", "payment_ids")
+
+    def payment_ids(self, obj):
+        payments = obj.payments.all()
+        if payments:
+            return format_html(
+                ", ".join(
+                    f'<a href="/admin/iaso/payment/{payment.id}/change/">{payment.id}</a>' for payment in payments
+                )
+            )
+        return "-"
+
+    payment_ids.short_description = "Payment IDs"
 
 
 @admin.register(DataSource)

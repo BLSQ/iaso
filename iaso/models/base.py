@@ -1,22 +1,23 @@
 import datetime
+import mimetypes
 import operator
 import random
 import re
 import time
 import typing
-from copy import copy
 from functools import reduce
 from io import StringIO
 from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
+
 import django_cte
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
 from django.contrib import auth
 from django.contrib.auth import models as authModels
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -38,13 +39,15 @@ from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.utils import extract_form_version_id, flat_parse_xml_soup
+from iaso.utils.file_utils import get_file_type
 
 from .. import periods
+from ..utils.emoji import fix_emoji
 from ..utils.jsonlogic import jsonlogic_to_q
 from ..utils.models.common import get_creator_name
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
-from ..utils.emoji import fix_emoji
+from .project import Project
 
 logger = getLogger(__name__)
 
@@ -487,13 +490,62 @@ class Group(models.Model):
         return res
 
 
+class GroupSetQuerySet(models.QuerySet):
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
+    ):
+        queryset = self
+        if user and user.is_anonymous and app_id is None:
+            return self.none()
+
+        if user and user.is_authenticated:
+            queryset = queryset.filter(
+                source_version__data_source__projects__in=user.iaso_profile.account.project_set.all()
+            )
+
+        if app_id is not None:
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+
+                queryset = queryset.filter(source_version__data_source__projects__in=[project])
+
+            except Project.DoesNotExist:
+                return self.none()
+
+        return queryset
+
+    def prefetch_source_version_details(self):
+        queryset = self
+        queryset = queryset.prefetch_related("source_version")
+        queryset = queryset.prefetch_related("source_version__data_source")
+        return queryset
+
+    def prefetch_groups_details(self):
+        queryset = self
+        queryset = queryset.prefetch_related("groups__source_version")
+        queryset = queryset.prefetch_related("groups__source_version__data_source")
+        return queryset
+
+
+GroupSetManager = models.Manager.from_queryset(GroupSetQuerySet)
+
+
 class GroupSet(models.Model):
+    class GroupBelonging(models.TextChoices):
+        SINGLE = _("SINGLE")
+        MULTIPLE = _("MULTIPLE")
+
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
     source_version = models.ForeignKey(SourceVersion, null=True, blank=True, on_delete=models.CASCADE)
     groups = models.ManyToManyField(Group, blank=True, related_name="group_sets")
+    group_belonging = models.TextField(
+        choices=GroupBelonging.choices, default=GroupBelonging.SINGLE, null=False, blank=False, max_length=10
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = GroupSetManager()
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)
@@ -979,7 +1031,7 @@ class Instance(models.Model):
         ]
 
     def __str__(self):
-        return "%s %s" % (self.form, self.name)
+        return "%s %s %s" % (self.id, self.form, self.name)
 
     @property
     def is_instance_of_reference_form(self) -> bool:
@@ -1288,17 +1340,13 @@ class Instance(models.Model):
             "correlation_id": self.correlation_id,
         }
 
-    def soft_delete(self, user: typing.Optional[User] = None):
-        original = copy(self)
+    def soft_delete(self):
         self.deleted = True
         self.save()
-        log_modification(original, self, INSTANCE_API, user=user)
 
-    def restore(self, user: typing.Optional[User] = None):
-        original = copy(self)
+    def restore(self):
         self.deleted = False
         self.save()
-        log_modification(original, self, INSTANCE_API, user=user)
 
     def can_user_modify(self, user):
         """Check only for lock, assume user have other perms"""
@@ -1343,11 +1391,21 @@ class InstanceFile(models.Model):
     def __str__(self):
         return "%s " % (self.name,)
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "instance_id": self.instance_id,
+            "file": self.file.url if self.file else None,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "file_type": get_file_type(self.file),
+        }
+
 
 class Profile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")
     external_user_id = models.CharField(max_length=512, null=True, blank=True)
+    organization = models.CharField(max_length=512, null=True, blank=True)
     # Each profile/user has access to multiple orgunits. Having access to OU also give access to all its children
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
     language = models.CharField(max_length=512, null=True, blank=True)
@@ -1388,6 +1446,7 @@ class Profile(models.Model):
                 "user_roles": list(role.id for role in user_roles),
                 "user_roles_permissions": list(role.as_dict() for role in user_roles),
                 "language": self.language,
+                "organization": self.organization,
                 "user_id": self.user.id,
                 "dhis2_id": self.dhis2_id,
                 "home_page": self.home_page,
@@ -1412,6 +1471,7 @@ class Profile(models.Model):
                 "user_id": self.user.id,
                 "dhis2_id": self.dhis2_id,
                 "home_page": self.home_page,
+                "organization": self.organization,
                 "phone_number": self.phone_number.as_e164 if self.phone_number else None,
                 "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
                 "projects": [p.as_dict() for p in self.projects.all()],
@@ -1606,7 +1666,8 @@ class UserRole(models.Model):
         }
 
     # This method will remove a given prefix from a string
-    def remove_user_role_name_prefix(self, str):
+    @staticmethod
+    def remove_user_role_name_prefix(str):
         prefix = str.split("_")[0] + "_"
         if str.startswith(prefix):
             return str[len(prefix) :]

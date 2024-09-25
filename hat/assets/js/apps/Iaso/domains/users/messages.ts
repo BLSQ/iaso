@@ -13,11 +13,23 @@ const MESSAGES = defineMessages({
         defaultMessage: 'User name',
         id: 'iaso.label.userName',
     },
+    username: {
+        defaultMessage: 'User name',
+        id: 'iaso.label.userName',
+    },
     firstName: {
         defaultMessage: 'First name',
         id: 'iaso.label.firstName',
     },
     lastName: {
+        defaultMessage: 'Last name',
+        id: 'iaso.label.lastName',
+    },
+    first_name: {
+        defaultMessage: 'First name',
+        id: 'iaso.label.firstName',
+    },
+    last_name: {
         defaultMessage: 'Last name',
         id: 'iaso.label.lastName',
     },
@@ -105,6 +117,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'User roles',
         id: 'iaso.users.dialog.userRoles',
     },
+    user_roles: {
+        defaultMessage: 'User roles',
+        id: 'iaso.users.dialog.userRoles',
+    },
     searchUser: {
         id: 'iaso.users.filter.searchUser',
         defaultMessage: 'Search user',
@@ -140,6 +156,10 @@ const MESSAGES = defineMessages({
     },
 
     homePage: {
+        defaultMessage: 'Home page',
+        id: 'iaso.users.label.homePage',
+    },
+    home_page: {
         defaultMessage: 'Home page',
         id: 'iaso.users.label.homePage',
     },
@@ -313,6 +333,7 @@ const MESSAGES = defineMessages({
     },
     exportMobileAppBodyWarning: {
         defaultMessage:
+            // eslint-disable-next-line max-len
             'Caution: This file will contain sensitive information, for this reason the exported file will be encrypted. Please choose a password of at least 8 characters to encrypt the file. You will need to provide this password when setting up the mobile application.',
         id: 'iaso.users.exportMobileAppBodyWarning',
     },
@@ -358,6 +379,124 @@ const MESSAGES = defineMessages({
     phoneNumber: {
         defaultMessage: 'Phone number',
         id: 'iaso.users.phoneNumber',
+    },
+    phone_number: {
+        defaultMessage: 'Phone number',
+        id: 'iaso.users.phoneNumber',
+    },
+    usersHistory: {
+        defaultMessage: 'Users history',
+        id: 'iaso.users.usersHistory',
+    },
+    modifiedBy: {
+        id: 'iaso.labels.modifiedBy',
+        defaultMessage: 'Modified by',
+    },
+    fieldsModified: {
+        id: 'iaso.labels.fieldsModified',
+        defaultMessage: 'Fields modified',
+    },
+    newLocation: {
+        id: 'iaso.users.history.labels.newLocation',
+        defaultMessage: 'New location',
+    },
+    pastLocation: {
+        id: 'iaso.users.history.labels.pastLocation',
+        defaultMessage: 'Past location',
+    },
+    dateModified: {
+        id: 'iaso.users.history.labels.dateModified',
+        defaultMessage: 'Date modified',
+    },
+    modifiedBefore: {
+        id: 'iaso.users.history.labels.modifiedBefore',
+        defaultMessage: 'Modified before',
+    },
+    modifiedAfter: {
+        id: 'iaso.users.history.labels.modifiedAfter',
+        defaultMessage: 'Modified after',
+    },
+    before: {
+        id: 'iaso.label.before',
+        defaultMessage: 'Before',
+    },
+    after: {
+        id: 'iaso.label.after',
+        defaultMessage: 'After',
+    },
+    created: {
+        id: 'iaso.label.created',
+        defaultMessage: 'Creation',
+    },
+    renderError: {
+        id: 'iaso.label.renderError',
+        defaultMessage: 'Error rendering value',
+    },
+    yes: {
+        defaultMessage: 'Yes',
+        id: 'iaso.label.yes',
+    },
+    no: {
+        defaultMessage: 'No',
+        id: 'iaso.label.no',
+    },
+    fr: {
+        defaultMessage: 'French',
+        id: 'iaso.users.label.french',
+    },
+    en: {
+        defaultMessage: 'English',
+        id: 'iaso.users.label.english',
+    },
+    language: {
+        defaultMessage: 'Language',
+        id: 'iaso.users.dialog.locale',
+    },
+    user_permissions: {
+        defaultMessage: 'User permissions',
+        id: 'iaso.users.userPermissions',
+    },
+    org_units: {
+        defaultMessage: 'Location',
+        id: 'iaso.map.location',
+    },
+    password_updated: {
+        defaultMessage: 'Password updated',
+        id: 'iaso.users.label.password_updated',
+    },
+    deleted_at: {
+        id: 'iaso.forms.deleted_at',
+        defaultMessage: 'Deleted',
+    },
+    new_user_created: {
+        id: 'iaso.users.label.new_user_created',
+        defaultMessage: 'New user created',
+    },
+    phoneNumberWarning: {
+        id: 'iaso.users.label.phoneNumberWarning',
+        defaultMessage: 'WARNING: Updating phone number',
+    },
+    phoneNumberWarningMessage: {
+        id: 'iaso.users.label.phoneNumberWarningMessage',
+        defaultMessage: 'All phone number updates are logged and archived',
+    },
+    createUserWithoutPerm: {
+        id: 'iaso.users.labels.createUserWithoutPerm',
+        defaultMessage: 'Save user with no permissions?',
+    },
+    warningModalMessage: {
+        id: 'iaso.users.warningModalMessage',
+        defaultMessage: `You are about to save a user with no permissions. This user will
+        have access to the mobile application but not to the features of the
+        web interface.`,
+    },
+    permAndPhoneWarningTitle: {
+        id: 'iaso.users.permAndPhoneWarningTitle',
+        defaultMessage: 'WARNING: Read before saving',
+    },
+    organization: {
+        id: 'iaso.users.organization',
+        defaultMessage: 'Organization',
     },
 });
 

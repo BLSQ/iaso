@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { ReactNode, useContext, useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import Link from '@mui/icons-material/Link';
@@ -27,6 +27,7 @@ import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import PriceCheckIcon from '@mui/icons-material/PriceCheck';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import HistoryIcon from '@mui/icons-material/History';
 
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -296,6 +297,20 @@ const menuItems = (
                     key: 'users',
                     permissions: paths.usersPath.permissions,
                     icon: props => <SupervisorAccount {...props} />,
+                    subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.management),
+                            key: 'management',
+                            permissions: paths.usersPath.permissions,
+                            icon: props => <Settings {...props} />,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.history),
+                            key: 'history',
+                            permissions: paths.usersHistoryPath.permissions,
+                            icon: props => <HistoryIcon {...props} />,
+                        },
+                    ],
                 },
                 {
                     label: formatMessage(MESSAGES.userRoles),

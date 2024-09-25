@@ -9,7 +9,7 @@ docker rmi -f iaso-webpack:latest
 
 ### Build the new Docker image:
 ```
-docker-compose build --no-cache webpack
+docker compose build --no-cache webpack
 ```
 
 

@@ -8,6 +8,7 @@ from django.core import serializers
 from django.db import models
 
 PROFILE_API = "profile_api"
+PROFILE_API_BULK = "profile_api_bulk"
 PASSWORD_API = "password_api"
 PATIENT_API = "patient_api"
 ORG_UNIT_API = "org_unit_api"
@@ -18,11 +19,14 @@ INSTANCE_API = "instance_api"
 FORM_API = "form_api"
 GPKG_IMPORT = "gpkg_import"
 CAMPAIGN_API = "campaign_api"
-PROFILE_API_BULK = "profile_api_bulk"
 PAYMENT_API_BULK = "payment_api_bulk"
 PAYMENT_API = "payment_api"
 PAYMENT_LOT_API = "payment_lot_api"
 ORG_UNIT_CHANGE_REQUEST_API = "org_unit_change_request_api"
+DJANGO_ADMIN = "django_admin"
+BULK_UPLOAD = "bulk_upload"
+BULK_UPLOAD_MERGED_ENTITY = "bulk_upload_merged_entity"
+ENTITY_DUPLICATE_MERGE = "entity_duplicate_merge"
 
 
 def dict_compare(d1, d2):
@@ -55,7 +59,7 @@ class Modification(models.Model):
     past_value = models.JSONField(encoder=IasoJsonEncoder)
     new_value = models.JSONField(encoder=IasoJsonEncoder)
     source = models.TextField()
-    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

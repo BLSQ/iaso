@@ -54,9 +54,59 @@ class GroupSetsAPITestCase(APITestCase):
 
         cls.acccount_1_user_1.iaso_profile.projects.add(cls.project_1)
 
-    def test_authentification_required(self):
+    def test_authentification_required_for_get_list(self):
         response = self.client.get("/api/group_sets/", format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_authentification_required_for_create(self):
+        response = self.client.post("/api/group_sets/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_authentification_required_for_get_details(self):
+        response = self.client.get("/api/group_sets/1/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_authentification_required_for_delete_details(self):
+        response = self.client.delete("/api/group_sets/1/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_authentification_required_for_patch_details(self):
+        response = self.client.patch("/api/group_sets/1/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_authentification_required_for_edit_details(self):
+        response = self.client.put("/api/group_sets/1/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_permissions_required_for_get_list(self):
+        self.client.force_authenticate(self.acccount_1_user_2)
+        response = self.client.get("/api/group_sets/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_permissions_required_for_create(self):
+        self.client.force_authenticate(self.acccount_1_user_2)
+        response = self.client.post("/api/group_sets/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_permissions_required_for_get_details(self):
+        self.client.force_authenticate(self.acccount_1_user_2)
+        response = self.client.get("/api/group_sets/1/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_permissions_required_for_delete_details(self):
+        self.client.force_authenticate(self.acccount_1_user_2)
+        response = self.client.delete("/api/group_sets/1/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_permissions_required_for_patch_details(self):
+        self.client.force_authenticate(self.acccount_1_user_2)
+        response = self.client.patch("/api/group_sets/1/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_permissions_required_for_edit_details(self):
+        self.client.force_authenticate(self.acccount_1_user_2)
+        response = self.client.put("/api/group_sets/1/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_groupset_with_valid_groups(self):
         """

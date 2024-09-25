@@ -23,7 +23,7 @@ Setup
 - To run the backend on a fresh database instance with a test user you can launch a django testserver. Alternatively see below to run on your current database.
   - in docker:
 ```
-docker-compose run   -p 8000:8000 iaso manage testserver --addrport 0.0.0.0:8000 --noinput iaso/fixtures/user.yaml
+docker compose run   -p 8000:8000 iaso manage testserver --addrport 0.0.0.0:8000 --noinput iaso/fixtures/user.yaml
 ```
   - outside docker
 ```

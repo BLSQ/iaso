@@ -1,27 +1,27 @@
 import datetime
+import mimetypes
 import operator
 import random
 import re
 import time
 import typing
-from copy import copy
 from functools import reduce
 from io import StringIO
 from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import urlopen
-from .project import Project
+
+
 import django_cte
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
 from django.contrib import auth
 from django.contrib.auth import models as authModels
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
-from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
@@ -39,12 +39,15 @@ from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.utils import extract_form_version_id, flat_parse_xml_soup
+from iaso.utils.file_utils import get_file_type
 
 from .. import periods
+from ..utils.emoji import fix_emoji
 from ..utils.jsonlogic import jsonlogic_to_q
 from ..utils.models.common import get_creator_name
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
+from .project import Project
 
 logger = getLogger(__name__)
 
@@ -153,6 +156,18 @@ class Account(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "default_version": self.default_version.as_dict() if self.default_version else None,
+            "feature_flags": [flag.code for flag in self.feature_flags.all()],
+            "user_manual_path": self.user_manual_path,
+            "analytics_script": self.analytics_script,
+        }
+
+    def as_small_dict(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "default_version": self.default_version.as_small_dict() if self.default_version else None,
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
             "user_manual_path": self.user_manual_path,
             "analytics_script": self.analytics_script,
@@ -1016,7 +1031,7 @@ class Instance(models.Model):
         ]
 
     def __str__(self):
-        return "%s %s" % (self.form, self.name)
+        return "%s %s %s" % (self.id, self.form, self.name)
 
     @property
     def is_instance_of_reference_form(self) -> bool:
@@ -1096,8 +1111,10 @@ class Instance(models.Model):
             self.save()
 
     def xml_file_to_json(self, file: typing.IO) -> typing.Dict[str, typing.Any]:
-        copy_io_utf8 = StringIO(file.read().decode("utf-8"))
-        soup = Soup(copy_io_utf8, "xml", from_encoding="utf-8")
+        raw_content = file.read().decode("utf-8")
+        fixed_content = fix_emoji(raw_content).decode("utf-8")
+        copy_io_utf8 = StringIO(fixed_content)
+        soup = Soup(copy_io_utf8, "lxml-xml", from_encoding="utf-8")
 
         form_version_id = extract_form_version_id(soup)
         if form_version_id:
@@ -1323,17 +1340,13 @@ class Instance(models.Model):
             "correlation_id": self.correlation_id,
         }
 
-    def soft_delete(self, user: typing.Optional[User] = None):
-        original = copy(self)
+    def soft_delete(self):
         self.deleted = True
         self.save()
-        log_modification(original, self, INSTANCE_API, user=user)
 
-    def restore(self, user: typing.Optional[User] = None):
-        original = copy(self)
+    def restore(self):
         self.deleted = False
         self.save()
-        log_modification(original, self, INSTANCE_API, user=user)
 
     def can_user_modify(self, user):
         """Check only for lock, assume user have other perms"""
@@ -1378,11 +1391,21 @@ class InstanceFile(models.Model):
     def __str__(self):
         return "%s " % (self.name,)
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "instance_id": self.instance_id,
+            "file": self.file.url if self.file else None,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "file_type": get_file_type(self.file),
+        }
+
 
 class Profile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")
     external_user_id = models.CharField(max_length=512, null=True, blank=True)
+    organization = models.CharField(max_length=512, null=True, blank=True)
     # Each profile/user has access to multiple orgunits. Having access to OU also give access to all its children
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
     language = models.CharField(max_length=512, null=True, blank=True)
@@ -1398,7 +1421,7 @@ class Profile(models.Model):
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
 
-    def as_dict(self):
+    def as_dict(self, small=False):
         user_roles = self.user_roles.all()
         user_group_permissions = list(
             map(lambda permission: permission.split(".")[1], list(self.user.get_group_permissions()))
@@ -1408,27 +1431,51 @@ class Profile(models.Model):
         )
         all_permissions = user_group_permissions + user_permissions
         permissions = list(set(all_permissions))
-        return {
-            "id": self.id,
-            "first_name": self.user.first_name,
-            "user_name": self.user.username,
-            "last_name": self.user.last_name,
-            "email": self.user.email,
-            "account": self.account.as_dict(),
-            "permissions": permissions,
-            "user_permissions": user_permissions,
-            "is_superuser": self.user.is_superuser,
-            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
-            "user_roles": list(role.id for role in user_roles),
-            "user_roles_permissions": list(role.as_dict() for role in user_roles),
-            "language": self.language,
-            "user_id": self.user.id,
-            "dhis2_id": self.dhis2_id,
-            "home_page": self.home_page,
-            "phone_number": self.phone_number.as_e164 if self.phone_number else None,
-            "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
-            "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
-        }
+        if not small:
+            return {
+                "id": self.id,
+                "first_name": self.user.first_name,
+                "user_name": self.user.username,
+                "last_name": self.user.last_name,
+                "email": self.user.email,
+                "account": self.account.as_small_dict(),
+                "permissions": permissions,
+                "user_permissions": user_permissions,
+                "is_superuser": self.user.is_superuser,
+                "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
+                "user_roles": list(role.id for role in user_roles),
+                "user_roles_permissions": list(role.as_dict() for role in user_roles),
+                "language": self.language,
+                "organization": self.organization,
+                "user_id": self.user.id,
+                "dhis2_id": self.dhis2_id,
+                "home_page": self.home_page,
+                "phone_number": self.phone_number.as_e164 if self.phone_number else None,
+                "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
+                "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
+            }
+        else:
+            return {
+                "id": self.id,
+                "first_name": self.user.first_name,
+                "user_name": self.user.username,
+                "last_name": self.user.last_name,
+                "email": self.user.email,
+                "permissions": permissions,
+                "user_permissions": user_permissions,
+                "is_superuser": self.user.is_superuser,
+                "org_units": [o.as_very_small_dict() for o in self.org_units.all()],
+                "user_roles": list(role.id for role in user_roles),
+                "user_roles_permissions": list(role.as_dict() for role in user_roles),
+                "language": self.language,
+                "user_id": self.user.id,
+                "dhis2_id": self.dhis2_id,
+                "home_page": self.home_page,
+                "organization": self.organization,
+                "phone_number": self.phone_number.as_e164 if self.phone_number else None,
+                "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
+                "projects": [p.as_dict() for p in self.projects.all()],
+            }
 
     def as_short_dict(self):
         return {
@@ -1619,7 +1666,8 @@ class UserRole(models.Model):
         }
 
     # This method will remove a given prefix from a string
-    def remove_user_role_name_prefix(self, str):
+    @staticmethod
+    def remove_user_role_name_prefix(str):
         prefix = str.split("_")[0] + "_"
         if str.startswith(prefix):
             return str[len(prefix) :]

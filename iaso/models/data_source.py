@@ -60,6 +60,16 @@ class DataSource(models.Model):
             "tree_config_status_fields": self.tree_config_status_fields,
         }
 
+    def as_small_dict(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "tree_config_status_fields": self.tree_config_status_fields,
+        }
+
     def as_list(self):
         return {"name": self.name, "id": self.id}
 
@@ -99,6 +109,16 @@ class SourceVersion(models.Model):
     def as_dict(self):
         return {
             "data_source": self.data_source.as_dict(),
+            "number": self.number,
+            "description": self.description,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
+
+    def as_small_dict(self):
+        return {
+            "data_source": self.data_source.as_small_dict(),
             "number": self.number,
             "description": self.description,
             "id": self.id,

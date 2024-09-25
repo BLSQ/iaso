@@ -1,5 +1,7 @@
 import json
+import logging
 import ntpath
+from copy import copy
 from time import gmtime, strftime
 from typing import Any, Dict, Union
 
@@ -8,7 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Count, Q, QuerySet, Prefetch
+from django.db.models import Count, F, Func, Prefetch, Q, QuerySet
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
@@ -20,7 +22,7 @@ from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
-from hat.audit.models import INSTANCE_API, log_modification
+from hat.audit.models import INSTANCE_API, Modification, log_modification
 from hat.common.utils import queryset_iterator
 from hat.menupermissions import models as permission
 from iaso.api.serializers import OrgUnitSerializer
@@ -35,13 +37,16 @@ from iaso.models import (
     Project,
 )
 from iaso.utils import timestamp_to_datetime
+from iaso.utils.file_utils import get_file_type
 
 from ..models.forms import CR_MODE_IF_REFERENCE_FORM
+from ..utils.models.common import get_creator_name
 from . import common
 from .comment import UserSerializerForComment
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, TimestampField, safe_api_import
 from .instance_filters import get_form_from_instance_filters, parse_instance_filters
-from ..utils.models.common import get_creator_name
+
+logger = logging.getLogger(__name__)
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -101,9 +106,14 @@ class HasInstancePermission(permissions.BasePermission):
 
 
 class InstanceFileSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     instance_id = serializers.IntegerField()
     file = serializers.FileField(use_url=True)
     created_at = TimestampField(read_only=True)
+    file_type = serializers.SerializerMethodField()
+
+    def get_file_type(self, obj):
+        return get_file_type(obj.file)
 
 
 class OrgUnitNestedSerializer(OrgUnitSerializer):
@@ -165,7 +175,14 @@ class InstancesViewSet(viewsets.ViewSet):
         instances = self.get_queryset()
         filters = parse_instance_filters(request.GET)
         instances = instances.for_filters(**filters)
-        queryset = InstanceFile.objects.filter(instance__in=instances)
+        queryset = InstanceFile.objects.filter(instance__in=instances).annotate(
+            file_extension=Func(F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')")
+        )
+
+        image_only = request.GET.get("image_only", "false").lower() == "true"
+        if image_only:
+            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
+            queryset = queryset.filter(file_extension__in=image_extensions)
 
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)
@@ -501,9 +518,11 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(response)
 
     def delete(self, request, pk=None):
+        original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
-        instance.soft_delete(request.user)
+        instance.soft_delete()
+        log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
     def patch(self, request, pk=None):
@@ -558,10 +577,12 @@ class InstancesViewSet(viewsets.ViewSet):
         try:
             with transaction.atomic():
                 for instance in instances_query.iterator():
+                    original = copy(instance)
                     if is_deletion == True:
-                        instance.soft_delete(request.user)
+                        instance.soft_delete()
                     else:
-                        instance.restore(request.user)
+                        instance.restore()
+                    log_modification(original, instance, INSTANCE_API, user=request.user)
 
         except Exception as e:
             print(f"Error : {e}")
@@ -593,7 +614,13 @@ class InstancesViewSet(viewsets.ViewSet):
 
     @action(detail=False)
     def stats(self, request):
+        project_ids_param = request.GET.get("project_ids", None)
         projects = request.user.iaso_profile.account.project_set.all()
+
+        if project_ids_param:
+            project_ids_array = project_ids_param.split(",")
+            projects = projects.filter(id__in=project_ids_array)
+
         projects_ids = list(projects.values_list("id", flat=True))
 
         df = pd.read_sql_query(self.QUERY, connection, params=[projects_ids])
@@ -614,7 +641,13 @@ class InstancesViewSet(viewsets.ViewSet):
 
     @action(detail=False)
     def stats_sum(self, request):
+        project_ids_param = request.GET.get("project_ids", None)
         projects = request.user.iaso_profile.account.project_set.all()
+
+        if project_ids_param:
+            project_ids_array = project_ids_param.split(",")
+            projects = projects.filter(id__in=project_ids_array)
+
         projects_ids = list(projects.values_list("id", flat=True))
         QUERY = """
         select DATE_TRUNC('day', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)) as period,
@@ -632,6 +665,23 @@ class InstancesViewSet(viewsets.ViewSet):
         df["name"] = df["period"].apply(lambda x: x.strftime("%Y-%m-%d"))
         r = df.to_json(orient="table")
         return HttpResponse(r, content_type="application/json")
+
+    @action(detail=True, methods=["get"], url_path="instance_logs/(?P<logId>[^/.]+)")
+    def instance_logs(self, request, pk=None, logId=None):
+        """
+        GET /api/instances/<pk>/instance_logs/<logId>/
+        """
+        instance = get_object_or_404(Instance, pk=pk)
+        log = get_object_or_404(Modification, pk=logId)
+        log_dict = log.as_dict()
+        possible_fields = (
+            instance.form_version.possible_fields
+            if instance.form_version and instance.form_version.possible_fields
+            else []
+        )
+
+        log_dict["possible_fields"] = possible_fields
+        return Response(log_dict)
 
 
 def import_data(instances, user, app_id):
@@ -669,10 +719,33 @@ def import_data(instances, user, app_id):
         entityUuid = instance_data.get("entityUuid", None)
         entityTypeId = instance_data.get("entityTypeId", None)
         if entityUuid and entityTypeId:
-            entity, created = Entity.objects.get_or_create(
+            entity, created = Entity.objects_include_deleted.get_or_create(
                 uuid=entityUuid, entity_type_id=entityTypeId, account=project.account
             )
+
+            if entity.deleted_at:
+                logger.info(
+                    f"Entity %s is soft-deleted for instance %s %s",
+                    entity.uuid,
+                    instance.uuid,
+                    instance.name,
+                )
+                if entity.merged_to:
+                    active_entity = entity.merged_to
+                    while active_entity.deleted_at and active_entity.merged_to:
+                        active_entity = active_entity.merged_to
+                    logger.info(
+                        f"Adding new instance %s %s to merged entity %s",
+                        instance.uuid,
+                        instance.name,
+                        active_entity.uuid,
+                    )
+                    entity = active_entity
+                else:
+                    instance.deleted = True
+
             instance.entity = entity
+
             # If instance's form is the same as the type reference form, set the instance as reference_instance
             if entity.entity_type.reference_form == instance.form:
                 entity.attributes = instance

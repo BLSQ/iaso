@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-indent */
 import CommentIcon from '@mui/icons-material/Comment';
 import FunctionsIcon from '@mui/icons-material/Functions';
 import { Table, TableBody, TableCell, TableRow, Tooltip } from '@mui/material';
@@ -196,6 +197,8 @@ const PhotoField = ({ descriptor, data, showQuestionKey, files }) => {
                                 maxWidth: '35vw',
                                 maxHeight: '35vh',
                                 cursor: 'pointer',
+                                width: '100%',
+                                height: 'auto',
                             }}
                             onClick={() => setOpen(true)}
                         />
@@ -229,18 +232,16 @@ PhotoField.propTypes = {
 function FormChild({ descriptor, data, showQuestionKey, showNote, files }) {
     switch (descriptor.type) {
         case 'repeat':
-            return data[descriptor.name] ? (
-                data[descriptor.name].map((subdata, index) => (
-                    <FormGroup
-                        key={`repeat-${index}`}
-                        descriptor={descriptor}
-                        data={subdata}
-                        showQuestionKey={showQuestionKey}
-                    />
-                ))
-            ) : (
-                <></>
-            );
+            return data[descriptor.name]
+                ? data[descriptor.name].map(subdata => (
+                      <FormGroup
+                          key={descriptor.name}
+                          descriptor={descriptor}
+                          data={subdata}
+                          showQuestionKey={showQuestionKey}
+                      />
+                  ))
+                : null;
         case 'group':
             return (
                 <FormGroup
@@ -502,8 +503,8 @@ function Label({ descriptor, value, tooltip, showQuestionKey }) {
             {showQuestionKey
                 ? showNameHint && (
                       <div className={classes.tableCellLabelName}>
-                    {descriptor.name}
-                </div>
+                          {descriptor.name}
+                      </div>
                   )
                 : null}
         </div>

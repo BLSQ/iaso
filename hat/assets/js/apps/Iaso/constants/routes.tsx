@@ -15,7 +15,7 @@ import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
-import FormsStats from '../domains/forms/stats';
+import { FormsStats } from '../domains/forms/stats';
 import Instances from '../domains/instances';
 import CompareSubmissions from '../domains/instances/compare';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
@@ -30,7 +30,8 @@ import Groups from '../domains/orgUnits/groups';
 import GroupSets from '../domains/orgUnits/groupSets';
 import GroupSet from '../domains/orgUnits/groupSets/GroupSet';
 import Types from '../domains/orgUnits/orgUnitTypes';
-import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges';
+import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges';
+import { ReviewOrgUnitChangesDetail } from '../domains/orgUnits/reviewChanges/details';
 import Pages from '../domains/pages';
 import { LotsPayments } from '../domains/payments/LotsPayments';
 import { PotentialPayments } from '../domains/payments/PotentialPayments';
@@ -49,6 +50,7 @@ import { Details as WorkflowDetails } from '../domains/workflows/details';
 import { SHOW_PAGES } from '../utils/featureFlags';
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
+import { UsersHistory } from '../domains/users/history/UsersHistory';
 
 export type RoutePath = {
     baseUrl: string;
@@ -172,6 +174,13 @@ export const orgUnitChangeRequestPath = {
     element: <ReviewOrgUnitChanges />,
 };
 
+export const orgUnitChangeRequestDetailPath = {
+    baseUrl: baseUrls.orgUnitsChangeRequestDetail,
+    routerUrl: `${baseUrls.orgUnitsChangeRequestDetail}/*`,
+    permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
+    element: <ReviewOrgUnitChangesDetail />,
+};
+
 export const registryPath = {
     baseUrl: baseUrls.registry,
     routerUrl: `${baseUrls.registry}/*`,
@@ -219,6 +228,13 @@ export const usersPath = {
     routerUrl: `${baseUrls.users}/*`,
     permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
     element: <Users />,
+};
+
+export const usersHistoryPath = {
+    baseUrl: baseUrls.usersHistory,
+    routerUrl: `${baseUrls.usersHistory}/*`,
+    permissions: [Permission.USERS_ADMIN],
+    element: <UsersHistory />,
 };
 
 export const userRolesPath = {
@@ -430,6 +446,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     completenessPath,
     completenessStatsPath,
     usersPath,
+    usersHistoryPath,
     userRolesPath,
     projectsPath,
     dataSourcesPath,
@@ -458,6 +475,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     workflowsPath,
     workflowsDetailPath,
     orgUnitChangeRequestPath,
+    orgUnitChangeRequestDetailPath,
     registryPath,
     modulesPath,
     potentialPaymentsPath,

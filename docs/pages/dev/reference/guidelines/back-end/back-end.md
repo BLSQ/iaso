@@ -192,7 +192,7 @@ We configure the Iaso deployement (the server) via environment flags. So if you 
 
 Note :There are of course some exceptions and thus some settings are configured in the Database. Notably for the Polio plugins. But please keep that exceptional.
 
-You can change your own local configuration in the file `.env`. Do note that if you make any modification in your `.env` or  in your `docker-compose.yml` file. You will need to restart the whole docker-compose for it to take effect (Ctrl-c your current docker-compose and bring it back up with `docker-compose up`
+You can change your own local configuration in the file `.env`. Do note that if you make any modification in your `.env` or  in your `docker-compose.yml` file. You will need to restart the whole docker compose for it to take effect (Ctrl-c your current docker compose and bring it back up with `docker compose up`
 
 
 If you add a new Environement variable to allow some configuration:

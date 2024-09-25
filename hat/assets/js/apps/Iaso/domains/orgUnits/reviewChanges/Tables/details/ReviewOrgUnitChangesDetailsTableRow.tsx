@@ -20,7 +20,6 @@ const useStyles = makeStyles(theme => ({
         color: 'inherit',
     },
     cellRejected: {
-        maxWidth: 350,
         '& > a': {
             color: `${theme.palette.error.main} !important`,
         },
@@ -38,7 +37,6 @@ const useStyles = makeStyles(theme => ({
         },
     },
     cellApproved: {
-        maxWidth: 350,
         '& > a': {
             color: `${theme.palette.success.main} !important`,
         },
@@ -92,11 +90,15 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
     return (
         <>
             {!isNewOrgUnit && (
-                <TableCell className={classes.verticalTop}>
+                <TableCell
+                    className={classes.verticalTop}
+                    sx={{ width: '40vw' }}
+                >
                     {field.oldValue}
                 </TableCell>
             )}
             <TableCell
+                sx={{ width: '40vw' }}
                 className={classNames(
                     !isNewOrgUnit &&
                         !isFetchingChangeRequest &&

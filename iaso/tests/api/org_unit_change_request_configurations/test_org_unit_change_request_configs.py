@@ -80,7 +80,47 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.get(self.OUCRC_API_URL)
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
-    # list with filters?
+    def test_list_with_restricted_queryset(self):
+        new_project, new_account = self.create_new_project_and_account(project_name="Palworld", account_name="Palworld")
+        new_user = self.create_user_with_profile(
+            username="Palworld guy", account=new_account, permissions=["iaso_org_unit_change_request_configurations"]
+        )
+        new_oucrc = m.OrgUnitChangeRequestConfiguration.objects.create(
+            org_unit_type=self.ou_type_water_pokemons,
+            project=new_project,
+            created_by=new_user,
+            org_units_editable=False,
+        )
+
+        # There are now 4 OUCRCs, but the new_user should only see the new one, because he doesn't have access to self.account_pokemon
+        self.client.force_authenticate(new_user)
+        response = self.client.get(self.OUCRC_API_URL)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        result = response.json()["results"]
+        self.assertEqual(1, len(result))
+        self.assertEqual(new_oucrc.id, result[0]["id"])
+
+    def test_list_superadmin(self):
+        new_project, new_account = self.create_new_project_and_account(project_name="Palworld", account_name="Palworld")
+        new_user = self.create_user_with_profile(
+            username="Not Professor Oak",
+            account=new_account,
+            permissions=["iaso_org_unit_change_request_configurations"],
+            is_superuser=True,
+        )
+        new_oucrc = m.OrgUnitChangeRequestConfiguration.objects.create(
+            org_unit_type=self.ou_type_fire_pokemons,
+            project=new_project,
+            created_by=new_user,
+            org_units_editable=False,
+        )
+        # There are now 4 OUCRCs and the new_user should see all of them because he's a superuser
+        self.client.force_authenticate(new_user)
+        response = self.client.get(self.OUCRC_API_URL)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        result = response.json()["results"]
+        self.assertEqual(4, len(result))
+        self.assertEqual(new_oucrc.id, result[3]["id"])
 
     # *** Testing retrieve GET endpoint ***
     def test_retrieve_ok(self):

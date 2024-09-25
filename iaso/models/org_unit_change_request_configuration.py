@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models import Q, QuerySet
 from django.utils.translation import gettext_lazy as _
 
+from iaso.models.entity import UserNotAuthError
 from iaso.utils.models.soft_deletable import (
     SoftDeletableModel,
     DefaultSoftDeletableManager,
@@ -16,9 +17,8 @@ from iaso.utils.models.soft_deletable import (
 
 class OrgUnitChangeRequestConfigurationQuerySet(QuerySet):
     def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
-        # Authorization & authentication issues will be dealt with later, in another ticket
-        # if not user or not user.is_authenticated:
-        #     raise UserNotAuthError(f"User not Authenticated")
+        if not user or not user.is_authenticated:
+            raise UserNotAuthError(f"User not Authenticated")
 
         profile = user.iaso_profile
         return self.filter(project__account=profile.account)

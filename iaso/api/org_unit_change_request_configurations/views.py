@@ -1,7 +1,7 @@
 import django_filters
 from django.db.models import Q
 from rest_framework import viewsets, filters, serializers
-from rest_framework.decorators import action, permission_classes
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.org_unit_change_request_configurations.filters import OrgUnitChangeRequestConfigurationListFilter
@@ -19,7 +19,7 @@ from iaso.api.org_unit_change_request_configurations.serializers import (
     OrgUnitChangeRequestConfigurationAuditLogger,
     ProjectIdSerializer,
 )
-from iaso.models import OrgUnitChangeRequestConfiguration, OrgUnitType, Project
+from iaso.models import OrgUnitChangeRequestConfiguration, OrgUnitType
 
 
 class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
@@ -48,9 +48,14 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
     pagination_class = OrgUnitChangeRequestConfigurationPagination
 
     def get_queryset(self):
-        return (
-            OrgUnitChangeRequestConfiguration.objects.order_by("id")
-            .select_related("project", "org_unit_type", "created_by", "updated_by")
+        user = self.request.user
+        if user.is_superuser:
+            queryset = OrgUnitChangeRequestConfiguration.objects.all()
+        else:
+            queryset = OrgUnitChangeRequestConfiguration.objects.filter_for_user(user)
+
+        queryset = (
+            queryset.select_related("project", "org_unit_type", "created_by", "updated_by")
             .prefetch_related(
                 "possible_types",
                 "possible_parent_types",
@@ -58,7 +63,9 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
                 "editable_reference_forms",
                 "other_groups",
             )
+            .order_by("id")
         )
+        return queryset
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:

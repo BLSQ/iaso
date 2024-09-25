@@ -73,9 +73,23 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
             .first()
         )
 
-        if first_round_start_date is not None:
+        last_round_end_date = (
+            Round.objects.filter(campaign=obj.campaign).order_by("-ended_at").values_list("ended_at", flat=True).first()
+        )
+
+        if first_round_start_date is not None and last_round_end_date is not None:
+            sel_qs = DestructionReport.objects.filter(
+                vaccine_stock=vaccine_stock,
+                rrt_destruction_report_reception_date__gt=first_round_start_date,
+                rrt_destruction_report_reception_date__lt=last_round_end_date,
+            )
+        elif first_round_start_date is not None:
             sel_qs = DestructionReport.objects.filter(
                 vaccine_stock=vaccine_stock, rrt_destruction_report_reception_date__gt=first_round_start_date
+            )
+        elif last_round_end_date is not None:
+            sel_qs = DestructionReport.objects.filter(
+                vaccine_stock=vaccine_stock, rrt_destruction_report_reception_date__lt=last_round_end_date
             )
         else:
             sel_qs = DestructionReport.objects.filter(vaccine_stock=vaccine_stock)

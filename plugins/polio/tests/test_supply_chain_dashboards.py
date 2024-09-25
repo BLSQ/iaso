@@ -13,6 +13,7 @@ from plugins.polio.models import (
     VaccineRequestForm,
     VaccineStock,
 )
+from plugins.polio.models.base import Round
 
 
 class SupplyChainDashboardsAPITestCase(APITestCase):
@@ -49,7 +50,15 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             quantities_ordered_in_doses=1000,
             vaccine_type=cls.vaccine_type,
         )
-        cls.vrf.rounds.set([])
+
+        cls.round_1 = Round.objects.create(
+            campaign=cls.campaign, number=1, started_at=date(2022, 1, 1), ended_at=date(2022, 1, 10)
+        )
+        cls.round_2 = Round.objects.create(
+            campaign=cls.campaign, number=2, started_at=date(2022, 2, 1), ended_at=date(2022, 2, 10)
+        )
+
+        cls.vrf.rounds.set([cls.round_1, cls.round_2])
         cls.other_vrf = VaccineRequestForm.objects.create(
             campaign=cls.other_campaign,
             date_vrf_signature=date.today(),
@@ -72,6 +81,23 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
 
         cls.vaccine_stock = VaccineStock.objects.create(
             country=cls.country, vaccine=cls.vaccine_type, account=cls.account
+        )
+
+        cls.form_a = OutgoingStockMovement.objects.create(
+            campaign=cls.campaign,
+            vaccine_stock=cls.vaccine_stock,
+            report_date=date.today(),
+            form_a_reception_date=date(2022, 2, 2),
+            usable_vials_used=100,
+            missing_vials=10,
+        )
+
+        cls.destruction_report = DestructionReport.objects.create(
+            vaccine_stock=cls.vaccine_stock,
+            rrt_destruction_report_reception_date=date(2022, 2, 9),
+            destruction_report_date=date.today(),
+            unusable_vials_destroyed=10,
+            action="destroyed",
         )
 
     def test_user_has_permission_vrf(self):
@@ -117,25 +143,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
     def test_vrf_new_fields(self):
         self.client.force_authenticate(self.authorized_user_read)
 
-        # Create ArrivalReport and DestructionReport
-        form_a = OutgoingStockMovement.objects.create(
-            campaign=self.campaign,
-            vaccine_stock=self.vaccine_stock,
-            report_date=date.today(),
-            form_a_reception_date=date.today(),
-            usable_vials_used=100,
-            missing_vials=10,
-        )
-
-        destruction_report = DestructionReport.objects.create(
-            vaccine_stock=self.vaccine_stock,
-            rrt_destruction_report_reception_date=date.today(),
-            destruction_report_date=date.today(),
-            unusable_vials_destroyed=10,
-            action="destroyed",
-        )
-
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(15):
             response = self.client.get(self.vrf_url)
 
         jr = self.assertJSONResponse(response, 200)
@@ -148,9 +156,9 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         self.assertIn("destruction_report_reception_date", vrf)
 
         # Check if the dates match with the created ArrivalReport and DestructionReport
-        self.assertEqual(vrf["form_a_reception_date"], str(form_a.form_a_reception_date))
+        self.assertEqual(vrf["form_a_reception_date"], str(self.form_a.form_a_reception_date))
         self.assertEqual(
-            vrf["destruction_report_reception_date"], str(destruction_report.rrt_destruction_report_reception_date)
+            vrf["destruction_report_reception_date"], str(self.destruction_report.rrt_destruction_report_reception_date)
         )
 
     def test_pre_alerts_filters_by_account(self):
@@ -170,3 +178,77 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         self.assertEqual(len(results), 1)
         arrival_report = results[0]
         self.assertEqual(arrival_report["request_form"], self.vrf.pk)
+
+    def test_vrf_correct_dates_with_multiple_entries(self):
+        self.client.force_authenticate(self.authorized_user_read)
+
+        # Create another campaign and associated VaccineRequestForm, VaccinePreAlert, and VaccineArrivalReport
+        new_campaign = Campaign.objects.create(
+            obr_name="NewCampaign-2024", account=self.account, initial_org_unit=self.country
+        )
+        new_vrf = VaccineRequestForm.objects.create(
+            campaign=new_campaign,
+            date_vrf_signature=date.today(),
+            date_vrf_reception=date.today(),
+            date_dg_approval=date.today(),
+            quantities_ordered_in_doses=2000,
+            vaccine_type=self.vaccine_type,
+        )
+        new_vrf_round_1 = Round.objects.create(
+            campaign=new_campaign, number=1, started_at=date(2023, 1, 1), ended_at=date(2023, 1, 10)
+        )
+        new_vrf_round_2 = Round.objects.create(
+            campaign=new_campaign, number=2, started_at=date(2024, 1, 1), ended_at=date(2024, 1, 10)
+        )
+        new_vrf.rounds.set([new_vrf_round_1, new_vrf_round_2])
+        new_pre_alert = VaccinePreAlert.objects.create(request_form=new_vrf, date_pre_alert_reception=date.today())
+        new_arrival_report = VaccineArrivalReport.objects.create(
+            request_form=new_vrf, arrival_report_date=date.today(), doses_received=2000
+        )
+
+        # Should appear only in 2nd VRF
+        new_forma = OutgoingStockMovement.objects.create(
+            campaign=new_campaign,
+            vaccine_stock=self.vaccine_stock,
+            report_date=date.today(),
+            form_a_reception_date=date(2024, 2, 1),
+            usable_vials_used=60,
+            missing_vials=6,
+        )
+
+        # Should appear only in 2nd VRF
+        new_dr = DestructionReport.objects.create(
+            vaccine_stock=self.vaccine_stock,
+            rrt_destruction_report_reception_date=date(2024, 1, 8),
+            destruction_report_date=date.today(),
+            unusable_vials_destroyed=6,
+            action="destroyed",
+        )
+
+        # Shoud be ignored as outside date range
+        DestructionReport.objects.create(
+            vaccine_stock=self.vaccine_stock,
+            rrt_destruction_report_reception_date=date(2024, 2, 15),
+            destruction_report_date=date.today(),
+            unusable_vials_destroyed=6,
+            action="destroyed",
+        )
+
+        response = self.client.get(self.vrf_url)
+        jr = self.assertJSONResponse(response, 200)
+        results = jr["results"]
+        self.assertEqual(len(results), 2)
+        vrf1 = results[0]
+
+        # Check if the latest dates are returned
+        self.assertEqual(vrf1["form_a_reception_date"], str(self.form_a.form_a_reception_date))
+        self.assertEqual(
+            vrf1["destruction_report_reception_date"],
+            str(self.destruction_report.rrt_destruction_report_reception_date),
+        )
+
+        vrf2 = results[1]
+
+        # Check if the latest dates are returned
+        self.assertEqual(vrf2["form_a_reception_date"], str(new_forma.form_a_reception_date))
+        self.assertEqual(vrf2["destruction_report_reception_date"], str(new_dr.rrt_destruction_report_reception_date))

@@ -12,9 +12,7 @@ import { useTranslatedErrors } from '../../../../libs/validation';
 import MESSAGES from '../messages';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import InputComponent from '../../../../components/forms/InputComponent';
-import {
-    useGetOUCRCCheckAvailabilityDropdownOptions,
-} from '../hooks/api/useGetOUCRCCheckAvailabilityDropdownOptions';
+import { useGetOUCRCCheckAvailabilityDropdownOptions } from '../hooks/api/useGetOUCRCCheckAvailabilityDropdownOptions';
 
 type Props = {
     isOpen: boolean;
@@ -26,16 +24,18 @@ type Props = {
 const useCreationSchema = () => {
     const { formatMessage } = useSafeIntl();
     return Yup.object().shape({
-        projectId: Yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
-        orgUnitTypeId: Yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
+        projectId: Yup.string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
+        orgUnitTypeId: Yup.string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
     });
 };
 
-const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<Props> = ({
-isOpen,
-closeDialog,
-openCreationSecondStepDialog,
-}) => {
+const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<
+    Props
+> = ({ isOpen, closeDialog, openCreationSecondStepDialog }) => {
     const creationSchema = useCreationSchema();
     const {
         values,
@@ -53,21 +53,26 @@ openCreationSecondStepDialog,
         },
         validationSchema: creationSchema,
         onSubmit: () => {
-            const projectOption = allProjects?.find(project =>
-                `${project.value}` === `${values.projectId}`,
+            const projectOption = allProjects?.find(
+                project => `${project.value}` === `${values.projectId}`,
             );
-            const orgUnitTypeOption = orgUnitTypeOptions?.find(orgUnitType =>
-                `${orgUnitType.value}` === `${values.orgUnitTypeId}`,
+            const orgUnitTypeOption = orgUnitTypeOptions?.find(
+                orgUnitType =>
+                    `${orgUnitType.value}` === `${values.orgUnitTypeId}`,
             );
             openCreationSecondStepDialog({
-                project: projectOption ? {
-                    id: projectOption.value,
-                    name: projectOption.label,
-                } : undefined,
-                orgUnitType: orgUnitTypeOption ? {
-                    id: orgUnitTypeOption.value,
-                    name: orgUnitTypeOption.label,
-                } : undefined,
+                project: projectOption
+                    ? {
+                          id: projectOption.value,
+                          name: projectOption.label,
+                      }
+                    : undefined,
+                orgUnitType: orgUnitTypeOption
+                    ? {
+                          id: orgUnitTypeOption.value,
+                          name: orgUnitTypeOption.label,
+                      }
+                    : undefined,
             });
         },
     });
@@ -80,11 +85,10 @@ openCreationSecondStepDialog,
         messages: MESSAGES,
     });
 
-    const { data: allProjects, isFetching: isFetchingProjects } = useGetProjectsDropdownOptions();
-    const {
-        data: orgUnitTypeOptions,
-        isFetching: isFetchingOrgUnitTypes,
-    } = useGetOUCRCCheckAvailabilityDropdownOptions(values.projectId);
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
+    const { data: orgUnitTypeOptions, isFetching: isFetchingOrgUnitTypes } =
+        useGetOUCRCCheckAvailabilityDropdownOptions(values.projectId);
 
     const onChange = useCallback(
         (keyValue, value) => {

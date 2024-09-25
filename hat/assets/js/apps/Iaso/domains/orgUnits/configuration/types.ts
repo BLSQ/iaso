@@ -48,14 +48,26 @@ export type OrgUnitChangeRequestConfigListElement = {
 export type OrgUnitChangeRequestConfigurationFull = {
     id: number;
     project: Project;
-    orgUnitType: OrgUnitType;
+    org_unit_type: OrgUnitType;
+    org_units_editable?: boolean;
+    editable_fields?: string;
+    possible_types?: Array<OrgUnitType>;
+    possible_parent_types?: Array<OrgUnitType>;
+    group_sets?: Array<GroupSet>;
+    editable_reference_forms?: Array<Form>;
+    other_groups?: Array<Group>;
+};
+
+export type OrgUnitChangeRequestConfigurationForm = {
+    projectId: number;
+    orgUnitTypeId: number;
     orgUnitsEditable?: boolean;
-    editableFields?: Array<string>;
-    possibleTypes?: Array<OrgUnitType>;
-    possibleParentTypes?: Array<OrgUnitType>;
-    groupSets?: Array<GroupSet>;
-    editableReferenceForms?: Array<Form>;
-    otherGroups?: Array<Group>;
+    editableFields?: string;
+    possibleTypeIds?: string;
+    possibleParentTypeIds?: string;
+    groupSetIds?: string;
+    editableReferenceFormIds?: string;
+    otherGroupIds?: string;
 };
 
 export type OrgUnitChangeRequestConfiguration = {

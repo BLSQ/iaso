@@ -19,11 +19,13 @@ export const useGetOUCRCCheckAvailabilityDropdownOptions = (
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,
             retry: false,
-            select: (data) => {
-                return data?.map((orgUnitType: OrgUnitType) => ({
+            select: data => {
+                return (
+                    data?.map((orgUnitType: OrgUnitType) => ({
                         value: orgUnitType.id,
                         label: orgUnitType.name,
                     })) ?? []
+                );
             },
         },
     });

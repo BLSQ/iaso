@@ -27,43 +27,67 @@ yup.addMethod(
 export const useValidationSchemaOUCRC = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
-        projectId: yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
-        orgUnitTypeId: yup.string().nullable().required(formatMessage(MESSAGES.requiredField)),
-        orgUnitsEditable: yup.boolean().nullable().required(formatMessage(MESSAGES.requiredField)),
+        projectId: yup
+            .string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
+        orgUnitTypeId: yup
+            .string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
+        orgUnitsEditable: yup
+            .boolean()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
         editableFields: yup.string().nullable().when('orgUnitsEditable', {
             is: true,
             then: yup.string().nullable().required(),
             otherwise: yup.string().nullable(),
         }),
-        possibleTypeIds: yup.string().nullable().when('orgUnitsEditable', {
-            is: true,
-            // @ts-ignore
-            then: yup.string().nullable().isMultiSelectValid(formatMessage),
-            otherwise: yup.string().nullable(),
-        }),
-        possibleParentTypeIds: yup.string().nullable().when('orgUnitsEditable', {
-            is: true,
-            // @ts-ignore
-            then: yup.string().nullable().isMultiSelectValid(formatMessage),
-            otherwise: yup.string().nullable(),
-        }),
-        groupSetIds: yup.string().nullable().when('orgUnitsEditable', {
-            is: true,
-            // @ts-ignore
-            then: yup.string().nullable().isMultiSelectValid(formatMessage),
-            otherwise: yup.string().nullable(),
-        }),
-        editableReferenceFormIds: yup.string().nullable().when('orgUnitsEditable', {
-            is: true,
-            // @ts-ignore
-            then: yup.string().nullable().isMultiSelectValid(formatMessage),
-            otherwise: yup.string().nullable(),
-        }),
-        otherGroupIds: yup.string().nullable().when('orgUnitsEditable', {
-            is: true,
-            // @ts-ignore
-            then: yup.string().nullable().isMultiSelectValid(formatMessage),
-            otherwise: yup.string().nullable(),
-        }),
+        possibleTypeIds: yup
+            .string()
+            .nullable()
+            .when('orgUnitsEditable', {
+                is: true,
+                // @ts-ignore
+                then: yup.string().nullable().isMultiSelectValid(formatMessage),
+                otherwise: yup.string().nullable(),
+            }),
+        possibleParentTypeIds: yup
+            .string()
+            .nullable()
+            .when('orgUnitsEditable', {
+                is: true,
+                // @ts-ignore
+                then: yup.string().nullable().isMultiSelectValid(formatMessage),
+                otherwise: yup.string().nullable(),
+            }),
+        groupSetIds: yup
+            .string()
+            .nullable()
+            .when('orgUnitsEditable', {
+                is: true,
+                // @ts-ignore
+                then: yup.string().nullable().isMultiSelectValid(formatMessage),
+                otherwise: yup.string().nullable(),
+            }),
+        editableReferenceFormIds: yup
+            .string()
+            .nullable()
+            .when('orgUnitsEditable', {
+                is: true,
+                // @ts-ignore
+                then: yup.string().nullable().isMultiSelectValid(formatMessage),
+                otherwise: yup.string().nullable(),
+            }),
+        otherGroupIds: yup
+            .string()
+            .nullable()
+            .when('orgUnitsEditable', {
+                is: true,
+                // @ts-ignore
+                then: yup.string().nullable().isMultiSelectValid(formatMessage),
+                otherwise: yup.string().nullable(),
+            }),
     });
 };

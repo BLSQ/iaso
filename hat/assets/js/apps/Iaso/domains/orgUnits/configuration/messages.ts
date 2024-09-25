@@ -75,7 +75,8 @@ const MESSAGES = defineMessages({
     },
     oucrcCreateSecondStepModalTitle: {
         id: 'iaso.label.oucrcCreateModalTitle',
-        defaultMessage: 'OrgUnit Change Request Configuration - Creation 2nd step',
+        defaultMessage:
+            'OrgUnit Change Request Configuration - Creation 2nd step',
     },
     oucrcCreateUpdateModalTitle: {
         id: 'iaso.label.oucrcCreateModalTitle',

@@ -71,7 +71,6 @@ const useColumns = (
                             orgUnitType: settings.row.original.org_unit_type,
                         };
                         onEditClicked(configToUpdate);
-                        // onEditClicked(settings.row.original);
                     }, [settings.row.original]);
                     return (
                         <>
@@ -92,7 +91,7 @@ const useColumns = (
 type Props = {
     data: OrgUnitChangeRequestConfigsPaginated | undefined;
     isFetching: boolean;
-    onEditClicked: Dispatch<SetStateAction<OrgUnitChangeRequestConfig>>;
+    onEditClicked: Dispatch<SetStateAction<OrgUnitChangeRequestConfiguration>>;
     params: OrgUnitChangeRequestConfigsParams;
 };
 export const baseUrl = baseUrls.orgUnitsChangeRequestConfiguration;

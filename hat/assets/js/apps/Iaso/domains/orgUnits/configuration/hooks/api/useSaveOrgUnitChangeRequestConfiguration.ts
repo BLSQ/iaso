@@ -3,7 +3,7 @@ import { patchRequest, postRequest } from '../../../../../libs/Api';
 import { useSnackMutation } from '../../../../../libs/apiHooks';
 
 import { apiUrlOUCRC, editableFieldsForBackend } from '../../constants';
-import { OrgUnitChangeRequestConfigurationFull } from '../../types';
+import { OrgUnitChangeRequestConfigurationForm, OrgUnitChangeRequestConfigurationFull } from '../../types';
 
 function cleanEditableFieldsForSaving(editableFields) {
     if (!editableFields) {
@@ -22,64 +22,78 @@ function cleanEditableFieldsForSaving(editableFields) {
     return cleanEditableFields;
 }
 
-function mapValuesForSaving(values) {
+function mapValuesForSaving(values: OrgUnitChangeRequestConfigurationForm) : Partial<OrgUnitChangeRequestConfigurationFull> {
     const apiValues = {
         org_units_editable: values.orgUnitsEditable,
     };
 
     // These two fields can't be updated so they are only set for creation
     if (!values.id) {
-       apiValues.project_id = values.projectId;
-       apiValues.org_unit_type_id = values.orgUnitTypeId;
+        apiValues.project_id = values.projectId;
+        apiValues.org_unit_type_id = values.orgUnitTypeId;
     }
 
     // This field must be cleaned because the backend accepts only some values
-    const cleanedEditableFields = cleanEditableFieldsForSaving(values.editableFields);
+    const cleanedEditableFields = cleanEditableFieldsForSaving(
+        values.editableFields,
+    );
     if (cleanedEditableFields) {
-       apiValues.editable_fields = cleanedEditableFields;
+        apiValues.editable_fields = cleanedEditableFields;
     }
 
     // All the many to many fields are added if they have a value
     if (values.possibleTypeIds) {
-       apiValues.possible_type_ids = values.possibleTypeIds.split(",").map(Number);
+        apiValues.possible_type_ids = values.possibleTypeIds
+            .split(',')
+            .map(Number);
     }
     if (values.possibleParentTypeIds) {
-       apiValues.possible_parent_type_ids = values.possibleParentTypeIds.split(",").map(Number);
+        apiValues.possible_parent_type_ids = values.possibleParentTypeIds
+            .split(',')
+            .map(Number);
     }
     if (values.groupSetIds) {
-        apiValues.group_set_ids = values.groupSetIds.split(",").map(Number);
+        apiValues.group_set_ids = values.groupSetIds.split(',').map(Number);
     }
     if (values.editableReferenceFormIds) {
-        apiValues.editable_reference_form_ids = values.editableReferenceFormIds.split(",").map(Number);
+        apiValues.editable_reference_form_ids = values.editableReferenceFormIds
+            .split(',')
+            .map(Number);
     }
     if (values.otherGroupIds) {
-        apiValues.other_group_ids = values.otherGroupIds.split(",").map(Number);
+        apiValues.other_group_ids = values.otherGroupIds.split(',').map(Number);
     }
     return apiValues;
-};
+}
 
-const patchOrgUniType = async (body: Partial<OrgUnitChangeRequestConfigurationFull>) => {
-    const url = `${apiUrlOUCRC}${body.id}/`;
+const patchOrgUniType = async (
+    configId: number,
+    body: Partial<OrgUnitChangeRequestConfigurationFull>,
+): Promise<any> => {
+    const url = `${apiUrlOUCRC}${configId}/`;
     return patchRequest(url, body);
 };
 
-const postOrgUnitType = async (body: OrgUnitChangeRequestConfigurationFull) => {
+const postOrgUnitType = async (body: Partial<OrgUnitChangeRequestConfigurationFull>): Promise<any> => {
     return postRequest({
         url: `${apiUrlOUCRC}`,
         data: body,
     });
 };
 
-export const useSaveOrgUnitChangeRequestConfiguration = (): UseMutationResult => {
-    const ignoreErrorCodes = [400];
-    return useSnackMutation({
-        mutationFn: (data: Partial<OrgUnitChangeRequestConfigurationFull>) => {
-            const formattedData = mapValuesForSaving(data);
-            return formattedData.id
-                ? patchOrgUniType(formattedData)
-                : postOrgUnitType(formattedData as OrgUnitChangeRequestConfigurationFull);
-        },
-        // invalidateQueryKey: ['paginated-orgunit-types'],
-        ignoreErrorCodes,
-    });
-};
+export const useSaveOrgUnitChangeRequestConfiguration =
+    (): UseMutationResult => {
+        const ignoreErrorCodes = [400];
+        return useSnackMutation({
+            mutationFn: (
+                configId: number | undefined,
+                data: Partial<OrgUnitChangeRequestConfigurationForm>,
+            ) => {
+                const formattedData = mapValuesForSaving(data);
+                return configId
+                    ? patchOrgUniType(configId, formattedData)
+                    : postOrgUnitType(formattedData);
+            },
+            ignoreErrorCodes,
+        });
+    };

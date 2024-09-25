@@ -10,7 +10,7 @@ import { apiUrlForms } from '../../constants';
 export const useGetFormDropdownOptions = (
     orgUnitTypeId: number,
 ): UseQueryResult<DropdownOptions<number>[], Error> => {
- const url = `${apiUrlForms}?orgUnitTypeIds=${orgUnitTypeId}`;
+    const url = `${apiUrlForms}?orgUnitTypeIds=${orgUnitTypeId}`;
     return useSnackQuery({
         queryKey: ['useGetFormDropdownOptions', url],
         queryFn: () => getRequest(url),

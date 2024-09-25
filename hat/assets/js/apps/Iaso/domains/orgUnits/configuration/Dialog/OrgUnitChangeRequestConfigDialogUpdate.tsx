@@ -19,7 +19,7 @@ import { useGetFormDropdownOptions } from '../hooks/api/useGetFormDropdownOption
 import { useSaveOrgUnitChangeRequestConfiguration } from '../hooks/api/useSaveOrgUnitChangeRequestConfiguration';
 import { useOrgUnitsEditableOptions } from '../hooks/useOrgUnitsEditableOptions';
 import { useOrgUnitsEditableFieldsOptions } from '../hooks/useOrgUnitEditableFieldsOptions';
-import { OrgUnitChangeRequestConfiguration } from '../types';
+import { OrgUnitChangeRequestConfiguration, OrgUnitChangeRequestConfigurationForm } from '../types';
 import { useRetrieveOrgUnitChangeRequestConfig } from '../hooks/api/useRetrieveOrgUnitChangeRequestConfig';
 import { useValidationSchemaOUCRC } from '../hooks/useValidationSchemaOUCRC';
 
@@ -34,7 +34,6 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
 }) => {
-    const { data: fullConfig, isLoading: isLoadingFullConfig } = useRetrieveOrgUnitChangeRequestConfig(config?.id);
     const configValidationSchema = useValidationSchemaOUCRC();
     const {
         values,
@@ -45,7 +44,8 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
         errors,
         touched,
         setFieldTouched,
-    } = useFormik({
+        resetForm,
+    } = useFormik<OrgUnitChangeRequestConfigurationForm>({
         initialValues: {
             projectId: config.project.id,
             orgUnitTypeId: config.orgUnitType.id,
@@ -59,17 +59,26 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
         },
         validationSchema: configValidationSchema,
         onSubmit: () => {
-            console.log('*** onSubmit values = ', values);
-            saveConfig(values);
+            saveConfig(config.id, values);
             closeDialog();
         },
     });
+    const { isLoading: isLoadingFullConfig } =
+        useRetrieveOrgUnitChangeRequestConfig(config?.id, fetchedConfig => {
+            console.log("*** before resetting form - fetchedConfig ", fetchedConfig);
+            resetForm(fetchedConfig);
+        });
+
+    console.log("*** values = ", values);
 
     const { data: orgUnitTypeOptions } = useGetOrgUnitTypesDropdownOptions();
     const { data: groupOptions } = useGetGroupDropdown({});
-    const { data: formOptions } = useGetFormDropdownOptions(config.orgUnitType.id);
+    const { data: formOptions } = useGetFormDropdownOptions(
+        config.orgUnitType.id,
+    );
     const { data: groupSetOptions } = useGetGroupDropdown({});
-    const { mutateAsync: saveConfig } = useSaveOrgUnitChangeRequestConfiguration();
+    const { mutateAsync: saveConfig } =
+        useSaveOrgUnitChangeRequestConfiguration();
     const orgUnitsEditableOptions = useOrgUnitsEditableOptions();
     const orgUnitEditableFieldsOptions = useOrgUnitsEditableFieldsOptions();
 
@@ -89,11 +98,12 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
         [setFieldValue, setFieldTouched],
     );
 
-    const onChangeEditableFields = useCallback((keyValue, value) => {
+    const onChangeEditableFields = useCallback(
+        (keyValue, value) => {
             // if a many-to-many field has some value, but the field is removed from editableFields, we need to clean the field
             if (value) {
                 const split = value.split(',');
-                editableFieldsManyToManyFields.forEach((field) => {
+                editableFieldsManyToManyFields.forEach(field => {
                     if (!split.includes(field)) {
                         setFieldValue(field, undefined);
                     }
@@ -104,11 +114,12 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
         [onChange, setFieldValue],
     );
 
-    const onChangeOrgUnitsEditable = useCallback((keyValue, value) => {
+    const onChangeOrgUnitsEditable = useCallback(
+        (keyValue, value) => {
             // if we say that the org units are no longer editable, we need to clean everything up
             const boolValue = value === 'true';
             if (!boolValue) {
-                editableFieldsManyToManyFields.forEach((field) => {
+                editableFieldsManyToManyFields.forEach(field => {
                     setFieldValue(field, undefined);
                 });
                 setFieldValue('editableFields', undefined);

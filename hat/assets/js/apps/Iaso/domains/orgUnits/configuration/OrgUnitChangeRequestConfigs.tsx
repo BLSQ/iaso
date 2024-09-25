@@ -14,9 +14,7 @@ import MESSAGES from './messages';
 import { OrgUnitChangeRequestConfigsFilter } from './Filter/OrgUnitChangeRequestConfigsFilter';
 import { OrgUnitChangeRequestConfigsTable } from './Tables/OrgUnitChangeRequestConfigsTable';
 import { OrgUnitChangeRequestConfigDialogCreateFirstStep } from './Dialog/OrgUnitChangeRequestConfigDialogCreateFirstStep';
-import {
-    OrgUnitChangeRequestConfigDialogCreateSecondStep,
-} from './Dialog/OrgUnitChangeRequestConfigDialogUpdate';
+import { OrgUnitChangeRequestConfigDialogCreateSecondStep } from './Dialog/OrgUnitChangeRequestConfigDialogUpdate';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -33,7 +31,7 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
     const [config, setConfig] = useState<OrgUnitChangeRequestConfiguration>();
 
     const handleSecondStep = useCallback(
-        (newConfig) => {
+        newConfig => {
             setConfig(newConfig);
             setIsCreationSecondStepDialogOpen(true);
         },
@@ -53,7 +51,6 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <OrgUnitChangeRequestConfigsFilter params={params} />
                 <Box mb={2} display="flex" justifyContent="flex-end">
-
                     <OrgUnitChangeRequestConfigDialogCreateFirstStep
                         iconProps={{}}
                         openCreationSecondStepDialog={handleSecondStep}

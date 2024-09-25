@@ -16,8 +16,20 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
     DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
     # *** utility methods for testing ***
-    def create_new_org_unit_type(self, new_name=None):
-        return m.OrgUnitType.objects.create(name=new_name)
+    def create_new_org_unit_type(self, name=None, project=None):
+        """
+        Creates a new OrgUnitType and returns it.
+        If a Project is given, this method also links the new OrgUnitType to the Project.
+        """
+        new_org_unit = m.OrgUnitType.objects.create(name=name)
+        if project:
+            new_org_unit.projects.add(project)
+        return new_org_unit
+
+    def create_new_project_and_account(self, project_name=None, account_name=None):
+        new_account = m.Account.objects.create(name=account_name)
+        new_project = m.Project.objects.create(name=project_name, account=new_account)
+        return new_project, new_account
 
     def make_patch_api_call_with_non_existing_id_in_attribute(self, attribute_name):
         self._make_api_call_with_non_existing_id_in_attribute(attribute_name, "patch")
@@ -68,7 +80,47 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.get(self.OUCRC_API_URL)
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
-    # list with filters?
+    def test_list_with_restricted_queryset(self):
+        new_project, new_account = self.create_new_project_and_account(project_name="Palworld", account_name="Palworld")
+        new_user = self.create_user_with_profile(
+            username="Palworld guy", account=new_account, permissions=["iaso_org_unit_change_request_configurations"]
+        )
+        new_oucrc = m.OrgUnitChangeRequestConfiguration.objects.create(
+            org_unit_type=self.ou_type_water_pokemons,
+            project=new_project,
+            created_by=new_user,
+            org_units_editable=False,
+        )
+
+        # There are now 4 OUCRCs, but the new_user should only see the new one, because he doesn't have access to self.account_pokemon
+        self.client.force_authenticate(new_user)
+        response = self.client.get(self.OUCRC_API_URL)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        result = response.json()["results"]
+        self.assertEqual(1, len(result))
+        self.assertEqual(new_oucrc.id, result[0]["id"])
+
+    def test_list_superadmin(self):
+        new_project, new_account = self.create_new_project_and_account(project_name="Palworld", account_name="Palworld")
+        new_user = self.create_user_with_profile(
+            username="Not Professor Oak",
+            account=new_account,
+            permissions=["iaso_org_unit_change_request_configurations"],
+            is_superuser=True,
+        )
+        new_oucrc = m.OrgUnitChangeRequestConfiguration.objects.create(
+            org_unit_type=self.ou_type_fire_pokemons,
+            project=new_project,
+            created_by=new_user,
+            org_units_editable=False,
+        )
+        # There are now 4 OUCRCs and the new_user should see all of them because he's a superuser
+        self.client.force_authenticate(new_user)
+        response = self.client.get(self.OUCRC_API_URL)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        result = response.json()["results"]
+        self.assertEqual(4, len(result))
+        self.assertEqual(new_oucrc.id, result[3]["id"])
 
     # *** Testing retrieve GET endpoint ***
     def test_retrieve_ok(self):
@@ -110,7 +162,7 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
     @time_machine.travel(DT, tick=False)
     def test_create_happy_path(self):
         self.client.force_authenticate(self.user_brock)
-        new_ou_type = self.create_new_org_unit_type("new ou type")
+        new_ou_type = self.create_new_org_unit_type(name="new ou type", project=self.project_johto)
         data = {
             "project_id": self.project_johto.id,
             "org_unit_type_id": new_ou_type.id,
@@ -154,27 +206,8 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertEqual(logged_oucrc.created_at, self.DT)
         self.assertEqual(logged_oucrc.user, self.user_brock)
 
-    # @time_machine.travel(DT, tick=False)
-    # def test_create_ok_using_uuid_for_project_id(self):
-    #     self.client.force_authenticate(self.user)
-    #     data = {
-    #         "org_unit_id": self.org_unit.uuid,
-    #         "new_name": "I want this new name",
-    #         "new_org_unit_type_id": self.org_unit_type.pk,
-    #     }
-    #     with self.assertNumQueries(11):
-    #         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-    #     self.assertEqual(response.status_code, 201)
-    #     change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
-    #     self.assertEqual(change_request.new_name, data["new_name"])
-    #     self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
-    #     self.assertEqual(change_request.created_at, self.DT)
-    #     self.assertEqual(change_request.created_by, self.user)
-    #     self.assertEqual(change_request.updated_at, self.DT)
-    #     self.assertEqual(change_request.requested_fields, ["new_name", "new_org_unit_type"])
-    #
     def test_create_without_auth(self):
-        new_ou_type = self.create_new_org_unit_type("new ou type")
+        new_ou_type = self.create_new_org_unit_type(name="new ou type", project=self.project_johto)
         data = {
             "project_id": self.project_johto.id,
             "org_unit_type_id": new_ou_type.id,
@@ -183,19 +216,7 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
-    #
-    # def test_create_without_perm(self):
-    #     self.client.force_authenticate(self.user)
-    #
-    #     unauthorized_org_unit = m.OrgUnit.objects.create()
-    #     data = {
-    #         "org_unit_id": unauthorized_org_unit.id,
-    #         "new_name": "I want this new name",
-    #     }
-    #     response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-    #     self.assertEqual(response.status_code, 403)
-
-    def test_create_existing_invalid_oug_unit_type_and_project(self):
+    def test_create_existing_invalid_org_unit_type_and_project(self):
         # an OUCRC already exists with this combination of OUType & Project
         self.client.force_authenticate(self.user_ash_ketchum)
         data = {
@@ -263,12 +284,14 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         }
         response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertContains(
-            response, f"The field '{pikachu}' is not a valid editable field.", status_code=status.HTTP_400_BAD_REQUEST
+            response, f"Value '{pikachu}' is not a valid choice.", status_code=status.HTTP_400_BAD_REQUEST
         )
+        self.assertIn("editable_fields", response.json())
 
     def test_create_invalid_possible_type_ids(self):
-        new_org_unit_type = self.create_new_org_unit_type("new org unit type")
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=self.project_johto)
         data = {
+            "project_id": self.project_johto.id,
             "org_unit_type_id": new_org_unit_type.id,
         }
         self.make_post_api_call_with_non_existing_id_in_attribute(
@@ -276,8 +299,9 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         )
 
     def test_create_invalid_possible_parent_type_ids(self):
-        new_org_unit_type = self.create_new_org_unit_type("new org unit type")
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=self.project_johto)
         data = {
+            "project_id": self.project_johto.id,
             "org_unit_type_id": new_org_unit_type.id,
         }
         self.make_post_api_call_with_non_existing_id_in_attribute(
@@ -285,15 +309,17 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         )
 
     def test_create_invalid_group_set_ids(self):
-        new_org_unit_type = self.create_new_org_unit_type("new org unit type")
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=self.project_johto)
         data = {
+            "project_id": self.project_johto.id,
             "org_unit_type_id": new_org_unit_type.id,
         }
         self.make_post_api_call_with_non_existing_id_in_attribute(attribute_name="group_set_ids", additional_data=data)
 
     def test_create_invalid_editable_reference_form_ids(self):
-        new_org_unit_type = self.create_new_org_unit_type("new org unit type")
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=self.project_johto)
         data = {
+            "project_id": self.project_johto.id,
             "org_unit_type_id": new_org_unit_type.id,
         }
         self.make_post_api_call_with_non_existing_id_in_attribute(
@@ -301,13 +327,116 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         )
 
     def test_create_invalid_other_group_ids(self):
-        new_org_unit_type = self.create_new_org_unit_type("new org unit type")
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=self.project_johto)
         data = {
+            "project_id": self.project_johto.id,
             "org_unit_type_id": new_org_unit_type.id,
         }
         self.make_post_api_call_with_non_existing_id_in_attribute(
             attribute_name="other_group_ids", additional_data=data
         )
+
+    def test_create_with_org_unit_type_id_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        new_org_unit_type = self.create_new_org_unit_type("new org unit type")
+        data = {
+            "project_id": self.project_johto.id,
+            "org_unit_type_id": new_org_unit_type.id,
+            "org_units_editable": False,
+        }
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the OrgUnitType {new_org_unit_type.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("org_unit_type_id", response.json())
+
+    def test_create_with_possible_type_ids_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        new_project, _ = self.create_new_project_and_account(project_name="new project", account_name="new account")
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=new_project)
+        data = {
+            "project_id": self.project_johto.id,
+            "org_unit_type_id": new_org_unit_type.id,
+            "possible_type_ids": [new_org_unit_type.id],
+        }
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the OrgUnitType {new_org_unit_type.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("possible_type_ids", response.json())
+
+    def test_create_with_possible_parent_type_ids_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_misty)
+        new_project, _ = self.create_new_project_and_account(project_name="new project", account_name="new account")
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=self.project_johto)
+        new_parent_type = self.create_new_org_unit_type(name="new org unit type", project=new_project)
+        data = {
+            "project_id": self.project_johto.id,
+            "org_unit_type_id": new_org_unit_type.id,
+            "possible_parent_type_ids": [new_parent_type.id],
+        }
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the OrgUnitType {new_parent_type.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("possible_parent_type_ids", response.json())
+
+    def test_create_with_group_set_ids_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_brock)
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=self.project_johto)
+        new_group_set = m.GroupSet.objects.create(name="new group set")
+        data = {
+            "project_id": self.project_johto.id,
+            "org_unit_type_id": new_org_unit_type.id,
+            "group_set_ids": [new_group_set.id],
+        }
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the GroupSet {new_group_set.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("group_set_ids", response.json())
+
+    def test_create_with_editable_reference_form_ids_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=self.project_johto)
+        new_form = m.Form.objects.create(name="new form")
+        data = {
+            "project_id": self.project_johto.id,
+            "org_unit_type_id": new_org_unit_type.id,
+            "editable_reference_form_ids": [new_form.id],
+        }
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the Form {new_form.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("editable_reference_form_ids", response.json())
+
+    def test_create_with_other_group_ids_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=self.project_johto)
+        new_group = m.Group.objects.create(name="new group")
+        data = {
+            "project_id": self.project_johto.id,
+            "org_unit_type_id": new_org_unit_type.id,
+            "other_group_ids": [new_group.id],
+        }
+        response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the Group {new_group.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("other_group_ids", response.json())
 
     # *** Testing update PATCH endpoint ***
     def test_update_full(self):
@@ -407,6 +536,14 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_update_without_perm(self):
+        self.client.force_authenticate(self.user_without_perms_giovanni)
+        data = {
+            "org_units_editable": False,
+        }
+        response = self.client.post(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_update_invalid_id(self):
         self.client.force_authenticate(self.user_ash_ketchum)
         data = {
@@ -443,6 +580,78 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
 
     def test_update_unknown_other_groups(self):
         self.make_patch_api_call_with_non_existing_id_in_attribute(attribute_name="other_group_ids")
+
+    def test_update_with_possible_type_ids_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        new_project, _ = self.create_new_project_and_account(project_name="new project", account_name="new account")
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=new_project)
+        data = {
+            "possible_type_ids": [new_org_unit_type.id],
+        }
+        response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the OrgUnitType {new_org_unit_type.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("possible_type_ids", response.json())
+
+    def test_update_with_possible_parent_type_ids_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_misty)
+        new_project, _ = self.create_new_project_and_account(project_name="new project", account_name="new account")
+        new_parent_type = self.create_new_org_unit_type(name="parent org unit type", project=new_project)
+        data = {
+            "possible_parent_type_ids": [new_parent_type.id],
+        }
+        response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_water.id}/", data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the OrgUnitType {new_parent_type.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("possible_parent_type_ids", response.json())
+
+    def test_update_with_group_set_ids_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_brock)
+        new_group_set = m.GroupSet.objects.create(name="new group set")
+        data = {
+            "group_set_ids": [new_group_set.id],
+        }
+        response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_rock.id}/", data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the GroupSet {new_group_set.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("group_set_ids", response.json())
+
+    def test_update_with_editable_reference_form_ids_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        new_form = m.Form.objects.create(name="new form")
+        data = {
+            "editable_reference_form_ids": [new_form.id],
+        }
+        response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the Form {new_form.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("editable_reference_form_ids", response.json())
+
+    def test_update_with_other_group_ids_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_misty)
+        new_group = m.Group.objects.create(name="new group")
+        data = {
+            "other_group_ids": [new_group.id],
+        }
+        response = self.client.patch(f"{self.OUCRC_API_URL}{self.oucrc_type_water.id}/", data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the Group {new_group.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("other_group_ids", response.json())
 
     # + Test for updating groupsets or groups, but there were updates in groupsets between OUCRC creation and update
     # -> what should happen? error? cleanup without telling the user?
@@ -483,6 +692,11 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_delete_without_perm(self):
+        self.client.force_authenticate(self.user_without_perms_giovanni)
+        response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_delete_invalid_id(self):
         self.client.force_authenticate(self.user_ash_ketchum)
         probably_not_a_valid_id = 1234567890
@@ -510,6 +724,16 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         new_oucrc = m.OrgUnitChangeRequestConfiguration.objects.get(id=result["id"])
         self.assertEqual(new_oucrc.project_id, self.oucrc_type_fire.project_id)
         self.assertEqual(new_oucrc.org_unit_type_id, self.oucrc_type_fire.org_unit_type_id)
+
+    def test_error_deleting_already_deleted(self):
+        # First, let's delete the existing OUCRC
+        self.client.force_authenticate(self.user_ash_ketchum)
+        response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Then let's delete it again
+        response = self.client.delete(f"{self.OUCRC_API_URL}{self.oucrc_type_fire.id}/", format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # *** Testing GET check_availability endpoint ***
     def test_check_availability_ok(self):
@@ -541,9 +765,12 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
 
     def test_check_availability_no_config_yet(self):
         # Preparing a new Project and new OrgUnitTypes
-        new_account = m.Account.objects.create(name="New account")
-        new_project = m.Project.objects.create(name="New project", account=new_account, app_id="new")
-        new_user = self.create_user_with_profile(username="New user", account=new_account)
+        new_project, new_account = self.create_new_project_and_account(
+            project_name="New project", account_name="New account"
+        )
+        new_user = self.create_user_with_profile(
+            username="New user", account=new_account, permissions=["iaso_org_unit_change_request_configurations"]
+        )
 
         new_ou_type_1 = self.create_new_org_unit_type("new type 1")
         new_ou_type_1.projects.add(new_project)
@@ -576,6 +803,13 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_check_availability_without_perm(self):
+        self.client.force_authenticate(self.user_without_perms_giovanni)
+        response = self.client.get(
+            f"{self.OUCRC_API_URL}check_availability/?project_id={self.project_johto.id}", format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_check_availability_error_missing_parameter(self):
         self.client.force_authenticate(self.user_ash_ketchum)
         response = self.client.get(f"{self.OUCRC_API_URL}check_availability/", format="json")
@@ -600,17 +834,21 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertIn("project_id", response.json())
         self.assertIn("does not exist", response.json()["project_id"][0])
 
-    # Add a test for checking availability for a project not assigned to the user, once implemented
-
-    # def test_update_should_be_forbidden(self):
-    #     self.client.force_authenticate(self.user_with_review_perm)
-    #     change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-    #     data = {"new_name": "Baz"}
-    #     response = self.client.put(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
-    #     self.assertEqual(response.status_code, 405)
-    #
-    # def test_delete_should_be_forbidden(self):
-    #     self.client.force_authenticate(self.user_with_review_perm)
-    #     change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-    #     response = self.client.delete(f"/api/orgunits/changes/{change_request.pk}/", format="json")
-    #     self.assertEqual(response.status_code, 405)
+    def test_check_availability_with_project_id_not_accessible_to_user(self):
+        self.client.force_authenticate(self.user_misty)
+        new_project, _ = self.create_new_project_and_account(project_name="new project", account_name="new account")
+        new_org_unit_type = self.create_new_org_unit_type(name="new org unit type", project=new_project)
+        # There should be one result since there is no OUCRC for the new project, but the user doesn't have access to it
+        data = {
+            "project_id": new_project.id,
+            "org_unit_type_id": new_org_unit_type.id,
+            "org_units_editable": False,
+        }
+        response = self.client.get(
+            f"{self.OUCRC_API_URL}check_availability/?project_id={new_project.id}", format="json"
+        )
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the Project {new_project.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )

@@ -33,6 +33,3 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.client.force_authenticate(self.user_ash_ketchum)
         response = self.client.get(f"{self.MOBILE_OUCRC_API_URL}")
         self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
-
-
-#    def test_list_without_permission(self):

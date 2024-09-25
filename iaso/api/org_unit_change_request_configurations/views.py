@@ -6,6 +6,10 @@ from rest_framework.response import Response
 
 from iaso.api.org_unit_change_request_configurations.filters import OrgUnitChangeRequestConfigurationListFilter
 from iaso.api.org_unit_change_request_configurations.pagination import OrgUnitChangeRequestConfigurationPagination
+from iaso.api.org_unit_change_request_configurations.permissions import (
+    HasOrgUnitsChangeRequestConfigurationReadPermission,
+    HasOrgUnitsChangeRequestConfigurationFullPermission,
+)
 from iaso.api.org_unit_change_request_configurations.serializers import (
     OrgUnitChangeRequestConfigurationListSerializer,
     OrgUnitChangeRequestConfigurationRetrieveSerializer,
@@ -15,7 +19,7 @@ from iaso.api.org_unit_change_request_configurations.serializers import (
     OrgUnitChangeRequestConfigurationAuditLogger,
     ProjectIdSerializer,
 )
-from iaso.models import OrgUnitChangeRequestConfiguration, OrgUnitType, Project
+from iaso.models import OrgUnitChangeRequestConfiguration, OrgUnitType
 
 
 class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
@@ -44,9 +48,14 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
     pagination_class = OrgUnitChangeRequestConfigurationPagination
 
     def get_queryset(self):
-        return (
-            OrgUnitChangeRequestConfiguration.objects.order_by("id")
-            .select_related("project", "org_unit_type", "created_by", "updated_by")
+        user = self.request.user
+        if user.is_superuser:
+            queryset = OrgUnitChangeRequestConfiguration.objects.all()
+        else:
+            queryset = OrgUnitChangeRequestConfiguration.objects.filter_for_user(user)
+
+        queryset = (
+            queryset.select_related("project", "org_unit_type", "created_by", "updated_by")
             .prefetch_related(
                 "possible_types",
                 "possible_parent_types",
@@ -54,19 +63,28 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
                 "editable_reference_forms",
                 "other_groups",
             )
+            .order_by("id")
         )
+        return queryset
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            permission_classes = [HasOrgUnitsChangeRequestConfigurationReadPermission]
+        else:
+            permission_classes = [HasOrgUnitsChangeRequestConfigurationFullPermission]
+        return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
         if self.action == "create":
             return OrgUnitChangeRequestConfigurationWriteSerializer
-        if self.action in ["list", "metadata"]:
+        if self.action == "list":
             return OrgUnitChangeRequestConfigurationListSerializer
         if self.action == "retrieve":
             return OrgUnitChangeRequestConfigurationRetrieveSerializer
         if self.action == "partial_update":
             return OrgUnitChangeRequestConfigurationUpdateSerializer
 
-    @action(detail=False)
+    @action(detail=False, permission_classes=[HasOrgUnitsChangeRequestConfigurationFullPermission])
     def check_availability(self, request, *args, **kwargs):
         user = request.user
         if user and user.is_anonymous:
@@ -74,10 +92,9 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
 
         project_id = ProjectIdSerializer(data=self.request.query_params).get_project_id(raise_exception=True)
 
-        # It seems there is currently no constraints on projects, but it will happen in the near future
-        # user_projects = user.iaso_profile.projects.all()
-        # if user_projects and project_id not in user_projects:
-        #     raise serializers.ValidationError("You don't have access to this project")
+        user_projects = user.iaso_profile.projects.values_list("id", flat=True)
+        if user_projects and project_id not in user_projects:
+            raise serializers.ValidationError(f"The user doesn't have access to the Project {project_id}")
 
         org_unit_types_in_configs = OrgUnitChangeRequestConfiguration.objects.filter(project_id=project_id).values_list(
             "org_unit_type_id", flat=True

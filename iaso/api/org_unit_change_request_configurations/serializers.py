@@ -5,6 +5,12 @@ from django.contrib.auth.models import User
 
 from hat.audit.audit_logger import AuditLogger
 from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_CONFIGURATION_API
+from iaso.api.org_unit_change_request_configurations.validation import (
+    validate_org_unit_types,
+    validate_group_sets,
+    validate_forms,
+    validate_groups,
+)
 from iaso.api.query_params import PROJECT_ID
 from iaso.models import (
     OrgUnitType,
@@ -161,98 +167,7 @@ class OrgUnitChangeRequestConfigurationRetrieveSerializer(serializers.ModelSeria
         ]
 
 
-class OrgUnitChangeRequestConfigurationWriteSerializer(serializers.ModelSerializer):
-    """
-    Used to create one `OrgUnitChangeRequestConfiguration` instance.
-    """
-
-    id = serializers.IntegerField(read_only=True)
-    project_id = IdOrUuidRelatedField(source="project", queryset=Project.objects.all())
-    org_unit_type_id = serializers.PrimaryKeyRelatedField(source="org_unit_type", queryset=OrgUnitType.objects.all())
-    possible_type_ids = serializers.PrimaryKeyRelatedField(
-        source="possible_types", queryset=OrgUnitType.objects.all(), many=True, allow_empty=True, required=False
-    )
-    possible_parent_type_ids = serializers.PrimaryKeyRelatedField(
-        source="possible_parent_types", queryset=OrgUnitType.objects.all(), many=True, allow_empty=True, required=False
-    )
-    group_set_ids = serializers.PrimaryKeyRelatedField(
-        source="group_sets", queryset=GroupSet.objects.all(), many=True, allow_empty=True, required=False
-    )
-    editable_reference_form_ids = serializers.PrimaryKeyRelatedField(
-        source="editable_reference_forms", queryset=Form.objects.all(), many=True, allow_empty=True, required=False
-    )
-    other_group_ids = serializers.PrimaryKeyRelatedField(
-        source="other_groups", queryset=Group.objects.all(), many=True, allow_empty=True, required=False
-    )
-
-    class Meta:
-        model = OrgUnitChangeRequestConfiguration
-        fields = [
-            "id",
-            "project_id",
-            "org_unit_type_id",
-            "org_units_editable",
-            "editable_fields",
-            "possible_type_ids",
-            "possible_parent_type_ids",
-            "group_set_ids",
-            "editable_reference_form_ids",
-            "other_group_ids",
-        ]
-
-    def validate(self, validated_data):
-        # All IDs should be validated here, but this will be done in another ticket
-        request = self.context.get("request")
-        user = request.user
-
-        # Making sure that there is no soft-deleted OUCRC with the same project_id and org_unit_type_id
-        project_id = validated_data["project"].id
-        org_unit_type_id = validated_data["org_unit_type"].id
-        if OrgUnitChangeRequestConfiguration.objects.filter(
-            project_id=project_id, org_unit_type_id=org_unit_type_id
-        ).exists():
-            raise serializers.ValidationError(
-                f"There is already a configuration for this project_id ({project_id}) and org_unit_type_id ({org_unit_type_id}).)"
-            )
-
-        # Making sure the editable_fields values are correct
-        editable_fields_set = set()
-        for field in validated_data["editable_fields"]:
-            if field not in OrgUnitChangeRequestConfiguration.LIST_OF_POSSIBLE_EDITABLE_FIELDS:
-                raise serializers.ValidationError(f"The field '{field}' is not a valid editable field.")
-            editable_fields_set.add(field)
-        validated_data["editable_fields"] = list(editable_fields_set)
-
-        validated_data["created_by"] = user
-
-        return validated_data
-
-    def create(self, validated_data):
-        # Overriding create in order to log the OUCRC creation
-        # Splitting m2m relationships from the rest because you can't just do object.m2m_field = something
-        data_without_m2m_relationships = validated_data
-        m2m_relationships = pop_keys(
-            data_without_m2m_relationships, OrgUnitChangeRequestConfiguration.LIST_OF_M2M_RELATIONSHIPS
-        )
-        new_oucrc = OrgUnitChangeRequestConfiguration.objects.create(**data_without_m2m_relationships)
-        for key, value in m2m_relationships.items():
-            getattr(new_oucrc, key).set(value)
-        new_oucrc.save()
-
-        audit_serializer = OrgUnitChangeRequestConfigurationAuditLogger()
-        audit_serializer.log_modification(
-            instance=new_oucrc,
-            request_user=self.context["request"].user,
-            old_data_dump=[],
-        )
-        return new_oucrc
-
-
-class OrgUnitChangeRequestConfigurationUpdateSerializer(serializers.ModelSerializer):
-    """
-    Used to update a single `OrgUnitChangeRequestConfiguration` instance.
-    """
-
+class BaseOrgUnitChangeRequestConfigurationWriteUpdateSerializer(serializers.ModelSerializer):
     possible_type_ids = serializers.PrimaryKeyRelatedField(
         source="possible_types", queryset=OrgUnitType.objects.all(), many=True, allow_empty=True, required=False
     )
@@ -282,22 +197,108 @@ class OrgUnitChangeRequestConfigurationUpdateSerializer(serializers.ModelSeriali
         ]
 
     def validate_editable_fields(self, value):
+        fields_set = set()
         for field in value:
             if field not in OrgUnitChangeRequestConfiguration.LIST_OF_POSSIBLE_EDITABLE_FIELDS:
-                raise serializers.ValidationError(f"Value {field} is not a valid choice.")
-        return value
+                raise serializers.ValidationError(f"Value '{field}' is not a valid choice.")
+            fields_set.add(field)
+        return list(fields_set)
 
-    # Filtering for all relations will be done in another ticket
-    # def validate_possible_types(self, value):
-    #     pass
-    # def validate_possible_parent_types(self, value):
-    #     pass
-    # def validate_group_sets(self, value):
-    #     pass
-    # def validate_editable_reference_forms(self, value):
-    #     pass
-    # def validate_other_groups(self, value):
-    #     pass
+    def validate_possible_type_ids(self, possible_types):
+        user = self.context["request"].user
+        validate_org_unit_types(user=user, org_unit_types=possible_types)
+        return possible_types
+
+    def validate_possible_parent_type_ids(self, possible_parent_types):
+        user = self.context["request"].user
+        validate_org_unit_types(user=user, org_unit_types=possible_parent_types)
+        return possible_parent_types
+
+    def validate_group_set_ids(self, group_sets):
+        user = self.context["request"].user
+        validate_group_sets(user=user, group_sets=group_sets)
+        return group_sets
+
+    def validate_editable_reference_form_ids(self, editable_reference_forms):
+        user = self.context["request"].user
+        validate_forms(user=user, forms=editable_reference_forms)
+        return editable_reference_forms
+
+    def validate_other_group_ids(self, other_groups):
+        user = self.context["request"].user
+        validate_groups(user=user, groups=other_groups)
+        return other_groups
+
+
+class OrgUnitChangeRequestConfigurationWriteSerializer(BaseOrgUnitChangeRequestConfigurationWriteUpdateSerializer):
+    """
+    Used to create one `OrgUnitChangeRequestConfiguration` instance.
+    """
+
+    id = serializers.IntegerField(read_only=True)
+    project_id = IdOrUuidRelatedField(source="project", queryset=Project.objects.all())
+    org_unit_type_id = serializers.PrimaryKeyRelatedField(source="org_unit_type", queryset=OrgUnitType.objects.all())
+
+    class Meta(BaseOrgUnitChangeRequestConfigurationWriteUpdateSerializer.Meta):
+        fields = [
+            "id",
+            "project_id",
+            "org_unit_type_id",
+            *BaseOrgUnitChangeRequestConfigurationWriteUpdateSerializer.Meta.fields,
+        ]
+
+    def validate_org_unit_type_id(self, org_unit_type):
+        user = self.context["request"].user
+        validate_org_unit_types(user=user, org_unit_types=[org_unit_type])
+        return org_unit_type
+
+    def validate(self, validated_data):
+        # All IDs should be validated here, but this will be done in another ticket
+        request = self.context.get("request")
+        user = request.user
+
+        # Making sure that there is no soft-deleted OUCRC with the same project_id and org_unit_type_id
+        project_id = validated_data["project"].id
+        org_unit_type_id = validated_data["org_unit_type"].id
+        if OrgUnitChangeRequestConfiguration.objects.filter(
+            project_id=project_id, org_unit_type_id=org_unit_type_id
+        ).exists():
+            raise serializers.ValidationError(
+                f"There is already a configuration for this project_id ({project_id}) and org_unit_type_id ({org_unit_type_id}).)"
+            )
+
+        validated_data["created_by"] = user
+
+        return validated_data
+
+    def create(self, validated_data):
+        # Overriding create in order to log the OUCRC creation
+        # Splitting m2m relationships from the rest because you can't just do object.m2m_field = something
+        data_without_m2m_relationships = validated_data
+        m2m_relationships = pop_keys(
+            data_without_m2m_relationships, OrgUnitChangeRequestConfiguration.LIST_OF_M2M_RELATIONSHIPS
+        )
+        new_oucrc = OrgUnitChangeRequestConfiguration.objects.create(**data_without_m2m_relationships)
+        for key, value in m2m_relationships.items():
+            getattr(new_oucrc, key).set(value)
+        new_oucrc.save()
+
+        audit_serializer = OrgUnitChangeRequestConfigurationAuditLogger()
+        audit_serializer.log_modification(
+            instance=new_oucrc,
+            request_user=self.context["request"].user,
+            old_data_dump=[],
+        )
+        return new_oucrc
+
+
+class OrgUnitChangeRequestConfigurationUpdateSerializer(BaseOrgUnitChangeRequestConfigurationWriteUpdateSerializer):
+    """
+    Used to update a single `OrgUnitChangeRequestConfiguration` instance.
+    """
+
+    class Meta(BaseOrgUnitChangeRequestConfigurationWriteUpdateSerializer.Meta):
+        pass  # there is no specific field for update that is not in the shared base
 
     def validate(self, validated_data):
         request = self.context.get("request")

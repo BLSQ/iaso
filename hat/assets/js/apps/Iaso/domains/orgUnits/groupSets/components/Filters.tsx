@@ -1,27 +1,21 @@
-import React, { useState, FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 
-import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
+import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 
 import { useFilterState } from '../../../../hooks/useFilterState';
 
 import MESSAGES from '../messages';
 
-import { baseUrl } from '../config';
-import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useDataSourceVersions } from '../../../dataSources/requests';
-
-const useStyles = makeStyles(theme => ({}));
+import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
+import { baseUrl } from '../config';
 
 type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
     search?: string;
-    sourceVersion: string;
+    sourceVersion?: string;
     projectsIds?: string;
     accountId: string;
 };
@@ -31,7 +25,7 @@ type Props = {
 };
 
 const makeVersionsDropDown = sourceVersions => {
-    if (sourceVersions == undefined) {
+    if (sourceVersions === undefined) {
         return [];
     }
 
@@ -39,10 +33,9 @@ const makeVersionsDropDown = sourceVersions => {
         sourceVersions
             .map(sourceVersion => {
                 return {
-                    label:
-                        sourceVersion.data_source_name +
-                        ' - ' +
-                        sourceVersion.number.toString(),
+                    label: `${
+                        sourceVersion.data_source_name
+                    } - ${sourceVersion.number.toString()}`,
                     value: sourceVersion.id,
                 };
             })
@@ -52,7 +45,6 @@ const makeVersionsDropDown = sourceVersions => {
 };
 
 const Filters: FunctionComponent<Props> = ({ params }) => {
-    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params, withPagination: true });
@@ -66,7 +58,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     const sourceVersionsDropDown = useMemo(
         () => makeVersionsDropDown(allSourceVersions),
-        [allSourceVersions, formatMessage],
+        [allSourceVersions],
     );
 
     const theme = useTheme();
@@ -123,11 +115,10 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         data-test="search-button"
                         disabled={!filtersUpdated || textSearchError}
                         variant="contained"
-                        className={classes.button}
                         color="primary"
                         onClick={() => handleSearch()}
                     >
-                        <SearchIcon className={classes.buttonIcon} />
+                        <SearchIcon />
                         {formatMessage(MESSAGES.search)}
                     </Button>
                 </Box>

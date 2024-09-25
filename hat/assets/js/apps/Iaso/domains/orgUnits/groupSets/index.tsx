@@ -1,25 +1,22 @@
-import React from 'react';
-import { Box, Button, Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    LoadingSpinner,
+    AddButton as AddButtonComponent,
     commonStyles,
+    LoadingSpinner,
     Table,
-    useSafeIntl,
     useRedirectTo,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import TopBar from '../../../components/nav/TopBarComponent';
-import {Filters} from './components/Filters';
-import { useGroupSetsTableColumns } from './config';
-import MESSAGES from './messages';
-import { useGetGroupSets, useDeleteGroupSet } from './hooks/requests';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
-import { useNavigate } from 'react-router-dom';
-
-import {
-    AddButton as AddButtonComponent,
-} from 'bluesquare-components';
+import { Filters } from './components/Filters';
+import { useGroupSetsTableColumns } from './config';
+import { useDeleteGroupSet, useGetGroupSets } from './hooks/requests';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -29,17 +26,17 @@ const GroupSets = () => {
     const params = useParamsObject(baseUrl);
     const redirectTo = useRedirectTo();
     const classes = useStyles();
-    const {mutate: deleteGroupSet, isLoading: isDeleting} = useDeleteGroupSet()
-    const tableColumns = useGroupSetsTableColumns(  deleteGroupSet);
+    const { mutate: deleteGroupSet } = useDeleteGroupSet();
+    const tableColumns = useGroupSetsTableColumns(deleteGroupSet);
     const { formatMessage } = useSafeIntl();
 
     const { data, isFetching } = useGetGroupSets(params);
     const navigate = useNavigate();
     const isLoading = isFetching;
-    const createGroupSet =() => {
+    const createGroupSet = () => {
         // how to use the paths ?
-        navigate("/orgunits/groupSet/groupSetId/new")
-    }
+        navigate('/orgunits/groupSet/groupSetId/new');
+    };
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -47,18 +44,18 @@ const GroupSets = () => {
                 title={formatMessage(MESSAGES.groupSets)}
                 displayBackButton={false}
             />
-            
+
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
 
                 <Box mt={4}>
                     <Grid container spacing={2} justifyContent="flex-end">
-                    <AddButtonComponent
-                    onClick={createGroupSet}
-                    dataTestId="create-groupset"
-                />
+                        <AddButtonComponent
+                            onClick={createGroupSet}
+                            dataTestId="create-groupset"
+                        />
                     </Grid>
-                </Box>            
+                </Box>
 
                 {tableColumns && (
                     <Table

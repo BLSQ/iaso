@@ -1,30 +1,30 @@
+import { Box, Button } from '@mui/material';
+import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
+import { Field, FormikProvider, useFormik } from 'formik';
+import { isEqual } from 'lodash';
 import React, { useMemo } from 'react';
 import TopBar from '../../../components/nav/TopBarComponent';
-import { isEqual } from 'lodash';
 
-import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
-import MESSAGES from './messages';
+import { baseUrls } from '../../../constants/urls';
+import { useApiErrorValidation } from '../../../libs/validation';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { useDataSourceVersions } from '../../dataSources/requests';
+import { MultiSelect } from '../../pages/components/MultiSelect';
+import { SingleSelect } from '../../pages/components/SingleSelect';
+import TextInput from '../../pages/components/TextInput';
+import { useGetGroupDropdown } from '../hooks/requests/useGetGroups';
 import {
     useGetGroupSet,
     useOptionGroupSet,
     useSaveGroupSet,
 } from './hooks/requests';
-import { baseUrls } from '../../../constants/urls';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject';
-import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
-import { useDataSourceVersions } from '../../dataSources/requests';
 import { useGroupSetSchema } from './hooks/validations';
-import { Field, FormikProvider, useFormik } from 'formik';
-import TextInput from '../../pages/components/TextInput';
-import { SingleSelect } from '../../pages/components/SingleSelect';
-import { MultiSelect } from '../../pages/components/MultiSelect';
-import { Box, Button } from '@mui/material';
-import { useApiErrorValidation } from '../../../libs/validation';
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.groupSetDetail;
 
 const makeVersionsDropDown = sourceVersions => {
-    if (sourceVersions == undefined) {
+    if (sourceVersions === undefined) {
         return [];
     }
 
@@ -32,10 +32,9 @@ const makeVersionsDropDown = sourceVersions => {
         sourceVersions
             .map(sourceVersion => {
                 return {
-                    label:
-                        sourceVersion.data_source_name +
-                        ' - ' +
-                        sourceVersion.number.toString(),
+                    label: `${
+                        sourceVersion.data_source_name
+                    } - ${sourceVersion.number.toString()}`,
                     value: sourceVersion.id,
                 };
             })
@@ -51,27 +50,22 @@ const GroupSet = () => {
     const { data: groupSet, isFetching } = useGetGroupSet(params.groupSetId);
     const { data: groupSetMetaData, isLoading: isFetchingMetaData } =
         useOptionGroupSet();
-    const { data: allSourceVersions, isLoading: areSourceVersionsLoading } =
-        useDataSourceVersions();
+    const { data: allSourceVersions } = useDataSourceVersions();
 
     const sourceVersionsDropDown = useMemo(
         () => makeVersionsDropDown(allSourceVersions),
-        [allSourceVersions, formatMessage],
+        [allSourceVersions],
     );
 
     const goBack = useGoBack(baseUrls.groupSets);
-    const { mutate: saveOrCreate, isSuccess: mutationIsSuccess } =
+    const { mutateAsync: saveOrCreate, isSuccess: mutationIsSuccess } =
         useSaveGroupSet();
-    const {
-        apiErrors,
-        payload,
-        mutation: confirm,
-    } = useApiErrorValidation({
+    const { apiErrors, payload } = useApiErrorValidation({
         mutationFn: saveOrCreate,
     });
     const schema = useGroupSetSchema(apiErrors, payload);
 
-    const isCreate = groupSet && groupSet?.id == undefined;
+    const isCreate = groupSet && groupSet?.id === undefined;
     const formik = useFormik({
         initialValues: {
             id: groupSet?.id,
@@ -107,9 +101,9 @@ const GroupSet = () => {
             <TopBar
                 title={
                     formatMessage(MESSAGES.groupSet) +
-                    (groupSet && groupSet.name ? ' - ' + groupSet.name : '')
+                    (groupSet && groupSet.name ? ` - ${groupSet.name}` : '')
                 }
-                displayBackButton={true}
+                displayBackButton
                 goBack={() => goBack()}
             />
 
@@ -168,12 +162,18 @@ const GroupSet = () => {
                     <Button
                         type="submit"
                         disabled={!allowConfirm}
-                        onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                        onClick={(
+                            event: React.MouseEvent<HTMLButtonElement>,
+                        ) => {
                             event.preventDefault();
                             formik.handleSubmit();
                         }}
                     >
-                        {formatMessage(isCreate ? MESSAGES.createButton : MESSAGES.saveButton)}
+                        {formatMessage(
+                            isCreate
+                                ? MESSAGES.createButton
+                                : MESSAGES.saveButton,
+                        )}
                     </Button>
                 </div>
             </FormikProvider>

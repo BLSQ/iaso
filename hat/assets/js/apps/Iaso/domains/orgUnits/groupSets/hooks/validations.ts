@@ -2,9 +2,9 @@ import * as yup from 'yup';
 
 import { useSafeIntl } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
-import { useAPIErrorValidator } from '../../../../libs/validation';
 import { useMemo } from 'react';
+import { useAPIErrorValidator } from '../../../../libs/validation';
+import MESSAGES from '../messages';
 
 export const useGroupSetSchema = (errors, payload) => {
     const { formatMessage } = useSafeIntl();
@@ -23,7 +23,7 @@ export const useGroupSetSchema = (errors, payload) => {
                     .of(yup.number())
                     .test(apiValidator('group_ids')),
             }),
-        [apiValidator],
+        [apiValidator, formatMessage],
     );
 
     return schema;

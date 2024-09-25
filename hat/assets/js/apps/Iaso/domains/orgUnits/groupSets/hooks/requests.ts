@@ -1,16 +1,14 @@
-import { useSnackQuery, useSnackMutation } from '../../../../libs/apiHooks';
-import {
-    getRequest,
-    deleteRequest,
-    postRequest,
-    patchRequest,
-    optionsRequest,
-} from '../../../../libs/Api';
-
 import { UseMutationResult, UseQueryResult } from 'react-query';
+import {
+    deleteRequest,
+    getRequest,
+    optionsRequest,
+    patchRequest,
+    postRequest,
+} from '../../../../libs/Api';
+import { useSnackMutation, useSnackQuery } from '../../../../libs/apiHooks';
 
 import { GroupSetMetaData } from '../types/GroupSetMetaData';
-import { baseUrl } from '../config';
 
 import MESSAGES from '../messages';
 
@@ -63,8 +61,8 @@ export const useGetGroupSet = groupSetId => {
         ['group_sets', groupSetId],
         () => {
             // if create
-            if (groupSetId == 'new') {
-                return new Promise(resolve => resolve({}));
+            if (groupSetId === 'new') {
+                return Promise.resolve({});
             }
             return getRequest(`/api/group_sets/${groupSetId}/?fields=:all`);
         },
@@ -77,9 +75,8 @@ export const useSaveGroupSet = (): UseMutationResult<any, any, any, any> =>
         body => {
             if (body.id) {
                 return patchRequest(`/api/group_sets/${body.id}/`, body);
-            } else {
-                return postRequest('/api/group_sets/', body);
             }
+            return postRequest('/api/group_sets/', body);
         },
         undefined,
         undefined,

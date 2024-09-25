@@ -1,4 +1,4 @@
-import { Box, Button } from '@mui/material';
+import { Box, Button, Container } from '@mui/material';
 import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
@@ -73,7 +73,9 @@ const GroupSet = () => {
             source_ref: groupSet?.source_ref,
             source_version_id: groupSet?.source_version?.id,
             group_ids: groupSet?.groups ? groupSet.groups.map(g => g.id) : [],
-            group_belonging: groupSet?.group_belonging || 'SINGLE',
+            group_belonging: params.groupSetId
+                ? groupSet?.group_belonging
+                : 'SINGLE',
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -108,7 +110,7 @@ const GroupSet = () => {
             />
 
             <FormikProvider value={formik}>
-                <div style={{ margin: '20px' }}>
+                <Container maxWidth="sm" sx={{ mt: theme => theme.spacing(4) }}>
                     <Box mb={2}>
                         <Field
                             label={formatMessage(MESSAGES.name)}
@@ -154,28 +156,32 @@ const GroupSet = () => {
                             label={formatMessage(MESSAGES.group_belonging)}
                             name="group_belonging"
                             component={SingleSelect}
-                            options={groupSetMetaData?.groupBelonging}
+                            options={groupSetMetaData?.groupBelonging || []}
                             required
+                            loading={isFetchingMetaData}
                             disabled={!userHasReadAndWritePerm}
                         />
                     </Box>
-                    <Button
-                        type="submit"
-                        disabled={!allowConfirm}
-                        onClick={(
-                            event: React.MouseEvent<HTMLButtonElement>,
-                        ) => {
-                            event.preventDefault();
-                            formik.handleSubmit();
-                        }}
-                    >
-                        {formatMessage(
-                            isCreate
-                                ? MESSAGES.createButton
-                                : MESSAGES.saveButton,
-                        )}
-                    </Button>
-                </div>
+                    <Box display="flex" justifyContent="flex-end">
+                        <Button
+                            type="submit"
+                            disabled={!allowConfirm}
+                            variant="contained"
+                            onClick={(
+                                event: React.MouseEvent<HTMLButtonElement>,
+                            ) => {
+                                event.preventDefault();
+                                formik.handleSubmit();
+                            }}
+                        >
+                            {formatMessage(
+                                isCreate
+                                    ? MESSAGES.createButton
+                                    : MESSAGES.saveButton,
+                            )}
+                        </Button>
+                    </Box>
+                </Container>
             </FormikProvider>
         </>
     );

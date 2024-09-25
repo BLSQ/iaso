@@ -1,7 +1,7 @@
 import { get } from 'lodash';
 import React, { FunctionComponent } from 'react';
-import { DropdownOptions } from '../../../types/utils';
 import InputComponent from '../../../components/forms/InputComponent';
+import { DropdownOptions } from '../../../types/utils';
 
 type Props = {
     options: DropdownOptions<number>[];
@@ -14,6 +14,7 @@ type Props = {
     disabled?: boolean;
     // eslint-disable-next-line no-unused-vars
     onChange?: (_keyValue: string, value: any) => void;
+    loading?: boolean;
 };
 
 export const SingleSelect: FunctionComponent<Props> = ({
@@ -26,6 +27,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
     clearable = true,
     withMarginTop = false,
     required = false,
+    loading = false,
 }) => {
     const hasError =
         form.errors &&
@@ -51,6 +53,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
                 }
             }}
             errors={hasError ? [get(form.errors, field.name)] : []}
+            loading={loading}
         />
     );
 };

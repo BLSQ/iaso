@@ -17,6 +17,7 @@ type Props = {
     baseUrl: string;
     params: Record<string, string>;
     defaultPageSize?: number;
+    showButtons?: boolean;
 };
 
 const useStyles = makeStyles(theme => {
@@ -32,6 +33,7 @@ export const Logs: FunctionComponent<Props> = ({
     baseUrl,
     params,
     defaultPageSize = 10,
+    showButtons = false,
 }) => {
     const classes = useStyles();
     const queryClient = useQueryClient();
@@ -72,6 +74,7 @@ export const Logs: FunctionComponent<Props> = ({
                             <LogsDetails
                                 logId={log.id}
                                 goToRevision={handleRevision}
+                                showButtons={showButtons}
                             />
                         ) : null,
                 }}

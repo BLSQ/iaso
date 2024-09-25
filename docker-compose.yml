@@ -24,6 +24,7 @@ services:
       - ./tsconfig.json:/opt/app/tsconfig.json
       - ./babel-register.js:/opt/app/babel-register.js
       - ./mypy.ini:/opt/app/mypy.ini
+      - ./pyproject.toml:/opt/app/pyproject.toml
       # test data
       - ./testdata:/opt/app/testdata
       # jupyter notebooks

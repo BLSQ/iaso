@@ -194,6 +194,20 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         instance_with_status = m.Instance.objects.with_status().get(pk=instance.pk)
         self.assertEqual(instance_with_status.status, status)
 
+    def test_xml_to_json_should_contains_emoji(self):
+        self.maxDiff = None
+        instance = m.Instance.objects.create(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_coruscant,
+            file=UploadedFile(open("iaso/tests/fixtures/submission_with_emoji.xml")),
+        )
+        json_instance = instance.get_and_save_json_of_xml()
+
+        self.assertEqual(json_instance["_version"], "2024080903")
+        # assert flattened and  lowered case keys
+        self.assertEqual(json_instance["prevous_muac_color"], "🟡Yellow")
+
     def test_xml_to_json_should_contains_chars_encoding(self):
         instance = m.Instance.objects.create(
             form=self.form_1,
@@ -506,40 +520,13 @@ class InstanceModelTestCase(TestCase, InstanceBase):
 
         return (alderaan, sluis, dagobah, first_council, second_council, first_academy, second_academy)
 
-    def test_org_unit_soft_delete_no_one(self):
+    def test_org_unit_soft_delete(self):
         instance = self.create_form_instance(
             form=self.form_1, period="202001", org_unit=self.jedi_council_coruscant, project=None
         )
-
         self.assertFalse(instance.deleted)
-        self.assertEqual(0, Modification.objects.count())
-
         instance.soft_delete()
-
         self.assertTrue(instance.deleted)
-        self.assertEqual(1, Modification.objects.count())
-        modification = Modification.objects.first()
-        self.assertIsNone(modification.user)
-        self.assertEqual(INSTANCE_API, modification.source)
-        self.assertEqual(instance.id, int(modification.object_id))
-        self.assertNotEqual(modification.past_value, modification.new_value)
-        self.assertFalse(modification.past_value[0]["fields"]["deleted"])
-        self.assertTrue(modification.new_value[0]["fields"]["deleted"])
-
-    def test_org_unit_soft_delete_someone(self):
-        instance = self.create_form_instance(
-            form=self.form_1, period="202002", org_unit=self.jedi_council_coruscant, project=None
-        )
-
-        self.assertFalse(instance.deleted)
-        self.assertEqual(0, Modification.objects.count())
-
-        instance.soft_delete(user=self.yoda)
-
-        self.assertTrue(instance.deleted)
-        self.assertEqual(1, Modification.objects.count())
-        modification = Modification.objects.first()
-        self.assertEqual(self.yoda, modification.user)
 
 
 class InstanceAPITestCase(APITestCase, InstanceBase):

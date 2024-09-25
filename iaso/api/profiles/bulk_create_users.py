@@ -2,6 +2,8 @@ import csv
 import io
 
 import pandas as pd
+from hat.audit.models import PROFILE_API_BULK
+from iaso.api.profiles.audit import ProfileAuditLogger
 import phonenumbers
 from django.contrib.auth.models import User, Permission, Group
 from django.contrib.auth.password_validation import validate_password
@@ -31,6 +33,7 @@ BULK_CREATE_USER_COLUMNS_LIST = [
     "orgunit__source_ref",
     "profile_language",
     "dhis2_id",
+    "organization",
     "permissions",
     "user_roles",
     "projects",
@@ -145,19 +148,16 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 raise serializers.ValidationError({"error": f"Operation aborted. Error: {e}"})
             except pd.errors.ParserError as e:
                 raise serializers.ValidationError({"error": f"Invalid CSV File. Error: {e}"})
-
             importer_user = request.user
             importer_account = request.user.iaso_profile.account
-            importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(importer_user)
-            importer_orgunits_hierarchy = OrgUnit.objects.hierarchy(importer_access_ou)
-
+            importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(importer_user).only("id")
             csv_indexes = []
             file_instance = BulkCreateUserCsvFile.objects.create(
                 file=user_csv, created_by=importer_user, account=importer_account
             )
             value_splitter = "," if delimiter == "," else "*"
             file_instance.save()
-
+            audit_logger = ProfileAuditLogger()
             for i, row in enumerate(reader):
                 if i > 0 and not set(BULK_CREATE_USER_COLUMNS_LIST).issubset(csv_indexes):
                     missing_elements = set(BULK_CREATE_USER_COLUMNS_LIST) - set(csv_indexes)
@@ -217,13 +217,12 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
                     org_units_source_refs = row[csv_indexes.index("orgunit__source_ref")].split(value_splitter)
                     org_units += org_units_source_refs
-
                     for ou in list(filter(None, org_units)):
                         ou = ou.strip()
                         if ou.isdigit():
                             try:
                                 ou = OrgUnit.objects.get(id=int(ou))
-                                if has_geo_limit and ou not in importer_orgunits_hierarchy:
+                                if has_geo_limit and ou not in importer_access_ou:
                                     raise serializers.ValidationError(
                                         {
                                             "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
@@ -252,7 +251,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             # due to multiple sequential imports from DHIS2 (this happens a lot). So we must
                             # select the one that matches the "default source version" of the account.
                             org_unit = OrgUnit.objects.filter(
-                                Q(pk__in=importer_orgunits_hierarchy),
+                                Q(pk__in=importer_access_ou),
                                 Q(version_id=importer_account.default_version_id),
                                 Q(name=ou) | Q(source_ref=ou),
                             ).order_by("-version_id")
@@ -272,7 +271,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         "again. Use Orgunit ID instead of name.".format(ou, i + 1)
                                     }
                                 )
-                            if org_unit[0] not in OrgUnit.objects.filter_for_user_and_app_id(importer_user, None):
+                            if org_unit[0] not in importer_access_ou:
                                 raise serializers.ValidationError(
                                     {
                                         "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
@@ -300,6 +299,15 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             )
 
                         profile.dhis2_id = dhis2_id
+
+                    # Using try except for organization in case users are being created with an older version of the template
+                    try:
+                        organization = row[csv_indexes.index("organization")]
+                    except ValueError:
+                        organization = None
+                    if organization:
+                        profile.organization = organization
+
                     try:
                         user_roles = row[csv_indexes.index("user_roles")]
                     except (IndexError, ValueError):
@@ -392,6 +400,12 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     content_file = ContentFile(csv_file.encode("utf-8"))
                     file_instance.file.save(f"{file_instance.id}.csv", content_file)
                     profile.save()
+                    audit_logger.log_modification(
+                        instance=profile,
+                        old_data_dump=None,
+                        request_user=request.user,
+                        source=f"{PROFILE_API_BULK}_create",
+                    )
                     user_created_count += 1
                 else:
                     csv_indexes = row

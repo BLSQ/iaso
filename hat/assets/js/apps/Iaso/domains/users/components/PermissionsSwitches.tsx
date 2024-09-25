@@ -1,23 +1,23 @@
-import React, { useCallback, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
+    Column,
     LoadingSpinner,
     Table,
-    Column,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { useCallback, useMemo } from 'react';
 import InputComponent from '../../../components/forms/InputComponent';
-import MESSAGES from '../messages';
-import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
-import { useUserPermissionColumns } from '../config';
-import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
-import { Permission } from '../../userRoles/types/userRoles';
-import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
-import { userHasPermission } from '../utils';
+import { useSnackQuery } from '../../../libs/apiHooks';
 import * as Permissions from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
+import { Permission } from '../../userRoles/types/userRoles';
+import { useUserPermissionColumns } from '../config';
+import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
+import MESSAGES from '../messages';
+import { userHasPermission } from '../utils';
 
 const canAssignPermission = (user, permission): boolean => {
     if (userHasPermission(Permissions.USERS_ADMIN, user)) {
@@ -77,17 +77,19 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         // Permission list is not displayed for superuser, no need to fetch it from server
         options: { enabled: !isSuperUser },
     });
-
-    const setPermissions = (codeName: string, isChecked: boolean) => {
-        const newUserPerms = [...currentUser.user_permissions.value];
-        if (!isChecked) {
-            const permIndex = newUserPerms.indexOf(codeName);
-            newUserPerms.splice(permIndex, 1);
-        } else {
-            newUserPerms.push(codeName);
-        }
-        handleChange(newUserPerms);
-    };
+    const setPermissions = useCallback(
+        (codeName: string, isChecked: boolean) => {
+            const newUserPerms = [...currentUser.user_permissions.value];
+            if (!isChecked) {
+                const permIndex = newUserPerms.indexOf(codeName);
+                newUserPerms.splice(permIndex, 1);
+            } else {
+                newUserPerms.push(codeName);
+            }
+            handleChange(newUserPerms);
+        },
+        [currentUser.user_permissions.value, handleChange],
+    );
     const loggedInUser = useCurrentUser();
 
     const allPermissions = useMemo(() => {

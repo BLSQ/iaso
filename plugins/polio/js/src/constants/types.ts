@@ -67,7 +67,7 @@ export type ConvertedLqasImData = {
     rounds: { number: number; data: LqasImDistrictDataWithNameAndRegion[] }[];
 };
 
-export type IMType = 'imGlobal' | 'imIHH' | 'imOHH';
+export type IMType = 'imGlobal' | 'imHH' | 'imOHH';
 
 export type LqasIMtype = IMType | 'lqas';
 

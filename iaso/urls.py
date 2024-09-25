@@ -12,6 +12,7 @@ from iaso import matching
 from iaso.api.config import ConfigViewSet
 from iaso.api.data_store import DataStoreViewSet
 from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
+from iaso.api.profiles.profile_logs import ProfileLogsViewset
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
@@ -25,7 +26,7 @@ from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.api_tokens import APITokenViewSet
 from .api.apps import AppsViewSet
-from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
+from .api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
@@ -62,9 +63,10 @@ from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.microplanning import AssignmentViewSet, MobilePlanningViewSet, PlanningViewSet, TeamViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
-from .api.mobile.entity import MobileEntityViewSet
+from .api.mobile.entity import MobileEntityViewSet, MobileEntityDeletedViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.groups import MobileGroupsViewSet
+from .api.mobile.group_sets import MobileGroupSetsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
@@ -80,7 +82,7 @@ from .api.pages import PagesViewSet
 from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
 from .api.permissions import PermissionsViewSet
-from .api.profiles import ProfilesViewSet
+from .api.profiles.profiles import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
@@ -96,6 +98,7 @@ from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.import_export import export_workflow, import_workflow
 from .api.workflows.mobile import MobileWorkflowViewSet
 from .api.workflows.versions import WorkflowVersionViewSet
+from .api.group_sets.views import GroupSetsViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 
 URL = Union[URLPattern, URLResolver]
@@ -134,7 +137,9 @@ router.register(r"profiles", ProfilesViewSet, basename="profiles")
 router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")
 router.register(r"groups", GroupsViewSet, basename="groups")
+router.register(r"group_sets", GroupSetsViewSet, basename="group_sets")
 router.register(r"mobile/groups", MobileGroupsViewSet, basename="groupsmobile")
+router.register(r"mobile/group_sets", MobileGroupSetsViewSet, basename="groupsetsmobile")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
 router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
@@ -156,6 +161,7 @@ router.register(r"tasks/create/exportmobilesetup", ExportMobileSetupViewSet, bas
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entities", EntityViewSet, basename="entity")
+router.register(r"mobile/entities/deleted", MobileEntityDeletedViewSet, basename="entitiesdeleted")
 router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytypes", EntityTypeViewSet, basename="entitytype")
 router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="entitytype")
@@ -179,6 +185,7 @@ router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobilework
 router.register(r"reports", ReportsViewSet, basename="report")
 router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
 router.register(r"userroles", UserRolesViewSet, basename="userroles")
+router.register(r"userlogs", ProfileLogsViewset, basename="userlogs")
 
 router.register(r"datastore", DataStoreViewSet, basename="datastore")
 router.register(r"validationstatus", ValidationStatusViewSet, basename="validationstatus")

@@ -11,6 +11,7 @@ from iaso.test import APITestCase
 from plugins.polio import models as pm
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
+BASE_URL_SUB_RESOURCES = "/api/polio/vaccine/stock/"
 
 
 class VaccineStockManagementAPITestCase(APITestCase):
@@ -341,3 +342,192 @@ class VaccineStockManagementAPITestCase(APITestCase):
         response = self.client.delete(f"{BASE_URL}{self.vaccine_stock.pk}/")
         self.assertEqual(response.status_code, 204)
         self.assertIsNone(pm.VaccineStock.objects.filter(pk=self.vaccine_stock.pk).first())
+
+    def test_incident_report_list(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}incident_report/?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20"
+        )
+
+        # Check that the response status code is 200
+        self.assertEqual(response.status_code, 200)
+
+        # Parse the response data
+        data = response.json()
+
+        # Check that the response data contains the expected keys
+        self.assertIn("count", data)
+        self.assertIn("results", data)
+
+        # Check that the results list is not empty
+        self.assertGreater(len(data["results"]), 0)
+
+        # Validate the structure of the first result
+        first_result = data["results"][0]
+        expected_keys = {
+            "id",
+            "vaccine_stock",
+            "date_of_incident_report",
+            "usable_vials",
+            "unusable_vials",
+            "stock_correction",
+        }
+        self.assertTrue(expected_keys.issubset(first_result.keys()))
+
+        # Check that the vaccine_stock in the results matches the requested vaccine_stock
+        for result in data["results"]:
+            self.assertEqual(result["vaccine_stock"], self.vaccine_stock.pk)
+
+            # Add a new test which adds the order=date_of_incident_report and verify that the results are ordered by date_of_incident_report
+
+    def test_incident_report_list_ordered_by_date(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}incident_report/?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20&order=date_of_incident_report"
+        )
+
+        # Check that the response status code is 200
+        self.assertEqual(response.status_code, 200)
+
+        # Parse the response data
+        data = response.json()
+
+        # Check that the response data contains the expected keys
+        self.assertIn("count", data)
+        self.assertIn("results", data)
+
+        # Check that the results list is not empty
+        self.assertGreater(len(data["results"]), 0)
+
+        # Verify that the results are ordered by date_of_incident_report
+        dates = [result["date_of_incident_report"] for result in data["results"]]
+        self.assertEqual(dates, sorted(dates))
+
+    def test_destruction_report_list(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20"
+        )
+
+        # Check that the response status code is 200
+        self.assertEqual(response.status_code, 200)
+
+        # Parse the response data
+        data = response.json()
+
+        # Check that the response data contains the expected keys
+        self.assertIn("count", data)
+        self.assertIn("results", data)
+
+        # Check that the results list is not empty
+        self.assertGreater(len(data["results"]), 0)
+
+        # Validate the structure of the first result
+        first_result = data["results"][0]
+        expected_keys = {
+            "id",
+            "vaccine_stock",
+            "destruction_report_date",
+            "rrt_destruction_report_reception_date",
+            "action",
+            "unusable_vials_destroyed",
+            "lot_numbers",
+        }
+        self.assertTrue(expected_keys.issubset(first_result.keys()))
+
+        # Check that the vaccine_stock in the results matches the requested vaccine_stock
+        for result in data["results"]:
+            self.assertEqual(result["vaccine_stock"], self.vaccine_stock.pk)
+
+            # Add a new test which adds the order=date_of_incident_report and verify that the results are ordered by date_of_incident_report
+
+    def test_destruction_report_list_ordered_by_date(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20&order=destruction_report_date"
+        )
+
+        # Check that the response status code is 200
+        self.assertEqual(response.status_code, 200)
+
+        # Parse the response data
+        data = response.json()
+
+        # Check that the response data contains the expected keys
+        self.assertIn("count", data)
+        self.assertIn("results", data)
+
+        # Check that the results list is not empty
+        self.assertGreater(len(data["results"]), 0)
+
+        # Verify that the results are ordered by date_of_incident_report
+        dates = [result["destruction_report_date"] for result in data["results"]]
+        self.assertEqual(dates, sorted(dates))
+
+    def test_outgoing_stock_movement_list(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20"
+        )
+
+        # Check that the response status code is 200
+        self.assertEqual(response.status_code, 200)
+
+        # Parse the response data
+        data = response.json()
+
+        # Check that the response data contains the expected keys
+        self.assertIn("count", data)
+        self.assertIn("results", data)
+
+        # Check that the results list is not empty
+        self.assertGreater(len(data["results"]), 0)
+
+        # Validate the structure of the first result
+        first_result = data["results"][0]
+        expected_keys = {
+            "id",
+            "campaign",
+            "vaccine_stock",
+            "report_date",
+            "form_a_reception_date",
+            "usable_vials_used",
+            "lot_numbers",
+            "missing_vials",
+        }
+        self.assertTrue(expected_keys.issubset(first_result.keys()))
+
+        # Check that the vaccine_stock in the results matches the requested vaccine_stock
+        for result in data["results"]:
+            self.assertEqual(result["vaccine_stock"], self.vaccine_stock.pk)
+
+            # Add a new test which adds the order=date_of_incident_report and verify that the results are ordered by date_of_incident_report
+
+    def test_outgoing_stock_movement_list_ordered_by_date(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/?vaccine_stock={self.vaccine_stock.pk}&page=1&limit=20&order=form_a_reception_date"
+        )
+
+        # Check that the response status code is 200
+        self.assertEqual(response.status_code, 200)
+
+        # Parse the response data
+        data = response.json()
+
+        # Check that the response data contains the expected keys
+        self.assertIn("count", data)
+        self.assertIn("results", data)
+
+        # Check that the results list is not empty
+        self.assertGreater(len(data["results"]), 0)
+
+        # Verify that the results are ordered by date_of_incident_report
+        dates = [result["form_a_reception_date"] for result in data["results"]]
+        self.assertEqual(dates, sorted(dates))

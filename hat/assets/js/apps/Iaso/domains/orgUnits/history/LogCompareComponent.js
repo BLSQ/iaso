@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
 import {
     Table,
     TableBody,
@@ -15,18 +14,12 @@ import {
 import { makeStyles } from '@mui/styles';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
-
 import ValueWithErrorBoundary from './ValueWithErrorBoundary';
-
 import MESSAGES from '../../forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm.tsx';
-import { ORG_UNITS } from '../../../utils/permissions.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -69,6 +62,7 @@ const LogCompareComponent = ({
     compareLog,
     goToRevision,
     title,
+    showButtons = false,
     isNewValue = false,
 }) => {
     const [showAllFields, setShowAllFields] = React.useState(false);
@@ -185,7 +179,7 @@ const LogCompareComponent = ({
                     alignItems="center"
                     justifyContent="center"
                 >
-                    <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
+                    {showButtons && (
                         <Grid xs={6} item>
                             <ConfirmDialog
                                 btnMessage={formatMessage(
@@ -200,27 +194,27 @@ const LogCompareComponent = ({
                                 confirm={() => goToRevision(l)}
                             />
                         </Grid>
-                        {isNewValue && (
-                            <Grid xs={6} item>
-                                <ConfirmDialog
-                                    btnMessage={formatMessage(
-                                        LOG_MESSAGES.goToRevisionChanges,
-                                    )}
-                                    question={formatMessage(
-                                        LOG_MESSAGES.goToRevisionQuestion,
-                                    )}
-                                    message={formatMessage(
-                                        LOG_MESSAGES.goToRevisionTextChanges,
-                                    )}
-                                    confirm={() =>
-                                        goToRevision({
-                                            fields: differenceArray[i],
-                                        })
-                                    }
-                                />
-                            </Grid>
-                        )}
-                    </DisplayIfUserHasPerm>
+                    )}
+                    {isNewValue && showButtons && (
+                        <Grid xs={6} item>
+                            <ConfirmDialog
+                                btnMessage={formatMessage(
+                                    LOG_MESSAGES.goToRevisionChanges,
+                                )}
+                                question={formatMessage(
+                                    LOG_MESSAGES.goToRevisionQuestion,
+                                )}
+                                message={formatMessage(
+                                    LOG_MESSAGES.goToRevisionTextChanges,
+                                )}
+                                confirm={() =>
+                                    goToRevision({
+                                        fields: differenceArray[i],
+                                    })
+                                }
+                            />
+                        </Grid>
+                    )}
                 </Grid>
             </Paper>
         );
@@ -232,6 +226,7 @@ LogCompareComponent.defaultProps = {
     title: '',
     goToRevision: () => {},
     isNewValue: false,
+    showButtons: false,
 };
 
 LogCompareComponent.propTypes = {
@@ -240,6 +235,7 @@ LogCompareComponent.propTypes = {
     goToRevision: PropTypes.func,
     title: PropTypes.string.isRequired,
     isNewValue: PropTypes.bool,
+    showButtons: PropTypes.bool,
 };
 
 export default LogCompareComponent;

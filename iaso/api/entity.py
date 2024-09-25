@@ -1,7 +1,9 @@
 import csv
 import datetime
 import io
+import json
 import math
+import pytz
 from time import gmtime, strftime
 from typing import Any, List, Union
 
@@ -29,6 +31,7 @@ from iaso.api.common import (
 )
 from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
+from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -131,6 +134,7 @@ class EntityViewSet(ModelViewSet):
         created_by_id = self.request.query_params.get("created_by_id", None)
         created_by_team_id = self.request.query_params.get("created_by_team_id", None)
         groups = self.request.query_params.get("groups", None)
+        fields_search = self.request.GET.get("fields_search", None)
 
         queryset = Entity.objects.filter_for_user(self.request.user)
 
@@ -161,8 +165,15 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(attributes__org_unit__path__descendants=parent.path)
 
         if date_from or date_to:
-            date_from_dt = datetime.datetime.strptime(date_from, "%Y-%m-%d") if date_from else datetime.datetime.min
-            date_to_dt = datetime.datetime.strptime(date_to, "%Y-%m-%d") if date_to else datetime.datetime.max
+            date_from_dt = datetime.datetime.min
+            if date_from:
+                parsed_date = datetime.datetime.strptime(date_from, "%Y-%m-%d")
+                date_from_dt = datetime.datetime.combine(parsed_date, datetime.time.min).replace(tzinfo=pytz.UTC)
+
+            date_to_dt = datetime.datetime.max
+            if date_to:
+                parsed_date = datetime.datetime.strptime(date_to, "%Y-%m-%d")
+                date_to_dt = datetime.datetime.combine(parsed_date, datetime.time.max).replace(tzinfo=pytz.UTC)
 
             instances_within_range = Instance.objects.annotate(
                 creation_timestamp=Coalesce("source_created_at", "created_at")
@@ -180,6 +191,10 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
         if groups:
             queryset = queryset.filter(attributes__org_unit__groups__in=groups.split(","))
+
+        if fields_search:
+            q = entities_jsonlogic_to_q(json.loads(fields_search))
+            queryset = queryset.filter(q)
 
         # location
         return queryset
@@ -228,6 +243,7 @@ class EntityViewSet(ModelViewSet):
 
     def list(self, request: Request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
+
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         is_export = any([csv_format, xlsx_format])

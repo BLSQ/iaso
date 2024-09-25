@@ -66,7 +66,7 @@ export const HighlightFields: FunctionComponent<Props> = ({
     }, [fieldType, oldFieldValues, newFieldValues]);
 
     return (
-        <TableRow>
+        <TableRow sx={{ verticalAlign: 'top' }}>
             <TableCell>{field.label}</TableCell>
             {(fieldType && fieldType === 'array' && (
                 <TableCell colSpan={2}>

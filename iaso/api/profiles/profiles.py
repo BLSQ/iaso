@@ -1,5 +1,4 @@
 from typing import Any, List, Optional, Union
-
 from django.conf import settings
 from django.contrib.auth import models, update_session_auth_hash
 from django.contrib.auth.models import Permission, User
@@ -7,6 +6,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
+from django.core.exceptions import BadRequest
 from django.db.models import Q, QuerySet
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -15,15 +15,17 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
+from hat.audit.models import PROFILE_API
+from iaso.api.profiles.audit import ProfileAuditLogger
+from iaso.utils import is_mobile_request
 from phonenumber_field.phonenumber import PhoneNumber
 from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
-
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.api.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.models import OrgUnit, Profile, Project, UserRole
 from iaso.utils.module_permissions import account_module_permissions
@@ -259,8 +261,20 @@ class ProfilesViewSet(viewsets.ViewSet):
             ids=ids,
         )
 
-        queryset = queryset.prefetch_related("user")
-
+        queryset = queryset.prefetch_related(
+            "user",
+            "user_roles",
+            "org_units",
+            "org_units__version",
+            "org_units__version__data_source",
+            "org_units__parent",
+            "org_units__parent__parent",
+            "org_units__parent__parent__parent",
+            "org_units__org_unit_type",
+            "org_units__parent__org_unit_type",
+            "org_units__parent__parent__org_unit_type",
+            "projects",
+        )
         if request.GET.get("csv"):
             return self.list_export(queryset=queryset, file_format=FileFormatEnum.CSV)
         if request.GET.get("xlsx"):
@@ -276,7 +290,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["profiles"] = map(lambda x: x.as_dict(), page.object_list)
+            res["profiles"] = map(lambda x: x.as_dict(small=True), page.object_list)
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
@@ -305,9 +319,13 @@ class ProfilesViewSet(viewsets.ViewSet):
                 ",".join(item.source_ref for item in org_units if item.source_ref),
                 profile.language,
                 profile.dhis2_id,
+                profile.organization,
                 ",".join(item.codename for item in profile.user.user_permissions.all()),
-                ",".join(str(item.pk) for item in profile.user_roles.all().order_by("id")),
-                ",".join(str(item.pk) for item in profile.projects.all().order_by("id")),
+                ",".join(
+                    item.group.name.removeprefix(f"{profile.account.pk}_")
+                    for item in profile.user_roles.all().order_by("id")
+                ),
+                ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
                 (f"'{profile.phone_number}'" if profile.phone_number else None),
             ]
 
@@ -360,55 +378,153 @@ class ProfilesViewSet(viewsets.ViewSet):
         if pk == PK_ME:
             return self.update_user_own_profile(request)
 
+        profile = get_object_or_404(self.get_queryset(), id=pk)
+        user = profile.user
+        # profile.account is safe to use because we never update it through the API
+        current_account = user.iaso_profile.account
+        audit_logger = ProfileAuditLogger()
+        old_data = audit_logger.serialize_instance(profile)
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
+        # Validation
         try:
-            profile = self.update_user_profile(request, pk)
+            self.validate_user(request, user)
+            user_permissions = self.validate_user_permissions(request, current_account)
+            org_units = self.validate_org_units(request, profile)
+            user_roles_data = self.validate_user_roles(request)
+            projects = self.validate_projects(request, profile)
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        user = profile.user
 
-        self.update_password(user, request)
-        self.update_permissions(self, user, request)
+        profile = self.update_user_profile(
+            request=request,
+            profile=profile,
+            user=user,
+            user_permissions=user_permissions,
+            org_units=org_units,
+            user_roles=user_roles_data["user_roles"],
+            user_roles_groups=user_roles_data["groups"],
+            projects=projects,
+        )
 
-        self.update_org_units(profile, request)
-        self.update_user_roles(profile, request)
-        self.update_projects(profile, request)
-
-        profile.save()
+        audit_logger.log_modification(
+            instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+        )
 
         return Response(profile.as_dict())
 
+    def validate_user(self, request, user):
+        username = request.data.get("user_name")
+        if not username:
+            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
+
+        existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
+        if existing_user:
+            # Prevent from username change with existing username
+            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur existant"))
+
+    def validate_user_permissions(self, request, current_account):
+        user_permissions = []
+        module_permissions = self.module_permissions(current_account)
+        for permission_codename in request.data.get("user_permissions", []):
+            if permission_codename in module_permissions:
+                CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
+                user_permissions.append(get_object_or_404(Permission, codename=permission_codename))
+        return user_permissions
+
+    def validate_org_units(self, request, profile):
+        result = []
+        org_units = request.data.get("org_units", [])
+        # Using list to get the value before we clear the list right after
+        existing_org_units = list(profile.org_units.values_list("id", flat=True))
+        managed_org_units = None
+        if request.user.has_perm(permission.USERS_MANAGED):
+            managed_org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list(
+                "id", flat=True
+            )
+        for org_unit in org_units:
+            org_unit_id = org_unit.get("id")
+            if (
+                managed_org_units
+                and len(managed_org_units) > 0
+                and org_unit_id not in managed_org_units
+                and org_unit_id not in existing_org_units
+                and not request.user.is_superuser
+            ):
+                raise PermissionDenied(
+                    f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
+                    f"pyramid. Trying to assign {org_unit_id}."
+                )
+            org_unit_item = get_object_or_404(OrgUnit, pk=org_unit_id)
+            result.append(org_unit_item)
+        return result
+
+    def validate_user_roles(self, request):
+        result = {"groups": [], "user_roles": []}
+        user_roles = request.data.get("user_roles", [])
+        # Get the current connected user
+        current_profile = request.user.iaso_profile
+        for user_role_id in user_roles:
+            # Get only a user role linked to the account's user
+            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
+            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
+            for p in user_group_item.permissions.all():
+                CustomPermissionSupport.assert_right_to_assign(request.user, p.codename)
+            result["groups"].append(user_group_item)
+            result["user_roles"].append(user_role_item)
+        return result
+
+    def validate_projects(self, request, profile):
+        result = []
+        request_user = request.user
+        projects = request.data.get("projects", None)
+        if projects is not None:
+            if not request_user.has_perm(permission.USERS_ADMIN):
+                raise PermissionDenied(
+                    f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
+                )
+        # This is bit ugly, but it's to maintain the fetaure's behaviour after adding the check in the permission
+        if projects is None:
+            projects = []
+        for project in projects:
+            item = get_object_or_404(Project, pk=project)
+            if profile.account_id != item.account_id:
+                raise BadRequest
+            result.append(item)
+        return result
+
     @staticmethod
     def update_user_own_profile(request):
+        audit_logger = ProfileAuditLogger()
         # allow user to change his own language
         profile = request.user.iaso_profile
+        old_data = audit_logger.serialize_instance(profile)
         if "home_page" in request.data:
             profile.home_page = request.data["home_page"]
         if "language" in request.data:
             profile.language = request.data["language"]
         profile.save()
+        source = f"{PROFILE_API}_mobile_me" if is_mobile_request(request) else f"{PROFILE_API}_me"
+        audit_logger.log_modification(
+            instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+        )
         return Response(profile.as_dict())
 
-    def update_user_profile(self, request, pk):
-        profile = get_object_or_404(self.get_queryset(), id=pk)
+    def update_user_profile(
+        self, request, profile, user, user_roles, user_roles_groups, projects, org_units, user_permissions
+    ):
         username = request.data.get("user_name")
-
-        if not username:
-            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
-
-        user = profile.user
-        existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
-
-        if existing_user:
-            # Prevent from username change with existing username
-            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur existant"))
-
         user.first_name = request.data.get("first_name", "")
         user.last_name = request.data.get("last_name", "")
         user.username = username
         user.email = request.data.get("email", "")
+        user.groups.set(user_roles_groups)
+        user.save()
+        user.user_permissions.set(user_permissions)
+
+        self.update_password(user, request)
 
         phone_number = self.extract_phone_number(request)
 
@@ -416,23 +532,17 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.phone_number = phone_number
 
         profile.language = request.data.get("language", "")
+        profile.organization = request.data.get("organization", None)
         profile.home_page = request.data.get("home_page", "")
         profile.dhis2_id = request.data.get("dhis2_id", "")
         if profile.dhis2_id == "":
             profile.dhis2_id = None
+
+        profile.user_roles.set(user_roles)
+        profile.projects.set(projects)
+        profile.org_units.set(org_units)
         profile.save()
         return profile
-
-    @staticmethod
-    def update_permissions(self, user, request):
-        user.user_permissions.clear()
-        current_account = user.iaso_profile.account
-        module_permissions = self.module_permissions(current_account)
-        for permission_codename in request.data.get("user_permissions", []):
-            if permission_codename in module_permissions:
-                CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
-                user.user_permissions.add(get_object_or_404(Permission, codename=permission_codename))
-        user.save()
 
     @staticmethod
     def module_permissions(current_account):
@@ -473,60 +583,6 @@ class ProfilesViewSet(viewsets.ViewSet):
             # update session hash if you changed your own password, so you don't get logged out
             # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
             update_session_auth_hash(request, user)
-
-    @staticmethod
-    def update_org_units(profile, request):
-        org_units = request.data.get("org_units", [])
-        # Using list to get the value before we clear the list right after
-        existing_org_units = list(profile.org_units.values_list("id", flat=True))
-        profile.org_units.clear()
-        managed_org_units = None
-        if request.user.has_perm(permission.USERS_MANAGED):
-            managed_org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list(
-                "id", flat=True
-            )
-        for org_unit in org_units:
-            org_unit_id = org_unit.get("id")
-            if (
-                managed_org_units
-                and len(managed_org_units) > 0
-                and org_unit_id not in managed_org_units
-                and org_unit_id not in existing_org_units
-                and not request.user.is_superuser
-            ):
-                raise PermissionDenied(
-                    f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
-                    f"pyramid. Trying to assign {org_unit_id}."
-                )
-            org_unit_item = get_object_or_404(OrgUnit, pk=org_unit_id)
-            profile.org_units.add(org_unit_item)
-
-    @staticmethod
-    def update_user_roles(profile, request):
-        # link the profile to user roles
-        user_roles = request.data.get("user_roles", [])
-        profile.user_roles.clear()
-        profile.user.groups.clear()
-        # Get the current connected user
-        current_profile = request.user.iaso_profile
-        for user_role_id in user_roles:
-            # Get only a user role linked to the account's user
-            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
-            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
-            for p in user_group_item.permissions.all():
-                CustomPermissionSupport.assert_right_to_assign(request.user, p.codename)
-            profile.user.groups.add(user_group_item)
-            profile.user_roles.add(user_role_item)
-
-    @staticmethod
-    def update_projects(profile, request):
-        projects = request.data.get("projects", [])
-        profile.projects.clear()
-        for project in projects:
-            item = get_object_or_404(Project, pk=project)
-            if profile.account_id != item.account_id:
-                return JsonResponse({"errorKey": "projects", "errorMessage": _("Unauthorized")}, status=400)
-            profile.projects.add(item)
 
     def send_email_invitation(self, profile, email_subject, email_message, email_html_message):
         domain = settings.DNS_DOMAIN
@@ -622,6 +678,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             account=current_account,
             language=request.data.get("language", ""),
             home_page=request.data.get("home_page", ""),
+            organization=request.data.get("organization", None),
         )
 
         org_units = request.data.get("org_units", [])
@@ -657,6 +714,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.phone_number = phone_number
 
         profile.save()
+        audit_logger = ProfileAuditLogger()
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
+        audit_logger.log_modification(instance=profile, old_data_dump=None, request_user=request.user, source=source)
 
         # send an email invitation to new user when the send_email_invitation checkbox has been checked
         # and the email adresse has been given
@@ -671,6 +731,10 @@ class ProfilesViewSet(viewsets.ViewSet):
     def delete(self, request, pk=None):
         profile = get_object_or_404(self.get_queryset(), id=pk)
         user = profile.user
+        # TODO log after actual deletion
+        audit_logger = ProfileAuditLogger()
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
+        audit_logger.log_hard_deletion(instance=profile, request_user=request.user, source=source)
         user.delete()
         profile.delete()
         return Response(True)

@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl, LinkWithLocation } from 'bluesquare-components';
+import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 
 const useStyles = makeStyles(theme => ({
@@ -13,8 +13,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    url: string | null;
-    urlLabel: { id: string; defaultMessage: string } | undefined;
+    url?: string | null;
+    urlLabel?: { id: string; defaultMessage: string } | undefined;
 };
 
 export const ImageGalleryLink: FunctionComponent<Props> = ({

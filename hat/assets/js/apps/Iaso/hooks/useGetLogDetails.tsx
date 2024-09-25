@@ -4,10 +4,11 @@ import { useSnackQuery } from '../libs/apiHooks';
 
 export const useGetLogDetails = (
     logId: string | number,
+    apiKey = 'logs',
 ): UseQueryResult<any> => {
     return useSnackQuery({
-        queryKey: ['log-details', logId],
-        queryFn: () => getRequest(`/api/logs/${logId}/`),
+        queryKey: [apiKey, logId],
+        queryFn: () => getRequest(`/api/${apiKey}/${logId}/`),
         options: {
             keepPreviousData: true,
             staleTime: 60000,

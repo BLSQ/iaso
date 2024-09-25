@@ -25,11 +25,13 @@ import { fetchAssociatedOrgUnits } from '../../utils/requests';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
 import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
+import { OrgUnitImages } from './components/OrgUnitImages.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
 import { OrgUnitChildren } from './details/Children/OrgUnitChildren.tsx';
 import { OrgUnitLinks } from './details/Links/OrgUnitLinks.tsx';
 import { Logs } from './history/LogsComponent.tsx';
+import { wktToGeoJSON } from './history/LogValue.tsx';
 import {
     useOrgUnitDetailData,
     useOrgUnitTabParams,
@@ -42,7 +44,9 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
-import { wktToGeoJSON } from './history/LogValue.tsx';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { userHasPermission } from '../users/utils';
+import { ORG_UNITS } from '../../utils/permissions.ts';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -96,6 +100,7 @@ const tabs = [
     'links',
     'history',
     'forms',
+    'images',
     'comments',
 ];
 
@@ -109,6 +114,8 @@ const OrgUnitDetail = () => {
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
     const redirectToReplace = useRedirectToReplace();
+    const currentUser = useCurrentUser();
+    const showLogButtons = userHasPermission(ORG_UNITS, currentUser);
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
@@ -472,8 +479,23 @@ const OrgUnitDetail = () => {
                                         params={params}
                                         logObjectId={currentOrgUnit.id}
                                         goToRevision={goToRevision}
+                                        showButtons={showLogButtons}
                                     />
                                 </div>
+                            )}
+                            {params.tab === 'images' && (
+                                <Box
+                                    className={
+                                        classes.containerFullHeightNoTabPadded
+                                    }
+                                    data-test="image-tab"
+                                >
+                                    <OrgUnitImages
+                                        params={params}
+                                        orgUnit={originalOrgUnit}
+                                        isFetchingDetail={isFetchingDetail}
+                                    />
+                                </Box>
                             )}
                             {params.tab === 'forms' && (
                                 <Box

@@ -1,5 +1,5 @@
 import typing
-
+import jsonschema
 import numpy as np
 import pandas as pd
 from django.conf import settings
@@ -14,6 +14,103 @@ from iaso import models as m
 from iaso.models import Profile
 from iaso.models.microplanning import Team
 from iaso.test import APITestCase
+
+name_and_id_schema = {
+    "type": "object",
+    "properties": {"id": {"type": "number"}, "name": {"type": "string"}},
+    "required": ["name", "id"],
+}
+
+PROFILE_LOG_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "id": {"type": "number"},
+        "content-type": {"type": "string"},
+        "object_id": {"type": "string"},
+        "source": {"type": "string"},
+        "created_at": {"type": "string"},
+        "user": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "number"},
+                "first_name": {"type": ["string", "null"]},
+                "last_name": {"type": ["string", "null"]},
+                "user_name": {"type": "string"},
+                "email": {"type": ["string", "null"]},
+                "language": {"type": ["string", "null"]},
+                "phone_number": {"type": ["string", "null"]},
+                "country_code": {"type": ["string", "null"]},
+            },
+            "required": ["id", "user_name"],
+        },
+        "past_value": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "pk": {"type": "number"},
+                    "fields": {
+                        "type": "object",
+                        "properties": {
+                            "user": {"type": "number"},
+                            "first_name": {"type": ["string", "null"]},
+                            "last_name": {"type": ["string", "null"]},
+                            "username": {"type": ["string", "null"]},
+                            "email": {"type": ["string", "null"]},
+                            "organization": {"type": ["string", "null"]},
+                            "user_permissions": {"type": "array", "items": {"type": "string"}},
+                            "deleted_at": {"type": ["string", "null"]},
+                            "account": {"type": "number"},
+                            "dhis2_id": {"type": ["string", "null"]},
+                            "language": {"type": ["string", "null"]},
+                            "home_page": {"type": ["string", "null"]},
+                            "projects": {"type": "array", "items": {"type": "number"}},
+                            "org_units": {"type": "array", "items": {"type": "number"}},
+                            "user_roles": {"type": "array", "items": {"type": "number"}},
+                            "phone_number": {"type": ["string", "null"]},
+                            "deleted_at": {"type": ["string", "null"]},
+                        },
+                        "required": ["user", "account"],
+                    },
+                },
+            },
+        },
+        "new_value": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "pk": {"type": "number"},
+                    "fields": {
+                        "type": "object",
+                        "properties": {
+                            "user": {"type": "number"},
+                            "first_name": {"type": ["string", "null"]},
+                            "last_name": {"type": ["string", "null"]},
+                            "username": {"type": ["string", "null"]},
+                            "email": {"type": ["string", "null"]},
+                            "organization": {"type": ["string", "null"]},
+                            "user_permissions": {"type": "array", "items": {"type": "string"}},
+                            "password_updated": {"type": "boolean"},
+                            "deleted_at": {"type": ["string", "null"]},
+                            "account": {"type": "number"},
+                            "dhis2_id": {"type": ["string", "null"]},
+                            "language": {"type": ["string", "null"]},
+                            "home_page": {"type": ["string", "null"]},
+                            "projects": {"type": "array", "items": {"type": "number"}},
+                            "org_units": {"type": "array", "items": {"type": "number"}},
+                            "user_roles": {"type": "array", "items": {"type": "number"}},
+                            "phone_number": {"type": ["string", "null"]},
+                            "deleted_at": {"type": ["string", "null"]},
+                        },
+                        "required": ["user"],
+                    },
+                },
+            },
+        },
+    },
+    "required": ["id", "user", "content_type", "source", "object_id", "created_at", "past_value", "new_value"],
+}
 
 
 class ProfileAPITestCase(APITestCase):
@@ -88,6 +185,9 @@ class ProfileAPITestCase(APITestCase):
         cls.permission = Permission.objects.create(
             name="iaso permission", content_type_id=1, codename="iaso_permission"
         )
+        # cls.permission = Permission.objects.create(
+        #     name="iaso permission 2", content_type_id=1, codename="iaso_permission2"
+        # )
         cls.group = Group.objects.create(name="user role")
         cls.group.permissions.add(cls.permission)
         cls.user_role = m.UserRole.objects.create(group=cls.group, account=cls.ghi)
@@ -117,6 +217,18 @@ class ProfileAPITestCase(APITestCase):
             account=cls.ghi,
             permissions=[permission._USERS_MANAGED],
             org_units=[cls.jedi_council_corruscant],
+        )
+        cls.team1 = Team.objects.create(project=cls.project, name="team1", manager=cls.jane)
+        cls.team1.users.add(cls.jane)
+        cls.team2 = Team.objects.create(project=cls.project, name="team2", manager=cls.jim)
+        cls.team2.users.add(cls.jim)
+        cls.user_managed_geo_limit.iaso_profile.user_roles.set([cls.user_role, cls.user_role_another_account])
+
+        cls.user_role_name = cls.user_role.group.name.removeprefix(
+            f"{cls.user_managed_geo_limit.iaso_profile.account.pk}_"
+        )
+        cls.user_role_another_account_name = cls.user_role_another_account.group.name.removeprefix(
+            f"{cls.user_managed_geo_limit.iaso_profile.account.pk}_"
         )
 
     def test_can_delete_dhis2_id(self):
@@ -183,7 +295,8 @@ class ProfileAPITestCase(APITestCase):
         """GET /profiles/ with auth (user has read only permissions)"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get("/api/profiles/")
+        with self.assertNumQueries(10):
+            response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
         profile_url = "/api/profiles/%s/" % self.jane.iaso_profile.id
         response = self.client.get(profile_url)
@@ -203,7 +316,6 @@ class ProfileAPITestCase(APITestCase):
 
     def test_profile_list_export_as_csv(self):
         self.john.iaso_profile.org_units.set([self.jedi_squad_1, self.jedi_council_corruscant])
-
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?csv=true")
         self.assertEqual(response.status_code, 200)
@@ -221,19 +333,20 @@ class ProfileAPITestCase(APITestCase):
             "orgunit__source_ref,"
             "profile_language,"
             "dhis2_id,"
+            "organization,"
             "permissions,"
             "user_roles,"
             "projects,"
             "phone_number\r\n"
         )
 
-        expected_csv += "janedoe,,,,,,,,,iaso_forms,,,\r\n"
-        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,,\r\n'
-        expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
-        expected_csv += "jam,,,,,,,en,,iaso_users_managed,,,\r\n"
-        expected_csv += "jom,,,,,,,fr,,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,,{self.project.id},\r\n"
-        expected_csv += f"managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,iaso_users_managed,,,\r\n"
+        expected_csv += "janedoe,,,,,,,,,,iaso_forms,,,\r\n"
+        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,,,\r\n'
+        expected_csv += 'jim,,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
+        expected_csv += "jam,,,,,,,en,,,iaso_users_managed,,,\r\n"
+        expected_csv += "jom,,,,,,,fr,,,,,,\r\n"
+        expected_csv += f"jum,,,,,,,,,,,,{self.project.name},\r\n"
+        expected_csv += f'managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,,iaso_users_managed,"{self.user_role_name},{self.user_role_another_account_name}",,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -260,6 +373,7 @@ class ProfileAPITestCase(APITestCase):
                 "orgunit__source_ref",
                 "profile_language",
                 "dhis2_id",
+                "organization",
                 "permissions",
                 "user_roles",
                 "projects",
@@ -297,6 +411,7 @@ class ProfileAPITestCase(APITestCase):
                 },
                 "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
                 "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+                "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "permissions": {
                     0: "iaso_forms",
                     1: None,
@@ -306,8 +421,16 @@ class ProfileAPITestCase(APITestCase):
                     5: None,
                     6: "iaso_users_managed",
                 },
-                "user_roles": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
-                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.id, 6: None},
+                "user_roles": {
+                    0: None,
+                    1: None,
+                    2: None,
+                    3: None,
+                    4: None,
+                    5: None,
+                    6: f"{self.user_role_name},{self.user_role_another_account_name}",
+                },
+                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
                 "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
             },
         )
@@ -702,7 +825,7 @@ class ProfileAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
 
-        response = self.client.get(f"/api/profiles/?location={self.jedi_council_corruscant.pk}")
+        response = self.client.get(f"/api/profiles/?location={self.jedi_council_corruscant.pk}&limit=100")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
@@ -712,7 +835,7 @@ class ProfileAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
 
-        response = self.client.get(f"/api/profiles/?orgUnitTypes={self.jedi_council.pk}")
+        response = self.client.get(f"/api/profiles/?orgUnitTypes={self.jedi_council.pk}&limit=100")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
@@ -735,9 +858,10 @@ class ProfileAPITestCase(APITestCase):
         self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
 
         response = self.client.get(
-            f"/api/profiles/?location={self.jedi_council_corruscant_child.pk}&ouParent=true&ouChildren=false"
+            f"/api/profiles/?location={self.jedi_council_corruscant_child.pk}&ouParent=true&ouChildren=false&limit=100"
         )
         self.assertEqual(response.status_code, 200)
+        print(response.json())
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(len(response.json()["profiles"]), 2)
 
@@ -751,11 +875,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_search_by_teams(self):
         self.client.force_authenticate(self.jane)
-        team1 = Team.objects.create(project=self.project, name="team1", manager=self.jane)
-        team1.users.add(self.jane)
-        team2 = Team.objects.create(project=self.project, name="team2", manager=self.jim)
-        team2.users.add(self.jim)
-        response = self.client.get(f"/api/profiles/", {"teams": f"{team1.pk},{team2.pk}"})
+        response = self.client.get(f"/api/profiles/", {"teams": f"{self.team1.pk},{self.team2.pk}"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["profiles"]), 2)
         user_names = [item["user_name"] for item in response.data["profiles"]]
@@ -949,3 +1069,305 @@ class ProfileAPITestCase(APITestCase):
             self.assertNotEqual(response.status_code, 200)
             self.assertEqual(response.data["errorKey"], "phone_number")
             self.assertEqual(response.data["errorMessage"], _("Invalid phone number"))
+
+    def get_new_user_data(self):
+        user_name = "audit_user"
+        pwd = "admin1234lol"
+        first_name = "audit_user_first_name"
+        last_name = "audit_user_last_name"
+        email = "audit@test.com"
+        organization = "Bluesquare"
+        org_units = [
+            {
+                "id": f"{self.jedi_council_corruscant.id}",
+                "name": self.jedi_council_corruscant.name,
+                "validation_status": self.jedi_council_corruscant.validation_status,
+                "has_children": False,
+                "org_unit_type_id": self.jedi_council.id,
+                "org_unit_type_short_name": "Cnc",
+            }
+        ]
+        language = "fr"
+        home_page = "/forms/list"
+        dhis2_id = "666666666666"
+        user_roles = [self.user_role.id]
+        user_roles_permissions = [
+            {
+                "id": self.user_role.id,
+                "name": self.user_role.group.name,
+                "permissions": [self.permission.name],
+                "created_at": self.user_role.created_at,
+                "updated_at": self.user_role.updated_at,
+            }
+        ]
+        user_permissions = ["iaso_org_units_read"]
+        send_email_invitation = False
+        projects = [self.project.id]
+        phone_number = "32475888888"
+        country_code = "be"
+        data = {
+            "user_name": user_name,
+            "password": pwd,
+            "first_name": first_name,
+            "last_name": last_name,
+            "send_email_invitation": send_email_invitation,
+            "email": email,
+            "organization": organization,
+            "language": language,
+            "home_page": home_page,
+            "dhis2_id": dhis2_id,
+            "permissions": [],  # This looks legacy from an older version of the API
+            "user_permissions": user_permissions,
+            "projects": projects,
+            "phone_number": phone_number,
+            "country_code": country_code,
+            "user_roles": user_roles,
+            "user_roles_permissions": user_roles_permissions,
+            "org_units": org_units,
+        }
+        return data
+
+    def test_log_on_user_create(self):
+        self.client.force_authenticate(self.john)
+
+        data = self.get_new_user_data()
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        response_data = self.assertJSONResponse(response, 200)
+        new_profile_id = response_data["id"]
+        new_user_id = response_data["user_id"]
+
+        response = self.client.get(
+            f"/api/logs/?contentType=iaso.profile&fields=past_value,new_value&objectId={new_profile_id}"
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        logs = response_data["list"]
+        log = logs[0]
+
+        try:
+            jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        self.assertEquals(log["past_value"], [])
+        self.assertEquals(log["new_value"][0]["pk"], new_profile_id)
+        new_profile = log["new_value"][0]["fields"]
+        self.assertEquals(new_profile["user"], new_user_id)
+        self.assertEquals(new_profile["username"], data["user_name"])
+        self.assertEquals(new_profile["first_name"], data["first_name"])
+        self.assertEquals(new_profile["last_name"], data["last_name"])
+        self.assertEquals(new_profile["email"], data["email"])
+        self.assertEquals(new_profile["organization"], data["organization"])
+        self.assertEquals(len(new_profile["user_permissions"]), 1)
+        self.assertEquals(new_profile["user_permissions"], data["user_permissions"])
+        self.assertTrue(new_profile["password_updated"])
+        self.assertNotIn("password", new_profile.keys())
+
+        self.assertEquals(new_profile["dhis2_id"], data["dhis2_id"])
+        self.assertEquals(new_profile["language"], data["language"])
+        self.assertEquals(new_profile["home_page"], data["home_page"])
+        self.assertEquals(new_profile["phone_number"], f'+{data["phone_number"]}')
+        self.assertEquals(len(new_profile["org_units"]), 1)
+        self.assertIn(self.jedi_council_corruscant.id, new_profile["org_units"])
+        self.assertEquals(len(new_profile["user_roles"]), 1)
+        self.assertIn(self.user_role.id, new_profile["user_roles"])
+        self.assertEquals(len(new_profile["projects"]), 1)
+        self.assertIn(self.project.id, new_profile["projects"])
+
+    def test_log_on_user_delete(self):
+        self.client.force_authenticate(self.john)
+        data = self.get_new_user_data()
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        response_data = self.assertJSONResponse(response, 200)
+        new_profile_id = response_data["id"]
+        new_user_id = response_data["user_id"]
+
+        response = self.client.delete(f"/api/profiles/{new_profile_id}/")
+        self.assertJSONResponse(response, 200)
+
+        response = self.client.get(
+            f"/api/logs/?contentType=iaso.profile&fields=past_value,new_value&objectId={new_profile_id}"
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        logs = response_data["list"]
+        log = logs[0]
+
+        try:
+            jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        self.assertEquals(log["new_value"][0]["pk"], new_profile_id)
+        new_profile = log["new_value"][0]["fields"]
+        self.assertEquals(new_profile["user"], new_user_id)
+        self.assertEquals(new_profile["username"], data["user_name"])
+        self.assertEquals(new_profile["first_name"], data["first_name"])
+        self.assertEquals(new_profile["last_name"], data["last_name"])
+        self.assertEquals(new_profile["email"], data["email"])
+        self.assertEquals(len(new_profile["user_permissions"]), 1)
+        self.assertEquals(new_profile["user_permissions"], data["user_permissions"])
+        self.assertIsNotNone(new_profile["deleted_at"])
+        self.assertFalse(new_profile["password_updated"])
+        self.assertNotIn("password", new_profile.keys())
+
+        self.assertEquals(new_profile["dhis2_id"], data["dhis2_id"])
+        self.assertEquals(new_profile["language"], data["language"])
+        self.assertEquals(new_profile["home_page"], data["home_page"])
+        self.assertEquals(new_profile["phone_number"], f'+{data["phone_number"]}')
+        self.assertEquals(len(new_profile["org_units"]), 1)
+        self.assertIn(self.jedi_council_corruscant.id, new_profile["org_units"])
+        self.assertEquals(len(new_profile["user_roles"]), 1)
+        self.assertIn(self.user_role.id, new_profile["user_roles"])
+        self.assertEquals(len(new_profile["projects"]), 1)
+        self.assertIn(self.project.id, new_profile["projects"])
+        self.assertIsNotNone(new_profile["deleted_at"])
+
+        self.assertEquals(log["past_value"][0]["pk"], new_profile_id)
+        past_profile = log["past_value"][0]["fields"]
+        self.assertEquals(past_profile["user"], new_user_id)
+        self.assertEquals(past_profile["username"], data["user_name"])
+        self.assertEquals(past_profile["first_name"], data["first_name"])
+        self.assertEquals(past_profile["last_name"], data["last_name"])
+        self.assertEquals(past_profile["email"], data["email"])
+        self.assertEquals(len(past_profile["user_permissions"]), 1)
+        self.assertEquals(past_profile["user_permissions"], data["user_permissions"])
+        self.assertIsNone(past_profile["deleted_at"])
+        self.assertNotIn("password", past_profile.keys())
+
+        self.assertEquals(past_profile["dhis2_id"], data["dhis2_id"])
+        self.assertEquals(past_profile["language"], data["language"])
+        self.assertEquals(past_profile["home_page"], data["home_page"])
+        self.assertEquals(past_profile["phone_number"], f'+{data["phone_number"]}')
+        self.assertEquals(len(past_profile["org_units"]), 1)
+        self.assertIn(self.jedi_council_corruscant.id, past_profile["org_units"])
+        self.assertEquals(len(past_profile["user_roles"]), 1)
+        self.assertIn(self.user_role.id, past_profile["user_roles"])
+        self.assertEquals(len(past_profile["projects"]), 1)
+        self.assertIn(self.project.id, past_profile["projects"])
+        self.assertIsNone(past_profile["deleted_at"])
+
+    def test_log_on_user_update(self):
+        self.client.force_authenticate(self.john)
+        data = self.get_new_user_data()
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        response_data = self.assertJSONResponse(response, 200)
+        new_profile_id = response_data["id"]
+        new_user_id = response_data["user_id"]
+        new_user_name = response_data["user_name"]
+
+        new_data = {
+            "id": new_profile_id,
+            "user_name": new_user_name,
+            "org_units": [
+                {
+                    "id": f"{self.jedi_council_corruscant.id}",
+                    "name": self.jedi_council_corruscant.name,
+                    "validation_status": self.jedi_council_corruscant.validation_status,
+                    "has_children": False,
+                    "org_unit_type_id": self.jedi_council.id,
+                    "org_unit_type_short_name": "Cnc",
+                },
+                {
+                    "id": f"{self.jedi_squad_1.id}",
+                    "name": self.jedi_squad_1.name,
+                    "validation_status": self.jedi_squad_1.validation_status,
+                    "has_children": False,
+                    "org_unit_type_id": self.jedi_squad.id,
+                    "org_unit_type_short_name": "Jds",
+                },
+            ],
+            "language": "en",
+            "password": "yolo",
+            "home_page": "/orgunits/list",
+            "organization": "Bluesquare",
+            "user_permissions": ["iaso_org_units_read", "iaso_forms"],
+            "user_roles": [],
+            "user_roles_permissions": [],
+        }
+
+        response = self.client.patch(f"/api/profiles/{new_profile_id}/", data=new_data, format="json")
+        self.assertJSONResponse(response, 200)
+
+        response = self.client.get(
+            f"/api/logs/?contentType=iaso.profile&fields=past_value,new_value&objectId={new_profile_id}"
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        logs = response_data["list"]
+        log = logs[0]
+
+        try:
+            jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+        self.assertEquals(log["past_value"][0]["pk"], new_profile_id)
+        past_value = log["past_value"][0]["fields"]
+        self.assertEquals(past_value["user"], new_user_id)
+        self.assertEquals(past_value["username"], data["user_name"])
+        self.assertEquals(past_value["first_name"], data["first_name"])
+        self.assertEquals(past_value["last_name"], data["last_name"])
+        self.assertEquals(past_value["email"], data["email"])
+        self.assertEquals(len(past_value["user_permissions"]), 1)
+        self.assertEquals(past_value["user_permissions"], data["user_permissions"])
+        self.assertNotIn("password", past_value.keys())
+
+        self.assertEquals(past_value["dhis2_id"], data["dhis2_id"])
+        self.assertEquals(past_value["language"], data["language"])
+        self.assertEquals(past_value["home_page"], data["home_page"])
+        self.assertEquals(past_value["phone_number"], f'+{data["phone_number"]}')
+        self.assertEquals(len(past_value["org_units"]), 1)
+        self.assertIn(
+            self.jedi_council_corruscant.id,
+            past_value["org_units"],
+        )
+        self.assertEquals(len(past_value["user_roles"]), 1)
+        self.assertIn(self.user_role.id, past_value["user_roles"])
+        self.assertEquals(len(past_value["projects"]), 1)
+        self.assertIn(self.project.id, past_value["projects"])
+        self.assertEquals(log["new_value"][0]["pk"], new_profile_id)
+        new_value = log["new_value"][0]["fields"]
+        self.assertTrue(new_value["password_updated"])
+        self.assertNotIn("password", new_value.keys())
+        self.assertEquals(len(new_value["user_permissions"]), 2)
+        self.assertIn("iaso_forms", new_value["user_permissions"])
+        self.assertIn("iaso_org_units_read", new_value["user_permissions"])
+        self.assertEquals(new_value["language"], new_data["language"])
+        self.assertEquals(new_value["home_page"], new_data["home_page"])
+        self.assertEquals(new_value["organization"], new_data["organization"])
+        self.assertEquals(len(new_value["org_units"]), 2)
+        self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
+        self.assertIn(self.jedi_squad_1.id, new_value["org_units"])
+        self.assertEquals(new_value["user_roles"], [])
+
+    def test_log_on_user_updates_own_profile(self):
+        self.client.force_authenticate(self.jim)
+        new_data = {"language": "fr"}
+        response = self.client.patch(f"/api/profiles/me/", data=new_data, format="json")
+        self.assertJSONResponse(response, 200)
+        # Log as super user to access the logs API
+        self.client.force_authenticate(self.john)
+        response = self.client.get(
+            f"/api/logs/?contentType=iaso.profile&fields=past_value,new_value&objectId={self.jim.iaso_profile.id}"
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        logs = response_data["list"]
+        log = logs[0]
+
+        try:
+            jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        self.assertEquals(log["past_value"][0]["pk"], self.jim.iaso_profile.id)
+        past_value = log["past_value"][0]["fields"]
+        self.assertEquals(past_value["user"], self.jim.id)
+        self.assertEquals(past_value["username"], self.jim.username)
+        self.assertEquals(past_value["first_name"], "")
+        self.assertEquals(past_value["language"], None)
+        self.assertNotIn("password", past_value.keys())
+
+        self.assertEquals(log["new_value"][0]["pk"], self.jim.iaso_profile.id)
+        new_value = log["new_value"][0]["fields"]
+        self.assertEquals(new_value["user"], self.jim.id)
+        self.assertEquals(new_value["username"], self.jim.username)
+        self.assertEquals(new_value["first_name"], "")
+        self.assertEquals(new_value["language"], "fr")
+        self.assertNotIn("password", new_value.keys())

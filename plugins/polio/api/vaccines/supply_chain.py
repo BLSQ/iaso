@@ -286,6 +286,7 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
             "quantities_approved_by_dg_in_doses",
             "comment",
             "target_population",
+            "vrf_type",
         ]
 
         read_only_fields = ["created_at", "updated_at"]
@@ -365,6 +366,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
             "country_id",
             "obr_name",
             "target_population",
+            "vrf_type",
         ]
 
 
@@ -396,6 +398,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "var",
             "created_at",
             "updated_at",
+            "vrf_type",
         ]
 
     def get_prefetched_data(self, obj):

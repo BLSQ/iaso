@@ -1080,6 +1080,12 @@ class NotificationManager(models.Manager):
 # VAR = Vaccine Arrival Report
 
 
+class VaccineRequestFormType(models.TextChoices):
+    NORMAL = "Normal", _("Normal")
+    MISSING = "Missing", _("Missing")
+    NOT_REQUIRED = "Not Required", _("Not Required")
+
+
 class VaccineRequestForm(SoftDeletableModel):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     vaccine_type = models.CharField(max_length=5, choices=VACCINES)
@@ -1087,7 +1093,10 @@ class VaccineRequestForm(SoftDeletableModel):
     date_vrf_signature = models.DateField(null=True, blank=True)
     date_vrf_reception = models.DateField(null=True, blank=True)
     date_dg_approval = models.DateField(null=True, blank=True)
-    quantities_ordered_in_doses = models.PositiveIntegerField()
+    quantities_ordered_in_doses = models.PositiveIntegerField(null=True, blank=True, default=0)
+    vrf_type = models.CharField(
+        max_length=20, choices=VaccineRequestFormType.choices, default=VaccineRequestFormType.NORMAL
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

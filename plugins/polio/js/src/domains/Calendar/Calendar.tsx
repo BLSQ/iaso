@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -9,13 +8,13 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import classnames from 'classnames';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 // @ts-ignore
 import moment from 'moment';
 import { useLocation } from 'react-router-dom';
-import { DisplayIfUserHasPerm } from '../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { XlsxButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/XslxButton';
-import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { getCampaignColor } from '../../constants/campaignsColors';
 import { CampaignsCalendar } from './campaignCalendar';
 import { CalendarMap } from './campaignCalendar/map/CalendarMap';
@@ -27,16 +26,15 @@ import {
 
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../constants/messages';
+import { baseUrls } from '../../constants/urls';
 import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns';
 import { ExportCsvModal } from './ExportCsvModal';
 import { CampaignsFilters } from './campaignCalendar/CampaignsFilters';
 import { IsTestLegend } from './campaignCalendar/IsTestLegend';
+import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 import { TogglePeriod } from './campaignCalendar/TogglePeriod';
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import { CalendarParams, MappedCampaign } from './campaignCalendar/types';
-import { baseUrls } from '../../constants/urls';
-import { POLIO, POLIO_ADMIN } from '../../constants/permissions';
-import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {
@@ -217,18 +215,14 @@ export const Calendar: FunctionComponent = () => {
                                         </XlsxButton>
                                     </Box>
                                 </Grid>
-                                <DisplayIfUserHasPerm
-                                    permissions={[POLIO, POLIO_ADMIN]}
-                                >
-                                    <Grid item>
-                                        <Box mb={2} mt={2}>
-                                            <ExportCsvModal
-                                                params={params}
-                                                iconProps={{}}
-                                            />
-                                        </Box>
-                                    </Grid>
-                                </DisplayIfUserHasPerm>
+                                <Grid item>
+                                    <Box mb={2} mt={2}>
+                                        <ExportCsvModal
+                                            params={params}
+                                            iconProps={{}}
+                                        />
+                                    </Box>
+                                </Grid>
                             </Grid>
                         </>
                     )}

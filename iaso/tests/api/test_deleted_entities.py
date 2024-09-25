@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AnonymousUser
+from django.core.files import File
 
 from iaso import models as m
 from iaso.models import Entity, EntityType, Instance
@@ -69,19 +70,20 @@ class EntityAPITestCase(APITestCase):
 
     def test_get_merged_entities(self):
         # Add proper attributes or the merge will fail
-        instance1 = Instance.objects.create(form=self.form, period="202002")
-        instance1.entity = self.entity1
-        instance1.save()
-        self.entity1.attributes = instance1
-        self.entity1.save()
+        with open("iaso/fixtures/instance_form_1_1.xml", "rb") as f:
+            instance1 = Instance.objects.create(form=self.form, period="202002", file=File(f))
+            instance1.entity = self.entity1
+            instance1.save()
+            self.entity1.attributes = instance1
+            self.entity1.save()
 
-        instance2 = Instance.objects.create(form=self.form, period="202002")
-        instance2.entity = self.entity2
-        instance2.save()
-        self.entity2.attributes = instance2
-        self.entity2.save()
+            instance2 = Instance.objects.create(form=self.form, period="202002", file=File(f))
+            instance2.entity = self.entity2
+            instance2.save()
+            self.entity2.attributes = instance2
+            self.entity2.save()
 
-        new_entity = merge_entities(self.entity1, self.entity2, {})
+        new_entity = merge_entities(self.entity1, self.entity2, {}, self.user)
 
         self.client.force_authenticate(self.user)
 

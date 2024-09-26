@@ -1,6 +1,7 @@
 from datetime import date
 
 from hat.menupermissions import models as permission
+from iaso import models as m
 from iaso.models.base import Account
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
@@ -8,6 +9,7 @@ from plugins.polio.models import (
     Campaign,
     DestructionReport,
     OutgoingStockMovement,
+    RoundScope,
     VaccineArrivalReport,
     VaccinePreAlert,
     VaccineRequestForm,
@@ -22,7 +24,9 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         cls.vrf_url = "/api/polio/dashboards/vaccine_request_forms/"
         cls.pre_alerts_url = "/api/polio/dashboards/pre_alerts/"
         cls.arrival_reports_url = "/api/polio/dashboards/arrival_reports/"
-        cls.account = Account.objects.create(name="test account")
+        cls.data_source = m.DataSource.objects.create(name="Default source")
+        cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = Account.objects.create(name="test account", default_version=cls.source_version_1)
         cls.other_account = Account.objects.create(name="other account")
         cls.authorized_user_read = cls.create_user_with_profile(
             username="authorized_read",
@@ -143,7 +147,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
     def test_vrf_new_fields(self):
         self.client.force_authenticate(self.authorized_user_read)
 
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(16):
             response = self.client.get(self.vrf_url)
 
         jr = self.assertJSONResponse(response, 200)
@@ -184,8 +188,12 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
 
         # Create another campaign and associated VaccineRequestForm, VaccinePreAlert, and VaccineArrivalReport
         new_campaign = Campaign.objects.create(
-            obr_name="NewCampaign-2024", account=self.account, initial_org_unit=self.country
+            obr_name="NewCampaign-2024",
+            account=self.account,
+            initial_org_unit=self.country,
+            separate_scopes_per_round=True,
         )
+
         new_vrf = VaccineRequestForm.objects.create(
             campaign=new_campaign,
             date_vrf_signature=date.today(),
@@ -197,6 +205,19 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         new_vrf_round_1 = Round.objects.create(
             campaign=new_campaign, number=1, started_at=date(2023, 1, 1), ended_at=date(2023, 1, 10)
         )
+
+        jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
+
+        district_1 = OrgUnit.objects.create(
+            id=5460, name="district 1", org_unit_type=jedi_squad, version=self.account.default_version
+        )
+
+        org_units_group_1 = m.Group.objects.create(name="group_1")
+        org_units_group_1.org_units.add(district_1)
+        org_units_group_1.save()
+
+        rs = RoundScope.objects.create(vaccine=self.vaccine_type, round=new_vrf_round_1, group=org_units_group_1)
+
         new_vrf_round_2 = Round.objects.create(
             campaign=new_campaign, number=2, started_at=date(2024, 1, 1), ended_at=date(2024, 1, 10)
         )
@@ -217,7 +238,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         )
 
         # Should appear only in 2nd VRF
-        new_dr = DestructionReport.objects.create(
+        DestructionReport.objects.create(
             vaccine_stock=self.vaccine_stock,
             rrt_destruction_report_reception_date=date(2024, 1, 8),
             destruction_report_date=date.today(),
@@ -226,7 +247,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         )
 
         # Shoud be ignored as outside date range
-        DestructionReport.objects.create(
+        last_dr = DestructionReport.objects.create(
             vaccine_stock=self.vaccine_stock,
             rrt_destruction_report_reception_date=date(2024, 2, 15),
             destruction_report_date=date.today(),
@@ -251,4 +272,4 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
 
         # Check if the latest dates are returned
         self.assertEqual(vrf2["form_a_reception_date"], str(new_forma.form_a_reception_date))
-        self.assertEqual(vrf2["destruction_report_reception_date"], str(new_dr.rrt_destruction_report_reception_date))
+        self.assertEqual(vrf2["destruction_report_reception_date"], str(last_dr.rrt_destruction_report_reception_date))

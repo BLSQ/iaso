@@ -49,6 +49,7 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
             onChange={(_, checked) => handleCheckboxChange(permission, checked)}
             labelString={!key ? '' : key}
             dataTestId="permission-checkbox"
+            withMarginTop={false}
         />
     );
 

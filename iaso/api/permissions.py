@@ -55,22 +55,33 @@ class PermissionsViewSet(viewsets.ViewSet):
         if not filtered_permissions:
             return []
 
-        read_edit_permissions = READ_EDIT_PERMISSIONS.keys()
         permissions = []
+        read_edit_permissions_map = READ_EDIT_PERMISSIONS.keys()
+
+        processed_codenames = set()
 
         for permission in filtered_permissions:
-            matching_perm = next((perm for perm in read_edit_permissions if permission.codename in perm), None)
+            matching_key = next(
+                (
+                    key
+                    for key in read_edit_permissions_map
+                    if permission.codename in READ_EDIT_PERMISSIONS[key].values()
+                ),
+                None,
+            )
 
-            if matching_perm:
-                if not any(p["codename"] == matching_perm for p in permissions):
-                    permissions.append(
-                        {
-                            "id": permission.id,
-                            "name": _(matching_perm),
-                            "codename": matching_perm,
-                            "read_edit": READ_EDIT_PERMISSIONS[matching_perm],
-                        }
-                    )
+            if matching_key:
+                if permission.codename not in processed_codenames:
+                    read_edit_data = READ_EDIT_PERMISSIONS[matching_key]
+                    combined_permissions = {
+                        "id": permission.id,
+                        "name": _(matching_key),
+                        "codename": matching_key,
+                        "read_edit": read_edit_data,
+                    }
+                    permissions.append(combined_permissions)
+                    processed_codenames.update(read_edit_data.values())
+
             else:
                 permissions.append(
                     {

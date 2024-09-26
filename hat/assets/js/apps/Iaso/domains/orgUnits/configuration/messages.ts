@@ -70,7 +70,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Next',
     },
     oucrcCreateModalTitle: {
-        id: 'iaso.label.oucrcCreateModalTitle',
+        id: 'iaso.oucrc.oucrcCreateModalTitle',
         defaultMessage: 'OrgUnit Change Request Configuration - Creation',
     },
     oucrcCreateSecondStepModalTitle: {
@@ -87,15 +87,15 @@ const MESSAGES = defineMessages({
         defaultMessage: 'This field is required',
     },
     orgUnitsEditable: {
-        id: 'iaso.label.orgUnitsEditable',
+        id: 'iaso.ourcrc.orgUnitsEditable',
         defaultMessage: 'Should OrgUnits of this type be editable?',
     },
     orgUnitsEditableYes: {
-        id: 'iaso.label.orgUnitsEditableYes',
+        id: 'iaso.forms.yes',
         defaultMessage: 'Yes',
     },
     orgUnitsEditableNo: {
-        id: 'iaso.label.orgUnitsEditableNo',
+        id: 'iaso.forms.no',
         defaultMessage: 'No',
     },
     name: {
@@ -103,15 +103,15 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Name',
     },
     aliases: {
-        id: 'iaso.label.aliases',
+        id: 'iaso.forms.aliases',
         defaultMessage: 'Aliases',
     },
     openingDate: {
-        id: 'iaso.label.openingDate',
+        id: 'iaso.orgUnits.openingDate',
         defaultMessage: 'Opening Date',
     },
     closedDate: {
-        id: 'iaso.label.closedDate',
+        id: 'iaso.oucrc.closedDate',
         defaultMessage: 'Closing Date',
     },
     location: {
@@ -123,19 +123,19 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Editable Fields',
     },
     possibleTypeIds: {
-        id: 'iaso.label.possibleTypeIds',
+        id: 'iaso.oucrc.possibleTypeIds',
         defaultMessage: 'Possible New Types',
     },
     possibleParentTypeIds: {
-        id: 'iaso.label.possibleParentTypeIds',
+        id: 'iaso.oucrc.possibleParentTypeIds',
         defaultMessage: 'Possible New Parent Types',
     },
     groupSetIds: {
-        id: 'iaso.label.groupSetIds',
+        id: 'iaso.oucrc.groupSetIds',
         defaultMessage: 'Group Sets',
     },
     editableReferenceFormIds: {
-        id: 'iaso.label.editableReferenceFormIds',
+        id: 'iaso.oucrc.editableReferenceFormIds',
         defaultMessage: 'Editable Reference Forms',
     },
     otherGroupIds: {
@@ -143,11 +143,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Other Groups',
     },
     oucrcModalCreateButton: {
-        id: 'iaso.label.oucrcModalCreateButton',
+        id: 'iaso.label.create',
         defaultMessage: 'Create',
     },
     oucrcModalUpdateButton: {
-        id: 'iaso.label.oucrcModalUpdateButton',
+        id: 'iaso.mappings.label.update',
         defaultMessage: 'Update',
     },
 });

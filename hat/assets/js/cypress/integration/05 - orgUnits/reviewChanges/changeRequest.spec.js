@@ -99,7 +99,10 @@ const openDialogForChangeRequestIndex = index => {
     const actionCol = row.find('td').eq(11);
     const editButton = actionCol.find('button').first();
     editButton.click();
-    cy.get('#approve-orgunit-changes-dialog').should('be.visible');
+    cy.url().should(
+        'eq',
+        `${baseUrl}/detail/accountId/1/changeRequestId/${listFixture.results[index].id}`,
+    );
 };
 
 const goToPage = (
@@ -289,11 +292,7 @@ describe('Organisations changes', () => {
                     ).as('approveChanges');
 
                     cy.get('#check-box-name').click();
-                    cy.get('#approve-orgunit-changes-dialog')
-                        .find('button')
-                        .eq(3)
-                        .click()
-                        .then(() => {});
+                    cy.get('[data-test="confirm-button"]').click();
                     cy.wait('@approveChanges').then(() => {
                         cy.wrap(interceptFlag).should('eq', true);
                     });
@@ -308,9 +307,7 @@ describe('Organisations changes', () => {
                 cy.wait('@getOrgUnitChanges').then(() => {
                     const orgUnitChangeIndex = 0;
                     openDialogForChangeRequestIndex(orgUnitChangeIndex);
-                    cy.get('#approve-orgunit-changes-dialog')
-                        .find('button')
-                        .eq(2)
+                    cy.get('[data-test="reject-button"]')
                         .click()
                         .then(() => {});
                     const textArea = cy.get('textarea');
@@ -349,9 +346,7 @@ describe('Organisations changes', () => {
                 cy.wait('@getOrgUnitChanges').then(() => {
                     const orgUnitChangeIndex = 0;
                     openDialogForChangeRequestIndex(orgUnitChangeIndex);
-                    cy.get('#approve-orgunit-changes-dialog')
-                        .find('button')
-                        .eq(1)
+                    cy.get('#top-bar-back-button')
                         .click()
                         .then(() => {});
                 });

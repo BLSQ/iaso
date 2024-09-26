@@ -1190,6 +1190,7 @@
     "iaso.snackBar.fetchFormsError": "Une erreur est survenue en récupérant la liste des formulaires",
     "iaso.snackBar.fetchFormVersionsError": "Une erreur est survenue en récupérant les version du formulaire",
     "iaso.snackBar.fetchGroupsError": "Une erreur est survenue en récupérant la liste des groupes",
+    "iaso.snackBar.fetchGroupSetsError": "Une erreur est survenue en récupérant la liste des group sets",
     "iaso.snackBar.fetchingLogDetailError": "Une erreur est survenu en récupérant l'historique",
     "iaso.snackBar.fetchInstanceDictError": "Une erreur est survenue en récupérant la liste des soumissions",
     "iaso.snackBar.fetchInstanceError": "Une erreur est survenue en récupérant le detail de la soumission",

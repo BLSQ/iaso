@@ -1,13 +1,15 @@
 import django_filters
-from rest_framework import permissions
+from rest_framework import filters, permissions, serializers, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import filters, status
-from iaso.models import GroupSet
-from ..common import ModelViewSet, HasPermission
+
 from hat.menupermissions import models as permission
 from iaso.api.common import Paginator
-from .serializers import GroupSetSerializer
+from iaso.models import GroupSet, Project, SourceVersion
+
+from ..common import HasPermission, ModelViewSet
 from .filters import GroupSetFilter
+from .serializers import GroupSetSerializer
 
 
 class HasGroupsetPermission(permissions.BasePermission):
@@ -24,6 +26,13 @@ class HasGroupsetPermission(permissions.BasePermission):
 
 class GroupSetPagination(Paginator):
     page_size = 10
+
+
+class GroupSetDropdownSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupSet
+        fields = ["id", "name"]
+        read_only_fields = ["id", "name"]
 
 
 class GroupSetsViewSet(ModelViewSet):
@@ -75,3 +84,32 @@ class GroupSetsViewSet(ModelViewSet):
         serializer.save()
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(permission_classes=[], detail=False, methods=["GET"], serializer_class=GroupSetDropdownSerializer)
+    def dropdown(self, request, *args):
+        """To be used in dropdowns (filters)
+
+        * Read only
+        * Readable anonymously if feature flag on project allow them and an app_id parameter is passed
+        * No permission needed
+        """
+
+        app_id = self.request.query_params.get("app_id")
+        user = request.user
+        if user and user.is_anonymous and app_id is None:
+            raise serializers.ValidationError("Parameter app_id is missing")
+
+        if user and user.is_authenticated:
+            account = user.iaso_profile.account
+            # Filter on version ids (linked to the account)
+            versions = SourceVersion.objects.filter(data_source__projects__account=account)
+
+        else:
+            # this check if project need auth
+            project = Project.objects.get_for_user_and_app_id(user, app_id)
+            versions = SourceVersion.objects.filter(data_source__projects=project)
+        group_sets = GroupSet.objects.filter(source_version__in=versions).distinct()
+
+        queryset = self.filter_queryset(group_sets)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

@@ -12,6 +12,7 @@ import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../../libs/validation';
 import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
+import { useGetGroupSetsDropdown } from '../../hooks/requests/useGetGroupSets';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { editableFieldsManyToManyFields } from '../constants';
 import { useGetFormDropdownOptions } from '../hooks/api/useGetFormDropdownOptions';
@@ -81,7 +82,7 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     const { data: formOptions } = useGetFormDropdownOptions(
         config.orgUnitType.id,
     );
-    const { data: groupSetOptions } = useGetGroupDropdown({});
+    const { data: groupSetOptions } = useGetGroupSetsDropdown();
     const { mutateAsync: saveConfig } =
         useSaveOrgUnitChangeRequestConfiguration();
     const orgUnitsEditableOptions = useOrgUnitsEditableOptions();
@@ -135,7 +136,6 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     );
 
     const allowConfirm = isValid && !isSubmitting && !isEqual(touched, {});
-
     return (
         <ConfirmCancelModal
             open={isOpen}
@@ -225,7 +225,7 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                         value={values.groupSetIds}
                         errors={getErrors('groupSetIds')}
                         label={MESSAGES.groupSetIds}
-                        options={groupSetOptions} // Warning: no call for groupsets ATM (using groups as placeholder)
+                        options={groupSetOptions}
                     />
                 )}
             {values?.editableFields &&

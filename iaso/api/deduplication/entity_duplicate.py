@@ -26,6 +26,7 @@ from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
 from iaso.models.deduplication import ValidationStatus  # type: ignore
 from hat.menupermissions import models as permission
+from iaso.utils.emoji import fix_emoji
 
 logger = getLogger(__name__)
 
@@ -165,13 +166,7 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
 
     lookup = {e1.pk: att1, e2.pk: att2}
 
-    try:
-        tree = ET.parse(att1.file)
-    except Exception as e:
-        logger.exception("Error parsing xml file %s: %s", att1.file, e)
-        return None
-
-    root = tree.getroot()
+    root = _xmlfile_to_element(att1.file)
 
     for field_name, e_id in merge_def.items():
         the_val = lookup[e_id].json[field_name]
@@ -213,13 +208,7 @@ def copy_instance(inst: Instance, new_entity: Entity):
     if inst.form is None:
         raise Exception("Instance has no form")
 
-    try:
-        tree = ET.parse(inst.file)
-    except Exception as e:
-        logger.exception("Error parsing xml file %s: %s", inst.file, e)
-        return None
-
-    root = tree.getroot()
+    root = _xmlfile_to_element(inst.file)
 
     entity_uuid = root.find("entityUuid")
     if entity_uuid is not None:
@@ -240,6 +229,17 @@ def copy_instance(inst: Instance, new_entity: Entity):
     new_inst.file.save(new_inst.file_name, new_xml_content, save=True)
     new_inst.get_and_save_json_of_xml()
     return new_inst
+
+
+def _xmlfile_to_element(file):
+    """
+    Read XML file, sanitize content to support emoji, and return a parsed Element
+    (xml.etree.ElementTree.Element)
+    """
+    raw_content = file.read().decode("utf-8")
+    fixed_content = fix_emoji(raw_content).decode("utf-8")
+
+    return ET.fromstring(fixed_content)
 
 
 def merge_entities(e1: Entity, e2: Entity, merge_def: Dict, current_user: User):

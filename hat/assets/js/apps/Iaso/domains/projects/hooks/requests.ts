@@ -1,12 +1,12 @@
-import { UseQueryResult, UseMutationResult, useQueryClient } from 'react-query';
-import { UrlParams, ApiParams } from 'bluesquare-components';
+import { ApiParams, UrlParams } from 'bluesquare-components';
+import { UseMutationResult, useQueryClient, UseQueryResult } from 'react-query';
 import { getRequest, postRequest, putRequest } from '../../../libs/Api';
-import { useSnackQuery, useSnackMutation } from '../../../libs/apiHooks';
+import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
 
+import { DropdownOptions } from '../../../types/utils';
+import { FeatureFlag } from '../types/featureFlag';
 import { PaginatedProjects } from '../types/paginatedProjects';
 import { Project } from '../types/project';
-import { FeatureFlag } from '../types/featureFlag';
-import { DropdownOptions } from '../../../types/utils';
 
 type ProjectApi = {
     projects: Array<Project>;
@@ -15,10 +15,9 @@ const getProjects = (): Promise<ProjectApi> => {
     return getRequest('/api/projects/');
 };
 
-export const useGetProjectsDropdownOptions = (): UseQueryResult<
-    DropdownOptions<string>[],
-    Error
-> => {
+export const useGetProjectsDropdownOptions = (
+    asString = true,
+): UseQueryResult<DropdownOptions<any>[], Error> => {
     const queryClient = useQueryClient();
     const queryKey: any[] = ['projects-dropdown'];
     return useSnackQuery(queryKey, () => getProjects(), undefined, {
@@ -32,7 +31,7 @@ export const useGetProjectsDropdownOptions = (): UseQueryResult<
             if (!data) return [];
             return data.projects.map(project => {
                 return {
-                    value: project.id.toString(),
+                    value: asString ? project.id?.toString() : project.id,
                     label: project.name,
                 };
             });

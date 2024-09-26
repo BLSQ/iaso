@@ -1,18 +1,18 @@
-import React, { FunctionComponent, useCallback } from 'react';
 import {
+    AddButton,
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
-    AddButton,
 } from 'bluesquare-components';
-import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { useTranslatedErrors } from '../../../../libs/validation';
-import MESSAGES from '../messages';
-import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
+import React, { FunctionComponent, useCallback } from 'react';
+import * as Yup from 'yup';
 import InputComponent from '../../../../components/forms/InputComponent';
+import { useTranslatedErrors } from '../../../../libs/validation';
+import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { useGetOUCRCCheckAvailabilityDropdownOptions } from '../hooks/api/useGetOUCRCCheckAvailabilityDropdownOptions';
+import MESSAGES from '../messages';
 
 type Props = {
     isOpen: boolean;
@@ -86,7 +86,7 @@ const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<
     });
 
     const { data: allProjects, isFetching: isFetchingProjects } =
-        useGetProjectsDropdownOptions();
+        useGetProjectsDropdownOptions(false);
     const { data: orgUnitTypeOptions, isFetching: isFetchingOrgUnitTypes } =
         useGetOUCRCCheckAvailabilityDropdownOptions(values.projectId);
 

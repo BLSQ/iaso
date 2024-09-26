@@ -1,22 +1,23 @@
-import React, {
-    FunctionComponent,
-    Dispatch,
-    SetStateAction,
-    useMemo,
-    useCallback,
-} from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
+import React, {
+    Dispatch,
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useMemo,
+} from 'react';
+import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
+import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
+import { ConfirmDeleteModal } from '../Dialog/ConfirmDeleteModal';
+import MESSAGES from '../messages';
 import {
     OrgUnitChangeRequestConfigsPaginated,
     OrgUnitChangeRequestConfigsParams,
     OrgUnitChangeRequestConfiguration,
 } from '../types';
-import MESSAGES from '../messages';
-import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
-import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
-import { ConfirmDeleteModal } from '../Dialog/ConfirmDeleteModal';
+import { EditableFieldsCell } from './EditableFieldsCell';
 
 const useColumns = (
     onEditClicked: Dispatch<SetStateAction<OrgUnitChangeRequestConfiguration>>,
@@ -56,7 +57,8 @@ const useColumns = (
             {
                 Header: formatMessage(MESSAGES.editable_fields),
                 id: 'editable_fields',
-                width: 600,
+                sortable: false,
+                Cell: EditableFieldsCell,
             },
             {
                 Header: formatMessage(MESSAGES.actions),

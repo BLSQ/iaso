@@ -1,27 +1,20 @@
 import django.core.serializers
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
-from django.contrib.auth.models import User
 
 from hat.audit.audit_logger import AuditLogger
 from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_CONFIGURATION_API
+from iaso.api.common import TimestampField
 from iaso.api.org_unit_change_request_configurations.validation import (
-    validate_org_unit_types,
-    validate_group_sets,
     validate_forms,
+    validate_group_sets,
     validate_groups,
+    validate_org_unit_types,
 )
 from iaso.api.query_params import PROJECT_ID
-from iaso.models import (
-    OrgUnitType,
-    OrgUnitChangeRequestConfiguration,
-    Project,
-    GroupSet,
-    Form,
-    Group,
-)
+from iaso.models import Form, Group, GroupSet, OrgUnitChangeRequestConfiguration, OrgUnitType, Project
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
-from iaso.api.common import TimestampField
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -126,6 +119,12 @@ class OrgUnitChangeRequestConfigurationListSerializer(serializers.ModelSerialize
             "created_at",
             "updated_by",
             "updated_at",
+            "editable_fields",
+            "possible_types",
+            "possible_parent_types",
+            "group_sets",
+            "editable_reference_forms",
+            "other_groups",
         ]
 
 

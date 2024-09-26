@@ -7,7 +7,7 @@ import {
 } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../../libs/validation';
@@ -69,17 +69,13 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
             closeDialog();
         },
     });
-    const { isLoading: isLoadingFullConfig } =
-        useRetrieveOrgUnitChangeRequestConfig(config?.id, fetchedConfig => {
-            // eslint-disable-next-line no-console
-            console.log(
-                '*** before resetting form - fetchedConfig ',
-                fetchedConfig,
-            );
-
+    const { data: fetchedConfig, isLoading: isLoadingFullConfig } =
+        useRetrieveOrgUnitChangeRequestConfig(config?.id);
+    useEffect(() => {
+        if (fetchedConfig) {
             setValues(fetchedConfig);
-        });
-
+        }
+    }, [fetchedConfig, setValues]);
     const { data: orgUnitTypeOptions } = useGetOrgUnitTypesDropdownOptions();
     const { data: groupOptions } = useGetGroupDropdown({});
     const { data: formOptions } = useGetFormDropdownOptions(

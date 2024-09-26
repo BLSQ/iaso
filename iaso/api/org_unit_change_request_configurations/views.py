@@ -1,22 +1,22 @@
 import django_filters
 from django.db.models import Q
-from rest_framework import viewsets, filters, serializers
+from rest_framework import filters, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.org_unit_change_request_configurations.filters import OrgUnitChangeRequestConfigurationListFilter
 from iaso.api.org_unit_change_request_configurations.pagination import OrgUnitChangeRequestConfigurationPagination
 from iaso.api.org_unit_change_request_configurations.permissions import (
-    HasOrgUnitsChangeRequestConfigurationReadPermission,
     HasOrgUnitsChangeRequestConfigurationFullPermission,
+    HasOrgUnitsChangeRequestConfigurationReadPermission,
 )
 from iaso.api.org_unit_change_request_configurations.serializers import (
+    OrgUnitChangeRequestConfigurationAuditLogger,
     OrgUnitChangeRequestConfigurationListSerializer,
     OrgUnitChangeRequestConfigurationRetrieveSerializer,
-    OrgUnitChangeRequestConfigurationWriteSerializer,
     OrgUnitChangeRequestConfigurationUpdateSerializer,
+    OrgUnitChangeRequestConfigurationWriteSerializer,
     OrgUnitTypeNestedSerializer,
-    OrgUnitChangeRequestConfigurationAuditLogger,
     ProjectIdSerializer,
 )
 from iaso.models import OrgUnitChangeRequestConfiguration, OrgUnitType

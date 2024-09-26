@@ -286,6 +286,7 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
             "quantities_approved_by_dg_in_doses",
             "comment",
             "target_population",
+            "vrf_type",
         ]
 
         read_only_fields = ["created_at", "updated_at"]
@@ -365,6 +366,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
             "country_id",
             "obr_name",
             "target_population",
+            "vrf_type",
         ]
 
 
@@ -396,14 +398,38 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "var",
             "created_at",
             "updated_at",
+            "vrf_type",
         ]
 
-    # comma separated list of all
-    def get_po_numbers(self, obj):
+    def get_prefetched_data(self, obj):
+        # Prefetch vaccineprea_lert and vaccinearrival_report to reduce the number of queries in the DB
         pre_alerts = obj.vaccineprealert_set.all().order_by("-estimated_arrival_time")
-        if not pre_alerts:
-            return ""
-        return ", ".join([pre_alert.po_number for pre_alert in pre_alerts])
+        arrival_reports = obj.vaccinearrivalreport_set.filter(po_number__in=[p.po_number for p in pre_alerts]).order_by(
+            "-arrival_report_date"
+        )
+
+        # Get arrival reports matching by po_number
+        arrival_report_matching = {}
+        for report in arrival_reports:
+            if report.po_number not in arrival_report_matching:
+                arrival_report_matching[report.po_number] = []
+            arrival_report_matching[report.po_number].append(report)
+
+        return pre_alerts, arrival_report_matching
+
+    # Comma separated list of all
+    def get_po_numbers(self, obj):
+        pre_alerts, arrival_report_matching = self.get_prefetched_data(obj)
+
+        po_numbers = []
+        for pre_alert in pre_alerts:
+            matching_reports = arrival_report_matching.get(pre_alert.po_number, [])
+            if matching_reports:
+                for report in matching_reports:
+                    po_numbers.append(str(report.po_number))
+            else:
+                po_numbers.append(pre_alert.po_number)
+        return ",".join(po_numbers)
 
     def get_start_date(self, obj):
         rounds = obj.rounds.all()
@@ -422,17 +448,31 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
 
     # Comma Separated List of all estimated arrival times
     def get_eta(self, obj):
-        pre_alerts = obj.vaccineprealert_set.all().order_by("-estimated_arrival_time")
-        if not pre_alerts:
-            return ""
-        return ", ".join([str(pre_alert.estimated_arrival_time) for pre_alert in pre_alerts])
+        pre_alerts, arrival_report_matching = self.get_prefetched_data(obj)
+
+        estimated_arrival_dates = []
+        for pre_alert in pre_alerts:
+            matching_reports = arrival_report_matching.get(pre_alert.po_number, [])
+            if matching_reports:
+                for _ in matching_reports:
+                    estimated_arrival_dates.append(str(pre_alert.estimated_arrival_time))
+            else:
+                estimated_arrival_dates.append(str(pre_alert.estimated_arrival_time))
+        return ",".join(estimated_arrival_dates)
 
     # Comma Separated List of all arrival report dates
     def get_var(self, obj):
-        arrival_reports = obj.vaccinearrivalreport_set.all().order_by("-arrival_report_date")
-        if not arrival_reports:
-            return ""
-        return ", ".join([str(report.arrival_report_date) for report in arrival_reports])
+        pre_alerts, arrival_report_matching = self.get_prefetched_data(obj)
+
+        arrival_report_dates = []
+        for pre_alert in pre_alerts:
+            matching_reports = arrival_report_matching.get(pre_alert.po_number, [])
+            if matching_reports:
+                for report in matching_reports:
+                    arrival_report_dates.append(str(report.arrival_report_date))
+            else:
+                arrival_report_dates.append("")
+        return ",".join(arrival_report_dates)
 
 
 class VRFCustomOrderingFilter(filters.BaseFilterBackend):

@@ -15,7 +15,7 @@ from django.utils.timezone import now
 from rest_framework import status
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from hat.audit.models import Modification
+from hat.audit.models import Modification, INSTANCE_API
 from iaso import models as m
 from iaso.api import query_params as query
 from iaso.models import FormVersion, Instance, InstanceLock
@@ -571,6 +571,15 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
         self.assertJSONResponse(response, 200)
         self.assertTrue(response.json()["deleted"])
+
+        self.assertEqual(1, Modification.objects.count())
+        modification = Modification.objects.first()
+        self.assertEqual(modification.source, INSTANCE_API)
+        self.assertEqual(modification.user, self.yoda)
+        self.assertEqual(soft_deleted_instance.id, int(modification.object_id))
+        self.assertNotEqual(modification.past_value, modification.new_value)
+        self.assertFalse(modification.past_value[0]["fields"]["deleted"])
+        self.assertTrue(modification.new_value[0]["fields"]["deleted"])
 
     def test_bulk_delete_selected_instance_ids(self):
         """POST /instances/bulkdelete and undelete"""

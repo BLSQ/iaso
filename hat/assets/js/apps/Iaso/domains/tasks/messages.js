@@ -106,6 +106,10 @@ const MESSAGES = defineMessages({
             "{count} error(s). The following data couldn't be imported.",
         id: 'iaso.tasks.polioNotificationImport.errors',
     },
+    relaunch: {
+        defaultMessage: 'Relaunch the task',
+        id: 'iaso.tasks.relaunch',
+    },
 });
 
 export default MESSAGES;

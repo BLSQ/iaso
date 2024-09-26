@@ -8,6 +8,7 @@ import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 import BookIcon from '@mui/icons-material/Book';
 import CategoryIcon from '@mui/icons-material/Category';
 import CompareArrows from '@mui/icons-material/CompareArrows';
+import Diversity3Icon from '@mui/icons-material/Diversity3';
 import DnsRoundedIcon from '@mui/icons-material/DnsRounded';
 import DoneAll from '@mui/icons-material/DoneAll';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
@@ -153,6 +154,12 @@ const menuItems = (
                     label: formatMessage(MESSAGES.groups),
                     permissions: paths.groupsPath.permissions,
                     key: 'groups',
+                    icon: props => <GroupIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.groupSets),
+                    permissions: paths.groupSetsPath.permissions,
+                    key: 'groupSets',
                     icon: props => <GroupWork {...props} />,
                 },
                 {
@@ -329,7 +336,7 @@ const menuItems = (
                     label: formatMessage(MESSAGES.teams),
                     permissions: paths.teamsPath.permissions,
                     key: 'teams',
-                    icon: props => <GroupIcon {...props} />,
+                    icon: props => <Diversity3Icon {...props} />,
                 },
             ],
         },

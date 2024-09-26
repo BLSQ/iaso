@@ -1,11 +1,11 @@
-import React, { FunctionComponent } from 'react';
+import { Container, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
     commonStyles,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Container, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import React, { FunctionComponent } from 'react';
 import { useGetLogDetails } from '../../../hooks/useGetLogDetails';
 import MESSAGES from '../messages';
 import { UserLogCompare } from './UserLogCompare';
@@ -26,7 +26,10 @@ type Props = {
 export const UserHistoryLogDetails: FunctionComponent<Props> = ({ logId }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data: log, isFetching: loading } = useGetLogDetails(logId);
+    const { data: log, isFetching: loading } = useGetLogDetails(
+        logId,
+        'userlogs',
+    );
     return (
         <Container maxWidth={false} className={classes.root}>
             {loading && <LoadingSpinner />}

@@ -1,0 +1,61 @@
+<?xml version='1.0'?>
+<data id="trypelim_registration" version="2024032701" xmlns:h="http://www.w3.org/1999/xhtml"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa"
+    xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:orx="http://openrosa.org/xforms"
+    xmlns:odk="http://www.opendatakit.org/xforms">
+    <Registration>
+        <last_name>Makulo</last_name>
+        <post_name />
+        <first_name>Disasi</first_name>
+        <mother_last_name>t</mother_last_name>
+        <_full_name>Disasi Makulo</_full_name>
+        <phone_number />
+        <gender>F</gender>
+    </Registration>
+    <birth_group>
+        <birth_year_is_known>no</birth_year_is_known>
+    </birth_group>
+    <residency_group>
+        <residency_type>resident</residency_type>
+    </residency_group>
+    <profession_group>
+        <profession_type>unemployed</profession_type>
+    </profession_group>
+    <repeat_case_group>
+        <repeat_case_type>no</repeat_case_type>
+    </repeat_case_group>
+    <is_absent>0</is_absent>
+    <first_test_done>1</first_test_done>
+    <is_suspect>1</is_suspect>
+    <is_not_done>0</is_not_done>
+    <clinical_signs_done>0</clinical_signs_done>
+    <has_clinical_signs>0</has_clinical_signs>
+    <is_confirmed_positive>0</is_confirmed_positive>
+    <is_confirmed_negative>0</is_confirmed_negative>
+    <is_trypanolyse_positive>0</is_trypanolyse_positive>
+    <is_qpcr_positive>0</is_qpcr_positive>
+    <trypelim_profile>UM</trypelim_profile>
+    <confirmation_pg_done>0</confirmation_pg_done>
+    <test_ctcwoo_done>0</test_ctcwoo_done>
+    <test_maect_done>0</test_maect_done>
+    <confirmation_pg_not_done>0</confirmation_pg_not_done>
+    <test_ctcwoo_not_done>0</test_ctcwoo_not_done>
+    <test_maect_not_done>0</test_maect_not_done>
+    <plresearch_not_done>0</plresearch_not_done>
+    <stade>0</stade>
+    <white_cells_count>0</white_cells_count>
+    <presence_trypanosomes>0</presence_trypanosomes>
+    <pl_stad_presence_trypanosome>0</pl_stad_presence_trypanosome>
+    <pl_stad_is_not_done>0</pl_stad_is_not_done>
+    <pl_stad_globules_blanc>0</pl_stad_globules_blanc>
+    <pl_stad_is_done>0</pl_stad_is_done>
+    <is_treatment_ongoing>0</is_treatment_ongoing>
+    <number_of_previous_treatments>0</number_of_previous_treatments>
+    <infection_location>0</infection_location>
+    <infection_type_selected>0</infection_type_selected>
+    <manque_confirmation_done>0</manque_confirmation_done>
+    <is_deceased>0</is_deceased>
+    <meta>
+        <instanceID>uuid:63e653b6-bca1-4a6d-93d9-6db455c342db</instanceID>
+    </meta>
+</data>

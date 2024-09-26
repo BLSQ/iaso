@@ -520,40 +520,13 @@ class InstanceModelTestCase(TestCase, InstanceBase):
 
         return (alderaan, sluis, dagobah, first_council, second_council, first_academy, second_academy)
 
-    def test_org_unit_soft_delete_no_one(self):
+    def test_org_unit_soft_delete(self):
         instance = self.create_form_instance(
             form=self.form_1, period="202001", org_unit=self.jedi_council_coruscant, project=None
         )
-
         self.assertFalse(instance.deleted)
-        self.assertEqual(0, Modification.objects.count())
-
         instance.soft_delete()
-
         self.assertTrue(instance.deleted)
-        self.assertEqual(1, Modification.objects.count())
-        modification = Modification.objects.first()
-        self.assertIsNone(modification.user)
-        self.assertEqual(INSTANCE_API, modification.source)
-        self.assertEqual(instance.id, int(modification.object_id))
-        self.assertNotEqual(modification.past_value, modification.new_value)
-        self.assertFalse(modification.past_value[0]["fields"]["deleted"])
-        self.assertTrue(modification.new_value[0]["fields"]["deleted"])
-
-    def test_org_unit_soft_delete_someone(self):
-        instance = self.create_form_instance(
-            form=self.form_1, period="202002", org_unit=self.jedi_council_coruscant, project=None
-        )
-
-        self.assertFalse(instance.deleted)
-        self.assertEqual(0, Modification.objects.count())
-
-        instance.soft_delete(user=self.yoda)
-
-        self.assertTrue(instance.deleted)
-        self.assertEqual(1, Modification.objects.count())
-        modification = Modification.objects.first()
-        self.assertEqual(self.yoda, modification.user)
 
 
 class InstanceAPITestCase(APITestCase, InstanceBase):

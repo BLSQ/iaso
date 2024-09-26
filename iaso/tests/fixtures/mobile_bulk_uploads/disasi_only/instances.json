@@ -1,0 +1,32 @@
+[
+    {
+        "id": "a5362052-408f-44f8-8abc-2a520c01ea10",
+        "created_at": 1.71232618245e9,
+        "updated_at": 1.71232618245e9,
+        "file": "/storage/emulated/0/Android/data/org.bluesquare/files/Documents/instances/16_12_2024-04-05_16-09-42/16_12_127775b2-06a2-4ae6-b2bd-cf64143a9dfe_2024-04-05_16-09-42.xml",
+        "name": "CATT",
+        "formId": "2",
+        "orgUnitId": "9dcb6991-c72c-416d-ba38-4556c62b400f",
+        "entityUuid": "3f0ed68e-bfcf-4395-a2a5-a5821390ae1b",
+        "entityTypeId": "1",
+        "latitude": 50.6429501,
+        "longitude": 4.6004282,
+        "altitude": 128.3000030517578,
+        "accuracy": 12.74
+    },
+    {
+        "id": "3f0ed68e-bfcf-4395-a2a5-a5821390ae1b",
+        "created_at": 1.712326150005e9,
+        "updated_at": 1.712326150005e9,
+        "file": "/storage/emulated/0/Android/data/org.bluesquare/files/Documents/instances/20_56_2024-04-05_16-08-56/20_56_bd75c228-ee48-4df6-9226-d6360d0e6b6c_2024-04-05_16-08-56.xml",
+        "name": "Enregistrement",
+        "formId": "1",
+        "orgUnitId": "9dcb6991-c72c-416d-ba38-4556c62b400f",
+        "entityUuid": "3f0ed68e-bfcf-4395-a2a5-a5821390ae1b",
+        "entityTypeId": "1",
+        "latitude": 50.6429429,
+        "longitude": 4.6004524,
+        "altitude": 128.3000030517578,
+        "accuracy": 14.929
+    }
+]

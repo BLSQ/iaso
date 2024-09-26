@@ -1,6 +1,7 @@
 import React from 'react';
 import { Permission } from '../../userRoles/types/userRoles';
 import InputComponent from '../../../components/forms/InputComponent';
+import PERMISSIONS_MESSAGES from '../permissionsMessages';
 
 type Props = {
     value: string | Permission;
@@ -21,7 +22,6 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
     type,
 }) => {
     const { original } = settings.row;
-
     const handleCheckboxChange = (
         permission: string | Permission,
         checked: boolean,
@@ -41,17 +41,27 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
         permissionCode: string,
         permission: string | Permission,
         key: string | null,
-    ) => (
-        <InputComponent
-            type="checkbox"
-            keyValue={`permission-checkbox-${permissionCode}`}
-            value={isChecked(permissionCode)}
-            onChange={(_, checked) => handleCheckboxChange(permission, checked)}
-            labelString={!key ? '' : key}
-            dataTestId="permission-checkbox"
-            withMarginTop={false}
-        />
-    );
+    ) => {
+        const checkBoxLabel =
+            key !== null
+                ? { label: PERMISSIONS_MESSAGES[key] }
+                : { labelString: '' };
+
+        return (
+            <InputComponent
+                type="checkbox"
+                keyValue={`permission-checkbox-${permissionCode}`}
+                value={isChecked(permissionCode)}
+                onChange={(_, checked) =>
+                    handleCheckboxChange(permission, checked)
+                }
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                {...checkBoxLabel}
+                dataTestId="permission-checkbox"
+                withMarginTop={false}
+            />
+        );
+    };
 
     if (!original.group) {
         if (original.readEdit) {
@@ -63,11 +73,18 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
                                 ? original.readEdit[key]
                                 : {
                                       codename: original.readEdit[key],
-                                      id: 0,
                                       name: original.readEdit[key],
                                   };
 
-                        return renderCheckbox(original.readEdit[key], val, key);
+                        return (
+                            <span key={key}>
+                                {renderCheckbox(
+                                    original.readEdit[key],
+                                    val,
+                                    key,
+                                )}
+                            </span>
+                        );
                     })}
                 </div>
             );

@@ -16,6 +16,7 @@ import * as Permission from '../../utils/permissions.ts';
 import PermissionSwitch from './components/PermissionSwitch.tsx';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
 import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
+import PERMISSIONS_MESSAGES from './permissionsMessages.ts';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 
 export const usersTableColumns = ({
@@ -214,7 +215,11 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                                                     <NotCheckedIcon color="disabled" />
                                                 )}
                                                 <Typography variant="body1">
-                                                    {key}
+                                                    {formatMessage(
+                                                        PERMISSIONS_MESSAGES[
+                                                            key
+                                                        ],
+                                                    )}
                                                 </Typography>
                                             </Stack>
                                         );

@@ -1,27 +1,30 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import { Typography } from '@mui/material';
 import {
     ConfirmCancelModal,
     LoadingSpinner,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import { isEqual } from 'lodash';
-import { Typography } from '@mui/material';
 import { useFormik } from 'formik';
-import { useTranslatedErrors } from '../../../../libs/validation';
-import MESSAGES from '../messages';
+import { isEqual } from 'lodash';
+import React, { FunctionComponent, useCallback } from 'react';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { editableFieldsManyToManyFields } from '../constants';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { useTranslatedErrors } from '../../../../libs/validation';
 import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { editableFieldsManyToManyFields } from '../constants';
 import { useGetFormDropdownOptions } from '../hooks/api/useGetFormDropdownOptions';
-import { useSaveOrgUnitChangeRequestConfiguration } from '../hooks/api/useSaveOrgUnitChangeRequestConfiguration';
-import { useOrgUnitsEditableOptions } from '../hooks/useOrgUnitsEditableOptions';
-import { useOrgUnitsEditableFieldsOptions } from '../hooks/useOrgUnitEditableFieldsOptions';
-import { OrgUnitChangeRequestConfiguration, OrgUnitChangeRequestConfigurationForm } from '../types';
 import { useRetrieveOrgUnitChangeRequestConfig } from '../hooks/api/useRetrieveOrgUnitChangeRequestConfig';
+import { useSaveOrgUnitChangeRequestConfiguration } from '../hooks/api/useSaveOrgUnitChangeRequestConfiguration';
+import { useOrgUnitsEditableFieldsOptions } from '../hooks/useOrgUnitEditableFieldsOptions';
+import { useOrgUnitsEditableOptions } from '../hooks/useOrgUnitsEditableOptions';
 import { useValidationSchemaOUCRC } from '../hooks/useValidationSchemaOUCRC';
+import MESSAGES from '../messages';
+import {
+    OrgUnitChangeRequestConfiguration,
+    OrgUnitChangeRequestConfigurationForm,
+} from '../types';
 
 type Props = {
     config: OrgUnitChangeRequestConfiguration;
@@ -29,7 +32,7 @@ type Props = {
     closeDialog: () => void;
 };
 
-const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
+const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     config,
     isOpen,
     closeDialog,
@@ -44,7 +47,7 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
         errors,
         touched,
         setFieldTouched,
-        resetForm,
+        setValues,
     } = useFormik<OrgUnitChangeRequestConfigurationForm>({
         initialValues: {
             projectId: config.project.id,
@@ -58,18 +61,24 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
             otherGroupIds: undefined,
         },
         validationSchema: configValidationSchema,
-        onSubmit: () => {
-            saveConfig(config.id, values);
+        onSubmit: (newValues: OrgUnitChangeRequestConfigurationForm) => {
+            saveConfig({
+                configId: config.id,
+                data: newValues,
+            });
             closeDialog();
         },
     });
     const { isLoading: isLoadingFullConfig } =
         useRetrieveOrgUnitChangeRequestConfig(config?.id, fetchedConfig => {
-            console.log("*** before resetting form - fetchedConfig ", fetchedConfig);
-            resetForm(fetchedConfig);
-        });
+            // eslint-disable-next-line no-console
+            console.log(
+                '*** before resetting form - fetchedConfig ',
+                fetchedConfig,
+            );
 
-    console.log("*** values = ", values);
+            setValues(fetchedConfig);
+        });
 
     const { data: orgUnitTypeOptions } = useGetOrgUnitTypesDropdownOptions();
     const { data: groupOptions } = useGetGroupDropdown({});
@@ -254,11 +263,12 @@ const OrgUnitChangeRequestConfigDialogUpdate: FunctionComponent<Props> = ({
 };
 
 const modalWithButton = makeFullModal(
-    OrgUnitChangeRequestConfigDialogUpdate,
+    OrgUnitChangeRequestConfigDialog,
     EditIconButton,
 );
 
 export {
-    modalWithButton as OrgUnitChangeRequestConfigDialogUpdate,
-    OrgUnitChangeRequestConfigDialogUpdate as OrgUnitChangeRequestConfigDialogCreateSecondStep,
+    OrgUnitChangeRequestConfigDialog as OrgUnitChangeRequestConfigDialogCreateSecondStep,
+    modalWithButton as OrgUnitChangeRequestConfigDialogUpdate
 };
+

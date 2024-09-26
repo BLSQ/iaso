@@ -1,5 +1,5 @@
-import * as yup from 'yup';
 import { useSafeIntl } from 'bluesquare-components';
+import * as yup from 'yup';
 import MESSAGES from '../messages';
 
 yup.addMethod(
@@ -11,7 +11,7 @@ yup.addMethod(
             if (!parent.editableFields) {
                 return true;
             }
-            const splitFields = parent.editableFields.split(',');
+            const splitFields = parent.editableFields;
             const isFieldPopulated = parent[path];
             if (!isFieldPopulated && splitFields.includes(path)) {
                 return createError({

@@ -3,78 +3,77 @@ import { patchRequest, postRequest } from '../../../../../libs/Api';
 import { useSnackMutation } from '../../../../../libs/apiHooks';
 
 import { apiUrlOUCRC, editableFieldsForBackend } from '../../constants';
-import { OrgUnitChangeRequestConfigurationForm, OrgUnitChangeRequestConfigurationFull } from '../../types';
+import { OrgUnitChangeRequestConfigurationForm } from '../../types';
 
-function cleanEditableFieldsForSaving(editableFields) {
+const cleanEditableFieldsForSaving = (editableFields?: string): string[] => {
     if (!editableFields) {
-        return editableFields;
+        return [];
     }
-    let cleanEditableFields = '';
-    const splitFields = editableFields.split(',');
-    for (const field in splitFields) {
-        if (editableFieldsForBackend.includes(field)) {
-            cleanEditableFields += `${field},`;
-        }
-    }
-    if (cleanEditableFields.length) {
-        cleanEditableFields = cleanEditableFields.slice(0, -1);
-    }
-    return cleanEditableFields;
-}
+    return editableFields
+        .split(',')
+        .filter(field => editableFieldsForBackend.includes(field))
+        .map(field => {
+            if (field === 'openingDate') return 'opening_date';
+            if (field === 'closedDate') return 'closed_date';
+            return field;
+        });
+};
 
-function mapValuesForSaving(values: OrgUnitChangeRequestConfigurationForm) : Partial<OrgUnitChangeRequestConfigurationFull> {
-    const apiValues = {
-        org_units_editable: values.orgUnitsEditable,
+type ApiValues = {
+    org_units_editable: boolean;
+    project_id?: number;
+    org_unit_type_id?: number;
+    editable_fields?: string[];
+    possible_type_ids?: number[];
+    possible_parent_type_ids?: number[];
+    group_set_ids?: number[];
+    editable_reference_form_ids?: number[];
+    other_group_ids?: number[];
+};
+
+const mapValuesForSaving = (
+    configId: number | undefined,
+    values: OrgUnitChangeRequestConfigurationForm,
+): ApiValues => {
+    const apiValues: ApiValues = {
+        org_units_editable: values.orgUnitsEditable ?? false,
     };
-
     // These two fields can't be updated so they are only set for creation
-    if (!values.id) {
+    if (configId) {
         apiValues.project_id = values.projectId;
         apiValues.org_unit_type_id = values.orgUnitTypeId;
     }
 
     // This field must be cleaned because the backend accepts only some values
-    const cleanedEditableFields = cleanEditableFieldsForSaving(
+
+    apiValues.editable_fields = cleanEditableFieldsForSaving(
         values.editableFields,
     );
-    if (cleanedEditableFields) {
-        apiValues.editable_fields = cleanedEditableFields;
-    }
 
     // All the many to many fields are added if they have a value
-    if (values.possibleTypeIds) {
-        apiValues.possible_type_ids = values.possibleTypeIds
-            .split(',')
-            .map(Number);
-    }
-    if (values.possibleParentTypeIds) {
-        apiValues.possible_parent_type_ids = values.possibleParentTypeIds
-            .split(',')
-            .map(Number);
-    }
-    if (values.groupSetIds) {
-        apiValues.group_set_ids = values.groupSetIds.split(',').map(Number);
-    }
-    if (values.editableReferenceFormIds) {
-        apiValues.editable_reference_form_ids = values.editableReferenceFormIds
-            .split(',')
-            .map(Number);
-    }
-    if (values.otherGroupIds) {
-        apiValues.other_group_ids = values.otherGroupIds.split(',').map(Number);
-    }
+    const splitAndMapToNumbers = (str?: string) => str?.split(',').map(Number);
+
+    apiValues.possible_type_ids = splitAndMapToNumbers(values.possibleTypeIds);
+    apiValues.possible_parent_type_ids = splitAndMapToNumbers(
+        values.possibleParentTypeIds,
+    );
+    apiValues.group_set_ids = splitAndMapToNumbers(values.groupSetIds);
+    apiValues.editable_reference_form_ids = splitAndMapToNumbers(
+        values.editableReferenceFormIds,
+    );
+    apiValues.other_group_ids = splitAndMapToNumbers(values.otherGroupIds);
     return apiValues;
-}
+};
 
 const patchOrgUniType = async (
     configId: number,
-    body: Partial<OrgUnitChangeRequestConfigurationFull>,
+    body: ApiValues,
 ): Promise<any> => {
     const url = `${apiUrlOUCRC}${configId}/`;
     return patchRequest(url, body);
 };
 
-const postOrgUnitType = async (body: Partial<OrgUnitChangeRequestConfigurationFull>): Promise<any> => {
+const postOrgUnitType = async (body: ApiValues): Promise<any> => {
     return postRequest({
         url: `${apiUrlOUCRC}`,
         data: body,
@@ -85,15 +84,22 @@ export const useSaveOrgUnitChangeRequestConfiguration =
     (): UseMutationResult => {
         const ignoreErrorCodes = [400];
         return useSnackMutation({
-            mutationFn: (
-                configId: number | undefined,
-                data: Partial<OrgUnitChangeRequestConfigurationForm>,
-            ) => {
-                const formattedData = mapValuesForSaving(data);
+            mutationFn: ({
+                configId,
+                data,
+            }: {
+                configId: number | undefined;
+                data: OrgUnitChangeRequestConfigurationForm;
+            }) => {
+                const formattedData = mapValuesForSaving(configId, data);
                 return configId
                     ? patchOrgUniType(configId, formattedData)
                     : postOrgUnitType(formattedData);
             },
             ignoreErrorCodes,
+            invalidateQueryKey: [
+                'useRetrieveOrgUnitChangeRequestConfig',
+                'getOrgUnitChangeRequestConfigs',
+            ],
         });
     };

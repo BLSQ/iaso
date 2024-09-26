@@ -1,20 +1,20 @@
+import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Box } from '@mui/material';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import TopBar from '../../../components/nav/TopBarComponent';
 import { baseUrls } from '../../../constants/urls';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { OrgUnitChangeRequestConfigDialogCreateSecondStep } from './Dialog/OrgUnitChangeRequestConfigDialog';
+import { OrgUnitChangeRequestConfigDialogCreateFirstStep } from './Dialog/OrgUnitChangeRequestConfigDialogCreateFirstStep';
+import { OrgUnitChangeRequestConfigsFilter } from './Filter/OrgUnitChangeRequestConfigsFilter';
+import { useGetOrgUnitChangeRequestConfigs } from './hooks/api/useGetOrgUnitChangeRequestConfigs';
+import MESSAGES from './messages';
+import { OrgUnitChangeRequestConfigsTable } from './Tables/OrgUnitChangeRequestConfigsTable';
 import {
     OrgUnitChangeRequestConfigsParams,
     OrgUnitChangeRequestConfiguration,
 } from './types';
-import { useGetOrgUnitChangeRequestConfigs } from './hooks/api/useGetOrgUnitChangeRequestConfigs';
-import TopBar from '../../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
-import { OrgUnitChangeRequestConfigsFilter } from './Filter/OrgUnitChangeRequestConfigsFilter';
-import { OrgUnitChangeRequestConfigsTable } from './Tables/OrgUnitChangeRequestConfigsTable';
-import { OrgUnitChangeRequestConfigDialogCreateFirstStep } from './Dialog/OrgUnitChangeRequestConfigDialogCreateFirstStep';
-import { OrgUnitChangeRequestConfigDialogCreateSecondStep } from './Dialog/OrgUnitChangeRequestConfigDialogUpdate';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

@@ -50,7 +50,7 @@ export type OrgUnitChangeRequestConfigurationFull = {
     project: Project;
     org_unit_type: OrgUnitType;
     org_units_editable?: boolean;
-    editable_fields?: string;
+    editable_fields?: string[];
     possible_types?: Array<OrgUnitType>;
     possible_parent_types?: Array<OrgUnitType>;
     group_sets?: Array<GroupSet>;

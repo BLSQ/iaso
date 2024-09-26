@@ -74,12 +74,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'OrgUnit Change Request Configuration - Creation',
     },
     oucrcCreateSecondStepModalTitle: {
-        id: 'iaso.label.oucrcCreateModalTitle',
+        id: 'iaso.oucrc.oucrcCreateModalTitle2',
         defaultMessage:
             'OrgUnit Change Request Configuration - Creation 2nd step',
     },
     oucrcCreateUpdateModalTitle: {
-        id: 'iaso.label.oucrcCreateModalTitle',
+        id: 'iaso.oucrc.oucrcCreateUpdateModalTitle',
         defaultMessage: 'OrgUnit Change Request Configuration - Update',
     },
     requiredField: {
@@ -87,7 +87,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'This field is required',
     },
     orgUnitsEditable: {
-        id: 'iaso.ourcrc.orgUnitsEditable',
+        id: 'iaso.oucrc.orgUnitsEditable',
         defaultMessage: 'Should OrgUnits of this type be editable?',
     },
     orgUnitsEditableYes: {
@@ -107,7 +107,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Aliases',
     },
     openingDate: {
-        id: 'iaso.orgUnits.openingDate',
+        id: 'iaso.changeRequest.openingDate',
         defaultMessage: 'Opening Date',
     },
     closedDate: {
@@ -139,7 +139,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Editable Reference Forms',
     },
     otherGroupIds: {
-        id: 'iaso.label.otherGroupIds',
+        id: 'iaso.oucrc.otherGroupIds',
         defaultMessage: 'Other Groups',
     },
     oucrcModalCreateButton: {

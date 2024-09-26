@@ -45,7 +45,7 @@ export const useHomeButtons = (): Button[] => {
                 },
                 {
                     label: formatMessage(MESSAGES.storages),
-                    permissions: paths.entityTypesPath.permissions,
+                    permissions: paths.storagesPath.permissions,
                     Icon: <Storage />,
                     url: `/${baseUrls.storages}`,
                 },

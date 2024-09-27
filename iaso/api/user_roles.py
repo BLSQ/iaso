@@ -1,18 +1,21 @@
-from typing import Any
-from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import permissions, serializers, status
 from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
-from iaso.models import UserRole
+from iaso.models import UserRole, OrgUnitType
 from .common import TimestampField, ModelViewSet
 from hat.menupermissions import models as permission
+from .validation_utils import validate_org_unit_types_for_user
+from ..utils.strings import remove_prefix_from_str
 
 
 class HasUserRolePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if (not request.user.has_perm(permission.USERS_ROLES)) and request.method != "GET":
+        user = request.user
+        if user.is_superuser:
+            return True
+        if (not user.has_perm(permission.USERS_ROLES)) and request.method != "GET":
             return False
         return True
 
@@ -26,28 +29,28 @@ class PermissionSerializer(serializers.ModelSerializer):
 class UserRoleSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField("get_permissions")
     name = serializers.CharField(source="group.name")
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
+    editable_org_unit_type_ids = serializers.PrimaryKeyRelatedField(
+        source="editable_org_unit_types", queryset=OrgUnitType.objects.all(), many=True, allow_empty=True, required=False
+    )
 
     class Meta:
         model = UserRole
-        fields = ["id", "name", "permissions", "created_at", "updated_at"]
+        fields = ["id", "name", "permissions", "created_at", "updated_at", "editable_org_unit_type_ids"]
 
     def to_representation(self, instance):
         user_role = super().to_representation(instance)
         account_id = user_role["name"].split("_")[0]
-        user_role["name"] = self.remove_prefix_from_str(user_role["name"], account_id + "_")
+        user_role["name"] = remove_prefix_from_str(user_role["name"], account_id + "_")
         return user_role
-
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
-
-    # This method will remove a given prefix from a string
-    def remove_prefix_from_str(self, str, prefix):
-        if str.startswith(prefix):
-            return str[len(prefix) :]
-        return str
 
     def get_permissions(self, obj):
         return [permission["codename"] for permission in PermissionSerializer(obj.group.permissions, many=True).data]
+
+    def validate_editable_org_unit_type_ids(self, org_unit_types):
+        user = self.context["request"].user
+        return validate_org_unit_types_for_user(user, org_unit_types)
 
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account
@@ -73,9 +76,13 @@ class UserRoleSerializer(serializers.ModelSerializer):
                 group.permissions.add(permission)
             group.save()
 
-        userRole = UserRole.objects.create(group=group, account=account)
-        userRole.save()
-        return userRole
+        user_role = UserRole.objects.create(group=group, account=account)
+
+        if "editable_org_unit_types" in validated_data:
+            user_role.editable_org_unit_types.set(validated_data["editable_org_unit_types"])
+
+        user_role.save()
+        return user_role
 
     def update(self, user_role, validated_data):
         account = self.context["request"].user.iaso_profile.account
@@ -95,6 +102,9 @@ class UserRoleSerializer(serializers.ModelSerializer):
             for permission_codename in permissions:
                 permission = get_object_or_404(Permission, codename__startswith="iaso_", codename=permission_codename)
                 group.permissions.add(permission)
+
+        if "editable_org_unit_types" in validated_data:
+            user_role.editable_org_unit_types.set(validated_data["editable_org_unit_types"])
 
         group.save()
         user_role.save()

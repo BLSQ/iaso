@@ -1,4 +1,3 @@
-import django.core.serializers
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
@@ -10,10 +9,19 @@ from iaso.api.org_unit_change_request_configurations.validation import (
     validate_forms,
     validate_group_sets,
     validate_groups,
-    validate_org_unit_types,
 )
 from iaso.api.query_params import PROJECT_ID
-from iaso.models import Form, Group, GroupSet, OrgUnitChangeRequestConfiguration, OrgUnitType, Project
+
+from iaso.api.validation_utils import validate_org_unit_types_for_user
+from iaso.models import (
+    OrgUnitType,
+    OrgUnitChangeRequestConfiguration,
+    Project,
+    GroupSet,
+    Form,
+    Group,
+)
+
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 
 
@@ -205,12 +213,12 @@ class BaseOrgUnitChangeRequestConfigurationWriteUpdateSerializer(serializers.Mod
 
     def validate_possible_type_ids(self, possible_types):
         user = self.context["request"].user
-        validate_org_unit_types(user=user, org_unit_types=possible_types)
+        validate_org_unit_types_for_user(user=user, org_unit_types=possible_types)
         return possible_types
 
     def validate_possible_parent_type_ids(self, possible_parent_types):
         user = self.context["request"].user
-        validate_org_unit_types(user=user, org_unit_types=possible_parent_types)
+        validate_org_unit_types_for_user(user=user, org_unit_types=possible_parent_types)
         return possible_parent_types
 
     def validate_group_set_ids(self, group_sets):
@@ -248,7 +256,7 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(BaseOrgUnitChangeRequestC
 
     def validate_org_unit_type_id(self, org_unit_type):
         user = self.context["request"].user
-        validate_org_unit_types(user=user, org_unit_types=[org_unit_type])
+        validate_org_unit_types_for_user(user=user, org_unit_types=[org_unit_type])
         return org_unit_type
 
     def validate(self, validated_data):

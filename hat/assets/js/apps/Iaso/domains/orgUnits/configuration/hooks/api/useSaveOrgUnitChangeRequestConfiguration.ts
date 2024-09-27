@@ -96,6 +96,7 @@ export const useSaveOrgUnitChangeRequestConfiguration =
             invalidateQueryKey: [
                 'useRetrieveOrgUnitChangeRequestConfig',
                 'getOrgUnitChangeRequestConfigs',
+                'checkAvailabilityOrgUnitChangeRequestConfigs',
             ],
         });
     };

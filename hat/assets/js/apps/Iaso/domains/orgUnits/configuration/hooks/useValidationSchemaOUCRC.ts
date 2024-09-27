@@ -8,10 +8,13 @@ yup.addMethod(
     function isMultiSelectValid(formatMessage) {
         return this.test('isMultiSelectValid', '', (value, context) => {
             const { path, createError, parent } = context;
-            if (!parent.editableFields) {
-                return true;
+            if (!parent.editableFields && !parent.groupSetIds) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.requiredField),
+                });
             }
-            const splitFields = parent.editableFields;
+            const splitFields = parent.editableFields || [];
             const isFieldPopulated = parent[path];
             if (!isFieldPopulated && splitFields.includes(path)) {
                 return createError({
@@ -41,7 +44,7 @@ export const useValidationSchemaOUCRC = () => {
             .required(formatMessage(MESSAGES.requiredField)),
         editableFields: yup.string().nullable().when('orgUnitsEditable', {
             is: true,
-            then: yup.string().nullable().required(),
+            then: yup.string().nullable(),
             otherwise: yup.string().nullable(),
         }),
         possibleTypeIds: yup
@@ -49,7 +52,6 @@ export const useValidationSchemaOUCRC = () => {
             .nullable()
             .when('orgUnitsEditable', {
                 is: true,
-                // @ts-ignore
                 then: yup.string().nullable().isMultiSelectValid(formatMessage),
                 otherwise: yup.string().nullable(),
             }),
@@ -58,7 +60,6 @@ export const useValidationSchemaOUCRC = () => {
             .nullable()
             .when('orgUnitsEditable', {
                 is: true,
-                // @ts-ignore
                 then: yup.string().nullable().isMultiSelectValid(formatMessage),
                 otherwise: yup.string().nullable(),
             }),
@@ -67,7 +68,6 @@ export const useValidationSchemaOUCRC = () => {
             .nullable()
             .when('orgUnitsEditable', {
                 is: true,
-                // @ts-ignore
                 then: yup.string().nullable().isMultiSelectValid(formatMessage),
                 otherwise: yup.string().nullable(),
             }),
@@ -76,18 +76,13 @@ export const useValidationSchemaOUCRC = () => {
             .nullable()
             .when('orgUnitsEditable', {
                 is: true,
-                // @ts-ignore
-                then: yup.string().nullable().isMultiSelectValid(formatMessage),
+                then: yup.string().nullable(),
                 otherwise: yup.string().nullable(),
             }),
-        otherGroupIds: yup
-            .string()
-            .nullable()
-            .when('orgUnitsEditable', {
-                is: true,
-                // @ts-ignore
-                then: yup.string().nullable().isMultiSelectValid(formatMessage),
-                otherwise: yup.string().nullable(),
-            }),
+        otherGroupIds: yup.string().nullable().when('orgUnitsEditable', {
+            is: true,
+            then: yup.string().nullable(),
+            otherwise: yup.string().nullable(),
+        }),
     });
 };

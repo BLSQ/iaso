@@ -14,5 +14,9 @@ const deleteOrgUnitChangeRequestConfigs = (
 export const useDeleteOrgUnitChangeRequestConfig = (): UseMutationResult =>
     useSnackMutation({
         mutationFn: deleteOrgUnitChangeRequestConfigs,
-        invalidateQueryKey: 'getOrgUnitChangeRequestConfigs',
+        invalidateQueryKey: [
+            'useRetrieveOrgUnitChangeRequestConfig',
+            'getOrgUnitChangeRequestConfigs',
+            'checkAvailabilityOrgUnitChangeRequestConfigs',
+        ],
     });

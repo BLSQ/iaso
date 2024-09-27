@@ -1,0 +1,23 @@
+<?xml version='1.0'?>
+<data id="trypelim_CATT" version="2024031801" xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms"
+    xmlns:h="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:jr="http://openrosa.org/javarosa">
+    <trypelim_profile>UM</trypelim_profile>
+    <serie_id>ad893d6d-355f-4ffe-a575-cea6bbe5914f</serie_id>
+    <CATT>
+        <absent>no</absent>
+        <position>1</position>
+        <result>positive</result>
+    </CATT>
+    <quality_control_group>
+        <rdt_control_picture>1712326156339.png</rdt_control_picture>
+    </quality_control_group>
+    <is_suspect>1</is_suspect>
+    <is_not_done>0</is_not_done>
+    <first_test_done>1</first_test_done>
+    <is_absent>0</is_absent>
+    <meta>
+        <instanceID>uuid:03b91754-6b59-4cb4-b786-aef7690c8a48</instanceID>
+    </meta>
+</data>

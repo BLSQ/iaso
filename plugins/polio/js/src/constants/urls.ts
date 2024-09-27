@@ -1,10 +1,10 @@
-import { paginationPathParams } from '../../../../../hat/assets/js/apps/Iaso/routing/common';
 import {
     RouteConfig,
     extractParams,
     extractParamsConfig,
     extractUrls,
 } from '../../../../../hat/assets/js/apps/Iaso/constants/urls';
+import { paginationPathParams } from '../../../../../hat/assets/js/apps/Iaso/routing/common';
 import {
     DESTRUCTION,
     FORM_A,
@@ -37,7 +37,7 @@ export const STOCK_MANAGEMENT = `${VACCINE_MODULE}/stockmanagement`;
 export const STOCK_MANAGEMENT_DETAILS = `${STOCK_MANAGEMENT}/details`;
 export const STOCK_VARIATION = `${STOCK_MANAGEMENT}/variation`;
 export const NOTIFICATIONS_BASE_URL = 'polio/notifications';
-export const CHRONOGRAM_BASE_URL = 'polio/chronogram';
+export const CHRONOGRAM_BASE_URL = `${VACCINE_MODULE}/chronogram`;
 export const CHRONOGRAM_TEMPLATE_TASK = `${CHRONOGRAM_BASE_URL}/templateTask`;
 export const CHRONOGRAM_DETAILS = `${CHRONOGRAM_BASE_URL}/details`;
 

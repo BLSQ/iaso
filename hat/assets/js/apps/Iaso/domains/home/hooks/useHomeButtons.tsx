@@ -1,5 +1,10 @@
 import React, { ReactElement, useMemo } from 'react';
-import { ListAlt, Storage, Assignment } from '@mui/icons-material/';
+import {
+    ListAlt,
+    Storage,
+    Assignment,
+    SupervisorAccount,
+} from '@mui/icons-material/';
 import { useSafeIntl } from 'bluesquare-components';
 
 import OrgUnitSvg from '../../../components/svg/OrgUnitSvgComponent';
@@ -44,8 +49,14 @@ export const useHomeButtons = (): Button[] => {
                     url: `/${baseUrls.entities}`,
                 },
                 {
+                    label: formatMessage(MESSAGES.users),
+                    permissions: paths.usersPath.permissions,
+                    Icon: <SupervisorAccount />,
+                    url: `/${baseUrls.users}`,
+                },
+                {
                     label: formatMessage(MESSAGES.storages),
-                    permissions: paths.entityTypesPath.permissions,
+                    permissions: paths.storagesPath.permissions,
                     Icon: <Storage />,
                     url: `/${baseUrls.storages}`,
                 },

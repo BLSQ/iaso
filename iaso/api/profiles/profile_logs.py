@@ -1,20 +1,19 @@
-from hat.audit.models import Modification
-from iaso.api.common import (
-    HasPermission,
-    ModelViewSet,
-    parse_comma_separated_numeric_values,
-)
-from hat.menupermissions import models as permission
-from rest_framework import serializers, filters
+import copy
+
 import django_filters
-from django.contrib.auth.models import User
-from iaso.models.base import Profile
-from django.utils.translation import gettext_lazy as _
-from django.db.models.query import QuerySet
-from django.db.models import Q
 from django.conf import settings
-from iaso.api.common import Paginator
+from django.contrib.auth.models import User
+from django.db.models import Q
+from django.db.models.query import QuerySet
+from django.utils.translation import gettext_lazy as _
+from rest_framework import filters, serializers
+
+from hat.audit.models import Modification
+from hat.menupermissions import models as permission
+from iaso.api.common import HasPermission, ModelViewSet, Paginator, parse_comma_separated_numeric_values
+from iaso.models.base import Profile, UserRole
 from iaso.models.org_unit import OrgUnit
+from iaso.models.project import Project
 
 
 class ProfileLogsListPagination(Paginator):
@@ -137,9 +136,56 @@ class ProfileLogListSerializer(serializers.ModelSerializer):
 
 
 class ProfileLogRetrieveSerializer(serializers.ModelSerializer):
+    past_value = serializers.SerializerMethodField(read_only=True)
+    new_value = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Modification
         fields = ["id", "created_at", "user", "source", "new_value", "past_value", "object_id", "content_type"]
+
+    def _fetch_and_transform_data(self, org_units, projects, user_roles):
+        org_units_names_and_ids = OrgUnit.objects.filter(id__in=org_units).values("id", "name")
+        projects_names_and_ids = Project.objects.filter(id__in=projects).values("id", "name")
+        user_roles_group_names_and_ids = UserRole.objects.filter(id__in=user_roles).values("id", "group__name")
+        user_roles_names_and_ids = [
+            {"id": entry["id"], "name": UserRole.remove_user_role_name_prefix(entry["group__name"])}
+            for entry in user_roles_group_names_and_ids
+        ]
+        return org_units_names_and_ids, projects_names_and_ids, user_roles_names_and_ids
+
+    def get_past_value(self, modification):
+        if not modification.past_value:
+            return []
+        logged_org_units = modification.past_value[0]["fields"]["org_units"]
+        logged_projects = modification.past_value[0]["fields"]["projects"]
+        logged_user_roles = modification.past_value[0]["fields"]["user_roles"]
+
+        org_units, projects, user_roles = self._fetch_and_transform_data(
+            logged_org_units, logged_projects, logged_user_roles
+        )
+
+        past_value_copy = copy.deepcopy(modification.past_value)
+        past_value_copy[0]["fields"]["org_units"] = org_units
+        past_value_copy[0]["fields"]["projects"] = projects
+        past_value_copy[0]["fields"]["user_roles"] = user_roles
+
+        return past_value_copy
+
+    def get_new_value(self, modification):
+        logged_org_units = modification.new_value[0]["fields"]["org_units"]
+        logged_projects = modification.new_value[0]["fields"]["projects"]
+        logged_user_roles = modification.new_value[0]["fields"]["user_roles"]
+
+        org_units, projects, user_roles = self._fetch_and_transform_data(
+            logged_org_units, logged_projects, logged_user_roles
+        )
+
+        new_value_copy = copy.deepcopy(modification.new_value)
+        new_value_copy[0]["fields"]["org_units"] = org_units
+        new_value_copy[0]["fields"]["projects"] = projects
+        new_value_copy[0]["fields"]["user_roles"] = user_roles
+
+        return new_value_copy
 
 
 class ProfileLogsViewset(ModelViewSet):
@@ -181,4 +227,6 @@ class ProfileLogsViewset(ModelViewSet):
     def get_serializer_class(self):
         if hasattr(self, "action") and self.action == "list":
             return ProfileLogListSerializer
+        if hasattr(self, "action") and self.action == "retrieve":
+            return ProfileLogRetrieveSerializer
         return super().get_serializer_class()

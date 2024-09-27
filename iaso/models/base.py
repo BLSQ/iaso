@@ -5,7 +5,6 @@ import random
 import re
 import time
 import typing
-from copy import copy
 from functools import reduce
 from io import StringIO
 from logging import getLogger
@@ -1032,7 +1031,7 @@ class Instance(models.Model):
         ]
 
     def __str__(self):
-        return "%s %s" % (self.form, self.name)
+        return "%s %s %s" % (self.id, self.form, self.name)
 
     @property
     def is_instance_of_reference_form(self) -> bool:
@@ -1341,17 +1340,13 @@ class Instance(models.Model):
             "correlation_id": self.correlation_id,
         }
 
-    def soft_delete(self, user: typing.Optional[User] = None):
-        original = copy(self)
+    def soft_delete(self):
         self.deleted = True
         self.save()
-        log_modification(original, self, INSTANCE_API, user=user)
 
-    def restore(self, user: typing.Optional[User] = None):
-        original = copy(self)
+    def restore(self):
         self.deleted = False
         self.save()
-        log_modification(original, self, INSTANCE_API, user=user)
 
     def can_user_modify(self, user):
         """Check only for lock, assume user have other perms"""
@@ -1671,7 +1666,8 @@ class UserRole(models.Model):
         }
 
     # This method will remove a given prefix from a string
-    def remove_user_role_name_prefix(self, str):
+    @staticmethod
+    def remove_user_role_name_prefix(str):
         prefix = str.split("_")[0] + "_"
         if str.startswith(prefix):
             return str[len(prefix) :]

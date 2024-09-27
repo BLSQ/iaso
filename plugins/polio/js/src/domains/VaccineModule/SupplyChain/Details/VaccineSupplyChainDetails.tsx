@@ -156,13 +156,18 @@ export const VaccineSupplyChainDetails: FunctionComponent = () => {
 
     // list changed tabs to avoid patching unchanged tabs
     useWatchChangedTabs({ initialValues, values, setFieldValue });
+
+    const isNew = !vrfDetails;
+    const isNormal = formik.values.vrf?.vrf_type === 'Normal';
+
     return (
         <FormikProvider value={formik}>
             <TopBar title={title} displayBackButton goBack={goBack}>
                 <SupplyChainTabs
                     tab={tab}
                     onChangeTab={onChangeTab}
-                    disabled={!vrfDetails}
+                    isNew={isNew}
+                    isNormal={isNormal}
                 />
             </TopBar>
             <Box className={classnames(classes.containerFullHeightPadded)}>

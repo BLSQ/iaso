@@ -23,6 +23,7 @@ type Props = {
     value?: string | number | Array<string> | Array<number> | boolean;
     intl: { formatMessage: IntlFormatMessage };
     classes: Record<string, string>;
+    isDifferent: boolean;
 };
 
 type State = {
@@ -49,6 +50,7 @@ class ValueWithErrorBoundary extends React.Component<Props, State> {
             value,
             intl: { formatMessage },
             classes,
+            isDifferent,
         } = this.props;
         if (this.state.hasError) {
             return (
@@ -60,7 +62,13 @@ class ValueWithErrorBoundary extends React.Component<Props, State> {
                 </Box>
             );
         }
-        return <UserLogValue fieldKey={fieldKey} value={value} />;
+        return (
+            <UserLogValue
+                fieldKey={fieldKey}
+                value={value}
+                isDifferent={isDifferent}
+            />
+        );
     }
 }
 

@@ -186,6 +186,10 @@ export const UserLogCompare: FunctionComponent<Props> = ({
                                                 // @ts-ignore
                                                 fieldKey={fieldKey}
                                                 value={value ?? ''}
+                                                isDifferent={Boolean(
+                                                    showAllFields &&
+                                                        diffFields[fieldKey],
+                                                )}
                                             />
                                         </TableCell>
                                     </TableRow>

@@ -16,6 +16,6 @@ def run_deduplication_algo(algo_name=None, algo_params=None, task=None):
 
     finished_at = datetime.now()
     the_duration = (finished_at - started_at).total_seconds()
-    task.report_success_with_result(f"Finished in {the_duration} seconds", results)
+    task.report_success_with_result(f"Finished in {the_duration} seconds")
 
     return results

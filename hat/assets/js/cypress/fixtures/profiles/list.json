@@ -5,6 +5,7 @@
             "first_name": "Bruce",
             "user_name": "oneFistPunch",
             "last_name": "Lee",
+            "phone_number": null,
             "email": "",
             "projects": [{
                 "id": 1,
@@ -58,6 +59,7 @@
             "first_name": "Mario",
             "user_name": "peachLover",
             "last_name": "Bros",
+            "phone_number": null,
             "email": "",
             "account": {
                 "name": "RDC",
@@ -116,6 +118,7 @@
             "first_name": "Luigi",
             "user_name": "SpaghettiEater",
             "last_name": "Bros",
+            "phone_number": null,
             "email": "",
             "account": {
                 "name": "RDC",

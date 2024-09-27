@@ -74,13 +74,9 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
             .first()
         )
 
-        last_round_end_date = (
-            Round.objects.filter(campaign=obj.campaign).order_by("-ended_at").values_list("ended_at", flat=True).first()
-        )
-
         campaigns_after_last_round = Campaign.objects.filter(
             country=vaccine_stock.country,
-            rounds__started_at__gt=last_round_end_date,
+            rounds__started_at__gt=first_round_start_date,
             account=self.context["request"].user.iaso_profile.account,
         ).order_by("rounds__started_at")
 

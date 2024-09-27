@@ -207,7 +207,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'userIds',
             'userRoles',
             'withLocation',
-            'projectIds',
+            'project_id',
             'paymentStatus',
             ...paginationPathParams,
             'paymentIds',
@@ -352,7 +352,13 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     groupSets: {
         url: 'orgunits/groupSets',
-        params: ['accountId', 'search', 'sourceVersion', 'projectsIds', ...paginationPathParams],
+        params: [
+            'accountId',
+            'search',
+            'sourceVersion',
+            'projectsIds',
+            ...paginationPathParams,
+        ],
     },
     groupSetDetail: {
         url: 'orgunits/groupSet',

@@ -32,7 +32,11 @@ type Props = {
     isOpen: boolean;
     closeDialog: () => void;
 };
+// rajouter les champs dans forms editable et rendre possible_type_ids, possible_parent_type_ids, editable_reference_form_ids, other_group_ids to non required
+// Laisser toujours group sets et l'enlever de editable fields
 
+//    NAME, ALIASES, ORG_UNIT_TYPE, OPENING_DATE,
+//     CLOSING_DATE, LOCATION, PARENT_TYPE, REFERENCE_FORMS, OTHER_GROUPS;
 const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     config,
     isOpen,

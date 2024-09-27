@@ -4,15 +4,15 @@ import emptyFixture from '../../../fixtures/orgunits/changes/configuration/empty
 import page2 from '../../../fixtures/orgunits/changes/configuration/orgUnitChangeConfigurations-page2.json';
 import listFixture from '../../../fixtures/orgunits/changes/configuration/orgUnitChangeConfigurations.json';
 import orgUnitTypesFixture from '../../../fixtures/orgunittypes/list.json';
-import projectsFixture from '../../../fixtures/projects/list.json';
 import superUser from '../../../fixtures/profiles/me/superuser.json';
+import projectsFixture from '../../../fixtures/projects/list.json';
 import { testPageFilters } from '../../../support/testPageFilters';
 import { testPagination } from '../../../support/testPagination';
 import { testTablerender } from '../../../support/testTableRender';
 import { testTableSort } from '../../../support/testTableSort';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/configuration/changeRequest`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/changeRequestConfig/configuration`;
 
 let interceptFlag = false;
 const defaultQuery = {

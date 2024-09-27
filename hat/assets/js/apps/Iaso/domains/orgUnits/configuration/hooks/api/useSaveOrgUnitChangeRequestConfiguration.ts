@@ -2,21 +2,16 @@ import { UseMutationResult } from 'react-query';
 import { patchRequest, postRequest } from '../../../../../libs/Api';
 import { useSnackMutation } from '../../../../../libs/apiHooks';
 
-import { apiUrlOUCRC, editableFieldsForBackend } from '../../constants';
+import { apiUrlOUCRC, mappingEditableFieldsForBackend } from '../../constants';
 import { OrgUnitChangeRequestConfigurationForm } from '../../types';
 
 const cleanEditableFieldsForSaving = (editableFields?: string): string[] => {
     if (!editableFields) {
         return [];
     }
-    return editableFields
-        .split(',')
-        .filter(field => editableFieldsForBackend.includes(field))
-        .map(field => {
-            if (field === 'openingDate') return 'opening_date';
-            if (field === 'closedDate') return 'closed_date';
-            return field;
-        });
+    return editableFields.split(',').map(field => {
+        return mappingEditableFieldsForBackend[field];
+    });
 };
 
 type ApiValues = {
@@ -39,19 +34,20 @@ const mapValuesForSaving = (
         org_units_editable: values.orgUnitsEditable ?? false,
     };
     // These two fields can't be updated so they are only set for creation
-    if (configId) {
+    if (!configId) {
         apiValues.project_id = values.projectId;
         apiValues.org_unit_type_id = values.orgUnitTypeId;
     }
 
     // This field must be cleaned because the backend accepts only some values
-
     apiValues.editable_fields = cleanEditableFieldsForSaving(
         values.editableFields,
     );
 
     // All the many to many fields are added if they have a value
-    const splitAndMapToNumbers = (str?: string) => str?.split(',').map(Number);
+    const splitAndMapToNumbers = (str?: string) => {
+        return str?.trim() ? str.split(',').map(Number) : [];
+    };
 
     apiValues.possible_type_ids = splitAndMapToNumbers(values.possibleTypeIds);
     apiValues.possible_parent_type_ids = splitAndMapToNumbers(

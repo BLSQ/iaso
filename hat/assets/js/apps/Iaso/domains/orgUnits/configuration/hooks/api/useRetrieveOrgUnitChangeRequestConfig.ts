@@ -3,10 +3,7 @@ import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 
 import { apiUrlOUCRC } from '../../constants';
-import {
-    OrgUnitChangeRequestConfigurationForm,
-    OrgUnitChangeRequestConfigurationFull,
-} from '../../types';
+import { OrgUnitChangeRequestConfigurationForm, OrgUnitChangeRequestConfigurationFull } from '../../types';
 
 const retrieveOrgUnitChangeRequestConfig = (url: string) => {
     return getRequest(url) as Promise<OrgUnitChangeRequestConfigurationFull>;
@@ -15,32 +12,22 @@ const retrieveOrgUnitChangeRequestConfig = (url: string) => {
 const fieldMapping: { [key: string]: string } = {
     opening_date: 'openingDate',
     closed_date: 'closedDate',
+    possible_types: 'possibleTypeIds',
+    possible_parent_types: 'possibleParentTypeIds',
+    editable_reference_forms: 'editableReferenceFormIds',
+    other_groups: 'otherGroupIds',
 };
-
-const conditionalFields = [
-    { key: 'possible_types', name: 'possibleTypeIds' },
-    { key: 'possible_parent_types', name: 'possibleParentTypeIds' },
-    { key: 'group_sets', name: 'groupSetIds' },
-    { key: 'editable_reference_forms', name: 'editableReferenceFormIds' },
-    { key: 'other_groups', name: 'otherGroupIds' },
-];
 
 export const computeEditableFields = (
     data: OrgUnitChangeRequestConfigurationFull,
 ): string[] => {
-    const editableFields: string[] = (data.editable_fields || []).map(field => {
+    return (data.editable_fields || []).map(field => {
         return fieldMapping[field] || field;
     });
-
-    conditionalFields.forEach(({ key, name }) => {
-        if ((data[key] ?? []).length > 0) {
-            editableFields.push(name);
-        }
-    });
-
-    return editableFields;
 };
+
 const mapAndJoin = (items: any[] = []) => items?.map(item => item.id).join(',');
+
 export const useRetrieveOrgUnitChangeRequestConfig = (
     configId?: number,
 ): UseQueryResult<OrgUnitChangeRequestConfigurationForm, Error> => {

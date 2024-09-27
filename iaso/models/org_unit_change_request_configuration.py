@@ -77,14 +77,16 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         OrgUnitChangeRequestConfigurationQuerySet
     )()
 
-    # Only the non-relationship fields since an ID present in any relationship
-    # means that the field is editable by the user
     LIST_OF_POSSIBLE_EDITABLE_FIELDS = [
         "name",
         "aliases",
         "opening_date",
         "closed_date",
         "location",
+        "possible_types",
+        "possible_parent_types",
+        "editable_reference_forms",
+        "other_groups",
     ]
 
     # Used to easily create/update objects in serializers

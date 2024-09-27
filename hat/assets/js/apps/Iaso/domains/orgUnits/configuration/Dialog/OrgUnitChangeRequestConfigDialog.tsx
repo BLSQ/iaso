@@ -133,6 +133,7 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                     setFieldValue(field, undefined);
                 });
                 setFieldValue('editableFields', undefined);
+                setFieldValue('groupSetIds', undefined);
             }
             onChange(keyValue, boolValue);
         },
@@ -193,6 +194,18 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                     options={orgUnitEditableFieldsOptions}
                 />
             )}
+            {values?.orgUnitsEditable && (
+                <InputComponent
+                    type="select"
+                    multi
+                    keyValue="groupSetIds"
+                    onChange={onChange}
+                    value={values.groupSetIds}
+                    errors={getErrors('groupSetIds')}
+                    label={MESSAGES.groupSetIds}
+                    options={groupSetOptions}
+                />
+            )}
             {values?.editableFields &&
                 values.editableFields.includes('possibleTypeIds') && (
                     <InputComponent
@@ -217,19 +230,6 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                         errors={getErrors('possibleParentTypeIds')}
                         label={MESSAGES.possibleParentTypeIds}
                         options={orgUnitTypeOptions} // Warning: we should probably filter data here (only what is available in parent/child relationship)
-                    />
-                )}
-            {values?.editableFields &&
-                values.editableFields.includes('groupSetIds') && (
-                    <InputComponent
-                        type="select"
-                        multi
-                        keyValue="groupSetIds"
-                        onChange={onChange}
-                        value={values.groupSetIds}
-                        errors={getErrors('groupSetIds')}
-                        label={MESSAGES.groupSetIds}
-                        options={groupSetOptions}
                     />
                 )}
             {values?.editableFields &&

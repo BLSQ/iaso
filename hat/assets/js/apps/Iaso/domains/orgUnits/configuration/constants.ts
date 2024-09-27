@@ -9,22 +9,23 @@ export const editableFields = [
     'location',
     'possibleTypeIds',
     'possibleParentTypeIds',
-    'groupSetIds',
     'editableReferenceFormIds',
     'otherGroupIds',
 ];
-// only these values are allowed by the backend, the others are there to make fields appear
-export const editableFieldsForBackend = [
-    'name',
-    // 'aliases',  commented out because right now the feature is not ready yet
-    'openingDate',
-    'closedDate',
-    'location',
-];
+export const mappingEditableFieldsForBackend = {
+    'name': 'name',
+    // 'aliases': 'aliases',  commented out because right now the feature is not ready yet
+    'openingDate': 'opening_date',
+    'closedDate': 'closed_date',
+    'location': 'location',
+    'possibleTypeIds': 'possible_types',
+    'possibleParentTypeIds': 'possible_parent_types',
+    'editableReferenceFormIds': 'editable_reference_forms',
+    'otherGroupIds': 'other_groups',
+}
 export const editableFieldsManyToManyFields = [
     'possibleTypeIds',
     'possibleParentTypeIds',
-    'groupSetIds',
     'editableReferenceFormIds',
     'otherGroupIds',
 ];

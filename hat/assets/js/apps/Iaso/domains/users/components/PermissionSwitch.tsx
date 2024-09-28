@@ -25,7 +25,18 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
     const handleCheckboxChange = (
         permission: string | Permission,
         checked: boolean,
-    ) => setPermissions(permission, checked);
+        checkBoxKeys: string[] = [],
+        checkBoxs: any = undefined,
+        key: string | null,
+    ) => {
+        const permissionsToCheckOrUncheck = [permission];
+        if (checkBoxKeys.length > 1 && checkBoxKeys[1] === key && checked) {
+            permissionsToCheckOrUncheck.push(checkBoxs[checkBoxKeys[0]]);
+            setPermissions(permissionsToCheckOrUncheck, checked);
+        } else {
+            setPermissions(permission, checked);
+        }
+    };
 
     const isChecked = (permissionCode: string) => {
         return Boolean(
@@ -41,6 +52,8 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
         permissionCode: string,
         permission: string | Permission,
         key: string | null,
+        checkBoxKeys: string[] = [],
+        checkBoxs: any = undefined,
     ) => {
         const checkBoxLabel =
             key !== null
@@ -53,7 +66,13 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
                 keyValue={`permission-checkbox-${permissionCode}`}
                 value={isChecked(permissionCode)}
                 onChange={(_, checked) =>
-                    handleCheckboxChange(permission, checked)
+                    handleCheckboxChange(
+                        permission,
+                        checked,
+                        checkBoxKeys,
+                        checkBoxs,
+                        key,
+                    )
                 }
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...checkBoxLabel}
@@ -65,27 +84,32 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
 
     if (!original.group) {
         if (original.readEdit) {
+            const checkBoxKeys = Object.keys(original.readEdit);
             return (
                 <div style={{ display: 'inline-flex' }}>
-                    {Object.entries(original.readEdit).map(([key]) => {
-                        const val =
-                            type === 'user'
-                                ? original.readEdit[key]
-                                : {
-                                      codename: original.readEdit[key],
-                                      name: original.readEdit[key],
-                                  };
+                    {Object.entries(original.readEdit).map(
+                        ([permissionKey]) => {
+                            const val =
+                                type === 'user'
+                                    ? original.readEdit[permissionKey]
+                                    : {
+                                          codename:
+                                              original.readEdit[permissionKey],
+                                      };
 
-                        return (
-                            <span key={key}>
-                                {renderCheckbox(
-                                    original.readEdit[key],
-                                    val,
-                                    key,
-                                )}
-                            </span>
-                        );
-                    })}
+                            return (
+                                <span key={permissionKey}>
+                                    {renderCheckbox(
+                                        original.readEdit[permissionKey],
+                                        val,
+                                        permissionKey,
+                                        checkBoxKeys,
+                                        original.readEdit,
+                                    )}
+                                </span>
+                            );
+                        },
+                    )}
                 </div>
             );
         }

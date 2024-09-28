@@ -78,11 +78,15 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         options: { enabled: !isSuperUser },
     });
     const setPermissions = useCallback(
-        (codeName: string, isChecked: boolean) => {
+        (codeName: string | string[], isChecked: boolean) => {
             const newUserPerms = [...currentUser.user_permissions.value];
             if (!isChecked) {
                 const permIndex = newUserPerms.indexOf(codeName);
                 newUserPerms.splice(permIndex, 1);
+            } else if (Array.isArray(codeName)) {
+                codeName.forEach(code => {
+                    newUserPerms.push(code);
+                });
             } else {
                 newUserPerms.push(codeName);
             }

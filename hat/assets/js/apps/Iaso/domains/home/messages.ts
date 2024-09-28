@@ -25,4 +25,8 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Users',
         id: 'iaso.label.users',
     },
+    admin: {
+        defaultMessage: 'Admin',
+        id: 'iaso.label.admin',
+    },
 });

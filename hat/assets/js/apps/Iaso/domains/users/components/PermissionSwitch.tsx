@@ -60,6 +60,11 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
                 ? { label: PERMISSIONS_MESSAGES[key] }
                 : { labelString: '' };
 
+        const disabled =
+            checkBoxKeys.length > 1 &&
+            key === checkBoxKeys[0] &&
+            permissions.includes(checkBoxs[checkBoxKeys[1]]);
+
         return (
             <InputComponent
                 type="checkbox"
@@ -78,6 +83,8 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
                 {...checkBoxLabel}
                 dataTestId="permission-checkbox"
                 withMarginTop={false}
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                disabled={disabled}
             />
         );
     };

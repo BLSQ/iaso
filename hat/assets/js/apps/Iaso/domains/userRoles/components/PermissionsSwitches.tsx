@@ -64,6 +64,14 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
                     return item.codename === permission.codename;
                 });
                 newUserRolePerms.splice(permIndex, 1);
+            } else if (Array.isArray(permission)) {
+                permission.forEach(code => {
+                    newUserRolePerms.push({
+                        id: code.id,
+                        codename: code.codename,
+                        name: code.name,
+                    });
+                });
             } else {
                 newUserRolePerms.push({
                     id: permission.id,

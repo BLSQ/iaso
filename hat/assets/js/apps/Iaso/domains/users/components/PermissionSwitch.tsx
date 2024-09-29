@@ -31,7 +31,10 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
     ) => {
         const permissionsToCheckOrUncheck = [permission];
         if (checkBoxKeys.length > 1 && checkBoxKeys[1] === key && checked) {
-            permissionsToCheckOrUncheck.push(checkBoxs[checkBoxKeys[0]]);
+            permissionsToCheckOrUncheck.push({
+                codename: checkBoxs[checkBoxKeys[0]],
+                name: checkBoxs[checkBoxKeys[0]],
+            });
             setPermissions(permissionsToCheckOrUncheck, checked);
         } else {
             setPermissions(permission, checked);
@@ -60,10 +63,14 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
                 ? { label: PERMISSIONS_MESSAGES[key] }
                 : { labelString: '' };
 
+        const permissionsChecked =
+            typeof permissions[0] === 'object'
+                ? permissions.map(item => item.codename)
+                : permissions;
         const disabled =
             checkBoxKeys.length > 1 &&
             key === checkBoxKeys[0] &&
-            permissions.includes(checkBoxs[checkBoxKeys[1]]);
+            permissionsChecked.includes(checkBoxs[checkBoxKeys[1]]);
 
         return (
             <InputComponent
@@ -102,6 +109,9 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
                                     : {
                                           codename:
                                               original.readEdit[permissionKey],
+                                          name: original.readEdit[
+                                              permissionKey
+                                          ],
                                       };
 
                             return (

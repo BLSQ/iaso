@@ -28,13 +28,19 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
         checkBoxKeys: string[] = [],
         checkBoxs: any = undefined,
         key: string | null,
+        type: string,
     ) => {
         const permissionsToCheckOrUncheck = [permission];
         if (checkBoxKeys.length > 1 && checkBoxKeys[1] === key && checked) {
-            permissionsToCheckOrUncheck.push({
-                codename: checkBoxs[checkBoxKeys[0]],
-                name: checkBoxs[checkBoxKeys[0]],
-            });
+            if (type !== 'user') {
+                permissionsToCheckOrUncheck.push({
+                    codename: checkBoxs[checkBoxKeys[0]],
+                    name: checkBoxs[checkBoxKeys[0]],
+                });
+            } else {
+                permissionsToCheckOrUncheck.push(checkBoxs[checkBoxKeys[0]]);
+            }
+
             setPermissions(permissionsToCheckOrUncheck, checked);
         } else {
             setPermissions(permission, checked);
@@ -57,6 +63,7 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
         key: string | null,
         checkBoxKeys: string[] = [],
         checkBoxs: any = undefined,
+        type: string,
     ) => {
         const checkBoxLabel =
             key !== null
@@ -64,7 +71,7 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
                 : { labelString: '' };
 
         const permissionsChecked =
-            typeof permissions[0] === 'object'
+            type !== 'user'
                 ? permissions.map(item => item.codename)
                 : permissions;
         const disabled =
@@ -84,6 +91,7 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
                         checkBoxKeys,
                         checkBoxs,
                         key,
+                        type,
                     )
                 }
                 // eslint-disable-next-line react/jsx-props-no-spreading
@@ -122,6 +130,7 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
                                         permissionKey,
                                         checkBoxKeys,
                                         original.readEdit,
+                                        type,
                                     )}
                                 </span>
                             );

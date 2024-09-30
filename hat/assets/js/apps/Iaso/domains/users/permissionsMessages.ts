@@ -611,6 +611,120 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.user_managed',
         defaultMessage: 'Managed',
     },
+    iaso_submission_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_submission_permissions',
+        defaultMessage: 'Forms and submissions',
+    },
+    iaso_submission_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_submission_permissions',
+        defaultMessage: 'View and edit the forms submissions',
+    },
+    iaso_org_unit_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_org_unit_permissions',
+        defaultMessage: 'Organisation units management',
+    },
+    iaso_org_unit_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_org_unit_permissions',
+        defaultMessage:
+            'Manage organisation units and pyramids, including uploading of geo data (GPS coordinates and shapes), and groups',
+    },
+    iaso_registry_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_registry_permissions',
+        defaultMessage: 'Registry',
+    },
+    iaso_registry_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_registry_permissions',
+        defaultMessage:
+            'View and edit summary view of data collected per organisation unit',
+    },
+    iaso_source_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_source_permissions',
+        defaultMessage: 'Geo data sources',
+    },
+    iaso_source_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_source_permissions',
+        defaultMessage: 'View and edit geo data sources',
+    },
+    iaso_entity_duplicate_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_entity_duplicate_permissions',
+        defaultMessage: 'Entity duplicates',
+    },
+    iaso_entity_duplicate_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_entity_duplicate_permissions',
+        defaultMessage:
+            'View (without the possibility to merge them) and edit entity duplicates',
+    },
+    iaso_planning_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_planning_permissions',
+        defaultMessage: 'Planning',
+    },
+    iaso_planning_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_planning_permissions',
+        defaultMessage: 'View and edit planning',
+    },
+    iaso_page_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_page_permissions',
+        defaultMessage: 'Web embedded links management',
+    },
+    iaso_page_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_page_permissions',
+        defaultMessage:
+            'External links management: View and edit an external link',
+    },
+    iaso_polio_budget_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_polio_budget_permissions',
+        defaultMessage: 'Polio budget',
+    },
+    iaso_polio_budget_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_polio_budget_permissions',
+        defaultMessage:
+            'View budget approval process and take action as defined by your role in the process. Extra admin powers: Override any step in the process if needed.',
+    },
+    iaso_polio_chronogram_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_polio_chronogram_permissions',
+        defaultMessage: 'Polio chronogram',
+    },
+    iaso_polio_chronogram_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_polio_chronogram_permissions',
+        defaultMessage:
+            'Manage polio chronogram - Read and Write - Restricted Write',
+    },
+    iaso_polio_vaccine_supply_chain_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_polio_vaccine_supply_chain_permissions',
+        defaultMessage: 'Polio vaccine supply chain',
+    },
+    iaso_polio_vaccine_supply_chain_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_polio_vaccine_supply_chain_permissions',
+        defaultMessage:
+            'See summary of vaccine supply chain, by country and vaccine. Edit and add supply chain data',
+    },
+    iaso_polio_vaccine_stock_management_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_polio_vaccine_stock_management_permissions',
+        defaultMessage: 'Polio vaccine stock management',
+    },
+    iaso_polio_vaccine_stock_management_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_polio_vaccine_stock_management_permissions',
+        defaultMessage:
+            'See summary of vaccine stock management, by country and vaccine. Edit and add vaccine stock management data',
+    },
+    iaso_polio_vaccine_authorization_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_polio_vaccine_authorization_permissions',
+        defaultMessage: 'Polio Vaccine Authorizations',
+    },
+    iaso_polio_vaccine_authorization_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_polio_vaccine_authorization_permissions',
+        defaultMessage:
+            'Admin and no-admin permission on managing polio vaccine authorizations',
+    },
+    iaso_user_permissions: {
+        id: 'iaso.permissions.readEdit.iaso_user_permissions',
+        defaultMessage: 'User management',
+    },
+    iaso_user_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.iaso_user_permissions',
+        defaultMessage:
+            'Managed (Edition rights limited to the users linked to the children org units of the current user.) and admin permissions on managing users of the account: create or edit users (user name, email, password, permissions/location/language/project/user role)',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

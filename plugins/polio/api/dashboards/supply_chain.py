@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Subquery, OuterRef
 from rest_framework import serializers
 
 from iaso.api.common import ModelViewSet
@@ -74,16 +74,31 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
             .first()
         )
 
-        campaigns_after_last_round = Campaign.objects.filter(
-            country=vaccine_stock.country,
-            rounds__started_at__gt=first_round_start_date,
-            account=self.context["request"].user.iaso_profile.account,
-        ).order_by("rounds__started_at")
+        earliest_round_start_date = (
+            Round.objects.filter(campaign=OuterRef("pk")).order_by("started_at").values("started_at")[:1]
+        )
+
+        distinct_campaign_ids = (
+            Campaign.objects.filter(
+                country=vaccine_stock.country,
+                rounds__started_at__gt=first_round_start_date,
+                rounds__number=1,
+                account=self.context["request"].user.iaso_profile.account,
+            )
+            .order_by("id")
+            .distinct("id")
+            .values_list("id", flat=True)
+        )
+
+        campaigns_after_last_round = (
+            Campaign.objects.filter(id__in=Subquery(distinct_campaign_ids))
+            .annotate(earliest_round_start=Subquery(earliest_round_start_date))
+            .order_by("earliest_round_start")
+        )
 
         next_campaign_start_date = None
 
         for campaign in campaigns_after_last_round:
-            print("Vaccines :" + campaign.vaccines)
             if vaccine_stock.vaccine in campaign.vaccines:
                 # Do something if the vaccine matches
                 next_campaign_start_date = (

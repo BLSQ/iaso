@@ -3,7 +3,10 @@ import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 
 import { apiUrlOUCRC } from '../../constants';
-import { OrgUnitChangeRequestConfigurationForm, OrgUnitChangeRequestConfigurationFull } from '../../types';
+import {
+    OrgUnitChangeRequestConfigurationForm,
+    OrgUnitChangeRequestConfigurationFull,
+} from '../../types';
 
 const retrieveOrgUnitChangeRequestConfig = (url: string) => {
     return getRequest(url) as Promise<OrgUnitChangeRequestConfigurationFull>;
@@ -11,9 +14,9 @@ const retrieveOrgUnitChangeRequestConfig = (url: string) => {
 
 const fieldMapping: { [key: string]: string } = {
     opening_date: 'openingDate',
-    closed_date: 'closedDate',
-    possible_types: 'possibleTypeIds',
-    possible_parent_types: 'possibleParentTypeIds',
+    closing_date: 'closedDate',
+    org_unit_type: 'possibleTypeIds',
+    parent_type: 'possibleParentTypeIds',
     editable_reference_forms: 'editableReferenceFormIds',
     other_groups: 'otherGroupIds',
 };

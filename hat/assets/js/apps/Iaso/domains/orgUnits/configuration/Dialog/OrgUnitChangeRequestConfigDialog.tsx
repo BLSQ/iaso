@@ -33,6 +33,9 @@ type Props = {
     closeDialog: () => void;
 };
 
+//  we should filter forms, groups, groupsets, types using correct project id
+/// marquer les types comme requis
+
 const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     config,
     isOpen,
@@ -89,7 +92,6 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
         useSaveOrgUnitChangeRequestConfiguration();
     const orgUnitsEditableOptions = useOrgUnitsEditableOptions();
     const orgUnitEditableFieldsOptions = useOrgUnitsEditableFieldsOptions();
-
     const { formatMessage } = useSafeIntl();
     const getErrors = useTranslatedErrors({
         errors,

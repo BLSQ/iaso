@@ -13,16 +13,16 @@ export const editableFields = [
     'otherGroupIds',
 ];
 export const mappingEditableFieldsForBackend = {
-    'name': 'name',
+    name: 'name',
     // 'aliases': 'aliases',  commented out because right now the feature is not ready yet
-    'openingDate': 'opening_date',
-    'closedDate': 'closed_date',
-    'location': 'location',
-    'possibleTypeIds': 'possible_types',
-    'possibleParentTypeIds': 'possible_parent_types',
-    'editableReferenceFormIds': 'editable_reference_forms',
-    'otherGroupIds': 'other_groups',
-}
+    openingDate: 'opening_date',
+    closedDate: 'closing_date',
+    location: 'location',
+    possibleTypeIds: 'org_unit_type',
+    possibleParentTypeIds: 'parent_type',
+    editableReferenceFormIds: 'editable_reference_forms',
+    otherGroupIds: 'other_groups',
+};
 export const editableFieldsManyToManyFields = [
     'possibleTypeIds',
     'possibleParentTypeIds',

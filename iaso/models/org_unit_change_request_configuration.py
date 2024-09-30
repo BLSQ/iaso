@@ -1,5 +1,6 @@
 import typing
-from django.contrib.auth.models import User, AnonymousUser
+
+from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -8,10 +9,10 @@ from django.utils.translation import gettext_lazy as _
 
 from iaso.models.entity import UserNotAuthError
 from iaso.utils.models.soft_deletable import (
-    SoftDeletableModel,
     DefaultSoftDeletableManager,
-    OnlyDeletedSoftDeletableManager,
     IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
 )
 
 
@@ -81,10 +82,10 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         "name",
         "aliases",
         "opening_date",
-        "closed_date",
+        "closing_date",
         "location",
-        "possible_types",
-        "possible_parent_types",
+        "org_unit_type",
+        "parent_type",
         "editable_reference_forms",
         "other_groups",
     ]

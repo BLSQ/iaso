@@ -359,7 +359,29 @@ def import_data(org_units, user, app_id):
         if latitude and longitude:
             altitude = org_unit.get("altitude", 0)
             org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-        org_unit_db, created = orgunits_for_default_version_qs(default_version).get_or_create(uuid=uuid)
+
+        org_unit_defaults = {
+            "custom": True,
+            "validated": False,
+            "name": org_unit.get("name", None),
+            "version": project.account.default_version,
+        }
+
+        if not user.is_anonymous:
+            org_unit_defaults["creator"] = user
+
+        created_at = None
+        if org_unit.get("created_at", None):
+            created_at = timestamp_to_utc_datetime(int(org_unit.get("created_at", None)))
+        else:
+            created_at = org_unit.get("created_at", None)
+        if created_at:
+            org_unit_defaults["created_at"] = created_at
+        if org_unit_location:
+            org_unit_defaults["location"] = org_unit_location
+        org_unit_db, created = orgunits_for_default_version_qs(default_version).get_or_create(
+            uuid=uuid, defaults=org_unit_defaults
+        )
 
         if created:
             org_unit_db.custom = True

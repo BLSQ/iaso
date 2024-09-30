@@ -44,7 +44,7 @@ type Row = {
     readEdit?: { read: string; edit: string }[];
 };
 
-export const PermissionsSwitches: React.FunctionComponent<Props> = ({
+export const PermissionsAttribution: React.FunctionComponent<Props> = ({
     userRolePermissions,
     handleChange,
 }) => {

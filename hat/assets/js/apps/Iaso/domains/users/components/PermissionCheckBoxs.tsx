@@ -1,7 +1,6 @@
 import React from 'react';
 import { Permission } from '../../userRoles/types/userRoles';
-import InputComponent from '../../../components/forms/InputComponent';
-import PERMISSIONS_MESSAGES from '../permissionsMessages';
+import PermissionCheckbox from './PermissionCheckbox';
 
 type Props = {
     value: string | Permission;
@@ -13,7 +12,7 @@ type Props = {
     type: string;
 };
 
-const PermissionSwitch: React.FunctionComponent<Props> = ({
+const PermissionCheckBoxs: React.FunctionComponent<Props> = ({
     value,
     codeName,
     settings,
@@ -22,20 +21,25 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
     type,
 }) => {
     const { original } = settings.row;
+
     const handleCheckboxChange = (
         permission: string | Permission,
         checked: boolean,
+        keyPermission: string | null,
         checkBoxKeys: string[] = [],
         checkBoxs: any = undefined,
-        key: string | null,
-        type: string,
     ) => {
         const permissionsToCheckOrUncheck = [permission];
-        if (checkBoxKeys.length > 1 && checkBoxKeys[1] === key && checked) {
+        if (
+            checkBoxKeys.length > 1 &&
+            checkBoxKeys[1] === keyPermission &&
+            checked
+        ) {
             if (type !== 'user') {
                 permissionsToCheckOrUncheck.push({
                     codename: checkBoxs[checkBoxKeys[0]],
                     name: checkBoxs[checkBoxKeys[0]],
+                    id: 0,
                 });
             } else {
                 permissionsToCheckOrUncheck.push(checkBoxs[checkBoxKeys[0]]);
@@ -54,53 +58,6 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
                     ? up === permissionCode
                     : up.codename === permissionCode,
             ),
-        );
-    };
-
-    const renderCheckbox = (
-        permissionCode: string,
-        permission: string | Permission,
-        key: string | null,
-        checkBoxKeys: string[] = [],
-        checkBoxs: any = undefined,
-        type: string,
-    ) => {
-        const checkBoxLabel =
-            key !== null
-                ? { label: PERMISSIONS_MESSAGES[key] }
-                : { labelString: '' };
-
-        const permissionsChecked =
-            type !== 'user'
-                ? permissions.map(item => item.codename)
-                : permissions;
-        const disabled =
-            checkBoxKeys.length > 1 &&
-            key === checkBoxKeys[0] &&
-            permissionsChecked.includes(checkBoxs[checkBoxKeys[1]]);
-
-        return (
-            <InputComponent
-                type="checkbox"
-                keyValue={`permission-checkbox-${permissionCode}`}
-                value={isChecked(permissionCode)}
-                onChange={(_, checked) =>
-                    handleCheckboxChange(
-                        permission,
-                        checked,
-                        checkBoxKeys,
-                        checkBoxs,
-                        key,
-                        type,
-                    )
-                }
-                // eslint-disable-next-line react/jsx-props-no-spreading
-                {...checkBoxLabel}
-                dataTestId="permission-checkbox"
-                withMarginTop={false}
-                // eslint-disable-next-line react/jsx-props-no-spreading
-                disabled={disabled}
-            />
         );
     };
 
@@ -124,14 +81,21 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
 
                             return (
                                 <span key={permissionKey}>
-                                    {renderCheckbox(
-                                        original.readEdit[permissionKey],
-                                        val,
-                                        permissionKey,
-                                        checkBoxKeys,
-                                        original.readEdit,
-                                        type,
-                                    )}
+                                    <PermissionCheckbox
+                                        permissionCode={
+                                            original.readEdit[permissionKey]
+                                        }
+                                        permission={val}
+                                        keyPermission={permissionKey}
+                                        checkBoxKeys={checkBoxKeys}
+                                        checkBoxs={original.readEdit}
+                                        isChecked={isChecked}
+                                        handleCheckboxChange={
+                                            handleCheckboxChange
+                                        }
+                                        type={type}
+                                        allPermissions={permissions}
+                                    />
                                 </span>
                             );
                         },
@@ -142,7 +106,15 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
 
         return (
             <div style={{ display: 'inline-flex' }}>
-                {renderCheckbox(original[codeName], value, null)}
+                <PermissionCheckbox
+                    permissionCode={original[codeName]}
+                    permission={value}
+                    keyPermission={null}
+                    isChecked={isChecked}
+                    handleCheckboxChange={handleCheckboxChange}
+                    type={type}
+                    allPermissions={permissions}
+                />
             </div>
         );
     }
@@ -150,4 +122,4 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
     return null;
 };
 
-export default PermissionSwitch;
+export default PermissionCheckBoxs;

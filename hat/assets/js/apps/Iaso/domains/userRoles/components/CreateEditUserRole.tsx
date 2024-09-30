@@ -19,7 +19,7 @@ import {
     useTranslatedErrors,
 } from '../../../libs/validation';
 import InputComponent from '../../../components/forms/InputComponent';
-import { PermissionsSwitches } from './PermissionsSwitches';
+import { PermissionsAttribution } from './PermissionsAttribution';
 import { Permission } from '../types/userRoles';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import UserRoleDialogInfoComponent from './UserRoleDialogInfoComponent';
@@ -149,7 +149,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                         label={MESSAGES.name}
                         required
                     />
-                    <PermissionsSwitches
+                    <PermissionsAttribution
                         userRolePermissions={userRolePermissions}
                         handleChange={newPermissions => {
                             handlePermissionsChange(newPermissions);

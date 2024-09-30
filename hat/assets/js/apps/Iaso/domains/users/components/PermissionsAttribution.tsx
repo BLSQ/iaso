@@ -62,7 +62,7 @@ type PermissionResult = {
     permissions: Permission[];
 };
 
-const PermissionsSwitches: React.FunctionComponent<Props> = ({
+const PermissionsAttribution: React.FunctionComponent<Props> = ({
     isSuperUser,
     currentUser,
     handleChange,
@@ -180,8 +180,8 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     );
 };
 
-PermissionsSwitches.defaultProps = {
+PermissionsAttribution.defaultProps = {
     isSuperUser: false,
 };
 
-export default PermissionsSwitches;
+export default PermissionsAttribution;

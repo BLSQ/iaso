@@ -7,7 +7,7 @@ import USER_MESSAGES from '../users/messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { UserRole, Permission } from './types/userRoles';
 import PermissionTooltip from '../users/components/PermissionTooltip';
-import PermissionSwitch from '../users/components/PermissionSwitch';
+import PermissionCheckBoxs from '../users/components/PermissionCheckBoxs';
 
 export const useGetUserRolesColumns = (
     // eslint-disable-next-line no-unused-vars
@@ -110,7 +110,7 @@ export const useUserPermissionColumns = (
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <PermissionSwitch
+                        <PermissionCheckBoxs
                             codeName="codename"
                             settings={settings}
                             setPermissions={setPermissions}

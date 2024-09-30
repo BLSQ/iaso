@@ -147,7 +147,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
     def test_vrf_new_fields(self):
         self.client.force_authenticate(self.authorized_user_read)
 
-        with self.assertNumQueries(16):
+        with self.assertNumQueries(15):
             response = self.client.get(self.vrf_url)
 
         jr = self.assertJSONResponse(response, 200)
@@ -237,20 +237,18 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             missing_vials=6,
         )
 
-        # Should appear only in 2nd VRF
         DestructionReport.objects.create(
             vaccine_stock=self.vaccine_stock,
-            rrt_destruction_report_reception_date=date(2024, 1, 8),
-            destruction_report_date=date.today(),
+            rrt_destruction_report_reception_date=date(2023, 3, 3),
+            destruction_report_date=date(2023, 3, 3),
             unusable_vials_destroyed=6,
             action="destroyed",
         )
 
-        # Shoud be ignored as outside date range
         last_dr = DestructionReport.objects.create(
             vaccine_stock=self.vaccine_stock,
             rrt_destruction_report_reception_date=date(2024, 2, 15),
-            destruction_report_date=date.today(),
+            destruction_report_date=date(2024, 2, 15),
             unusable_vials_destroyed=6,
             action="destroyed",
         )

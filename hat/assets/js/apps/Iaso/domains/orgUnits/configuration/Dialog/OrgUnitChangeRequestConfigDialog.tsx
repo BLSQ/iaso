@@ -80,12 +80,15 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
             setValues(fetchedConfig);
         }
     }, [fetchedConfig, setValues]);
-    const { data: orgUnitTypeOptions } = useGetOrgUnitTypesDropdownOptions();
+    const { data: orgUnitTypeOptions } = useGetOrgUnitTypesDropdownOptions(
+        config.project.id,
+    );
     const { data: groupOptions } = useGetGroupDropdown({
         defaultVersion: 'true',
     });
     const { data: formOptions } = useGetFormDropdownOptions(
         config.orgUnitType.id,
+        config.project.id,
     );
     const { data: groupSetOptions } = useGetGroupSetsDropdown();
     const { mutateAsync: saveConfig } =

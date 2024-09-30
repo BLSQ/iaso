@@ -142,7 +142,6 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
         },
         [onChange, setFieldValue],
     );
-
     const allowConfirm = isValid && !isSubmitting && !isEqual(touched, {});
     return (
         <ConfirmCancelModal

@@ -150,7 +150,7 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(response.status_code, 201)
 
         created_account = m.Account.objects.filter(name="initial_project_account test-appid")
-        created_project = m.Project.objects.filter(name="initial_project_account test-appid project")
+        created_project = m.Project.objects.filter(name="Main Project")
         created_data_source = m.DataSource.objects.filter(name="initial_project_account test-appid")
         self.assertEqual(len(created_project), 1)
 

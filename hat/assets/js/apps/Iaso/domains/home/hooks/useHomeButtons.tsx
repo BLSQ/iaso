@@ -68,7 +68,7 @@ export const useHomeButtons = (): Button[] => {
                     url: `/${baseUrls.planning}`,
                 },
                 {
-                    label: formatMessage(MESSAGES.admin),
+                    label: formatMessage(MESSAGES.projects),
                     permissions: paths.projectsPath.permissions,
                     Icon: <PhonelinkSetupIcon />,
                     url: `/${baseUrls.projects}`,

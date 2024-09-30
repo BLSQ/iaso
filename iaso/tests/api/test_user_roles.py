@@ -58,7 +58,7 @@ class UserRoleAPITestCase(APITestCase):
         payload = {
             "name": "New user role name",
             "permissions": ["iaso_mappings"],
-            "editable_org_unit_type_ids": [self.org_unit_type_1.id]
+            "editable_org_unit_type_ids": [self.org_unit_type_1.id],
         }
 
         response = self.client.post("/api/userroles/", data=payload, format="json")
@@ -72,7 +72,7 @@ class UserRoleAPITestCase(APITestCase):
 
         payload = {
             "permissions": ["iaso_mappings"],
-            "editable_org_unit_type_ids": [self.org_unit_type_1.id, self.org_unit_type_2.id]
+            "editable_org_unit_type_ids": [self.org_unit_type_1.id, self.org_unit_type_2.id],
         }
         response = self.client.post("/api/userroles/", data=payload, format="json")
 
@@ -103,7 +103,9 @@ class UserRoleAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         result = m.UserRole.objects.get(id=response.json()["id"])
-        self.assertCountEqual(result.editable_org_unit_types.values_list("id", flat=True), payload["editable_org_unit_type_ids"])
+        self.assertCountEqual(
+            result.editable_org_unit_types.values_list("id", flat=True), payload["editable_org_unit_type_ids"]
+        )
 
     def test_create_user_role_with_unknown_org_unit_type(self):
         self.client.force_authenticate(self.yoda)
@@ -138,7 +140,9 @@ class UserRoleAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         result = m.UserRole.objects.get(id=response.json()["id"])
-        self.assertCountEqual(result.editable_org_unit_types.values_list("id", flat=True), payload["editable_org_unit_type_ids"])
+        self.assertCountEqual(
+            result.editable_org_unit_types.values_list("id", flat=True), payload["editable_org_unit_type_ids"]
+        )
 
     def test_create_user_role_with_restricted_org_unit_type(self):
         # The user doesn't have access to this new org unit type, so it can't be in the userrole
@@ -152,7 +156,11 @@ class UserRoleAPITestCase(APITestCase):
         }
         response = self.client.post("/api/userroles/", data=payload, format="json")
 
-        self.assertContains(response, f"The user doesn't have access to the OrgUnitType {new_org_unit_type.id}", status_code=status.HTTP_400_BAD_REQUEST)
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the OrgUnitType {new_org_unit_type.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
 
     # *** test GET retrieve ***
     def test_retrieve_user_role(self):
@@ -271,7 +279,9 @@ class UserRoleAPITestCase(APITestCase):
         self.assertJSONResponse(response, status.HTTP_200_OK)
 
         user_role = m.UserRole.objects.get(pk=self.user_role.id)
-        self.assertCountEqual(user_role.editable_org_unit_types.values_list("id", flat=True), payload["editable_org_unit_type_ids"])
+        self.assertCountEqual(
+            user_role.editable_org_unit_types.values_list("id", flat=True), payload["editable_org_unit_type_ids"]
+        )
 
     def test_partial_update_remove_org_unit_types(self):
         payload = {
@@ -332,8 +342,11 @@ class UserRoleAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
-        self.assertContains(response, f"The user doesn't have access to the OrgUnitType {new_org_unit_type.id}",
-                            status_code=status.HTTP_400_BAD_REQUEST)
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the OrgUnitType {new_org_unit_type.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
 
     def test_partial_update_with_org_unit_type_by_superuser(self):
         new_project = m.Project.objects.create(name="new project", account=self.star_wars, app_id="test")
@@ -353,7 +366,9 @@ class UserRoleAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = m.UserRole.objects.get(id=response.json()["id"])
-        self.assertCountEqual(result.editable_org_unit_types.values_list("id", flat=True), payload["editable_org_unit_type_ids"])
+        self.assertCountEqual(
+            result.editable_org_unit_types.values_list("id", flat=True), payload["editable_org_unit_type_ids"]
+        )
 
     # *** test DELETE ***
     def test_delete_user_role(self):

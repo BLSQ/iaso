@@ -32,7 +32,11 @@ class UserRoleSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     editable_org_unit_type_ids = serializers.PrimaryKeyRelatedField(
-        source="editable_org_unit_types", queryset=OrgUnitType.objects.all(), many=True, allow_empty=True, required=False
+        source="editable_org_unit_types",
+        queryset=OrgUnitType.objects.all(),
+        many=True,
+        allow_empty=True,
+        required=False,
     )
 
     class Meta:

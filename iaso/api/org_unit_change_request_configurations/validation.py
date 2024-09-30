@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from iaso.models import GroupSet, Form, Group
 
+
 def validate_group_sets(user, group_sets):
     if user.is_superuser:
         return  # There is no need to check if it's a superuser
@@ -11,6 +12,7 @@ def validate_group_sets(user, group_sets):
             if group_set.id not in group_sets_for_user:
                 raise serializers.ValidationError(f"The user doesn't have access to the GroupSet {group_set.id}")
 
+
 def validate_forms(user, forms):
     if user.is_superuser:
         return  # There is no need to check if it's a superuser
@@ -19,6 +21,7 @@ def validate_forms(user, forms):
         for form in forms:
             if form.id not in forms_for_user:
                 raise serializers.ValidationError(f"The user doesn't have access to the Form {form.id}")
+
 
 def validate_groups(user, groups):
     if user.is_superuser:

@@ -1508,6 +1508,18 @@ class Profile(models.Model):
             return True
         return False
 
+    def fetch_all_editable_org_unit_types(self):
+        """
+        Fetches all editable OrgUnitTypes that are linked to this Profile, directly and through any UserRole
+        """
+        types_set = set()
+        for role in self.user_roles.all():
+            for org_unit_type in role.editable_org_unit_types.all():
+                types_set.add(org_unit_type)
+        for org_unit_type in self.editable_org_unit_types.all():
+            types_set.add(org_unit_type)
+        return list(types_set)
+
 
 class ExportRequest(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")

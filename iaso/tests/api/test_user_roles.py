@@ -165,6 +165,7 @@ class UserRoleAPITestCase(APITestCase):
         self.user_role.refresh_from_db()
         user_role_name = remove_prefix_from_str(self.user_role.group.name, str(self.star_wars.id) + "_")
         self.assertEqual(r["name"], user_role_name)
+        self.assertCountEqual(r["editable_org_unit_type_ids"], [self.org_unit_type_1.id, self.org_unit_type_2.id])
 
     def test_retrieve_user_role_read_only(self):
         self.client.force_authenticate(self.user_with_no_permissions)

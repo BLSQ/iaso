@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { Box, Chip } from '@mui/material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { computeEditableFields } from '../hooks/api/useRetrieveOrgUnitChangeRequestConfig';
 import MESSAGES from '../messages';
 import { OrgUnitChangeRequestConfigurationFull } from '../types';
@@ -12,7 +12,10 @@ export const EditableFieldsCell = ({
     row: { original: OrgUnitChangeRequestConfigurationFull };
 }) => {
     const { formatMessage } = useSafeIntl();
-    const editableFields = computeEditableFields(original);
+    const editableFields = useMemo(
+        () => computeEditableFields(original),
+        [original],
+    );
 
     if (editableFields.length === 0) {
         return textPlaceholder;

@@ -170,10 +170,10 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
         >
             {isLoadingFullConfig && <LoadingSpinner />}
             <Typography variant="h6" component="h6">
-                Project: {config.project.name}
+                {formatMessage(MESSAGES.project)}: {config.project.name}
             </Typography>
             <Typography variant="h6" component="h6">
-                Org Unit Type: {config.orgUnitType.name}
+                {formatMessage(MESSAGES.orgUnitType)}: {config.orgUnitType.name}
             </Typography>
             <InputComponent
                 type="radio"
@@ -208,58 +208,54 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                     options={groupSetOptions}
                 />
             )}
-            {values?.editableFields &&
-                values.editableFields.includes('possibleTypeIds') && (
-                    <InputComponent
-                        type="select"
-                        multi
-                        keyValue="possibleTypeIds"
-                        onChange={onChange}
-                        value={values.possibleTypeIds}
-                        errors={getErrors('possibleTypeIds')}
-                        label={MESSAGES.possibleTypeIds}
-                        options={orgUnitTypeOptions}
-                    />
-                )}
-            {values?.editableFields &&
-                values.editableFields.includes('possibleParentTypeIds') && (
-                    <InputComponent
-                        type="select"
-                        multi
-                        keyValue="possibleParentTypeIds"
-                        onChange={onChange}
-                        value={values.possibleParentTypeIds}
-                        errors={getErrors('possibleParentTypeIds')}
-                        label={MESSAGES.possibleParentTypeIds}
-                        options={orgUnitTypeOptions} // Warning: we should probably filter data here (only what is available in parent/child relationship)
-                    />
-                )}
-            {values?.editableFields &&
-                values.editableFields.includes('editableReferenceFormIds') && (
-                    <InputComponent
-                        type="select"
-                        multi
-                        keyValue="editableReferenceFormIds"
-                        onChange={onChange}
-                        value={values.editableReferenceFormIds}
-                        errors={getErrors('editableReferenceFormIds')}
-                        label={MESSAGES.editableReferenceFormIds}
-                        options={formOptions}
-                    />
-                )}
-            {values?.editableFields &&
-                values.editableFields.includes('otherGroupIds') && (
-                    <InputComponent
-                        type="select"
-                        multi
-                        keyValue="otherGroupIds"
-                        onChange={onChange}
-                        value={values.otherGroupIds}
-                        errors={getErrors('otherGroupIds')}
-                        label={MESSAGES.otherGroupIds}
-                        options={groupOptions} // Warning: we should probably filter data here (groups not in groupsets)
-                    />
-                )}
+            {values?.editableFields?.includes('possibleTypeIds') && (
+                <InputComponent
+                    type="select"
+                    multi
+                    keyValue="possibleTypeIds"
+                    onChange={onChange}
+                    value={values.possibleTypeIds}
+                    errors={getErrors('possibleTypeIds')}
+                    label={MESSAGES.possibleTypeIds}
+                    options={orgUnitTypeOptions}
+                />
+            )}
+            {values?.editableFields?.includes('possibleParentTypeIds') && (
+                <InputComponent
+                    type="select"
+                    multi
+                    keyValue="possibleParentTypeIds"
+                    onChange={onChange}
+                    value={values.possibleParentTypeIds}
+                    errors={getErrors('possibleParentTypeIds')}
+                    label={MESSAGES.possibleParentTypeIds}
+                    options={orgUnitTypeOptions}
+                />
+            )}
+            {values?.editableFields?.includes('editableReferenceFormIds') && (
+                <InputComponent
+                    type="select"
+                    multi
+                    keyValue="editableReferenceFormIds"
+                    onChange={onChange}
+                    value={values.editableReferenceFormIds}
+                    errors={getErrors('editableReferenceFormIds')}
+                    label={MESSAGES.editableReferenceFormIds}
+                    options={formOptions}
+                />
+            )}
+            {values?.editableFields?.includes('otherGroupIds') && (
+                <InputComponent
+                    type="select"
+                    multi
+                    keyValue="otherGroupIds"
+                    onChange={onChange}
+                    value={values.otherGroupIds}
+                    errors={getErrors('otherGroupIds')}
+                    label={MESSAGES.otherGroupIds}
+                    options={groupOptions}
+                />
+            )}
         </ConfirmCancelModal>
     );
 };

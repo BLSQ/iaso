@@ -42,11 +42,7 @@ export const useValidationSchemaOUCRC = () => {
             .boolean()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
-        editableFields: yup.string().nullable().when('orgUnitsEditable', {
-            is: true,
-            then: yup.string().nullable(),
-            otherwise: yup.string().nullable(),
-        }),
+        editableFields: yup.string().nullable(),
         possibleTypeIds: yup
             .string()
             .nullable()
@@ -71,18 +67,7 @@ export const useValidationSchemaOUCRC = () => {
                 then: yup.string().nullable().isMultiSelectValid(formatMessage),
                 otherwise: yup.string().nullable(),
             }),
-        editableReferenceFormIds: yup
-            .string()
-            .nullable()
-            .when('orgUnitsEditable', {
-                is: true,
-                then: yup.string().nullable(),
-                otherwise: yup.string().nullable(),
-            }),
-        otherGroupIds: yup.string().nullable().when('orgUnitsEditable', {
-            is: true,
-            then: yup.string().nullable(),
-            otherwise: yup.string().nullable(),
-        }),
+        editableReferenceFormIds: yup.string().nullable(),
+        otherGroupIds: yup.string().nullable(),
     });
 };

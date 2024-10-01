@@ -14,6 +14,11 @@ const cleanEditableFieldsForSaving = (editableFields?: string): string[] => {
     });
 };
 
+// All the many to many fields are added if they have a value
+const splitAndMapToNumbers = (str?: string) => {
+    return str?.trim() ? str.split(',').map(Number) : [];
+};
+
 type ApiValues = {
     org_units_editable: boolean;
     project_id?: number;
@@ -44,11 +49,6 @@ const mapValuesForSaving = (
         values.editableFields,
     );
 
-    // All the many to many fields are added if they have a value
-    const splitAndMapToNumbers = (str?: string) => {
-        return str?.trim() ? str.split(',').map(Number) : [];
-    };
-
     apiValues.possible_type_ids = splitAndMapToNumbers(values.possibleTypeIds);
     apiValues.possible_parent_type_ids = splitAndMapToNumbers(
         values.possibleParentTypeIds,
@@ -61,15 +61,12 @@ const mapValuesForSaving = (
     return apiValues;
 };
 
-const patchOrgUniType = async (
-    configId: number,
-    body: ApiValues,
-): Promise<any> => {
+const patchOUCRC = async (configId: number, body: ApiValues): Promise<any> => {
     const url = `${apiUrlOUCRC}${configId}/`;
     return patchRequest(url, body);
 };
 
-const postOrgUnitType = async (body: ApiValues): Promise<any> => {
+const postOUCRC = async (body: ApiValues): Promise<any> => {
     return postRequest({
         url: `${apiUrlOUCRC}`,
         data: body,
@@ -89,8 +86,8 @@ export const useSaveOrgUnitChangeRequestConfiguration =
             }) => {
                 const formattedData = mapValuesForSaving(configId, data);
                 return configId
-                    ? patchOrgUniType(configId, formattedData)
-                    : postOrgUnitType(formattedData);
+                    ? patchOUCRC(configId, formattedData)
+                    : postOUCRC(formattedData);
             },
             ignoreErrorCodes,
             invalidateQueryKey: [

@@ -106,7 +106,10 @@ class GroupSetsViewSet(ModelViewSet):
 
         else:
             # this check if project need auth
-            project = Project.objects.get_for_user_and_app_id(user, app_id)
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+            except Project.DoesNotExist:
+                raise serializers.ValidationError("No project found for the given app_id")
             versions = SourceVersion.objects.filter(data_source__projects=project)
         group_sets = GroupSet.objects.filter(source_version__in=versions).distinct()
 

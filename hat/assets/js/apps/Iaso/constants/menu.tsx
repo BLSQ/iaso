@@ -211,7 +211,9 @@ const menuItems = (
                     subMenu: [
                         {
                             label: formatMessage(MESSAGES.changeRequestConfig),
-                            permissions: paths.dataSourcesPath.permissions,
+                            permissions:
+                                paths.orgUnitsChangeRequestConfiguration
+                                    .permissions,
                             key: CONFIGURATION,
                             icon: props => <CategoryIcon {...props} />,
                         },

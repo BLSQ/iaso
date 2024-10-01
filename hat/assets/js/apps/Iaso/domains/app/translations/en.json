@@ -971,6 +971,7 @@
     "iaso.permissions.iaso_forms_stats_tooltip": "See statistics of number forms submissions",
     "iaso.permissions.iaso_org_unit_change_request": "Org unit change request - Read and Write",
     "iaso.permissions.iaso_org_unit_change_request_approve": "Org unit change request - Approve",
+    "iaso.permissions.iaso_org_unit_change_request_configurations": "Org unit change request configurations",
     "iaso.permissions.iaso_org_unit_groups": "Organisation unit groups management",
     "iaso.permissions.iaso_org_unit_types": "Organisation unit types management",
     "iaso.permissions.iaso_page_write": "Web embedded links management - Read and Write",

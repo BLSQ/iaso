@@ -149,6 +149,7 @@ PERMISSIONS_PRESENTATION = {
         "iaso_registry_read",
         "iaso_registry_write",
         "iaso_org_unit_change_request_review",
+        "iaso_org_unit_change_request_configurations",
     ],
     "entities": [
         "iaso_entities",

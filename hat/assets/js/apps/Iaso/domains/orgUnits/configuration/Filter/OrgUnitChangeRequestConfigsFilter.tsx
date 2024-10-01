@@ -51,8 +51,16 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.orgUnitType)}
                 />
             </Grid>
-            <Grid item xs={12} md={4} lg={1}>
-                <Box mt={2} display="flex" justifyContent="flex-end">
+            <Grid
+                item
+                xs={12}
+                md={4}
+                lg={6}
+                container
+                justifyContent="flex-end"
+                alignItems="center"
+            >
+                <Box mb={{ xs: 2, sm: 0 }}>
                     <FilterButton
                         disabled={!filtersUpdated}
                         onFilter={handleSearch}

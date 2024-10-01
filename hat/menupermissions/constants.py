@@ -50,7 +50,12 @@ MODULE_PERMISSIONS = {
         "iaso_polio_vaccine_authorizations_read_only",
         "iaso_polio_vaccine_authorizations_admin",
     ],
-    "REGISTRY": ["iaso_registry_write", "iaso_registry_read", "iaso_org_unit_change_request_review"],
+    "REGISTRY": [
+        "iaso_registry_write",
+        "iaso_registry_read",
+        "iaso_org_unit_change_request_review",
+        "iaso_org_unit_change_request_configurations",
+    ],
     "PAYMENTS": ["iaso_payments"],
     "COMPLETENESS_PER_PERIOD": ["iaso_completeness"],
     "TRYPELIM_PROJECT": [

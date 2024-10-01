@@ -33,9 +33,14 @@ type Props = {
     disableOnlyDeleted?: boolean;
     isCalendar?: boolean;
     isEmbedded?: boolean;
+    setCampaignType: React.Dispatch<React.SetStateAction<string>>;
+    campaignType?: string;
 };
 
-const getRedirectUrl = (isCalendar: boolean, isEmbedded: boolean): string => {
+export const getRedirectUrl = (
+    isCalendar: boolean,
+    isEmbedded: boolean,
+): string => {
     if (isCalendar && isEmbedded) {
         return baseUrls.embeddedCalendar;
     }
@@ -51,6 +56,8 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     disableOnlyDeleted = false,
     isCalendar = false,
     isEmbedded = false,
+    setCampaignType,
+    campaignType,
 }) => {
     const redirectUrl = getRedirectUrl(isCalendar, isEmbedded);
     const redirectToReplace = useRedirectToReplace();
@@ -58,9 +65,6 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [orgUnitGroups, setOrgUnitGroups] = useState(params.orgUnitGroups);
-    const [campaignType, setCampaignType] = useState(
-        isEmbedded ? params.campaignType ?? 'polio' : params.campaignType,
-    );
     const [campaignCategory, setCampaignCategory] = useState(
         isEmbedded ? params.campaignCategory ?? 'all' : params.campaignCategory,
     );
@@ -95,6 +99,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const urlParams = {
+                ...params,
                 countries,
                 search: search && search !== '' ? search : undefined,
                 roundStartFrom:
@@ -117,6 +122,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         }
     }, [
         filtersUpdated,
+        params,
         countries,
         search,
         roundStartFrom,
@@ -127,7 +133,6 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         campaignGroups,
         orgUnitGroups,
         filtersFilled,
-        params?.periodType,
         notShowTest,
         redirectToReplace,
         redirectUrl,

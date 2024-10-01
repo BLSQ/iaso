@@ -47,6 +47,14 @@ def create_payment_from_payment_lot(user, payment_lot, *, potential_payment):
     )
 
 
+def end_task_and_delete_payment_lot(payment_lot, task, message):
+    task.status = ERRORED
+    task.ended_at = timezone.now()
+    task.result = {"result": ERRORED, "message": message}
+    task.save()
+    payment_lot.delete()
+
+
 @task_decorator(task_name="create_payment_lot")
 def create_payment_lot(
     comment: str,
@@ -54,7 +62,7 @@ def create_payment_lot(
     potential_payment_ids: List[int],
     task: Task,
 ):
-    """Background Task to bulk update payments related to specific PaymentLot
+    """Background Task to create Payment Lot and convert Potential Payments into Payments
     Used exclusively within the context of the PaymentLot API. Users won't launch it directly from another endpoint.
     """
     start = time()
@@ -72,19 +80,16 @@ def create_payment_lot(
         payment_lot.potential_payments.add(*potential_payments, bulk=False)
         payment_lot.save()
     except:
-        the_task.status = ERRORED
-        the_task.ended_at = timezone.now()
-        the_task.result = {"result": ERRORED, "message": "Error while getting potential payments"}
-        the_task.save()
-        payment_lot.delete()
+        end_task_and_delete_payment_lot(
+            payment_lot=payment_lot, task=the_task, message="Error while getting potential payments"
+        )
 
     total = len(potential_payment_ids)
     if potential_payments.count() != total:
-        the_task.status = ERRORED
-        the_task.ended_at = timezone.now()
-        the_task.result = {"result": ERRORED, "message": "One or several Potential payments not found"}
-        the_task.save()
-        payment_lot.delete()
+        end_task_and_delete_payment_lot(
+            payment_lot=payment_lot, task=the_task, message="One or several Potential payments not found"
+        )
+
     else:
         with transaction.atomic():
             for index, potential_payment in enumerate(potential_payments.iterator()):
@@ -99,11 +104,9 @@ def create_payment_lot(
         # If potential payments haven't been deleted, it means there was a problem with the above transaction and it was reverted.
         # In this case we delete the payment lot and ERROR the task
         if payment_lot.potential_payments.count():
-            the_task.status = ERRORED
-            the_task.ended_at = timezone.now()
-            the_task.result = {"result": ERRORED, "message": "Error while creating one or several payments"}
-            the_task.save()
-            payment_lot.delete()
+            end_task_and_delete_payment_lot(
+                payment_lot=payment_lot, task=the_task, message="Error while creating one or several payments"
+            )
         else:
             audit_logger = PaymentLotAuditLogger()
             # Compute status, although it should be NEW since we just created all the Payments

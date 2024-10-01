@@ -1,5 +1,5 @@
 import MenuIcon from '@mui/icons-material/Menu';
-import { Box, Container, Grid, IconButton, Typography } from '@mui/material';
+import { Box, Container, Grid, IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useContext } from 'react';
 import { Link } from 'react-router-dom';
@@ -29,11 +29,6 @@ const useStyles = makeStyles(theme => ({
         textAlign: 'center',
         '& svg': { filter: 'drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.24))' },
         '& img': { filter: 'drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.24))' },
-    },
-    title: {
-        fontFamily: '"DINAlternate-Bold", "DIN Alternate", sans-serif',
-        fontSize: 50,
-        textAlign: 'center',
     },
     text: {
         fontFamily: '"DINAlternate-Bold", "DIN Alternate", sans-serif',
@@ -162,9 +157,6 @@ export const HomeOnline: FunctionComponent = () => {
                                 <LogoSvg width={150} height={160} />
                             )}
                         </Box>
-                        <Typography className={classes.title}>
-                            {APP_TITLE}
-                        </Typography>
                     </Box>
                 </Box>
 

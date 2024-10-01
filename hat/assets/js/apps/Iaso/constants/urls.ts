@@ -37,8 +37,12 @@ const orgUnitDetailsLogsParams = paginationPathParamsWithPrefix(LOGS_PREFIX);
 const orgUnitDetailsFormsParams = paginationPathParamsWithPrefix(FORMS_PREFIX);
 
 export const CHANGE_REQUEST = 'changeRequest';
+export const CHANGE_REQUEST_CONFIG = 'changeRequestConfig';
+export const CONFIGURATION = 'configuration';
 const ORG_UNITS = 'orgunits';
 const ORG_UNITS_CHANGE_REQUEST = `${ORG_UNITS}/${CHANGE_REQUEST}`;
+const ORG_UNITS_CHANGE_REQUEST_CONFIG = `${ORG_UNITS}/${CHANGE_REQUEST_CONFIG}`;
+const ORG_UNITS_CONFIGURATION_CHANGE_REQUESTS = `${ORG_UNITS_CHANGE_REQUEST_CONFIG}/${CONFIGURATION}`;
 
 // TODO export to blsq-comp
 export type RouteConfig = {
@@ -189,6 +193,15 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: `${ORG_UNITS_CHANGE_REQUEST}/detail`,
         params: ['accountId', 'changeRequestId'],
     },
+    orgUnitsChangeRequestConfiguration: {
+        url: ORG_UNITS_CONFIGURATION_CHANGE_REQUESTS,
+        params: [
+            'accountId',
+            'org_unit_type_id',
+            'project_id',
+            ...paginationPathParams,
+        ],
+    },
     registry: {
         url: 'orgunits/registry',
         params: [
@@ -327,7 +340,13 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     groupSets: {
         url: 'orgunits/groupSets',
-        params: ['accountId', 'search', 'sourceVersion', 'projectsIds', ...paginationPathParams],
+        params: [
+            'accountId',
+            'search',
+            'sourceVersion',
+            'projectsIds',
+            ...paginationPathParams,
+        ],
     },
     groupSetDetail: {
         url: 'orgunits/groupSet',
@@ -548,6 +567,7 @@ type IasoBaseUrls = {
     orgUnitDetails: string;
     orgUnitsChangeRequest: string;
     orgUnitsChangeRequestDetail: string;
+    orgUnitsChangeRequestConfiguration: string;
     registry: string;
     registryDetail: string;
     links: string;

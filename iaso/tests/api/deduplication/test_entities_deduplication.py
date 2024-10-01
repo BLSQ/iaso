@@ -45,6 +45,8 @@ def create_instance_and_entity(cls, entity_name, instance_json, form_version, or
         attributes=tmp_inst,
         account=cls.default_account,
     )
+    tmp_inst.entity = same_entity_2
+    tmp_inst.save()
 
     setattr(cls, entity_name, same_entity_2)
 
@@ -654,3 +656,62 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         response = self.client.get(f"/api/entityduplicates/")
 
         self.assertEqual(response.data["results"], [])
+
+    # WC2-532 Merge entities with instance containing emoji
+    def test_merge_entity_duplicate_with_emoji(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom"],
+                "algorithm": "levenshtein",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        duplicate = m.EntityDuplicate.objects.first()
+
+        self.assertEqual(duplicate.validation_status, ValidationStatus.PENDING)
+
+        entity1 = duplicate.entity1
+        entity2 = duplicate.entity2
+
+        # Now add a form instance with an emoji to entity1
+        with open("iaso/tests/fixtures/submission_with_emoji.xml", "rb") as xml_file:
+            instance = m.Instance.objects.create(
+                entity=entity1,
+                form=self.default_form,
+                org_unit=self.default_orgunit,
+                file=UploadedFile(xml_file),
+            )
+        json_instance = instance.get_and_save_json_of_xml()
+        # make sure the emoji is there
+        self.assertEqual(json_instance["prevous_muac_color"], "🟡Yellow")
+
+        merged_data = {i: entity1.id for i in duplicate.analyze.metadata["fields"]}
+
+        response = self.client.post(
+            f"/api/entityduplicates/",
+            data={"merge": merged_data, "entity1_id": entity1.id, "entity2_id": entity2.id},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        # Verify DB updates were correctly done
+        entity1.refresh_from_db()
+        entity2.refresh_from_db()
+        self.assertIsNotNone(entity1.deleted_at)
+        self.assertIsNotNone(entity2.deleted_at)
+        self.assertEqual(entity1.merged_to_id, response_data["new_entity_id"])
+        self.assertEqual(entity2.merged_to_id, response_data["new_entity_id"])
+
+        merged = entity1.merged_to
+        self.assertEqual(merged.instances.count(), 2)  # reference form + emoji form
+        self.assertEqual(merged.instances.last().json["prevous_muac_color"], "🟡Yellow")

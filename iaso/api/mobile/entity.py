@@ -200,7 +200,7 @@ class MobileEntityViewSet(ModelViewSet):
 class DeletedMobileEntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Entity
-        fields = ["id", "uuid", "deleted_at", "merged_to_uuid"]
+        fields = ["id", "uuid", "deleted_at", "merged_to_uuid", "entity_type_id"]
 
     deleted_at = TimestampField()
     merged_to_uuid = serializers.SerializerMethodField()
@@ -247,6 +247,7 @@ class MobileEntityDeletedViewSet(ModelViewSet):
                 "uuid",
                 "deleted_at",
                 "merged_to_id",
+                "entity_type_id",
             )
             .order_by("id")
         )

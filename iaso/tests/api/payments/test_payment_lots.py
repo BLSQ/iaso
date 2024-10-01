@@ -83,7 +83,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
         self.assertJSONResponse(response, 201)
         data = response.json()
-        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payments_from_payment_lot")
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
         self.assertEqual(task.launcher, self.user)
 
         # Run the task
@@ -110,8 +110,8 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         self.assertIsNone(self.third_change_request.potential_payment)
         self.assertFalse(m.PotentialPayment.objects.filter(id=self.potential_payment.pk).exists())
 
-        # Changes have been logged: 1 for Payment lot at creation, 1 for payment, 1 for change request, 1 for Payment lot after all payments have been created
-        self.assertEqual(4, am.Modification.objects.count())
+        # Changes have been logged: 1 for payment, 1 for change request, 1 for Payment lot after all payments have been created
+        self.assertEqual(3, am.Modification.objects.count())
 
     def test_update_payment_lot_mark_payments_as_sent(self):
         self.client.force_authenticate(self.user)

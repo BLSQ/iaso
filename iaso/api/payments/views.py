@@ -22,7 +22,8 @@ from iaso.api.payments.filters import potential_payments as potential_payments_f
 from iaso.api.tasks import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.models.payments import PaymentStatuses
-from iaso.tasks.create_payments_from_payment_lot import create_payments_from_payment_lot
+from iaso.tasks.create_payment_lot import create_payment_lot
+from rest_framework.exceptions import ValidationError
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
 
 from .serializers import (
@@ -209,42 +210,22 @@ class PaymentLotsViewSet(ModelViewSet):
         responses={status.HTTP_201_CREATED: PaymentLotSerializer()},
     )
     def create(self, request):
-        with transaction.atomic():
-            # Extract user, name, comment, and potential_payments IDs from request data
-            user = self.request.user
-            name = request.data.get("name")
-            comment = request.data.get("comment")
-            potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
+        # with transaction.atomic():
+        # Extract user, name, comment, and potential_payments IDs from request data
+        user = self.request.user
+        name = request.data.get("name")
+        comment = request.data.get("comment")
+        potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
+        # TODO move this in valdate method
+        if not potential_payment_ids:
+            raise ValidationError("At least one potential payment required")
 
-            audit_logger = PaymentLotAuditLogger()
-
-            # Link the potential Payments to the payment lot to enable front-end to filter them out while the task is creating the Payments
-
-            # Create the PaymentLot instance but don't save it yet
-            payment_lot = PaymentLot(name=name, comment=comment, created_by=request.user, updated_by=request.user)
-
-            # Save the PaymentLot instance to ensure it has a primary key
-            payment_lot.save()
-            potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
-            payment_lot.potential_payments.add(*potential_payments)
-            payment_lot.save()
-            audit_logger.log_modification(old_data_dump=None, instance=payment_lot, request_user=user)
-
-            # Launch a atask in the worker to update payments, delete potehtial payments, update change requests, update payment_lot status
-            # and log everything
-            task = create_payments_from_payment_lot(
-                payment_lot_id=payment_lot.pk,
-                potential_payment_ids=potential_payment_ids,
-                user=user,
-            )
-            payment_lot.task = task
-            # not logging the task assignment to avoid cluttering the audit logs
-            payment_lot.save()
-
-            # Return the created PaymentLot instance
-            # It will be incomplete as the task has to run for all the data to be correct
-            serializer = self.get_serializer(payment_lot)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        task = create_payment_lot(user=user, name=name, potential_payment_ids=potential_payment_ids, comment=comment)
+        # Return the created Task
+        return Response(
+            {"task": TaskSerializer(instance=task).data},
+            status=status.HTTP_201_CREATED,
+        )
 
     def retrieve(self, request, *args, **kwargs):
         csv_format = bool(request.query_params.get("csv"))
@@ -455,8 +436,8 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         queryset = (
             PotentialPayment.objects.prefetch_related("change_requests")
             .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
-            # Filter out potential payments already linked to a payment lot as this means there's already a task running converting them into Payment
-            .filter(payment_lot__isnull=True)
+            # Filter out potential payments already linked to a task as this means there's a task running converting them into Payment
+            .filter(task__isnull=True)
             .distinct()
         )
         queryset = queryset.annotate(change_requests_count=Count("change_requests"))
@@ -476,8 +457,8 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
                 created_by_id=user["created_by"],
                 status=OrgUnitChangeRequest.Statuses.APPROVED,
                 payment__isnull=True,
-                # Filter out potential payments already linked to a payment lot as this means there's already a task running converting them into Payment
-                potential_payment__payment_lot__isnull=True,
+                # Filter out potential payments with task as they are being converted to payments
+                potential_payment__task__isnull=True,
             )
             if change_requests.exists():
                 potential_payment, created = PotentialPayment.objects.get_or_create(

@@ -1,14 +1,14 @@
-import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { useFilterState } from '../../../../hooks/useFilterState';
+import React, { FunctionComponent } from 'react';
+import { FilterButton } from '../../../../components/FilterButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { OrgUnitChangeRequestConfigsParams } from '../types';
+import { useFilterState } from '../../../../hooks/useFilterState';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import MESSAGES from '../messages';
-import { FilterButton } from '../../../../components/FilterButton';
+import { OrgUnitChangeRequestConfigsParams } from '../types';
 
 const baseUrl = baseUrls.orgUnitsChangeRequestConfiguration;
 type Props = { params: OrgUnitChangeRequestConfigsParams };
@@ -30,7 +30,7 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                 <InputComponent
                     keyValue="project_id"
                     onChange={handleChange}
-                    value={filters.projectId}
+                    value={filters.project_id}
                     type="select"
                     options={allProjects}
                     label={MESSAGES.project}
@@ -51,8 +51,16 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.orgUnitType)}
                 />
             </Grid>
-            <Grid item xs={12} md={4} lg={1}>
-                <Box mt={2} display="flex" justifyContent="flex-end">
+            <Grid
+                item
+                xs={12}
+                md={4}
+                lg={6}
+                container
+                justifyContent="flex-end"
+                alignItems="center"
+            >
+                <Box mb={{ xs: 2, sm: 0 }}>
                     <FilterButton
                         disabled={!filtersUpdated}
                         onFilter={handleSearch}

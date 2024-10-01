@@ -1,5 +1,6 @@
 import typing
-from django.contrib.auth.models import User, AnonymousUser
+
+from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -8,10 +9,10 @@ from django.utils.translation import gettext_lazy as _
 
 from iaso.models.entity import UserNotAuthError
 from iaso.utils.models.soft_deletable import (
-    SoftDeletableModel,
     DefaultSoftDeletableManager,
-    OnlyDeletedSoftDeletableManager,
     IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
 )
 
 
@@ -77,14 +78,16 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         OrgUnitChangeRequestConfigurationQuerySet
     )()
 
-    # Only the non-relationship fields since an ID present in any relationship
-    # means that the field is editable by the user
     LIST_OF_POSSIBLE_EDITABLE_FIELDS = [
         "name",
         "aliases",
         "opening_date",
-        "closed_date",
+        "closing_date",
         "location",
+        "org_unit_type",
+        "parent_type",
+        "editable_reference_forms",
+        "other_groups",
     ]
 
     # Used to easily create/update objects in serializers

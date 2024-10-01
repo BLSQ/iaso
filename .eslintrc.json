@@ -147,6 +147,7 @@
   ],
 
     "rules": {
+      "prefer-arrow-callback": "error",
       "react/function-component-definition": "off",
       "no-tabs": "off",
       "no-console":["error",{"allow":["warn","error"]}],

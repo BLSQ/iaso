@@ -55,7 +55,7 @@ import { DropdownOptions } from '../types/utils';
 import { PluginsContext } from '../utils';
 import { useCurrentUser } from '../utils/usersUtils';
 import MESSAGES from './messages';
-import { CHANGE_REQUEST, CONFIGURATION } from './urls';
+import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG, CONFIGURATION } from './urls';
 
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
@@ -206,7 +206,7 @@ const menuItems = (
                 },
                 {
                     label: formatMessage(MESSAGES.configuration),
-                    key: CHANGE_REQUEST,
+                    key: CHANGE_REQUEST_CONFIG,
                     icon: props => <Settings {...props} />,
                     subMenu: [
                         {

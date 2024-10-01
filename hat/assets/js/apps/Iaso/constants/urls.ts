@@ -37,10 +37,12 @@ const orgUnitDetailsLogsParams = paginationPathParamsWithPrefix(LOGS_PREFIX);
 const orgUnitDetailsFormsParams = paginationPathParamsWithPrefix(FORMS_PREFIX);
 
 export const CHANGE_REQUEST = 'changeRequest';
+export const CHANGE_REQUEST_CONFIG = 'changeRequestConfig';
 export const CONFIGURATION = 'configuration';
 const ORG_UNITS = 'orgunits';
 const ORG_UNITS_CHANGE_REQUEST = `${ORG_UNITS}/${CHANGE_REQUEST}`;
-const ORG_UNITS_CONFIGURATION_CHANGE_REQUESTS = `${ORG_UNITS_CHANGE_REQUEST}/${CONFIGURATION}`;
+const ORG_UNITS_CHANGE_REQUEST_CONFIG = `${ORG_UNITS}/${CHANGE_REQUEST_CONFIG}`;
+const ORG_UNITS_CONFIGURATION_CHANGE_REQUESTS = `${ORG_UNITS_CHANGE_REQUEST_CONFIG}/${CONFIGURATION}`;
 
 // TODO export to blsq-comp
 export type RouteConfig = {
@@ -195,21 +197,9 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: ORG_UNITS_CONFIGURATION_CHANGE_REQUESTS,
         params: [
             'accountId',
-            'parent_id',
-            'groups',
             'org_unit_type_id',
-            'status',
-            'created_at_after',
-            'created_at_before',
-            'forms',
-            'userIds',
-            'userRoles',
-            'withLocation',
-            'projectIds',
-            'paymentStatus',
+            'project_id',
             ...paginationPathParams,
-            'paymentIds',
-            'potentialPaymentIds',
         ],
     },
     registry: {
@@ -350,7 +340,13 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     groupSets: {
         url: 'orgunits/groupSets',
-        params: ['accountId', 'search', 'sourceVersion', 'projectsIds', ...paginationPathParams],
+        params: [
+            'accountId',
+            'search',
+            'sourceVersion',
+            'projectsIds',
+            ...paginationPathParams,
+        ],
     },
     groupSetDetail: {
         url: 'orgunits/groupSet',

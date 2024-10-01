@@ -61,6 +61,95 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.updated_by',
         defaultMessage: 'Updated by',
     },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
+    next: {
+        id: 'iaso.label.next',
+        defaultMessage: 'Next',
+    },
+    oucrcCreateModalTitle: {
+        id: 'iaso.oucrc.oucrcCreateModalTitle',
+        defaultMessage: 'OrgUnit Change Request Configuration - Creation',
+    },
+    oucrcCreateSecondStepModalTitle: {
+        id: 'iaso.oucrc.oucrcCreateModalTitle2',
+        defaultMessage:
+            'OrgUnit Change Request Configuration - Creation 2nd step',
+    },
+    oucrcCreateUpdateModalTitle: {
+        id: 'iaso.oucrc.oucrcCreateUpdateModalTitle',
+        defaultMessage: 'OrgUnit Change Request Configuration - Update',
+    },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
+    orgUnitsEditable: {
+        id: 'iaso.oucrc.orgUnitsEditable',
+        defaultMessage: 'Should OrgUnits of this type be editable?',
+    },
+    orgUnitsEditableYes: {
+        id: 'iaso.forms.yes',
+        defaultMessage: 'Yes',
+    },
+    orgUnitsEditableNo: {
+        id: 'iaso.forms.no',
+        defaultMessage: 'No',
+    },
+    name: {
+        id: 'iaso.label.name',
+        defaultMessage: 'Name',
+    },
+    aliases: {
+        id: 'iaso.forms.aliases',
+        defaultMessage: 'Aliases',
+    },
+    openingDate: {
+        id: 'iaso.changeRequest.openingDate',
+        defaultMessage: 'Opening Date',
+    },
+    closedDate: {
+        id: 'iaso.oucrc.closedDate',
+        defaultMessage: 'Closing Date',
+    },
+    location: {
+        id: 'iaso.label.location',
+        defaultMessage: 'Location',
+    },
+    editableFields: {
+        id: 'iaso.label.editableFields',
+        defaultMessage: 'Editable Fields',
+    },
+    possibleTypeIds: {
+        id: 'iaso.oucrc.possibleTypeIds',
+        defaultMessage: 'Possible New Types',
+    },
+    possibleParentTypeIds: {
+        id: 'iaso.oucrc.possibleParentTypeIds',
+        defaultMessage: 'Possible New Parent Types',
+    },
+    groupSetIds: {
+        id: 'iaso.oucrc.groupSetIds',
+        defaultMessage: 'Group Sets',
+    },
+    editableReferenceFormIds: {
+        id: 'iaso.oucrc.editableReferenceFormIds',
+        defaultMessage: 'Editable Reference Forms',
+    },
+    otherGroupIds: {
+        id: 'iaso.oucrc.otherGroupIds',
+        defaultMessage: 'Other Groups',
+    },
+    oucrcModalCreateButton: {
+        id: 'iaso.label.create',
+        defaultMessage: 'Create',
+    },
+    oucrcModalUpdateButton: {
+        id: 'iaso.mappings.label.update',
+        defaultMessage: 'Update',
+    },
 });
 
 export default MESSAGES;

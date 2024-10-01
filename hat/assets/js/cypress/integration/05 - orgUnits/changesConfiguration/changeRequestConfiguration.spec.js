@@ -4,15 +4,15 @@ import emptyFixture from '../../../fixtures/orgunits/changes/configuration/empty
 import page2 from '../../../fixtures/orgunits/changes/configuration/orgUnitChangeConfigurations-page2.json';
 import listFixture from '../../../fixtures/orgunits/changes/configuration/orgUnitChangeConfigurations.json';
 import orgUnitTypesFixture from '../../../fixtures/orgunittypes/list.json';
-import projectsFixture from '../../../fixtures/projects/list.json';
 import superUser from '../../../fixtures/profiles/me/superuser.json';
+import projectsFixture from '../../../fixtures/projects/list.json';
 import { testPageFilters } from '../../../support/testPageFilters';
 import { testPagination } from '../../../support/testPagination';
 import { testTablerender } from '../../../support/testTableRender';
 import { testTableSort } from '../../../support/testTableSort';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/configuration/changeRequest`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/changeRequestConfig/configuration`;
 
 let interceptFlag = false;
 const defaultQuery = {
@@ -85,7 +85,12 @@ const testRowContent = (index, config = listFixture.results[index]) => {
         r.colAt(2).should('contain', config.org_unit_type.name);
         r.colAt(3).should('contain', formatDate(config.created_at));
         r.colAt(4).should('contain', formatDate(config.updated_at));
-        r.colAt(5).should('contain', config.editable_fields.join(', '));
+        r.colAt(5)
+            .find('.MuiChip-label')
+            .should(labels => {
+                const labelTexts = [...labels].map(label => label.textContent);
+                expect(labelTexts).to.include.members(['1', '2', '3']);
+            });
     });
 };
 
@@ -196,10 +201,6 @@ describe('OrgUnit Change Configuration', () => {
                     {
                         colIndex: 4,
                         order: 'updated_at',
-                    },
-                    {
-                        colIndex: 5,
-                        order: 'editable_fields',
                     },
                 ];
                 sorts.forEach(s => {

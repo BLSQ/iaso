@@ -6,15 +6,15 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
-import { OrgUnitChangeRequestConfig } from '../types';
 import { DeleteIconButton } from '../../../../components/Buttons/DeleteIconButton';
 import { useDeleteOrgUnitChangeRequestConfig } from '../hooks/api/useDeleteOrgUnitChangeRequestConfig';
+import MESSAGES from '../messages';
+import { OrgUnitChangeRequestConfigurationFull } from '../types';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    config: OrgUnitChangeRequestConfig;
+    config: OrgUnitChangeRequestConfigurationFull;
 };
 
 const ConfirmDeleteModal: FunctionComponent<Props> = ({

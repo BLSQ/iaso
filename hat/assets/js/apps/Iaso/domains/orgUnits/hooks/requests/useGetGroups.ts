@@ -5,8 +5,8 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { getRequest } from 'Iaso/libs/Api';
 import { DropdownOptions } from '../../../../types/utils';
 
-import MESSAGES from '../../messages';
 import { staleTime } from '../../config';
+import MESSAGES from '../../messages';
 
 type Props = {
     dataSourceId?: number;
@@ -24,7 +24,6 @@ const makeGroupsQueryParams = ({
     if (blockOfCountries) return `?blockOfCountries=${blockOfCountries}`;
     return '';
 };
-
 
 export const useGetGroups = ({
     dataSourceId,
@@ -74,6 +73,7 @@ type Params = {
     sourceVersionId?: number;
     blockOfCountries?: string;
     appId?: string;
+    defaultVersion?: string;
 };
 export const useGetGroupDropdown = (
     params: Params,
@@ -83,7 +83,7 @@ export const useGetGroupDropdown = (
         if (params[keyInJS]) {
             queryParams[keyInApi] = params[keyInJS];
         }
-    });    
+    });
     const urlSearchParams = new URLSearchParams(queryParams);
     const queryString = urlSearchParams.toString();
     return useSnackQuery({

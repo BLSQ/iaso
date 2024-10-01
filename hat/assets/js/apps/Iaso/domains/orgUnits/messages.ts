@@ -382,6 +382,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchGroupsError',
         defaultMessage: 'An error occurred while fetching groups list',
     },
+    fetchGroupSetsError: {
+        id: 'iaso.snackBar.fetchGroupSetsError',
+        defaultMessage: 'An error occurred while fetching group sets list',
+    },
     fetchProfilesError: {
         id: 'iaso.snackBar.fetchProfilesError',
         defaultMessage: 'An error occurred while fetching profiles list',

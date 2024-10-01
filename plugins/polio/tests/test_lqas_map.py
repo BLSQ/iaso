@@ -19,6 +19,7 @@ from plugins.polio.api.common import (
     reduce_to_country_status,
 )
 from plugins.polio.models import Campaign, CampaignScope, Round, RoundScope
+from plugins.polio.models.base import CampaignType
 
 
 class PolioLqasAfroMapTestCase(APITestCase):
@@ -136,6 +137,8 @@ class PolioLqasAfroMapTestCase(APITestCase):
             version=cls.source_version,
             simplified_geom=cls.country_3_geo_json,
         )
+        cls.polio_type,created = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
+        cls.measles_type,created = CampaignType.objects.get_or_create(name=CampaignType.MEASLES)
 
         # Campaign 1. Scope at campaign level
         cls.campaign_1 = Campaign.objects.create(
@@ -144,6 +147,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             separate_scopes_per_round=False,
             initial_org_unit=cls.country_org_unit_1,
         )
+        
         cls.campaign1_scope_group = Group.objects.create(
             name="campaign1scope", domain="POLIO", source_version=cls.source_version
         )
@@ -169,6 +173,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             ended_at=cls.campaign1_round2_end.strftime("%Y-%m-%d"),
             campaign=cls.campaign_1,
         )
+        cls.campaign_1.campaign_types.add(cls.polio_type)
 
         # Campaign 2. Scope at round level
         cls.campaign_2 = Campaign.objects.create(
@@ -210,6 +215,8 @@ class PolioLqasAfroMapTestCase(APITestCase):
         cls.campaign2_round2_scope = RoundScope.objects.create(
             round=cls.campaign2_round2, vaccine="nOPV2", group=cls.campaign2_round2_scope_org_units
         )
+        cls.campaign_2.campaign_types.add(cls.polio_type)
+
         # Creating a campign with round ending at date.max to check if it is exluded from results
         cls.excluded_campaign = Campaign.objects.create(
             obr_name="EXCLUDEDCAMPAIGN",

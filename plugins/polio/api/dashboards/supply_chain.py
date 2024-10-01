@@ -111,7 +111,7 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
         if first_round_start_date is not None and next_campaign_start_date is not None:
             sel_qs = DestructionReport.objects.filter(
                 vaccine_stock=vaccine_stock,
-                rrt_destruction_report_reception_date__gt=first_round_start_date,
+                rrt_destruction_report_reception_date__gte=first_round_start_date,
                 rrt_destruction_report_reception_date__lt=next_campaign_start_date,
             )
         elif first_round_start_date is not None:

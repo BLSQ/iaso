@@ -82,9 +82,9 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
             Campaign.objects.filter(
                 country=vaccine_stock.country,
                 rounds__started_at__gt=first_round_start_date,
-                rounds__number=1,
                 account=self.context["request"].user.iaso_profile.account,
             )
+            .exclude(id=obj.campaign.id)  # We dont want to considerate the current campaign
             .order_by("id")
             .distinct("id")
             .values_list("id", flat=True)

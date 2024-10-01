@@ -140,7 +140,7 @@ class UserRoleAPITestCase(APITestCase):
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(
-            [r["permissions"][0]["codename"], r["permissions"][1]["codename"]],
+            [r["permissions"][0], r["permissions"][1]],
             [self.permission1.codename, self.permission2.codename],
         )
 

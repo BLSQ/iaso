@@ -5,10 +5,10 @@ import { useSafeIntl, LoadingSpinner, Table } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
-import { Permission } from '../types/userRoles';
 import PERMISSIONS_MESSAGES from '../../users/permissionsMessages';
 import { useUserPermissionColumns } from '../config';
 import PERMISSIONS_GROUPS_MESSAGES from '../../users/permissionsGroupsMessages';
+import { Permission } from '../types/userRoles';
 
 const styles = theme => ({
     container: {
@@ -31,7 +31,7 @@ const styles = theme => ({
 const useStyles = makeStyles(styles);
 
 type Props = {
-    userRolePermissions: Permission[];
+    userRolePermissions: (string | Permission)[];
     // eslint-disable-next-line no-unused-vars
     handleChange: (newValue: any) => void;
 };
@@ -50,37 +50,30 @@ export const PermissionsAttribution: React.FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data, isLoading } = useSnackQuery<{ permissions: Permission[] }>(
+    const { data, isLoading } = useSnackQuery<{ permissions: string[] }>(
         ['grouped_permissions'],
         () => getRequest('/api/permissions/grouped_permissions/'),
         MESSAGES.fetchPermissionsError,
     );
 
     const setPermissions = useCallback(
-        (permission: Permission, isChecked: boolean) => {
+        (permission: string, isChecked: boolean) => {
             const newUserRolePerms = [...userRolePermissions];
             if (!isChecked) {
                 const permIndex = newUserRolePerms.findIndex(item => {
-                    return item.codename === permission.codename;
+                    return item === permission;
                 });
                 newUserRolePerms.splice(permIndex, 1);
             } else if (Array.isArray(permission)) {
                 permission.forEach(code => {
-                    newUserRolePerms.push({
-                        id: code.id,
-                        codename: code.codename,
-                        name: code.name,
-                    });
+                    newUserRolePerms.push(code);
                 });
             } else {
-                newUserRolePerms.push({
-                    id: permission.id,
-                    codename: permission.codename,
-                    name: permission.name,
-                });
+                newUserRolePerms.push(permission);
             }
             handleChange(newUserRolePerms);
         },
+
         [handleChange, userRolePermissions],
     );
 

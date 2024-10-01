@@ -13,7 +13,6 @@ import { useSnackQuery } from '../../../libs/apiHooks';
 import * as Permissions from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
-import { Permission } from '../../userRoles/types/userRoles';
 import { useUserPermissionColumns } from '../config';
 import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
 import MESSAGES from '../messages';
@@ -59,7 +58,7 @@ type Props = {
 };
 
 type PermissionResult = {
-    permissions: Permission[];
+    permissions: string[];
 };
 
 const PermissionsAttribution: React.FunctionComponent<Props> = ({
@@ -127,6 +126,7 @@ const PermissionsAttribution: React.FunctionComponent<Props> = ({
             const newUserRoles = value
                 ? value.split(',').map(userRoleId => parseInt(userRoleId, 10))
                 : [];
+
             setFieldValue('user_roles', newUserRoles);
         },
         [setFieldValue],

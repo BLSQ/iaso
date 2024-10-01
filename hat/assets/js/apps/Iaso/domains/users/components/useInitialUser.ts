@@ -131,9 +131,7 @@ export const useInitialUser = (
                     .map(userRole => {
                         const role = {
                             ...(userRole.original as UserRole),
-                            permissions: userRole.original?.permissions.map(
-                                perm => perm.codename,
-                            ),
+                            permissions: userRole.original?.permissions,
                         };
                         return role;
                     });

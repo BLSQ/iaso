@@ -18,8 +18,7 @@ type PermissionCheckboxProps = {
         checkBoxKeys?: string[],
         checkBoxs?: any,
     ) => void;
-    type: string;
-    allPermissions: Permission[];
+    allPermissions: (string | Permission)[];
 };
 
 const PermissionCheckbox: React.FunctionComponent<PermissionCheckboxProps> = ({
@@ -30,7 +29,6 @@ const PermissionCheckbox: React.FunctionComponent<PermissionCheckboxProps> = ({
     checkBoxs = undefined,
     isChecked,
     handleCheckboxChange,
-    type,
     allPermissions,
 }) => {
     const checkBoxLabel =
@@ -38,10 +36,7 @@ const PermissionCheckbox: React.FunctionComponent<PermissionCheckboxProps> = ({
             ? { label: PERMISSIONS_MESSAGES[keyPermission] }
             : { labelString: '' };
 
-    const permissionsChecked =
-        type !== 'user'
-            ? allPermissions.map(item => item.codename)
-            : allPermissions;
+    const permissionsChecked = allPermissions;
 
     const disabled =
         checkBoxKeys.length > 1 &&

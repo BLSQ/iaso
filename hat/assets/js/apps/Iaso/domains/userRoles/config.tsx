@@ -5,7 +5,7 @@ import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import MESSAGES from './messages';
 import USER_MESSAGES from '../users/messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { UserRole, Permission } from './types/userRoles';
+import { Permission, UserRole } from './types/userRoles';
 import PermissionTooltip from '../users/components/PermissionTooltip';
 import PermissionCheckBoxs from '../users/components/PermissionCheckBoxs';
 
@@ -67,8 +67,8 @@ export const useGetUserRolesColumns = (
 
 export const useUserPermissionColumns = (
     // eslint-disable-next-line no-unused-vars
-    setPermissions: (permission: Permission, isChecked: boolean) => void,
-    userRolePermissions: Permission[],
+    setPermissions: (permission: string, isChecked: boolean) => void,
+    userRolePermissions: (string | Permission)[],
 ): Array<Column> => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
@@ -114,7 +114,7 @@ export const useUserPermissionColumns = (
                             codeName="codename"
                             settings={settings}
                             setPermissions={setPermissions}
-                            value={settings.row.original}
+                            value={settings.row.original.codename}
                             permissions={userRolePermissions}
                             type="userrole"
                         />

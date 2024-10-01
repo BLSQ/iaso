@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React from 'react';
 import { Permission } from '../../userRoles/types/userRoles';
 import PermissionCheckbox from './PermissionCheckbox';
@@ -6,9 +7,12 @@ type Props = {
     value: string | Permission;
     codeName: string;
     settings: any;
-    // eslint-disable-next-line no-unused-vars
-    setPermissions: (permission: string | Permission, checked: boolean) => void;
-    permissions: Permission[];
+
+    setPermissions: (
+        permission: (string | Permission) | (string | Permission)[],
+        checked: boolean,
+    ) => void;
+    permissions: (string | Permission)[];
     type: string;
 };
 
@@ -35,16 +39,7 @@ const PermissionCheckBoxs: React.FunctionComponent<Props> = ({
             checkBoxKeys[1] === keyPermission &&
             checked
         ) {
-            if (type !== 'user') {
-                permissionsToCheckOrUncheck.push({
-                    codename: checkBoxs[checkBoxKeys[0]],
-                    name: checkBoxs[checkBoxKeys[0]],
-                    id: 0,
-                });
-            } else {
-                permissionsToCheckOrUncheck.push(checkBoxs[checkBoxKeys[0]]);
-            }
-
+            permissionsToCheckOrUncheck.push(checkBoxs[checkBoxKeys[0]]);
             setPermissions(permissionsToCheckOrUncheck, checked);
         } else {
             setPermissions(permission, checked);
@@ -52,13 +47,7 @@ const PermissionCheckBoxs: React.FunctionComponent<Props> = ({
     };
 
     const isChecked = (permissionCode: string) => {
-        return Boolean(
-            permissions.find(up =>
-                typeof up === 'string'
-                    ? up === permissionCode
-                    : up.codename === permissionCode,
-            ),
-        );
+        return Boolean(permissions.find(up => up === permissionCode));
     };
 
     if (!original.group) {
@@ -68,24 +57,14 @@ const PermissionCheckBoxs: React.FunctionComponent<Props> = ({
                 <div style={{ display: 'inline-flex' }}>
                     {Object.entries(original.readEdit).map(
                         ([permissionKey]) => {
-                            const val =
-                                type === 'user'
-                                    ? original.readEdit[permissionKey]
-                                    : {
-                                          codename:
-                                              original.readEdit[permissionKey],
-                                          name: original.readEdit[
-                                              permissionKey
-                                          ],
-                                      };
+                            const permissionCode =
+                                original.readEdit[permissionKey];
 
                             return (
                                 <span key={permissionKey}>
                                     <PermissionCheckbox
-                                        permissionCode={
-                                            original.readEdit[permissionKey]
-                                        }
-                                        permission={val}
+                                        permissionCode={permissionCode}
+                                        permission={permissionCode}
                                         keyPermission={permissionKey}
                                         checkBoxKeys={checkBoxKeys}
                                         checkBoxs={original.readEdit}
@@ -93,7 +72,6 @@ const PermissionCheckBoxs: React.FunctionComponent<Props> = ({
                                         handleCheckboxChange={
                                             handleCheckboxChange
                                         }
-                                        type={type}
                                         allPermissions={permissions}
                                     />
                                 </span>
@@ -112,7 +90,6 @@ const PermissionCheckBoxs: React.FunctionComponent<Props> = ({
                     keyPermission={null}
                     isChecked={isChecked}
                     handleCheckboxChange={handleCheckboxChange}
-                    type={type}
                     allPermissions={permissions}
                 />
             </div>

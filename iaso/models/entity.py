@@ -13,6 +13,7 @@ has a foreign key to a reference form, and each entity has a foreign key (attrib
 form.
 """
 
+from copy import copy
 import typing
 import uuid
 import json
@@ -21,9 +22,12 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
+
+from hat.audit.models import log_modification
 
 from iaso.models import Account, Form, Instance, OrgUnit, Project
+
 from iaso.utils.jsonlogic import jsonlogic_to_q
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
@@ -216,3 +220,20 @@ class Entity(SoftDeletableModel):
             "instances": instances,
             "account": self.account.as_dict(),
         }
+
+    def soft_delete_with_instances_and_pending_duplicates(self, audit_source, user):
+        from iaso.models import EntityDuplicate
+        from iaso.models.deduplication import ValidationStatus
+
+        original = copy(self)
+        self.delete()  # soft delete
+        log_modification(original, self, audit_source, user=user)
+
+        for instance in set([self.attributes] + list(self.instances.all())):
+            original = copy(instance)
+            instance.soft_delete()
+            log_modification(original, instance, audit_source, user=user)
+
+        EntityDuplicate.objects.filter(
+            (Q(entity1=self) | Q(entity2=self)) & Q(validation_status=ValidationStatus.PENDING)
+        ).delete()

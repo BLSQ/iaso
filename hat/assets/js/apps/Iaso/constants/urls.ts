@@ -325,6 +325,14 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'orgunits/groups',
         params: ['accountId', 'search', ...paginationPathParams],
     },
+    groupSets: {
+        url: 'orgunits/groupSets',
+        params: ['accountId', 'search', 'sourceVersion', 'projectsIds', ...paginationPathParams],
+    },
+    groupSetDetail: {
+        url: 'orgunits/groupSet',
+        params: ['accountId', 'groupSetId'],
+    },
     orgUnitTypes: {
         url: 'orgunits/types',
         params: ['accountId', 'search', 'projectIds', ...paginationPathParams],
@@ -556,6 +564,8 @@ type IasoBaseUrls = {
     tasks: string;
     devices: string;
     groups: string;
+    groupSets: string;
+    groupSetDetail: string;
     orgUnitTypes: string;
     entities: string;
     entityDetails: string;

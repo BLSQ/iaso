@@ -228,7 +228,6 @@ class Entity(SoftDeletableModel):
         - soft delete its attached form instances
         - delete relevant pending EntityDuplicate pairs
         """
-        from iaso.models import EntityDuplicate
         from iaso.models.deduplication import ValidationStatus
 
         original = copy(self)
@@ -240,8 +239,7 @@ class Entity(SoftDeletableModel):
             instance.soft_delete()
             log_modification(original, instance, audit_source, user=user)
 
-        EntityDuplicate.objects.filter(
-            (Q(entity1=self) | Q(entity2=self)) & Q(validation_status=ValidationStatus.PENDING)
-        ).delete()
+        self.duplicates1.filter(validation_status=ValidationStatus.PENDING).delete()
+        self.duplicates2.filter(validation_status=ValidationStatus.PENDING).delete()
 
         return self

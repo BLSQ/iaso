@@ -137,8 +137,8 @@ class PolioLqasAfroMapTestCase(APITestCase):
             version=cls.source_version,
             simplified_geom=cls.country_3_geo_json,
         )
-        cls.polio_type,created = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
-        cls.measles_type,created = CampaignType.objects.get_or_create(name=CampaignType.MEASLES)
+        cls.polio_type, created = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
+        cls.measles_type, created = CampaignType.objects.get_or_create(name=CampaignType.MEASLES)
 
         # Campaign 1. Scope at campaign level
         cls.campaign_1 = Campaign.objects.create(
@@ -147,7 +147,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             separate_scopes_per_round=False,
             initial_org_unit=cls.country_org_unit_1,
         )
-        
+
         cls.campaign1_scope_group = Group.objects.create(
             name="campaign1scope", domain="POLIO", source_version=cls.source_version
         )

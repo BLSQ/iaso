@@ -13,16 +13,14 @@ type Props = {
         checked: boolean,
     ) => void;
     permissions: (string | Permission)[];
-    type: string;
 };
 
-const PermissionCheckBoxs: React.FunctionComponent<Props> = ({
+const PermissionCheckBoxes: React.FunctionComponent<Props> = ({
     value,
     codeName,
     settings,
     setPermissions,
     permissions,
-    type,
 }) => {
     const { original } = settings.row;
 
@@ -99,4 +97,4 @@ const PermissionCheckBoxs: React.FunctionComponent<Props> = ({
     return null;
 };
 
-export default PermissionCheckBoxs;
+export default PermissionCheckBoxes;

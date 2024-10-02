@@ -13,7 +13,7 @@ import MESSAGES from './messages.ts';
 import { userHasOneOfPermissions } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';
-import PermissionCheckBoxs from './components/PermissionCheckBoxs.tsx';
+import PermissionCheckBoxes from './components/PermissionCheckBoxes.tsx';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
 import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
 import PERMISSIONS_MESSAGES from './permissionsMessages.ts';
@@ -162,7 +162,7 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 align: 'center',
                 Cell: settings => {
                     return (
-                        <PermissionCheckBoxs
+                        <PermissionCheckBoxes
                             codeName="permissionCodeName"
                             settings={settings}
                             setPermissions={setPermissions}

@@ -20,6 +20,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
             "reference_form",
             "entities_count",
             "account",
+            "code",
             "fields_detail_info_view",
             "fields_list_view",
             "fields_duplicate_search",
@@ -88,6 +89,11 @@ class EntityTypeViewSet(ModelViewSet):
 
         if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
             return Response(status=status.HTTP_403_FORBIDDEN)
+        name = request.data.get("name", None)
+        account = request.data.get("account", None)
+        if name is not None and account is not None:
+            name_to_code = name.replace(" ", "_")
+            request.data["code"] = f"{name_to_code.lower()}_{account}"
         entity_type_serializer = EntityTypeSerializer(data=request.data, context={"request": request})
         entity_type_serializer.is_valid(raise_exception=True)
         entity_type = entity_type_serializer.save()

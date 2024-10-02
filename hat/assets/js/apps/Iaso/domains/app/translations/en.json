@@ -1010,7 +1010,7 @@
     "iaso.permissions.polio_vaccine_authorizations_read_only": "Polio Vaccine Authorizations: Read Only",
     "iaso.permissions.projects": "Projects",
     "iaso.permissions.readEdit.admin": "Admin",
-    "iaso.permissions.readEdit.edit": "Read",
+    "iaso.permissions.readEdit.edit": "Edit",
     "iaso.permissions.readEdit.entity_duplicate_permissions": "Entity duplicates",
     "iaso.permissions.readEdit.no_admin": "No-Admin",
     "iaso.permissions.readEdit.org_unit_permissions": "Organisation units management",

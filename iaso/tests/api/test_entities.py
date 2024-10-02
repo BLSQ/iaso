@@ -10,6 +10,7 @@ from django.core.files import File
 
 from iaso import models as m
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
+from iaso.models.deduplication import ValidationStatus
 from iaso.test import APITestCase
 
 
@@ -951,3 +952,50 @@ class EntityAPITestCase(APITestCase):
         json_result = response.json()["result"]
         self.assertEqual(len(json_result), 1)
         self.assertEqual(json_result[0]["org_unit"]["name"], village_1.name)
+
+    def test_delete_entity(self):
+        """
+        DELETE /api/entities/pk/
+
+        This should do a soft-delete of the entity, along with instances and
+        potential EntityDuplicate pairs
+        """
+        self.client.force_authenticate(self.yoda)
+        self.form_2 = m.Form.objects.create(name="Form 2", form_id="form_2")
+
+        # Create Entity with ref instance
+        ent_ref_instance = Instance.objects.create(org_unit=self.jedi_council_corruscant, form=self.form_1)
+        ent = Entity.objects.create(
+            entity_type=self.entity_type,
+            attributes=ent_ref_instance,
+            account=self.star_wars,
+        )
+        ent_ref_instance.entity = ent
+        ent_ref_instance.save()
+
+        # Add two more instances to the entity
+        inst1 = Instance.objects.create(org_unit=self.jedi_council_corruscant, form=self.form_2, entity=ent)
+        inst2 = Instance.objects.create(org_unit=self.jedi_council_corruscant, form=self.form_2, entity=ent)
+
+        # Create duplicate pairs for the entity: a PENDING and a VALIDATED one
+        m.EntityDuplicate.objects.create(
+            entity1=ent,
+            entity2=Entity.objects.create(entity_type=self.entity_type, account=self.star_wars),
+            validation_status=ValidationStatus.PENDING,
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=ent,
+            entity2=Entity.objects.create(entity_type=self.entity_type, account=self.star_wars),
+            validation_status=ValidationStatus.VALIDATED,
+        )
+        self.assertEqual(m.EntityDuplicate.objects.count(), 2)
+
+        response = self.client.delete(f"/api/entities/{ent.id}/")
+        self.assertEqual(response.status_code, 200)
+
+        ent.refresh_from_db()
+        self.assertIsNotNone(ent.deleted_at)
+        for inst in [ent_ref_instance, inst1, inst2]:
+            inst.refresh_from_db()
+            self.assertTrue(inst.deleted)
+        self.assertEqual(m.EntityDuplicate.objects.count(), 1)  # only pending removed

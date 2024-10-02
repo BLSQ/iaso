@@ -77,7 +77,7 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
         if request:
             user = request.user
             if "group_ids" in self.fields:
-                self.fields["group_ids"].child_relation.queryset = Group.objects.filter_for_user(user)
+                self.fields["group_ids"].child_relation.queryset = Group.objects.filter_for_user(user).distinct()
 
     def validate(self, attrs: typing.MutableMapping):
         data = self.context["request"].data

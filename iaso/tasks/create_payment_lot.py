@@ -47,12 +47,17 @@ def create_payment_from_payment_lot(user, payment_lot, *, potential_payment):
     )
 
 
-def end_task_and_delete_payment_lot(payment_lot, task, message):
+def end_task_and_delete_payment_lot(payment_lot, potential_payments, task, message):
     task.status = ERRORED
     task.ended_at = timezone.now()
     task.result = {"result": ERRORED, "message": message}
     task.save()
+    potential_payments.update(task=None)
+    # update doesn't call save(), so we need to loop through the queryset and save each instance
+    for potential_payment in potential_payments:
+        potential_payment.save()
     payment_lot.delete()
+    raise Exception("Error while creating Payment Lot")
 
 
 @task_decorator(task_name="create_payment_lot")
@@ -78,25 +83,32 @@ def create_payment_lot(
     try:
         # We want to filter out potential payments assigned to another task.
         # Since the task is assigned in the view after it's created, we filter out potential payments with no task or with the current task assigned (for safety)
-        potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids).filter(
-            Q(task__isnull=True) | Q(task__id=the_task.id)
-        )
-        payment_lot.potential_payments.add(*potential_payments, bulk=False)
+        potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
+        for p in potential_payments:
+            print(p.task.id)
+        potential_payments_for_lot = potential_payments.filter(task=the_task)
+        # potential_payments_for_lot = potential_payments.filter((Q(task__isnull=True) | Q(task=the_task)))
+        payment_lot.potential_payments.add(*potential_payments_for_lot, bulk=False)
         payment_lot.save()
     except:
         end_task_and_delete_payment_lot(
-            payment_lot=payment_lot, task=the_task, message="Error while getting potential payments"
+            payment_lot=payment_lot,
+            potential_payments=potential_payments,
+            task=the_task,
+            message="Error while getting potential payments",
         )
-
     total = len(potential_payment_ids)
-    if potential_payments.count() != total:
+    if potential_payments_for_lot.count() != total:
         end_task_and_delete_payment_lot(
-            payment_lot=payment_lot, task=the_task, message="One or several Potential payments not found"
+            payment_lot=payment_lot,
+            potential_payments=potential_payments,
+            task=the_task,
+            message="One or several Potential payments not found",
         )
 
     else:
         with transaction.atomic():
-            for index, potential_payment in enumerate(potential_payments.iterator()):
+            for index, potential_payment in enumerate(potential_payments_for_lot.iterator()):
                 potential_payment.payment_lot = payment_lot
                 potential_payment.save()
                 res_string = "%.2f sec, processed %i payments" % (time() - start, index)
@@ -108,12 +120,17 @@ def create_payment_lot(
         # In this case we delete the payment lot and ERROR the task
         if payment_lot.potential_payments.count():
             end_task_and_delete_payment_lot(
-                payment_lot=payment_lot, task=the_task, message="Error while creating one or several payments"
+                payment_lot=payment_lot,
+                potential_payments=potential_payments,
+                task=the_task,
+                message="Error while creating one or several payments",
             )
         else:
             audit_logger = PaymentLotAuditLogger()
             # Compute status, although it should be NEW since we just created all the Payments
             payment_lot.compute_status()
+            # Set task to null, so we can filter out active tasks in the payment lot API
+            payment_lot.task = None
             payment_lot.save()
             audit_logger.log_modification(instance=payment_lot, old_data_dump=None, request_user=user)
             the_task.report_success(message="%d modified" % total)

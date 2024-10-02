@@ -97,7 +97,8 @@ class PaymentLotsViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
 
     def get_queryset(self):
-        queryset = PaymentLot.objects.all()
+        # Filter out PaymentLot with task because they're still being created by the worker
+        queryset = PaymentLot.objects.filter(task__isnull=True)
 
         change_requests_prefetch = Prefetch(
             "payments__change_requests",
@@ -215,15 +216,18 @@ class PaymentLotsViewSet(ModelViewSet):
         user = self.request.user
         name = request.data.get("name")
         comment = request.data.get("comment")
-        potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
+        potential_payment_ids = request.data.getlist("potential_payments", [])  # Expecting a list of IDs
+        potential_payment_ids = [int(pp_id) for pp_id in potential_payment_ids]
         # TODO move this in valdate method
         if not potential_payment_ids:
             raise ValidationError("At least one potential payment required")
-
+        potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
         task = create_payment_lot(user=user, name=name, potential_payment_ids=potential_payment_ids, comment=comment)
         # Assign task to potential payments to avoid racing condition when calling potential payments API
-        potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
-        task.potential_payments.add(*potential_payments, bulk=False)
+        for potential_payment in potential_payments:
+            if potential_payment.task is None:
+                potential_payment.task = task
+                potential_payment.save()
 
         # Return the created Task
         return Response(

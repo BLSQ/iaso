@@ -1,3 +1,4 @@
+from django.db.models import Subquery, OuterRef
 from rest_framework import serializers
 
 from iaso.api.common import ModelViewSet
@@ -11,6 +12,7 @@ from plugins.polio.models import (
     VaccineRequestForm,
     VaccineStock,
 )
+from plugins.polio.models.base import Campaign, Round
 
 
 class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
@@ -34,8 +36,10 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
         )
 
         representation["stock_in_hand"] = self.get_stock_in_hand(instance, vaccine_stock)
-        representation["form_a_reception_date"] = self.get_form_a_reception_date(vaccine_stock)
-        representation["destruction_report_reception_date"] = self.get_destruction_report_reception_date(vaccine_stock)
+        representation["form_a_reception_date"] = self.get_form_a_reception_date(instance, vaccine_stock)
+        representation["destruction_report_reception_date"] = self.get_destruction_report_reception_date(
+            instance, vaccine_stock
+        )
 
         return representation
 
@@ -54,18 +58,71 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
 
         return self.context["stock_in_hand_cache"][cache_key]
 
-    def get_form_a_reception_date(self, vaccine_stock):
+    def get_form_a_reception_date(self, obj, vaccine_stock):
         latest_outgoing_stock_movement = (
-            OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock).order_by("-form_a_reception_date").first()
+            OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock, campaign=obj.campaign)
+            .order_by("-form_a_reception_date")
+            .first()
         )
         return latest_outgoing_stock_movement.form_a_reception_date if latest_outgoing_stock_movement else None
 
-    def get_destruction_report_reception_date(self, vaccine_stock):
-        latest_destruction_report = (
-            DestructionReport.objects.filter(vaccine_stock=vaccine_stock)
-            .order_by("-rrt_destruction_report_reception_date")
+    def get_destruction_report_reception_date(self, obj, vaccine_stock):
+        first_round_start_date = (
+            Round.objects.filter(campaign=obj.campaign)
+            .order_by("started_at")
+            .values_list("started_at", flat=True)
             .first()
         )
+
+        earliest_round_start_date = (
+            Round.objects.filter(campaign=OuterRef("pk")).order_by("started_at").values("started_at")[:1]
+        )
+
+        distinct_campaign_ids = (
+            Campaign.objects.filter(
+                country=vaccine_stock.country,
+                rounds__started_at__gt=first_round_start_date,
+                account=self.context["request"].user.iaso_profile.account,
+            )
+            .exclude(id=obj.campaign.id)  # We dont want to considerate the current campaign
+            .order_by("id")
+            .distinct("id")
+            .values_list("id", flat=True)
+        )
+
+        campaigns_after_last_round = (
+            Campaign.objects.filter(id__in=Subquery(distinct_campaign_ids))
+            .annotate(earliest_round_start=Subquery(earliest_round_start_date))
+            .order_by("earliest_round_start")
+        )
+
+        next_campaign_start_date = None
+
+        for campaign in campaigns_after_last_round:
+            if vaccine_stock.vaccine in campaign.vaccines:
+                # Do something if the vaccine matches
+                next_campaign_start_date = (
+                    Round.objects.filter(campaign=campaign)
+                    .order_by("started_at")
+                    .values_list("started_at", flat=True)
+                    .first()
+                )
+
+        if first_round_start_date is not None and next_campaign_start_date is not None:
+            sel_qs = DestructionReport.objects.filter(
+                vaccine_stock=vaccine_stock,
+                rrt_destruction_report_reception_date__gte=first_round_start_date,
+                rrt_destruction_report_reception_date__lt=next_campaign_start_date,
+            )
+        elif first_round_start_date is not None:
+            sel_qs = DestructionReport.objects.filter(
+                vaccine_stock=vaccine_stock, rrt_destruction_report_reception_date__gt=first_round_start_date
+            )
+        else:
+            sel_qs = DestructionReport.objects.filter(vaccine_stock=vaccine_stock)
+
+        latest_destruction_report = sel_qs.order_by("-rrt_destruction_report_reception_date").first()
+
         return latest_destruction_report.rrt_destruction_report_reception_date if latest_destruction_report else None
 
 

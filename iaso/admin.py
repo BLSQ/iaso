@@ -10,11 +10,10 @@ from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import Q
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
-from hat.audit.models import DJANGO_ADMIN, log_modification
+from hat.audit.models import DJANGO_ADMIN
 
 from iaso.utils.admin.custom_filters import (
     DuplicateUUIDFilter,
@@ -56,6 +55,7 @@ from .models import (
     MatchingAlgorithm,
     OrgUnit,
     OrgUnitChangeRequest,
+    OrgUnitChangeRequestConfiguration,
     OrgUnitReferenceInstance,
     OrgUnitType,
     Page,
@@ -78,7 +78,6 @@ from .models import (
     WorkflowVersion,
 )
 from .models.data_store import JsonDataStore
-from .models.deduplication import ValidationStatus
 from .models.microplanning import Assignment, Planning, Team
 from .utils.gis import convert_2d_point_to_3d
 
@@ -269,7 +268,13 @@ class InstanceFileAdminInline(admin.TabularInline):
 @admin.register(Instance)
 @admin_attr_decorator
 class InstanceAdmin(admin.GeoModelAdmin):
-    raw_id_fields = ("org_unit", "entity")
+    raw_id_fields = (
+        "org_unit",
+        "entity",
+        "form_version",
+        "last_modified_by",
+        "created_by",
+    )
     search_fields = ("file_name", "uuid")
     list_display = (
         "id",
@@ -409,7 +414,7 @@ class GroupAdmin(admin.ModelAdmin):
 class UserAdmin(admin.GeoModelAdmin):
     search_fields = ("username", "email", "first_name", "last_name", "iaso_profile__account__name")
     list_filter = ("iaso_profile__account", "is_staff", "is_superuser", "is_active")
-    list_display = ("username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
+    list_display = ("id", "username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
 
 
 @admin.register(Profile)
@@ -542,25 +547,16 @@ class EntityAdmin(admin.ModelAdmin):
             del actions["delete_selected"]
         return actions
 
-    # Override the Django admin delete action to:
-    # - soft delete the entity
-    # - soft delete its attached form instances
-    # - delete potential EntityDuplicates
+    # Override the Django admin delete action to do a proper soft-deletion
     def delete_view(self, request, object_id, extra_context=None):
         entity = Entity.objects_include_deleted.get(pk=object_id)
-        entity.delete()  # soft delete
-        instances_to_soft_delete = set([entity.attributes] + list(entity.instances.all()))
 
-        for instance in instances_to_soft_delete:
-            original = copy(instance)
-            instance.soft_delete()
-            log_modification(original, instance, DJANGO_ADMIN, user=request.user)
+        entity.soft_delete_with_instances_and_pending_duplicates(
+            audit_source=DJANGO_ADMIN,
+            user=request.user,
+        )
 
-        EntityDuplicate.objects.filter(
-            (Q(entity1=entity) | Q(entity2=entity)) & Q(validation_status=ValidationStatus.PENDING)
-        ).delete()
-
-        msg = f"Entity {entity.uuid} was soft deleted, along with its {len(instances_to_soft_delete)} instances and pending duplicates"
+        msg = f"Entity {entity.uuid} was soft deleted, along with its instances and pending duplicates"
         self.message_user(request, msg)
 
         # redirect to the list view
@@ -969,3 +965,4 @@ admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
 admin.site.register(UserRole)
+admin.site.register(OrgUnitChangeRequestConfiguration)

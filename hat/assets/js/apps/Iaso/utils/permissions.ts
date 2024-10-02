@@ -32,6 +32,8 @@ const PROJECTS = 'iaso_projects';
 const REGISTRY_WRITE = 'iaso_registry_write';
 const REGISTRY_READ = 'iaso_registry_read';
 const ORG_UNITS_CHANGE_REQUEST_REVIEW = 'iaso_org_unit_change_request_review';
+const ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION =
+    'iaso_org_unit_change_request_configurations';
 const SOURCES = 'iaso_sources';
 const SOURCE_WRITE = 'iaso_write_sources';
 const STORAGES = 'iaso_storages';
@@ -62,8 +64,9 @@ export {
     MOBILE_APP_OFFLINE_SETUP,
     MODULES,
     ORG_UNITS,
-    ORG_UNITS_READ,
+    ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION,
     ORG_UNITS_CHANGE_REQUEST_REVIEW,
+    ORG_UNITS_READ,
     ORG_UNIT_GROUPS,
     ORG_UNIT_TYPES,
     PAGES,
@@ -72,9 +75,9 @@ export {
     PLANNING_READ,
     PLANNING_WRITE,
     POLIO,
-    POLIO_CONFIG,
     POLIO_CHRONOGRAM,
     POLIO_CHRONOGRAM_RESTRICTED_WRITE,
+    POLIO_CONFIG,
     POLIO_NOTIFICATIONS,
     POLIO_SUPPLY_CHAIN_READ,
     POLIO_SUPPLY_CHAIN_WRITE,

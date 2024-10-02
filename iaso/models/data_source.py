@@ -81,7 +81,7 @@ class SourceVersionQuerySet(models.QuerySet):
             return self.none()
 
         if user and user.is_authenticated:
-            queryset = queryset.filter(data_source__projects__account=user.iaso_profile.account)
+            queryset = queryset.filter(data_source__projects__account=user.iaso_profile.account).distinct()
 
         return queryset
 

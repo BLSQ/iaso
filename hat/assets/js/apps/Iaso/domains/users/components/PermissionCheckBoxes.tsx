@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Permission } from '../../userRoles/types/userRoles';
 import PermissionCheckbox from './PermissionCheckbox';
 
@@ -24,25 +24,28 @@ const PermissionCheckBoxes: React.FunctionComponent<Props> = ({
 }) => {
     const { original } = settings.row;
 
-    const handleCheckboxChange = (
-        permission: string | Permission,
-        checked: boolean,
-        keyPermission: string | null,
-        checkBoxKeys: string[] = [],
-        checkBoxs: any = undefined,
-    ) => {
-        const permissionsToCheckOrUncheck = [permission];
-        if (
-            checkBoxKeys.length > 1 &&
-            checkBoxKeys[1] === keyPermission &&
-            checked
-        ) {
-            permissionsToCheckOrUncheck.push(checkBoxs[checkBoxKeys[0]]);
-            setPermissions(permissionsToCheckOrUncheck, checked);
-        } else {
-            setPermissions(permission, checked);
-        }
-    };
+    const handleCheckboxChange = useCallback(
+        (
+            permission: string | Permission,
+            checked: boolean,
+            keyPermission: string | null,
+            checkBoxKeys: string[] = [],
+            checkBoxs: any = undefined,
+        ) => {
+            const permissionsToCheckOrUncheck = [permission];
+            if (
+                checkBoxKeys.length > 1 &&
+                checkBoxKeys[1] === keyPermission &&
+                checked
+            ) {
+                permissionsToCheckOrUncheck.push(checkBoxs[checkBoxKeys[0]]);
+                setPermissions(permissionsToCheckOrUncheck, checked);
+            } else {
+                setPermissions(permission, checked);
+            }
+        },
+        [setPermissions],
+    );
 
     const isChecked = (permissionCode: string) => {
         return Boolean(permissions.find(up => up === permissionCode));

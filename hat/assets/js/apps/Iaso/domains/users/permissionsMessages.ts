@@ -595,9 +595,9 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.readEdit.read',
         defaultMessage: 'Read',
     },
-    edit: {
-        id: 'iaso.permissions.readEdit.edit',
-        defaultMessage: 'Edit',
+    write: {
+        id: 'iaso.permissions.readEdit.write',
+        defaultMessage: 'Write',
     },
     no_admin: {
         id: 'iaso.permissions.readEdit.no_admin',

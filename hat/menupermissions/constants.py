@@ -229,28 +229,28 @@ PERMISSIONS_PRESENTATION = {
 }
 
 READ_EDIT_PERMISSIONS = {
-    "iaso_submission_permissions": {"read": "iaso_submissions", "edit": "iaso_update_submission"},
-    "iaso_org_unit_permissions": {"read": "iaso_org_units_read", "edit": "iaso_org_units"},
-    "iaso_registry_permissions": {"read": "iaso_registry_read", "edit": "iaso_registry_write"},
-    "iaso_source_permissions": {"read": "iaso_sources", "edit": "iaso_write_sources"},
+    "iaso_submission_permissions": {"read": "iaso_submissions", "write": "iaso_update_submission"},
+    "iaso_org_unit_permissions": {"read": "iaso_org_units_read", "write": "iaso_org_units"},
+    "iaso_registry_permissions": {"read": "iaso_registry_read", "write": "iaso_registry_write"},
+    "iaso_source_permissions": {"read": "iaso_sources", "write": "iaso_write_sources"},
     "iaso_entity_duplicate_permissions": {
         "read": "iaso_entity_duplicates_read",
-        "edit": "iaso_entity_duplicates_write",
+        "write": "iaso_entity_duplicates_write",
     },
-    "iaso_planning_permissions": {"read": "iaso_planning_read", "edit": "iaso_planning_write"},
-    "iaso_page_permissions": {"read": "iaso_pages", "edit": "iaso_page_write"},
-    "iaso_polio_budget_permissions": {"read": "iaso_polio_budget", "edit": "iaso_polio_budget_admin"},
+    "iaso_planning_permissions": {"read": "iaso_planning_read", "write": "iaso_planning_write"},
+    "iaso_page_permissions": {"read": "iaso_pages", "write": "iaso_page_write"},
+    "iaso_polio_budget_permissions": {"read": "iaso_polio_budget", "write": "iaso_polio_budget_admin"},
     "iaso_polio_chronogram_permissions": {
         "read": "iaso_polio_chronogram_restricted_write",
-        "edit": "iaso_polio_chronogram",
+        "write": "iaso_polio_chronogram",
     },
     "iaso_polio_vaccine_supply_chain_permissions": {
         "read": "iaso_polio_vaccine_supply_chain_read",
-        "edit": "iaso_polio_vaccine_supply_chain_write",
+        "write": "iaso_polio_vaccine_supply_chain_write",
     },
     "iaso_polio_vaccine_stock_management_permissions": {
         "read": "iaso_polio_vaccine_stock_management_read",
-        "edit": "iaso_polio_vaccine_stock_management_write",
+        "write": "iaso_polio_vaccine_stock_management_write",
     },
     "iaso_polio_vaccine_authorization_permissions": {
         "no_admin": "iaso_polio_vaccine_authorizations_read_only",

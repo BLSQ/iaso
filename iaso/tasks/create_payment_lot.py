@@ -10,8 +10,8 @@ from iaso.api.payments.serializers import PaymentAuditLogger, PaymentLotAuditLog
 from iaso.models import Task
 from iaso.models.payments import Payment, PaymentLot, PaymentStatuses, PotentialPayment
 from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
 from iaso.models.base import ERRORED
+from django.db.models import Q
 
 
 def create_payment_from_payment_lot(user, payment_lot, *, potential_payment):
@@ -76,7 +76,11 @@ def create_payment_lot(
     # Addding a try/except so if there's an error while adding the potential payments, we can delete the payment lot and avoid empty payment lots in the DB
     # TODO Not sure we need to add the potential payments to the payment lot anymore
     try:
-        potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids, task__isnull=True)
+        # We want to filter out potential payments assigned to another task.
+        # Since the task is assigned in the view after it's created, we filter out potential payments with no task or with the current task assigned (for safety)
+        potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids).filter(
+            Q(task__isnull=True) | Q(task__id=the_task.id)
+        )
         payment_lot.potential_payments.add(*potential_payments, bulk=False)
         payment_lot.save()
     except:
@@ -93,7 +97,6 @@ def create_payment_lot(
     else:
         with transaction.atomic():
             for index, potential_payment in enumerate(potential_payments.iterator()):
-                potential_payment.task = the_task
                 potential_payment.payment_lot = payment_lot
                 potential_payment.save()
                 res_string = "%.2f sec, processed %i payments" % (time() - start, index)

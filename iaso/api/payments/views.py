@@ -221,6 +221,10 @@ class PaymentLotsViewSet(ModelViewSet):
             raise ValidationError("At least one potential payment required")
 
         task = create_payment_lot(user=user, name=name, potential_payment_ids=potential_payment_ids, comment=comment)
+        # Assign task to potential payments to avoid racing condition when calling potential payments API
+        potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
+        task.potential_payments.add(*potential_payments, bulk=False)
+
         # Return the created Task
         return Response(
             {"task": TaskSerializer(instance=task).data},

@@ -9,10 +9,10 @@ import { makeUrlWithParams } from '../../../../libs/utils';
 
 import { OrgUnit, PaginatedOrgUnits } from '../../../orgUnits/types/orgUnit';
 
-import { BaseLocation, Locations } from '../../types/locations';
 import { Profile } from '../../../../utils/usersUtils';
-import { DropdownTeamsOptions } from '../../types/team';
 import { AssignmentsApi } from '../../types/assigment';
+import { BaseLocation, Locations } from '../../types/locations';
+import { DropdownTeamsOptions } from '../../types/team';
 
 import { getOrgUnitAssignation } from '../../utils';
 
@@ -57,7 +57,7 @@ const mapLocation = ({
         };
         if (!orgUnitParentIds.find(ou => ou === orgUnit.id)) {
             if (parseInt(baseOrgunitType, 10) === orgUnit.org_unit_type_id) {
-                if (orgUnit.geo_json) {
+                if (orgUnit.has_geo_json && orgUnit.geo_json) {
                     const shape = {
                         ...baseLocation,
                         geoJson: orgUnit.geo_json,

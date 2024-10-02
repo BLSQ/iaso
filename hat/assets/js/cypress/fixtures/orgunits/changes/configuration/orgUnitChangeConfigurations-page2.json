@@ -1,0 +1,64 @@
+{
+  "count": 12,
+  "results": [
+    {
+      "id": 11,
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": false,
+      "editable_fields": ["1", "2", "3"],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    },
+    {
+      "id": 12,
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": true,
+      "editable_fields": ["1", "3"],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    }
+  ],
+  "has_next": false,
+  "has_previous": true,
+  "page": 2,
+  "pages": 2,
+  "limit": 10
+}

@@ -5,6 +5,7 @@ import {
     Assignment,
     SupervisorAccount,
 } from '@mui/icons-material/';
+import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
 import { useSafeIntl } from 'bluesquare-components';
 
 import OrgUnitSvg from '../../../components/svg/OrgUnitSvgComponent';
@@ -65,6 +66,12 @@ export const useHomeButtons = (): Button[] => {
                     permissions: paths.planningPath.permissions,
                     Icon: <Assignment />,
                     url: `/${baseUrls.planning}`,
+                },
+                {
+                    label: formatMessage(MESSAGES.projects),
+                    permissions: paths.projectsPath.permissions,
+                    Icon: <PhonelinkSetupIcon />,
+                    url: `/${baseUrls.projects}`,
                 },
             ].filter(button =>
                 userHasOneOfPermissions(button.permissions, currentUser),

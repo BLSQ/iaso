@@ -312,6 +312,40 @@ class PolioLqasAfroMapTestCase(APITestCase):
         )
         cls.url_bounds = json.dumps({"_southWest": {"lat": 1, "lng": 1}, "_northEast": {"lat": 10, "lng": 10}})
 
+        # Non polio campaign, should not appear in results
+        cls.non_polio_campaign = Campaign.objects.create(
+            obr_name="NOT POLIO",
+            account=cls.account,
+            separate_scopes_per_round=False,
+            initial_org_unit=cls.country_org_unit_1,
+        )
+        cls.non_polio_campaign_scope_group = Group.objects.create(
+            name="campaign1scope", domain="POLIO", source_version=cls.source_version
+        )
+        cls.non_polio_campaign_scope_group.org_units.add(cls.district_org_unit_1)
+        cls.non_polio_campaign_scope_group.org_units.add(cls.district_org_unit_2)
+        cls.non_polio_campaign_scope_group.save()
+        cls.non_polio_campaign_scope = CampaignScope.objects.create(
+            campaign=cls.non_polio_campaign, vaccine="bOPV", group=cls.non_polio_campaign_scope_group
+        )
+        cls.non_polio_campaign_round1_start = (datetime.now() - timedelta(days=68)).date()
+        cls.non_polio_campaign_round1_end = (datetime.now() - timedelta(days=63)).date()
+        cls.non_polio_campaign_round2_start = (datetime.now() - timedelta(days=37)).date()
+        cls.non_polio_campaign_round2_end = (datetime.now() - timedelta(days=32)).date()
+        cls.non_polio_campaign_round1 = Round.objects.create(
+            number=1,
+            started_at=cls.non_polio_campaign_round1_start.strftime("%Y-%m-%d"),
+            ended_at=cls.non_polio_campaign_round1_end.strftime("%Y-%m-%d"),
+            campaign=cls.non_polio_campaign,
+        )
+        cls.non_polio_campaign_round2 = Round.objects.create(
+            number=2,
+            started_at=cls.non_polio_campaign_round2_start.strftime("%Y-%m-%d"),
+            ended_at=cls.non_polio_campaign_round2_end.strftime("%Y-%m-%d"),
+            campaign=cls.non_polio_campaign,
+        )
+        cls.non_polio_campaign.campaign_types.add(cls.measles_type)
+
     def test_authorized_user(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
@@ -393,6 +427,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
+        print("results", results)
         # Test details of data for first country
         self.assertEqual(len(results), 2)
         results_for_first_country = next(

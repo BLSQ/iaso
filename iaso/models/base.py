@@ -430,7 +430,13 @@ class DefaultGroupManager(models.Manager):
 
     def filter_for_user(self, user: User):
         profile = user.iaso_profile
-        queryset = self.filter(source_version__data_source__projects__in=profile.account.project_set.all())
+        queryset = self
+        version_ids = (
+            SourceVersion.objects.filter(data_source__projects__account=profile.account)
+            .values_list("id", flat=True)
+            .distinct()
+        )
+        queryset = queryset.filter(source_version_id__in=version_ids)
         return queryset
 
 
@@ -499,9 +505,13 @@ class GroupSetQuerySet(models.QuerySet):
             return self.none()
 
         if user and user.is_authenticated:
-            queryset = queryset.filter(
-                source_version__data_source__projects__in=user.iaso_profile.account.project_set.all()
+            # avoid creating duplicated record by joining projects's datasources
+            version_ids = (
+                SourceVersion.objects.filter(data_source__projects__account=user.iaso_profile.account)
+                .values_list("id", flat=True)
+                .distinct()
             )
+            queryset = queryset.filter(source_version_id__in=version_ids)
 
         if app_id is not None:
             try:

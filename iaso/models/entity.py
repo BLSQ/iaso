@@ -225,6 +225,12 @@ class Entity(SoftDeletableModel):
         }
 
     def soft_delete_with_instances_and_pending_duplicates(self, audit_source, user):
+        """
+        This method does a proper soft-deletion of the entity:
+        - soft delete the entity
+        - soft delete its attached form instances
+        - delete relevant pending EntityDuplicate pairs
+        """
         from iaso.models import EntityDuplicate
         from iaso.models.deduplication import ValidationStatus
 
@@ -240,3 +246,5 @@ class Entity(SoftDeletableModel):
         EntityDuplicate.objects.filter(
             (Q(entity1=self) | Q(entity2=self)) & Q(validation_status=ValidationStatus.PENDING)
         ).delete()
+
+        return self

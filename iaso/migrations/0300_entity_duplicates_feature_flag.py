@@ -3,7 +3,7 @@
 from django.db import migrations
 
 
-def create_accoun_feature_flag(apps, schema_editor):
+def create_account_feature_flag(apps, schema_editor):
     AccountFeatureFlag = apps.get_model("iaso", "AccountFeatureFlag")
     AccountFeatureFlag.objects.get_or_create(
         code="ENTITY_DUPLICATES_SOFT_DELETE",
@@ -11,7 +11,7 @@ def create_accoun_feature_flag(apps, schema_editor):
     )
 
 
-def destroy_accoun_feature_flag(apps, schema_editor):
+def destroy_account_feature_flag(apps, schema_editor):
     AccountFeatureFlag = apps.get_model("iaso", "AccountFeatureFlag")
     AccountFeatureFlag.objects.get(code="ENTITY_DUPLICATES_SOFT_DELETE").delete()
 
@@ -22,5 +22,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(create_accoun_feature_flag, destroy_accoun_feature_flag),
+        migrations.RunPython(create_account_feature_flag, destroy_account_feature_flag),
     ]

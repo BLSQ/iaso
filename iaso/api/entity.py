@@ -427,7 +427,7 @@ class EntityViewSet(ModelViewSet):
     def destroy(self, request, pk=None):
         entity = Entity.objects_include_deleted.get(pk=pk)
 
-        entity.soft_delete_with_instances_and_pending_duplicates(
+        entity = entity.soft_delete_with_instances_and_pending_duplicates(
             audit_source=ENTITY_API,
             user=request.user,
         )

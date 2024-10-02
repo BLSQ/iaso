@@ -414,7 +414,7 @@ class GroupAdmin(admin.ModelAdmin):
 class UserAdmin(admin.GeoModelAdmin):
     search_fields = ("username", "email", "first_name", "last_name", "iaso_profile__account__name")
     list_filter = ("iaso_profile__account", "is_staff", "is_superuser", "is_active")
-    list_display = ("username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
+    list_display = ("id", "username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
 
 
 @admin.register(Profile)
@@ -547,10 +547,7 @@ class EntityAdmin(admin.ModelAdmin):
             del actions["delete_selected"]
         return actions
 
-    # Override the Django admin delete action to:
-    # - soft delete the entity
-    # - soft delete its attached form instances
-    # - delete potential EntityDuplicates
+    # Override the Django admin delete action to do a proper soft-deletion
     def delete_view(self, request, object_id, extra_context=None):
         entity = Entity.objects_include_deleted.get(pk=object_id)
 

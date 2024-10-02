@@ -182,12 +182,12 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
                 "allow_creating_sub_unit_type_ids": [],
-                "reference_forms_ids": [100],
+                "reference_forms_ids": [1000],
             },
             format="json",
         )
         self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), "reference_forms_ids", 'Invalid pk "100" - object does not exist.')
+        self.assertHasError(response.json(), "reference_forms_ids", 'Invalid pk "1000" - object does not exist.')
 
     def test_org_unit_type_create_with_reference_form_ok(self):
         """POST /orgunittypes/ with auth: 201 OK"""

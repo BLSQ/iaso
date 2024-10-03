@@ -4,6 +4,7 @@ import React, { FunctionComponent, useCallback, useState } from 'react';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import { SxStyles } from '../../../types/general';
+import { useGetUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
 import { useGetImages } from '../../forms/hooks/useGetImages';
 import { ShortFile } from '../../instances/types/instance';
 import { useSaveOrgUnit } from '../hooks';
@@ -77,6 +78,9 @@ export const OrgUnitImages: FunctionComponent<Props> = ({
         [handleImageFavoriteClick, isDefaultImage, isLoading],
     );
 
+    const hasWritePermission = useGetUserHasWritePermissionOnOrgunit(
+        orgUnit?.org_unit_type_id,
+    );
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -85,11 +89,15 @@ export const OrgUnitImages: FunctionComponent<Props> = ({
                     {formatMessage(MESSAGES.noResult)}
                 </Paper>
             )}
-            {!isLoadingFiles && (
+            {orgUnit && !isLoadingFiles && (
                 <LazyImagesList
                     imageList={files ?? []}
                     onImageClick={index => handleOpenLightbox(index)}
-                    onImageFavoriteClick={handleImageFavoriteClick}
+                    onImageFavoriteClick={
+                        hasWritePermission
+                            ? handleImageFavoriteClick
+                            : undefined
+                    }
                     isDefaultImage={isDefaultImage}
                 />
             )}

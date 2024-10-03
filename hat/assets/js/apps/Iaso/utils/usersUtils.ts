@@ -3,6 +3,8 @@ import { LangOptions } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';
 import { Project } from '../domains/projects/types/project';
+import { userHasPermission } from '../domains/users/utils';
+import * as Permissions from './permissions';
 
 export type Profile = {
     id: string;
@@ -77,6 +79,7 @@ export type User = {
     language?: LangOptions;
     user_id: number;
     dhis2_id?: string;
+    editable_org_unit_type_ids?: number[];
 };
 
 export const getDisplayName = (
@@ -108,4 +111,31 @@ export const useIsLoggedIn = (): boolean => {
 export const useHasNoAccount = (): boolean => {
     const currentUser = useCurrentUser();
     return Boolean(currentUser && !currentUser.account);
+};
+
+export const useGetUserHasWriteTypePermission = (): (() => boolean) => {
+    const currentUser = useCurrentUser();
+    return (orgUnitTypeId?: number) => {
+        return Boolean(
+            currentUser &&
+                (!currentUser.editable_org_unit_type_ids ||
+                    currentUser.editable_org_unit_type_ids?.length === 0 ||
+                    (orgUnitTypeId &&
+                        currentUser.editable_org_unit_type_ids?.includes(
+                            orgUnitTypeId,
+                        ))),
+        );
+    };
+};
+
+export const useGetUserHasWritePermissionOnOrgunit = (
+    orgUnitTypeId?: number,
+): boolean => {
+    const getHasWriteByTypePermission = useGetUserHasWriteTypePermission();
+    const hasWriteByTypePermission = getHasWriteByTypePermission(orgUnitTypeId);
+    const currentUser = useCurrentUser();
+    return (
+        userHasPermission(Permissions.ORG_UNITS, currentUser) &&
+        hasWriteByTypePermission
+    );
 };

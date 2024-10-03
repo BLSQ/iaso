@@ -17,17 +17,18 @@ import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 
 import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DatesRange from '../../../components/filters/DatesRange';
+import { ORG_UNITS } from '../../../utils/permissions';
+import {
+    useGetUserHasWritePermissionOnOrgunit
+} from '../../../utils/usersUtils';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Instance } from '../../instances/types/instance';
 import { Group, OrgUnit, OrgUnitState } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
 import { useGetOrgUnit } from './TreeView/requests';
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
-import { ORG_UNITS } from '../../../utils/permissions';
-import { userHasPermission } from '../../users/utils';
-import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
@@ -103,8 +104,9 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             ? `${orgUnitState.parent.value.id}`
             : undefined,
     );
-    const currentUser = useCurrentUser();
-    const hasManagementPermission = userHasPermission(ORG_UNITS, currentUser);
+    const hasManagementPermission = useGetUserHasWritePermissionOnOrgunit(
+        orgUnit?.org_unit_type_id,
+    );
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={4}>

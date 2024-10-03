@@ -2,14 +2,18 @@
 import React, { FunctionComponent } from 'react';
 
 import { LoadingSpinner } from 'bluesquare-components';
-import SpeedDialInstanceActions from './SpeedDialInstanceActions';
-import { userHasPermission } from '../../users/utils';
 import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
 } from '../../../utils/featureFlags';
+import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
-import { Instance } from '../types/instance';
+import { useGetEnketoUrl } from '../../registry/hooks/useGetEnketoUrl';
+import { userHasPermission } from '../../users/utils';
+import {
+    useDeleteInstance,
+    useRestoreInstance,
+} from '../hooks/requests/useDeleteInstance';
 import {
     useBaseActions,
     useDeleteAction,
@@ -19,12 +23,8 @@ import {
     useLockAction,
 } from '../hooks/speedDialActions';
 import { useGetFormDefForInstance } from '../hooks/speeddials';
-import {
-    useDeleteInstance,
-    useRestoreInstance,
-} from '../hooks/requests/useDeleteInstance';
-import { useGetEnketoUrl } from '../../registry/hooks/useGetEnketoUrl';
-import * as Permission from '../../../utils/permissions';
+import { Instance } from '../types/instance';
+import SpeedDialInstanceActions from './SpeedDialInstanceActions';
 
 type Props = {
     currentInstance: Instance;
@@ -118,7 +118,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
 
     const actions = [...baseActions, deleteRestore];
 
-    if (!isGpsEqual && userHasPermission(Permission.ORG_UNITS, currentUser)) {
+    if (!isGpsEqual && hasOrgUnitPermission) {
         actions.unshift(editLocationWithInstanceGps);
     }
 

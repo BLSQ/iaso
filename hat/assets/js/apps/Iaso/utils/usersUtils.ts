@@ -113,7 +113,9 @@ export const useHasNoAccount = (): boolean => {
     return Boolean(currentUser && !currentUser.account);
 };
 
-export const useGetUserHasWriteTypePermission = (): (() => boolean) => {
+export const useGetUserHasWriteTypePermission = (): ((
+    orgUnitTypeId?: number,
+) => boolean) => {
     const currentUser = useCurrentUser();
     return (orgUnitTypeId?: number) => {
         return Boolean(

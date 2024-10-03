@@ -1,12 +1,12 @@
 from typing import Any, List, Optional, Union
+
 from django.conf import settings
 from django.contrib.auth import models, update_session_auth_hash
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import BadRequest, ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.core.exceptions import BadRequest
 from django.db.models import Q, QuerySet
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -15,19 +15,20 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
-from hat.audit.models import PROFILE_API
-from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.utils import is_mobile_request
 from phonenumber_field.phonenumber import PhoneNumber
 from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
+from hat.audit.models import PROFILE_API
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
+from iaso.api.profiles.audit import ProfileAuditLogger
+from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.models import OrgUnit, Profile, Project, UserRole
+from iaso.utils import is_mobile_request
 from iaso.utils.module_permissions import account_module_permissions
 
 PK_ME = "me"
@@ -355,7 +356,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         if pk == PK_ME:
             try:
                 profile = request.user.iaso_profile
-                return Response(profile.as_dict())
+                profile_dict = profile.as_dict()
+                profile_dict["editable_org_unit_type_ids"] = []  # Mocking the response, add types ids to test
+                return Response(profile_dict)
             except ObjectDoesNotExist:
                 return Response(
                     {

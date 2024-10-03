@@ -19,6 +19,7 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from hat.audit.models import ENTITY_API
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.menupermissions import models as permission
 from iaso.api.common import (
@@ -422,6 +423,16 @@ class EntityViewSet(ModelViewSet):
 
         res = {"columns": columns_list, "result": result_list}
         return Response(res)
+
+    def destroy(self, request, pk=None):
+        entity = Entity.objects_include_deleted.get(pk=pk)
+
+        entity = entity.soft_delete_with_instances_and_pending_duplicates(
+            audit_source=ENTITY_API,
+            user=request.user,
+        )
+
+        return Response(EntitySerializer(entity, many=False).data)
 
     @action(detail=False, methods=["GET"])
     def export_entity_submissions_list(self, request):

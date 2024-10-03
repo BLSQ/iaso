@@ -1,60 +1,61 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useContext, useMemo } from 'react';
 
-import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
-import Link from '@mui/icons-material/Link';
-import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
-import Input from '@mui/icons-material/Input';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import BookIcon from '@mui/icons-material/Book';
+import CategoryIcon from '@mui/icons-material/Category';
 import CompareArrows from '@mui/icons-material/CompareArrows';
-import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
-import GroupsIcon from '@mui/icons-material/Groups';
-import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
+import Diversity3Icon from '@mui/icons-material/Diversity3';
 import DnsRoundedIcon from '@mui/icons-material/DnsRounded';
 import DoneAll from '@mui/icons-material/DoneAll';
-import Settings from '@mui/icons-material/Settings';
-import GroupWork from '@mui/icons-material/GroupWork';
-import CategoryIcon from '@mui/icons-material/Category';
-import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
-import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRounded';
-import BookIcon from '@mui/icons-material/Book';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import GroupIcon from '@mui/icons-material/Group';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import StorageIcon from '@mui/icons-material/Storage';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import PaymentsIcon from '@mui/icons-material/Payments';
-import PriceCheckIcon from '@mui/icons-material/PriceCheck';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
+import GroupIcon from '@mui/icons-material/Group';
+import GroupsIcon from '@mui/icons-material/Groups';
+import GroupWork from '@mui/icons-material/GroupWork';
 import HistoryIcon from '@mui/icons-material/History';
+import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRounded';
+import Input from '@mui/icons-material/Input';
+import Link from '@mui/icons-material/Link';
+import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
+import PriceCheckIcon from '@mui/icons-material/PriceCheck';
+import Settings from '@mui/icons-material/Settings';
+import StorageIcon from '@mui/icons-material/Storage';
+import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
 
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
-import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import BeneficiarySvg from '../components/svg/Beneficiary';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
-import * as paths from './routes';
+import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
+import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import {
     hasFeatureFlag,
-    SHOW_PAGES,
-    SHOW_DHIS2_LINK,
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     SHOW_DEV_FEATURES,
+    SHOW_DHIS2_LINK,
+    SHOW_PAGES,
 } from '../utils/featureFlags';
-import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
+import * as paths from './routes';
 
-import MESSAGES from './messages';
-import { useCurrentUser } from '../utils/usersUtils';
+import { MenuItem, MenuItems, Plugins } from '../domains/app/types';
+import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
+import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
 import {
     listMenuPermission,
     userHasOneOfPermissions,
 } from '../domains/users/utils';
-import { PluginsContext } from '../utils';
-import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
 import { DropdownOptions } from '../types/utils';
-import { MenuItem, MenuItems, Plugins } from '../domains/app/types';
-import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
-import { CHANGE_REQUEST } from './urls';
+import { PluginsContext } from '../utils';
+import { useCurrentUser } from '../utils/usersUtils';
+import MESSAGES from './messages';
+import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG, CONFIGURATION } from './urls';
 
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
@@ -153,6 +154,12 @@ const menuItems = (
                     label: formatMessage(MESSAGES.groups),
                     permissions: paths.groupsPath.permissions,
                     key: 'groups',
+                    icon: props => <GroupIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.groupSets),
+                    permissions: paths.groupSetsPath.permissions,
+                    key: 'groupSets',
                     icon: props => <GroupWork {...props} />,
                 },
                 {
@@ -194,6 +201,21 @@ const menuItems = (
                                     icon: props => <CompareArrows {...props} />,
                                 },
                             ],
+                        },
+                    ],
+                },
+                {
+                    label: formatMessage(MESSAGES.configuration),
+                    key: CHANGE_REQUEST_CONFIG,
+                    icon: props => <Settings {...props} />,
+                    subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.changeRequestConfig),
+                            permissions:
+                                paths.orgUnitsChangeRequestConfiguration
+                                    .permissions,
+                            key: CONFIGURATION,
+                            icon: props => <CategoryIcon {...props} />,
                         },
                     ],
                 },
@@ -316,7 +338,7 @@ const menuItems = (
                     label: formatMessage(MESSAGES.teams),
                     permissions: paths.teamsPath.permissions,
                     key: 'teams',
-                    icon: props => <GroupIcon {...props} />,
+                    icon: props => <Diversity3Icon {...props} />,
                 },
             ],
         },

@@ -27,6 +27,8 @@ import { Modules } from '../domains/modules';
 import { OrgUnits } from '../domains/orgUnits';
 import OrgUnitDetail from '../domains/orgUnits/details';
 import Groups from '../domains/orgUnits/groups';
+import GroupSets from '../domains/orgUnits/groupSets';
+import GroupSet from '../domains/orgUnits/groupSets/GroupSet';
 import Types from '../domains/orgUnits/orgUnitTypes';
 import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges';
 import { ReviewOrgUnitChangesDetail } from '../domains/orgUnits/reviewChanges/details';
@@ -49,6 +51,7 @@ import { SHOW_PAGES } from '../utils/featureFlags';
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
 import { UsersHistory } from '../domains/users/history/UsersHistory';
+import { OrgUnitChangeRequestConfigs } from '../domains/orgUnits/configuration/OrgUnitChangeRequestConfigs';
 
 export type RoutePath = {
     baseUrl: string;
@@ -179,6 +182,13 @@ export const orgUnitChangeRequestDetailPath = {
     element: <ReviewOrgUnitChangesDetail />,
 };
 
+export const orgUnitsChangeRequestConfiguration = {
+    baseUrl: baseUrls.orgUnitsChangeRequestConfiguration,
+    routerUrl: `${baseUrls.orgUnitsChangeRequestConfiguration}/*`,
+    permissions: [Permission.ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION],
+    element: <OrgUnitChangeRequestConfigs />,
+};
+
 export const registryPath = {
     baseUrl: baseUrls.registry,
     routerUrl: `${baseUrls.registry}/*`,
@@ -283,6 +293,21 @@ export const groupsPath = {
     permissions: [Permission.ORG_UNIT_GROUPS],
     element: <Groups />,
 };
+
+export const groupSetsPath = {
+    baseUrl: baseUrls.groupSets,
+    routerUrl: `${baseUrls.groupSets}/*`,
+    permissions: [Permission.ORG_UNIT_GROUPS],
+    element: <GroupSets />,
+};
+
+export const groupSetDetailPath = {
+    baseUrl: baseUrls.groupSetDetail,
+    routerUrl: `${baseUrls.groupSetDetail}/*`,
+    permissions: [Permission.ORG_UNIT_GROUPS],
+    element: <GroupSet />,
+};
+
 
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
@@ -437,6 +462,8 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     tasksPath,
     devicesPath,
     groupsPath,
+    groupSetsPath,
+    groupSetDetailPath,
     orgUnitTypesPath,
     entityTypesPath,
     pagesPath,
@@ -457,6 +484,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     workflowsDetailPath,
     orgUnitChangeRequestPath,
     orgUnitChangeRequestDetailPath,
+    orgUnitsChangeRequestConfiguration,
     registryPath,
     modulesPath,
     potentialPaymentsPath,

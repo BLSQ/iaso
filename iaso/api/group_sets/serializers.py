@@ -77,7 +77,7 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
         if request:
             user = request.user
             if "group_ids" in self.fields:
-                self.fields["group_ids"].child_relation.queryset = Group.objects.filter_for_user(user)
+                self.fields["group_ids"].child_relation.queryset = Group.objects.filter_for_user(user).distinct()
 
     def validate(self, attrs: typing.MutableMapping):
         data = self.context["request"].data
@@ -127,7 +127,7 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
                 )
 
             if len(source_ids) == 1:
-                if source_ids[0] != source_version_id:
+                if str(source_ids[0]) != str(source_version_id):
                     raise serializers.ValidationError(
                         detail={
                             "group_ids": f"Groups do not all belong to the same as the groupset : {source_ids} vs {source_version_id}."
@@ -149,9 +149,8 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
 
         group_ids = self.context["request"].data.get("group_ids")
         if group_ids:
-            # Ensure all provided group_ids are valid and belong to the same source_version
             groups = Group.objects.filter(id__in=group_ids)
-
+            group_set.groups.clear()
             for g in groups:
                 group_set.groups.add(g)
 

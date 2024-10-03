@@ -4,6 +4,12 @@
     "user_name": "oneFistPunch",
     "last_name": "Lee",
     "email": "",
+    "phone_number": null,
+    "projects": [{
+        "id": 1,
+        "app_id": "app_id_2",
+        "name": "Test2.35.3"
+    }],
     "account": {
         "name": "RDC",
         "id": 1,

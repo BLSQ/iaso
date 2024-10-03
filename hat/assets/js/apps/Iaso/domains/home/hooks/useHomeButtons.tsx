@@ -1,5 +1,11 @@
 import React, { ReactElement, useMemo } from 'react';
-import { ListAlt, Storage, Assignment } from '@mui/icons-material/';
+import {
+    ListAlt,
+    Storage,
+    Assignment,
+    SupervisorAccount,
+} from '@mui/icons-material/';
+import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
 import { useSafeIntl } from 'bluesquare-components';
 
 import OrgUnitSvg from '../../../components/svg/OrgUnitSvgComponent';
@@ -44,8 +50,14 @@ export const useHomeButtons = (): Button[] => {
                     url: `/${baseUrls.entities}`,
                 },
                 {
+                    label: formatMessage(MESSAGES.users),
+                    permissions: paths.usersPath.permissions,
+                    Icon: <SupervisorAccount />,
+                    url: `/${baseUrls.users}`,
+                },
+                {
                     label: formatMessage(MESSAGES.storages),
-                    permissions: paths.entityTypesPath.permissions,
+                    permissions: paths.storagesPath.permissions,
                     Icon: <Storage />,
                     url: `/${baseUrls.storages}`,
                 },
@@ -54,6 +66,12 @@ export const useHomeButtons = (): Button[] => {
                     permissions: paths.planningPath.permissions,
                     Icon: <Assignment />,
                     url: `/${baseUrls.planning}`,
+                },
+                {
+                    label: formatMessage(MESSAGES.projects),
+                    permissions: paths.projectsPath.permissions,
+                    Icon: <PhonelinkSetupIcon />,
+                    url: `/${baseUrls.projects}`,
                 },
             ].filter(button =>
                 userHasOneOfPermissions(button.permissions, currentUser),

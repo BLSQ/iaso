@@ -21,4 +21,12 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Planning',
         id: 'iaso.label.planning',
     },
+    users: {
+        defaultMessage: 'Users',
+        id: 'iaso.label.users',
+    },
+    projects: {
+        defaultMessage: 'Projects',
+        id: 'iaso.label.projects',
+    },
 });

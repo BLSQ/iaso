@@ -30,6 +30,10 @@ class GroupSetFilter(django_filters.rest_framework.FilterSet):
         choices=Bools.choices, method="filter_default_version", label=_("Limit to default version source")
     )
 
+    project_ids = django_filters.CharFilter(
+        field_name="project_ids", method="filter_project_ids", label=_("Limit search to coma seperated project ids")
+    )
+
     class Meta:
         model = GroupSet
         fields = ["search", "version", "default_version"]
@@ -38,4 +42,10 @@ class GroupSetFilter(django_filters.rest_framework.FilterSet):
         if value == "true":
             queryset = queryset.filter(source_version=self.request.user.iaso_profile.account.default_version)
 
+        return queryset
+
+    def filter_project_ids(self, queryset: QuerySet, _, value: str):
+        projects_ids = value
+        if projects_ids:
+            queryset = queryset.filter(source_version__data_source__projects__in=projects_ids.split(","))
         return queryset

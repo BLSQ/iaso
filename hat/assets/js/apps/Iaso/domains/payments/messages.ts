@@ -205,7 +205,7 @@ const MESSAGES = defineMessages({
     paymentLotTaskLaunched: {
         id: 'iaso.snackBar.paymentLotTaskLaunched',
         defaultMessage:
-            'The creation of the payment lot may take a few moments. Try refreshing the page in a few seconds',
+            "The creation of the payment lot may take a few moments. Try refreshing the Payment Lots page if it doesn't appear",
     },
 });
 

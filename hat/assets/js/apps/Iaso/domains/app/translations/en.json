@@ -1228,7 +1228,7 @@
     "iaso.snackBar.newEmptyVersionSavedSuccess": "New empty version saved successfully",
     "iaso.snackBar.patchTaskError": "An error occurred while updating the task.",
     "iaso.snackBar.patchTaskSuccess": "The task has been updated.",
-    "iaso.snackBar.paymentLotTaskLaunched": "The creation of the payment lot may take a few moments. Try refreshing the page in a few seconds",
+    "iaso.snackBar.paymentLotTaskLaunched": "The creation of the payment lot may take a few moments. Try refreshing the Payment Lots page if it doesn't appear",
     "iaso.snackBar.paymentsBulkUpdateLaunched": "The modifications to the payments will take a few moments to take effect",
     "iaso.snackBar.permissionError": "You don't have permission to perform this action",
     "iaso.snackBar.reload": "Reload",

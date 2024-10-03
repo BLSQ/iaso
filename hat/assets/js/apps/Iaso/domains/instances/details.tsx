@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import Alert from '@mui/lab/Alert';
 import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';

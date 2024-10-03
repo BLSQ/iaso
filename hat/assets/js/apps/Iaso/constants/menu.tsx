@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { useContext, useMemo } from 'react';
 
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';

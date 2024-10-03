@@ -134,7 +134,6 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                 id={keyValue}
                 renderInput={params => (
                     <TextField
-                        /* eslint-disable-next-line react/jsx-props-no-spreading */
                         {...params}
                         id={keyValue}
                         disabled={disabled}

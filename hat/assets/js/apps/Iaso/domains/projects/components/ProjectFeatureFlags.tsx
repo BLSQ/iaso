@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useState } from 'react';
 
 import { FeatureFlag } from '../types/featureFlag';

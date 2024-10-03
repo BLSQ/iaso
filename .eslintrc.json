@@ -3,11 +3,13 @@
         "browser": true,
         "commonjs": true,
         "es6": true,
-        "node": true
+        "node": true,
+        "cypress/globals": true
     },
     "extends": [
         "airbnb",
         "plugin:react-hooks/recommended",
+        "plugin:cypress/recommended",
         "prettier"
     ],
     "globals": {
@@ -161,7 +163,7 @@
                     4
                 ],
                 "react/jsx-one-expression-per-line": "off",
-                "react/jsx-props-no-spreading": "warn",
+                "react/jsx-props-no-spreading": "off",
                 "react/jsx-wrap-multilines": "off",
                 "react/no-access-state-in-setstate": "off",
                 "react/no-array-index-key": "warn",
@@ -273,7 +275,7 @@
             4
         ],
         "react/jsx-one-expression-per-line": "off",
-        "react/jsx-props-no-spreading": "warn",
+        "react/jsx-props-no-spreading": "off",
         "react/jsx-wrap-multilines": "off",
         "react/no-access-state-in-setstate": "off",
         "react/no-array-index-key": "warn",

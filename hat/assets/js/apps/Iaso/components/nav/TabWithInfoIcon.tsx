@@ -84,7 +84,6 @@ export const TabWithInfoIcon: FunctionComponent<Props> = ({
                     </Tooltip>
                 )) || <></>
             }
-            // eslint-disable-next-line react/jsx-props-no-spreading
             {...filteredProps}
             onClick={onChange}
         />

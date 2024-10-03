@@ -1,31 +1,30 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { useState, useMemo, useCallback } from 'react';
-import PropTypes from 'prop-types';
+import AddBox from '@mui/icons-material/AddBoxOutlined';
+import Public from '@mui/icons-material/Public';
 import { Button, DialogActions, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import Public from '@mui/icons-material/Public';
-import AddBox from '@mui/icons-material/AddBoxOutlined';
-import { FormattedMessage } from 'react-intl';
 import {
     commonStyles,
     DHIS2Svg,
     Table,
     useSafeIntl,
 } from 'bluesquare-components';
+import PropTypes from 'prop-types';
+import React, { useCallback, useMemo, useState } from 'react';
+import { FormattedMessage } from 'react-intl';
 import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
+import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
-import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
 
+import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns.tsx';
 import {
     getSortedSourceVersions,
+    getTablePages,
+    getTableParams,
     handleSort,
     handleTableParamsChange,
-    getTableParams,
-    getTablePages,
 } from '../utils';
-import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns.tsx';
 
 const useStyles = makeStyles(theme => ({
     spanStyle: {

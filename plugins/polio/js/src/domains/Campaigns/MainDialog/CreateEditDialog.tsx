@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import isEqual from 'lodash/isEqual';
 import React, { FunctionComponent, useCallback, useState } from 'react';
 

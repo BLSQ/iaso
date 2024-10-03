@@ -228,7 +228,6 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         }}
                         setFieldError={setFieldError}
                         dataTestId={dataTestId}
-                        // eslint-disable-next-line react/jsx-props-no-spreading
                         {...localizedNumberOptions}
                     />
                 );
@@ -322,7 +321,6 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         lang={locale as LangOptions}
                         required={required}
                         disabled={disabled}
-                        // eslint-disable-next-line react/jsx-props-no-spreading
                         {...phoneInputOptions}
                     />
                 );

@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import { Popup, useMap } from 'react-leaflet';
 import { useSelector } from 'react-redux';

@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import { Box } from '@mui/material';
 import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import React, { FunctionComponent, useState } from 'react';

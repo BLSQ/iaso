@@ -126,6 +126,5 @@ const modalWithIcon = makeFullModal(LegendBuilderDialog, EditIconButton);
 
 export {
     modalWithButton as AddLegendDialog,
-    modalWithIcon as EditLegendDialog
+    modalWithIcon as EditLegendDialog,
 };
-

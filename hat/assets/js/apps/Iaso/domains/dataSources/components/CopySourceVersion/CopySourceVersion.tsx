@@ -1,11 +1,7 @@
 /* eslint-disable camelcase */
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { Box, Divider, Grid } from '@mui/material';
-import {
-    IconButton,
-    useRedirectTo,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { IconButton, useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,

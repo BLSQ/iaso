@@ -112,9 +112,8 @@ export const DataSourceDialogComponent = ({
     renderTrigger,
     sourceCredentials,
 }) => {
-    const [form, setFieldValue, setFieldErrors, setFormState] = useFormState(
-        initialForm(),
-    );
+    const [form, setFieldValue, setFieldErrors, setFormState] =
+        useFormState(initialForm());
     const { saveDataSource, isSaving } = useSaveDataSource(setFieldErrors);
     const checkDhis2 = useCheckDhis2Mutation(setFieldErrors);
     const [fieldHasBeenChanged, setFieldHasBeenChanged] = useState(false);

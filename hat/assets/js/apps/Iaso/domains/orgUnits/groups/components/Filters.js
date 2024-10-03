@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import { Grid, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
-import { commonStyles, useSafeIntl, useRedirectTo } from 'bluesquare-components';
+import {
+    commonStyles,
+    useSafeIntl,
+    useRedirectTo,
+} from 'bluesquare-components';
 import InputComponent from '../../../../components/forms/InputComponent.tsx';
 import { baseUrl } from '../config';
 import MESSAGES from '../messages';
@@ -46,44 +50,42 @@ const Filters = ({ params }) => {
         [filters],
     );
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}>
-                    <InputComponent
-                        keyValue="search"
-                        onChange={handleChange}
-                        value={filters.search}
-                        type="search"
-                        label={MESSAGES.search}
-                        onEnterPressed={handleSearch}
-                        blockForbiddenChars
-                        onErrorChange={setTextSearchError}
-                    />
-                </Grid>
-
-                <Grid
-                    item
-                    xs={12}
-                    sm={6}
-                    md={9}
-                    container
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    <Button
-                        data-test="search-button"
-                        disabled={textSearchError || !filtersUpdated}
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        onClick={() => handleSearch()}
-                    >
-                        <SearchIcon className={classes.buttonIcon} />
-                        {formatMessage(MESSAGES.search)}
-                    </Button>
-                </Grid>
+        <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={3}>
+                <InputComponent
+                    keyValue="search"
+                    onChange={handleChange}
+                    value={filters.search}
+                    type="search"
+                    label={MESSAGES.search}
+                    onEnterPressed={handleSearch}
+                    blockForbiddenChars
+                    onErrorChange={setTextSearchError}
+                />
             </Grid>
-        </>
+
+            <Grid
+                item
+                xs={12}
+                sm={6}
+                md={9}
+                container
+                justifyContent="flex-end"
+                alignItems="center"
+            >
+                <Button
+                    data-test="search-button"
+                    disabled={textSearchError || !filtersUpdated}
+                    variant="contained"
+                    className={classes.button}
+                    color="primary"
+                    onClick={() => handleSearch()}
+                >
+                    <SearchIcon className={classes.buttonIcon} />
+                    {formatMessage(MESSAGES.search)}
+                </Button>
+            </Grid>
+        </Grid>
     );
 };
 

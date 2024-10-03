@@ -11,7 +11,7 @@ import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCan
 import IasoSearchComponent from './IasoSearchComponent';
 import Dhis2Search from './Dhis2SearchComponent';
 import MESSAGES from '../messages';
-import { mappingTypeOptions } from './MappingTypeOptions'
+import { mappingTypeOptions } from './MappingTypeOptions';
 import { useDataSources, useCreateMappingMutation } from '../hooks.js';
 
 const CreateMappingVersionDialogComponent = () => {

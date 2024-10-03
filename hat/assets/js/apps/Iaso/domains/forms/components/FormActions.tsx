@@ -123,8 +123,12 @@ export const FormActions: FunctionComponent<Props> = ({
                                     url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
                                     icon="dhis"
                                     tooltipMessage={MESSAGES.dhis2Mappings}
-                                    color={settings.row.original.has_mappings ? "primary": undefined}
-                                />                                
+                                    color={
+                                        settings.row.original.has_mappings
+                                            ? 'primary'
+                                            : undefined
+                                    }
+                                />
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
                                 permissions={[Permission.FORMS]}

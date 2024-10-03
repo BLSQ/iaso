@@ -307,7 +307,6 @@ export const groupSetDetailPath = {
     element: <GroupSet />,
 };
 
-
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
     routerUrl: `${baseUrls.orgUnitTypes}/*`,

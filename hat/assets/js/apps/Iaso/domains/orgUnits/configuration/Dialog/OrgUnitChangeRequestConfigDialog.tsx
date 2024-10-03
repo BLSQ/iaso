@@ -267,6 +267,5 @@ const modalWithButton = makeFullModal(
 
 export {
     OrgUnitChangeRequestConfigDialog as OrgUnitChangeRequestConfigDialogCreateSecondStep,
-    modalWithButton as OrgUnitChangeRequestConfigDialogUpdate
+    modalWithButton as OrgUnitChangeRequestConfigDialogUpdate,
 };
-

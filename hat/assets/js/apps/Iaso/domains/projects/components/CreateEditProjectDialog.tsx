@@ -291,6 +291,5 @@ const editProjectModalWithIcon = makeFullModal(
 
 export {
     createProjectModalWithButton as CreateProjectDialog,
-    editProjectModalWithIcon as EditProjectDialog
+    editProjectModalWithIcon as EditProjectDialog,
 };
-

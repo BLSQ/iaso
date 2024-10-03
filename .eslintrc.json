@@ -2,9 +2,9 @@
     "env": {
         "browser": true,
         "commonjs": true,
+        "cypress/globals": true,
         "es6": true,
-        "node": true,
-        "cypress/globals": true
+        "node": true
     },
     "extends": [
         "airbnb",
@@ -75,6 +75,16 @@
                 "@typescript-eslint"
             ],
             "rules": {
+                "import/extensions": [
+                    "error",
+                    "ignorePackages",
+                    {
+                        "js": "off",
+                        "jsx": "off",
+                        "ts": "off",
+                        "tsx": "off"
+                    }
+                ],
                 "@typescript-eslint/ban-ts-comment": "off",
                 "@typescript-eslint/no-explicit-any": 0,
                 "@typescript-eslint/no-unused-vars": [
@@ -87,13 +97,13 @@
                 "camelcase": "off",
                 "class-methods-use-this": "warn",
                 "constructor-super": "warn",
-                "import/extensions": "off",
                 "import/no-extraneous-dependencies": "off",
                 "import/no-named-as-default": "warn",
                 "import/no-unresolved": "warn",
                 "import/prefer-default-export": "off",
                 "jsx-a11y/anchor-is-valid": "off",
                 "jsx-a11y/click-events-have-key-events": "off",
+                "jsx-a11y/control-has-associated-label": "off",
                 "jsx-a11y/href-no-hash": "off",
                 "jsx-a11y/jsx-wrap-multilines": "off",
                 "jsx-a11y/label-has-associated-control": "off",
@@ -199,6 +209,16 @@
                 "varsIgnorePattern": "^_"
             }
         ],
+        "import/extensions": [
+            "error",
+            "ignorePackages",
+            {
+                "js": "off",
+                "jsx": "off",
+                "ts": "off",
+                "tsx": "off"
+            }
+        ],
         "camelcase": "off",
         "class-methods-use-this": "warn",
         "constructor-super": "warn",
@@ -207,6 +227,7 @@
         "import/prefer-default-export": "off",
         "jsx-a11y/anchor-is-valid": "off",
         "jsx-a11y/click-events-have-key-events": "off",
+        "jsx-a11y/control-has-associated-label": "off",
         "jsx-a11y/href-no-hash": "off",
         "jsx-a11y/jsx-wrap-multilines": "off",
         "jsx-a11y/label-has-associated-control": "off",
@@ -291,6 +312,14 @@
     },
     "settings": {
         "import/resolver": {
+            "node": {
+                "extensions": [
+                    ".js",
+                    ".jsx",
+                    ".ts",
+                    ".tsx"
+                ]
+            },
             "webpack": {
                 "config": "hat/webpack.dev.js"
             }

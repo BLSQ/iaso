@@ -89,7 +89,8 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         },
     )["orgunits"][0]
 
-    team = teams[0]
+    team = [team for team in teams if team["name"] == "TEAM alpha"][0]
+
     current_date = datetime.now()
     campaign = iaso_client.post(
         "/api/microplanning/plannings/",
@@ -104,19 +105,26 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
             "published_at": current_date.strftime("%Y-%m-%d"),
         },
     )
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
 
+    health_facility_type = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][
+        0
+    ]
     health_facitities = iaso_client.get(
         "/api/orgunits/",
         params={
             "validation_status": "VALID",
+            "asLocation": "true",
+            "limit": 3000,
             "geography": "any",
             "onlyDirectChildren": "false",
             "page": 1,
             "withParents": "true",
             "order": "name",
-            "depth": 5,
+            "orgUnitParentIds": country["id"],
+            "orgUnitTypeId": health_facility_type["id"],
         },
-    )["orgUnits"]
+    )
 
     for health_facitity in health_facitities:
         print("assigning", health_facitity["name"], "to", team["name"])

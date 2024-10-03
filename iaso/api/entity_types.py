@@ -7,6 +7,7 @@ from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, TimestampField
 from iaso.models import Entity, EntityType
 from iaso.models.deduplication import ValidationStatus
+from unidecode import unidecode
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -92,8 +93,8 @@ class EntityTypeViewSet(ModelViewSet):
         name = request.data.get("name", None)
         account = request.data.get("account", None)
         if name is not None and account is not None:
-            name_to_code = name.replace(" ", "_")
-            request.data["code"] = f"{name_to_code.lower()}_{account}"
+            name_to_code = unidecode(name).lower().replace(" ", "_")
+            request.data["code"] = f"{name_to_code}_{account}"
         entity_type_serializer = EntityTypeSerializer(data=request.data, context={"request": request})
         entity_type_serializer.is_valid(raise_exception=True)
         entity_type = entity_type_serializer.save()

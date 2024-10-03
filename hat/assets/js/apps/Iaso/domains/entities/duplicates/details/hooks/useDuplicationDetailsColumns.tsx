@@ -7,6 +7,11 @@ import { convertValueIfDate } from '../../../../../components/Cells/DateTimeCell
 import { DuplicateEntityForTable } from '../../types';
 import { useEntityCell } from './useEntityCell';
 import { findDescriptorInChildren } from '../../../../../utils';
+import {
+    hasFeatureFlag,
+    ENTITY_DUPLICATES_SOFT_DELETE,
+} from '../../../../../utils/featureFlags';
+import { useCurrentUser } from '../../../../../utils/usersUtils';
 
 type UseDuplicationDetailsColumnsArgs = {
     state: DuplicateEntityForTable[];
@@ -27,9 +32,10 @@ export const useDuplicationDetailsColumns = ({
     descriptors,
 }: UseDuplicationDetailsColumnsArgs): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
 
     return useMemo(() => {
-        return [
+        const columns = [
             {
                 Header: formatMessage(MESSAGES.field),
                 accessor: 'field',
@@ -108,7 +114,10 @@ export const useDuplicationDetailsColumns = ({
                     );
                 },
             },
-            {
+        ];
+
+        if (!hasFeatureFlag(currentUser, ENTITY_DUPLICATES_SOFT_DELETE)) {
+            columns.push({
                 Header: formatMessage(MESSAGES.finalValue),
                 accessor: 'final',
                 resizable: false,
@@ -124,8 +133,10 @@ export const useDuplicationDetailsColumns = ({
                     );
                     return <div>{result}</div>;
                 },
-            },
-        ];
+            });
+        }
+
+        return columns;
     }, [
         formatMessage,
         setQuery,

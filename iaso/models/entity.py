@@ -13,6 +13,7 @@ has a foreign key to a reference form, and each entity has a foreign key (attrib
 form.
 """
 
+from copy import copy
 import typing
 import uuid
 import json
@@ -21,9 +22,12 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
+
+from hat.audit.models import log_modification
 
 from iaso.models import Account, Form, Instance, OrgUnit, Project
+
 from iaso.utils.jsonlogic import jsonlogic_to_q
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
@@ -39,6 +43,9 @@ class EntityType(models.Model):
     """Its `reference_form` describes the core attributes/metadata about the entity type (in case it refers to a person: name, age, ...)"""
 
     name = models.CharField(max_length=255)  # Example: "Child under 5"
+    code = models.CharField(
+        max_length=255, null=True, blank=True
+    )  # As the name could change over the time, this field will never change once the entity type created and ETL script will rely on that
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # Link to the reference form that contains the core attribute/metadata specific to this entity type
@@ -216,3 +223,26 @@ class Entity(SoftDeletableModel):
             "instances": instances,
             "account": self.account.as_dict(),
         }
+
+    def soft_delete_with_instances_and_pending_duplicates(self, audit_source, user):
+        """
+        This method does a proper soft-deletion of the entity:
+        - soft delete the entity
+        - soft delete its attached form instances
+        - delete relevant pending EntityDuplicate pairs
+        """
+        from iaso.models.deduplication import ValidationStatus
+
+        original = copy(self)
+        self.delete()  # soft delete
+        log_modification(original, self, audit_source, user=user)
+
+        for instance in set([self.attributes] + list(self.instances.all())):
+            original = copy(instance)
+            instance.soft_delete()
+            log_modification(original, instance, audit_source, user=user)
+
+        self.duplicates1.filter(validation_status=ValidationStatus.PENDING).delete()
+        self.duplicates2.filter(validation_status=ValidationStatus.PENDING).delete()
+
+        return self

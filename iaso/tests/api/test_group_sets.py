@@ -2,7 +2,7 @@ from django.utils.timezone import now
 from rest_framework import status
 
 from iaso import models as m
-from iaso.models import GroupSet
+from iaso.models import GroupSet, SourceVersion
 from iaso.test import APITestCase
 from hat.audit.models import Modification
 
@@ -20,6 +20,7 @@ class GroupSetsAPITestCase(APITestCase):
         star_wars = m.Account.objects.create(name="Star Wars", default_version=cls.source_version_1)
         marvel = m.Account.objects.create(name="Marvel")
 
+        cls.acccount_1 = star_wars
         cls.acccount_1_user_1 = cls.create_user_with_profile(
             username="yoda", account=star_wars, permissions=["iaso_org_units"]
         )
@@ -43,9 +44,14 @@ class GroupSetsAPITestCase(APITestCase):
 
         cls.project_1.data_sources.add(cls.data_source)
         cls.project_1.save()
+
+        cls.project_2.data_sources.add(cls.data_source)
+        cls.project_2.save()
+
         cls.data_source.account = star_wars
         cls.data_source.default_version = cls.source_version_1
         cls.data_source.projects.add(cls.project_1)
+        cls.data_source.projects.add(cls.project_2)
         cls.data_source.save()
 
         cls.data_source_2.account = star_wars
@@ -53,6 +59,7 @@ class GroupSetsAPITestCase(APITestCase):
         cls.data_source_2.save()
 
         cls.acccount_1_user_1.iaso_profile.projects.add(cls.project_1)
+        cls.acccount_1_user_1.iaso_profile.projects.add(cls.project_2)
 
     def test_authentification_required_for_get_list(self):
         response = self.client.get("/api/group_sets/", format="json")

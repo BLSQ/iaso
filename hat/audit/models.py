@@ -28,6 +28,7 @@ DJANGO_ADMIN = "django_admin"
 BULK_UPLOAD = "bulk_upload"
 BULK_UPLOAD_MERGED_ENTITY = "bulk_upload_merged_entity"
 ENTITY_DUPLICATE_MERGE = "entity_duplicate_merge"
+ENTITY_API = "entity_api"
 
 
 def dict_compare(d1, d2):

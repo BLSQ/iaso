@@ -39,7 +39,9 @@ const useStyles = makeStyles(theme => {
 });
 const baseUrl = baseUrls.stockManagementDetails;
 export const VaccineStockManagementDetails: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as StockManagementDetailsParams;
+    const params = useParamsObject(
+        baseUrl,
+    ) as unknown as StockManagementDetailsParams;
     const goBack = useGoBack(baseUrls.stockManagement);
     const redirectTo = useRedirectTo();
     const { formatMessage } = useSafeIntl();

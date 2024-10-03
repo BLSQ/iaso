@@ -1,4 +1,3 @@
-/* eslint-disable react/require-default-props */
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { Box, Button } from '@mui/material';
 import React, { FunctionComponent } from 'react';

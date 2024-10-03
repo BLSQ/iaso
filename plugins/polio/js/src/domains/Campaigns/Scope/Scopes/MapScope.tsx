@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box } from '@mui/material';
 import { FieldInputProps } from 'formik';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';

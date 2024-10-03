@@ -223,7 +223,6 @@
         "class-methods-use-this": "warn",
         "constructor-super": "warn",
         "import/no-extraneous-dependencies": "off",
-        "import/no-named-as-default": "warn",
         "import/prefer-default-export": "off",
         "jsx-a11y/anchor-is-valid": "off",
         "jsx-a11y/click-events-have-key-events": "off",
@@ -295,6 +294,7 @@
             "error",
             4
         ],
+        "import/no-named-as-default": "off",
         "react/jsx-one-expression-per-line": "off",
         "react/jsx-props-no-spreading": "off",
         "react/jsx-wrap-multilines": "off",

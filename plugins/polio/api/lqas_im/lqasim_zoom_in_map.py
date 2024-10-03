@@ -40,7 +40,6 @@ def get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_b
         .exclude(campaign__is_test=True)
         .order_by("-started_at")[:1]
     )
-    polio_campaign_type = CampaignType.objects.get(name=CampaignType.POLIO)
     latest_active_campaign = (
         Campaign.objects.filter(id__in=Subquery(latest_active_round_qs.values("campaign")))
         .filter(deleted_at=None)

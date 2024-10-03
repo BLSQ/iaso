@@ -427,7 +427,6 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        print("results", results)
         # Test details of data for first country
         self.assertEqual(len(results), 2)
         results_for_first_country = next(

@@ -4,10 +4,12 @@ import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../messages';
 import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 
-export const useVaccineStockManagementTableColumns = (): Column[] => {
+export const useVaccineStockManagementTableColumns = (
+    vaccineType?: string,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
-        return [
+        const columns = [
             {
                 Header: formatMessage(MESSAGES.country),
                 accessor: 'country_name',
@@ -46,7 +48,10 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
                     />
                 ),
             },
-            {
+        ];
+
+        if (vaccineType !== 'bOPV') {
+            columns.push({
                 Header: formatMessage(MESSAGES.stockUnusableVials),
                 accessor: 'stock_of_unusable_vials',
                 sortable: false,
@@ -55,7 +60,9 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
                         value={settings.row.original.stock_of_unusable_vials}
                     />
                 ),
-            },
+            });
+        }
+        columns.push(
             {
                 Header: formatMessage(MESSAGES.vialsDestroyed),
                 accessor: 'vials_destroyed',
@@ -78,6 +85,8 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
                     );
                 },
             },
-        ];
-    }, [formatMessage]);
+        );
+
+        return columns;
+    }, [formatMessage, vaccineType]);
 };

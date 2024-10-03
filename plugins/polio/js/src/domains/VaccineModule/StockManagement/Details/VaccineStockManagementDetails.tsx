@@ -69,6 +69,8 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
         });
     }, [params, redirectTo]);
 
+    const isBopv = summary?.vaccine_type === 'bOPV';
+
     const title = `${formatMessage(MESSAGES.stockDetails)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
@@ -116,11 +118,13 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                         value={USABLE_VIALS}
                         label={formatMessage(MESSAGES.usable)}
                     />
-                    <Tab
-                        key={UNUSABLE_VIALS}
-                        value={UNUSABLE_VIALS}
-                        label={formatMessage(MESSAGES.unusable)}
-                    />
+                    {!isBopv && (
+                        <Tab
+                            key={UNUSABLE_VIALS}
+                            value={UNUSABLE_VIALS}
+                            label={formatMessage(MESSAGES.unusable)}
+                        />
+                    )}
                 </Tabs>
                 <Paper elevation={2} className={classes.marginTop}>
                     <Box pt={2} px={2}>

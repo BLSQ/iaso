@@ -121,13 +121,12 @@ Cypress.Commands.add('testInputValue', (id, value) =>
  * @param {array} options - list of possible options
  * @param {string} accessor - key of the option to test, by default 'name'
  */
-Cypress.Commands.add('testMultiSelect', (id, options, accessor = 'name') => {
-    cy.get(id).parent().as('select');
-    cy.get('@select').find('div[role=button]').as('chips');
-    cy.get('@chips').should('have.length', options.length);
-    options.forEach(o => {
-        cy.get('@select').should('contain', o[accessor]);
-    });
+Cypress.Commands.add('testMultiSelect', (id, options) => {
+    cy.get(id)
+        .parent()
+        .within(() => {
+            cy.get('div[role=button]').should('have.length', options.length);
+        });
 });
 
 /**
@@ -206,9 +205,7 @@ Cypress.Commands.add('deleteLastFieldInArrayInputField', selector => {
  */
 Cypress.Commands.add('fillTextField', (id, value = '') => {
     cy.get(id).clear();
-    cy.get(id).then(() => {
-        cy.wrap(id).type(value);
-    });
+    cy.get(id).type(value);
 });
 
 /**

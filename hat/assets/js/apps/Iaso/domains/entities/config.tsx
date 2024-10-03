@@ -1,35 +1,34 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable camelcase */
-import React, { ReactElement, useMemo } from 'react';
 import {
-    IconButton as IconButtonComponent,
-    useSafeIntl,
     Column,
+    IconButton as IconButtonComponent,
     IntlFormatMessage,
     LinkWithLocation,
     textPlaceholder,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { ReactElement, useMemo } from 'react';
 
-import moment from 'moment';
-import _ from 'lodash';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
+import _ from 'lodash';
+import moment from 'moment';
 import {
     DateCell,
     DateTimeCell,
     DateTimeCellRfc,
 } from '../../components/Cells/DateTimeCell';
+import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 
 import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
 
-import { ExtraColumn } from './types/fields';
 import getDisplayName from '../../utils/usersUtils';
-import { useGetFieldValue } from './hooks/useGetFieldValue';
-import { formatLabel } from '../instances/utils';
 import { LinkToInstance } from '../instances/components/LinkToInstance';
+import { formatLabel } from '../instances/utils';
 import { filterOrgUnitsByGroupUrl } from '../orgUnits/utils';
+import { useGetFieldValue } from './hooks/useGetFieldValue';
+import { ExtraColumn } from './types/fields';
 
 export const baseUrl = baseUrls.entities;
 

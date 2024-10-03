@@ -1,27 +1,26 @@
-import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import { useSafeIntl, useRedirectTo } from 'bluesquare-components';
+import React, { FunctionComponent, useCallback } from 'react';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
-import MESSAGES from '../messages';
-import { useMergeDuplicate } from '../hooks/api/useMergeDuplicate';
-import { useIgnoreDuplicate } from '../hooks/api/useIgnoreDuplicate';
-import { useSoftDeleteBeneficiary } from '../../hooks/requests';
 import {
     formSuccessFullMessageKey,
     succesfullSnackBar,
-    // successfullSnackBarWithButtons,
 } from '../../../../constants/snackBars';
 import { baseUrls } from '../../../../constants/urls';
+import {
+    ENTITY_DUPLICATES_SOFT_DELETE,
+    hasFeatureFlag,
+} from '../../../../utils/featureFlags';
+import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { userHasPermission } from '../../../users/utils';
+import { useSoftDeleteBeneficiary } from '../../hooks/requests';
+import { useIgnoreDuplicate } from '../hooks/api/useIgnoreDuplicate';
+import { useMergeDuplicate } from '../hooks/api/useMergeDuplicate';
+import MESSAGES from '../messages';
 import { DuplicateInfosTable } from './DuplicateInfosTable';
-import * as Permission from '../../../../utils/permissions';
-import {
-    hasFeatureFlag,
-    ENTITY_DUPLICATES_SOFT_DELETE,
-} from '../../../../utils/featureFlags';
 
 type Props = {
     isLoading: boolean;
@@ -68,8 +67,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const redirectTo = useRedirectTo();
 
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-    const successSnackBar = (msg, data) => {
+    const successSnackBar = (msg, _data) => {
         return succesfullSnackBar(formSuccessFullMessageKey, msg);
         // TODO uncomment when we figured out how to style the button
         // return successfullSnackBar({

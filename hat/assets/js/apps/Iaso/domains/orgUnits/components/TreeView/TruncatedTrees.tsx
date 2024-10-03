@@ -10,7 +10,6 @@ type TreeData = Map<string, any>;
 type Props = {
     treesData: TreeData;
     disabled: boolean;
-    // eslint-disable-next-line no-unused-vars
     label: (orgUnit: OrgUnit) => ReactNode;
     placeholderStyle: string;
     formattedPlaceholder: string;

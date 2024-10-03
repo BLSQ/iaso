@@ -1,17 +1,17 @@
-import React, { FunctionComponent, MouseEvent, useCallback } from 'react';
 import { Box, Divider } from '@mui/material';
-import get from 'lodash/get';
-import Color from 'color';
 import { Column, Table, useRedirectTo } from 'bluesquare-components';
-import { AssignmentsApi, AssignmentParams } from '../types/assigment';
-import { AssignmentUnit } from '../types/locations';
-import { useColumns } from '../configs/AssignmentsListTabColumns';
-import { DropdownTeamsOptions, SubTeam, User, Team } from '../types/team';
-import { Profile } from '../../../utils/usersUtils';
+import Color from 'color';
+import get from 'lodash/get';
+import React, { FunctionComponent, MouseEvent, useCallback } from 'react';
 import { baseUrls } from '../../../constants/urls';
-import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 import { getStickyTableHeadStyles } from '../../../styles/utils';
+import { Profile } from '../../../utils/usersUtils';
+import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { useColumns } from '../configs/AssignmentsListTabColumns';
 import { parentColor } from '../constants/colors';
+import { AssignmentParams, AssignmentsApi } from '../types/assigment';
+import { AssignmentUnit } from '../types/locations';
+import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
 type Order = {
     id: string;
@@ -39,15 +39,11 @@ type Props = {
     assignments: AssignmentsApi;
     isFetchingOrgUnits: boolean;
     params: AssignmentParams;
-    handleSaveAssignment: (
-        // eslint-disable-next-line no-unused-vars
-        selectedOrgUnit: AssignmentUnit,
-    ) => void;
+    handleSaveAssignment: (selectedOrgUnit: AssignmentUnit) => void;
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     selectedItem: SubTeam | User | undefined;
     currentTeam?: Team;
-    // eslint-disable-next-line no-unused-vars
     setParentSelected: (orgUnit: ParentOrgUnit | undefined) => void;
 };
 

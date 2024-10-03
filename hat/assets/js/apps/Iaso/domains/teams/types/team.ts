@@ -38,10 +38,7 @@ export type TeamFilterParams = {
 
 export type TeamParams = UrlParams &
     TeamFilterParams & {
-        select?: (
-            // eslint-disable-next-line no-unused-vars
-            data: Array<Team>,
-        ) => Array<any>;
+        select?: (data: Array<Team>) => Array<any>;
     };
 
 export type DropdownTeamsOptions = {

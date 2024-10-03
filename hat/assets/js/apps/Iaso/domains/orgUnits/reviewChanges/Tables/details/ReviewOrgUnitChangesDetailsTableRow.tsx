@@ -8,7 +8,6 @@ import { OrgUnitChangeRequestDetails } from '../../types';
 
 type Props = {
     field: NewOrgUnitField;
-    // eslint-disable-next-line no-unused-vars
     isNew: boolean;
     isNewOrgUnit: boolean;
     isFetchingChangeRequest: boolean;

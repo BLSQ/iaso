@@ -1,25 +1,25 @@
 /* eslint-disable camelcase */
-import React, { ReactNode, FunctionComponent, useState } from 'react';
-import { useFormik, FormikProvider, FormikProps } from 'formik';
-import * as yup from 'yup';
+import { Box } from '@mui/material';
 import {
-    useSafeIntl,
+    IconButton,
     IntlFormatMessage,
     IntlMessage,
-    IconButton,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { Box } from '@mui/material';
+import { FormikProps, FormikProvider, useFormik } from 'formik';
 import isEqual from 'lodash/isEqual';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
+import * as yup from 'yup';
 
-import InputComponent from '../../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
+import InputComponent from '../../../../components/forms/InputComponent';
 import { EntityType } from '../types/entityType';
 
-import { useGetFormForEntityType, useGetForms } from '../hooks/requests/forms';
-import { useTranslatedErrors } from '../../../../libs/validation';
-import MESSAGES from '../messages';
-import { formatLabel } from '../../../instances/utils';
 import { baseUrls } from '../../../../constants/urls';
+import { useTranslatedErrors } from '../../../../libs/validation';
+import { formatLabel } from '../../../instances/utils';
+import { useGetFormForEntityType, useGetForms } from '../hooks/requests/forms';
+import MESSAGES from '../messages';
 
 type RenderTriggerProps = {
     openDialog: () => void;
@@ -29,13 +29,10 @@ type EmptyEntityType = Partial<EntityType>;
 
 type Props = {
     titleMessage: IntlMessage;
-    // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: RenderTriggerProps) => ReactNode;
     initialData?: EntityType | EmptyEntityType;
     saveEntityType: (
-        // eslint-disable-next-line no-unused-vars
         e: EntityType | EmptyEntityType,
-        // eslint-disable-next-line no-unused-vars
         options: Record<string, () => void>,
     ) => void;
 };

@@ -1,22 +1,22 @@
 /* eslint-disable react/function-component-definition */
-import React, {
-    useState,
-    useCallback,
-    useEffect,
-    FunctionComponent,
-    useMemo,
-} from 'react';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
-import { Grid, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { getValues, useFormState } from '../../../hooks/form';
-import { OrgUnitInfos } from './OrgUnitInfos';
-import { OrgUnit, Group, OrgunitInititialState } from '../types/orgUnit';
+import { Group, OrgUnit, OrgunitInititialState } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
+import { OrgUnitInfos } from './OrgUnitInfos';
 
 const initialFormState = (orgUnit: OrgUnit): OrgunitInititialState => ({
     id: orgUnit.id,
@@ -45,11 +45,8 @@ type Props = {
     orgUnitTypes: OrgunitType[];
     groups: Group[];
     saveOrgUnit: (
-        // eslint-disable-next-line no-unused-vars
         newOu: OrgUnit,
-        // eslint-disable-next-line no-unused-vars
         onSuccess: (unit: OrgUnit) => void,
-        // eslint-disable-next-line no-unused-vars
         onError: (error: any) => void,
     ) => void;
     params: Record<string, string>;

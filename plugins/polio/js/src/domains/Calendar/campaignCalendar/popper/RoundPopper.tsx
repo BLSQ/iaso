@@ -46,7 +46,6 @@ type Props = {
     handleClose: () => void;
     open: boolean;
     anchorEl: HTMLElement | undefined;
-    // eslint-disable-next-line no-unused-vars
     setDialogOpen: (open: boolean) => void;
     round: CalendarRound;
 };

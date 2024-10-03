@@ -1,3 +1,4 @@
+import { useRedirectToReplace } from 'bluesquare-components';
 import {
     Dispatch,
     SetStateAction,
@@ -5,7 +6,6 @@ import {
     useMemo,
     useState,
 } from 'react';
-import { useRedirectToReplace } from 'bluesquare-components';
 import { Optional } from '../types/utils';
 
 type UseTabsParams<T> = {
@@ -18,7 +18,6 @@ type UseTabsParams<T> = {
 type UseTabsValue<T> = {
     tab: T;
     setTab: Dispatch<SetStateAction<T>>;
-    // eslint-disable-next-line no-unused-vars
     handleChangeTab: (_event: any, newTab: T) => void;
 };
 

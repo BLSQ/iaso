@@ -10,7 +10,6 @@ export type Form = {
 };
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     setFieldValue: (key: string, value: string) => void;
     projectFeatureFlagsValues: (string | number)[];
     featureFlags?: FeatureFlag[];

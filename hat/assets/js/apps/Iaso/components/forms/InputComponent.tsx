@@ -61,8 +61,7 @@ export type InputComponentProps = {
     keyValue: string;
     value?: any;
     errors?: string[];
-    onChange?: // eslint-disable-next-line no-unused-vars
-    (key: string, value: any, countryData?: BaseCountryData) => void;
+    onChange?: (key: string, value: any, countryData?: BaseCountryData) => void;
 
     options?: any[];
     disabled?: boolean;
@@ -76,18 +75,10 @@ export type InputComponentProps = {
     multi?: boolean;
     uid?: string;
     loading?: boolean;
-    // eslint-disable-next-line no-unused-vars
     getOptionLabel?: (option: Option) => string;
-    getOptionSelected?: (
-        // eslint-disable-next-line no-unused-vars
-        option: Option,
-        // eslint-disable-next-line no-unused-vars
-        value: Option,
-    ) => boolean;
+    getOptionSelected?: (option: Option, value: Option) => boolean;
     renderOption?: (
-        // eslint-disable-next-line no-unused-vars
         option: Option,
-        // eslint-disable-next-line no-unused-vars
         { inputValue }: { inputValue: string },
     ) => ReactNode;
     className?: string;
@@ -95,7 +86,6 @@ export type InputComponentProps = {
     min?: number;
     max?: number;
     blockForbiddenChars?: boolean;
-    // eslint-disable-next-line no-unused-vars
     onErrorChange?: (hasError: boolean) => void;
     numberInputOptions?: {
         prefix?: string;
@@ -107,10 +97,8 @@ export type InputComponentProps = {
         thousandSeparator?: '.' | ',';
     };
     phoneInputOptions?: PhoneInputOptions;
-    // eslint-disable-next-line no-unused-vars
     setFieldError?: (keyValue: string, message: string) => void;
     autoComplete?: string;
-    // eslint-disable-next-line no-unused-vars
     renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
     freeSolo?: boolean; // this props i only use on single select and allow user to give an option not present in the list. Errors will be ignored
     returnFullObject?: boolean;

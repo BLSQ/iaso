@@ -10,10 +10,7 @@ import React, {
 import { UseSaveChangeRequestQueryData } from '../hooks/api/useSaveChangeRequest';
 import MESSAGES from '../messages';
 
-type SubmitChangeRequest = (
-    // eslint-disable-next-line no-unused-vars
-    variables: UseSaveChangeRequestQueryData,
-) => void;
+type SubmitChangeRequest = (variables: UseSaveChangeRequestQueryData) => void;
 
 type Props = {
     comment?: string;

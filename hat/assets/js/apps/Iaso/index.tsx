@@ -34,13 +34,9 @@ const queryClient = new QueryClient({
 declare global {
     interface Window {
         iasoApp: (
-            // eslint-disable-next-line no-unused-vars
             element: HTMLElement,
-            // eslint-disable-next-line no-unused-vars
             enabledPluginsName: string[],
-            // eslint-disable-next-line no-unused-vars
             themeConfig: ThemeConfig,
-            // eslint-disable-next-line no-unused-vars
             userHomePage: string,
         ) => void;
     }

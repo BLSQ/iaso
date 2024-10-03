@@ -1,26 +1,21 @@
-import React, { useMemo } from 'react';
-import { useSafeIntl, Column } from 'bluesquare-components';
 import { Box } from '@mui/material';
-import MESSAGES from '../../messages';
-import { formatLabel } from '../../../../instances/utils';
+import { Column, useSafeIntl } from 'bluesquare-components';
+import React, { useMemo } from 'react';
 import { convertValueIfDate } from '../../../../../components/Cells/DateTimeCell';
-import { DuplicateEntityForTable } from '../../types';
-import { useEntityCell } from './useEntityCell';
 import { findDescriptorInChildren } from '../../../../../utils';
 import {
-    hasFeatureFlag,
     ENTITY_DUPLICATES_SOFT_DELETE,
+    hasFeatureFlag,
 } from '../../../../../utils/featureFlags';
 import { useCurrentUser } from '../../../../../utils/usersUtils';
+import { formatLabel } from '../../../../instances/utils';
+import MESSAGES from '../../messages';
+import { DuplicateEntityForTable } from '../../types';
+import { useEntityCell } from './useEntityCell';
 
 type UseDuplicationDetailsColumnsArgs = {
     state: DuplicateEntityForTable[];
-    updateCellState: (
-        // eslint-disable-next-line no-unused-vars
-        index: number,
-        // eslint-disable-next-line no-unused-vars
-        value: DuplicateEntityForTable,
-    ) => void;
+    updateCellState: (index: number, value: DuplicateEntityForTable) => void;
     setQuery: React.Dispatch<any>;
     descriptors: { descriptor1: any; descriptor2: any };
 };

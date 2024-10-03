@@ -45,10 +45,8 @@ type Props = {
     setLocationLimit: Dispatch<React.SetStateAction<number>>;
     searchIndex: number;
     currentSearch: Search;
-    // eslint-disable-next-line no-unused-vars
     setTextSearchError: Dispatch<React.SetStateAction<boolean>>;
     onSearch: () => void;
-    // eslint-disable-next-line no-unused-vars
     onChangeColor: (color: string, index: number) => void;
     setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     currentTab: string;

@@ -1,21 +1,19 @@
-import React, { FunctionComponent, SetStateAction } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent, SetStateAction } from 'react';
 import InputComponent from '../../../../components/forms/InputComponent';
-import MESSAGES from '../messages';
+import {
+    ENTITY_DUPLICATES_SOFT_DELETE,
+    hasFeatureFlag,
+} from '../../../../utils/featureFlags';
+import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { userHasPermission } from '../../../users/utils';
-import * as Permission from '../../../../utils/permissions';
-import {
-    hasFeatureFlag,
-    ENTITY_DUPLICATES_SOFT_DELETE,
-} from '../../../../utils/featureFlags';
+import MESSAGES from '../messages';
 
 type Props = {
     onlyShowUnmatched: boolean;
-    // eslint-disable-next-line no-unused-vars
     setOnlyShowUnmatched: (value: SetStateAction<boolean>) => void;
-    // eslint-disable-next-line no-unused-vars
     fillValues: (entity: 'entity1' | 'entity2') => void;
     resetSelection: () => void;
 };

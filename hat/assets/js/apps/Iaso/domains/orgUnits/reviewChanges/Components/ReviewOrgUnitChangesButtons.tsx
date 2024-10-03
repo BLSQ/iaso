@@ -13,10 +13,7 @@ import MESSAGES from '../messages';
 import { OrgUnitChangeRequestDetails } from '../types';
 import { ReviewOrgUnitChangesCommentDialog } from './ReviewOrgUnitChangesCommentDialog';
 
-type SubmitChangeRequest = (
-    // eslint-disable-next-line no-unused-vars
-    variables: UseSaveChangeRequestQueryData,
-) => void;
+type SubmitChangeRequest = (variables: UseSaveChangeRequestQueryData) => void;
 
 type Props = {
     newFields: NewOrgUnitField[];

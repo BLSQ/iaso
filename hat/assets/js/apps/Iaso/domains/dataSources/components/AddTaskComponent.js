@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
 import { Grid, Typography } from '@mui/material';
-import { FormattedMessage } from 'react-intl';
 import { LoadingSpinner, useRedirectTo } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import MESSAGES from '../messages';
+import React, { useState } from 'react';
+import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 import { Checkboxes } from '../../../components/forms/Checkboxes';
+import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 import { baseUrls } from '../../../constants/urls.ts';
-import { sendDhisOuImporterRequest } from '../requests';
 import { useFormState } from '../../../hooks/form';
 import { useSnackMutation } from '../../../libs/apiHooks.ts';
+import MESSAGES from '../messages';
+import { sendDhisOuImporterRequest } from '../requests';
 import { VersionDescription } from './VersionDescription.tsx';
 
 const initialFormState = sourceCredentials => {
@@ -30,8 +30,7 @@ const AddTask = ({
     sourceVersionNumber,
     sourceCredentials,
 }) => {
-    // eslint-disable-next-line no-unused-vars
-    const [form, setFormField, _, setFormState] = useFormState(
+    const [form, setFormField, , setFormState] = useFormState(
         initialFormState(sourceCredentials),
     );
     const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(

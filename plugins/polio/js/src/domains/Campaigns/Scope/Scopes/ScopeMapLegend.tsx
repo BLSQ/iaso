@@ -14,7 +14,6 @@ import { Scope, Vaccine } from '../../../../constants/types';
 type Props = {
     field: FieldInputProps<Scope[]>;
     selectedVaccine: string;
-    // eslint-disable-next-line no-unused-vars
     setSelectedVaccine: (selected: Vaccine) => void;
     availableVaccines?: PolioVaccine[];
 };

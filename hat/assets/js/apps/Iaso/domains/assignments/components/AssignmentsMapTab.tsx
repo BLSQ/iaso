@@ -2,16 +2,16 @@ import React, { FunctionComponent } from 'react';
 
 import { AssignmentsMap } from './AssignmentsMap';
 
-import { AssignmentsApi, AssignmentParams } from '../types/assigment';
-import { Planning } from '../types/planning';
-import { Team, DropdownTeamsOptions } from '../types/team';
-import { OrgUnitShape, Locations, OrgUnitMarker } from '../types/locations';
 import { Profile } from '../../../utils/usersUtils';
+import { AssignmentParams, AssignmentsApi } from '../types/assigment';
+import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
+import { Planning } from '../types/planning';
+import { DropdownTeamsOptions, Team } from '../types/team';
 
+import { DropdownOptions } from '../../../types/utils';
+import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
 import { useGetOrgUnitParentIds } from '../hooks/useGetOrgUnitParentIds';
-import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
-import { DropdownOptions } from '../../../types/utils';
 
 type Props = {
     allAssignments: AssignmentsApi;
@@ -20,13 +20,11 @@ type Props = {
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     params: AssignmentParams;
-    // eslint-disable-next-line no-unused-vars
     setParentSelected: (orgUnit: ParentOrgUnit | undefined) => void;
     locations: Locations | undefined;
     isFetchingLocations: boolean;
     isLoadingAssignments: boolean;
     handleSaveAssignment: (
-        // eslint-disable-next-line no-unused-vars
         selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
     ) => void;
     orgunitTypes: Array<DropdownOptions<string>>;

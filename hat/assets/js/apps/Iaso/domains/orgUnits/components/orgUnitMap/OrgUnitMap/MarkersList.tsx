@@ -9,9 +9,7 @@ type Props = {
     locationsList: any[];
     color?: string;
     keyId: string | number;
-    // eslint-disable-next-line no-unused-vars
     fetchDetail: (orgUnit: OrgUnit) => void;
-    // eslint-disable-next-line no-unused-vars
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
 };
 

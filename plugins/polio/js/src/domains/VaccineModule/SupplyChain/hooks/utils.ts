@@ -1,18 +1,18 @@
 /* eslint-disable camelcase */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { isEqual } from 'lodash';
 import { FormikProps } from 'formik';
+import { isEqual } from 'lodash';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { PREALERT, VAR, VRF } from '../constants';
+import { makeHandleSubmit } from '../Details/utils';
 import {
     PreAlert,
-    VAR as VARType,
     SupplyChainFormData,
     TabValue,
     UseHandleSubmitArgs,
+    VAR as VARType,
     VRF as VRFType,
 } from '../types';
-import { makeHandleSubmit } from '../Details/utils';
-import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 export const dosesPerVial = {
     nOPV2: 50,
@@ -170,8 +170,7 @@ export const useHandleSubmit = ({
     setInitialValues,
     saveForm,
     redirect,
-}: // eslint-disable-next-line no-unused-vars
-UseHandleSubmitArgs): ((saveAll?: boolean | undefined) => void) => {
+}: UseHandleSubmitArgs): ((saveAll?: boolean | undefined) => void) => {
     return useMemo(() => {
         return makeHandleSubmit({
             formik,
@@ -187,7 +186,6 @@ UseHandleSubmitArgs): ((saveAll?: boolean | undefined) => void) => {
 type UseWatchChangedTabsArgs = {
     initialValues: SupplyChainFormData;
     values: SupplyChainFormData;
-    // eslint-disable-next-line no-unused-vars
     setFieldValue: (key: string, value: any) => void;
 };
 
@@ -222,7 +220,6 @@ export const useWatchChangedTabs = ({
 
 type UseInitializeVRFValueOnFetchArgs = {
     vrf?: VRFType;
-    // eslint-disable-next-line no-unused-vars
     setFieldValue: (key: string, value: any) => void;
     setInitialValues: React.Dispatch<Partial<SupplyChainFormData>>;
 };
@@ -254,7 +251,6 @@ export const useInitializeVRFOnFetch = ({
 
 type UseInitializePreAlertsValueOnFetchArgs = {
     preAlerts?: PreAlert[];
-    // eslint-disable-next-line no-unused-vars
     setFieldValue: (key: string, value: any) => void;
     setInitialValues: React.Dispatch<Partial<SupplyChainFormData>>;
 };
@@ -287,7 +283,6 @@ export const useInitializePreAlertsOnFetch = ({
 };
 type UseInitializeArrivalReportsValueOnFetchArgs = {
     arrivalReports?: VARType[];
-    // eslint-disable-next-line no-unused-vars
     setFieldValue: (key: string, value: any) => void;
     setInitialValues: React.Dispatch<Partial<SupplyChainFormData>>;
 };

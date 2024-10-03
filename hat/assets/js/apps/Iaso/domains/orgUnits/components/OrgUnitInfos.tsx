@@ -17,17 +17,17 @@ import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 
 import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DatesRange from '../../../components/filters/DatesRange';
+import { ORG_UNITS } from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Instance } from '../../instances/types/instance';
+import { userHasPermission } from '../../users/utils';
 import { Group, OrgUnit, OrgUnitState } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
 import { useGetOrgUnit } from './TreeView/requests';
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
-import { ORG_UNITS } from '../../../utils/permissions';
-import { userHasPermission } from '../../users/utils';
-import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
@@ -52,9 +52,7 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     orgUnitState: OrgUnitState;
     onChangeInfo: (
-        // eslint-disable-next-line no-unused-vars
         key: string,
-        // eslint-disable-next-line no-unused-vars
         value: string | number | string[] | number[],
     ) => void;
     orgUnitTypes: OrgunitType[];

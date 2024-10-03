@@ -30,10 +30,8 @@ type Props = {
     values: CampaignFormValues;
     regionShapes: OrgUnit[];
     districtShapes: OrgUnit[];
-    // eslint-disable-next-line no-unused-vars
     onSelectOrgUnit: (id: Shape) => void;
     selectedVaccine: string;
-    // eslint-disable-next-line no-unused-vars
     setSelectedVaccine: (selected: Vaccine) => void;
     isPolio?: boolean;
     availableVaccines?: PolioVaccine[];

@@ -13,10 +13,7 @@ export type UserRolesFilterParams = {
 
 export type UserRoleParams = UrlParams &
     UserRolesFilterParams & {
-        select?: (
-            // eslint-disable-next-line no-unused-vars
-            data: Array<UserRole>,
-        ) => Array<any>;
+        select?: (data: Array<UserRole>) => Array<any>;
     };
 
 export type Permission = {

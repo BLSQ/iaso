@@ -10,7 +10,6 @@ import { ReviewOrgUnitChangesDetailsTableHead } from './ReviewOrgUnitChangesDeta
 type Props = {
     isSaving: boolean;
     newFields: NewOrgUnitField[];
-    // eslint-disable-next-line no-unused-vars
     setSelected: (key: string) => void;
     changeRequest?: OrgUnitChangeRequestDetails;
     isFetchingChangeRequest: boolean;

@@ -1,19 +1,19 @@
-import React, { useCallback, useState } from 'react';
-import {
-    CommentWithThread,
-    AddComment,
-    useSafeIntl,
-} from 'bluesquare-components';
 import { Pagination } from '@mui/lab';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import {
+    AddComment,
+    CommentWithThread,
+    useSafeIntl,
+} from 'bluesquare-components';
+import React, { useCallback, useState } from 'react';
 
-import { useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
 import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
-import { useGetComments, sendComment } from '../../../../utils/requests';
+import PropTypes from 'prop-types';
+import { useSelector } from 'react-redux';
+import { sendComment, useGetComments } from '../../../../utils/requests';
 
-import MESSAGES from '../../messages';
+import MESSAGES from '../../messages.ts';
 
 const styles = {
     commentsBlock: { marginBottom: '7px' },
@@ -63,8 +63,7 @@ const OrgUnitsMapComments = ({
     );
     const orgUnitToUse = getOrgUnitFromStore ? globalStateOrgUnit : orgUnit;
     const [offset, setOffset] = useState(null);
-    // eslint-disable-next-line no-unused-vars
-    const [pageSize, _setPageSize] = useState(maxPages);
+    const [pageSize] = useState(maxPages);
     const commentsParams = {
         orgUnitId: orgUnitToUse?.id,
         offset,
@@ -146,7 +145,7 @@ const OrgUnitsMapComments = ({
             </div>
             {comments?.count > 1 && (
                 <Pagination
-                    count={Math.ceil(comments?.count / pageSize)}
+                    count={Math.ceil((comments?.count ?? 0) / pageSize)}
                     onChange={(_, page) => {
                         setOffset(calculateOffset(page, pageSize));
                     }}

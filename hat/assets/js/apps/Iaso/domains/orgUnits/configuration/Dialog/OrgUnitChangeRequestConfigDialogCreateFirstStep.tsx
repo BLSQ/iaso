@@ -17,7 +17,6 @@ import MESSAGES from '../messages';
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    // eslint-disable-next-line no-unused-vars
     openCreationSecondStepDialog: (config: object) => void;
 };
 

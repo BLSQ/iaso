@@ -19,7 +19,6 @@ import './commands';
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
-// eslint-disable-next-line no-unused-vars
 Cypress.on('uncaught:exception', (err, _runnable, _promise) => {
     if (
         err.message.includes('AbortError') ||

@@ -11,8 +11,7 @@ import { longDateFormats } from '../../../utils/dates';
 
 const LocaleContext = createContext({
     locale: moment.locale(),
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-    setLocale: (locale: LangOptions) => {
+    setLocale: (_locale: LangOptions) => {
         /* noop */
     },
 });
@@ -37,7 +36,6 @@ export const LocaleProvider = ({ children }) => {
 
     const value: {
         locale: LangOptions;
-        // eslint-disable-next-line no-unused-vars
         setLocale: (newLocale: LangOptions) => void;
     } = useMemo(
         () => ({

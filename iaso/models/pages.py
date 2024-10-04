@@ -8,12 +8,14 @@ RAW = "RAW"
 TEXT = "TEXT"
 IFRAME = "IFRAME"
 POWERBI = "POWERBI"
+SUPERSET = "SUPERSET"
 
 PAGES_TYPES = [
     (RAW, _("Raw html")),
     (TEXT, _("Text")),
     (IFRAME, _("Iframe")),
     (POWERBI, _("PowerBI report")),
+    (SUPERSET, _("Superset dashboard")),
 ]
 
 

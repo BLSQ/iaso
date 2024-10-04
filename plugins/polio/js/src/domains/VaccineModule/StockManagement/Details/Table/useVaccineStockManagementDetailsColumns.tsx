@@ -92,6 +92,12 @@ export const useVaccineStockManagementDetailsColumnsUnusable = (): Column[] => {
                 Header: formatMessage(MESSAGES.action),
                 accessor: 'action',
                 id: 'action',
+                Cell: settings => {
+                    const { action } = settings.row.original;
+                    return MESSAGES[action]
+                        ? formatMessage(MESSAGES[action])
+                        : action;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.vials_in),

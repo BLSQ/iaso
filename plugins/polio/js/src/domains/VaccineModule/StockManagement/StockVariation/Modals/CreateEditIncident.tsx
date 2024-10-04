@@ -90,13 +90,14 @@ type Props = {
 export type IncidentReportFieldType =
     | 'plainMovement'
     | 'missingMovement'
+    | 'inOutMovement'
     | 'inventory';
 type IncidentReportConfig = {
     [key: string]: IncidentReportFieldType;
 };
 
 const incidentReportConfig: IncidentReportConfig = {
-    broken: 'missingMovement',
+    broken: 'inOutMovement',
     stealing: 'missingMovement',
     return: 'missingMovement',
     losses: 'missingMovement',
@@ -166,6 +167,10 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                     break;
                 case 'missingMovement':
                     usableVials = movement;
+                    break;
+                case 'inOutMovement':
+                    usableVials = values.usable_vials;
+                    unusableVials = values.unusable_vials;
                     break;
                 case 'inventory':
                     usableVials =
@@ -268,23 +273,57 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                     required
                 />
 
-                {currentMovementType && currentMovementType !== 'inventory' && (
-                    <Box mb={2}>
-                        <Field
-                            label={formatMessage(
-                                getMovementLabel(currentMovementType),
-                            )}
-                            name="movement"
-                            component={NumberInput}
-                            required
-                        />
-                        <Typography variant="body2">
-                            {getMovementDescription(
-                                currentMovementType,
-                                formik.values.movement,
-                            )}
-                        </Typography>
-                    </Box>
+                {currentMovementType &&
+                    currentMovementType !== 'inventory' &&
+                    currentMovementType !== 'inOutMovement' && (
+                        <Box mb={2}>
+                            <Field
+                                label={formatMessage(
+                                    getMovementLabel(currentMovementType),
+                                )}
+                                name="movement"
+                                component={NumberInput}
+                                required
+                            />
+                            <Typography variant="body2">
+                                {getMovementDescription(
+                                    currentMovementType,
+                                    formik.values.movement,
+                                )}
+                            </Typography>
+                        </Box>
+                    )}
+                {currentMovementType === 'inOutMovement' && (
+                    <>
+                        <Box mb={2}>
+                            <Field
+                                label={formatMessage(MESSAGES.usableVials)}
+                                name="usable_vials"
+                                component={NumberInput}
+                                required
+                            />
+                            <Typography variant="body2">
+                                {getMovementDescription(
+                                    currentMovementType,
+                                    formik.values.movement,
+                                )}
+                            </Typography>
+                        </Box>
+                        <Box mb={2}>
+                            <Field
+                                label={formatMessage(MESSAGES.unusableVials)}
+                                name="unusable_vials"
+                                component={NumberInput}
+                                required
+                            />
+                            <Typography variant="body2">
+                                {getMovementDescription(
+                                    currentMovementType,
+                                    formik.values.movement,
+                                )}
+                            </Typography>
+                        </Box>
+                    </>
                 )}
                 {currentMovementType === 'inventory' && (
                     <>

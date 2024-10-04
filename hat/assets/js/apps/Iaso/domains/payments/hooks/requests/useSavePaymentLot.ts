@@ -2,6 +2,7 @@
 import { UseMutationResult } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
+import MESSAGES from '../../messages';
 
 export type CreatePaymentLotQuery = {
     id?: number;
@@ -57,11 +58,14 @@ export const useSavePaymentLot = (
     type: 'create' | 'edit',
     onSuccess?: () => void,
 ): UseMutationResult => {
+    const snackSuccessMessage =
+        type === 'create' ? MESSAGES.paymentLotTaskLaunched : undefined;
     return useSnackMutation({
         mutationFn: (data: Partial<SavePaymentLotQuery>) =>
             createEditPaymentLot(data, type),
         invalidateQueryKey: ['paymentLots', 'potentialPayments'],
         options: { onSuccess },
+        snackSuccessMessage,
     });
 };
 

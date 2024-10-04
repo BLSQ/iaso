@@ -185,7 +185,7 @@ class Under5:
         return journey
 
     def run(self):
-        beneficiaries = ETL("Child Under 5").retrieve_entities()
+        beneficiaries = ETL("child_under_5_1").retrieve_entities()
         logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()}")
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()

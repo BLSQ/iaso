@@ -751,6 +751,7 @@ class AlgorithmRunAdmin(admin.ModelAdmin):
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    list_display = ("name", "slug", "type", "account")
 
 
 @admin.register(EntityDuplicate)

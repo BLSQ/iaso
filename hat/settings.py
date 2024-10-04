@@ -647,6 +647,12 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localho
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXTENDED = True
 
+# Superset dashboard/chart embedding configuration
+SUPERSET_URL = os.environ.get("SUPERSET_URL", None)
+SUPERSET_ADMIN_USERNAME = os.environ.get("SUPERSET_ADMIN_USERNAME", None)
+SUPERSET_ADMIN_PASSWORD = os.environ.get("SUPERSET_ADMIN_PASSWORD", None)
+
+
 # Plugin config
 print("Enabled plugins:", PLUGINS)
 for plugin_name in PLUGINS:

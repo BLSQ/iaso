@@ -84,11 +84,15 @@ services:
       MAINTENANCE_MODE:
       SERVER_URL: # Limit logging in dev to not overflow terminal
       SUPERSET_DB_NAME:
-      SUPERSET_HOSTNAME:
-      SUPERSET_PASSWORD:
+      SUPERSET_DB_HOSTNAME:
+      SUPERSET_DB_PASSWORD:
       SUPERSET_PORT:
-      SUPERSET_USERNAME:
+      SUPERSET_DB_USERNAME:
       SUPERSET_SECRET_KEY:
+      SUPERSET_IASO_USER_TOKEN:
+      SUPERSET_URL:
+      SUPERSET_ADMIN_USERNAME:
+      SUPERSET_ADMIN_PASSWORD:
     logging: &iaso_logging
       driver: "json-file"
       options:

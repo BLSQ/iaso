@@ -1,6 +1,3 @@
-/* eslint-disable camelcase */
-/* eslint-disable react/require-default-props */
-/* eslint-disable react/no-unused-prop-types */
 import React, {
     FunctionComponent,
     useCallback,
@@ -41,7 +38,6 @@ type Props = {
     closeDialog: () => void;
     isOpen: boolean;
     id?: string;
-    isMobileLayout?: boolean;
     requiredFields?: string[];
     params: Record<string, any>;
     recipients?: number[]; // team ids

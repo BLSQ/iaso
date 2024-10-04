@@ -72,9 +72,7 @@ type SnackMutationDict<Data, Error, Variables, Context> = {
     ignoreErrorCodes?: number[];
     showSucessSnackBar?: boolean;
     successSnackBar?: (
-        // eslint-disable-next-line no-unused-vars
         msg: IntlMessage,
-        // eslint-disable-next-line no-unused-vars
         data: any,
     ) => {
         messageKey: string;
@@ -105,9 +103,7 @@ const useBaseSnackMutation = <
     showSucessSnackBar = true,
     ignoreErrorCodes: number[] = [],
     successSnackBar: (
-        // eslint-disable-next-line no-unused-vars
         msg: IntlMessage,
-        // eslint-disable-next-line no-unused-vars
         data: any,
     ) => {
         messageKey: string;
@@ -186,9 +182,7 @@ export const useSnackMutation = <
     showSucessSnackBar = true,
     ignoreErrorCodes: number[] = [],
     successSnackBar: (
-        // eslint-disable-next-line no-unused-vars
         msg: IntlMessage,
-        // eslint-disable-next-line no-unused-vars
         data: any,
     ) => {
         messageKey: string;

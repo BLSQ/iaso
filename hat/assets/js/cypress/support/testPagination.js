@@ -99,6 +99,7 @@ export const testPagination = ({
                 .find('button.pagination-last')
                 .click({ force: true });
             cy.wait('@getData').then(() => {
+                // eslint-disable-next-line cypress/no-unnecessary-waiting
                 cy.wait(100);
                 cy.get('@selector')
                     .find('button.pagination-first')
@@ -130,6 +131,7 @@ export const testPagination = ({
                     res,
                 ).as('getData');
 
+                // eslint-disable-next-line cypress/no-unnecessary-waiting
                 cy.wait(1000);
                 cy.get(`${selector} .pagination-row-select`)
                     // .as('rowSelector')
@@ -138,10 +140,10 @@ export const testPagination = ({
                 cy.get(`.row-option-${pageSize}`).click();
 
                 cy.wait('@getData').then(() => {
-                    const table = cy.get('@selector').find('table');
-                    table.should('have.length', 1);
-                    const rows = table.find('tbody').find('tr');
-                    rows.should('have.length', pageSize);
+                    cy.get('@selector').find('table').as('table');
+                    cy.get('@table').should('have.length', 1);
+                    cy.get('@table').find('tbody').find('tr').as('tableRows');
+                    cy.get('@tableRows').should('have.length', pageSize);
                 });
             },
         );

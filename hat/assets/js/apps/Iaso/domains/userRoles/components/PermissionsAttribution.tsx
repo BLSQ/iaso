@@ -1,13 +1,13 @@
-import React, { useCallback, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl, LoadingSpinner, Table } from 'bluesquare-components';
-import MESSAGES from '../messages';
-import { useSnackQuery } from '../../../libs/apiHooks';
+import { LoadingSpinner, Table, useSafeIntl } from 'bluesquare-components';
+import React, { useCallback, useMemo } from 'react';
 import { getRequest } from '../../../libs/Api';
+import { useSnackQuery } from '../../../libs/apiHooks';
+import PERMISSIONS_GROUPS_MESSAGES from '../../users/permissionsGroupsMessages';
 import PERMISSIONS_MESSAGES from '../../users/permissionsMessages';
 import { useUserPermissionColumns } from '../config';
-import PERMISSIONS_GROUPS_MESSAGES from '../../users/permissionsGroupsMessages';
+import MESSAGES from '../messages';
 import { Permission } from '../types/userRoles';
 
 const styles = theme => ({
@@ -32,7 +32,6 @@ const useStyles = makeStyles(styles);
 
 type Props = {
     userRolePermissions: (string | Permission)[];
-    // eslint-disable-next-line no-unused-vars
     handleChange: (newValue: any) => void;
 };
 

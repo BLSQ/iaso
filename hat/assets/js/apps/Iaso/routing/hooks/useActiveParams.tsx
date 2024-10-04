@@ -11,7 +11,7 @@ export const useActiveParams = (
     params: ParamsWithAccountId,
 ): Record<string, string> => {
     return useMemo(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { accountId, ...paramsToUse } = params;
         return paramsToUse;
     }, [params]);

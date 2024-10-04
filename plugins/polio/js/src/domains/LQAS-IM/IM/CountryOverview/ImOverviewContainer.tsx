@@ -1,18 +1,18 @@
+import { Box, Divider, Paper } from '@mui/material';
 import React, { FunctionComponent, useMemo } from 'react';
-import { Paper, Divider, Box } from '@mui/material';
-import { baseUrls } from '../../../../constants/urls';
-import { ImCountryMap } from './ImCountryMap';
-import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
-import { ConvertedLqasImData, IMType, Side } from '../../../../constants/types';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { ConvertedLqasImData, IMType, Side } from '../../../../constants/types';
+import { baseUrls } from '../../../../constants/urls';
+import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
+import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
+import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
 import { LIST, MAP } from '../../shared/constants';
-import { ImSummary } from './ImSummary';
+import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
+import { useLqasImMapHeaderData } from '../../shared/hooks/useLqasImMapHeaderData';
 import { getLqasImMapLayer } from '../utils';
 import { ImCountryListOverview } from './ImCountryListOverview';
-import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
-import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
-import { useLqasImMapHeaderData } from '../../shared/hooks/useLqasImMapHeaderData';
-import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
+import { ImCountryMap } from './ImCountryMap';
+import { ImSummary } from './ImSummary';
 
 type Props = {
     round: number;
@@ -25,7 +25,6 @@ type Props = {
     paperElevation: number;
     type: IMType;
     options: DropdownOptions<number>[];
-    // eslint-disable-next-line no-unused-vars
     onRoundChange: (value: number) => void;
     side: Side;
     params: Record<string, string | undefined>;

@@ -127,29 +127,27 @@ export const ListMap: FunctionComponent<Props> = ({
                         fitOnLoad
                     />
                     {locations && (
-                        <>
-                            <Pane name="markers">
-                                <MarkerClusterGroup
-                                    iconCreateFunction={clusterCustomMarker}
-                                >
-                                    <MarkersListComponent
-                                        items={locations || []}
-                                        markerProps={() => ({
-                                            ...circleColorMarkerOptions(
-                                                theme.palette.primary.main,
-                                            ),
-                                            radius: 12,
-                                        })}
-                                        popupProps={location => ({
-                                            location,
-                                            extraColumns,
-                                        })}
-                                        PopupComponent={Popup}
-                                        isCircle
-                                    />
-                                </MarkerClusterGroup>
-                            </Pane>
-                        </>
+                        <Pane name="markers">
+                            <MarkerClusterGroup
+                                iconCreateFunction={clusterCustomMarker}
+                            >
+                                <MarkersListComponent
+                                    items={locations || []}
+                                    markerProps={() => ({
+                                        ...circleColorMarkerOptions(
+                                            theme.palette.primary.main,
+                                        ),
+                                        radius: 12,
+                                    })}
+                                    popupProps={location => ({
+                                        location,
+                                        extraColumns,
+                                    })}
+                                    PopupComponent={Popup}
+                                    isCircle
+                                />
+                            </MarkerClusterGroup>
+                        </Pane>
                     )}
                 </MapContainer>
             </Box>

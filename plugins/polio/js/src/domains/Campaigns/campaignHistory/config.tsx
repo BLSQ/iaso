@@ -1,14 +1,13 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { ReactElement } from 'react';
-import moment from 'moment';
-import { upperCase } from 'lodash';
-import { Link } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
+import { upperCase } from 'lodash';
+import moment from 'moment';
+import React, { ReactElement } from 'react';
+import { Link } from 'react-router-dom';
 import { GeoJsonMap } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/GeoJsonMapComponent';
-import MESSAGES from '../../../constants/messages';
-import { useGetOrgUnitDetail } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetOrgUnitDetail';
 import { LinkToOrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/LinkToOrgUnit';
+import { useGetOrgUnitDetail } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetOrgUnitDetail';
+import MESSAGES from '../../../constants/messages';
 
 type OrgUnitLinkProps = {
     orgUnitId: number;

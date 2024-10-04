@@ -25,12 +25,7 @@ import { ReactReduxContext } from 'react-redux';
 
 type Reducer = {
     reducerKey: string;
-    reducer: (
-        // eslint-disable-next-line no-unused-vars
-        state: any,
-        // eslint-disable-next-line no-unused-vars
-        action: Record<any, any>,
-    ) => Record<any, any>;
+    reducer: (state: any, action: Record<any, any>) => Record<any, any>;
 };
 
 type Reducers = Reducer[];

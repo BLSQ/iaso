@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Campaign, Round } from '../constants/types';
 import { accessArrayRound } from '../domains/LQAS-IM/shared/LqasIm';
 

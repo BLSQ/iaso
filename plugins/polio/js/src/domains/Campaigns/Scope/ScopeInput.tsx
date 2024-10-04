@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { FieldProps, useField } from 'formik';
@@ -19,13 +18,12 @@ import { MapScope } from './Scopes/MapScope';
 
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { CampaignFormValues, Scope, Vaccine } from '../../../constants/types';
+import { PolioVaccine } from '../../../constants/virus';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { FilteredDistricts } from './Scopes/types';
-import { PolioVaccine } from '../../../constants/virus';
 
 type ExtraProps = {
     filteredDistricts: FilteredDistricts[];
-    // eslint-disable-next-line no-unused-vars
     searchScope: boolean;
     onChangeSearchScope: () => void;
     isFetchingDistricts: boolean;
@@ -34,7 +32,6 @@ type ExtraProps = {
     regionShapes?: OrgUnit[];
     searchComponent: ReactNode;
     page: number;
-    // eslint-disable-next-line no-unused-vars
     setPage: (page: number) => void;
     campaign: CampaignFormValues; // Passing the campaign i.o getting it from formik context so we can re-use the component for subactivities
     availableVaccines?: PolioVaccine[];

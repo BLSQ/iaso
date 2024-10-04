@@ -123,9 +123,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 <Box mt={isLargeLayout ? 3 : 0}>
                     <Button
                         data-test="search-button"
-                        disabled={
-                            (!filtersUpdated) || textSearchError
-                        }
+                        disabled={!filtersUpdated || textSearchError}
                         variant="contained"
                         className={classes.button}
                         color="primary"

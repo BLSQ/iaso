@@ -542,6 +542,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.tooltip.iaso_org_unit_change_request_review',
         defaultMessage: 'Org unit change request review',
     },
+    iaso_org_unit_change_request_configurations: {
+        id: 'iaso.permissions.iaso_org_unit_change_request_configurations',
+        defaultMessage: 'Org unit change request configurations',
+    },
     iaso_polio_vaccine_stock_management_read: {
         id: 'iaso.permissions.iaso_polio_vaccine_stock_management_read',
         defaultMessage: 'Polio vaccine stock management - Read',

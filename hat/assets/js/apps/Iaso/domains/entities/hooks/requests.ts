@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import moment from 'moment';
 
@@ -155,12 +154,15 @@ export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
         },
     });
 
-export const useDeleteBeneficiary = (): UseMutationResult =>
+export const useSoftDeleteBeneficiary = (
+    onSuccess: (data: any) => void = _data => {},
+): UseMutationResult =>
     useSnackMutation({
-        mutationFn: body => deleteRequest(`/api/entities/${body.id}/`),
+        mutationFn: entityId => deleteRequest(`/api/entities/${entityId}/`),
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
         invalidateQueryKey: ['beneficiaries'],
+        options: { onSuccess },
     });
 
 export const useSaveBeneficiary = (): UseMutationResult =>

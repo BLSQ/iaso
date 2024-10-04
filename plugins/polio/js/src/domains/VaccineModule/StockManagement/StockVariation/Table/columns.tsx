@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import EditIcon from '@mui/icons-material/Edit';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';

@@ -1,6 +1,6 @@
+import 'leaflet/dist/leaflet.css';
 import React, { FunctionComponent, ReactNode } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 import { MapColor, Shape } from '../../../constants/types';
 
 import { Tooltip } from './Tooltip';
@@ -8,18 +8,13 @@ import { Tooltip } from './Tooltip';
 type Props = {
     mainLayer?: Shape[];
     backgroundLayer?: Shape[];
-    // eslint-disable-next-line no-unused-vars
     getMainLayerStyle?: (shape: Shape) => MapColor;
-    // eslint-disable-next-line no-unused-vars
     getBackgroundLayerStyle?: (shape: Shape) => MapColor;
     tooltipLabels?: { main: string; background: string };
     name?: string;
-    // eslint-disable-next-line no-unused-vars
     makePopup?: (shape: Shape) => ReactNode;
-    // eslint-disable-next-line no-unused-vars
     onSelectShape?: (shape: Shape) => void;
     tooltipFieldKey?: string;
-    // eslint-disable-next-line no-unused-vars
     customTooltip?: (shape: Shape) => ReactNode;
 };
 

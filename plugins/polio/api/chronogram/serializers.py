@@ -27,7 +27,7 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
 
         # Restrict writable fields for the `POLIO_CHRONOGRAM_RESTRICTED_WRITE` permission.
         if user and user.has_perm(iaso_permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE):
-            allowed_fields = ["status", "comment"]
+            allowed_fields = ["status", "user_in_charge", "comment"]
             read_only_fields = [field for field in fields if field not in allowed_fields]
             for field in read_only_fields:
                 fields[field].read_only = True

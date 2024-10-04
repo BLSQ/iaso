@@ -51,9 +51,7 @@ const useStyles = makeStyles(styles);
 type Props = {
     isSuperUser?: boolean;
     currentUser: any;
-    // eslint-disable-next-line no-unused-vars
     handleChange: (newValue: any) => void;
-    // eslint-disable-next-line no-unused-vars
     setFieldValue: (fieldName, fieldError) => void;
 };
 

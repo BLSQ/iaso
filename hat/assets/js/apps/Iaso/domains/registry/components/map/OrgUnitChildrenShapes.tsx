@@ -12,9 +12,7 @@ type Props = {
     selectedChildrenId: string | undefined;
     activeChildren: OrgUnit[];
     handleFeatureEvents: (
-        // eslint-disable-next-line no-unused-vars
         ou: OrgUnit,
-        // eslint-disable-next-line no-unused-vars
     ) => (feature: any, layer: L.Layer) => void;
     showTooltip: boolean;
     index: number;

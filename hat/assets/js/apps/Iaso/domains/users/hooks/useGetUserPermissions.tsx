@@ -53,7 +53,6 @@ export const useGetUserPermissions = (
 
 type SortProps = {
     allPermissions: string[];
-    // eslint-disable-next-line no-unused-vars
     getPermissionLabel: (codename: string) => string;
 };
 

@@ -1,10 +1,9 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
-import { FormattedMessage } from 'react-intl';
+import Info from '@mui/icons-material/Info';
 import { Box, Container, Paper, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import Info from '@mui/icons-material/Info';
 import { ClassNameMap } from 'notistack';
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
 import TopBar from '../nav/TopBarComponent';
 
 import MESSAGES from './messages';

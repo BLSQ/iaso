@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useDebounce } from 'use-debounce';

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseMutationResult } from 'react-query';
 import { isEmpty } from 'lodash';
 import { putRequest, postRequest } from '../../../../libs/Api';

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box } from '@mui/material';
 import {
     Column,

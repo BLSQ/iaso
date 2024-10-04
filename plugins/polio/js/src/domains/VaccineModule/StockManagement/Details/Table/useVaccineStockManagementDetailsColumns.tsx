@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';

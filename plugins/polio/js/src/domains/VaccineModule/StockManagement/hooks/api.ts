@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UrlParams } from 'bluesquare-components';
 import { useMemo } from 'react';
 import { UseMutationResult, UseQueryResult } from 'react-query';

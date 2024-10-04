@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import MapIcon from '@mui/icons-material/Map';
 import {
     Box,

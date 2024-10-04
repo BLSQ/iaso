@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import CallMade from '@mui/icons-material/CallMade';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { Tooltip } from '@mui/material';

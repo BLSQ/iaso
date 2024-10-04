@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import {
     Column,
     IconButton as IconButtonComponent,
@@ -67,7 +66,7 @@ export const useStaticColumns = (): Array<Column> => {
             Cell: settings => {
                 const groups = settings.row.original?.org_unit?.groups;
                 if (!groups || groups.length === 0) {
-                    return <>{textPlaceholder}</>;
+                    return <span>{textPlaceholder}</span>;
                 }
 
                 return groups.map((group, index) => (
@@ -90,7 +89,7 @@ export const useStaticColumns = (): Array<Column> => {
                 return settings.row.original?.org_unit ? (
                     <LinkToOrgUnit orgUnit={settings.row.original?.org_unit} />
                 ) : (
-                    <>{textPlaceholder}</>
+                    <span>{textPlaceholder}</span>
                 );
             },
         },
@@ -197,7 +196,7 @@ const generateColumnsFromFieldsList = (
                     return <DateCell value={moment(data).format('L')} />;
                 }
 
-                return <>{data ?? '--'}</>;
+                return <span>{data ?? '--'}</span>;
             },
         };
     });

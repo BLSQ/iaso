@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import moment from 'moment';
 

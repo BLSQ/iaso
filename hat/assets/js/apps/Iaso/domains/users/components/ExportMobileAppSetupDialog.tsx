@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, {
     FunctionComponent,
     useCallback,
@@ -25,6 +24,7 @@ import { getRequest } from 'Iaso/libs/Api';
 import { TaskApiResponse } from 'Iaso/domains/tasks/types';
 import { Project, User } from 'Iaso/utils/usersUtils';
 import MESSAGES from '../messages';
+import { SxStyles } from '../../../types/general';
 
 const styles: SxStyles = {
     progressWrapper: {

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { FormikProps } from 'formik';
 import { isEqual } from 'lodash';
 import React, { useEffect, useMemo, useRef, useState } from 'react';

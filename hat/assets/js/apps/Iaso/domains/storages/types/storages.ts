@@ -1,6 +1,4 @@
-/* eslint-disable camelcase */
 import { Pagination, UrlParams } from 'bluesquare-components';
-
 import { Profile } from '../../../utils/usersUtils';
 import { ShortOrgUnit } from '../../orgUnits/types/orgUnit';
 

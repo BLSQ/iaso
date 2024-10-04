@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box } from '@mui/material';
 import {
     IconButton,
@@ -167,6 +166,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                                     icon="remove-red-eye"
                                     tooltipMessage={MESSAGES.viewForm}
                                     iconSize="small"
+                                    // @ts-ignore
                                     fontSize="small"
                                     dataTestId="see-form-button"
                                 />

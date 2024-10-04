@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Table, TableContainer } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';

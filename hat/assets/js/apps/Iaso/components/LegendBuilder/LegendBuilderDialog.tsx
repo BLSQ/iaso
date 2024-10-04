@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box, Button } from '@mui/material';
 import {
     ConfirmCancelModal,

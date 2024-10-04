@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { FormikProps } from 'formik';
 import React from 'react';
 import { UseMutateAsyncFunction } from 'react-query';

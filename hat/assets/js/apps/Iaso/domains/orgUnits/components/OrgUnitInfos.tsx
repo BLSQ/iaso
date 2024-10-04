@@ -1,5 +1,3 @@
-/* eslint-disable react/function-component-definition */
-/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 
 import { Box, Button, Grid } from '@mui/material';

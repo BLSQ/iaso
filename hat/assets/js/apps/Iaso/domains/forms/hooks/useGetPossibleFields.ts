@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
 import { cloneDeep } from 'lodash';

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Paginated } from 'bluesquare-components';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import {

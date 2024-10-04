@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Grid, IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';

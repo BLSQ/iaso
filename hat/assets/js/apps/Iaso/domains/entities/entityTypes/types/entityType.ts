@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 export type EntityType = {
     id: number;
     name: string;

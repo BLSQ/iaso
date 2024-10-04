@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Nullable } from '../../types/utils';
 
 export type TaskStatus =

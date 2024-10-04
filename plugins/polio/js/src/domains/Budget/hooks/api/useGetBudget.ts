@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { groupBy } from 'lodash';
 import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';

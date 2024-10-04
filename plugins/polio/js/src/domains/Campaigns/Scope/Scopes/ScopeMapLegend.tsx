@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box, FormControl, List, ListItem } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { FieldInputProps } from 'formik';

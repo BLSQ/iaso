@@ -1,5 +1,3 @@
-/* eslint-disable react/require-default-props */
-/* eslint-disable camelcase */
 import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { UrlParams, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';

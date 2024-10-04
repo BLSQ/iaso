@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { postRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackMutation } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { PostArg } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';

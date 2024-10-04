@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { Box, Divider, Grid } from '@mui/material';
 import { IconButton, useRedirectTo, useSafeIntl } from 'bluesquare-components';
@@ -93,7 +92,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         [allSourceVersions, destinationSourceId, formatMessage],
     );
     const nextVersionNumber =
-        sourceVersionsDropDown[sourceVersionsDropDown?.length - 1].value ?? 1;
+        sourceVersionsDropDown[sourceVersionsDropDown?.length - 1]?.value ?? 1;
     const [destinationVersionNumber, setDestinationVersionNumber] =
         useState(nextVersionNumber);
     const warningVersionNumber = destinationVersionNumber ?? nextVersionNumber;

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { FormatListBulleted, History } from '@mui/icons-material';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';

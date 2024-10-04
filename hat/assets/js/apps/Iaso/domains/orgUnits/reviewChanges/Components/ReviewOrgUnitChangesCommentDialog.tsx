@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { SimpleModal } from 'bluesquare-components';
 import React, {
     Dispatch,

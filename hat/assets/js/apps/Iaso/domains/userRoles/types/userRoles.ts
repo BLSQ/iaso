@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UrlParams } from 'bluesquare-components';
 
 export type UserRole = {

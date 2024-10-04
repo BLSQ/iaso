@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
 
 import { getRequest } from '../../../../libs/Api';

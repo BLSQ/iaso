@@ -1,6 +1,5 @@
 import { UrlParams } from 'bluesquare-components';
 
-/* eslint-disable camelcase */
 export type StockManagementListParams = {
     order?: string;
     pageSize?: string; // number as string

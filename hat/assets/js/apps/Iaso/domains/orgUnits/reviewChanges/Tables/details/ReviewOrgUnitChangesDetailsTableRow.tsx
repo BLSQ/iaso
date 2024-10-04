@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { TableCell } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';

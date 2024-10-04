@@ -10,7 +10,6 @@ export type FormDesc = {
     slug: string;
 };
 
-/* eslint-disable camelcase */
 export type FormStat = {
     descendants: number; // int
     descendants_ok: number; // int
@@ -23,7 +22,6 @@ export type FormStat = {
     legend_threshold: ScaleThreshold; // Legend used to display colors per form
 };
 
-/* eslint-disable camelcase */
 export type CompletenessStats = {
     parent_org_unit?: NameAndId;
     org_unit_type?: NameAndId;
@@ -38,7 +36,6 @@ export type CompletenessApiResponse = Paginated<CompletenessStats> & {
 };
 
 export type ParentOrgUnit = { name: string; id: number; parent: NameAndId };
-/* eslint-disable camelcase */
 export type CompletenessMapStats = {
     altitude?: number;
     form_stats: Record<string, FormStat>;

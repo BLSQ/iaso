@@ -6,12 +6,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Actions',
     },
     createButton: {
-        id: "iaso.label.create",
-        default: "Create",
+        id: 'iaso.label.create',
+        default: 'Create',
     },
     saveButton: {
-        id: "iaso.label.save",
-        default: "Save",
+        id: 'iaso.label.save',
+        default: 'Save',
     },
     created_at: {
         id: 'iaso.label.created_at',
@@ -69,7 +69,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.delete_successful',
         defaultMessage: 'Deleted successfully',
     },
-    groupSets:  {
+    groupSets: {
         defaultMessage: 'Group Sets',
         id: 'iaso.label.groupSets',
     },

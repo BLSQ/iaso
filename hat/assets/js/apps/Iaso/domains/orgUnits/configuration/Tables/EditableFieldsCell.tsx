@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box, Chip } from '@mui/material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';

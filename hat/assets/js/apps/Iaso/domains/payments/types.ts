@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { TaskStatus } from '../tasks/types';
 

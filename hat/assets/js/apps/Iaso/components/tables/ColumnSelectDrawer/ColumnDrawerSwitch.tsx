@@ -1,10 +1,9 @@
-import React, { FunctionComponent, ChangeEvent, ReactElement } from 'react';
-import { Switch, ListItemText, Tooltip } from '@mui/material';
+import { ListItemText, Switch, Tooltip } from '@mui/material';
 import { truncateText } from 'bluesquare-components';
+import React, { ChangeEvent, FunctionComponent, ReactElement } from 'react';
 
 type Props = {
     disabled: boolean;
-    // eslint-disable-next-line no-unused-vars
     onChange?: (event: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
     className: string;
     checked: boolean;

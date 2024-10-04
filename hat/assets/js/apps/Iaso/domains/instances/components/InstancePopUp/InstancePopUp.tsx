@@ -1,26 +1,25 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
-import { useSelector } from 'react-redux';
 import { Popup, useMap } from 'react-leaflet';
+import { useSelector } from 'react-redux';
 
-import { Card, CardMedia, CardContent, Grid, Box } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
-    useSafeIntl,
     commonStyles,
-    mapPopupStyles,
-    LoadingSpinner,
     LinkButton,
+    LoadingSpinner,
+    mapPopupStyles,
+    useSafeIntl,
 } from 'bluesquare-components';
 import ConfirmDialog from '../../../../components/dialogs/ConfirmDialogComponent';
-import InstanceDetailsInfos from '../InstanceDetailsInfos';
 import InstanceDetailsField from '../InstanceDetailsField';
+import InstanceDetailsInfos from '../InstanceDetailsInfos';
 
-import MESSAGES from '../../messages';
-import { Instance } from '../../types/instance';
 import { baseUrls } from '../../../../constants/urls';
 import { getOrgUnitsTree } from '../../../orgUnits/utils';
+import MESSAGES from '../../messages';
+import { Instance } from '../../types/instance';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -37,14 +36,12 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     replaceLocation?: (instance: Instance) => void;
     displayUseLocation?: boolean;
 };
 
 export const InstancePopup: FunctionComponent<Props> = ({
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    replaceLocation = () => {},
+    replaceLocation = () => null,
     displayUseLocation = false,
 }) => {
     const { formatMessage } = useSafeIntl();

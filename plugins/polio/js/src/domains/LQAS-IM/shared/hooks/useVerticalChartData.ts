@@ -1,15 +1,14 @@
-import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
+import { useMemo } from 'react';
 import {
-    FormatForNFMArgs,
     BarChartData,
+    FormatForNFMArgs,
     LqasImCampaign,
 } from '../../../../constants/types';
 
 type Params = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
-    // eslint-disable-next-line no-unused-vars
     formatter: (args: FormatForNFMArgs<string>) => BarChartData[];
     type: string;
     selectedRounds: [number, number];

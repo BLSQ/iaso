@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { useRedirectToReplace } from 'bluesquare-components';

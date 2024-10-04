@@ -1,22 +1,20 @@
-/* eslint-disable camelcase */
-import React, { FunctionComponent } from 'react';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Grid, IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { isEmpty } from 'lodash';
-import DeleteIcon from '@mui/icons-material/Delete';
+import React, { FunctionComponent } from 'react';
 
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
+import { Legend } from '../../../components/LegendBuilder/Legend';
 import {
     AddLegendDialog,
     EditLegendDialog,
 } from '../../../components/LegendBuilder/LegendBuilderDialog';
-import { Legend } from '../../../components/LegendBuilder/Legend';
+import MESSAGES from '../messages';
 import { FormDataType } from '../types/forms';
 
 type FormFormProps = {
     currentForm: FormDataType;
-    // eslint-disable-next-line no-unused-vars
     setFieldValue: (key: string, value: any) => void;
 };
 const useStyles = makeStyles(theme => ({

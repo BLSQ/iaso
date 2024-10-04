@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Table, TableContainer } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
@@ -10,7 +9,6 @@ import { ReviewOrgUnitChangesDetailsTableHead } from './ReviewOrgUnitChangesDeta
 type Props = {
     isSaving: boolean;
     newFields: NewOrgUnitField[];
-    // eslint-disable-next-line no-unused-vars
     setSelected: (key: string) => void;
     changeRequest?: OrgUnitChangeRequestDetails;
     isFetchingChangeRequest: boolean;

@@ -57,14 +57,12 @@ type Props = {
     placeholder?: string | { id: string; defaultMessage: string };
     required: boolean;
     disabled: boolean;
-    // eslint-disable-next-line no-unused-vars
     label: (orgUnit: OrgUnit) => ReactNode;
     clearable: boolean;
     errors: string[];
 };
 
 const formatPlaceholder = (
-    // eslint-disable-next-line no-unused-vars
     formatMessage: (message: { id: string; defaultMessage: string }) => string,
     placeholder?: string | { id: string; defaultMessage: string },
 ) => {

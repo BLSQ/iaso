@@ -140,7 +140,7 @@ type UseRedirectionsArgs = {
     userHomePage?: string;
     allowAnonymous: boolean;
 };
-// eslint-disable-next-line no-unused-vars
+
 type RedirectionsMethod = (args: UseRedirectionsArgs) => ReactElement[];
 
 type Redirection = {

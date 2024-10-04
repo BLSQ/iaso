@@ -35,7 +35,6 @@ import {
 type Props = {
     titleMessage: string | IntlMessage;
     toggleOnLabelClick?: boolean;
-    // eslint-disable-next-line no-unused-vars
     onConfirm: (selectedOrgUnits: any) => void;
     multiselect?: boolean;
     initialSelection?: OrgUnit | OrgUnit[];
@@ -78,7 +77,8 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
 }) => {
     const theme = useTheme();
     const { formatMessage } = useSafeIntl();
-    const { fetchOrgUnit, isFetching: isFetchingOrgUnit } = useFetchOrgUnits(appId);
+    const { fetchOrgUnit, isFetching: isFetchingOrgUnit } =
+        useFetchOrgUnits(appId);
     const [settings, setSettings] = useState<Settings>({
         displayTypes: true,
         statusSettings: DEFAULT_CONFIG,

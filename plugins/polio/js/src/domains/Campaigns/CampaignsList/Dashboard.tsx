@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useMemo } from 'react';

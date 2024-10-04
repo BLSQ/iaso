@@ -1,8 +1,8 @@
-import { ElementType, ReactNode } from 'react';
 import { IntlMessage } from 'bluesquare-components';
+import { ElementType, ReactNode } from 'react';
 import {
-    Redirection as RoutingRedirection,
     RouteCustom,
+    Redirection as RoutingRedirection,
 } from '../../routing/types';
 
 export type MenuItem = {
@@ -10,12 +10,10 @@ export type MenuItem = {
     permissions?: string[];
     key?: string;
     mapKey?: string;
-    // eslint-disable-next-line no-unused-vars
     icon?: (props: Record<string, any>) => ReactNode;
     subMenu?: MenuItems;
     extraPath?: string;
     url?: string;
-    // eslint-disable-next-line no-unused-vars
     isActive?: (pathname: string) => boolean;
     dev?: boolean;
 };
@@ -24,7 +22,6 @@ export type MenuItems = MenuItem[];
 // TODO deprecate or update to react-router 6
 export type Redirection = {
     path: string;
-    // eslint-disable-next-line no-unused-vars
     component: (args: any) => ReactNode;
 };
 

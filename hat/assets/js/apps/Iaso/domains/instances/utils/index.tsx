@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import CallMade from '@mui/icons-material/CallMade';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { Tooltip } from '@mui/material';
@@ -50,7 +49,6 @@ import { InstanceMetasField } from '../components/ColumnSelect';
 import { INSTANCE_METAS_FIELDS } from '../constants';
 
 const NO_VALUE = '/';
-// eslint-disable-next-line no-unused-vars
 const hasNoValue: (value: string) => boolean = value => !value || value === '';
 
 type KeyValueFieldsProps = {
@@ -234,13 +232,11 @@ const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
 };
 
 export const useInstancesColumns = (
-    // eslint-disable-next-line no-unused-vars, default-param-last
+    // eslint-disable-next-line default-param-last
     getActionCell: RenderCell = settings => (
         <ActionTableColumnComponent settings={settings} />
     ),
     visibleColumns: VisibleColumn[],
-
-    // eslint-disable-next-line no-unused-vars
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
@@ -325,7 +321,6 @@ type PossibleColumn = {
     Header: string;
     id?: string;
     sortable?: boolean;
-    // eslint-disable-next-line no-unused-vars
     Cell?: (s: any) => ReactElement;
     align?: 'left' | 'center';
 };
@@ -334,9 +329,7 @@ export const useGetInstancesVisibleColumns = ({
     order,
     defaultOrder,
 }: Props): ((
-    // eslint-disable-next-line no-unused-vars
     columns?: string,
-    // eslint-disable-next-line no-unused-vars
     possibleFields?: PossibleField[],
 ) => VisibleColumn[]) => {
     const { formatMessage } = useSafeIntl();
@@ -480,9 +473,7 @@ export const getInstancesFilesList = (instances?: Instance[]): ShortFile[] => {
 
 type SelectionAction = {
     icon: (
-        // eslint-disable-next-line no-unused-vars
         newSelection: Selection<Instance>,
-        // eslint-disable-next-line no-unused-vars
         resetSelection?: any,
     ) => ReactElement;
     label: string;

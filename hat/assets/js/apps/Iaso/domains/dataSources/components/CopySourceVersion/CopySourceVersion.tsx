@@ -1,28 +1,22 @@
-/* eslint-disable react/jsx-props-no-spreading */
-/* eslint-disable camelcase */
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import { Box, Divider, Grid } from '@mui/material';
+import { IconButton, useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
-    useState,
-    useMemo,
     useEffect,
+    useMemo,
+    useState,
 } from 'react';
-import { Grid, Box, Divider } from '@mui/material';
-import FileCopyIcon from '@mui/icons-material/FileCopy';
-import {
-    IconButton,
-    useSafeIntl,
-    useRedirectTo,
-} from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../../messages';
 import {
     useCopyDataSourceVersion,
     useDataSourceAsDropDown,
     useDataSourceVersions,
 } from '../../requests';
-import { baseUrls } from '../../../../constants/urls';
-import InputComponent from '../../../../components/forms/InputComponent';
 import { WarningMessage } from './CopyVersionWarnings';
 
 type Props = {
@@ -98,7 +92,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         [allSourceVersions, destinationSourceId, formatMessage],
     );
     const nextVersionNumber =
-        sourceVersionsDropDown[sourceVersionsDropDown?.length - 1].value ?? 1;
+        sourceVersionsDropDown[sourceVersionsDropDown?.length - 1]?.value ?? 1;
     const [destinationVersionNumber, setDestinationVersionNumber] =
         useState(nextVersionNumber);
     const warningVersionNumber = destinationVersionNumber ?? nextVersionNumber;

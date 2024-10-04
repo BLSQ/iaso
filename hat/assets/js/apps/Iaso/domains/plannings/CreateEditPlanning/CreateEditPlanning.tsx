@@ -1,19 +1,27 @@
-import React, { FunctionComponent, useMemo, useEffect, useState } from 'react';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import { Box, Grid } from '@mui/material';
 import {
     AddButton,
-    useSafeIntl,
     IconButton,
     IntlFormatMessage,
+    useSafeIntl,
 } from 'bluesquare-components';
-import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { useFormik, FormikProvider, Field } from 'formik';
+import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { Grid, Box } from '@mui/material';
-import InputComponent from '../../../components/forms/InputComponent';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import InputComponent from '../../../components/forms/InputComponent';
 
 import MESSAGES from '../messages';
 
+import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
+import DatesRange from '../../../components/filters/DatesRange';
+import {
+    useApiErrorValidation,
+    useTranslatedErrors,
+} from '../../../libs/validation';
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetForms } from '../hooks/requests/useGetForms';
 import { useGetTeams } from '../hooks/requests/useGetTeams';
 import {
@@ -21,15 +29,7 @@ import {
     SavePlanningQuery,
     useSavePlanning,
 } from '../hooks/requests/useSavePlanning';
-import DatesRange from '../../../components/filters/DatesRange';
-import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 import { usePlanningValidation } from '../hooks/validation';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
-import {
-    useApiErrorValidation,
-    useTranslatedErrors,
-} from '../../../libs/validation';
 
 type ModalMode = 'create' | 'edit' | 'copy';
 
@@ -68,9 +68,7 @@ export const makeResetTouched =
     (
         formValues: Record<string, any>,
         setTouched: (
-            // eslint-disable-next-line no-unused-vars
             fields: { [field: string]: boolean },
-            // eslint-disable-next-line no-unused-vars
             shouldValidate?: boolean,
         ) => void,
     ) =>

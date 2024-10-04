@@ -1,8 +1,6 @@
-/* eslint-disable camelcase */
 import { Pagination, UrlParams } from 'bluesquare-components';
-
-import { ShortOrgUnit } from '../../orgUnits/types/orgUnit';
 import { Profile } from '../../../utils/usersUtils';
+import { ShortOrgUnit } from '../../orgUnits/types/orgUnit';
 
 export type StorageFilterParams = {
     performedAt?: string;
@@ -14,10 +12,7 @@ export type StorageFilterParams = {
 };
 export type StorageParams = UrlParams &
     StorageFilterParams & {
-        select?: (
-            // eslint-disable-next-line no-unused-vars
-            data: Array<Storage>,
-        ) => Array<any>;
+        select?: (data: Array<Storage>) => Array<any>;
     };
 
 export type StorageStatus = {

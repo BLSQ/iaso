@@ -26,11 +26,8 @@ const styles = {
 
 type Props = {
     imageList: ShortFile[];
-    // eslint-disable-next-line no-unused-vars
     onImageClick: (index: number) => void;
-    // eslint-disable-next-line no-unused-vars
     onImageFavoriteClick?: (id: number) => void;
-    // eslint-disable-next-line no-unused-vars
     isDefaultImage?: (id: number) => boolean;
 };
 

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { IntlFormatMessage } from 'bluesquare-components';
 import {
     BarChartData,

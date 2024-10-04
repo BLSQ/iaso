@@ -1,9 +1,9 @@
-import React, { FunctionComponent, useCallback } from 'react';
 import {
     Table,
     TableComponentProps,
     useRedirectToReplace,
 } from 'bluesquare-components';
+import React, { FunctionComponent, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 
 type TableWithDeepLinkProps = TableComponentProps & {
@@ -16,7 +16,6 @@ export const TableWithDeepLink: FunctionComponent<TableWithDeepLinkProps> = ({
 }) => {
     const redirectToReplace = useRedirectToReplace();
     return (
-        // eslint-disable-next-line react/jsx-props-no-spreading
         <Table
             {...props}
             onTableParamsChange={newParams =>

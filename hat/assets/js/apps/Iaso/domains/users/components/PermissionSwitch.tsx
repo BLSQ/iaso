@@ -6,7 +6,6 @@ type Props = {
     value: string | Permission;
     codeName: string;
     settings: any;
-    // eslint-disable-next-line no-unused-vars
     setPermissions: (permission: string | Permission, checked: boolean) => void;
     permissions: Permission[];
 };

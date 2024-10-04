@@ -216,7 +216,9 @@ describe('Users', () => {
                 cy.get('.MuiDialogActions-root').find('button').first().click();
                 openDialogForUserIndex(2);
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
-                cy.get('#permission-checkbox-iaso_forms').should('be.checked');
+                cy.get('#check-box-permission-checkbox-iaso_forms').should(
+                    'be.checked',
+                );
                 cy.get('#user-dialog-tabs').find('button').eq(2).click();
 
                 cy.get('.MuiTreeView-root').should(

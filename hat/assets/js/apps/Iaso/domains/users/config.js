@@ -1,7 +1,3 @@
-import {
-    CheckCircleOutlineOutlined as CheckedIcon,
-    HighlightOffOutlined as NotCheckedIcon,
-} from '@mui/icons-material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';
 
@@ -12,10 +8,11 @@ import MESSAGES from './messages.ts';
 import { userHasOneOfPermissions } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';
-import PermissionSwitch from './components/PermissionSwitch.tsx';
+import PermissionCheckBoxes from './components/PermissionCheckBoxes.tsx';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
 import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
+import { UserRolePermissions } from './components/UserRolePermissions.tsx';
 
 export const usersTableColumns = ({
     formatMessage,
@@ -157,9 +154,10 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 id: 'userPermission',
                 accessor: 'userPermission',
                 sortable: false,
+                align: 'center',
                 Cell: settings => {
                     return (
-                        <PermissionSwitch
+                        <PermissionCheckBoxes
                             codeName="permissionCodeName"
                             settings={settings}
                             setPermissions={setPermissions}
@@ -180,16 +178,12 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 width: 50,
                 Cell: settings => {
                     if (!settings.row.original.group) {
-                        if (
-                            role.permissions.find(
-                                permission =>
-                                    permission ===
-                                    settings.row.original.permissionCodeName,
-                            )
-                        ) {
-                            return <CheckedIcon style={{ color: 'green' }} />;
-                        }
-                        return <NotCheckedIcon color="disabled" />;
+                        return (
+                            <UserRolePermissions
+                                original={settings.row.original}
+                                userRolepermissions={role.permissions}
+                            />
+                        );
                     }
                     return '';
                 },

@@ -31,7 +31,7 @@ const styles = theme => ({
 const useStyles = makeStyles(styles);
 
 type Props = {
-    userRolePermissions: Permission[];
+    userRolePermissions: (string | Permission)[];
     handleChange: (newValue: any) => void;
 };
 
@@ -40,37 +40,39 @@ type Row = {
     codename?: string;
     group?: boolean;
     id?: number;
+    readEdit?: { read: string; edit: string }[];
 };
 
-export const PermissionsSwitches: React.FunctionComponent<Props> = ({
+export const PermissionsAttribution: React.FunctionComponent<Props> = ({
     userRolePermissions,
     handleChange,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data, isLoading } = useSnackQuery<{ permissions: Permission[] }>(
+    const { data, isLoading } = useSnackQuery<{ permissions: string[] }>(
         ['grouped_permissions'],
         () => getRequest('/api/permissions/grouped_permissions/'),
         MESSAGES.fetchPermissionsError,
     );
 
     const setPermissions = useCallback(
-        (permission: Permission, isChecked: boolean) => {
+        (permission: string, isChecked: boolean) => {
             const newUserRolePerms = [...userRolePermissions];
             if (!isChecked) {
                 const permIndex = newUserRolePerms.findIndex(item => {
-                    return item.codename === permission.codename;
+                    return item === permission;
                 });
                 newUserRolePerms.splice(permIndex, 1);
-            } else {
-                newUserRolePerms.push({
-                    id: permission.id,
-                    codename: permission.codename,
-                    name: permission.name,
+            } else if (Array.isArray(permission)) {
+                permission.forEach(code => {
+                    newUserRolePerms.push(code);
                 });
+            } else {
+                newUserRolePerms.push(permission);
             }
             handleChange(newUserRolePerms);
         },
+
         [handleChange, userRolePermissions],
     );
 
@@ -109,6 +111,9 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
                 row.id = permission.id;
                 row.codename = permission.codename;
                 row.name = getPermissionLabel(permission.codename);
+                if (permission.read_edit) {
+                    row.readEdit = permission.read_edit;
+                }
                 grouped_permissions.push(row);
             });
         });

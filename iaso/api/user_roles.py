@@ -47,7 +47,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
         return str
 
     def get_permissions(self, obj):
-        return PermissionSerializer(obj.group.permissions, many=True).data
+        return [permission["codename"] for permission in PermissionSerializer(obj.group.permissions, many=True).data]
 
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account

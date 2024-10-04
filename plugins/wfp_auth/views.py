@@ -25,7 +25,7 @@ from requests import RequestException, HTTPError
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
-from iaso.api.serializers import AppIdSerializer
+from iaso.api.query_params import APP_ID
 from iaso.models import Account, Profile, Project
 from .provider import WFPProvider
 
@@ -113,7 +113,10 @@ class WFP2Adapter(Auth0OAuth2Adapter):
             email = extra_data["sub"].lower().strip()
         # the sub is the email, wfp verify it so let's trust this
         uid = extra_data["sub"].lower().strip()
-        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
+        # We cannot use `AppIdSerializer` because we are in a method **before** `dispatch` and therefore
+        # `self.request.query_params` is not set yet. Using `request.query_params` results in:
+        # `'WSGIRequest' object has no attribute 'query_params'`
+        app_id = request.GET.get(APP_ID, None)
         if app_id:
             account = get_object_or_404(Project, app_id=app_id).account
         else:

@@ -118,6 +118,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.rawHtml',
         defaultMessage: 'Raw html',
     },
+    superset: {
+        id: 'iaso.label.superset',
+        defaultMessage: 'Superset',
+    },
     needsAuthentication: {
         id: 'iaso.label.needsAuthentication',
         defaultMessage: 'Authentification required',

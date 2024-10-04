@@ -5,8 +5,10 @@ import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
 } from '../../../utils/featureFlags';
-import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import {
+    useCurrentUser,
+    useGetUserHasWritePermissionOnOrgunit,
+} from '../../../utils/usersUtils';
 import { useGetEnketoUrl } from '../../registry/hooks/useGetEnketoUrl';
 import { userHasPermission } from '../../users/utils';
 import {
@@ -49,10 +51,6 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         currentUser,
         SHOW_LINK_INSTANCE_REFERENCE,
     );
-    const hasOrgUnitPermission = userHasPermission(
-        Permission.ORG_UNITS,
-        currentUser,
-    );
 
     const hasUpdateSubmissionPermission = userHasPermission(
         'iaso_update_submission',
@@ -66,6 +64,9 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         altitude: formAltitude,
     } = currentInstance ?? {};
 
+    const hasOrgUnitPermission = useGetUserHasWritePermissionOnOrgunit(
+        orgUnit?.org_unit_type_id,
+    );
     const isGpsEqual =
         hasOrgUnitPermission !== null &&
         formLat !== null &&
@@ -76,7 +77,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         formAltitude === orgUnit?.altitude;
 
     const isLinkActionEnabled =
-        hasOrgUnitPermission && hasfeatureFlag && isInstanceOfReferenceForm;
+        hasfeatureFlag && isInstanceOfReferenceForm && hasOrgUnitPermission;
 
     const baseActions = useBaseActions(currentInstance, formDef);
 

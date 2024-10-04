@@ -1,24 +1,24 @@
-import React, { ReactElement, useCallback, useMemo } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditLocationIcon from '@mui/icons-material/EditLocation';
-import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import LockIcon from '@mui/icons-material/Lock';
-import { ExportButton, useSafeIntl } from 'bluesquare-components';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { DialogContentText } from '@mui/material';
+import { ExportButton, useSafeIntl } from 'bluesquare-components';
+import React, { ReactElement, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
-import EnketoIcon from '../components/EnketoIcon';
-import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
-import MESSAGES from '../messages';
-import { Instance } from '../types/instance';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { useSaveOrgUnit } from '../../orgUnits/hooks';
-import { usePostLockInstance } from '../hooks';
-import { FormDef, useLinkOrgUnitToReferenceSubmission } from './speeddials';
 import { Nullable } from '../../../types/utils';
+import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { reAssignInstance } from '../actions';
 import { ReAssignDialog } from '../components/CreateReAssignDialogComponent';
+import EnketoIcon from '../components/EnketoIcon';
+import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
+import { usePostLockInstance } from '../hooks';
+import MESSAGES from '../messages';
+import { Instance } from '../types/instance';
+import { FormDef, useLinkOrgUnitToReferenceSubmission } from './speeddials';
 
 export type SpeedDialAction = {
     id: string;
@@ -98,11 +98,10 @@ export const useEditLocationWithGpsAction = (
             currentInstance.org_unit,
         ],
     );
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    const { mutateAsync: saveOrgUnit } = useSaveOrgUnit(() => {}, [
-        'orgUnits',
-        'instance',
-    ]);
+    const { mutateAsync: saveOrgUnit } = useSaveOrgUnit(
+        () => null,
+        ['orgUnits', 'instance'],
+    );
     return useMemo(
         () => ({
             id: 'editLocationWithInstanceGps',

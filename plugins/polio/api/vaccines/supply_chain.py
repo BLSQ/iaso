@@ -402,7 +402,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
         ]
 
     def get_prefetched_data(self, obj):
-        # Prefetch vaccinepre_alert and vaccinearrival_report to reduce the number of queries in the DB
+        # Prefetch vaccine pre_alert and vaccinearrival_report to reduce the number of queries in the DB
         pre_alerts = obj.vaccineprealert_set.all().order_by("-estimated_arrival_time")
         arrival_reports = obj.vaccinearrivalreport_set.all().order_by("-arrival_report_date")
 
@@ -423,12 +423,13 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
         for pre_alert in pre_alerts:
             matching_reports = arrival_report_matching.get(pre_alert.po_number, [])
             if matching_reports:
-                for report in matching_reports:
-                    po_numbers.append(str(report.po_number))
+                for _ in matching_reports:
+                    po_numbers.append(str(pre_alert.po_number))
             else:
                 po_numbers.append(pre_alert.po_number)
 
-        # Add arrival reports that don't have a PO number matching an arrival report
+        # Add arrival reports that don't have a PO number matching an prealert
+
         for arrival_report in arrival_reports:
             if arrival_report.po_number not in po_numbers:
                 po_numbers.append(arrival_report.po_number)
@@ -451,7 +452,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
 
     # Comma Separated List of all estimated arrival times
     def get_eta(self, obj):
-        pre_alerts, arrival_report_matching = self.get_prefetched_data(obj)
+        pre_alerts, arrival_report_matching, arrival_reports = self.get_prefetched_data(obj)
 
         estimated_arrival_dates = []
         for pre_alert in pre_alerts:
@@ -469,16 +470,16 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
 
         arrival_report_dates = []
         for pre_alert in pre_alerts:
-            matching_reports = arrival_report_matching.get(pre_alert.po_number, [])
+            matching_reports = arrival_report_matching.get(pre_alert.po_number, None)
             if matching_reports:
                 for report in matching_reports:
                     arrival_report_dates.append(str(report.arrival_report_date))
             else:
                 arrival_report_dates.append("")
-        # Add arrival reports that don't have a PO number matching an arrival report
+        # Add arrival reports that don't have a PO number matching a prealert
         for arrival_report in arrival_reports:
-            if arrival_report.po_number not in arrival_report_dates:
-                arrival_report_dates.append(arrival_report.arrival_report_date)
+            if not arrival_report_matching.get(arrival_report.po_number, None):
+                arrival_report_dates.append(str(arrival_report.arrival_report_date))
 
         return ",".join(arrival_report_dates)
 

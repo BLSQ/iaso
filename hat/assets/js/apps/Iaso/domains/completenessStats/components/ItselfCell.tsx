@@ -1,20 +1,17 @@
 import React, { ReactElement } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { FormStatRow } from '../types';
 import MESSAGES from '../messages';
-import { useSafeIntl } from 'bluesquare-components';
 
-export const ItselfCell = ({value}: FormStatRow): ReactElement =>  {
+export const ItselfCell = ({ value }: FormStatRow): ReactElement => {
     const { formatMessage } = useSafeIntl();
     return value.itself_target > 0 ? (
         <>
             {value.itself_has_instances ? (
                 <span
-                    title={formatMessage(
-                        MESSAGES.itselfSubmissionCount,
-                        {
-                            value: value.itself_instances_count,
-                        },
-                    )}
+                    title={formatMessage(MESSAGES.itselfSubmissionCount, {
+                        value: value.itself_instances_count,
+                    })}
                 >
                     ✅
                 </span>
@@ -24,12 +21,9 @@ export const ItselfCell = ({value}: FormStatRow): ReactElement =>  {
         </>
     ) : (
         <div
-            title={formatMessage(
-                MESSAGES.itselfNoSubmissionExpected,
-            )}
+            title={formatMessage(MESSAGES.itselfNoSubmissionExpected)}
             style={{
-                textDecoration:
-                    'underline dotted',
+                textDecoration: 'underline dotted',
             }}
         >
             N/A

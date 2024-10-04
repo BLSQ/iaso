@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { ReactElement } from 'react';
 import PageError from '../components/errors/PageError';
 import { Runs } from '../domains/algorithmRuns/Runs';
@@ -25,6 +24,7 @@ import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import { Modules } from '../domains/modules';
 import { OrgUnits } from '../domains/orgUnits';
+import { OrgUnitChangeRequestConfigs } from '../domains/orgUnits/configuration/OrgUnitChangeRequestConfigs';
 import OrgUnitDetail from '../domains/orgUnits/details';
 import Groups from '../domains/orgUnits/groups';
 import GroupSets from '../domains/orgUnits/groupSets';
@@ -45,13 +45,12 @@ import Tasks from '../domains/tasks';
 import { Teams } from '../domains/teams';
 import { UserRoles } from '../domains/userRoles';
 import { Users } from '../domains/users';
+import { UsersHistory } from '../domains/users/history/UsersHistory';
 import { Workflows } from '../domains/workflows';
 import { Details as WorkflowDetails } from '../domains/workflows/details';
 import { SHOW_PAGES } from '../utils/featureFlags';
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
-import { UsersHistory } from '../domains/users/history/UsersHistory';
-import { OrgUnitChangeRequestConfigs } from '../domains/orgUnits/configuration/OrgUnitChangeRequestConfigs';
 
 export type RoutePath = {
     baseUrl: string;
@@ -307,7 +306,6 @@ export const groupSetDetailPath = {
     permissions: [Permission.ORG_UNIT_GROUPS],
     element: <GroupSet />,
 };
-
 
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,

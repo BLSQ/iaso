@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 
-import { IntlFormatMessage, Column } from 'bluesquare-components';
+import { Column, IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from './messages';
 
 import { Team } from './types/team';
@@ -12,7 +12,6 @@ import { UsersTeamsCell } from './components/UsersTeamsCell';
 
 export const teamColumns = (
     formatMessage: IntlFormatMessage,
-    // eslint-disable-next-line no-unused-vars
     deleteTeam: (team: Team) => void,
 ): Column[] => {
     return [

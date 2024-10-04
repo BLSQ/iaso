@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 type Version = {
     number: number;
     description?: string;

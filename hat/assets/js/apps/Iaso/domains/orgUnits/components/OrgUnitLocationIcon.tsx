@@ -52,16 +52,18 @@ export const OrgUnitLocationIcon: FunctionComponent<Props> = ({ orgUnit }) => {
                     </Box>
                 </Tooltip>
             )}
-            {!orgUnit.latitude && !orgUnit.longitude && !orgUnit.has_geo_json && (
-                <Tooltip
-                    arrow
-                    title={formatMessage(MESSAGES.noGeographicalData)}
-                >
-                    <Box sx={styles.locationIcon}>
-                        <LocationDisabledIcon fontSize="small" />
-                    </Box>
-                </Tooltip>
-            )}
+            {!orgUnit.latitude &&
+                !orgUnit.longitude &&
+                !orgUnit.has_geo_json && (
+                    <Tooltip
+                        arrow
+                        title={formatMessage(MESSAGES.noGeographicalData)}
+                    >
+                        <Box sx={styles.locationIcon}>
+                            <LocationDisabledIcon fontSize="small" />
+                        </Box>
+                    </Tooltip>
+                )}
         </>
     );
 };

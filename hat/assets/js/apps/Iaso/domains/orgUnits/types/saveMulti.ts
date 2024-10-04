@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { OrgunitType } from './orgunitTypes';
 import { Group } from './group';
 import { Search } from './search';

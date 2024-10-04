@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import { Grid, Tabs, Tab } from '@mui/material';
+import { Grid, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
@@ -18,7 +18,6 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     formName: string;
     tab: string;
-    // eslint-disable-next-line no-unused-vars
     handleChangeTab: (newTab: string) => void;
     formIds: string[];
 };

@@ -9,13 +9,14 @@ const defaultTimes = {
     staleTime: 1000 * 60 * 15, // in MS
     cacheTime: 1000 * 60 * 5,
 };
-const defaultQueryParams = {
-};
+const defaultQueryParams = {};
 export const useGetMappingVersions = params => {
     if (params.formId) {
-        params['form_id'] = params.formId;
+        params.form_id = params.formId;
     }
-    const queryString = new URLSearchParams(useApiParams(params, defaultQueryParams));
+    const queryString = new URLSearchParams(
+        useApiParams(params, defaultQueryParams),
+    );
     return useSnackQuery({
         queryKey: ['mappingversions', params],
         queryFn: () =>

@@ -1,34 +1,33 @@
-/* eslint-disable camelcase */
-import { UseMutationResult, UseQueryResult } from 'react-query';
 import { UrlParams } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { UseMutationResult, UseQueryResult } from 'react-query';
+import {
+    FormattedApiParams,
+    useApiParams,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
+import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import {
     deleteRequest,
     getRequest,
     patchRequest,
     postRequest,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
-import {
-    FormattedApiParams,
-    useApiParams,
-} from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import {
-    StockManagementListParams,
     StockManagementDetailsParams,
+    StockManagementListParams,
     StockVariationParams,
 } from '../types';
 
+import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { commaSeparatedIdsToStringArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import {
     CAMPAIGNS_ENDPOINT,
     useGetCampaigns,
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
-import { commaSeparatedIdsToStringArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 const defaults = {
     order: 'country',
@@ -50,7 +49,6 @@ const options = {
 const apiUrl = '/api/polio/vaccine/vaccine_stock/';
 const modalUrl = '/api/polio/vaccine/stock/';
 
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getVaccineStockList = async (params: FormattedApiParams) => {
     const queryString = new URLSearchParams(params).toString();
     return getRequest(`${apiUrl}?${queryString}`);
@@ -75,7 +73,6 @@ export const useGetVaccineStockList = (
     });
 };
 
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getUsableVials = async (id: string, queryString: string) => {
     return getRequest(`${apiUrl}${id}/usable_vials/?${queryString}`);
 };
@@ -105,7 +102,6 @@ export const useGetUsableVials = (
     });
 };
 
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getUnusableVials = async (id: string, queryString: string) => {
     return getRequest(`${apiUrl}${id}/get_unusable_vials/?${queryString}`);
 };

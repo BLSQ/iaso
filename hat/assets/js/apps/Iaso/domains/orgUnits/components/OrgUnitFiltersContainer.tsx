@@ -34,14 +34,13 @@ import { Search } from '../types/search';
 
 import { decodeSearch } from '../utils';
 
-import MESSAGES from '../messages';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { ORG_UNITS } from '../../../utils/permissions';
+import MESSAGES from '../messages';
 
 type Props = {
     params: OrgUnitParams;
     paramsSearches: [Search];
-    // eslint-disable-next-line no-unused-vars
     onSearch: (searches: any) => void;
     currentTab: string;
     counts: Count[];

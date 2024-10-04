@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { TabContext, TabList } from '@mui/lab';
 import { Box, Tab } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';

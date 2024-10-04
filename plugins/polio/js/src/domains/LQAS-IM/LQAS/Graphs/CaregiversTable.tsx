@@ -1,27 +1,27 @@
 /* eslint-disable react/require-default-props */
+import { Box } from '@mui/material';
+import { Table, useSafeIntl } from 'bluesquare-components';
 import React, {
     FunctionComponent,
-    useState,
     useCallback,
     useMemo,
+    useState,
 } from 'react';
-import { Box } from '@mui/material';
-import { useSafeIntl, Table } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 import {
     ConvertedLqasImData,
     LqasImDistrictDataWithNameAndRegion,
 } from '../../../../constants/types';
-import { makeDataForTable } from '../utils';
+import { floatToPercentString } from '../../../../utils';
 import {
     sortbyDistrictNameAsc,
     sortbyDistrictNameDesc,
     sortbyRegionNameAsc,
     sortbyRegionNameDesc,
 } from '../../shared/tableUtils';
-import { CaregiversTableHeader } from './CaregiversTableHeader';
-import { floatToPercentString } from '../../../../utils';
+import { makeDataForTable } from '../utils';
 import { CaregiverInfoSource } from './CaregiverInfoSource';
+import { CaregiversTableHeader } from './CaregiversTableHeader';
 
 type Props = {
     marginTop?: boolean;
@@ -117,7 +117,6 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     const formatDataForTable = useCallback(
         (
             tableData: LqasImDistrictDataWithNameAndRegion[],
-            // eslint-disable-next-line no-unused-vars
             sortFunc: (a: any, b: any) => number,
         ) =>
             tableData

@@ -1,16 +1,15 @@
+import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import React, { ReactElement, useMemo } from 'react';
-import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
-import { EditUserRoleDialog } from './components/CreateEditUserRole';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
-import MESSAGES from './messages';
-import USER_MESSAGES from '../users/messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { UserRole, Permission } from './types/userRoles';
+import PermissionCheckBoxes from '../users/components/PermissionCheckBoxes';
 import PermissionTooltip from '../users/components/PermissionTooltip';
-import PermissionSwitch from '../users/components/PermissionSwitch';
+import USER_MESSAGES from '../users/messages';
+import { EditUserRoleDialog } from './components/CreateEditUserRole';
+import MESSAGES from './messages';
+import { Permission, UserRole } from './types/userRoles';
 
 export const useGetUserRolesColumns = (
-    // eslint-disable-next-line no-unused-vars
     deleteUserRole: (userRole: UserRole) => void,
 ): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -66,9 +65,8 @@ export const useGetUserRolesColumns = (
 };
 
 export const useUserPermissionColumns = (
-    // eslint-disable-next-line no-unused-vars
-    setPermissions: (permission: Permission, isChecked: boolean) => void,
-    userRolePermissions: Permission[],
+    setPermissions: (permission: string, isChecked: boolean) => void,
+    userRolePermissions: (string | Permission)[],
 ): Array<Column> => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
@@ -110,11 +108,11 @@ export const useUserPermissionColumns = (
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <PermissionSwitch
+                        <PermissionCheckBoxes
                             codeName="codename"
                             settings={settings}
                             setPermissions={setPermissions}
-                            value={settings.row.original}
+                            value={settings.row.original.codename}
                             permissions={userRolePermissions}
                         />
                     );

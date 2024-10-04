@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -21,7 +20,7 @@ import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
-import PermissionsSwitches from './PermissionsSwitches';
+import PermissionsAttribution from './PermissionsAttribution';
 import UsersInfos from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
@@ -232,7 +231,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         />
                     </div>
                     {tab === 'permissions' && (
-                        <PermissionsSwitches
+                        <PermissionsAttribution
                             isSuperUser={initialData?.is_superuser}
                             currentUser={user}
                             handleChange={permissions =>

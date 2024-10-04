@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';

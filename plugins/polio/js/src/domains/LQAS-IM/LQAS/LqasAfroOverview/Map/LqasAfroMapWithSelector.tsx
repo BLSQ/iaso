@@ -1,20 +1,20 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Box, Paper, Tabs, Tab } from '@mui/material';
+import { Box, Paper, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
     commonStyles,
     useRedirectToReplace,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { LIST, MAP, paperElevation } from '../../../shared/constants';
-import { LqasAfroMap } from './LqasAfroMap';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import MESSAGES from '../../../../../constants/messages';
-import { AfroMapParams, Side } from '../types';
-import { LqasAfroSelector } from '../LqasAfroSelector';
-import { LqasAfroList } from '../ListView/LqasAfroList';
-import { LqasAfroOverviewContextProvider } from '../Context/LqasAfroOverviewContext';
 import { Sides } from '../../../../../constants/types';
 import { baseUrls } from '../../../../../constants/urls';
+import { LIST, MAP, paperElevation } from '../../../shared/constants';
+import { LqasAfroOverviewContextProvider } from '../Context/LqasAfroOverviewContext';
+import { LqasAfroList } from '../ListView/LqasAfroList';
+import { LqasAfroSelector } from '../LqasAfroSelector';
+import { AfroMapParams, Side } from '../types';
+import { LqasAfroMap } from './LqasAfroMap';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -32,11 +32,9 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     selectedRound: string;
-    // eslint-disable-next-line no-unused-vars
     onRoundChange: (value: string, side: Side) => void;
     side: Side;
     params: AfroMapParams;
-    // eslint-disable-next-line no-unused-vars
     onDisplayedShapeChange: (value: string, side: Side) => void;
 };
 const baseUrl = baseUrls.lqasAfro;

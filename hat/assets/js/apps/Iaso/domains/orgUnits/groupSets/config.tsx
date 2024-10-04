@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
-import MESSAGES from './messages';
 import { Chip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import MESSAGES from './messages';
 import { baseUrls } from '../../../constants/urls';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 
@@ -51,7 +51,7 @@ export const useGroupSetsTableColumns = (deleteGroupSet): Column[] => {
                                     className={classes.groupChip}
                                     label={g.name}
                                     color="primary"
-                                ></Chip>
+                                />
                             ))}
                         </span>
                     );

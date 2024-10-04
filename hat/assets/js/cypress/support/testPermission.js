@@ -10,6 +10,6 @@ export const testPermission = baseUrl =>
         };
         cy.intercept('GET', '/api/profiles/me/**', fakeUser);
         cy.visit(baseUrl);
-        const errorCode = cy.get('#error-code');
-        errorCode.should('contain', '403');
+        cy.get('#error-code').as('errorCode');
+        cy.get('@errorCode').should('contain', '403');
     });

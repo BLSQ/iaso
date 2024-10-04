@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { makeStyles } from '@mui/styles';
 import { Grid, Box } from '@mui/material';
 
+import {
+    commonStyles,
+    LoadingSpinner,
+    useRedirectToReplace,
+    useSafeIntl,
+    useGoBack,
+} from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
 import RecursiveTreeView from './components/RecursiveTreeView';
 import QuestionInfos from './components/QuestionInfos';
@@ -12,13 +19,6 @@ import GeneraMappingInfo from './components/GeneraMappingInfo';
 import Descriptor from './descriptor';
 import MESSAGES from './messages';
 
-import {
-    commonStyles,
-    LoadingSpinner,
-    useRedirectToReplace,
-    useSafeIntl,
-    useGoBack,
-} from 'bluesquare-components';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import {
     useApplyPartialUpdate,
@@ -87,7 +87,7 @@ const MappingDetails = props => {
     }
     const backParams = {};
     if (currentFormVersion?.form_id) {
-        backParams['formId'] = currentFormVersion.form_id;
+        backParams.formId = currentFormVersion.form_id;
     }
 
     const goBack = useGoBack(baseUrls.mappings);

@@ -1,15 +1,15 @@
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { defineMessages } from 'react-intl';
-import { debounce } from '@mui/material/utils';
+import { Box, TextField } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
+import { AutocompleteGetTagProps } from '@mui/material/Autocomplete/Autocomplete';
+import { debounce } from '@mui/material/utils';
 import {
     IntlMessage,
     renderTags as defaultRenderTags,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Box, TextField } from '@mui/material';
 import { isArray } from 'lodash';
-import { AutocompleteGetTagProps } from '@mui/material/Autocomplete/Autocomplete';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     noOptionsText: {
@@ -24,7 +24,6 @@ type Props = {
     loading?: boolean;
     loadingText?: IntlMessage;
     keyValue: string;
-    // eslint-disable-next-line no-unused-vars
     onChange: (keyValue, newValue: any | null) => void;
     errors?: string[];
     required?: boolean;
@@ -34,12 +33,9 @@ type Props = {
     multi?: boolean;
     helperText?: string;
     minCharBeforeQuery?: number;
-    // eslint-disable-next-line no-unused-vars
     fetchOptions: (input: string) => Promise<any[]>;
     renderTags?: (
-        // eslint-disable-next-line no-unused-vars
         tag: any[],
-        // eslint-disable-next-line no-unused-vars
         getTagProps: AutocompleteGetTagProps,
     ) => React.ReactNode;
 };
@@ -94,7 +90,6 @@ export const AsyncSelect: FunctionComponent<Props> = ({
             debounce(
                 (
                     request: { input: string },
-                    // eslint-disable-next-line no-unused-vars
                     callback: (results?: readonly any[]) => void,
                 ) => {
                     setLoading(true);
@@ -139,7 +134,6 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                 id={keyValue}
                 renderInput={params => (
                     <TextField
-                        /* eslint-disable-next-line react/jsx-props-no-spreading */
                         {...params}
                         id={keyValue}
                         disabled={disabled}

@@ -12,7 +12,6 @@ import {
 import { ReviewOrgUnitFieldChanges } from './ReviewOrgUnitFieldChanges';
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     setSelected: (key: string) => void;
     field: NewOrgUnitField;
     newFieldValues: NestedGroup[];

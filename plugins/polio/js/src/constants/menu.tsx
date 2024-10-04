@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import CalendarToday from '@mui/icons-material/CalendarToday';

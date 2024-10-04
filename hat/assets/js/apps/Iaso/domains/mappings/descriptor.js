@@ -1,9 +1,6 @@
 class Descriptor {
     static hasChildren(node) {
-        return (
-            Array.isArray(node.children) &&
-            node.type !== 'select one' 
-        );
+        return Array.isArray(node.children) && node.type !== 'select one';
     }
 
     static getLabel(node, language = 'French') {
@@ -19,7 +16,7 @@ class Descriptor {
         return (
             node.type === 'survey' ||
             node.type === 'group' ||
-            node.type === 'repeat' || 
+            node.type === 'repeat' ||
             node.type === 'select all that apply'
         );
     }
@@ -100,7 +97,7 @@ class Descriptor {
     }
 
     static getKey(node) {
-        return node.uuid || node.name || ""
+        return node.uuid || node.name || '';
     }
 
     static getNodeName(node, parent) {
@@ -109,9 +106,9 @@ class Descriptor {
             result = node.label;
         }
 
-        if (parent && parent.type == "select all that apply") {
-            result = parent.name+"__"+node.name
-            node.uuid = result
+        if (parent && parent.type == 'select all that apply') {
+            result = `${parent.name}__${node.name}`;
+            node.uuid = result;
         }
 
         return result;
@@ -123,7 +120,12 @@ class Descriptor {
         if (descriptor?.children) {
             descriptorCopy.path = ['survey'];
             descriptorCopy.children.forEach(child =>
-                this.recursiveIndex(child, acc, [descriptorCopy, child], descriptorCopy),
+                this.recursiveIndex(
+                    child,
+                    acc,
+                    [descriptorCopy, child],
+                    descriptorCopy,
+                ),
             );
         }
         return acc;

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, { FunctionComponent, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';

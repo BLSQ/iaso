@@ -1,14 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import get from 'lodash/get';
-import { InitialUserData, UserDialogData } from '../types';
-import { UserRole } from '../../userRoles/types/userRoles';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
+import { UserRole } from '../../userRoles/types/userRoles';
+import { InitialUserData, UserDialogData } from '../types';
 
 export type InitialUserUtils = {
     user: UserDialogData;
-    // eslint-disable-next-line no-unused-vars
     setFieldErrors: (fieldName, fieldError) => void;
-    // eslint-disable-next-line no-unused-vars
     setFieldValue: (fieldName, fieldError) => void;
 };
 
@@ -131,9 +129,7 @@ export const useInitialUser = (
                     .map(userRole => {
                         const role = {
                             ...(userRole.original as UserRole),
-                            permissions: userRole.original?.permissions.map(
-                                perm => perm.codename,
-                            ),
+                            permissions: userRole.original?.permissions,
                         };
                         return role;
                     });

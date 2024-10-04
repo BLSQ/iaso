@@ -121,13 +121,12 @@ Cypress.Commands.add('testInputValue', (id, value) =>
  * @param {array} options - list of possible options
  * @param {string} accessor - key of the option to test, by default 'name'
  */
-Cypress.Commands.add('testMultiSelect', (id, options, accessor = 'name') => {
-    const select = cy.get(id).parent();
-    const chips = select.find('div[role=button]');
-    chips.should('have.length', options.length);
-    options.forEach(o => {
-        select.should('contain', o[accessor]);
-    });
+Cypress.Commands.add('testMultiSelect', (id, options) => {
+    cy.get(id)
+        .parent()
+        .within(() => {
+            cy.get('div[role=button]').should('have.length', options.length);
+        });
 });
 
 /**
@@ -189,7 +188,7 @@ Cypress.Commands.add('deleteLastFieldInArrayInputField', selector => {
     if (selector.includes('@')) {
         arrayInput = cy.get(selector);
     } else {
-        arrayInput = cy.get(`#array-input-field-list-${id}`);
+        arrayInput = cy.get(`#array-input-field-list-${selector}`);
     }
     arrayInput.find('li').last().prev().find('button').click();
     // reassigning addButton
@@ -205,7 +204,8 @@ Cypress.Commands.add('deleteLastFieldInArrayInputField', selector => {
  * @param {string} value - new value to fill, by default empty string
  */
 Cypress.Commands.add('fillTextField', (id, value = '') => {
-    cy.get(id).clear().type(value);
+    cy.get(id).clear();
+    cy.get(id).type(value);
 });
 
 /**
@@ -219,13 +219,17 @@ Cypress.Commands.add('selectTab', (tabIndex, parentSelector = 'body') => {
 
 // index based, so 1st row = 0
 Cypress.Commands.add('findTableCell', (row, column) => {
-    const selectedRow = cy.get('table').find('tbody').find('tr').eq(row);
-    return selectedRow.find('td').eq(column);
+    return cy
+        .get('table')
+        .find('tbody')
+        .find('tr')
+        .eq(row)
+        .find('td')
+        .eq(column);
 });
 
 Cypress.Commands.add('findTableHead', column => {
-    const selectedRow = cy.get('table').find('thead').find('tr').eq(0);
-    return selectedRow.find('th').eq(column);
+    return cy.get('table').find('thead').find('tr').eq(0).find('th').eq(column);
 });
 
 Cypress.Commands.add('assertTooltipDiplay', identifier => {

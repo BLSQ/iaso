@@ -70,11 +70,8 @@ type Props = {
     currentOrgUnit: any;
     saveOrgUnit: () => void;
     resetOrgUnit: () => void;
-    // eslint-disable-next-line no-unused-vars
     setOrgUnitLocationModified: (isModified: boolean) => void;
-    // eslint-disable-next-line no-unused-vars
     onChangeShape: (key, geoJson) => void;
-    // eslint-disable-next-line no-unused-vars
     onChangeLocation: (location) => void;
     sources: any[];
     orgUnitTypes: any[];
@@ -106,12 +103,10 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const didCatchmentInitialize = useRef(false);
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const [isCreatingMarker, setIsCreatingMarker] = useState<boolean>(false);
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-    const [state, setStateField, _, setState] = useFormState(
+    const [state, setStateField, , setState] = useFormState(
         initialState(currentUser),
     );
     const { fetchInstanceDetail, fetchSubOrgUnitDetail } = useRedux();
-    // console.log('state', state);
     const setAncestor = useCallback(() => {
         const ancestor = getAncestorWithGeojson(currentOrgUnit);
         if (ancestor) {

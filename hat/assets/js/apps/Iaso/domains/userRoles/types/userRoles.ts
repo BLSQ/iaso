@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UrlParams } from 'bluesquare-components';
 
 export type UserRole = {
@@ -13,10 +12,7 @@ export type UserRolesFilterParams = {
 
 export type UserRoleParams = UrlParams &
     UserRolesFilterParams & {
-        select?: (
-            // eslint-disable-next-line no-unused-vars
-            data: Array<UserRole>,
-        ) => Array<any>;
+        select?: (data: Array<UserRole>) => Array<any>;
     };
 
 export type Permission = {

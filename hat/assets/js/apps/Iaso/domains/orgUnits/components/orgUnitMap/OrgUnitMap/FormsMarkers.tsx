@@ -1,18 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { Pane } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { clusterSize, orgunitsPane } from './constants';
 import { colorClusterCustomMarker } from '../../../../../utils/map/mapUtils';
-import { MarkerList } from './MarkersList';
 import { InstancePopup } from '../../../../instances/components/InstancePopUp/InstancePopUp';
-import { OrgUnit } from '../../../types/orgUnit';
 import { Instance } from '../../../../instances/types/instance';
+import { OrgUnit } from '../../../types/orgUnit';
+import { clusterSize, orgunitsPane } from './constants';
+import { MarkerList } from './MarkersList';
 
 type Props = {
     forms: any[];
-    // eslint-disable-next-line no-unused-vars
     fetchInstanceDetail: (instance: Instance) => void;
-    // eslint-disable-next-line no-unused-vars
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
 };
 

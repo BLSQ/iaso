@@ -16,10 +16,10 @@ def projects_mapper(account_name):
             ],
         },
         {
-            "name": "Children vaccination/Vaccination des enfants",
+            "name": "Vaccination",
             "app_id": f"{account_name}.children",
             "feature_flags": ["REQUIRE_AUTHENTICATION", "ENTITY"],
-            "linked_forms": ["Child - Registration", "Child - Follow up"],
+            "linked_forms": ["Child/Enfant - Registration/Enregistrement", "Child/Enfant - Follow-up/Suivi"],
         },
     ]
     return projects

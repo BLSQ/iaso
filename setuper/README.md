@@ -72,7 +72,7 @@ Once the script has run, you can log in to your server using the account name as
 2. If you want to create additional projects like:
       - Planning
       - Georegistry/Géoregistre
-      - Children vaccination/Vaccination des enfants
+      - Vaccination
 
     You will need to add param `--additional_projects`:
 

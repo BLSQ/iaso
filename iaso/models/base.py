@@ -11,7 +11,6 @@ from logging import getLogger
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
-
 import django_cte
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
@@ -1424,6 +1423,7 @@ class Profile(models.Model):
     user_roles = models.ManyToManyField("UserRole", related_name="iaso_profile", blank=True)
     projects = models.ManyToManyField("Project", related_name="iaso_profile", blank=True)
     phone_number = PhoneNumberField(blank=True)
+    org_unit_types = models.ManyToManyField("OrgUnitType", blank=True, related_name="iaso_profile")
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
@@ -1463,6 +1463,7 @@ class Profile(models.Model):
                 "phone_number": self.phone_number.as_e164 if self.phone_number else None,
                 "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
                 "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
+                "editable_org_unit_type_ids": list(self.org_unit_types.values_list("id", flat=True)),
             }
         else:
             return {
@@ -1485,6 +1486,7 @@ class Profile(models.Model):
                 "phone_number": self.phone_number.as_e164 if self.phone_number else None,
                 "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
                 "projects": [p.as_dict() for p in self.projects.all()],
+                "editable_org_unit_type_ids": list(self.org_unit_types.values_list("id", flat=True)),
             }
 
     def as_short_dict(self):
@@ -1498,6 +1500,7 @@ class Profile(models.Model):
             "user_id": self.user.id,
             "phone_number": self.phone_number.as_e164 if self.phone_number else None,
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
+            "editable_org_unit_type_ids": list(self.org_unit_types.values_list("id", flat=True)),
         }
 
     def has_a_team(self):

@@ -357,7 +357,6 @@ class ProfilesViewSet(viewsets.ViewSet):
             try:
                 profile = request.user.iaso_profile
                 profile_dict = profile.as_dict()
-                profile_dict["editable_org_unit_type_ids"] = []  # Mocking the response, add types ids to test
                 return Response(profile_dict)
             except ObjectDoesNotExist:
                 return Response(

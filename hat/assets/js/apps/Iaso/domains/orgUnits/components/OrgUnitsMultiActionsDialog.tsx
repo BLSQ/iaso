@@ -1,15 +1,16 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 
+import ReportIcon from '@mui/icons-material/Report';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
     Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Tooltip,
     Typography,
     useTheme,
-    Tooltip,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -17,24 +18,26 @@ import {
     formatThousand,
     useSafeIntl,
 } from 'bluesquare-components';
-import ReportIcon from '@mui/icons-material/Report';
 // @ts-ignore
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
-import { UseMutateAsyncFunction } from 'react-query';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import {
+    useCurrentUser,
+    useGetUserHasWriteTypePermission,
+} from 'Iaso/utils/usersUtils';
+import { UseMutateAsyncFunction } from 'react-query';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 
-import MESSAGES from '../messages';
-import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
-import { compareGroupVersions, decodeSearch } from '../utils';
+import InputComponent from '../../../components/forms/InputComponent';
+import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { useGetGroups } from '../hooks';
-import { OrgUnitParams, OrgUnit } from '../types/orgUnit';
+import MESSAGES from '../messages';
+import { Group } from '../types/group';
+import { OrgUnit, OrgUnitParams } from '../types/orgUnit';
+import { OrgunitType } from '../types/orgunitTypes';
 import { SaveData } from '../types/saveMulti';
 import { Selection } from '../types/selection';
-import { Group } from '../types/group';
-import { OrgunitType } from '../types/orgunitTypes';
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
+import { compareGroupVersions, decodeSearch } from '../utils';
 
 type Props = {
     open: boolean;
@@ -109,6 +112,14 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         dataSourceId: currentUser?.account?.default_version?.data_source?.id,
         sourceVersionId: currentUser?.account?.default_version?.id,
     });
+    const getHasWriteByTypePermission = useGetUserHasWriteTypePermission();
+    const displayedOrgUnitTypes = useMemo(
+        () =>
+            orgUnitTypes?.filter(ouType =>
+                getHasWriteByTypePermission(parseInt(ouType.value, 10)),
+            ),
+        [orgUnitTypes, getHasWriteByTypePermission],
+    );
     const isSaveDisabled = () =>
         ((editGroups &&
             groupsAdded.length === 0 &&
@@ -297,7 +308,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                             onChange={(key, value) => setOrgUnitType(value)}
                             value={orgUnitType}
                             type="select"
-                            options={orgUnitTypes || []}
+                            options={displayedOrgUnitTypes || []}
                             label={MESSAGES.org_unit_type}
                             isSearchable
                         />

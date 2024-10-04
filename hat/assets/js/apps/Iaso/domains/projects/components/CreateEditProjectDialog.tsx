@@ -1,35 +1,34 @@
-import React, {
-    FunctionComponent,
-    useState,
-    useEffect,
-    useCallback,
-    useMemo,
-} from 'react';
-import get from 'lodash/get';
-import { Tabs, Tab } from '@mui/material';
+import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
+    AddButton,
     ConfirmCancelModal,
     makeFullModal,
-    AddButton,
+    useSafeIntl,
 } from 'bluesquare-components';
+import get from 'lodash/get';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 
-import { ProjectInfos } from './ProjectInfos';
 import { Form, ProjectFeatureFlags } from './ProjectFeatureFlags';
+import { ProjectInfos } from './ProjectInfos';
 
 import { Project } from '../types/project';
 
-import MESSAGES from '../messages';
-import { useGetFeatureFlags } from '../hooks/requests';
-import { FeatureFlag } from '../types/featureFlag';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import { useGetFeatureFlags } from '../hooks/requests';
+import MESSAGES from '../messages';
+import { FeatureFlag } from '../types/featureFlag';
 
 type Tab = 'infos' | 'feature_flags';
 
 type Props = {
     initialData?: Project | null;
-    // eslint-disable-next-line no-unused-vars
     saveProject: (s: Project) => Promise<any>;
     closeDialog: () => void;
     isOpen: boolean;

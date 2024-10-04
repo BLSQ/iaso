@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     deleteRequest,

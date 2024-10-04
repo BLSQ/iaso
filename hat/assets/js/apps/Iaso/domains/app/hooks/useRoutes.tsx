@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import { last } from 'lodash';
 import React, { ElementType, ReactElement, useContext, useMemo } from 'react';
 import { Route, Routes } from 'react-router';

@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 // TODO: types are a bit repetitive in micro planning, maybe use a a common types folder
 type Team = {
     id: number;

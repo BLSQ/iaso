@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Pagination } from 'bluesquare-components';
 import { User } from '../../../utils/usersUtils';
 import { Beneficiary } from '../../entities/types/beneficiary';

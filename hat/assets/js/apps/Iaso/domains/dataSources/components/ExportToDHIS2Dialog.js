@@ -14,7 +14,7 @@ import {
     convertFormStateToDict,
 } from '../../../utils/forms';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus.ts';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
 import MESSAGES from '../messages';
 import {
     csvPreview,
@@ -89,13 +89,9 @@ export const ExportToDHIS2Dialog = ({
 
     const [isCSVLoading, setIsCsvLoading] = useState(false);
 
-    const [
-        exportData,
-        setExportDataField,
-        // eslint-disable-next-line no-unused-vars
-        _setExportDataErrors,
-        setExportData,
-    ] = useFormState(initialExportData(defaultVersionId));
+    const [exportData, setExportDataField, , setExportData] = useFormState(
+        initialExportData(defaultVersionId),
+    );
 
     const sourceVersion = sourceVersions?.find(
         v => v.id.toString() === exportData.source_version_id.value,

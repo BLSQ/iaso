@@ -1,5 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
-/* eslint-disable react/prop-types */
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import LockIcon from '@mui/icons-material/Lock';
@@ -70,8 +68,7 @@ const getUrlInstance = data => {
 
 const ActionTableColumnComponent = ({ settings }) => {
     const user = useCurrentUser();
-    // eslint-disable-next-line no-unused-vars
-    const [_formState, _setFieldValue, setFieldErrors] = useFormState(
+    const [, , setFieldErrors] = useFormState(
         initialFormState(
             settings.row.original.org_unit,
             settings.row.original.id,

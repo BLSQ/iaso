@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { LangOptions } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';

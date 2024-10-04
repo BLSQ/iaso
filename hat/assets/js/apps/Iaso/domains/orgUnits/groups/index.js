@@ -6,7 +6,8 @@ import {
     commonStyles,
     Table,
     AddButton,
-    useSafeIntl,useRedirectTo
+    useSafeIntl,
+    useRedirectTo,
 } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
 import Filters from './components/Filters';

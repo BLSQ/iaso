@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 export type DropdownOptions = {
     label: string;
     value: number | string;

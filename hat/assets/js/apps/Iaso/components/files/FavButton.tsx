@@ -31,9 +31,7 @@ const MESSAGES = defineMessages({
 
 type Props = {
     file: ShortFile;
-    // eslint-disable-next-line no-unused-vars
     onImageFavoriteClick: (id: number) => void;
-    // eslint-disable-next-line no-unused-vars
     isDefaultImage: (id: number) => boolean;
 };
 

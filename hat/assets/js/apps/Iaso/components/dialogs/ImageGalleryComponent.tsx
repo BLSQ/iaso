@@ -105,11 +105,9 @@ type Props = {
     closeLightbox: () => void;
     imageList: ShortFile[];
     currentIndex: number;
-    // eslint-disable-next-line no-unused-vars
     setCurrentIndex?: (index: number) => void;
     url?: string | null;
     urlLabel?: { id: string; defaultMessage: string } | undefined;
-    // eslint-disable-next-line no-unused-vars
     getExtraInfos?: (image: ShortFile) => React.ReactNode;
 };
 

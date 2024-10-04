@@ -73,7 +73,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
     },
-    groupSets:  {
+    groupSets: {
         defaultMessage: 'Group Sets',
         id: 'iaso.label.groupSets',
     },

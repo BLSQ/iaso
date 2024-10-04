@@ -60,44 +60,42 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     );
 
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={4}>
-                    <InputComponent
-                        keyValue="search"
-                        onChange={handleChange}
-                        value={filters.search}
-                        type="search"
-                        label={MESSAGES.search}
-                        onEnterPressed={handleSearch}
-                        onErrorChange={setTextSearchError}
-                        blockForbiddenChars
-                    />
-                </Grid>
-
-                <Grid
-                    item
-                    xs={12}
-                    sm={6}
-                    md={8}
-                    container
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    <Button
-                        data-test="search-button"
-                        disabled={textSearchError || !filtersUpdated}
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        onClick={() => handleSearch()}
-                    >
-                        <SearchIcon className={classes.buttonIcon} />
-                        {formatMessage(MESSAGES.search)}
-                    </Button>
-                </Grid>
+        <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={4}>
+                <InputComponent
+                    keyValue="search"
+                    onChange={handleChange}
+                    value={filters.search}
+                    type="search"
+                    label={MESSAGES.search}
+                    onEnterPressed={handleSearch}
+                    onErrorChange={setTextSearchError}
+                    blockForbiddenChars
+                />
             </Grid>
-        </>
+
+            <Grid
+                item
+                xs={12}
+                sm={6}
+                md={8}
+                container
+                justifyContent="flex-end"
+                alignItems="center"
+            >
+                <Button
+                    data-test="search-button"
+                    disabled={textSearchError || !filtersUpdated}
+                    variant="contained"
+                    className={classes.button}
+                    color="primary"
+                    onClick={() => handleSearch()}
+                >
+                    <SearchIcon className={classes.buttonIcon} />
+                    {formatMessage(MESSAGES.search)}
+                </Button>
+            </Grid>
+        </Grid>
     );
 };
 

@@ -22,20 +22,26 @@ export const testTablerender = ({
 
             if (request) {
                 cy.wait(request).then(() => {
-                    const table = cy.get(selector);
-                    table.should('have.length', 1);
-                    const tableRows = table.find('tbody').find('tr');
-                    tableRows.should('have.length', rows);
+                    cy.get(selector).as('table');
+                    cy.get('@table').should('have.length', 1);
+                    cy.get('@table').find('tbody').find('tr').as('tableRows');
+                    cy.get('@tableRows').should('have.length', rows);
                     // number of col
-                    tableRows.eq(0).find('td').should('have.length', columns);
+                    cy.get('@tableRows')
+                        .eq(0)
+                        .find('td')
+                        .should('have.length', columns);
                 });
             } else {
-                const table = cy.get(selector);
-                table.should('have.length', 1);
-                const tableRows = table.find('tbody').find('tr');
-                tableRows.should('have.length', rows);
+                cy.get(selector).as('table');
+                cy.get('@table').should('have.length', 1);
+                cy.get('@table').find('tbody').find('tr').as('tableRows');
+                cy.get('@tableRows').should('have.length', rows);
                 // number of col
-                tableRows.eq(0).find('td').should('have.length', columns);
+                cy.get('@tableRows')
+                    .eq(0)
+                    .find('td')
+                    .should('have.length', columns);
             }
         });
         it("Displays an empty table when there's no data", () => {
@@ -52,8 +58,8 @@ export const testTablerender = ({
             cy.visit(baseUrl);
             cy.wait('@fetch', { timeout: 10000 });
 
-            const table = cy.get(selector);
-            table.should('have.length', 1);
-            table.find('tbody').find('tr').should('not.exist');
+            cy.get(selector).as('table');
+            cy.get('@table').should('have.length', 1);
+            cy.get('@table').find('tbody').find('tr').should('not.exist');
         });
     });

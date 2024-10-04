@@ -1,10 +1,9 @@
 import React, { ReactNode, useCallback } from 'react';
-import { Row } from './Row';
 import { MultiRows } from './MultiRows';
+import { Row } from './Row';
 
 export const useGetMapLog = (
     structure: Record<string, any>,
-    // eslint-disable-next-line no-unused-vars
 ): ((logDetail: Record<string, any>) => ReactNode[]) => {
     const getlogRows = useCallback(
         logDetail =>

@@ -7,7 +7,6 @@ import { DataSource } from './dataSources';
 import { OrgunitType } from './orgunitTypes';
 import { Shape } from './shapes';
 
-/* eslint-disable camelcase */
 export type ShortOrgUnit = {
     name: string;
     id: number;

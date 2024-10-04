@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import { Group } from './Group';
 import { SourceVersion } from './SourceVersion';
 

@@ -6,9 +6,7 @@ import { MappedOrgUnit } from './types';
 
 type Props = {
     mappedSourcesSelected: MappedOrgUnit[];
-    // eslint-disable-next-line no-unused-vars
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
-    // eslint-disable-next-line no-unused-vars
     fetchSubOrgUnitDetail: (orgUnit: OrgUnit) => void;
 };
 

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseMutationResult, useQueryClient } from 'react-query';
 import { useSnackMutation } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 

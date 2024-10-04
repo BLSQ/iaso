@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
 import { FilterButton } from '../../../../components/FilterButton';

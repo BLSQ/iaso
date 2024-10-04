@@ -1,7 +1,7 @@
 import { getTableUrl } from 'bluesquare-components';
+import { getFromDateString, getToDateString } from '../../../utils/dates';
 import { OrgUnitParams } from '../types/orgUnit';
 import { Search } from '../types/search';
-import { getFromDateString, getToDateString } from '../../../utils/dates';
 
 export type ApiParams = {
     order: string;
@@ -15,11 +15,8 @@ export type ApiParams = {
 type Result = {
     apiParams: ApiParams;
     getUrl: (
-        // eslint-disable-next-line no-unused-vars
         toExport: boolean,
-        // eslint-disable-next-line no-unused-vars
         exportType: string,
-        // eslint-disable-next-line no-unused-vars
         asLocation?: boolean,
     ) => string;
 };

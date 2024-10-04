@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import moment from 'moment';
 
 import { PostArg } from '../types/general';

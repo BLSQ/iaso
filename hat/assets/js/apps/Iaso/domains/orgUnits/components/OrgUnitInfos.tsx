@@ -1,5 +1,3 @@
-/* eslint-disable react/function-component-definition */
-/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 
 import { Box, Button, Grid } from '@mui/material';
@@ -25,6 +23,7 @@ import {
 } from '../../../utils/usersUtils';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Instance } from '../../instances/types/instance';
+import { userHasPermission } from '../../users/utils';
 import { Group, OrgUnit, OrgUnitState } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
@@ -53,9 +52,7 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     orgUnitState: OrgUnitState;
     onChangeInfo: (
-        // eslint-disable-next-line no-unused-vars
         key: string,
-        // eslint-disable-next-line no-unused-vars
         value: string | number | string[] | number[],
     ) => void;
     orgUnitTypes: OrgunitType[];

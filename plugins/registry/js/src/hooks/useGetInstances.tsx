@@ -1,17 +1,12 @@
-/* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
-// @ts-ignore
 import { getSort } from 'bluesquare-components';
-
 import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-
 import {
     Instance,
     PaginatedInstances,
 } from '../../../../../hat/assets/js/apps/Iaso/domains/instances/types/instance';
 import { makeUrlWithParams } from '../../../../../hat/assets/js/apps/Iaso/libs/utils';
-
 import { OrgUnitStatus } from '../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { RegistryParams } from '../types';
 

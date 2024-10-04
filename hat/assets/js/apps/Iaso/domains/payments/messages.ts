@@ -202,6 +202,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.viewChangeRequestsForPayment',
         defaultMessage: 'View change requests for this payment',
     },
+    paymentLotTaskLaunched: {
+        id: 'iaso.snackBar.paymentLotTaskLaunched',
+        defaultMessage:
+            "The creation of the payment lot may take a few moments. Try refreshing the Payment Lots page if it doesn't appear",
+    },
 });
 
 export default MESSAGES;

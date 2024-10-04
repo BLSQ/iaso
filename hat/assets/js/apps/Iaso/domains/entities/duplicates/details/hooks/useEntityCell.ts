@@ -1,5 +1,5 @@
-import { useCallback, Dispatch } from 'react';
 import { isEqual } from 'lodash';
+import { Dispatch, useCallback } from 'react';
 import { DuplicateEntityForTable, EntityForTableData } from '../../types';
 
 const getEntityStatus = (
@@ -51,12 +51,7 @@ type UseEntityCellArgs = {
     entity1: EntityForTableData | undefined;
     entity2: EntityForTableData | undefined;
     state: DuplicateEntityForTable[];
-    updateCellState: (
-        // eslint-disable-next-line no-unused-vars
-        index: number,
-        // eslint-disable-next-line no-unused-vars
-        value: DuplicateEntityForTable,
-    ) => void;
+    updateCellState: (index: number, value: DuplicateEntityForTable) => void;
     setQuery: Dispatch<any>;
     key: 'entity1' | 'entity2';
 };

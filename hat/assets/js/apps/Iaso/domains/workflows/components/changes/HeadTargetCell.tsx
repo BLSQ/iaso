@@ -1,17 +1,16 @@
-import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
+import React, { FunctionComponent } from 'react';
 
 import { useSafeIntl } from 'bluesquare-components';
 
-import MESSAGES from '../../messages';
 import InputComponent from '../../../../components/forms/InputComponent';
+import MESSAGES from '../../messages';
 
 import { DropdownOptions } from '../../../../types/utils';
 
 import { ReferenceForm } from '../../types';
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     handleChangeTargetVersion: (_, value: string) => void;
     targetVersion: string;
     targetVersionsDropdownOptions: DropdownOptions<string>[];

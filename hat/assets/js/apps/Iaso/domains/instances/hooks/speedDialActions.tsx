@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, { ReactElement, useCallback, useMemo } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditLocationIcon from '@mui/icons-material/EditLocation';

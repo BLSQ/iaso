@@ -76,7 +76,7 @@ export const useGetQueryBuilderFieldsForAllForms = (
             conjunctions: ['AND', 'OR'],
             operators: ['some', 'all', 'none'],
             defaultOperator: 'some',
-            subfields: subfields,
+            subfields,
         };
     }
 

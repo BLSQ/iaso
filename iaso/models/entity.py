@@ -43,6 +43,9 @@ class EntityType(models.Model):
     """Its `reference_form` describes the core attributes/metadata about the entity type (in case it refers to a person: name, age, ...)"""
 
     name = models.CharField(max_length=255)  # Example: "Child under 5"
+    code = models.CharField(
+        max_length=255, null=True, blank=True
+    )  # As the name could change over the time, this field will never change once the entity type created and ETL script will rely on that
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # Link to the reference form that contains the core attribute/metadata specific to this entity type

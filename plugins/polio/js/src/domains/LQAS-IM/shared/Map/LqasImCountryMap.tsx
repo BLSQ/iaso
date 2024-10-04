@@ -1,14 +1,14 @@
-import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import { GreyHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/GreyHashedPattern';
 import { LegendItem, defaultShapeStyle } from '../../../../utils/index';
-import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer';
+import { MapComponent } from '../../../Campaigns/MapComponent/MapComponent';
+import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend';
+import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer';
 import { HASHED_MAP_PATTERN } from '../constants';
 import { makePopup } from './LqasImPopUp';
-import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer';
-import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend';
-import { MapComponent } from '../../../Campaigns/MapComponent/MapComponent';
+import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer';
 
 const getBackgroundLayerStyle = () => defaultShapeStyle;
 
@@ -27,7 +27,6 @@ type Props = {
     name: string;
     title: string;
     legendItems: LegendItem[];
-    // eslint-disable-next-line no-unused-vars
     getMainLayerStyles: (shape: any) => Record<string, any>;
 };
 

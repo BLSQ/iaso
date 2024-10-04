@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { SimpleModal } from 'bluesquare-components';
 import React, {
     Dispatch,
@@ -11,10 +10,7 @@ import { TextArea } from '../../../../components/forms/TextArea';
 import { UseSaveChangeRequestQueryData } from '../hooks/api/useSaveChangeRequest';
 import { ReviewOrgUnitChangesCommentDialogButtons } from './ReviewOrgUnitChangesCommentDialogButtons';
 
-type SubmitChangeRequest = (
-    // eslint-disable-next-line no-unused-vars
-    variables: UseSaveChangeRequestQueryData,
-) => void;
+type SubmitChangeRequest = (variables: UseSaveChangeRequestQueryData) => void;
 
 type Props = {
     submitChangeRequest: SubmitChangeRequest;

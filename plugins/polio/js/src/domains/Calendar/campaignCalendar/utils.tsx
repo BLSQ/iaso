@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-/* eslint-disable react/no-array-index-key */
 import moment, { Moment } from 'moment';
 import React, { ReactElement } from 'react';
 import { colsCounts, dateFormat } from './constants';

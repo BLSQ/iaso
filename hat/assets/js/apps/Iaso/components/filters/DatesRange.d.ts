@@ -4,7 +4,6 @@ import { ComponentType } from 'react';
 interface DatesRangeProps {
     dateFrom?: string;
     dateTo?: string;
-    // eslint-disable-next-line no-unused-vars
     onChangeDate: (key: string, value: any) => void;
     labelTo?: { id: string; defaultMessage: string };
     labelFrom?: { id: string; defaultMessage: string };

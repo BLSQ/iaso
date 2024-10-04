@@ -1,13 +1,12 @@
-import React, { FunctionComponent } from 'react';
 import { Box, Typography } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import { PercentageBarChart } from './PercentageBarChart';
 
 type Props = {
     // eslint-disable-next-line react/require-default-props
     title?: string;
     data: any[];
-    // eslint-disable-next-line no-unused-vars
     tooltipFormatter: (...args: any) => any;
     isLoading: boolean;
     chartKey: string;

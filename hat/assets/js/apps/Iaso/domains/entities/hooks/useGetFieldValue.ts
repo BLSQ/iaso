@@ -1,8 +1,7 @@
-/* eslint-disable no-unused-vars */
-import moment from 'moment';
 import { useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
 
-import { FileContent, Beneficiary } from '../types/beneficiary';
+import { Beneficiary, FileContent } from '../types/beneficiary';
 
 import { FieldType } from '../../forms/types/forms';
 

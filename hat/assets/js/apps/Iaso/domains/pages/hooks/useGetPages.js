@@ -1,5 +1,5 @@
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getRequest } from 'Iaso/libs/Api';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
 export const useGetPages = options => {
     const params = {
@@ -12,7 +12,7 @@ export const useGetPages = options => {
 
     const getURL = urlParams => {
         const filteredParams = Object.entries(urlParams).filter(
-            ([key, value]) => value !== undefined,
+            ([_key, value]) => value !== undefined,
         );
 
         const queryString = new URLSearchParams(

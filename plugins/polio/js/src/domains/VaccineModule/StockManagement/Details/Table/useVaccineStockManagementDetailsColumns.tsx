@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
@@ -92,6 +91,12 @@ export const useVaccineStockManagementDetailsColumnsUnusable = (): Column[] => {
                 Header: formatMessage(MESSAGES.action),
                 accessor: 'action',
                 id: 'action',
+                Cell: settings => {
+                    const { action } = settings.row.original;
+                    return MESSAGES[action]
+                        ? formatMessage(MESSAGES[action])
+                        : action;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.vials_in),

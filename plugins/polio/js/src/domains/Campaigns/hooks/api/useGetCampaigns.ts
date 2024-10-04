@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { useMemo } from 'react';
 import { QueryKey, UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
@@ -56,7 +55,6 @@ export type GetCampaignsParams = {
 
 const getURL = (urlParams: GetCampaignsParams, url: string): string => {
     const filteredParams: [string, any][] = Object.entries(urlParams).filter(
-        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
         ([_key, value]) => value !== undefined,
     );
 

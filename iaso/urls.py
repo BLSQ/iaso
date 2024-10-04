@@ -90,6 +90,7 @@ from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.storage import StorageBlacklistedViewSet, StorageLogViewSet, StorageViewSet, logs_per_device
+from .api.superset import SupersetTokenViewSet
 from .api.tasks import TaskSourceViewSet
 from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
@@ -203,9 +204,8 @@ router.register(r"validationstatus", ValidationStatusViewSet, basename="validati
 router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="lastupdates")
 router.register(r"modules", ModulesViewSet, basename="modules")
 router.register(r"configs", ConfigViewSet, basename="jsonconfigs")
-
-
 router.register(r"mobile/bulkupload", MobileBulkUploadsViewSet, basename="mobilebulkupload")
+router.register(r"superset/token", SupersetTokenViewSet, basename="supersettoken")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

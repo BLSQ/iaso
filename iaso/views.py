@@ -13,7 +13,7 @@ from drf_yasg.generators import OpenAPISchemaGenerator
 from drf_yasg.openapi import ReferenceResolver
 
 from hat.__version__ import DEPLOYED_BY, DEPLOYED_ON, VERSION
-from iaso.models import IFRAME, POWERBI, TEXT, Account, Page
+from iaso.models import IFRAME, POWERBI, SUPERSET, TEXT, Account, Page
 from iaso.utils.powerbi import get_powerbi_report_token
 
 
@@ -81,6 +81,14 @@ def page(request, page_slug):
         response = render(
             request,
             "iaso/pages/powerbi.html",
+            content,
+        )
+    elif page.type == SUPERSET:
+        # TODO: Use dedicated column for dashboard_id?
+        content.update({"dashboard_id": page.content, "title": page.name, "page": page})
+        response = render(
+            request,
+            "iaso/pages/superset.html",
             content,
         )
     else:

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import SendIcon from '@mui/icons-material/Send';
 import { ExternalLinkIconButton, IconButton } from 'bluesquare-components';

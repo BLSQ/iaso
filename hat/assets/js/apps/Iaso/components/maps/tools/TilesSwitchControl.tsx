@@ -1,10 +1,10 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Box, SxProps, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { Theme } from '@mui/material/styles';
-import { IconButton, useSafeIntl } from 'bluesquare-components';
 import Layers from '@mui/icons-material/Layers';
+import { Box, SxProps, Typography } from '@mui/material';
+import { Theme } from '@mui/material/styles';
+import { makeStyles } from '@mui/styles';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
+import React, { FunctionComponent, useState } from 'react';
 
 import TileSwitch from './TileSwitchComponent';
 
@@ -68,7 +68,6 @@ export type Tile = {
 
 type Props = {
     currentTile: Tile;
-    // eslint-disable-next-line no-unused-vars
     setCurrentTile: (newTile: Tile) => void;
     styles?: SxProps<Theme>;
 };
@@ -93,57 +92,50 @@ export const TilesSwitchControl: FunctionComponent<Props> = ({
     };
 
     return (
-        <>
+        <Box
+            className={classNames(classes.legendLayers, 'tile-switch-control')}
+            sx={styles}
+        >
+            {!tilePopup && (
+                <span
+                    className={classes.barButton}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => toggleTilePopup()}
+                >
+                    <Layers fontSize="small" />
+                </span>
+            )}
+
             <Box
                 className={classNames(
-                    classes.legendLayers,
-                    'tile-switch-control',
+                    tilePopup ? classes.open : classes.closed,
+                    classes.container,
                 )}
-                sx={styles}
             >
-                {!tilePopup && (
-                    <span
-                        className={classes.barButton}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => toggleTilePopup()}
-                    >
-                        <Layers fontSize="small" />
-                    </span>
-                )}
-
-                <Box
-                    className={classNames(
-                        tilePopup ? classes.open : classes.closed,
-                        classes.container,
-                    )}
-                >
-                    {tilePopup && (
-                        <Box width={235}>
-                            <Typography
-                                variant="subtitle1"
-                                className={classes.title}
-                            >
-                                {formatMessage(MESSAGES.layersTitle)}
-                            </Typography>
-                            <Box className={classes.iconContainer}>
-                                <IconButton
-                                    size="small"
-                                    onClick={() => toggleTilePopup()}
-                                    icon="clear"
-                                    tooltipMessage={MESSAGES.close}
-                                />
-                            </Box>
-                            <TileSwitch
-                                setCurrentTile={newtile =>
-                                    setCurrentTile(newtile)
-                                }
-                                currentTile={currentTile}
+                {tilePopup && (
+                    <Box width={235}>
+                        <Typography
+                            variant="subtitle1"
+                            className={classes.title}
+                        >
+                            {formatMessage(MESSAGES.layersTitle)}
+                        </Typography>
+                        <Box className={classes.iconContainer}>
+                            <IconButton
+                                size="small"
+                                onClick={() => toggleTilePopup()}
+                                icon="clear"
+                                tooltipMessage={MESSAGES.close}
                             />
                         </Box>
-                    )}
-                </Box>
+                        <TileSwitch
+                            setCurrentTile={newtile => setCurrentTile(newtile)}
+                            currentTile={currentTile}
+                        />
+                    </Box>
+                )}
             </Box>
-        </>
+        </Box>
     );
 };

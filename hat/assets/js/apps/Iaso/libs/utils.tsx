@@ -5,10 +5,10 @@
  * @param {{[p: string]: T}} urlParams
  */
 
-import React, { ReactElement } from 'react';
 import { textPlaceholder } from 'bluesquare-components';
-import { DropdownOptions, Nullable, Optional } from '../types/utils';
+import React, { ReactElement } from 'react';
 import { OptionsResponse } from '../types/general';
+import { DropdownOptions, Nullable, Optional } from '../types/utils';
 
 // url should include closing slash
 export const makeUrlWithParams = (
@@ -50,7 +50,6 @@ export const makeRegexValidator =
     ): {
         name: string;
         message: string;
-        // eslint-disable-next-line no-unused-vars
         test: (value: string) => boolean;
     } => ({
         name,
@@ -94,8 +93,7 @@ export const mapOptions = (
     // Convert object to 2 dimensional array
     Object.entries(data.actions.POST)
         // Only keep "choices" fields
-        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-        .filter(([_key, dict]) => dict.type === 'choice')
+        .filter(([, dict]) => dict.type === 'choice')
         // Format the choices as DropdownOptions
         .map(([key, dict]) => [
             key,

@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import { User, DropdownOptions } from '../types';
 
 export type ChronogramParams = {

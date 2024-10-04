@@ -71,7 +71,7 @@ const Mappings = props => {
                         justifyContent="flex-end"
                         alignItems="center"
                         className={classes.marginTop}
-                    ></Grid>
+                    />
                 </Box>
             </Box>
         </>

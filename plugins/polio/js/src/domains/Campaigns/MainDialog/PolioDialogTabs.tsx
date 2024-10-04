@@ -1,5 +1,5 @@
+import { Tabs } from '@mui/material';
 import React, { FunctionComponent } from 'react';
-import { Tab, Tabs } from '@mui/material';
 import { useStyles } from '../../../styles/theme';
 import { PolioDialogTab } from './PolioDialogTab';
 
@@ -13,7 +13,6 @@ export type Tab = {
 
 type Props = {
     selectedTab: number;
-    // eslint-disable-next-line no-unused-vars
     handleChange: (_event: any, newValue: number) => void;
     tabs: Tab[];
 };

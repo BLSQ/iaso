@@ -6,13 +6,13 @@ import { useApiParams } from '../../../../hooks/useApiParams';
 
 const getForms = params => {
     const queryString = new URLSearchParams(params).toString();
-    return getRequest(`/api/forms/?${queryString}`).then((value) => {
+    return getRequest(`/api/forms/?${queryString}`).then(value => {
         return value.forms.map(f => {
-            return  {
+            return {
                 value: f.id,
-                label: f.name
-            }
-        })
+                label: f.name,
+            };
+        });
     });
 };
 
@@ -25,7 +25,7 @@ export const tableDefaults = {
 type ValueLabel = {
     value: string;
     label: string;
-  };
+};
 export const useGetFormsDropdownOptions = (
     params,
     defaults = tableDefaults,

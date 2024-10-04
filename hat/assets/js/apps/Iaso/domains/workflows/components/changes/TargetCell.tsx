@@ -1,19 +1,16 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { cloneDeep } from 'lodash';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 
 import InputComponent from '../../../../components/forms/InputComponent';
-import { ChangesOption, Mapping } from '../../types';
 import { useGetUnUsedChangesOptions } from '../../hooks/useGetUnUsedChangesOptions';
+import { ChangesOption, Mapping } from '../../types';
 
 type Props = {
     targetOptions: ChangesOption[];
     sourceOptions: ChangesOption[];
     handleUpdate: (
-        // eslint-disable-next-line no-unused-vars
         key: keyof Mapping,
-        // eslint-disable-next-line no-unused-vars
         value: string | undefined,
-        // eslint-disable-next-line no-unused-vars
         index: number,
     ) => void;
     rowIndex: number;

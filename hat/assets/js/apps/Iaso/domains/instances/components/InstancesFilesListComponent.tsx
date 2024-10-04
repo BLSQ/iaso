@@ -42,9 +42,7 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     instanceDetail?: Instance;
     files: ShortFile[];
-    // eslint-disable-next-line no-unused-vars
     onLightBoxToggled?: (value: boolean) => void;
-    // eslint-disable-next-line no-unused-vars
     fetchDetails?: boolean;
     fetchingFile?: boolean;
     fetching?: boolean;

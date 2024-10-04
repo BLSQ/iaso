@@ -1,13 +1,11 @@
-import { getSort, Column } from 'bluesquare-components';
+import { Column, getSort } from 'bluesquare-components';
 
-import { useStaticColumns, defaultSorted } from '../config';
+import { defaultSorted, useStaticColumns } from '../config';
 
 import { Filters, Params } from '../types/filters';
 
 export const useFiltersParams = (): ((
-    // eslint-disable-next-line no-unused-vars
     params: Params,
-    // eslint-disable-next-line no-unused-vars
     filters: Filters,
 ) => Params) => {
     const staticColumns: Array<Column> = useStaticColumns();

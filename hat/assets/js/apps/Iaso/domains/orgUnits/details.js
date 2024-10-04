@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';

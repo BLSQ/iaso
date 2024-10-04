@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';

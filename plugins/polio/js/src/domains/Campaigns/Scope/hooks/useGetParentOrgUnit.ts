@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
 // @ts-ignore
 import { useSnackQuery } from 'Iaso/libs/apiHooks';

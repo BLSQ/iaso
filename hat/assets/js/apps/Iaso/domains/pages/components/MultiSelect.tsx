@@ -1,7 +1,7 @@
 import { get } from 'lodash';
 import React, { FunctionComponent } from 'react';
-import { DropdownOptions } from '../../../types/utils';
 import InputComponent from '../../../components/forms/InputComponent';
+import { DropdownOptions } from '../../../types/utils';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 export type Option = DropdownOptions<string | number>;
@@ -14,9 +14,7 @@ type Props = {
     clearable?: boolean;
     required?: boolean;
     disabled?: boolean;
-    // eslint-disable-next-line no-unused-vars
     onChange?: (_keyValue: string, value: any) => void;
-    // eslint-disable-next-line no-unused-vars
     renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
     returnFullObject?: boolean;
 };
@@ -55,7 +53,10 @@ export const MultiSelect: FunctionComponent<Props> = ({
                     onChange(keyValue, commaSeparatedIdsToArray(value));
                 } else {
                     form.setFieldTouched(field.name, true);
-                    form.setFieldValue(field.name, commaSeparatedIdsToArray(value));
+                    form.setFieldValue(
+                        field.name,
+                        commaSeparatedIdsToArray(value),
+                    );
                 }
             }}
             errors={hasError ? [get(form.errors, field.name)] : []}

@@ -2,7 +2,6 @@ import { Profile, User } from '../../utils/usersUtils';
 import { Project } from '../projects/types/project';
 import { UserRole } from '../userRoles/types/userRoles';
 
-/* eslint-disable camelcase */
 export type ValueAndErrors<T> = {
     value: T;
     errors: string[];

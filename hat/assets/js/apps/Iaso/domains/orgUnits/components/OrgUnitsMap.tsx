@@ -1,55 +1,55 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
-import MarkerClusterGroup from 'react-leaflet-markercluster';
-import {
-    MapContainer,
-    GeoJSON,
-    Pane,
-    Tooltip,
-    ScaleControl,
-} from 'react-leaflet';
-import { Grid, Box } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
     commonStyles,
     IntlFormatMessage,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { FunctionComponent, useMemo, useState } from 'react';
+import {
+    GeoJSON,
+    MapContainer,
+    Pane,
+    ScaleControl,
+    Tooltip,
+} from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-markercluster';
 
 // COMPONENTS
 
-import OrgUnitPopupComponent from './OrgUnitPopupComponent';
-import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
-import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
-import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
+import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
+import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
+import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
+import OrgUnitPopupComponent from './OrgUnitPopupComponent';
 // COMPONENTS
 
 // UTILS
 import {
+    Bounds,
+    circleColorMarkerOptions,
+    colorClusterCustomMarker,
     getLatLngBounds,
     getShapesBounds,
-    colorClusterCustomMarker,
-    circleColorMarkerOptions,
-    Bounds,
 } from '../../../utils/map/mapUtils';
 // UTILS
 
 // TYPES
-import { OrgUnit } from '../types/orgUnit';
 import { DropdownOptions } from '../../../types/utils';
+import { OrgUnit } from '../types/orgUnit';
 // TYPES
 
 // HOOKS
 import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
 // HOOKS
-import MESSAGES from '../messages';
-import tiles from '../../../constants/mapTiles';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import { MapToggleCluster } from '../../../components/maps/tools/MapToggleCluster';
-import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 import { InnerDrawer } from '../../../components/nav/InnerDrawer/Index';
+import tiles from '../../../constants/mapTiles';
+import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
+import MESSAGES from '../messages';
 
 type OrgUnitWithSearchIndex = Omit<OrgUnit, 'search_index'> & {
     search_index: number;
@@ -60,7 +60,6 @@ export type Locations = {
     shapes: OrgUnitWithSearchIndex[];
 };
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     getSearchColor: (index: number) => string;
     orgUnits: Locations;
 };

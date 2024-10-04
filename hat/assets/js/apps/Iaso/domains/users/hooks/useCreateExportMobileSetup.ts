@@ -17,7 +17,7 @@ export const useCreateExportMobileSetup = (): UseMutationResult => {
             return postRequest('/api/tasks/create/exportmobilesetup/', {
                 user_id: userId,
                 project_id: projectId,
-                password: password,
+                password,
             });
         },
         showSucessSnackBar: false,

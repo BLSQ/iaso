@@ -1,21 +1,21 @@
-import React, { ReactElement, useMemo } from 'react';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import {
-    IconButton as IconButtonComponent,
     Column,
+    IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import { EntityTypesDialog } from './components/EntityTypesDialog';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+import React, { ReactElement, useMemo } from 'react';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import Workflow from '../../../components/svg/Workflow';
+import { EntityTypesDialog } from './components/EntityTypesDialog';
 
 import MESSAGES from './messages';
 
 import { baseUrls } from '../../../constants/urls';
 
-import { EntityType } from './types/entityType';
 import { userHasPermission } from '../../users/utils';
+import { EntityType } from './types/entityType';
 
 import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -23,9 +23,7 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 export const baseUrl = baseUrls.entityTypes;
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     deleteEntityType: (e: EntityType) => void;
-    // eslint-disable-next-line no-unused-vars
     saveEntityType: (e: EntityType) => void;
 };
 

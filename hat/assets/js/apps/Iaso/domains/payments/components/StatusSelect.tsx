@@ -1,13 +1,12 @@
-import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import InputComponent from '../../../components/forms/InputComponent';
+import { usePaymentStatusOptions } from '../../orgUnits/reviewChanges/hooks/api/useGetPaymentStatusOptions';
 import MESSAGES from '../messages';
 import { PaymentStatus } from '../types';
-import { usePaymentStatusOptions } from '../../orgUnits/reviewChanges/hooks/api/useGetPaymentStatusOptions';
 
 type Props = {
     value: PaymentStatus;
-    // eslint-disable-next-line no-unused-vars
     onChange: (value: PaymentStatus) => void;
 };
 

@@ -1,24 +1,24 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import { Box, Divider } from '@mui/material';
 import {
-    useSafeIntl,
+    AddButton,
     ConfirmCancelModal,
     makeFullModal,
-    AddButton,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { Box, Divider } from '@mui/material';
 import { FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import MESSAGES from '../../../../constants/messages';
+import React, { FunctionComponent, useCallback } from 'react';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
+import { APP_LOCALES } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/constants';
 import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
-import { APP_LOCALES } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/constants';
+import MESSAGES from '../../../../constants/messages';
 import { useCreateEditReasonForDelay } from '../hooks/requests';
 import { useReasonsForDelayValidation } from '../hooks/validation';
-import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
 
 type Props = {
     isOpen: boolean;
@@ -48,7 +48,6 @@ const CreateEditReasonForDelay: FunctionComponent<Props> = ({
         mutation: save,
     } = useApiErrorValidation<Partial<any>, any>({
         mutationFn: saveReason,
-        // eslint-disable-next-line no-unused-vars
         onSuccess: _ => {
             closeDialog();
             formik.resetForm();
@@ -178,5 +177,6 @@ const editReasonForDelay = makeFullModal(
 
 export {
     createReasonForDelay as CreateReasonForDelay,
-    editReasonForDelay as EditReasonForDelay,
+    editReasonForDelay as EditReasonForDelay
 };
+

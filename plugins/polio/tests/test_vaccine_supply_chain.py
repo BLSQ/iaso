@@ -404,7 +404,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(len(res["pre_alerts"]), 1)
         self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 500000)
         self.assertEqual(res["pre_alerts"][0]["po_number"], "1234")
-        
+
     def test_bad_po_number_raises_error(self):
         self.client.force_authenticate(user=self.user_rw_perm)
 
@@ -428,7 +428,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         )
 
         self.assertEqual(response.status_code, 400)
- 
 
     def test_can_add_request_form_vaccine_arrival_reports(self):
         self.client.force_authenticate(user=self.user_rw_perm)

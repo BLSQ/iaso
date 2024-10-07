@@ -492,7 +492,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
                 arrival_report_dates.append("")
         # Add arrival reports that don't have a PO number matching a prealert
         for arrival_report in arrival_reports:
-            if not arrival_report_matching.get(arrival_report.po_number, None):
+            if str(arrival_report.arrival_report_date) not in arrival_report_dates:
                 arrival_report_dates.append(str(arrival_report.arrival_report_date))
 
         return ",".join(arrival_report_dates)

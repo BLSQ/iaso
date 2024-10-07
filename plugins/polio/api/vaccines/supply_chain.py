@@ -111,6 +111,12 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             "vials_shipped",
         ]
 
+    def validate(self, attrs: Any) -> Any:
+        validated_data = super().validate(attrs)
+        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
+            raise serializers.ValidationError("PO number should not be prefixed")
+        return validated_data
+
 
 class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerForPost):
     id = serializers.IntegerField(required=True, read_only=False)
@@ -128,7 +134,6 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         # at least one of the other fields must be present
         if not any(key in attrs.keys() for key in NestedVaccinePreAlertSerializerForPost.Meta.fields):
             raise serializers.ValidationError("At least one of the fields must be present.")
-
         return super().validate(attrs)
 
 
@@ -144,6 +149,12 @@ class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
             "doses_shipped",
             "po_number",
         ]
+
+    def validate(self, attrs: Any) -> Any:
+        validated_data = super().validate(attrs)
+        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
+            raise serializers.ValidationError("PO number should not be prefixed")
+        return validated_data
 
 
 class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSerializerForPost):
@@ -164,7 +175,10 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         if not any(key in attrs.keys() for key in NestedVaccineArrivalReportSerializerForPost.Meta.fields):
             raise serializers.ValidationError("At least one of the fields must be present.")
 
-        return super().validate(attrs)
+        validated_data = super().validate(attrs)
+        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
+            raise serializers.ValidationError("PO number should not be prefixed")
+        return validated_data
 
 
 class PostPreAlertSerializer(serializers.Serializer):

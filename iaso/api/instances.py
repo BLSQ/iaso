@@ -716,12 +716,34 @@ def import_data(instances, user, app_id):
 
         # TODO: check that planning_id is valid
         instance.planning_id = instance_data.get("planningId", None)
-        entityUuid = instance_data.get("entityUuid", None)
-        entityTypeId = instance_data.get("entityTypeId", None)
-        if entityUuid and entityTypeId:
-            entity, created = Entity.objects_include_deleted.get_or_create(
-                uuid=entityUuid, entity_type_id=entityTypeId, account=project.account
-            )
+        entity_uuid = instance_data.get("entityUuid", None)
+        entity_type_id = instance_data.get("entityTypeId", None)
+        if entity_uuid and entity_type_id:
+            # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
+            # If a non-deleted entity was found, ignore potential duplicates.
+            filter = {
+                "uuid": entity_uuid,
+                "entity_type_id": entity_type_id,
+                "account": project.account,
+            }
+            existing_entities = list(Entity.objects_include_deleted.filter(**filter))
+
+            if len(existing_entities) == 0:
+                entity = Entity.objects.create(**filter)
+            elif len(existing_entities) == 1:
+                entity = existing_entities[0]
+            else:
+                # In case of duplicates, try to take the "best" one. Best one would
+                # be one that's not deleted and that has valid attributes with a
+                # file attached. We first assign the last one to avoid having None.
+                entity = existing_entities[-1]
+                for ent in existing_entities:
+                    if not ent.deleted_at:
+                        entity = ent
+                        if ent.attributes:
+                            entity = ent
+                            if ent.attributes.file and not ent.attributes.file == "":
+                                entity = ent
 
             if entity.deleted_at:
                 logger.info(

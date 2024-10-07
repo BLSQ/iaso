@@ -552,3 +552,47 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEquals(modif.source, BULK_UPLOAD_MERGED_ENTITY)
         self.assertEquals(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-01")
         self.assertEquals(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
+
+    # WC2-580: Don't break on duplicate uuid if they're soft deleted
+    def test_duplicate_uuids(self, mock_download_file):
+        # Create active + soft-deleted entity Disasi with same uuid
+        ent_active = create_valid_entity_with_registration(
+            name="Disasi",
+            uuid=DISASI_MAKULO_REGISTRATION,
+            creation_timestamp=datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC),
+            entity_type=self.entity_type,
+            ref_form=self.form_registration,
+            deleted=False,
+        )
+        ent_deleted = create_valid_entity_with_registration(
+            name="Disasi",
+            uuid=uuid.uuid4(),
+            creation_timestamp=datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC),
+            entity_type=self.entity_type,
+            ref_form=self.form_registration,
+            deleted=True,
+        )
+        ent_deleted.uuid = DISASI_MAKULO_REGISTRATION
+        ent_deleted.save()
+
+        with zipfile.ZipFile(f"/tmp/{CATT_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+
+        mock_download_file.return_value = f"/tmp/{CATT_TABLET_DIR}.zip"
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        mock_download_file.assert_called_once()
+
+        # check Task status and result
+        self.task.refresh_from_db()
+        self.assertEquals(self.task.status, m.SUCCESS)
+
+        self.api_import.refresh_from_db()
+        self.assertEquals(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)

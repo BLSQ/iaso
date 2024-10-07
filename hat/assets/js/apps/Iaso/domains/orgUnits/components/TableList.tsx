@@ -103,9 +103,15 @@ export const TableList: FunctionComponent<Props> = ({
     );
     const getHasWriteByTypePermission = useGetUserHasWriteTypePermission();
 
+    const getIsSelectionDisabled = useCallback(
+        (ou: OrgUnit) => !getHasWriteByTypePermission(ou.org_unit_type_id),
+        [getHasWriteByTypePermission],
+    );
+
     useSkipEffectOnMount(() => {
         handleTableSelection('reset');
     }, [resetPageToOne]);
+
     return (
         <>
             <OrgUnitsMultiActionsDialog
@@ -134,11 +140,7 @@ export const TableList: FunctionComponent<Props> = ({
                     setTableSelection={(selectionType, items, totalCount) =>
                         handleTableSelection(selectionType, items, totalCount)
                     }
-                    getIsSelectionDisabled={ou => {
-                        return !getHasWriteByTypePermission(
-                            ou.org_unit_type_id,
-                        );
-                    }}
+                    getIsSelectionDisabled={getIsSelectionDisabled}
                 />
             </Box>
         </>

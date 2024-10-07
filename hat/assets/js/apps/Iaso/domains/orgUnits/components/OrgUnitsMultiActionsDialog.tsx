@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 
 import ReportIcon from '@mui/icons-material/Report';
 import {
@@ -20,18 +20,15 @@ import {
 } from 'bluesquare-components';
 // @ts-ignore
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import {
-    useCurrentUser,
-    useGetUserHasWriteTypePermission,
-} from 'Iaso/utils/usersUtils';
 import { UseMutateAsyncFunction } from 'react-query';
-import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { useGetGroups } from '../hooks';
 import MESSAGES from '../messages';
+import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { Group } from '../types/group';
 import { OrgUnit, OrgUnitParams } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
@@ -93,7 +90,10 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
-    const { data: orgUnitTypes } = useGetOrgUnitTypes();
+    const { data: orgUnitTypes } = useGetOrgUnitTypesDropdownOptions(
+        undefined,
+        true,
+    );
     const [editGroups, setEditGroups] = useState<boolean>(false);
     const [groupsAdded, setGroupsAdded] = useState<Group[]>([]);
     const [groupsRemoved, setGroupsRemoved] = useState<Group[]>([]);
@@ -112,14 +112,6 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         dataSourceId: currentUser?.account?.default_version?.data_source?.id,
         sourceVersionId: currentUser?.account?.default_version?.id,
     });
-    const getHasWriteByTypePermission = useGetUserHasWriteTypePermission();
-    const displayedOrgUnitTypes = useMemo(
-        () =>
-            orgUnitTypes?.filter(ouType =>
-                getHasWriteByTypePermission(parseInt(ouType.value, 10)),
-            ),
-        [orgUnitTypes, getHasWriteByTypePermission],
-    );
     const isSaveDisabled = () =>
         ((editGroups &&
             groupsAdded.length === 0 &&
@@ -308,7 +300,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                             onChange={(key, value) => setOrgUnitType(value)}
                             value={orgUnitType}
                             type="select"
-                            options={displayedOrgUnitTypes || []}
+                            options={orgUnitTypes || []}
                             label={MESSAGES.org_unit_type}
                             isSearchable
                         />

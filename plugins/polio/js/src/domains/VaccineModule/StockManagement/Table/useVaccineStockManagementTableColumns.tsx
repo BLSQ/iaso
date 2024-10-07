@@ -1,5 +1,10 @@
 import React, { useMemo } from 'react';
-import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
+import {
+    Column,
+    IconButton,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../messages';
 import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
@@ -55,11 +60,21 @@ export const useVaccineStockManagementTableColumns = (
                 Header: formatMessage(MESSAGES.stockUnusableVials),
                 accessor: 'stock_of_unusable_vials',
                 sortable: false,
-                Cell: settings => (
-                    <NumberCell
-                        value={settings.row.original.stock_of_unusable_vials}
-                    />
-                ),
+                Cell: settings => {
+                    // If no filter is selected, we can still see bOPV vaccines
+                    const isBopv =
+                        settings.row.original.vaccine_type === 'bOPV';
+                    if (isBopv) {
+                        return <span>{textPlaceholder}</span>;
+                    }
+                    return (
+                        <NumberCell
+                            value={
+                                settings.row.original.stock_of_unusable_vials
+                            }
+                        />
+                    );
+                },
             });
         }
         columns.push(

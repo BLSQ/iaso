@@ -13,4 +13,3 @@ def validate_org_unit_types_for_user(user: User, org_unit_types: list):
             if org_unit_type.id not in org_unit_types_for_user:
                 raise serializers.ValidationError(f"The user doesn't have access to the OrgUnitType {org_unit_type.id}")
     return org_unit_types
-

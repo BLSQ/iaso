@@ -393,10 +393,20 @@ class ProfilesViewSet(viewsets.ViewSet):
             org_units = self.validate_org_units(request, profile)
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, profile)
+            request_user = request.user
+            org_unit_types = request.data.get("editable_org_unit_types", [])
+            validated_org_unit_types = self.validate_editable_org_unit_types(
+                request_user=request_user, target_user=user, org_unit_types=org_unit_types
+            )
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+        except serializers.ValidationError as error:
+            return JsonResponse(
+                {"errorKey": error.detail, "errorMessage": error.detail},
+                status=error.status_code,
             )
 
         profile = self.update_user_profile(
@@ -408,6 +418,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles=user_roles_data["user_roles"],
             user_roles_groups=user_roles_data["groups"],
             projects=projects,
+            org_unit_types=validated_org_unit_types,
         )
 
         audit_logger.log_modification(
@@ -518,7 +529,15 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         for found_org_unit_type in found_org_unit_types:
             if found_org_unit_type not in creator_editable_org_unit_types:
-                raise serializers.ValidationError(f"The user doesn't have access to the OrgUnitType {found_org_unit_type.id}")
+                raise serializers.ValidationError(
+                    f"The user doesn't have access to the OrgUnitType {found_org_unit_type.id}"
+                )
+
+        # For updates, we also don't want a user to remove access to somebody if this user himself doesn't have access to that OUT
+        target_editable_org_unit_types = target_user.iaso_profile.fetch_all_editable_org_unit_types()
+        if not target_editable_org_unit_types:
+            # If the target doesn't have any yet, then nothing can be removed, it's ok
+            return found_org_unit_types
 
         return found_org_unit_types
 
@@ -540,7 +559,16 @@ class ProfilesViewSet(viewsets.ViewSet):
         return Response(profile.as_dict())
 
     def update_user_profile(
-        self, request, profile, user, user_roles, user_roles_groups, projects, org_units, user_permissions
+        self,
+        request,
+        profile,
+        user,
+        user_roles,
+        user_roles_groups,
+        projects,
+        org_units,
+        user_permissions,
+        org_unit_types,
     ):
         username = request.data.get("user_name")
         user.first_name = request.data.get("first_name", "")
@@ -568,6 +596,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.user_roles.set(user_roles)
         profile.projects.set(projects)
         profile.org_units.set(org_units)
+        profile.editable_org_unit_types.set(org_unit_types)
         profile.save()
         return profile
 

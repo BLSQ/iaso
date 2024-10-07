@@ -1169,6 +1169,177 @@ class ProfileAPITestCase(APITestCase):
             self.assertEqual(response.data["errorKey"], "phone_number")
             self.assertEqual(response.data["errorMessage"], _("Invalid phone number"))
 
+    def test_update_profile_add_org_unit_type_restrictions_by_non_restricted_user(self):
+        self.client.force_authenticate(self.jim)
+        target_user = self.user_managed_geo_limit
+        count_org_unit_types_before = target_user.iaso_profile.editable_org_unit_types.count()
+        data = {
+            "user_name": target_user.username,
+            "first_name": target_user.first_name,
+            "last_name": target_user.last_name,
+            "permissions": [permission._USERS_MANAGED],
+            "org_units": [
+                {
+                    "id": self.jedi_council_corruscant.id,
+                }
+            ],
+            "editable_org_unit_types": [self.jedi_council.id, self.jedi_squad.id],  # Change here: adding 1 OrgUnitType
+        }
+
+        response = self.client.patch(f"/api/profiles/{target_user.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+
+        profile = m.Profile.objects.get(pk=response_data["id"])
+        org_unit_types_after = profile.editable_org_unit_types.values_list("id", flat=True)
+        self.assertCountEqual(org_unit_types_after, data["editable_org_unit_types"])
+        self.assertNotEqual(count_org_unit_types_before, org_unit_types_after.count())
+        self.assertEqual(count_org_unit_types_before + 1, org_unit_types_after.count())
+
+    def test_update_profile_remove_org_unit_type_restrictions_by_non_restricted_user(self):
+        self.client.force_authenticate(self.jim)
+        target_user = self.user_managed_geo_limit
+        count_org_unit_types_before = target_user.iaso_profile.editable_org_unit_types.count()
+        data = {
+            "user_name": target_user.username,
+            "first_name": target_user.first_name,
+            "last_name": target_user.last_name,
+            "permissions": [permission._USERS_MANAGED],
+            "org_units": [
+                {
+                    "id": self.jedi_council_corruscant.id,
+                }
+            ],
+            "editable_org_unit_types": [],  # Change here: removing existing OrgUnitType
+        }
+
+        response = self.client.patch(f"/api/profiles/{target_user.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+
+        profile = m.Profile.objects.get(pk=response_data["id"])
+        org_unit_types_after = profile.editable_org_unit_types.values_list("id", flat=True)
+        self.assertCountEqual(org_unit_types_after, data["editable_org_unit_types"])
+        self.assertFalse(org_unit_types_after.exists())
+        self.assertEqual(count_org_unit_types_before - 1, org_unit_types_after.count())
+
+    def test_update_profile_add_org_unit_type_restrictions_by_restricted_user_ok(self):
+        self.client.force_authenticate(self.user_admin_with_geo_limit)
+        self.user_admin_with_geo_limit.iaso_profile.editable_org_unit_types.add(self.jedi_squad.id)  # Now he has 2
+        target_user = self.user_managed_geo_limit
+        count_org_unit_types_before = target_user.iaso_profile.editable_org_unit_types.count()
+        data = {
+            "user_name": target_user.username,
+            "first_name": target_user.first_name,
+            "last_name": target_user.last_name,
+            "permissions": [permission._USERS_MANAGED],
+            "org_units": [
+                {
+                    "id": self.jedi_council_corruscant.id,
+                }
+            ],
+            "editable_org_unit_types": [self.jedi_council.id, self.jedi_squad.id],  # Change here: adding 1 OrgUnitType
+        }
+
+        response = self.client.patch(f"/api/profiles/{target_user.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+
+        profile = m.Profile.objects.get(pk=response_data["id"])
+        org_unit_types_after = profile.editable_org_unit_types.values_list("id", flat=True)
+        self.assertCountEqual(org_unit_types_after, data["editable_org_unit_types"])
+        self.assertNotEqual(count_org_unit_types_before, org_unit_types_after.count())
+        self.assertEqual(count_org_unit_types_before + 1, org_unit_types_after.count())
+
+    def test_update_profile_add_org_unit_type_restrictions_by_restricted_user_error(self):
+        self.client.force_authenticate(self.user_admin_with_geo_limit)
+        target_user = self.user_managed_geo_limit
+        data = {
+            "user_name": target_user.username,
+            "first_name": target_user.first_name,
+            "last_name": target_user.last_name,
+            "permissions": [permission._USERS_MANAGED],
+            "org_units": [
+                {
+                    "id": self.jedi_council_corruscant.id,
+                }
+            ],
+            "editable_org_unit_types": [
+                self.jedi_council.id,
+                self.jedi_squad.id,
+            ],  # Change here: adding 1 OrgUnitType but the admin doesn't have it
+        }
+
+        response = self.client.patch(f"/api/profiles/{target_user.id}/", data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the OrgUnitType {self.jedi_squad.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    def test_update_profile_remove_org_unit_type_restrictions_by_restricted_user_ok(self):
+        # First, let's add the jedi_squad OUT to both users
+        self.user_admin_with_geo_limit.iaso_profile.editable_org_unit_types.add(self.jedi_squad.id)
+        self.user_managed_geo_limit.iaso_profile.editable_org_unit_types.add(self.jedi_squad.id)
+
+        self.client.force_authenticate(self.user_admin_with_geo_limit)
+        target_user = self.user_managed_geo_limit
+        count_org_unit_types_before = target_user.iaso_profile.editable_org_unit_types.count()
+        data = {
+            "user_name": target_user.username,
+            "first_name": target_user.first_name,
+            "last_name": target_user.last_name,
+            "permissions": [permission._USERS_MANAGED],
+            "org_units": [
+                {
+                    "id": self.jedi_council_corruscant.id,
+                }
+            ],
+            "editable_org_unit_types": [self.jedi_council.id],  # Change here: removing jedi_squad
+        }
+
+        response = self.client.patch(f"/api/profiles/{target_user.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response_data = response.json()
+
+        profile = m.Profile.objects.get(pk=response_data["id"])
+        org_unit_types_after = profile.editable_org_unit_types.values_list("id", flat=True)
+        self.assertCountEqual(org_unit_types_after, data["editable_org_unit_types"])
+        self.assertNotEqual(count_org_unit_types_before, org_unit_types_after.count())
+        self.assertEqual(count_org_unit_types_before - 1, org_unit_types_after.count())
+
+    def test_update_profile_remove_org_unit_type_restrictions_by_restricted_user_error(self):
+        # This scenario should not happen, but if it does, we want to trigger an error
+        # First, let's add the jedi_squad OUT to the target user, so the target user has that OUT but not the admin user
+        self.user_managed_geo_limit.iaso_profile.editable_org_unit_types.add(self.jedi_squad.id)
+        self.client.force_authenticate(self.user_admin_with_geo_limit)
+
+        target_user = self.user_managed_geo_limit
+        data = {
+            "user_name": target_user.username,
+            "first_name": target_user.first_name,
+            "last_name": target_user.last_name,
+            "permissions": [permission._USERS_MANAGED],
+            "org_units": [
+                {
+                    "id": self.jedi_council_corruscant.id,
+                }
+            ],
+            "editable_org_unit_types": [self.jedi_council.id],  # Change here: removing the jedi_council OUT
+        }
+
+        # so now, the admin is going to remove the jedi_squad OUT even though he doesn't have access to it personally
+        response = self.client.patch(f"/api/profiles/{target_user.id}/", data=data, format="json")
+        self.assertContains(
+            response,
+            f"The user doesn't have access to the OrgUnitType {self.jedi_squad.id}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
     def get_new_user_data(self):
         user_name = "audit_user"
         pwd = "admin1234lol"

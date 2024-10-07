@@ -20,7 +20,7 @@ import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
-import PermissionsSwitches from './PermissionsSwitches';
+import PermissionsAttribution from './PermissionsAttribution';
 import { useInitialUser } from './useInitialUser';
 import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
 import UsersInfos from './UsersInfos';
@@ -236,7 +236,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         />
                     </div>
                     {tab === 'permissions' && (
-                        <PermissionsSwitches
+                        <PermissionsAttribution
                             isSuperUser={initialData?.is_superuser}
                             currentUser={user}
                             handleChange={permissions =>

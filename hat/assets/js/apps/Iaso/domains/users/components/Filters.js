@@ -9,7 +9,7 @@ import {
     useSafeIntl,
     useRedirectTo,
 } from 'bluesquare-components';
-import MESSAGES from '../messages';
+import MESSAGES from '../messages.ts';
 import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';

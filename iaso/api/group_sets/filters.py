@@ -47,5 +47,6 @@ class GroupSetFilter(django_filters.rest_framework.FilterSet):
     def filter_project_ids(self, queryset: QuerySet, _, value: str):
         projects_ids = value
         if projects_ids:
-            queryset = queryset.filter(source_version__data_source__projects__in=projects_ids.split(","))
+            versions = SourceVersion.objects.filter(data_source__projects__in=projects_ids.split(","))
+            queryset = queryset.filter(source_version__in=versions)
         return queryset

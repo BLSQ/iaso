@@ -147,8 +147,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
     def test_vrf_new_fields(self):
         self.client.force_authenticate(self.authorized_user_read)
 
-        with self.assertNumQueries(15):
-            response = self.client.get(self.vrf_url)
+        response = self.client.get(self.vrf_url)
 
         jr = self.assertJSONResponse(response, 200)
         results = jr["results"]

@@ -14,7 +14,7 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import {
     DateInput,
@@ -96,8 +96,10 @@ type IncidentReportConfig = {
     [key: string]: IncidentReportFieldType;
 };
 
-const incidentReportConfig: IncidentReportConfig = {
-    broken: 'inOutMovement',
+const makeIncidentReportConfig = (
+    vaccineType: string,
+): IncidentReportConfig => ({
+    broken: vaccineType === 'bOPV' ? 'plainMovement' : 'inOutMovement',
     stealing: 'missingMovement',
     return: 'missingMovement',
     losses: 'missingMovement',
@@ -105,13 +107,13 @@ const incidentReportConfig: IncidentReportConfig = {
     unreadable_label: 'plainMovement',
     vvm_reached_discard_point: 'plainMovement',
     physical_inventory: 'inventory',
-};
+});
 
-const getInitialMovement = incident => {
-    if (!incident) return 0;
-    const movementType = incidentReportConfig[incident.stock_correction];
-    return movementType === 'inventory' ? 0 : incident.usable_vials;
-};
+// const getInitialMovement = incident => {
+//     if (!incident) return 0;
+//     const movementType = incidentReportConfig[incident.stock_correction];
+//     return movementType === 'inventory' ? 0 : incident.usable_vials;
+// };
 
 const getMovementLabel = (movementType: IncidentReportFieldType) => {
     switch (movementType) {
@@ -141,6 +143,18 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
         }
         return 'usable';
     });
+    const incidentConfig = useMemo(() => {
+        return makeIncidentReportConfig(vaccine);
+    }, [vaccine]);
+
+    const getInitialMovement = useCallback(
+        i => {
+            if (!i) return 0;
+            const movementType = incidentConfig[i.stock_correction];
+            return movementType === 'inventory' ? 0 : i.usable_vials;
+        },
+        [incidentConfig],
+    );
 
     const handleInventoryTypeChange = (
         event: React.ChangeEvent<HTMLInputElement>,
@@ -154,7 +168,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
 
     const handleSubmit = useCallback(
         (values: any) => {
-            const movementType = incidentReportConfig[values.stock_correction];
+            const movementType = incidentConfig[values.stock_correction];
             const { movement } = values;
 
             let usableVials = 0;
@@ -191,7 +205,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             };
             save(submissionValues);
         },
-        [inventoryType, save],
+        [incidentConfig, inventoryType, save],
     );
     const formik = useFormik<any>({
         initialValues: {
@@ -217,8 +231,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     )} ${formatMessage(MESSAGES.incidentReports)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
 
-    const currentMovementType =
-        incidentReportConfig[formik.values.stock_correction];
+    const currentMovementType = incidentConfig[formik.values.stock_correction];
 
     return (
         <FormikProvider value={formik}>

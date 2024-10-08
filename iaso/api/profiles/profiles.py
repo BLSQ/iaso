@@ -502,9 +502,10 @@ class ProfilesViewSet(viewsets.ViewSet):
     def validate_editable_org_unit_types(self, request):
         result = []
         editable_org_unit_type_ids = request.data.get("editable_org_unit_type_ids", None)
-        for editable_org_unit_type_id in editable_org_unit_type_ids:
-            item = get_object_or_404(OrgUnitType, pk=editable_org_unit_type_id)
-            result.append(item)
+        if editable_org_unit_type_ids:
+            for editable_org_unit_type_id in editable_org_unit_type_ids:
+                item = get_object_or_404(OrgUnitType, pk=editable_org_unit_type_id)
+                result.append(item)
         return result
 
     @staticmethod

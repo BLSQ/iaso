@@ -1,0 +1,1864 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../iaso_modules/iaso_modules.html">
+      
+      
+        <link rel="next" href="../iaso_mobile/iaso_mobile.html">
+      
+      <link rel="icon" href="../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.1">
+    
+    
+      
+        <title>Web Platform - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.402914a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#web-platform" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Web Platform
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Users
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Users
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../iaso_concepts/iaso_concepts.html" class="md-nav__link">
+        Concepts
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../iaso_modules/iaso_modules.html" class="md-nav__link">
+        Modules
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Web Platform
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="user_guide.html" class="md-nav__link md-nav__link--active">
+        Web Platform
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#login" class="md-nav__link">
+    Login
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navigating-in-iaso" class="md-nav__link">
+    Navigating in IASO
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manage-data-collection-forms" class="md-nav__link">
+    Manage data collection forms
+  </a>
+  
+    <nav class="md-nav" aria-label="Manage data collection forms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#forms-list" class="md-nav__link">
+    Forms list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#createupload-a-data-collection-form" class="md-nav__link">
+    Create/Upload a data collection form
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#form-submissions" class="md-nav__link">
+    Form submissions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manage-submissions" class="md-nav__link">
+    Manage submissions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#form-statistics" class="md-nav__link">
+    Form statistics
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dhis2-mappings" class="md-nav__link">
+    DHIS2 mappings
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#completeness" class="md-nav__link">
+    Completeness
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#completeness-statistics" class="md-nav__link">
+    Completeness statistics
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#georegistry-organization-units-management" class="md-nav__link">
+    Georegistry - Organization Units Management
+  </a>
+  
+    <nav class="md-nav" aria-label="Georegistry - Organization Units Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#organization-units-list" class="md-nav__link">
+    Organization Units List
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#organization-unit-groups" class="md-nav__link">
+    Organization Unit Groups
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#organization-unit-types-management" class="md-nav__link">
+    Organization Unit types management
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-sources-management" class="md-nav__link">
+    Data Source(s) management
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Source(s) management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-sources-list" class="md-nav__link">
+    Data Source(s) List
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matching" class="md-nav__link">
+    Matching
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#registry" class="md-nav__link">
+    Registry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-change-proposals" class="md-nav__link">
+    Review change proposals
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planning" class="md-nav__link">
+    Planning
+  </a>
+  
+    <nav class="md-nav" aria-label="Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planning-list" class="md-nav__link">
+    Planning List
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#admin" class="md-nav__link">
+    Admin
+  </a>
+  
+    <nav class="md-nav" aria-label="Admin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tasks" class="md-nav__link">
+    Tasks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    Monitoring
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projects" class="md-nav__link">
+    Projects
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#users" class="md-nav__link">
+    Users
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-roles" class="md-nav__link">
+    User roles
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#teams" class="md-nav__link">
+    Teams
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../iaso_mobile/iaso_mobile.html" class="md-nav__link">
+        Mobile Application
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Developers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Developers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          References
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          References
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/data_model_glossary/data_model_glossary.html" class="md-nav__link">
+        Data model glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/sql_dashboard/SQL_Dashboard_feature.html" class="md-nav__link">
+        SQL Dashboard feature
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/docker/docker.html" class="md-nav__link">
+        Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/background_tasks/background_tasks.html" class="md-nav__link">
+        Background tasks & worker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/env_variables/env_variables.html" class="md-nav__link">
+        Environnement variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Models
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Models
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/API/entity.html" class="md-nav__link">
+        API reference: Entity
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          How to
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          How to
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/how_to/contribute/contribute.html" class="md-nav__link">
+        Contribute
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/how_to/setup_dev_env/setup_dev_env.html" class="md-nav__link">
+        Setup a dev environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/how_to/use_iaso_apis/use_iaso_apis.html" class="md-nav__link">
+        Use iaso apis
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          More about Iaso
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          More about Iaso
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        Get a demo
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        Bluesquare
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#login" class="md-nav__link">
+    Login
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navigating-in-iaso" class="md-nav__link">
+    Navigating in IASO
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#manage-data-collection-forms" class="md-nav__link">
+    Manage data collection forms
+  </a>
+  
+    <nav class="md-nav" aria-label="Manage data collection forms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#forms-list" class="md-nav__link">
+    Forms list
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#createupload-a-data-collection-form" class="md-nav__link">
+    Create/Upload a data collection form
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#form-submissions" class="md-nav__link">
+    Form submissions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manage-submissions" class="md-nav__link">
+    Manage submissions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#form-statistics" class="md-nav__link">
+    Form statistics
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dhis2-mappings" class="md-nav__link">
+    DHIS2 mappings
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#completeness" class="md-nav__link">
+    Completeness
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#completeness-statistics" class="md-nav__link">
+    Completeness statistics
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#georegistry-organization-units-management" class="md-nav__link">
+    Georegistry - Organization Units Management
+  </a>
+  
+    <nav class="md-nav" aria-label="Georegistry - Organization Units Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#organization-units-list" class="md-nav__link">
+    Organization Units List
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#organization-unit-groups" class="md-nav__link">
+    Organization Unit Groups
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#organization-unit-types-management" class="md-nav__link">
+    Organization Unit types management
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-sources-management" class="md-nav__link">
+    Data Source(s) management
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Source(s) management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-sources-list" class="md-nav__link">
+    Data Source(s) List
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#matching" class="md-nav__link">
+    Matching
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#registry" class="md-nav__link">
+    Registry
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-change-proposals" class="md-nav__link">
+    Review change proposals
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planning" class="md-nav__link">
+    Planning
+  </a>
+  
+    <nav class="md-nav" aria-label="Planning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planning-list" class="md-nav__link">
+    Planning List
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#admin" class="md-nav__link">
+    Admin
+  </a>
+  
+    <nav class="md-nav" aria-label="Admin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tasks" class="md-nav__link">
+    Tasks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    Monitoring
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#projects" class="md-nav__link">
+    Projects
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#users" class="md-nav__link">
+    Users
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-roles" class="md-nav__link">
+    User roles
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#teams" class="md-nav__link">
+    Teams
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="web-platform">Web Platform<a class="headerlink" href="#web-platform" title="Permanent link">#</a></h1>
+<p>IASO web platform is intended to administrators for them to define the details of the data collection they would like to proceed with.
+Some key assets of IASO are:</p>
+<ul>
+<li>
+<p>the versioning of all data - every change is tracked and former versions can be retrieved as needed</p>
+</li>
+<li>
+<p>geo-structured data collection - forms are linked to clear Geographical levels or "Organization Units"</p>
+</li>
+<li>
+<p>the traceability of changes - allowing decentralization of the activities and responsibilities
+Administrators can therefore use the web platform to plan, monitor and then evaluate the data collection efforts.</p>
+</li>
+</ul>
+<h2 id="login">Login<a class="headerlink" href="#login" title="Permanent link">#</a></h2>
+<p>To log into the web interface, go to
+<a href="https://iaso.bluesquare.org/login/"><u>https://iaso.bluesquare.org/login/</u></a>
+and sign in with your username and password.</p>
+<p><img alt="alt text" src="attachments/iasologin.png" /></p>
+<p>You can also reset your password by clicking on the link "Forgot password". This will send an automatic email and allow you to create a new password. </p>
+<h2 id="navigating-in-iaso">Navigating in IASO<a class="headerlink" href="#navigating-in-iaso" title="Permanent link">#</a></h2>
+<p><img alt="alt text" src="attachments/Web%20interface%20intro.jpg" /></p>
+<h2 id="manage-data-collection-forms">Manage data collection forms<a class="headerlink" href="#manage-data-collection-forms" title="Permanent link">#</a></h2>
+<h3 id="forms-list">Forms list<a class="headerlink" href="#forms-list" title="Permanent link">#</a></h3>
+<p>From the forms list, you can search through the available forms of the IASO account you are connected to using the filters:</p>
+<p><img alt="alt text" src="attachments/formsmanagementv2.png" /></p>
+<p>The below buttons allow you to manage the data collections forms.</p>
+<p><img alt="alt text" src="attachments/formsbuttons.png" /></p>
+<h3 id="createupload-a-data-collection-form">Create/Upload a data collection form<a class="headerlink" href="#createupload-a-data-collection-form" title="Permanent link">#</a></h3>
+<p>Access the Forms entry in the menu, then click on Form list. 
+Click on the button "Create". Once on the Form creation page, follow the below steps:</p>
+<ul>
+<li>Enter a name for your form in the field "Name". </li>
+<li>Assign one or several <a href="https://iaso.readthedocs.io/en/latest/pages/users/reference/iaso_concepts/iaso_concepts.html#projects">Project(s)</a> to your form. </li>
+<li>Assign an <a href="https://iaso.readthedocs.io/en/latest/pages/users/reference/iaso_concepts/iaso_concepts.html#organization-units">Org unit type</a> to your form. </li>
+<li>Assign a Period to your form. This is intended for regular data collection (e.g. daily/weekly/yearly). If you don't need this option, just select "No Period".</li>
+</ul>
+<p><img alt="alt text" src="attachments/createformv2.png" /></p>
+<p>Tips:</p>
+<ul>
+<li>Check your XLS form before uploading it to IASO using this link: https://getodk.org/xlsform/</li>
+<li>Form ID should stay the same across versions (it cannot be different from a version to another). You will have an error if this is the case.</li>
+<li>Form version (which is not a mandatory field in the settings of the XLS forms) should stay consistent across versions. For instance, if it is a date such as 20240410, then you will not be able to upload a version names 20231025. IASO makes automatic checks to ensure that you are not uploading a former version.</li>
+</ul>
+<h3 id="form-submissions">Form submissions<a class="headerlink" href="#form-submissions" title="Permanent link">#</a></h3>
+<p>Once a form has been completed and sent to the server, it creates a "form submission". Every form submission is recorded into the platform and data submitted can be consulted from there. You can use the filters to consult the form submissions as needed:</p>
+<ul>
+<li>Open search (type some key words)</li>
+<li>Per form</li>
+<li>Per Org unit (select the relevant one in the dropdown pyramid)</li>
+<li>Per Org unit type (e.g. Country, District, Village)</li>
+<li>Per submission date (creation from/creation until)</li>
+<li>Per user (type a user name and it will show as dropdown)</li>
+</ul>
+<p>This view allows you to search forms through free text entry and several
+filters that can be combined. </p>
+<p><img alt="alt text" src="attachments/Formsubmissions.png" /></p>
+<p>Once you have applied at least one form filter, you can download submissions using the "CSV" or "XLSX" buttons.</p>
+<p>You can also create a new submission by clicking on "Create". This will open Enketo and ask you which Organization Unit it relates to.</p>
+<p><img alt="alt text" src="attachments/downloadsubmissions.png" /></p>
+<p>You can also check the submissions on the map view, on which the filters apply. To make sure to have this map view enabled, make sure you have added the feature flag "GPS for each form" to the related <a href="Projects">Project</a>.</p>
+<p><img alt="alt text" src="attachments/mapviewsubmissions.png" /></p>
+<p>The tab "File" allows you to visualize the files that have been submitted together with the forms, such as pictures. When clicking on a given file, you can then be redirected to the relevant form submission. </p>
+<p><img alt="alt text" src="attachments/formsubmissionsfiles.png" /></p>
+<h3 id="manage-submissions">Manage submissions<a class="headerlink" href="#manage-submissions" title="Permanent link">#</a></h3>
+<p>On the Submissions page, you can see the list of submissions that have been done for the account. You can manage them using the below options.</p>
+<p><img alt="alt text" src="attachments/submissionsmanagement.png" /></p>
+<p><img alt="alt text" src="attachments/Submissionsbuttons.png" /></p>
+<p><strong>Visualise a submission</strong></p>
+<p>You can view a specific submission/submitted form by clicking on the
+"View" button (see above).</p>
+<p>This allows you to see the data submitted and edit it on Enketo
+(<a href="https://github.com/enketo/enketo-express/">open-source</a> web
+application.</p>
+<p><img alt="alt text" src="attachments/submissionview.png" /></p>
+<p>The “Information” section provides a technical overview of the form.</p>
+<p>The “Location” section shows the health pyramid's indication of where
+the data was collected.</p>
+<p>The “Export Requests” section shows when the data was exported to DHIS2,
+by whom, and any errors that occurred during export.</p>
+<p>The “Files” section can contain images, videos, documents.</p>
+<p>The “Form” section shows all form questions and answers entered during
+data collection.</p>
+<p><strong>Download a submission</strong></p>
+<p>The "XML" icon allows you to download a submission in XML format.</p>
+<p><img src="./attachments/image102.png"
+style="width:5.96354in;height:2.29367in" /></p>
+<p><img src="./attachments/image71.png"
+style="width:5.95313in;height:2.73806in" /></p>
+<p>The gear icon on the bottom corner at the right hand side shows you a series of icons upon hover. These allow you to:</p>
+<ul>
+<li>Delete a submission</li>
+<li>Edit attached Org Unit or Period</li>
+<li>Export (e.g. to DHIS2)</li>
+<li>Push GPS coordinates from the submission to the Org Unit</li>
+<li>Edit this submission via Enketo</li>
+<li>Lock submission</li>
+</ul>
+<p>See below the dedicated sections for more information on each of these actions.</p>
+<p><strong>Delete a submission</strong></p>
+<p>Allows you to delete the form. If it has already been exported to DHIS2,
+this will not delete the data in DHIS2. A warning message will appear:</p>
+<p><img src="./attachments/image66.png"
+style="width:4.52131in;height:1.05729in" /></p>
+<p><strong>Edit attached Org Unit or Period</strong></p>
+<p>When you click on “Edit Period and/or Organisational Unit”, a window
+opens allowing you to reassign the instance. You can change the time
+period or organization unit that has been assigned to the submitted
+form.</p>
+<p><img src="./attachments/image76.png"
+style="width:1.56771in;height:1.65794in" /></p>
+<p><strong>Export a submission</strong></p>
+<p>The export function allows you to export the form to DHIS2. Beforehand, it needs to have been mapped using the <a href="DHIS2">DHIS2 mapping</a> functionality. </p>
+<p><strong>Edit the submission via Enketo</strong></p>
+<p>To edit a form, click on the Enketo icon (see above).</p>
+<p>Edit the form by changing the answers to the questions that need to be
+changed. Then click on submit at the bottom of the form.</p>
+<p><img src="./attachments/image57.png"
+style="width:6.15663in;height:3.40104in" /></p>
+<p><img src="./attachments/image7.png"
+style="width:1.04311in;height:0.32269in" /></p>
+<p><strong>Push GPS coordinates from the submission to the Org Unit</strong></p>
+<p>This will use the GPS coordinate collected via the form to push to the Organization Unit GPS coordinates.</p>
+<p><strong>Lock submission</strong></p>
+<p>This functionalty allows you to protect the form submissions from further editing by users who have less permissions than you.</p>
+<h3 id="form-statistics">Form statistics<a class="headerlink" href="#form-statistics" title="Permanent link">#</a></h3>
+<p>This view allows you to see statistics about the forms. When clicking on
+”Form Statistics" you will open a page with two graphs.</p>
+<p>The first one shows the total number of submissions over time and the
+second one shows the new submissions per month per form.</p>
+<p><img src="./attachments/image74.png" style="width:6.5in;height:1.75in" /></p>
+<h3 id="dhis2-mappings">DHIS2 mappings<a class="headerlink" href="#dhis2-mappings" title="Permanent link">#</a></h3>
+<p>A great advantage of IASO is that you can export data to DHIS2. When
+doing so, prior mapping is necessary. After the form is uploaded, map
+the form to match the data item in DHIS2. </p>
+<p>Click on DHIS mappings to see the forms :</p>
+<p><img src="./attachments/image75.png" style="width:6.5in;height:2.59722in" /></p>
+<p>In the Form view you can see details of:</p>
+<ul>
+<li>
+<p>Actions</p>
+</li>
+<li>
+<p>Name of forms available for mapping</p>
+</li>
+<li>
+<p>Versions</p>
+</li>
+<li>
+<p>Type of the form :</p>
+<ul>
+<li>
+<p>Aggregate : fix</p>
+</li>
+<li>
+<p>Event : series of singular events</p>
+</li>
+<li>
+<p>Event Tracker : continuous</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Number of questionnaire to be mapped</p>
+</li>
+<li>
+<p>Total number of questionnaires</p>
+</li>
+<li>
+<p>Mapping coverage</p>
+</li>
+<li>
+<p>Date of last modification</p>
+</li>
+</ul>
+<p>Click "Create" and a window will open allowing you to
+map each questionnaire of the xls forms to the correspondent DHIS2 data
+element<img src="./attachments/image93.png"
+style="width:2.03704in;height:1.83333in" /><img src="./attachments/image98.png"
+style="width:2.05729in;height:1.8085in" /></p>
+<p>The mapping process consists of selecting a question on the left and
+deciding whether it should be mapped to DHIS2 or not.</p>
+<p>Some questions may not need to be mapped like notes, metadata etc. in
+such a case click on never map.</p>
+<p>If the question is to be mapped, search for the correspondence DE in the
+box by using the name, code or ID and then confirm.</p>
+<p>Once confirmed, the question will turn to green and be counted.</p>
+<p><img src="./attachments/image115.png"
+style="width:7.03646in;height:3.20249in" /></p>
+<h3 id="completeness">Completeness<a class="headerlink" href="#completeness" title="Permanent link">#</a></h3>
+<p>This functionality is intended to use cases where Periods have been set to the data collection forms.
+In the view “completeness” you will see details of :</p>
+<ul>
+<li>
+<p>Buttons to select forms “ready” to be exported, form with “errors”
+    &gt; and forms that have been “exported”</p>
+</li>
+<li>
+<p>Periodicity filter : the periodicity filter allows you to organise
+    &gt; the data into months, quarters, semesters or years. The list will
+    &gt; display the forms available for the selected period, and will
+    &gt; indicate how many forms have been submitted for each</p>
+</li>
+<li>
+<p>Synchronise button to synchronise two forms</p>
+</li>
+</ul>
+<p>Click on each of these buttons to have forms ready to be exported,
+errors and exported. A periodicity filter is there to organise data in
+months, quarters, semester or yearly.</p>
+<p><img src="./attachments/image94.png"
+style="width:6.96429in;height:1.48438in" /></p>
+<p>If you click on the number of submissions, you will be taken to the
+submissions view, where you can click on the view icon and see the
+submissions for that form.</p>
+<p>Click on the <img src="./attachments/image104.png"
+style="width:0.49791in;height:0.40738in" />button to synchronise two
+forms</p>
+<p>Eg: to get aggregate data from community verification survey, all the
+client forms should be synchronised to a single form.
+<img src="./attachments/image17.png" style="width:6.5in;height:2.95833in" /></p>
+<h3 id="completeness-statistics">Completeness statistics<a class="headerlink" href="#completeness-statistics" title="Permanent link">#</a></h3>
+<p>This table view shows you the completeness of the forms submissions in number (number of completed forms) and in percentages (Data completeness). A distinction is made between “direct forms” (which relate to the select Organization unit level) and “lower level forms” (which relates to forms down the hierarchy).</p>
+<p>Use the filters (Form name, Parent Organization Unit, Organization Unit type, User, Planning, Teams, Period) to only see statistics in a more specific way.</p>
+<p>The "See children" action button allows you to drilldown the geographical hierarchy to identify the level of completeness and spot where issues may have happened. </p>
+<p>The first two columns "itself" indicate the number of forms completed at the level of the Organization Unit highlighted.
+The next column "descendants" give information on the number of forms completed at the level in question, but also at all lower levels.</p>
+<p><img alt="" src="attachments/completeness%20stats.png" /></p>
+<p>You can also view data completeness with a map view by clicking on the "Map" tab. Be aware that you need to select a Form in the filters beforehand to enable this view.
+You can adjust the thresholds to apply to the legend on completeness in the relevant form's advanced settings.</p>
+<p><img alt="alt text" src="attachments/Completenessmap.png" /></p>
+<h2 id="georegistry-organization-units-management">Georegistry - Organization Units Management<a class="headerlink" href="#georegistry-organization-units-management" title="Permanent link">#</a></h2>
+<p>See the <a href="https://iaso.readthedocs.io/en/doc_test/pages/users/reference/iaso_concepts/iaso_concepts.html#organization-units">Organization Unit</a> definition for more insight on what Organization Units are.
+In a nutshell, you can manage your geographical data associated to your account using the Organization Unit part of IASO.</p>
+<h3 id="organization-units-list">Organization Units List<a class="headerlink" href="#organization-units-list" title="Permanent link">#</a></h3>
+<p>Click Organization Units in the menu and then on Organization Unit List to navigate the organization unit pyramid.</p>
+<p>You can view in list or map.</p>
+<p>You can select an Organization Unit Navigation and:</p>
+<ul>
+<li>Change the name, type, validation status, place in the pyramid, etc. of the OU</li>
+<li>Visualize the OU on a map</li>
+<li>See the history of its modifications</li>
+</ul>
+<p><img alt="alt text" src="attachments/Orgunitlist.png" /></p>
+<p><img alt="alt text" src="attachments/orgunitmap.png" /></p>
+<p>The search results can be exported in CSV, XLSX or GPKG.</p>
+<p><img alt="alt text" src="attachments/download%20orgunits.png" /></p>
+<p>Results can be seen in a list or on a map</p>
+<p><img src="./attachments/image35.png"
+style="width:6.18229in;height:2.9029in" /></p>
+<p>The status for when a village has just been added and needs to be
+reviewed for example.</p>
+<p>The external reference is used to export data to DHIS2.</p>
+<p>The map helps you to know where the structure is located.</p>
+<p>You can see the history of modifications by clicking on the little clock
+icon or the details of the filled forms by clicking on the eye icon.</p>
+<p><img src="./attachments/image32.png" style="width:6.5in;height:2.875in" /></p>
+<p>Several searches can be made by adding tabs to the page with the +
+button. <img src="./attachments/image45.png" style="width:7.01017in;height:1.93229in" /></p>
+<p>You can choose the colour of the results on the map for each search.</p>
+<p><img src="./attachments/image90.png"
+style="width:6.95313in;height:2.9466in" /></p>
+<p><img src="./attachments/image120.png" style="width:6.26042in;height:2.38542in" /></p>
+<p><strong>Creation of an Organization Unit</strong></p>
+<p>On the Organization Unit list page, click on "Create". You can then create an Organization Unit as needed. </p>
+<p><img src="./attachments/image16.png" style="width:6.86961in;height:2.80729in" /></p>
+<p>You will need to enter the below information before saving:</p>
+<ul>
+<li>Name of the Organization Unit</li>
+<li>Type of the Organization Unit (that you would have previously defined in the Organization Unit Type part)</li>
+<li>Status: New, Validated, or Rejected. <ul>
+<li>New: the Organization unit has been created but has not been validated yet. If you activate the possibility to create Organization Units from the IASO mobile application, they will first appear as "New" on the web</li>
+<li>Validated: the Organization unit is validated</li>
+<li>Rejected: the Organization unit no longer exists or has been merged/split or replaced by another one. IASO does not allow to erase Organization Units in order to keep track of past changes.</li>
+</ul>
+</li>
+</ul>
+<p>Optional fields:</p>
+<ul>
+<li>Aliases: you can add as many aliases as necessary to track the different ways of writing the name of the Organization Unit (e.g. "Ste Marie", "Sainte-Marie", "Sainte Marie", etc.)</li>
+<li>Group: you can organize Organization Units in Groups in IASO. You can multi-select the group(s) that the organization unit you are creating is associated to</li>
+<li>Parent Org Unit: place your Organization Unit at its relevant place in the hierarchy</li>
+<li>Opening and/or Closing date(s): use these fields to indicate the opening or closing date(s) of the Organization Unit</li>
+</ul>
+<p><strong>Edit an Organization Unit or consult details</strong></p>
+<p>To access the detailed view of an Organization Unit, proceed as described below: </p>
+<p><img alt="alt text" src="attachments/orgunitdetailsedit.png" /></p>
+<p>In this view, you have a set of tabs that allow you to edit the Organization Unit as needed:</p>
+<ul>
+<li>Infos: edit the main information relating to this Organization Unit</li>
+<li>Map: consult the geographical information available for this Organization Unit (boundaries or GPS coordinates). You can view geographical data across data sources (if there are several sources). You can also leave a comment</li>
+<li>Children: lists this Organization Unit's children. You can use filter to go through the list in a more detailed way
+<img alt="alt text" src="attachments/children%20org%20units.png" /></li>
+<li>Links: in the case of matching an Organization Unit across multiple data sources, the links among the data sources can be found here</li>
+<li>History: allows you to trace back all modifications that were done to the Organization Unit by user</li>
+<li>Forms: lists all data collection forms that are linked to the Organization Unit type of this Organization Unit</li>
+<li>Comments: you can leave a comment about this Organization Unit using this section</li>
+</ul>
+<p><strong>Bulk edition of Organization Units</strong></p>
+<p>You can also edit Organization Units in bulk. 
+In order to do this, from the Organization Unit list, tick the boxes of the Organization Units you would like to bulk edit, then hover on the action button. Click on the gear action button, and select the action you would like to perform. </p>
+<p><img alt="alt text" src="attachments/Orgunitbulkedit.png" /></p>
+<h3 id="organization-unit-groups">Organization Unit Groups<a class="headerlink" href="#organization-unit-groups" title="Permanent link">#</a></h3>
+<p>Organisation units can be grouped in organisation unit groups, and these
+groups can be further organised into group sets. Together they can mimic
+an alternative organisational hierarchy which can be used when creating
+reports and other data output. In addition to representing alternative
+geographical locations not part of the main hierarchy, these groups are
+useful for assigning classification schemes to Organization Units. </p>
+<p><img src="./attachments/image44.png" style="width:6.5in;height:2.41667in" /></p>
+<p><strong>Manage Organization Unit Groups</strong></p>
+<p>In order to manage the Organization Unit Groups, access the menu entry Organization Units &gt; Groups. </p>
+<p><img src="./attachments/image5.png" style="width:6.5in;height:2.29167in" /></p>
+<p>This view allows you to search the Organisation Unit Groups through free
+text entry. </p>
+<p>You can create a new group 
+by clicking on the create button. </p>
+<p>Groups can be edited by clicking on the gear icon
+or deleted by clicking on the
+delete button.</p>
+<p>In the table, the column "Org Units" shows the number of Organization Units that are assigned to this group. When you click on the number, you will see the list of that Org Unit
+group.</p>
+<p><strong>Assign Organization Units to Groups</strong></p>
+<p>To assign Organization Units to Groups, go to the Organization Units List view from the menu and make a bulk edit of the selected organization Units. See above in section "Bulk edition of Organization Units" for more details on bulk edition of Organization Units.  </p>
+<h3 id="organization-unit-types-management">Organization Unit types management<a class="headerlink" href="#organization-unit-types-management" title="Permanent link">#</a></h3>
+<p>Organization Unit types are specific to IASO (i.e. this is not handled in DHIS2). See the part about <a href="OU">Organization Units</a> for more details on what Organization Unit types are.</p>
+<p>From the Organization Unit menu entry, click on "Organization Unit types". This view lists the Organization Unit types existing in your IASO account. </p>
+<p><strong>Create an Organization Unit type</strong></p>
+<p>Click on "Create" and enter the below mandatory fields:</p>
+<ul>
+<li>Name of the Organization Unit type. Beware that this should be the "category" / "level in the hierarchy", NOT the specific name of an Organization Unit. E.g. "Country, "Province", "District", and NOT "DRC", "Kinshasa", "Gombe"</li>
+<li>Short name: this will appear on other IASO views. It should be a short version of the full name </li>
+<li>Project(s): select one or multiple project(s) the Organization Unit type is linked to</li>
+</ul>
+<p>These other fields are not mandatory:</p>
+<ul>
+<li>Level: start with 0 for the highest point in the hierarchy, for instance "Country". E.g. Country - 0, Province - 1, District - 2, Village - 3</li>
+<li>Sub org unit types to display: select the below Org Unit type(s) that you would like to display on the Registry view if this main Org Unit type that you are editing is selected.</li>
+<li>Sub Org unit types to create: select the Org Unit type(s) that you would like to enable the creation for in the IASO mobile application. For instance, if you are editing the Org unit type "District", you can enable the creation of "Village" and/or "Point of Interest"</li>
+<li>Reference forms: select one or several data collection Form(s) that will be assigned as reference for this Org Unit type. Reference forms are Forms that are closely linked to the Org Unit type. A typical use case is for an Area to assign a reference Form for Population data. </li>
+</ul>
+<p><img alt="alt text" src="attachments/editorgunittype.png" /></p>
+<h3 id="data-sources-management">Data Source(s) management<a class="headerlink" href="#data-sources-management" title="Permanent link">#</a></h3>
+<p>IASO allows to import and handle one or several geographic data source(s). </p>
+<h4 id="data-sources-list">Data Source(s) List<a class="headerlink" href="#data-sources-list" title="Permanent link">#</a></h4>
+<p>Find here the data sources with their names, versions and descriptions. It is possible to
+edit the data source, check up on the files’ version history or compare
+data sources and export them to DHIS2.</p>
+<p><img src="./attachments/image52.png" style="width:6.5in;height:1.86111in" /></p>
+<h4 id="matching">Matching<a class="headerlink" href="#matching" title="Permanent link">#</a></h4>
+<p>This is rather a "geospatial" functionality : to have several geographical pyramid
+sources and try to make links (Example: where in a csv “province x” is
+called "PROVINCE X" and in another source it is called "DPS X").</p>
+<p>The algorithms run part is intended for data science work.</p>
+<p><img src="./attachments/image40.png" style="width:6.5in;height:1.26389in" /></p>
+<h3 id="registry">Registry<a class="headerlink" href="#registry" title="Permanent link">#</a></h3>
+<p>The Registry entry in Organization Unit is a visualization tool allowing users to drilldown in the geographical hierarchy and consult the geographical data as well as data collection associated to the different level(s). </p>
+<p><img alt="alt text" src="attachments/registry.png" /></p>
+<h3 id="review-change-proposals">Review change proposals<a class="headerlink" href="#review-change-proposals" title="Permanent link">#</a></h3>
+<p>With IASO, supervisors can compare and validate data submissions as they are sent to the server. 
+Note that this feature will only work provided that you have activated the "Change requests" feature flag on the IASO Project you would like to validate data collected for. See the Projects part for more information on mobile feature flags in IASO.</p>
+<p>On the Review change proposals page, users can use the filters to select the proposals they would like to focus on. See on the picture below the detailed filters.</p>
+<p><img alt="alt text" src="attachments/reviewchangeproposals.png" /></p>
+<p>Supervisors can then click on the gear icon at the end of the relevant line to be able to see the details of the change proposal submitted and compare with the former version on the left.</p>
+<p><img alt="alt text" src="attachments/reviewchanges.png" /></p>
+<p>Supervisors can then select the changes they would like to approve by ticking the boxes of the changes selected on the right column, and then hit "Approve selected changes".
+If the changes proposed are not satisfactory, supervisors can reject all changes and provide a comment.</p>
+<p>For each change proposal sent, IASO mobile application users will be able to see if they have been approved or rejected, and if rejected, consult the comment. </p>
+<h2 id="planning">Planning<a class="headerlink" href="#planning" title="Permanent link">#</a></h2>
+<p>The Planning feature in IASO allows you to plan field work per team and user in defined zones/organization units and according to a specific timeline. Once data collection activities would have been assigned via the interface, field agents using the mobile application would only be able to see the activities assigned to them, and navigate towards the relevant GPS point(s). </p>
+<p>In order to be able to create a Planning, you will need to have created beforehand Organization units, Users, a Project, Teams of Users/Teams of Teams and data collection Forms for which you would like to use the Planning feature.</p>
+<h3 id="planning-list">Planning List<a class="headerlink" href="#planning-list" title="Permanent link">#</a></h3>
+<p>Click on Planning in the menu panel. Under Planning List you will see the list of schedules/plannings that have been
+created in IASO. You can search through the different Plannings using the different filters and take the below actions:</p>
+<ul>
+<li>Create Planning</li>
+<li>View Planning: this is where you will access the interface to assign data collection activities to Teams and Users according to geographies</li>
+<li>Edit Planning: edit the Name, Project, Parent Organization Unit and Team it applies to, Form(s), Description</li>
+<li>Duplicate Planning: allows users to copy an existing Planning and readapt it as needed</li>
+<li>Erase Planning</li>
+</ul>
+<p><img alt="alt text" src="attachments/planninglist.png" /></p>
+<p><strong>Create a Planning</strong></p>
+<p>Click on "Create" and you will see the below window opening:</p>
+<p><img src="./attachments/image48.png" style="width:6.5in;height:3.80556in" /></p>
+<p>The below fields are mandatory:</p>
+<ul>
+<li>Name</li>
+<li>Project: defines in which mobile app environment the Planning info
+will be visible</li>
+<li>Team: it is the team responsible for the planning - this is usually a Team of Teams</li>
+<li>Form(s): select one or several Form(s) to apply to this Planning </li>
+<li>Org unit: select the base Organization Unit your Planning applies to. Keep in mind that you will drilldown from this base Organization Unit to assign your data collection activities to Teams/Users. </li>
+<li>start and end dates for your Planning</li>
+</ul>
+<p>You can add a description as an option. </p>
+<p>The “Publishing status” (in the lower left
+corner) feature makes it possible to ensure, once completed (and all
+assignments made), the newly created planning will be available in the
+IASO mobile app for the relevant project.</p>
+<p>Once you have completed the fields, click "Save" to finish.  </p>
+<p>Click on the eye icon
+button from the Planning list
+to start editing your new Planning via the Map interface.</p>
+<p>You can do
+the assignment either through the “Map” or the “List” tab. If
+processing through the map, first select the Team you would like to assign a geography to in the dropdown, as well as the relevant “Base Org Unit type” in the dropdown. You can then start assigning geographic areas or points directly to the selected Team members directly on the map.</p>
+<p><img alt="alt text" src="attachments/planning%20assignment.png" /></p>
+<p>Selected areas will be highlighted with the team’s colour, that you can change as needed. </p>
+<p>In order to assign all children Org Unit of a given parent Org unit to the same Team/User, you can select the "Parent picking mode" before proceeding to your selection.</p>
+<p><img src="./attachments/image10.png" style="width:2.97396in;height:2.55034in" /></p>
+<p>If you prefer using the List tab, the process is pretty similar. The
+main difference being that you work here with a list of names, according
+to the selected level. Org units are assigned by clicking in front of
+the item name, in the “Assignment” column.</p>
+<p><img src="./attachments/image73.png" style="width:6.5in;height:2.68056in" /></p>
+<p>You can sort Org units and Parents by clicking on the column name.</p>
+<h2 id="admin">Admin<a class="headerlink" href="#admin" title="Permanent link">#</a></h2>
+<p>The Admin part of IASO comprises several parts, which will appear or not depending on the user's permissions:</p>
+<ul>
+<li>Tasks</li>
+<li>Monitoring</li>
+<li>Projects</li>
+<li>Modules</li>
+<li>Users</li>
+<li>User roles</li>
+<li>Teams</li>
+</ul>
+<h3 id="tasks">Tasks<a class="headerlink" href="#tasks" title="Permanent link">#</a></h3>
+<p>This is the IASO batch updates log. An operation log contains information about when and where an operation
+ran, the operation status, the number of source and target records
+processed, and any log messages.</p>
+<p>Examples of tasks include:</p>
+<ul>
+<li>Organization unit bulk update</li>
+<li>DHIS2 data import</li>
+<li>Geopackage import</li>
+</ul>
+<p>The statuses are:</p>
+<ul>
+<li>Errored: the Task did not make it through. Users are advised to try again.</li>
+<li>Running: the Task is in process</li>
+<li>Queued: the Task has stopped and will restart if the conditions are met (for instance, if there is better connectivity)</li>
+<li>Killed: the Task was interrupted by the user after it had been started</li>
+<li>Success: the Task has been successfully run</li>
+</ul>
+<p>The Task list can be refreshed by pressing the button "Refresh" on the right top hand side. </p>
+<p><img alt="alt text" src="attachments/tasks.png" /></p>
+<h3 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">#</a></h3>
+<p>This part allows supervisors to monitor devices that are linked with the IASO account. 
+From this page, you can consult:</p>
+<ul>
+<li>The IMEI or device identifier</li>
+<li>If this is a test device or not</li>
+<li>the name of the last owner</li>
+<li>the last time it has been synchronized</li>
+<li>the creation date (first time it has been synchronized)</li>
+<li>the modification date</li>
+</ul>
+<p>On the right hand side, you can see the number of devices that are connected under the IASO account you are connected to.</p>
+<p><img alt="alt text" src="attachments/Devices.png" /></p>
+<h3 id="projects">Projects<a class="headerlink" href="#projects" title="Permanent link">#</a></h3>
+<p>A Project in IASO relates to an instance of mobile application. 
+Each Project is identified by a Name and an App ID. See <a href="https://iaso.readthedocs.io/en/latest/pages/users/reference/iaso_concepts/iaso_concepts.html#projects">here</a> for a more detailed definition of Projects in IASO.</p>
+<p><strong>Create a Project</strong></p>
+<p>From the menu, Admin &gt; Projects &gt; Click on "Create"</p>
+<p><img alt="alt text" src="attachments/Project.png" /></p>
+<p>Then, add a Project name, and an App ID. 
+Be aware that the App ID will have to be entered by IASO mobile application users the first time they connect to the IASO app, so it should not be overly complicated to avoid typing errors. </p>
+<p>You can then select the Feature flags you would like to apply to your Project in the next tab and press "Save". </p>
+<p><img alt="alt text" src="attachments/featureflags2.png" /></p>
+<p><strong>Feature flags definition</strong></p>
+<p>See the table below for more details on the Project Feature flags:</p>
+<table>
+<thead>
+<tr>
+<th>Feature flag</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Authentication</td>
+<td>Users have to enter their login and password on the mobile application before proceeding to the data collection. Please note that this is possible in IASO to proceed to data collection without authentication for simplified processes (also called “anonymous mode”)</td>
+</tr>
+<tr>
+<td>Mobile: show data collection screen</td>
+<td>Enable the feature to collect data from the IASO mobile application (data collection that is not linked to a planning or a change request workflow)</td>
+</tr>
+<tr>
+<td>GPS for each form</td>
+<td>Every time a data collection form is submitted, a GPS point is automatically taken and associated to the form submission</td>
+</tr>
+<tr>
+<td>Enforce users are within reach of the org unit before starting the form</td>
+<td>IASO mobile application users have to be close (50m) to the organization unit GPS point they are collecting data for in order for the form to open</td>
+</tr>
+<tr>
+<td>Mobile. Show planning screen</td>
+<td>When a planning has been done in IASO via the web interface, the assigned data collection points and tasks are reflected via this tab</td>
+</tr>
+<tr>
+<td>Mobile: limit download of org unit to what the user has access to</td>
+<td>When loading data into the mobile application, only the geographical zone that is assigned to the user is downloaded, so as to enable offline use. This allows a lighter (and then quicker and less data-consuming) download of data at the start of the IASO mobile application</td>
+</tr>
+<tr>
+<td>Mobile. Show Map of org unit</td>
+<td>Adds a tab in the mobile application to show the geographic information available for the selected Org Unit in the mobile application. For instance, if a GPS coordinate is available for a health facility, it would show on the map via this tab</td>
+</tr>
+<tr>
+<td>Request changes to org units</td>
+<td>Enable the feature to propose changes to org units and their related reference form(s)</td>
+</tr>
+<tr>
+<td>Mobile: Change requests</td>
+<td>Adds the tab allowing to propose changes to org units and their reference form(s)</td>
+</tr>
+<tr>
+<td>GPS for trajectory</td>
+<td>Enable the user to activate a function that track their position every 15 minutes over a period of time</td>
+</tr>
+<tr>
+<td>Mobile. Warn the user when forms have been updated</td>
+<td>When new form versions have been uploaded on the web, the IASO mobile application user is notified. Then the user can choose to apply them or not</td>
+</tr>
+<tr>
+<td>Mobile. Warn the user when forms have been updated and force them to update</td>
+<td>When new form versions have been uploaded on the web, the IASO mobile application user is notified and the update happens automatically</td>
+</tr>
+<tr>
+<td>Mobile. Warn the user when the org units have been updated</td>
+<td>When changes to the Org units (health pyramid) have been done on the web, the IASO mobile application user is notified. Then the user can choose to apply them or not</td>
+</tr>
+<tr>
+<td>Mobile. Warn the user when the org units have been updated and force them to update</td>
+<td>When changes to the Org units (health pyramid) have been done on the web, the IASO mobile application user is notified and the update happens automatically</td>
+</tr>
+<tr>
+<td>Auto upload of finalized forms</td>
+<td>The synchronization of forms that have been filled takes place automatically as soon as the user has connectivity</td>
+</tr>
+<tr>
+<td>Mobile. Finalized forms are read only</td>
+<td>IASO mobile application users cannot edit the forms once finalized in the mobile application</td>
+</tr>
+</tbody>
+</table>
+<h3 id="users">Users<a class="headerlink" href="#users" title="Permanent link">#</a></h3>
+<p>Users can access IASO web and mobile application with login credentials. Each user is assigned permissions and can be limited by location.</p>
+<p>Permissions are relatively granular:
+- By screen/tab
+- Different read/write permissions for important domains
+- Restriction of access using the health pyramid
+- Batch creation/modification of users
+- Customizable user roles (Administrator, Data manager, etc.)</p>
+<p>Please note that the permissions assigned from the User management apply to <strong>IASO web only</strong>. IASO does not have a system of permissions for its mobile application, but rather a set of Feature Flags. </p>
+<p><strong>Create a new IASO user</strong></p>
+<p>From the menu Admin &gt; Users, click on "Create". </p>
+<ol>
+<li>Fill in user information</li>
+</ol>
+<p><img alt="alt text" src="attachments/Createuser.png" /></p>
+<p>Note that you can also indicate the following information:</p>
+<ul>
+<li>DHIS2 id of the user: you can import a list of DHIS2 users to IASO and keep track of their DHIS2 id in IASO to link then across both systems</li>
+<li>Home page: you can set up a default landing page for that user when connecting to this IASO account</li>
+<li>Projects: select one or several Project(s) to which the newly created user will be linked. If there is no Project indicated here, the user will have access to all Projects of the IASO account by default.</li>
+<li>
+<p>Language: you can specify in which default language this user will use IASO web. IASO mobile application is based on the default language of the users's device.</p>
+</li>
+<li>
+<p>Assign user permissions</p>
+</li>
+</ul>
+<p>On the next tab “Permissions”, you can enable/disable permissions for that user as needed. Note that in the “?” are tooltips to explain what the permissions do.
+<img alt="alt text" src="attachments/Permissions.png" /></p>
+<ol>
+<li>Restrict user to a specific Location</li>
+</ol>
+<p>On the last tab "Location", you can restrict the access of the user you are editing to a sub-part of the Organization Unit hierarchy (hence the user will only be able to see data relating to his/her Geography).
+If no Location is specified here, by default the user will see all data available across the entire hierarchy.</p>
+<p><img alt="alt text" src="attachments/locationrestrict.png" /></p>
+<p><strong>Create users in bulk</strong></p>
+<p>You can create several users at once using a CSV file that you import to IASO.</p>
+<p>Use the button “Create from file” and you can then import your list of users (or download the relevant template to do so beforehand). </p>
+<p><strong>Manage IASO users</strong></p>
+<p>This view allows you to manage users and their permissions. You can search
+for a user using the different filters.</p>
+<p><img alt="alt text" src="attachments/userfilters.png" /></p>
+<p>You can edit IASO users in bulk using the bulk update feature. First, tick each user you would like to update using the check boxes on the right side of each user line. </p>
+<p><img alt="alt text" src="attachments/editusersbulk.png" /></p>
+<p>Then select the action(s) you would like to perform for these users. They can be:</p>
+<ul>
+<li>Add or remove from user role(s)</li>
+<li>Add or remove from Project(s)</li>
+<li>Add or remove from Team(s)</li>
+<li>Update default language</li>
+<li>Add or Remove Location (hence limiting these users to the selected Geography)</li>
+</ul>
+<p>Click on "Validate" when done. </p>
+<p><img alt="alt text" src="attachments/usersbulkeditactions.png" /></p>
+<h3 id="user-roles">User roles<a class="headerlink" href="#user-roles" title="Permanent link">#</a></h3>
+<p>User roles allow to group users that are granted a set of permissions under the same role. In the User role, you are able to create User roles with their matching permissions, to which Users can be assigned to.</p>
+<p><strong>Create a User role</strong></p>
+<p>From the Admin &gt; User roles page, click on "Create".</p>
+<p><img alt="alt text" src="attachments/userroles.png" /></p>
+<p>You can then assign this user role to any user through the Permission tab in the User edit popup. Be aware that the User role permissions will apply to the user, but if the User has more permissions that had been previsouly assigned to him/her, he/she will not lose them but they will add up. </p>
+<p><img alt="alt text" src="attachments/Userrolespermissions.png" /></p>
+<p>To assign multiple Users to this newly created user role in bulk, go back to the Users list and proceed to a bulk update (see Manage Users above).</p>
+<h3 id="teams">Teams<a class="headerlink" href="#teams" title="Permanent link">#</a></h3>
+<p>The notion of Teams in IASO is used mainly for the <a href="Planning">Planning</a> feature. It allows to organize Users in Team hierarchies and assign data collection activities to the relevant geographies as needed for the Planning purposes. </p>
+<p>There are two types of Teams:</p>
+<ul>
+<li>Teams of Users: gathers IASO Users under the same team </li>
+<li>Teams of Teams: gathers several Teams under a same Team. You can then create hierarchies of Teams</li>
+</ul>
+<p><strong>Create a Team</strong></p>
+<p>From the menu, access Admin &gt; Teams. Click on “Create”</p>
+<p><img alt="alt text" src="attachments/createteam.png" /></p>
+<p>Fill out the below fields:</p>
+<ul>
+<li>Team name</li>
+<li>Manager: select from the Users in IASO</li>
+<li>Project: select the Project to be linked to this Team</li>
+<li>Type: select in the dropdown the type of Team<ul>
+<li>If you select "Team of Users" - then select the Users to be added to that Team</li>
+<li>If you select "Team of Teams" - then select the Teams to be added to that Team</li>
+</ul>
+</li>
+<li>Parent: select the Parent Team for this newly created team</li>
+</ul>
+<p>You can then use the gear or bin icon on the main page to edit or delete Team(s) as needed. </p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../..", "features": [], "search": "../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.b78d2936.min.js"></script>
+      
+    
+  </body>
+</html>

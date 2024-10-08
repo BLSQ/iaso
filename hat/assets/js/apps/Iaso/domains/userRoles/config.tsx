@@ -2,7 +2,7 @@ import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import React, { ReactElement, useMemo } from 'react';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import PermissionSwitch from '../users/components/PermissionSwitch';
+import PermissionCheckBoxes from '../users/components/PermissionCheckBoxes';
 import PermissionTooltip from '../users/components/PermissionTooltip';
 import USER_MESSAGES from '../users/messages';
 import { EditUserRoleDialog } from './components/CreateEditUserRole';
@@ -65,8 +65,8 @@ export const useGetUserRolesColumns = (
 };
 
 export const useUserPermissionColumns = (
-    setPermissions: (permission: Permission, isChecked: boolean) => void,
-    userRolePermissions: Permission[],
+    setPermissions: (permission: string, isChecked: boolean) => void,
+    userRolePermissions: (string | Permission)[],
 ): Array<Column> => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
@@ -108,11 +108,11 @@ export const useUserPermissionColumns = (
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <PermissionSwitch
+                        <PermissionCheckBoxes
                             codeName="codename"
                             settings={settings}
                             setPermissions={setPermissions}
-                            value={settings.row.original}
+                            value={settings.row.original.codename}
                             permissions={userRolePermissions}
                         />
                     );

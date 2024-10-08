@@ -292,7 +292,7 @@ class VaccineStockCalculator:
                 results.append(
                     {
                         "date": report.date_of_incident_report,
-                        "action": report.get_stock_correction_display(),  # for every field FOO that has choices set, the object will have a get_FOO_display() method
+                        "action": report.stock_correction,  # for every field FOO that has choices set, the object will have a get_FOO_display() method
                         "vials_in": report.unusable_vials or 0,
                         "doses_in": (report.unusable_vials or 0) * self.get_doses_per_vial(),
                         "vials_out": None,

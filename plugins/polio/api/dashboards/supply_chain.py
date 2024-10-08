@@ -1,4 +1,6 @@
-from django.db.models import Subquery, OuterRef
+from django.db.models import OuterRef, Subquery
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import serializers
 
 from iaso.api.common import ModelViewSet
@@ -143,6 +145,10 @@ class VaccineRequestFormDashboardViewSet(ModelViewSet):
     permission_classes = [VaccineSupplyChainReadWritePerm]
     model = VaccineRequestForm
     serializer_class = VaccineRequestFormDashboardSerializer
+
+    @method_decorator(cache_page(60 * 60))  # Cache for 1 hour
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
         return VaccineRequestForm.objects.filter(

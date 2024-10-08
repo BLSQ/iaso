@@ -1,6 +1,6 @@
 site_name: IASO
 theme:
-  name: readthedocs
+  name: material
   highlightjs: true
 plugins:
   - search #built-in search input in the theme

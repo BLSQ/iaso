@@ -20,6 +20,7 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
+from storages.backends.s3boto3 import S3Boto3Storage
 from translated_fields import TranslatedField
 
 from beanstalk_worker import task_decorator
@@ -1074,6 +1075,18 @@ class NotificationManager(models.Manager):
         return OrgUnit.objects.filter(pk__in=countries_pk).defer("geom", "simplified_geom").order_by("name")
 
 
+class CustomPublicStorage(S3Boto3Storage):
+    default_acl = "public-read"
+    file_overwrite = False
+    querystring_auth = False
+
+    def get_available_name(self, name, max_length=None):
+        # This method ensures that files with the same name are not overwritten
+        if self.file_overwrite:
+            return super().get_available_name(name, max_length)
+        return name
+
+
 ## Terminology
 # VRF = Vaccine Request Form
 # VPA = Vaccine Pre Alert
@@ -1110,6 +1123,8 @@ class VaccineRequestForm(SoftDeletableModel):
     quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
     comment = models.TextField(blank=True, null=True)
     target_population = models.PositiveIntegerField(null=True, blank=True)
+
+    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/vrf/")
 
     objects = DefaultSoftDeletableManager()
 

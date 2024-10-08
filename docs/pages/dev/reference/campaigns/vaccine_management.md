@@ -76,6 +76,7 @@ classDiagram
     Round --> RoundScope : has
     Campaign --> CampaignScope : has
     Campaign --> VaccineRequestForm : has
+    Campaign --> OutgoingStockMovement : has
     VaccineRequestForm --> Round : relates to
     VaccineRequestForm --> VaccinePreAlert : has
     VaccineRequestForm --> VaccineArrivalReport : has

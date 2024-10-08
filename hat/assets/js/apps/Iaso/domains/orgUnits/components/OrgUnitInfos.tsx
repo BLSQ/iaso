@@ -18,12 +18,9 @@ import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DatesRange from '../../../components/filters/DatesRange';
 import { ORG_UNITS } from '../../../utils/permissions';
-import {
-    useGetUserHasWritePermissionOnOrgunit
-} from '../../../utils/usersUtils';
+import { useGetUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Instance } from '../../instances/types/instance';
-import { userHasPermission } from '../../users/utils';
 import { Group, OrgUnit, OrgUnitState } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
@@ -104,6 +101,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     const hasManagementPermission = useGetUserHasWritePermissionOnOrgunit(
         orgUnit?.org_unit_type_id,
     );
+    const disabled = !hasManagementPermission && !isNewOrgunit;
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={4}>
@@ -115,7 +113,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     value={orgUnitState.name.value}
                     errors={orgUnitState.name.errors}
                     label={MESSAGES.name}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
                 />
 
                 <InputComponent
@@ -135,7 +133,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         value: t.id,
                     }))}
                     label={MESSAGES.org_unit_type_id}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
                 />
                 <InputComponent
                     keyValue="groups"
@@ -154,7 +152,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         value: g.id,
                     }))}
                     label={MESSAGES.groups}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
                 />
                 <div className={classes.divAliasWrapper}>
                     <InputComponent
@@ -163,9 +161,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         value={orgUnitState.aliases.value}
                         type="arrayInput"
                     />
-                    {!hasManagementPermission && (
-                        <div className={classes.divAliasOverlay} />
-                    )}
+                    {disabled && <div className={classes.divAliasOverlay} />}
                 </div>
             </Grid>
 
@@ -180,7 +176,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     label={MESSAGES.status}
                     loading={isLoadingValidationStatusOptions}
                     options={validationStatusOptions || []}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
                 />
                 <InputComponent
                     keyValue="source_ref"
@@ -188,7 +184,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     value={orgUnitState.source_ref.value || ''}
                     onChange={onChangeInfo}
                     errors={orgUnitState.source_ref.errors}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
                 />
 
                 <FormControlComponent
@@ -210,7 +206,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         source={orgUnit.source_id}
                         initialSelection={parentOrgunit}
                         resetTrigger={resetTrigger}
-                        disabled={!hasManagementPermission}
+                        disabled={disabled}
                     />
                 </FormControlComponent>
                 <DatesRange
@@ -226,7 +222,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     labelFrom={MESSAGES.openingDate}
                     labelTo={MESSAGES.closingDate}
                     marginTop={0}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
                 />
                 <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
                     <Grid

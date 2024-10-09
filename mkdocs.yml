@@ -1,6 +1,6 @@
 site_name: IASO
 theme:
-  name: readthedocs
+  name: material
   highlightjs: true
   logo: ./assets/iaso.png
   favicon: ./assets/iaso-favicon.png

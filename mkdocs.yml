@@ -6,7 +6,6 @@ theme:
   favicon: ./assets/iaso-favicon.png
   palette:
     primary: 'custom'
-    # primary: '#006699'
     secondary: 'custom'
 plugins:
   - search #built-in search input in the theme

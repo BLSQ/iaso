@@ -10,7 +10,7 @@ on:
   push:
     # On push to main deploy doc to GH pages
     branches:
-      - main
+      # - main
       - IA-3491_deploy_doc_on_gh_pages # This can be deleted after merging on main
 
 

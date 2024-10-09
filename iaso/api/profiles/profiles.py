@@ -500,7 +500,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         return result
 
     def validate_editable_org_unit_types(self, request):
-        editable_org_unit_type_ids = request.data.get("editable_org_unit_type_ids", None)
+        editable_org_unit_type_ids = request.data.get("editable_org_unit_type_ids", [])
         editable_org_unit_types = OrgUnitType.objects.filter(pk__in=editable_org_unit_type_ids)
         if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
             raise ValidationError("Invalid editable org unit type submitted.")

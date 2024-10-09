@@ -48,6 +48,9 @@ jobs:
         # if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Environment info
         run: |
-          pip list
+            . ./venv/bin/activate  # Activate the venv here
+            pip list
       - name: Deploy on Github pages
-        run: mkdocs gh-deploy --config-file mkdocs.yml
+        run: |
+          . ./venv/bin/activate 
+          mkdocs gh-deploy --config-file mkdocs.yml

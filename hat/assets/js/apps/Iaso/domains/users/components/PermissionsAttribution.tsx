@@ -13,7 +13,6 @@ import { useSnackQuery } from '../../../libs/apiHooks';
 import * as Permissions from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
-import { Permission } from '../../userRoles/types/userRoles';
 import { useUserPermissionColumns } from '../config';
 import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
 import MESSAGES from '../messages';
@@ -57,10 +56,10 @@ type Props = {
 };
 
 type PermissionResult = {
-    permissions: Permission[];
+    permissions: string[];
 };
 
-const PermissionsSwitches: React.FunctionComponent<Props> = ({
+const PermissionsAttribution: React.FunctionComponent<Props> = ({
     isSuperUser,
     currentUser,
     handleChange,
@@ -76,11 +75,15 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         options: { enabled: !isSuperUser },
     });
     const setPermissions = useCallback(
-        (codeName: string, isChecked: boolean) => {
+        (codeName: string | string[], isChecked: boolean) => {
             const newUserPerms = [...currentUser.user_permissions.value];
             if (!isChecked) {
                 const permIndex = newUserPerms.indexOf(codeName);
                 newUserPerms.splice(permIndex, 1);
+            } else if (Array.isArray(codeName)) {
+                codeName.forEach(code => {
+                    newUserPerms.push(code);
+                });
             } else {
                 newUserPerms.push(codeName);
             }
@@ -121,6 +124,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
             const newUserRoles = value
                 ? value.split(',').map(userRoleId => parseInt(userRoleId, 10))
                 : [];
+
             setFieldValue('user_roles', newUserRoles);
         },
         [setFieldValue],
@@ -174,8 +178,8 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     );
 };
 
-PermissionsSwitches.defaultProps = {
+PermissionsAttribution.defaultProps = {
     isSuperUser: false,
 };
 
-export default PermissionsSwitches;
+export default PermissionsAttribution;

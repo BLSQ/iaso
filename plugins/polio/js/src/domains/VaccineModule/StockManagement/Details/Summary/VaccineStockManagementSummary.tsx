@@ -24,6 +24,8 @@ export const VaccineStockManagementSummary: FunctionComponent<Props> = ({
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const isBopv = data?.vaccine_type === 'bOPV';
+
     return (
         <WidgetPaper
             className={classnames(classes.paper)}
@@ -41,21 +43,25 @@ export const VaccineStockManagementSummary: FunctionComponent<Props> = ({
                         value={data?.total_usable_vials}
                         isLoading={isLoading}
                     />
-                    <PaperTableRow
-                        label={formatMessage(MESSAGES.unusableVials)}
-                        value={data?.total_unusable_vials}
-                        isLoading={isLoading}
-                    />
+                    {!isBopv && (
+                        <PaperTableRow
+                            label={formatMessage(MESSAGES.unusableVials)}
+                            value={data?.total_unusable_vials}
+                            isLoading={isLoading}
+                        />
+                    )}
                     <PaperTableRow
                         label={formatMessage(MESSAGES.usableDoses)}
                         value={data?.total_usable_doses}
                         isLoading={isLoading}
                     />
-                    <PaperTableRow
-                        label={formatMessage(MESSAGES.unusableDoses)}
-                        value={data?.total_unusable_doses}
-                        isLoading={isLoading}
-                    />
+                    {!isBopv && (
+                        <PaperTableRow
+                            label={formatMessage(MESSAGES.unusableDoses)}
+                            value={data?.total_unusable_doses}
+                            isLoading={isLoading}
+                        />
+                    )}
                 </TableBody>
             </Table>
         </WidgetPaper>

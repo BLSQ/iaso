@@ -721,22 +721,29 @@ def import_data(instances, user, app_id):
         if entity_uuid and entity_type_id:
             # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
             # If a non-deleted entity was found, ignore potential duplicates.
-            filter = {
+            filters = {
                 "uuid": entity_uuid,
                 "entity_type_id": entity_type_id,
                 "account": project.account,
             }
-            existing_entities = list(Entity.objects_include_deleted.filter(**filter))
+            existing_entities = list(Entity.objects_include_deleted.filter(**filters))
 
             if len(existing_entities) == 0:
-                entity = Entity.objects.create(**filter)
+                entity = Entity.objects.create(**filters)
             elif len(existing_entities) == 1:
                 entity = existing_entities[0]
             else:
                 # In case of duplicates, try to take the "best" one. Best one would
                 # be one that's not deleted and that has valid attributes with a
-                # file attached. We first assign the last one to avoid having None.
-                entity = existing_entities[-1]
+                # file attached. We first assign the first one to avoid having None.
+                # If there are multiple non-deleted entities, we send a Sentry,
+                # but don't break the upload.
+                if len([e for e in existing_entities if e.deleted_at is None]) > 1:
+                    logger.exception(
+                        f"Multiple non-deleted entities for UUID {entity_uuid}, entity_type_id {entity_type_id}"
+                    )
+
+                entity = existing_entities[0]
                 for ent in existing_entities:
                     if not ent.deleted_at:
                         entity = ent

@@ -10,8 +10,7 @@ on:
   push:
     # On push to main deploy doc to GH pages
     branches:
-      # - main
-      - IA-3491_deploy_doc_on_gh_pages
+      - main
 
 
 jobs:

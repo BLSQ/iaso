@@ -563,7 +563,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.user_roles.set(user_roles)
         profile.projects.set(projects)
         profile.org_units.set(org_units)
-        profile.org_unit_types.set(editable_org_unit_types)
+        profile.editable_org_unit_types.set(editable_org_unit_types)
         profile.save()
         return profile
 

@@ -11,7 +11,9 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="profile",
-            name="org_unit_types",
-            field=models.ManyToManyField(blank=True, related_name="iaso_profile", to="iaso.orgunittype"),
+            name="editable_org_unit_types",
+            field=models.ManyToManyField(
+                blank=True, related_name="editable_by_iaso_profile_set", to="iaso.orgunittype"
+            ),
         ),
     ]

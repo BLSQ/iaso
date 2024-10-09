@@ -7,6 +7,8 @@ theme:
   palette:
     primary: 'custom'
     secondary: 'custom'
+  features:
+    - content.action.edit
 plugins:
   - search #built-in search input in the theme
   - mermaid2 #enables rendering mermaid diagrams

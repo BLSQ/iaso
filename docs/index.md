@@ -41,5 +41,5 @@ IASO is made of a white labeled Android application using Java/Kotlin, reusing l
 Frontend is mainly React/Leaflet. 
 The API is implemented via Django rest framework, all data is stored in Postgresql or the media/ directory. One of the aims is the ease of integration with other platforms. We already have csv and geopackage imports and exports and target easy integration with OSM.
 
-The companion mobile app for Android allow form submission and and org unit creation.
+The companion mobile app for Android allows form submission and and org unit creation.
 Forms can also be filled in a web interface via the Enketo companion service. 

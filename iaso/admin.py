@@ -71,6 +71,7 @@ from .models import (
     StorageLogEntry,
     StoragePassword,
     Task,
+    TenantUser,
     UserRole,
     Workflow,
     WorkflowChange,
@@ -966,3 +967,4 @@ admin.site.register(Report)
 admin.site.register(ReportVersion)
 admin.site.register(UserRole)
 admin.site.register(OrgUnitChangeRequestConfiguration)
+admin.site.register(TenantUser)

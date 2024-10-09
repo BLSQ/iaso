@@ -24,35 +24,35 @@ class AccountAPITestCase(APITestCase):
         cls.wha_version = m.SourceVersion.objects.create(data_source=wha_datasource, number=1)
 
     def test_account_list_without_auth(self):
-        """GET /projects/ without auth should result in a 403 (before the method not authorized?)"""
+        """GET /account/ without auth should result in a 403 (before the method not authorized?)"""
         self.client.force_authenticate(self.jim)
 
         response = self.client.get("/api/accounts/")
         self.assertJSONResponse(response, 403)
 
     def test_account_list_with_auth(self):
-        """GET /projects/ with auth should result in a 405 as method is not allowed"""
+        """GET /account/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.get("/api/accounts/")
         self.assertJSONResponse(response, 405)
 
     def test_account_delete_forbidden(self):
-        """DELETE /projects/ with auth should result in a 405 as method is not allowed"""
+        """DELETE /account/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.delete("/api/accounts/")
         self.assertJSONResponse(response, 405)
 
     def test_account_post_forbidden(self):
-        """POST /projects/ with auth should result in a 405 as method is not allowed"""
+        """POST /account/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.post("/api/accounts/", {"default_version": self.ghi_version})
         self.assertJSONResponse(response, 405)
 
     def test_account_detail_forbidden(self):
-        """POST /projects/ with auth should result in a 405 as method is not allowed"""
+        """POST /account/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.get(f"/api/accounts/{self.ghi.pk}/")

@@ -1159,6 +1159,8 @@ class VaccinePreAlert(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/prealert/")
+
     objects = DefaultSoftDeletableManager()
 
     def save(self, *args, **kwargs):
@@ -1243,6 +1245,8 @@ class OutgoingStockMovement(models.Model):
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     missing_vials = models.PositiveIntegerField()
 
+    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/forma/")
+
 
 class DestructionReport(models.Model):
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
@@ -1251,6 +1255,8 @@ class DestructionReport(models.Model):
     destruction_report_date = models.DateField()
     unusable_vials_destroyed = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
+
+    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/")
 
 
 class IncidentReport(models.Model):
@@ -1275,6 +1281,8 @@ class IncidentReport(models.Model):
     incident_report_received_by_rrt = models.DateField()  # Date reception document
     unusable_vials = models.PositiveIntegerField()
     usable_vials = models.PositiveIntegerField()
+
+    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/")
 
 
 class Notification(models.Model):

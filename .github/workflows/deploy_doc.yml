@@ -3,7 +3,6 @@ name: deploy_doc
 on:
   workflow_dispatch:
     inputs:
-      # Branch is chosen by default in github manual actions
       slack_channel:
         description: Slack Channel for notification (iasops by default)
         required: false
@@ -11,7 +10,8 @@ on:
   push:
     # On push to main deploy doc to GH pages
     branches:
-      - main
+      # - main
+      - IA-3491_deploy_doc_on_gh_pages
 
 
 jobs:

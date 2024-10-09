@@ -44,12 +44,10 @@ jobs:
                 ${{ runner.os }}-venv-
             # Build a virtualenv, but only if it doesn't already exist
       - run: python -v && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
-            pip install -r ./docs/requirements.txt
-        if: steps.cache-venv.outputs.cache-hit != 'true'
+            pip install -r docs/requirements.txt
+        # if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Environment info
         run: |
-          node --version
-          npm --version
           pip list
       - name: Deploy on Github pages
         run: mkdocs gh-deploy --config-file mkdocs.yml

@@ -1,7 +1,14 @@
 site_name: IASO
 theme:
-  name: readthedocs
+  name: material
   highlightjs: true
+  logo: ./assets/iaso.png
+  favicon: ./assets/iaso-favicon.png
+  palette:
+    primary: 'custom'
+    secondary: 'custom'
+  features:
+    - content.action.edit
 plugins:
   - search #built-in search input in the theme
   - mermaid2 #enables rendering mermaid diagrams
@@ -21,6 +28,8 @@ markdown_extensions:
       permalink: "#" # adds a link to headers
 repo_url: https://github.com/BLSQ/iaso 
 edit_uri: edit/main/docs # for the edit on github button
+extra_css: 
+  - ./stylesheets/extra.css
 use_directory_urls: false # IMPORTANT: without this the paths to pictures will break on build
 nav: # nav configures the side bar menu
   - Home: index.md
@@ -65,7 +74,7 @@ nav: # nav configures the side bar menu
       #   - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
 
   - More about Iaso:
-    - Get a demo: https://www.bluesquarehub.com/iaso/ 
+    - Get a demo: https://www.openiaso.com/ 
     - Bluesquare: https://www.bluesquarehub.com/
 
 

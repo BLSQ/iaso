@@ -527,9 +527,9 @@ class ProcessMobileBulkUploadTest(TestCase):
     # - More than 1 active, n deleted -> take an active one, log Sentry exception
     def test_duplicate_uuids_1_active_1_deleted(self, mock_download_file):
         # Create active + soft-deleted entity Disasi with same uuid
-        ent_active = create_entity_with_registration(self, name="Disasi", uuid=DISASI_MAKULO_REGISTRATION)
+        ent_active = create_entity_with_registration(self, name="Disasi Active", uuid=DISASI_MAKULO_REGISTRATION)
         # create it with a different uuid to avoid clash on instance uuid
-        ent_deleted = create_entity_with_registration(self, name="Disasi", uuid=uuid.uuid4(), deleted=True)
+        ent_deleted = create_entity_with_registration(self, name="Disasi Deleted", uuid=uuid.uuid4(), deleted=True)
         # then set it to same uuid as active entity
         ent_deleted.uuid = DISASI_MAKULO_REGISTRATION
         ent_deleted.save()
@@ -557,10 +557,14 @@ class ProcessMobileBulkUploadTest(TestCase):
 
     def test_duplicate_uuids_0_active_2_deleted(self, mock_download_file):
         # Create two soft-deleted entities Disasi with same uuid.
-        ent1 = create_entity_with_registration(self, name="Disasi", uuid=DISASI_MAKULO_REGISTRATION, deleted=True)
-        ent2 = create_entity_with_registration(self, name="Disasi", uuid=uuid.uuid4(), deleted=True)
+        # Make the 1st one the more "correct" one.
+        ent1 = create_entity_with_registration(self, name="Disasi 1", uuid=DISASI_MAKULO_REGISTRATION, deleted=True)
+        ent2 = create_entity_with_registration(self, name="Disasi 2", uuid=uuid.uuid4(), deleted=True)
         ent2.uuid = DISASI_MAKULO_REGISTRATION
         ent2.save()
+        attrs = ent2.attributes
+        attrs.file = ""
+        attrs.save()
 
         # Only add data for Disasi to avoid confusion
         with zipfile.ZipFile(f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
@@ -579,15 +583,15 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.api_import.refresh_from_db()
         self.assertFalse(self.api_import.has_problem)
 
-        # New instance was added to the first entity
+        # New instance was added to the more correct, second entity
         self.assertEquals(ent1.instances.count(), 2)
         self.assertEquals(ent2.instances.count(), 1)
 
     @mock.patch("iaso.api.instances.logger")
     def test_duplicate_uuids_multiple_active(self, mock_logger, mock_download_file):
         # Create two active Disasi with same uuid
-        ent1 = create_entity_with_registration(self, name="Disasi", uuid=DISASI_MAKULO_REGISTRATION)
-        ent2 = create_entity_with_registration(self, name="Disasi", uuid=uuid.uuid4())
+        ent1 = create_entity_with_registration(self, name="Disasi 1", uuid=DISASI_MAKULO_REGISTRATION)
+        ent2 = create_entity_with_registration(self, name="Disasi 2", uuid=uuid.uuid4())
         ent2.uuid = DISASI_MAKULO_REGISTRATION
         ent2.save()
 

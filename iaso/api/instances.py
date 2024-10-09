@@ -743,14 +743,7 @@ def import_data(instances, user, app_id):
                         f"Multiple non-deleted entities for UUID {entity_uuid}, entity_type_id {entity_type_id}"
                     )
 
-                entity = existing_entities[0]
-                for ent in existing_entities:
-                    if not ent.deleted_at:
-                        entity = ent
-                        if ent.attributes:
-                            entity = ent
-                            if ent.attributes.file and not ent.attributes.file == "":
-                                entity = ent
+                entity = sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
 
             if entity.deleted_at:
                 logger.info(
@@ -809,3 +802,15 @@ def import_data(instances, user, app_id):
                 oucr.new_reference_instances.set(new_reference_instances)
                 oucr.requested_fields = ["new_reference_instances"]
                 oucr.save()
+
+
+def _entity_correctness_score(entity):
+    score = 0
+    if not entity.deleted_at:
+        score += 100
+    if entity.attributes:
+        score += 10
+    if entity.attributes.file and not entity.attributes.file == "":
+        score += 1
+
+    return score

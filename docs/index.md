@@ -37,8 +37,9 @@ The platform has been implemented in Benin, Burkina Faso, Burundi, Cameroon, Cen
 
 ### Technical stack
 
-IASO is made of a white labeled Android application using Java/Kotlin, reusing large parts of the ODK projects, and a web platform programmed using Python/GeoDjango on top of PostGIS. Frontend is mainly React/Leaflet. The API is implemented via Django rest framework, all data is stored in Postgresql or the media/ directory. One of the aims is the ease of integration with other platforms. We already have csv and geopackage imports and exports and target easy integration with OSM.
+IASO is made of a white labeled Android application using Java/Kotlin, reusing large parts of the ODK projects, and a web platform programmed using Python/GeoDjango on top of PostGIS. 
+Frontend is mainly React/Leaflet. 
+The API is implemented via Django rest framework, all data is stored in Postgresql or the media/ directory. One of the aims is the ease of integration with other platforms. We already have csv and geopackage imports and exports and target easy integration with OSM.
 
-The companion mobile app for Android allow submitting forms and creating org unit.
-
-Forms can also be filled in a web interface via the Enketo companion service. Both IASO and Enketo need to be configured to work together. It is possible to run an Enketo service locally.
+The companion mobile app for Android allows form submission and and org unit creation.
+Forms can also be filled in a web interface via the Enketo companion service. 

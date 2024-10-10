@@ -21,6 +21,12 @@ export const teamColumns = (
             width: 80,
         },
         {
+            Header: formatMessage(MESSAGES.project),
+            accessor: 'project_details',
+            id: 'project__name',
+            Cell: settings => settings.row.original.project_details.name
+        },
+        {
             Header: formatMessage(MESSAGES.name),
             accessor: 'name',
             id: 'name',

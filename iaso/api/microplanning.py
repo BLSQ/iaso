@@ -72,6 +72,7 @@ class TeamSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "project",
+            "project_details",
             "name",
             "description",
             "created_at",
@@ -88,6 +89,7 @@ class TeamSerializer(serializers.ModelSerializer):
 
     users_details = NestedUserSerializer(many=True, read_only=True, source="users")
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
+    project_details = NestedProjectSerializer(many=False, read_only=True, source="project")
 
     def validate_parent(self, value: Team):
         if value is not None and value.type not in (None, TeamType.TEAM_OF_TEAMS):
@@ -239,7 +241,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
     permission_classes = [ReadOnlyOrHasPermission(permission.TEAMS)]  # type: ignore
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
-    ordering_fields = ["id", "name", "created_at", "updated_at", "type"]
+    ordering_fields = ["id", "project__name", "name", "created_at", "updated_at", "type"]
     filterset_fields = {
         "id": ["in"],
         "name": ["icontains"],

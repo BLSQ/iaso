@@ -34,7 +34,7 @@ To create the branch:
 - Make sure you are on main. If not run `git checkout main`
 - Run `git checkout -b <Branch name>`. This will create the branch and switch to it
 
-## 3. Create folder and markdown file
+## 3. Create folder and markdown files
 
 By convention, we create a folder with the same name as the markdown file. 
 For example, this document is in:
@@ -44,8 +44,11 @@ For example, this document is in:
     > users
         > how_to
             > create_new_documentation_page
-                - create_new_documentation_page.md
+                - create_new_documentation_page.en.md --> this page
+                - create_new_documentation_page.fr.md --> its french counterpart
 ```
+
+It's important to use the format `<name>.<language>.md`, as it will be used by mkDocs to display the right page for the right language
 
 ## 4. Write the doc
 
@@ -60,7 +63,8 @@ Format the text using [markdown syntax](https://www.markdownguide.org/cheat-shee
         > how_to
             > create_new_documentation_page
                 > attachments
-                - create_new_documentation_page.md
+                - create_new_documentation_page.en.md
+                - create_new_documentation_page.fr.md
 ```
 
 To add the image in the markdown file, either:
@@ -110,4 +114,4 @@ To review a pull request:
     - If not, explain what needs to be corrected and chooses "Request changes"
 - If the PR has been approved, go the "Conversation" tab of the PR, scroll down and click "Merge pull request"
 
-The changes will be visible in production after the next release of iaso.
+The changes will be visible in production once the pull request has been merged

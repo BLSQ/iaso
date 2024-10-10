@@ -4,3 +4,4 @@ markdown-include
 mkdocs-mermaid2-plugin
 mkdocs-awesome-pages-plugin
 mkdocs-material
+mkdocs-static-i18n

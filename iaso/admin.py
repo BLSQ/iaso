@@ -1,26 +1,26 @@
-import requests
 from copy import copy
 from typing import Any, Protocol
 
-from django.http import HttpResponseRedirect
-from django.urls import reverse
+import requests
 from django import forms as django_forms
-from django.contrib.admin import widgets, RelatedOnlyFieldListFilter
+from django.contrib.admin import RelatedOnlyFieldListFilter, widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
-from hat.audit.models import DJANGO_ADMIN
 
+from hat.audit.models import DJANGO_ADMIN
+from iaso.models.json_config import Config  # type: ignore
 from iaso.utils.admin.custom_filters import (
     DuplicateUUIDFilter,
     EntityEmptyAttributesFilter,
     has_relation_filter_factory,
 )
-from iaso.models.json_config import Config  # type: ignore
 
 from .models import (
     Account,
@@ -493,8 +493,11 @@ class TaskAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class SourceVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
-    list_display = ("id", "data_source", "number", "created_at")
-    list_filter = ("data_source",)
+    list_display = ["__str__", "data_source", "number", "created_at", "updated_at"]
+    list_filter = ["data_source", "created_at", "updated_at"]
+    search_fields = ["data_source__name", "number", "description"]
+    autocomplete_fields = ["data_source"]
+    date_hierarchy = "created_at"
 
 
 @admin.register(Entity)
@@ -512,9 +515,9 @@ class EntityAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     readonly_fields = ("created_at",)
@@ -714,9 +717,9 @@ class WorkflowAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     def get_queryset(self, request):
@@ -951,9 +954,18 @@ class DataSourceAdmin(admin.ModelAdmin):
             "widget": forms.CheckboxSelectMultiple,
         }
     }
+    list_display = ["name", "description", "created_at", "updated_at"]
+    list_filter = ["created_at", "updated_at", "public"]
+    search_fields = ["name", "description"]
+    date_hierarchy = "created_at"
 
 
-admin.site.register(Account)
+@admin.register(Account)
+class AccountAdmin(admin.ModelAdmin):
+    search_fields = ["name", "id"]
+    list_display = ["name", "created_at", "updated_at"]
+
+
 admin.site.register(AccountFeatureFlag)
 admin.site.register(Device)
 admin.site.register(DeviceOwnership)

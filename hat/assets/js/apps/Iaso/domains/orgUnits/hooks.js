@@ -1,13 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
+import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api.ts';
 import {
-    useSnackQuery,
     useSnackMutation,
     useSnackQueries,
+    useSnackQuery,
 } from 'Iaso/libs/apiHooks.ts';
-import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api.ts';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { getChipColors, getOtChipColors } from '../../constants/chipColors';
+import { useGetUserHasWriteTypePermission } from '../../utils/usersUtils.ts';
 import MESSAGES from './messages.ts';
-import { getOtChipColors, getChipColors } from '../../constants/chipColors';
 
 export const useOrgUnitDetailData = (
     isNewOrgunit,
@@ -40,6 +41,24 @@ export const useOrgUnitDetailData = (
         staleTime: 1000 * 60 * 15, // in MS
         cacheTime: 1000 * 60 * 5,
     };
+    const getHasWriteByTypePermission = useGetUserHasWriteTypePermission();
+    // Filter org unit types based on user permissions and editable types
+    // Include types the user can edit, plus the current org unit's type
+    const onSelectOrgUnitTypes = useCallback(
+        data => {
+            const orgUnitTypes =
+                data?.orgUnitTypes.map((ot, i) => ({
+                    ...ot,
+                    color: getOtChipColors(i),
+                })) || [];
+            return orgUnitTypes.filter(
+                ot =>
+                    getHasWriteByTypePermission(ot.id) ||
+                    originalOrgUnit?.org_unit_type?.id === ot.id,
+            );
+        },
+        [getHasWriteByTypePermission, originalOrgUnit?.org_unit_type?.id],
+    );
     const [
         { data: groups = [], isFetching: isFetchingGroups },
         { data: orgUnitTypes = [], isFetching: isFetchingOrgUnitTypes },
@@ -66,11 +85,7 @@ export const useOrgUnitDetailData = (
             queryFn: () => getRequest('/api/v2/orgunittypes/'),
             snackErrorMsg: MESSAGES.fetchOrgUnitTypesError,
             options: {
-                select: data =>
-                    data.orgUnitTypes.map((ot, i) => ({
-                        ...ot,
-                        color: getOtChipColors(i),
-                    })),
+                select: onSelectOrgUnitTypes,
                 enabled: tab === 'map' || tab === 'children' || tab === 'infos',
                 ...cacheOptions,
             },

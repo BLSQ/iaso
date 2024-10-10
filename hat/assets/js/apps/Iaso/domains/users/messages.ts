@@ -498,6 +498,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.organization',
         defaultMessage: 'Organization',
     },
+    orgUnitWriteTypes: {
+        id: 'iaso.users.orgUnitWriteTypes',
+        defaultMessage: 'Org unit write types',
+    },
+    orgUnitWriteTypesInfos: {
+        id: 'iaso.users.orgUnitWriteTypesInfos',
+        defaultMessage: 'Select the org unit types the user can edit',
+    },
+    selectAllHelperText: {
+        id: 'iaso.users.selectAllHelperText',
+        defaultMessage: 'Leave empty to select all',
+    },
 });
 
 export default MESSAGES;

@@ -4,6 +4,7 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
 import { DropdownOptions } from '../../../../types/utils';
+import { useGetUserHasWriteTypePermission } from '../../../../utils/usersUtils';
 import { OrgunitTypesApi } from '../../types/orgunitTypes';
 
 const getOrgunitTypes = (projectId?: number): Promise<OrgunitTypesApi> => {
@@ -16,8 +17,10 @@ const getOrgunitTypes = (projectId?: number): Promise<OrgunitTypesApi> => {
 
 export const useGetOrgUnitTypesDropdownOptions = (
     projectId?: number,
+    onlyWriteAccess = false,
 ): UseQueryResult<DropdownOptions<string>[], Error> => {
     const queryKey: any[] = ['orgunittypes-dropdown', projectId];
+    const getHasWriteByTypePermission = useGetUserHasWriteTypePermission();
     return useSnackQuery(
         queryKey,
         () => getOrgunitTypes(projectId),
@@ -28,7 +31,13 @@ export const useGetOrgUnitTypesDropdownOptions = (
             cacheTime: 1000 * 60 * 5,
             select: data => {
                 if (!data) return [];
-                return data.orgUnitTypes
+                let { orgUnitTypes } = data;
+                if (onlyWriteAccess) {
+                    orgUnitTypes = orgUnitTypes.filter(orgunitType =>
+                        getHasWriteByTypePermission(orgunitType.id),
+                    );
+                }
+                return orgUnitTypes
                     .sort((orgunitType1, orgunitType2) => {
                         const depth1 = orgunitType1.depth ?? 0;
                         const depth2 = orgunitType2.depth ?? 0;
@@ -38,6 +47,7 @@ export const useGetOrgUnitTypesDropdownOptions = (
                         return {
                             value: orgunitType.id.toString(),
                             label: orgunitType.name,
+                            original: orgunitType,
                         };
                     });
             },

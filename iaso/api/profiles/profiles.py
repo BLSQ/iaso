@@ -1,12 +1,12 @@
 from typing import Any, List, Optional, Union
+
 from django.conf import settings
 from django.contrib.auth import models, update_session_auth_hash
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import BadRequest, ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.core.exceptions import BadRequest
 from django.db.models import Q, QuerySet
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -15,19 +15,20 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
-from hat.audit.models import PROFILE_API
-from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.utils import is_mobile_request
 from phonenumber_field.phonenumber import PhoneNumber
 from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
+from hat.audit.models import PROFILE_API
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
-from iaso.models import OrgUnit, Profile, Project, UserRole
+from iaso.api.profiles.audit import ProfileAuditLogger
+from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.models import OrgUnit, OrgUnitType, Profile, Project, UserRole
+from iaso.utils import is_mobile_request
 from iaso.utils.module_permissions import account_module_permissions
 
 PK_ME = "me"
@@ -355,7 +356,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         if pk == PK_ME:
             try:
                 profile = request.user.iaso_profile
-                return Response(profile.as_dict())
+                profile_dict = profile.as_dict()
+                return Response(profile_dict)
             except ObjectDoesNotExist:
                 return Response(
                     {
@@ -392,6 +394,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             org_units = self.validate_org_units(request, profile)
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, profile)
+            editable_org_unit_types = self.validate_editable_org_unit_types(request)
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
@@ -407,6 +410,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles=user_roles_data["user_roles"],
             user_roles_groups=user_roles_data["groups"],
             projects=projects,
+            editable_org_unit_types=editable_org_unit_types,
         )
 
         audit_logger.log_modification(
@@ -495,6 +499,15 @@ class ProfilesViewSet(viewsets.ViewSet):
             result.append(item)
         return result
 
+    def validate_editable_org_unit_types(self, request):
+        result = []
+        editable_org_unit_type_ids = request.data.get("editable_org_unit_type_ids", None)
+        if editable_org_unit_type_ids:
+            for editable_org_unit_type_id in editable_org_unit_type_ids:
+                item = get_object_or_404(OrgUnitType, pk=editable_org_unit_type_id)
+                result.append(item)
+        return result
+
     @staticmethod
     def update_user_own_profile(request):
         audit_logger = ProfileAuditLogger()
@@ -513,7 +526,16 @@ class ProfilesViewSet(viewsets.ViewSet):
         return Response(profile.as_dict())
 
     def update_user_profile(
-        self, request, profile, user, user_roles, user_roles_groups, projects, org_units, user_permissions
+        self,
+        request,
+        profile,
+        user,
+        user_roles,
+        user_roles_groups,
+        projects,
+        org_units,
+        user_permissions,
+        editable_org_unit_types,
     ):
         username = request.data.get("user_name")
         user.first_name = request.data.get("first_name", "")
@@ -541,6 +563,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.user_roles.set(user_roles)
         profile.projects.set(projects)
         profile.org_units.set(org_units)
+        profile.editable_org_unit_types.set(editable_org_unit_types)
         profile.save()
         return profile
 

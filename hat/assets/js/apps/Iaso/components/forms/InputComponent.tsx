@@ -103,6 +103,7 @@ export type InputComponentProps = {
     freeSolo?: boolean; // this props i only use on single select and allow user to give an option not present in the list. Errors will be ignored
     returnFullObject?: boolean;
     dataTestId?: string;
+    placeholder?: string;
 };
 
 const useLocalizedNumberInputOptions = (
@@ -158,6 +159,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
     freeSolo = false,
     returnFullObject = false,
     dataTestId,
+    placeholder,
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
@@ -253,6 +255,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         freeSolo={!multi && freeSolo}
                         returnFullObject={returnFullObject}
                         dataTestId={dataTestId}
+                        placeholder={placeholder}
                     />
                 );
             case 'arrayInput':

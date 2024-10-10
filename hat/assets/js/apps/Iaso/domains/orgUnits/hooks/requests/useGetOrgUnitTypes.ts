@@ -5,8 +5,8 @@ import { useSnackQuery } from '../../../../libs/apiHooks';
 
 import { DropdownOptions } from '../../../../types/utils';
 
-import { OrgunitTypesApi } from '../../types/orgunitTypes';
 import { staleTime } from '../../config';
+import { OrgunitTypesApi } from '../../types/orgunitTypes';
 
 const getOrgUnitTypes = (project?: number): Promise<OrgunitTypesApi> => {
     if (project == null) {

@@ -182,6 +182,7 @@ venv
 /lib/**/*
 pyvenv.cfg
 originals
+/site/**/*/
 
 *.code-workspace
 /setuper/credentials.py

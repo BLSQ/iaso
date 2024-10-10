@@ -366,6 +366,8 @@ class InstanceFileAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ("name", "app_id", "account", "needs_authentication", "feature_flags_list")
+    autocomplete_fields = ["account"]
+    search_fields = ["name"]
 
     @admin.display(description="Feature flags")
     @admin_attr_decorator
@@ -390,6 +392,7 @@ class LinkAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class MappingAdmin(admin.GeoModelAdmin):
     list_filter = ("form_id",)
+    autocomplete_fields = ["data_source"]
 
 
 @admin.register(MappingVersion)
@@ -425,6 +428,7 @@ class ProfileAdmin(admin.GeoModelAdmin):
     list_select_related = ("user", "account")
     list_filter = ("account",)
     list_display = ("id", "user", "account", "language")
+    autocomplete_fields = ["account"]
 
 
 @admin.register(ExportRequest)
@@ -754,6 +758,7 @@ class AlgorithmRunAdmin(admin.ModelAdmin):
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ["account"]
 
 
 @admin.register(EntityDuplicate)
@@ -964,6 +969,22 @@ class DataSourceAdmin(admin.ModelAdmin):
 class AccountAdmin(admin.ModelAdmin):
     search_fields = ["name", "id"]
     list_display = ["name", "created_at", "updated_at"]
+    autocomplete_fields = ["default_version"]
+
+
+@admin.register(UserRole)
+class UserRoleAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["account"]
+
+
+@admin.register(OrgUnitChangeRequestConfiguration)
+class OrgUnitChangeRequestConfigurationAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["project"]
+
+
+@admin.register(GroupSet)
+class GroupSetAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["source_version"]
 
 
 admin.site.register(AccountFeatureFlag)
@@ -971,10 +992,7 @@ admin.site.register(Device)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(ExternalCredentials)
-admin.site.register(GroupSet)
 admin.site.register(DevicePosition)
 admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
-admin.site.register(UserRole)
-admin.site.register(OrgUnitChangeRequestConfiguration)

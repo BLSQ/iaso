@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point
+from org_unit_pictures import associate_favorite_picture
 import random
 
 
@@ -124,3 +125,5 @@ def create_submission_with_picture(account_name, iaso_client):
                     "reference_instance_action": "flag",
                 }
                 iaso_client.patch(f"/api/orgunits/{org_unit_id}/", json=org_unit_reference_submission)
+
+    associate_favorite_picture(iaso_client)

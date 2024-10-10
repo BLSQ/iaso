@@ -1,26 +1,26 @@
-import requests
 from copy import copy
 from typing import Any, Protocol
 
-from django.http import HttpResponseRedirect
-from django.urls import reverse
+import requests
 from django import forms as django_forms
-from django.contrib.admin import widgets, RelatedOnlyFieldListFilter
+from django.contrib.admin import RelatedOnlyFieldListFilter, widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
-from hat.audit.models import DJANGO_ADMIN
 
+from hat.audit.models import DJANGO_ADMIN
+from iaso.models.json_config import Config  # type: ignore
 from iaso.utils.admin.custom_filters import (
     DuplicateUUIDFilter,
     EntityEmptyAttributesFilter,
     has_relation_filter_factory,
 )
-from iaso.models.json_config import Config  # type: ignore
 
 from .models import (
     Account,

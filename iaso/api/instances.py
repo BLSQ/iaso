@@ -805,6 +805,11 @@ def import_data(instances, user, app_id):
 
 
 def _entity_correctness_score(entity):
+    """
+    A small function that allows sorting entities to pick the right one for
+    incoming data in case of duplicates. A deleted one is always less than an active
+    one, etc.
+    """
     score = 0
     if not entity.deleted_at:
         score += 100

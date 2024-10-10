@@ -1467,7 +1467,7 @@ class Profile(models.Model):
                 "phone_number": self.phone_number.as_e164 if self.phone_number else None,
                 "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
                 "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
-                "editable_org_unit_type_ids": list(self.editable_org_unit_types.values_list("id", flat=True)),
+                "editable_org_unit_type_ids": [out.pk for out in self.editable_org_unit_types.all()],
             }
         else:
             return {
@@ -1490,7 +1490,7 @@ class Profile(models.Model):
                 "phone_number": self.phone_number.as_e164 if self.phone_number else None,
                 "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
                 "projects": [p.as_dict() for p in self.projects.all()],
-                "editable_org_unit_type_ids": list(self.editable_org_unit_types.values_list("id", flat=True)),
+                "editable_org_unit_type_ids": [out.pk for out in self.editable_org_unit_types.all()],
             }
 
     def as_short_dict(self):
@@ -1504,7 +1504,7 @@ class Profile(models.Model):
             "user_id": self.user.id,
             "phone_number": self.phone_number.as_e164 if self.phone_number else None,
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
-            "editable_org_unit_type_ids": list(self.editable_org_unit_types.values_list("id", flat=True)),
+            "editable_org_unit_type_ids": [out.pk for out in self.editable_org_unit_types.all()],
         }
 
     def has_a_team(self):
@@ -1512,6 +1512,12 @@ class Profile(models.Model):
         if team:
             return True
         return False
+
+    def has_org_unit_write_permission(self, org_unit_type_id: int) -> bool:
+        editable_org_unit_type_ids = self.editable_org_unit_types.values_list("id", flat=True)
+        if not editable_org_unit_type_ids:
+            return True
+        return org_unit_type_id in editable_org_unit_type_ids
 
 
 class ExportRequest(models.Model):

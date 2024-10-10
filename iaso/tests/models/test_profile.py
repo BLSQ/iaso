@@ -18,3 +18,20 @@ class ProfileModelTestCase(TestCase):
     def test_user_has_team(self):
         self.assertTrue(self.profile1.has_a_team())
         self.assertFalse(self.profile2.has_a_team())
+
+    def test_has_org_unit_write_permission(self):
+        org_unit_type_country = m.OrgUnitType.objects.create(name="Country")
+        org_unit_type_region = m.OrgUnitType.objects.create(name="Region")
+
+        with self.assertNumQueries(1):
+            self.assertTrue(self.profile1.has_org_unit_write_permission(org_unit_type_country.pk))
+
+        self.profile1.editable_org_unit_types.set([org_unit_type_country])
+        with self.assertNumQueries(1):
+            self.assertFalse(self.profile1.has_org_unit_write_permission(org_unit_type_region.pk))
+        self.profile1.editable_org_unit_types.clear()
+
+        self.profile1.editable_org_unit_types.set([org_unit_type_region])
+        with self.assertNumQueries(1):
+            self.assertTrue(self.profile1.has_org_unit_write_permission(org_unit_type_region.pk))
+        self.profile1.editable_org_unit_types.clear()

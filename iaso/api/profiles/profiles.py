@@ -220,7 +220,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
-        return Profile.objects.filter(account=account)
+        return Profile.objects.filter(account=account).prefetch_related("editable_org_unit_types")
 
     def list(self, request):
         limit = request.GET.get("limit", None)
@@ -275,6 +275,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             "org_units__parent__org_unit_type",
             "org_units__parent__parent__org_unit_type",
             "projects",
+            "editable_org_unit_types",
         )
         if request.GET.get("csv"):
             return self.list_export(queryset=queryset, file_format=FileFormatEnum.CSV)

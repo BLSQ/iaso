@@ -1,7 +1,7 @@
-# Configuration for black, which automatically reformat python code.
-# see README for more info
 [tool.black]
 line-length = 120
+include = '\.pyi?$'
+target-version = ['py39']
 exclude = '''
 /(
     \.git
@@ -9,14 +9,24 @@ exclude = '''
   | venv
   | node_modules
   | src/django-webpack-loader
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
 )/
 '''
 
-
 [project]
-name= "Iaso"
+name = "Iaso"
 readme = "README.md"
 requires-python = "~=3.9"
+dependencies = [
+    "black==23.12.1"
+]
 
 [project.urls]
 Repository = "https://github.com/BLSQ/"

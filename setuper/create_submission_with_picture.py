@@ -25,7 +25,12 @@ def define_health_facility_reference_form(iaso_client):
         f"/api/v2/orgunittypes/{health_facility_type['id']}/", json=health_facility_type
     )
     form_ids = [form["id"] for form in update_reference_forms.get("reference_forms")]
-    org_unit_type_reference_forms = {"org_unit_type_id": health_facility_type["id"], "form_ids": form_ids}
+    org_unit_type_reference_forms = {
+        "org_unit_type_id": health_facility_type["id"],
+        "form_ids": form_ids,
+        "number_of_org_units": health_facility_type["units_count"],
+    }
+
     return org_unit_type_reference_forms
 
 
@@ -33,7 +38,7 @@ def create_submission_with_picture(account_name, iaso_client):
     print("-- Creating submissions with picture")
     form = define_health_facility_reference_form(iaso_client=iaso_client)
     # fetch orgunit ids
-    limit = 10
+    limit = form["number_of_org_units"]
     orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": form["org_unit_type_id"]})[
         "orgunits"
     ]

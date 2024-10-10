@@ -16,26 +16,67 @@ from django_json_widget.widgets import JSONEditorWidget
 
 from hat.audit.models import DJANGO_ADMIN
 from iaso.models.json_config import Config  # type: ignore
-from iaso.utils.admin.custom_filters import (DuplicateUUIDFilter,
-                                             EntityEmptyAttributesFilter,
-                                             has_relation_filter_factory)
+from iaso.utils.admin.custom_filters import (
+    DuplicateUUIDFilter,
+    EntityEmptyAttributesFilter,
+    has_relation_filter_factory,
+)
 
-from .models import (Account, AccountFeatureFlag, AlgorithmRun,
-                     BulkCreateUserCsvFile, DataSource, Device,
-                     DeviceOwnership, DevicePosition, Entity, EntityDuplicate,
-                     EntityDuplicateAnalyzis, EntityType, ExportLog,
-                     ExportRequest, ExportStatus, ExternalCredentials,
-                     FeatureFlag, Form, FormAttachment, FormPredefinedFilter,
-                     FormVersion, Group, GroupSet, Instance, InstanceFile,
-                     InstanceLock, Link, Mapping, MappingVersion,
-                     MatchingAlgorithm, OrgUnit, OrgUnitChangeRequest,
-                     OrgUnitChangeRequestConfiguration,
-                     OrgUnitReferenceInstance, OrgUnitType, Page, Payment,
-                     PaymentLot, PotentialPayment, Profile, Project, Report,
-                     ReportVersion, SourceVersion, StorageDevice,
-                     StorageLogEntry, StoragePassword, Task, UserRole,
-                     Workflow, WorkflowChange, WorkflowFollowup,
-                     WorkflowVersion)
+from .models import (
+    Account,
+    AccountFeatureFlag,
+    AlgorithmRun,
+    BulkCreateUserCsvFile,
+    DataSource,
+    Device,
+    DeviceOwnership,
+    DevicePosition,
+    Entity,
+    EntityDuplicate,
+    EntityDuplicateAnalyzis,
+    EntityType,
+    ExportLog,
+    ExportRequest,
+    ExportStatus,
+    ExternalCredentials,
+    FeatureFlag,
+    Form,
+    FormAttachment,
+    FormPredefinedFilter,
+    FormVersion,
+    Group,
+    GroupSet,
+    Instance,
+    InstanceFile,
+    InstanceLock,
+    Link,
+    Mapping,
+    MappingVersion,
+    MatchingAlgorithm,
+    OrgUnit,
+    OrgUnitChangeRequest,
+    OrgUnitChangeRequestConfiguration,
+    OrgUnitReferenceInstance,
+    OrgUnitType,
+    Page,
+    Payment,
+    PaymentLot,
+    PotentialPayment,
+    Profile,
+    Project,
+    Report,
+    ReportVersion,
+    SourceVersion,
+    StorageDevice,
+    StorageLogEntry,
+    StoragePassword,
+    Task,
+    UserRole,
+    Workflow,
+    WorkflowChange,
+    WorkflowFollowup,
+    WorkflowVersion,
+)
 from .models.data_store import JsonDataStore
 from .models.microplanning import Assignment, Planning, Team
 from .utils.gis import convert_2d_point_to_3d
@@ -478,9 +519,9 @@ class EntityAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields["entity_type"].label_from_instance = (
-            lambda entity: f"{entity.name} (Account: {entity.account.name})"
-        )
+        form.base_fields[
+            "entity_type"
+        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
         return form
 
     readonly_fields = ("created_at",)
@@ -680,9 +721,9 @@ class WorkflowAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields["entity_type"].label_from_instance = (
-            lambda entity: f"{entity.name} (Account: {entity.account.name})"
-        )
+        form.base_fields[
+            "entity_type"
+        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
         return form
 
     def get_queryset(self, request):

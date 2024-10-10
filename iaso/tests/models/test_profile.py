@@ -27,11 +27,11 @@ class ProfileModelTestCase(TestCase):
             self.assertTrue(self.profile1.has_org_unit_write_permission(org_unit_type_country.pk))
 
         self.profile1.editable_org_unit_types.set([org_unit_type_country])
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             self.assertFalse(self.profile1.has_org_unit_write_permission(org_unit_type_region.pk))
         self.profile1.editable_org_unit_types.clear()
 
         self.profile1.editable_org_unit_types.set([org_unit_type_region])
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             self.assertTrue(self.profile1.has_org_unit_write_permission(org_unit_type_region.pk))
         self.profile1.editable_org_unit_types.clear()

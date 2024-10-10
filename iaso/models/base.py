@@ -1514,9 +1514,10 @@ class Profile(models.Model):
         return False
 
     def has_org_unit_write_permission(self, org_unit_type_id: int) -> bool:
-        if not self.editable_org_unit_types.exists():
+        editable_org_unit_type_ids = self.editable_org_unit_types.values_list("id", flat=True)
+        if not editable_org_unit_type_ids:
             return True
-        return self.editable_org_unit_types.filter(id=org_unit_type_id).exists()
+        return org_unit_type_id in editable_org_unit_type_ids
 
 
 class ExportRequest(models.Model):

@@ -1513,6 +1513,11 @@ class Profile(models.Model):
             return True
         return False
 
+    def has_org_unit_write_permission(self, org_unit_type_id: int) -> bool:
+        if not self.editable_org_unit_types.exists():
+            return True
+        return self.editable_org_unit_types.filter(id=org_unit_type_id).exists()
+
 
 class ExportRequest(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")

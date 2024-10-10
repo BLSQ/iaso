@@ -1424,6 +1424,8 @@ class Profile(models.Model):
     user_roles = models.ManyToManyField("UserRole", related_name="iaso_profile", blank=True)
     projects = models.ManyToManyField("Project", related_name="iaso_profile", blank=True)
     phone_number = PhoneNumberField(blank=True)
+    # Each user can have restricted write access to OrgUnits, based on their type; by default no OUT = access to everything
+    editable_org_unit_types = models.ManyToManyField("OrgUnitType", related_name="iaso_profile", blank=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
@@ -1505,6 +1507,18 @@ class Profile(models.Model):
         if team:
             return True
         return False
+
+    def fetch_all_editable_org_unit_types(self):
+        """
+        Fetches all editable OrgUnitTypes that are linked to this Profile, directly and through any UserRole
+        """
+        types_set = set()
+        for role in self.user_roles.all():
+            for org_unit_type in role.editable_org_unit_types.all():
+                types_set.add(org_unit_type)
+        for org_unit_type in self.editable_org_unit_types.all():
+            types_set.add(org_unit_type)
+        return list(types_set)
 
 
 class ExportRequest(models.Model):
@@ -1662,6 +1676,8 @@ class UserRole(models.Model):
     group = models.OneToOneField(auth.models.Group, on_delete=models.CASCADE, related_name="iaso_user_role")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # a UserRole can restrict write access to some OrgUnits, based on their type; by default no OUT = access to everything
+    editable_org_unit_types = models.ManyToManyField("OrgUnitType", related_name="user_roles", blank=True)
 
     def __str__(self) -> str:
         return self.group.name

@@ -4,6 +4,7 @@ theme:
   highlightjs: true
   logo: ./assets/iaso.png
   favicon: ./assets/iaso-favicon.png
+  custom_dir: ./docs/overrides # here we need to specify /docs in the path. That's just how it is
   palette:
     primary: 'custom'
     secondary: 'custom'
@@ -86,6 +87,9 @@ repo_url: https://github.com/BLSQ/iaso
 edit_uri: edit/main/docs # for the edit on github button
 extra_css: 
   - ./stylesheets/extra.css
+extra_javascript:
+  - ./extrajs/html2pdf.bundle.min.js
+  - ./extrajs/pdfDownload.js
 use_directory_urls: false # IMPORTANT: without this the paths to pictures will break on build
 nav: # nav configures the side bar menu
   - Home: index.md

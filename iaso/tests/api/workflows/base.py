@@ -113,6 +113,14 @@ class BaseWorkflowsAPITestCase(APITestCase):
             account=blue_adults,
             reference_form=cls.form_adults_blue,
         )
+        # This is added to check if the error on get returning more than one entitytype accure again(WC2-500)
+        differen_account = m.Account.objects.create(name="Different Account")
+        cls.et_adults_blue_2_same_name_different_account = m.EntityType.objects.create(
+            name="Adults of Blue 2",
+            created_at=cls.now,
+            account=differen_account,
+            reference_form=cls.form_adults_blue,
+        )
 
         cls.workflow_et_adults_blue = Workflow.objects.create(entity_type=cls.et_adults_blue)
 

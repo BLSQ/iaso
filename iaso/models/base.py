@@ -1508,8 +1508,12 @@ class Profile(models.Model):
             return True
         return False
 
-    def has_org_unit_write_permission(self, org_unit_type_id: int) -> bool:
-        editable_org_unit_type_ids = self.editable_org_unit_types.values_list("id", flat=True)
+    def has_org_unit_write_permission(
+        self, org_unit_type_id: int, prefetched_editable_org_unit_type_ids: list = None
+    ) -> bool:
+        editable_org_unit_type_ids = prefetched_editable_org_unit_type_ids or list(
+            self.editable_org_unit_types.values_list("id", flat=True)
+        )
         if not editable_org_unit_type_ids:
             return True
         return org_unit_type_id in editable_org_unit_type_ids

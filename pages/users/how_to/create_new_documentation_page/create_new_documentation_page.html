@@ -11,7 +11,7 @@
       
       
       <link rel="icon" href="../../../../assets/iaso-favicon.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.1">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.1">
     
     
       
@@ -108,6 +108,32 @@
       </div>
     </div>
     
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Select language">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="create_new_documentation_page.html" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../../../../fr/pages/users/how_to/create_new_documentation_page/create_new_documentation_page.html" hreflang="fr" class="md-select__link">
+                    Français
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
     
     
       <label class="md-header__button md-icon" for="__search">
@@ -675,8 +701,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-create-folder-and-markdown-file" class="md-nav__link">
-    3. Create folder and markdown file
+  <a href="#3-create-folder-and-markdown-files" class="md-nav__link">
+    3. Create folder and markdown files
   </a>
   
 </li>
@@ -737,7 +763,7 @@
                   
 
   
-    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/users/how_to/create_new_documentation_page/create_new_documentation_page.md" title="Edit this page" class="md-content__button md-icon">
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/users/how_to/create_new_documentation_page/create_new_documentation_page.en.md" title="Edit this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
     </a>
@@ -769,15 +795,17 @@ For example, the development branch for this document is called <code>IA-2630_ho
 - Open a terminal
 - Make sure you are on main. If not run <code>git checkout main</code>
 - Run <code>git checkout -b &lt;Branch name&gt;</code>. This will create the branch and switch to it</p>
-<h2 id="3-create-folder-and-markdown-file">3. Create folder and markdown file<a class="headerlink" href="#3-create-folder-and-markdown-file" title="Permanent link">#</a></h2>
+<h2 id="3-create-folder-and-markdown-files">3. Create folder and markdown files<a class="headerlink" href="#3-create-folder-and-markdown-files" title="Permanent link">#</a></h2>
 <p>By convention, we create a folder with the same name as the markdown file. 
 For example, this document is in:</p>
 <pre><code>&gt; pages
     &gt; users
         &gt; how_to
             &gt; create_new_documentation_page
-                - create_new_documentation_page.md
+                - create_new_documentation_page.en.md --&gt; this page
+                - create_new_documentation_page.fr.md --&gt; its french counterpart
 </code></pre>
+<p>It's important to use the format <code>&lt;name&gt;.&lt;language&gt;.md</code>, as it will be used by mkDocs to display the right page for the right language</p>
 <h2 id="4-write-the-doc">4. Write the doc<a class="headerlink" href="#4-write-the-doc" title="Permanent link">#</a></h2>
 <p>Format the text using <a href="https://www.markdownguide.org/cheat-sheet/">markdown syntax</a></p>
 <h3 id="41-add-images">4.1. Add images<a class="headerlink" href="#41-add-images" title="Permanent link">#</a></h3>
@@ -789,7 +817,8 @@ For example, this document is in:</p>
         &gt; how_to
             &gt; create_new_documentation_page
                 &gt; attachments
-                - create_new_documentation_page.md
+                - create_new_documentation_page.en.md
+                - create_new_documentation_page.fr.md
 </code></pre>
 <p>To add the image in the markdown file, either:
 - use markdown syntax to add the link <code>![my_image](./attachments/my_image.png)</code>
@@ -824,7 +853,7 @@ There are tools to make this part faster and easier to manage (<a href="https://
     - If the changes can be deployed as they are, choose "Approve"
     - If not, explain what needs to be corrected and chooses "Request changes"
 - If the PR has been approved, go the "Conversation" tab of the PR, scroll down and click "Merge pull request"</p>
-<p>The changes will be visible in production after the next release of iaso.</p>
+<p>The changes will be visible in production once the pull request has been merged</p>
 
 
 

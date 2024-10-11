@@ -1,5 +1,3 @@
-import datetime
-import mimetypes
 import operator
 import random
 import re
@@ -15,7 +13,6 @@ import django_cte
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
 from django.contrib import auth
-from django.contrib.auth import models as authModels
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
@@ -33,7 +30,6 @@ from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers.phonenumberutil import region_code_for_number
 
-from hat.audit.models import INSTANCE_API, log_modification
 from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
@@ -43,7 +39,6 @@ from iaso.utils.file_utils import get_file_type
 from .. import periods
 from ..utils.emoji import fix_emoji
 from ..utils.jsonlogic import jsonlogic_to_q
-from ..utils.models.common import get_creator_name
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .project import Project

@@ -36,7 +36,7 @@ export const SubmissionsForEntity: FunctionComponent<Props> = ({
                             )}
 
                             <ExpandableItem
-                                // This warning message on label should be fixed in bluesquare-component
+                                // This warning message on label should be fixed in bluesquare-components
                                 label={<ExpandableLabel instance={instance} />}
                                 titleColor="primary"
                                 titleVariant="h5"

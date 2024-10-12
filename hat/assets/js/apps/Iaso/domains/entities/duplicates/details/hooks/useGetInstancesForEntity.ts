@@ -18,7 +18,7 @@ export const useGetInstancesForEntity = ({
         entityId?: string;
         with_descriptor?: 'true' | 'false';
     } = {
-        order: '-created_at',
+        order: 'source_created_at',
         with_descriptor: 'true',
     };
     if (entityId) {

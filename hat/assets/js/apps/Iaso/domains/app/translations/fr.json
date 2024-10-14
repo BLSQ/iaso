@@ -911,7 +911,7 @@
     "iaso.oucrc.oucrcCreateModalTitle": "Configuration de demande de changement d'unité d'organisation - Création",
     "iaso.oucrc.oucrcCreateModalTitle2": "Configuration de demande de changement d'unité d'organisation - Deuxième étape de création",
     "iaso.oucrc.oucrcCreateUpdateModalTitle": "Configuration de demande de changement d'unité d'organisation - Mise à jour",
-    "iaso.oucrc.possibleParentTypeIds": "Types de parents possibles",
+    "iaso.oucrc.possibleParentTypeIds": "Parent",
     "iaso.oucrc.possibleTypeIds": "Nouveaux types possibles",
     "iaso.page.deleteError": "Erreur lors de la suppression du lien intégré",
     "iaso.page.deleteSuccess": "Lien intégré supprimée",

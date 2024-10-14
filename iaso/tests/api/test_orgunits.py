@@ -607,7 +607,7 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.set_up_org_unit_creation()
         self.assertJSONResponse(response, 403)
 
-    def test_create_org_unit_without_write_permission(self):
+    def test_create_org_unit_with_restricted_write_permission_for_user(self):
         """
         Check that we cannot create an org unit if writing rights are limited
         by a set of org unit types that we are allowed to modify.
@@ -1015,7 +1015,7 @@ class OrgUnitAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 403)
 
-    def test_edit_org_unit_without_write_permission(self):
+    def test_edit_org_unit_with_restricted_write_permission_for_user(self):
         """
         Check that we cannot edit an org unit if writing rights are limited
         by a set of org unit types that we are allowed to modify.

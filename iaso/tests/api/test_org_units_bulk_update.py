@@ -247,7 +247,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(5, am.Modification.objects.count())
 
     @tag("iaso_only")
-    def test_org_unit_bulkupdate_select_all_without_write_permission(self):
+    def test_org_unit_bulkupdate_select_all_with_restricted_write_permission_for_user(self):
         """
         Check that we cannot bulk edit all org units if writing rights are limited
         by a set of org unit types that we are allowed to modify.

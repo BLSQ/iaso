@@ -22,14 +22,14 @@ const mockPage = () => {
     }).as('getDetailsDuplicate');
     cy.intercept(
         'GET',
-        '/api/instances/?order=-created_at&with_descriptor=true&entityId=163',
+        '/api/instances/?order=source_created_at&with_descriptor=true&entityId=163',
         {
             fixture: 'duplicates/instances-a.json',
         },
     ).as('getDetailsInstanceA');
     cy.intercept(
         'GET',
-        '/api/instances/?order=-created_at&with_descriptor=true&entityId=883',
+        '/api/instances/?order=source_created_at&with_descriptor=true&entityId=883',
         {
             fixture: 'duplicates/instances-b.json',
         },

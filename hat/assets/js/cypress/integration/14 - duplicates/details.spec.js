@@ -3,6 +3,8 @@
 import { find } from 'lodash';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import duplicatesInfos from '../../fixtures/duplicates/list-details.json';
+import instancesAInfos from '../../fixtures/duplicates/instances-a.json';
+import instancesBInfos from '../../fixtures/duplicates/instances-b.json';
 
 let interceptFlag = false;
 const siteBaseUrl = Cypress.env('siteBaseUrl');
@@ -153,12 +155,15 @@ describe('Duplicate details', () => {
             testCellIsEmpty(3, 3);
 
             // SUBMISSIONS
+            console.log(
+                cy.get('[data-test="duplicate-submissions-a"]').find('h5'),
+            );
             cy.get('[data-test="duplicate-submissions-a"]')
                 .find('h5')
-                .should('contain', 'Submission - 883');
+                .should('contain', instancesAInfos.instances[0].form_name);
             cy.get('[data-test="duplicate-submissions-b"]')
                 .find('h5')
-                .should('contain', 'Submission - 163');
+                .should('contain', instancesBInfos.instances[0].form_name);
 
             cy.get('[data-test="duplicate-submissions-a"]')
                 .find('.MuiButtonBase-root')

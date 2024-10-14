@@ -66,6 +66,8 @@ const queryParamsMap = new Map([
     ['sourceVersionId', 'version'],
     ['blockOfCountries', 'blockOfCountries'],
     ['appId', 'app_id'],
+    ['projectIds', 'projectIds'],
+    ['defaultVersion', 'defaultVersion'],
 ]);
 
 type Params = {
@@ -74,6 +76,7 @@ type Params = {
     blockOfCountries?: string;
     appId?: string;
     defaultVersion?: string;
+    projectIds?: string;
 };
 export const useGetGroupDropdown = (
     params: Params,

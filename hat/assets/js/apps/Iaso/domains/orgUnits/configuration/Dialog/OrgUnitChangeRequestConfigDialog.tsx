@@ -84,13 +84,14 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
         config.project.id,
     );
     const { data: groupOptions } = useGetGroupDropdown({
-        defaultVersion: 'true',
+        projectIds: `${config.project.id}`,
     });
     const { data: formOptions } = useGetFormDropdownOptions(
         config.orgUnitType.id,
-        config.project.id,
     );
-    const { data: groupSetOptions } = useGetGroupSetsDropdown();
+    const { data: groupSetOptions } = useGetGroupSetsDropdown({
+        project_ids: `${config.project.id}`,
+    });
     const { mutateAsync: saveConfig } =
         useSaveOrgUnitChangeRequestConfiguration();
     const orgUnitsEditableOptions = useOrgUnitsEditableOptions();

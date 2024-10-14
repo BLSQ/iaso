@@ -1,11 +1,11 @@
 import django_filters
 from dateutil.relativedelta import relativedelta
-
+from django.db import models
 from django.db.models import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.db import models
-from iaso.models import OrgUnit, SourceVersion, GroupSet
+
+from iaso.models import GroupSet, OrgUnit, SourceVersion
 
 
 def source_versions(request) -> QuerySet[OrgUnit]:

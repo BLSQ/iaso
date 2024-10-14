@@ -10,7 +10,6 @@ document$.subscribe( function () {
     const currentLanguage = document.documentElement.lang || "en"
   
     downloadButton.addEventListener("click", function () {
-        console.log(document.documentElement.lang)
         const element = document.querySelector('.md-content');
         const options = {
         margin:       1,

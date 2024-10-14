@@ -63,7 +63,7 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
             .prefetch_related(
                 "possible_types", "possible_parent_types", "group_sets", "editable_reference_forms", "other_groups"
             )
-            .order_by("org_unit_type_id")
+            .order_by("id")
         )
 
         user_editable_org_unit_type_ids = set(
@@ -82,6 +82,8 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
             for org_unit_type_id in non_editable_org_unit_type_ids
         ]
 
+        # A queryset is a representation of a database query, so it's difficult to add unsaved objects manually.
+        # This trick will return a list but some features like `order_by` will not work for unsaved objects.
         return list(
             chain(
                 org_unit_change_request_configurations.exclude(org_unit_type__in=non_editable_org_unit_type_ids),

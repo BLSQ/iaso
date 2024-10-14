@@ -60,74 +60,104 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertEqual(new_org_unit_type_3_config, None)
 
         self.assertEqual(5, len(results))  # 3 OUCRCs from setup + 2 dynamic OUCRCs.
+
+        ou_type_fire_pokemons_config = next(
+            (config for config in results if config["org_unit_type_id"] == self.ou_type_fire_pokemons.pk)
+        )
         self.assertEqual(
-            json.loads(json.dumps(response.data["results"])),
-            [
-                {
-                    "created_at": self.oucrc_type_fire.created_at.timestamp(),
-                    "editable_fields": ["name", "aliases", "location", "opening_date", "closing_date"],
-                    "editable_reference_form_ids": list(
-                        self.oucrc_type_fire.editable_reference_forms.values_list("id", flat=True)
-                    ),
-                    "group_set_ids": list(self.oucrc_type_fire.group_sets.values_list("id", flat=True)),
-                    "org_unit_type_id": self.ou_type_fire_pokemons.pk,
-                    "org_units_editable": True,
-                    "other_group_ids": list(self.oucrc_type_fire.other_groups.values_list("id", flat=True)),
-                    "possible_parent_type_ids": list(
-                        self.oucrc_type_fire.possible_parent_types.values_list("id", flat=True)
-                    ),
-                    "possible_type_ids": list(self.oucrc_type_fire.possible_types.values_list("id", flat=True)),
-                    "updated_at": self.oucrc_type_fire.updated_at.timestamp(),
-                },
-                {
-                    "created_at": None,
-                    "editable_fields": [],
-                    "editable_reference_form_ids": [],
-                    "group_set_ids": [],
-                    "org_unit_type_id": self.ou_type_rock_pokemons.pk,
-                    "org_units_editable": False,
-                    "other_group_ids": [],
-                    "possible_parent_type_ids": [],
-                    "possible_type_ids": [],
-                    "updated_at": None,
-                },
-                {
-                    "created_at": None,
-                    "editable_fields": [],
-                    "editable_reference_form_ids": [],
-                    "group_set_ids": [],
-                    "org_unit_type_id": self.ou_type_water_pokemons.pk,
-                    "org_units_editable": False,
-                    "other_group_ids": [],
-                    "possible_parent_type_ids": [],
-                    "possible_type_ids": [],
-                    "updated_at": None,
-                },
-                {
-                    "created_at": None,
-                    "editable_fields": [],
-                    "editable_reference_form_ids": [],
-                    "group_set_ids": [],
-                    "org_unit_type_id": new_org_unit_type_1.id,
-                    "org_units_editable": False,
-                    "other_group_ids": [],
-                    "possible_parent_type_ids": [],
-                    "possible_type_ids": [],
-                    "updated_at": None,
-                },
-                {
-                    "created_at": None,
-                    "editable_fields": [],
-                    "editable_reference_form_ids": [],
-                    "group_set_ids": [],
-                    "org_unit_type_id": new_org_unit_type_2.id,
-                    "org_units_editable": False,
-                    "other_group_ids": [],
-                    "possible_parent_type_ids": [],
-                    "possible_type_ids": [],
-                    "updated_at": None,
-                },
-            ],
+            ou_type_fire_pokemons_config,
+            {
+                "org_unit_type_id": self.ou_type_fire_pokemons.pk,
+                "org_units_editable": True,
+                "editable_fields": ["name", "aliases", "location", "opening_date", "closing_date"],
+                "possible_type_ids": list(self.oucrc_type_fire.possible_types.values_list("id", flat=True)),
+                "possible_parent_type_ids": list(
+                    self.oucrc_type_fire.possible_parent_types.values_list("id", flat=True)
+                ),
+                "group_set_ids": list(self.oucrc_type_fire.group_sets.values_list("id", flat=True)),
+                "editable_reference_form_ids": list(
+                    self.oucrc_type_fire.editable_reference_forms.values_list("id", flat=True)
+                ),
+                "other_group_ids": list(self.oucrc_type_fire.other_groups.values_list("id", flat=True)),
+                "created_at": self.oucrc_type_fire.created_at.timestamp(),
+                "updated_at": self.oucrc_type_fire.updated_at.timestamp(),
+            },
+        )
+
+        ou_type_rock_pokemons_config = next(
+            (config for config in results if config["org_unit_type_id"] == self.ou_type_rock_pokemons.pk)
+        )
+        self.assertEqual(
+            ou_type_rock_pokemons_config,
+            {
+                "org_unit_type_id": self.ou_type_rock_pokemons.pk,
+                "org_units_editable": False,
+                "editable_fields": [],
+                "possible_type_ids": [],
+                "possible_parent_type_ids": [],
+                "group_set_ids": [],
+                "editable_reference_form_ids": [],
+                "other_group_ids": [],
+                "created_at": None,
+                "updated_at": None,
+            },
+        )
+
+        ou_type_water_pokemons_config = next(
+            (config for config in results if config["org_unit_type_id"] == self.ou_type_water_pokemons.pk)
+        )
+        self.assertEqual(
+            ou_type_water_pokemons_config,
+            {
+                "org_unit_type_id": self.ou_type_water_pokemons.pk,
+                "org_units_editable": False,
+                "editable_fields": [],
+                "possible_type_ids": [],
+                "possible_parent_type_ids": [],
+                "group_set_ids": [],
+                "editable_reference_form_ids": [],
+                "other_group_ids": [],
+                "created_at": None,
+                "updated_at": None,
+            },
+        )
+
+        new_org_unit_type_1_config = next(
+            (config for config in results if config["org_unit_type_id"] == new_org_unit_type_1.pk)
+        )
+        self.assertEqual(
+            new_org_unit_type_1_config,
+            {
+                "org_unit_type_id": new_org_unit_type_1.pk,
+                "org_units_editable": False,
+                "editable_fields": [],
+                "possible_type_ids": [],
+                "possible_parent_type_ids": [],
+                "group_set_ids": [],
+                "editable_reference_form_ids": [],
+                "other_group_ids": [],
+                "created_at": None,
+                "updated_at": None,
+            },
+        )
+
+        new_org_unit_type_2_config = next(
+            (config for config in results if config["org_unit_type_id"] == new_org_unit_type_2.pk)
+        )
+        self.assertEqual(
+            new_org_unit_type_2_config,
+            {
+                "org_unit_type_id": new_org_unit_type_2.pk,
+                "org_units_editable": False,
+                "editable_fields": [],
+                "possible_type_ids": [],
+                "possible_parent_type_ids": [],
+                "group_set_ids": [],
+                "editable_reference_form_ids": [],
+                "other_group_ids": [],
+                "created_at": None,
+                "updated_at": None,
+            },
         )
 
     def test_list_without_auth(self):

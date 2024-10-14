@@ -31,7 +31,15 @@ In terms of features, IASO can be summarized around **three main components** wh
     - Manage teams of users and teams of teams
     - Assign data collection duties to teams and users using a map interface
     - Create plannings with a scope, a time span, and one or several data collection form(s)
-
+ 
+-   Entities - Entities can be individuals (e.g. health programme beneficiaries) or physical objects (e.g. vaccines parcel, mosquito net, etc.). Workflows allows the tracking of entities by opening specific forms according to previous answers given to previous forms.
+    - Create entity types (beneficiaries, stocks, or other)
+    - Assign workflows to entity types
+    - Register entities via mobile app (offline)
+    - Synchronize mobile and web applications
+    - Compare and merge entities as needed
+    - Record entity data in an NFC card
+  
 The platform has been implemented in Benin, Burkina Faso, Burundi, Cameroon, Central African Republic, the Democratic Republic of Congo, Haiti, Ivory Coast, Mali, Niger, Nigeria and Uganda. It is the official georegistry in Burkina Faso since 2023. IASO has also been implemented at regional level (AFRO region) in support to the Global Polio Eradication Initiative for its geospatial and health facility registries capabilities.
 
 

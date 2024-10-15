@@ -71,6 +71,7 @@ from .models import (
     StorageLogEntry,
     StoragePassword,
     Task,
+    TenantUser,
     UserRole,
     Workflow,
     WorkflowChange,
@@ -996,3 +997,4 @@ admin.site.register(DevicePosition)
 admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
+admin.site.register(TenantUser)

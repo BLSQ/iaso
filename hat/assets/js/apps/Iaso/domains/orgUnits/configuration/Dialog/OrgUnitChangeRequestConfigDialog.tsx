@@ -80,17 +80,20 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
             setValues(fetchedConfig);
         }
     }, [fetchedConfig, setValues]);
-    const { data: orgUnitTypeOptions } = useGetOrgUnitTypesDropdownOptions(
-        config.project.id,
-    );
-    const { data: groupOptions } = useGetGroupDropdown({
-        defaultVersion: 'true',
-    });
-    const { data: formOptions } = useGetFormDropdownOptions(
-        config.orgUnitType.id,
-        config.project.id,
-    );
-    const { data: groupSetOptions } = useGetGroupSetsDropdown();
+    const {
+        data: orgUnitTypeOptions,
+        isFetching: isFetchingOrgUnitTypeOptions,
+    } = useGetOrgUnitTypesDropdownOptions(config.project.id);
+    const { data: groupOptions, isFetching: isFetchingGroupOptions } =
+        useGetGroupDropdown({
+            projectIds: `${config.project.id}`,
+        });
+    const { data: formOptions, isFetching: isFetchingFormOptions } =
+        useGetFormDropdownOptions(config.orgUnitType.id);
+    const { data: groupSetOptions, isFetching: isFetchingGroupSetOptions } =
+        useGetGroupSetsDropdown({
+            project_ids: `${config.project.id}`,
+        });
     const { mutateAsync: saveConfig } =
         useSaveOrgUnitChangeRequestConfiguration();
     const orgUnitsEditableOptions = useOrgUnitsEditableOptions();
@@ -206,6 +209,7 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                     errors={getErrors('groupSetIds')}
                     label={MESSAGES.groupSetIds}
                     options={groupSetOptions}
+                    loading={isFetchingGroupSetOptions}
                 />
             )}
             {values?.editableFields?.includes('possibleTypeIds') && (
@@ -218,6 +222,7 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                     errors={getErrors('possibleTypeIds')}
                     label={MESSAGES.possibleTypeIds}
                     options={orgUnitTypeOptions}
+                    loading={isFetchingOrgUnitTypeOptions}
                 />
             )}
             {values?.editableFields?.includes('possibleParentTypeIds') && (
@@ -230,6 +235,7 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                     errors={getErrors('possibleParentTypeIds')}
                     label={MESSAGES.possibleParentTypeIds}
                     options={orgUnitTypeOptions}
+                    loading={isFetchingOrgUnitTypeOptions}
                 />
             )}
             {values?.editableFields?.includes('editableReferenceFormIds') && (
@@ -242,6 +248,7 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                     errors={getErrors('editableReferenceFormIds')}
                     label={MESSAGES.editableReferenceFormIds}
                     options={formOptions}
+                    loading={isFetchingFormOptions}
                 />
             )}
             {values?.editableFields?.includes('otherGroupIds') && (
@@ -254,6 +261,7 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                     errors={getErrors('otherGroupIds')}
                     label={MESSAGES.otherGroupIds}
                     options={groupOptions}
+                    loading={isFetchingGroupOptions}
                 />
             )}
         </ConfirmCancelModal>

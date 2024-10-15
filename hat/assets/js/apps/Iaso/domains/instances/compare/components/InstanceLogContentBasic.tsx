@@ -1,5 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { Table, TableCell, TableRow, TableHead } from '@mui/material';
+import {
+    Table,
+    TableCell,
+    TableRow,
+    TableHead,
+    Typography,
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 
@@ -40,10 +46,22 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                         {formatMessage(MESSAGES.label)}
                     </TableCell>
                     <TableCell align="left" className={classes.tableCellHead}>
-                        {formatMessage(MESSAGES.instanceLogsVersionA)}
+                        <Typography
+                            color={
+                                fileContent?.logA?.deleted ? 'error' : undefined
+                            }
+                        >
+                            {formatMessage(MESSAGES.instanceLogsVersionA)}
+                        </Typography>
                     </TableCell>
                     <TableCell align="left" className={classes.tableCellHead}>
-                        {formatMessage(MESSAGES.instanceLogsVersionB)}
+                        <Typography
+                            color={
+                                fileContent?.logB?.deleted ? 'error' : undefined
+                            }
+                        >
+                            {formatMessage(MESSAGES.instanceLogsVersionB)}
+                        </Typography>
                     </TableCell>
                 </TableRow>
             </TableHead>

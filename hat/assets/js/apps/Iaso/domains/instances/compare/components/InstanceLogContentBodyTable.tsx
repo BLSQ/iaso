@@ -17,6 +17,9 @@ const useStyles = makeStyles(theme => ({
         // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
+    deletedInfos: {
+        color: '#D22B2B !important',
+    },
     tableCellLabelName: {
         // @ts-ignore
         color: theme.palette.mediumGray.main,
@@ -77,13 +80,23 @@ const InstanceLogContentBodyTable = memo(
                                         </span>
                                     </TableCell>
                                     <TableCell
-                                        className={classes.tableCell}
+                                        className={
+                                            (classes.tableCell,
+                                            fileContent?.logA?.deleted
+                                                ? classes.deletedInfos
+                                                : undefined)
+                                        }
                                         align="left"
                                     >
                                         {fileContent?.logA.json[question.name]}
                                     </TableCell>
                                     <TableCell
-                                        className={classes.tableCell}
+                                        className={
+                                            (classes.tableCell,
+                                            fileContent?.logB?.deleted
+                                                ? classes.deletedInfos
+                                                : undefined)
+                                        }
                                         align="left"
                                     >
                                         {fileContent?.logB.json[question.name]}

@@ -357,7 +357,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         pk = kwargs.get("pk")
         if pk == PK_ME:
             # if the user is a main_user, login as an account user
-            # TODO: remember the last account_user
+            # TODO: This is not a clean side-effect and should be improved.
             if request.user.tenant_users.exists():
                 account_user = request.user.tenant_users.first().account_user
                 account_user.backend = "django.contrib.auth.backends.ModelBackend"

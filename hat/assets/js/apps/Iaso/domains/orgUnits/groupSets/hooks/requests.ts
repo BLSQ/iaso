@@ -24,7 +24,7 @@ interface GetGroupSetsParams {
 
 export const useGetGroupSets = params => {
     const newParams: GetGroupSetsParams = {
-        limit: params.pageSize || '20',
+        limit: params.pageSize || '10',
         order: params.order || 'id',
         page: params.page || '1',
     };

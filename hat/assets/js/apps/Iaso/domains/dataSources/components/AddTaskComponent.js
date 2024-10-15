@@ -12,6 +12,9 @@ import { useSnackMutation } from '../../../libs/apiHooks.ts';
 import MESSAGES from '../messages';
 import { sendDhisOuImporterRequest } from '../requests';
 import { VersionDescription } from './VersionDescription.tsx';
+import { userHasPermission } from '../../users/utils';
+import * as Permission from '../../../utils/permissions.ts';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const initialFormState = sourceCredentials => {
     return {
@@ -30,6 +33,7 @@ const AddTask = ({
     sourceVersionNumber,
     sourceCredentials,
 }) => {
+    const currentUser = useCurrentUser();
     const [form, setFormField, , setFormState] = useFormState(
         initialFormState(sourceCredentials),
     );
@@ -176,6 +180,18 @@ const AddTask = ({
             ]}
         />
     );
+    const hasTaskPermission = userHasPermission(
+        Permission.DATA_TASKS,
+        currentUser,
+    );
+
+    const additionalButtonProps = hasTaskPermission
+        ? {
+              additionalButton: true,
+              additionalMessage: MESSAGES.goToCurrentTask,
+              onAdditionalButtonClick: onRedirect,
+          }
+        : {};
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
@@ -186,9 +202,7 @@ const AddTask = ({
             cancelMessage={MESSAGES.cancel}
             maxWidth="sm"
             allowConfirm={allowConfirm}
-            additionalButton
-            additionalMessage={MESSAGES.goToCurrentTask}
-            onAdditionalButtonClick={onRedirect}
+            {...additionalButtonProps}
         >
             {mutation.isLoading && <LoadingSpinner />}
 

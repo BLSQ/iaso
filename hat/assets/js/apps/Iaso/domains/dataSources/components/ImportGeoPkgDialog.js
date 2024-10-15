@@ -16,6 +16,9 @@ import { useSnackMutation } from '../../../libs/apiHooks.ts';
 import MESSAGES from '../messages';
 import { postGeoPkg } from '../requests';
 import { VersionDescription } from './VersionDescription.tsx';
+import { userHasPermission } from '../../users/utils';
+import * as Permission from '../../../utils/permissions.ts';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const initialFormState = () => ({
     file: null,
@@ -30,6 +33,7 @@ const ImportGeoPkgDialog = ({
     versionNumber,
     projects,
 }) => {
+    const currentUser = useCurrentUser();
     const [form, setFormField, , setFormState] =
         useFormState(initialFormState());
     const { formatMessage } = useSafeIntl();
@@ -85,6 +89,19 @@ const ImportGeoPkgDialog = ({
     const allowConfirm = Boolean(
         !mutation.isLoading && form.file.value && form.project.value,
     );
+
+    const hasTaskPermission = userHasPermission(
+        Permission.DATA_TASKS,
+        currentUser,
+    );
+
+    const additionalButtonProps = hasTaskPermission
+        ? {
+              additionalButton: true,
+              additionalMessage: MESSAGES.goToCurrentTask,
+              onAdditionalButtonClick: onRedirect,
+          }
+        : {};
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
@@ -93,11 +110,9 @@ const ImportGeoPkgDialog = ({
             cancelMessage={MESSAGES.cancel}
             maxWidth="sm"
             allowConfirm={allowConfirm}
-            additionalButton
-            additionalMessage={MESSAGES.goToCurrentTask}
             onConfirm={onConfirm}
-            onAdditionalButtonClick={onRedirect}
             onClosed={reset}
+            {...additionalButtonProps}
         >
             {mutation.isLoading && <LoadingSpinner />}
             <Grid container spacing={4}>

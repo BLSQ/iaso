@@ -68,6 +68,7 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
                         instanceId={`${instance.id}`}
                         height="150px"
                         titleVariant="subtitle2"
+                        titleColor="inherit"
                     />
                 </Box>
             ))}

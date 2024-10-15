@@ -51,7 +51,7 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
             self.assertJSONResponse(response, status.HTTP_200_OK)
 
         results = response.data["results"]
-        self.assertEqual(5, len(results))  # 3 OUCRCs from setup + 2 dynamic OUCRCs.
+        self.assertEqual(5, len(results))
 
         # `new_org_unit_type_3` should not be in the response because the user
         # have full write permission on it:
@@ -63,6 +63,9 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.assertEqual(
             results,
             [
+                # The user has write access on `ou_type_fire_pokemons` at his Profile level,
+                # and there is an existing configuration for `ou_type_fire_pokemons`, so we
+                # return the configuration.
                 {
                     "org_unit_type_id": self.ou_type_fire_pokemons.pk,
                     "org_units_editable": True,
@@ -79,6 +82,8 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
                     "created_at": self.oucrc_type_fire.created_at.timestamp(),
                     "updated_at": self.oucrc_type_fire.updated_at.timestamp(),
                 },
+                # Because of the configuration of his Profile, the user can't write on `ou_type_rock_pokemons`,
+                # so we override the existing configuration.
                 {
                     "org_unit_type_id": self.ou_type_rock_pokemons.pk,
                     "org_units_editable": False,
@@ -91,6 +96,8 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
                     "created_at": None,
                     "updated_at": None,
                 },
+                # Because of the configuration of his Profile, the user can't write on `ou_type_water_pokemons`,
+                # so we override the existing configuration.
                 {
                     "org_unit_type_id": self.ou_type_water_pokemons.pk,
                     "org_units_editable": False,
@@ -103,6 +110,8 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
                     "created_at": None,
                     "updated_at": None,
                 },
+                # Because of the configuration of his Profile, the user can't write on `new_org_unit_type_1`,
+                # and since there is no existing configuration, we add a dynamic one.
                 {
                     "org_unit_type_id": new_org_unit_type_1.pk,
                     "org_units_editable": False,
@@ -115,6 +124,8 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
                     "created_at": None,
                     "updated_at": None,
                 },
+                # Because of the configuration of his Profile, the user can't write on `new_org_unit_type_2`,
+                # and since there is no existing configuration, we add a dynamic one.
                 {
                     "org_unit_type_id": new_org_unit_type_2.pk,
                     "org_units_editable": False,

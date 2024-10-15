@@ -911,7 +911,7 @@
     "iaso.oucrc.oucrcCreateModalTitle": "OrgUnit Change Request Configuration - Creation",
     "iaso.oucrc.oucrcCreateModalTitle2": "OrgUnit Change Request Configuration - Creation 2nd step",
     "iaso.oucrc.oucrcCreateUpdateModalTitle": "OrgUnit Change Request Configuration - Update",
-    "iaso.oucrc.possibleParentTypeIds": "Possible New Parent Types",
+    "iaso.oucrc.possibleParentTypeIds": "Parent",
     "iaso.oucrc.possibleTypeIds": "Possible New Types",
     "iaso.page.deleteError": "Error removing embedded link",
     "iaso.page.deleteSuccess": "Embedded link successfully removed",

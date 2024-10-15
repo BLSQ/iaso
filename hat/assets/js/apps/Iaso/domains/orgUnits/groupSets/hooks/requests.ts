@@ -43,7 +43,7 @@ export const useGetGroupSets = params => {
         newParams as Record<string, string>,
     );
     return useSnackQuery(
-        ['group_sets', searchParams.toString()],
+        ['groupSets', searchParams.toString()],
         () =>
             getRequest(
                 `/api/group_sets/?${searchParams.toString()}&fields=id,name,groups,created_at,updated_at`,
@@ -58,7 +58,7 @@ export const useGetGroupSets = params => {
 
 export const useGetGroupSet = groupSetId => {
     return useSnackQuery(
-        ['group_sets', groupSetId],
+        ['groupSet', groupSetId],
         () => {
             // if create
             if (groupSetId === 'new') {
@@ -80,7 +80,7 @@ export const useSaveGroupSet = (): UseMutationResult<any, any, any, any> =>
         },
         undefined,
         undefined,
-        ['group_sets'],
+        ['groupSets', 'groupSet'],
     );
 
 export const useDeleteGroupSet = () =>
@@ -88,7 +88,7 @@ export const useDeleteGroupSet = () =>
         body => deleteRequest(`/api/group_sets/${body.id}/`),
         MESSAGES.deleteSuccess,
         MESSAGES.deleteError,
-        ['group_sets'],
+        ['groupSets', 'groupSet'],
     );
 
 const mapChoices = choices =>

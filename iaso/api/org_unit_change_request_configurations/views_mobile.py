@@ -85,7 +85,7 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
             ]
 
             # Because we're merging unsaved instances with a queryset (which is a representation of a database query),
-            # we have to sort the resulting list manually we have to keep the pagination working properly.
+            # we have to sort the resulting list manually to keep the pagination working properly.
             queryset = list(
                 chain(
                     queryset.exclude(org_unit_type__in=non_editable_org_unit_type_ids),

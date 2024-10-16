@@ -1,15 +1,10 @@
-import {
-    ConfirmCancelModal,
-    makeFullModal,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useState,
 } from 'react';
-import Alert from '@mui/lab/Alert';
 import MESSAGES from '../messages';
 import { AnalysisModalButton } from './AnalysisModalButton';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -27,13 +22,9 @@ type Props = {
 const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     const [entityType, setEntityType] = useState(null);
     const [algorithm, setAlgorithm] = useState(null);
-    const [defaultFields, setDefaultFields] = useState([]);
     const [entityTypeFields, setEntityTypeFields] = useState([]);
     const [referenceForm, setReferenceForm] = useState(undefined);
     const [confirm, setConfirm] = useState(false);
-    const [errorMissingFields, setErrorMissingFields] = useState('');
-
-    const { formatMessage } = useSafeIntl();
 
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
         useGetBeneficiaryTypesDropdown();
@@ -43,27 +34,17 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
         startAnalyse({
             algorithm,
             entity_type_id: entityType,
-            fields:
-                entityTypeFields.length > 0 ? entityTypeFields : defaultFields,
+            fields: entityTypeFields,
             parameters: {},
         });
-    }, [startAnalyse, algorithm, entityType, entityTypeFields, defaultFields]);
+    }, [startAnalyse, algorithm, entityType, entityTypeFields]);
 
     const handleChangeEntityType = value => {
         const filteredEntityType = entityTypesDropdown?.find(
             entityTypeItem => entityTypeItem.value === value,
         );
-        const entityTypeDefaultFields =
-            filteredEntityType?.original?.fields_duplicate_search;
+
         setReferenceForm(filteredEntityType?.original?.reference_form);
-        if (!entityTypeDefaultFields) {
-            setErrorMissingFields(
-                formatMessage(MESSAGES.messageErrorMissingFields),
-            );
-        } else {
-            setErrorMissingFields('');
-            setDefaultFields(entityTypeDefaultFields || []);
-        }
 
         setEntityType(value);
     };
@@ -88,12 +69,12 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     };
 
     useEffect(() => {
-        if (algorithm && entityType && errorMissingFields === '') {
+        if (algorithm && entityType && entityTypeFields.length > 0) {
             setConfirm(true);
         } else {
             setConfirm(false);
         }
-    }, [algorithm, entityType, errorMissingFields]);
+    }, [algorithm, entityType, entityTypeFields]);
     const { possibleFields, isFetchingForm } = useGetFormForEntityType({
         formId: referenceForm,
         enabled: isOpen,
@@ -115,10 +96,6 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             onClose={() => null}
             dataTestId=""
         >
-            {errorMissingFields && (
-                <Alert severity="error">{errorMissingFields}</Alert>
-            )}
-
             <InputComponent
                 type="select"
                 keyValue="entity_type"
@@ -139,6 +116,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             <InputComponent
                 type="select"
                 multi
+                required
                 disabled={isFetchingForm || !referenceForm}
                 keyValue="entity_type_fields"
                 onChange={(key, value) =>

@@ -1,7 +1,7 @@
-import React, { FunctionComponent } from 'react';
 import { TypographyVariant } from '@mui/material';
-import { useGetInstance } from '../hooks/useGetInstance';
+import React, { FunctionComponent } from 'react';
 import { Instance } from '../../types/instance';
+import { useGetInstance } from '../hooks/useGetInstance';
 import { InstanceDetailRaw } from './InstanceDetailRaw';
 
 type Props = {
@@ -9,6 +9,7 @@ type Props = {
     showTitle?: boolean;
     height?: string | number;
     titleVariant?: TypographyVariant;
+    titleColor?: string;
 };
 
 const InstanceDetail: FunctionComponent<Props> = ({
@@ -16,6 +17,7 @@ const InstanceDetail: FunctionComponent<Props> = ({
     showTitle = true,
     height,
     titleVariant,
+    titleColor,
 }) => {
     const {
         data,
@@ -32,6 +34,7 @@ const InstanceDetail: FunctionComponent<Props> = ({
             showTitle={showTitle}
             height={height}
             titleVariant={titleVariant}
+            titleColor={titleColor}
         />
     );
 };

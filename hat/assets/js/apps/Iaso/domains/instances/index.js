@@ -1,17 +1,32 @@
 import { Box, Grid, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import {
     LoadingSpinner,
     commonStyles,
     selectionInitialState,
     setTableSelection,
-    useSafeIntl,
     useRedirectToReplace,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { useDispatch } from 'react-redux';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
+import snackMessages from '../../components/snackBars/messages';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
+import { baseUrls } from '../../constants/urls.ts';
+import { useSnackQuery } from '../../libs/apiHooks.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import * as Permission from '../../utils/permissions.ts';
+import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
 import { createInstance } from './actions';
+import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent.tsx';
+import InstancesFiltersComponent from './components/InstancesFiltersComponent';
+import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
+import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
+import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
+import MESSAGES from './messages';
 import {
     fetchFormDetailsForInstance,
     fetchInstancesAsDict,
@@ -23,21 +38,6 @@ import {
     useGetFilters,
     useSelectionActions,
 } from './utils/index.tsx';
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
-import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent.tsx';
-import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
-import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
-import { baseUrls } from '../../constants/urls.ts';
-import snackMessages from '../../components/snackBars/messages';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
-import { useSnackQuery } from '../../libs/apiHooks.ts';
-import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
-import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
-import MESSAGES from './messages';
-import * as Permission from '../../utils/permissions.ts';
-import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 
 const baseUrl = baseUrls.instances;
 

@@ -17,30 +17,27 @@ import React, {
 import { MutateFunction, useQueryClient } from 'react-query';
 
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import { SHOW_DEV_FEATURES } from '../../../utils/featureFlags';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
+import { userHasPermission } from '../utils';
 import PermissionsAttribution from './PermissionsAttribution';
+import { useInitialUser } from './useInitialUser';
+import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
 import UsersInfos from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
-import { useInitialUser } from './useInitialUser';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
         marginBottom: theme.spacing(3),
     },
-    tab: {
-        padding: 0,
-        width: '25%',
-        minWidth: 0,
-    },
     root: {
-        minHeight: 365,
         position: 'relative',
     },
     hiddenOpacity: {
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
         left: -5000,
         zIndex: -10,
@@ -155,7 +152,8 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         }
         return '';
     }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
-
+    const currentUser = useCurrentUser();
+    const hasDevFeatures = userHasPermission(SHOW_DEV_FEATURES, currentUser);
     return (
         <>
             <WarningModal
@@ -216,6 +214,15 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
+                    {hasDevFeatures && (
+                        <Tab
+                            classes={{
+                                root: classes.tab,
+                            }}
+                            value="orgUnitWriteTypes"
+                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
+                        />
+                    )}
                 </Tabs>
                 <div className={classes.root} id="user-profile-dialog">
                     <div
@@ -248,6 +255,17 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                                 setFieldValue('org_units', ouList)
                             }
                             currentUser={user}
+                        />
+                    )}
+                    {tab === 'orgUnitWriteTypes' && (
+                        <UserOrgUnitWriteTypes
+                            currentUser={user}
+                            handleChange={(ouTypesIds: number[]) =>
+                                setFieldValue(
+                                    'editable_org_unit_type_ids',
+                                    ouTypesIds,
+                                )
+                            }
                         />
                     )}
                 </div>

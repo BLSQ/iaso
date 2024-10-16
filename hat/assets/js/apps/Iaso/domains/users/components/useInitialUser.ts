@@ -84,6 +84,10 @@ export const useInitialUser = (
                 value: get(initialData, 'country_code', ''),
                 errors: [],
             },
+            editable_org_unit_type_ids: {
+                value: get(initialData, 'editable_org_unit_type_ids', []),
+                errors: [],
+            },
         };
     }, [initialData]);
     const [user, setUser] = useState<UserDialogData>(initialUser);

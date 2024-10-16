@@ -6,8 +6,8 @@ import {
     SHOW_LINK_INSTANCE_REFERENCE,
 } from '../../../utils/featureFlags';
 import {
+    useCheckUserHasWritePermissionOnOrgunit,
     useCurrentUser,
-    useGetUserHasWritePermissionOnOrgunit,
 } from '../../../utils/usersUtils';
 import { useGetEnketoUrl } from '../../registry/hooks/useGetEnketoUrl';
 import { userHasPermission } from '../../users/utils';
@@ -64,7 +64,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         altitude: formAltitude,
     } = currentInstance ?? {};
 
-    const hasOrgUnitPermission = useGetUserHasWritePermissionOnOrgunit(
+    const hasOrgUnitPermission = useCheckUserHasWritePermissionOnOrgunit(
         orgUnit?.org_unit_type_id,
     );
     const isGpsEqual =

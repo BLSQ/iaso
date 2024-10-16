@@ -18,7 +18,7 @@ import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DatesRange from '../../../components/filters/DatesRange';
 import { ORG_UNITS } from '../../../utils/permissions';
-import { useGetUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
+import { useCheckUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Instance } from '../../instances/types/instance';
 import { Group, OrgUnit, OrgUnitState } from '../types/orgUnit';
@@ -98,7 +98,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             ? `${orgUnitState.parent.value.id}`
             : undefined,
     );
-    const hasManagementPermission = useGetUserHasWritePermissionOnOrgunit(
+    const hasManagementPermission = useCheckUserHasWritePermissionOnOrgunit(
         orgUnit?.org_unit_type_id,
     );
     const disabled = !hasManagementPermission && !isNewOrgunit;

@@ -38,8 +38,8 @@ import MESSAGES from '../messages';
 // HOOKS
 import { ORG_UNITS } from '../../../utils/permissions';
 import {
+    useCheckUserHasWriteTypePermission,
     useCurrentUser,
-    useGetUserHasWriteTypePermission,
 } from '../../../utils/usersUtils';
 import { userHasPermission } from '../../users/utils';
 import { useGetOrgUnitsTableColumns } from '../hooks/useGetOrgUnitsTableColumns';
@@ -101,11 +101,12 @@ export const TableList: FunctionComponent<Props> = ({
         ],
         [formatMessage, multiEditDisabled, setMultiActionPopupOpen],
     );
-    const getHasWriteByTypePermission = useGetUserHasWriteTypePermission();
+    const checkUserHasWriteTypePermission =
+        useCheckUserHasWriteTypePermission();
 
     const getIsSelectionDisabled = useCallback(
-        (ou: OrgUnit) => !getHasWriteByTypePermission(ou.org_unit_type_id),
-        [getHasWriteByTypePermission],
+        (ou: OrgUnit) => !checkUserHasWriteTypePermission(ou.org_unit_type_id),
+        [checkUserHasWriteTypePermission],
     );
 
     useSkipEffectOnMount(() => {

@@ -21,7 +21,7 @@ import {
 } from '../../constants/urls.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { fetchAssociatedOrgUnits } from '../../utils/requests';
-import { useGetUserHasWritePermissionOnOrgunit } from '../../utils/usersUtils.ts';
+import { useCheckUserHasWritePermissionOnOrgunit } from '../../utils/usersUtils.ts';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
 import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
@@ -119,7 +119,7 @@ const OrgUnitDetail = () => {
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
         useState(false);
 
-    const showLogButtons = useGetUserHasWritePermissionOnOrgunit(
+    const showLogButtons = useCheckUserHasWritePermissionOnOrgunit(
         currentOrgUnit?.org_unit_type_id,
     );
     const formParams = useOrgUnitTabParams(params, FORMS_PREFIX);

@@ -7,7 +7,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { getChipColors, getOtChipColors } from '../../constants/chipColors';
-import { useGetUserHasWriteTypePermission } from '../../utils/usersUtils.ts';
+import { useCheckUserHasWriteTypePermission } from '../../utils/usersUtils.ts';
 import MESSAGES from './messages.ts';
 
 export const useOrgUnitDetailData = (
@@ -41,7 +41,8 @@ export const useOrgUnitDetailData = (
         staleTime: 1000 * 60 * 15, // in MS
         cacheTime: 1000 * 60 * 5,
     };
-    const getHasWriteByTypePermission = useGetUserHasWriteTypePermission();
+    const checkUserHasWriteTypePermission =
+        useCheckUserHasWriteTypePermission();
     // Filter org unit types based on user permissions and editable types
     // Include types the user can edit, plus the current org unit's type
     const onSelectOrgUnitTypes = useCallback(
@@ -53,11 +54,11 @@ export const useOrgUnitDetailData = (
                 })) || [];
             return orgUnitTypes.filter(
                 ot =>
-                    getHasWriteByTypePermission(ot.id) ||
+                    checkUserHasWriteTypePermission(ot.id) ||
                     originalOrgUnit?.org_unit_type?.id === ot.id,
             );
         },
-        [getHasWriteByTypePermission, originalOrgUnit?.org_unit_type?.id],
+        [checkUserHasWriteTypePermission, originalOrgUnit?.org_unit_type?.id],
     );
     const [
         { data: groups = [], isFetching: isFetchingGroups },

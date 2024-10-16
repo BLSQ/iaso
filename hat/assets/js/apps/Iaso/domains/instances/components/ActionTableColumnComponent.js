@@ -15,8 +15,8 @@ import {
 } from '../../../utils/featureFlags';
 import * as Permission from '../../../utils/permissions.ts';
 import {
+    useCheckUserHasWritePermissionOnOrgunit,
     useCurrentUser,
-    useGetUserHasWritePermissionOnOrgunit,
 } from '../../../utils/usersUtils.ts';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
@@ -106,7 +106,7 @@ const ActionTableColumnComponent = ({ settings }) => {
 
         saveOu(orgUnitPayload).catch(onError);
     };
-    const userHasWritePermission = useGetUserHasWritePermissionOnOrgunit(
+    const userHasWritePermission = useCheckUserHasWritePermissionOnOrgunit(
         settings.row.original.org_unit.org_unit_type_id,
     );
     const showLinkOrgUnitInstanceReferenceButton =

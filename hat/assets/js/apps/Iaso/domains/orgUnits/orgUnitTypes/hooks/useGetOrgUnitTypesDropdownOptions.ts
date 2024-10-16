@@ -4,7 +4,7 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
 import { DropdownOptions } from '../../../../types/utils';
-import { useGetUserHasWriteTypePermission } from '../../../../utils/usersUtils';
+import { useCheckUserHasWriteTypePermission } from '../../../../utils/usersUtils';
 import { OrgunitTypesApi } from '../../types/orgunitTypes';
 
 const getOrgunitTypes = (projectId?: number): Promise<OrgunitTypesApi> => {
@@ -20,7 +20,8 @@ export const useGetOrgUnitTypesDropdownOptions = (
     onlyWriteAccess = false,
 ): UseQueryResult<DropdownOptions<string>[], Error> => {
     const queryKey: any[] = ['orgunittypes-dropdown', projectId];
-    const getHasWriteByTypePermission = useGetUserHasWriteTypePermission();
+    const checkUserHasWriteTypePermission =
+        useCheckUserHasWriteTypePermission();
     return useSnackQuery(
         queryKey,
         () => getOrgunitTypes(projectId),
@@ -34,7 +35,7 @@ export const useGetOrgUnitTypesDropdownOptions = (
                 let { orgUnitTypes } = data;
                 if (onlyWriteAccess) {
                     orgUnitTypes = orgUnitTypes.filter(orgunitType =>
-                        getHasWriteByTypePermission(orgunitType.id),
+                        checkUserHasWriteTypePermission(orgunitType.id),
                     );
                 }
                 return orgUnitTypes

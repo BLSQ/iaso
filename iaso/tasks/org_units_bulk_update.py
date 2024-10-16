@@ -81,7 +81,7 @@ def org_units_bulk_update(
         raise Exception("Modification on read only source are not allowed")
 
     total = queryset.count()
-    editable_org_unit_type_ids = list(user.iaso_profile.editable_org_unit_types.values_list("id", flat=True))
+    editable_org_unit_type_ids = user.iaso_profile.get_editable_org_unit_type_ids()
     skipped_messages = []
 
     # FIXME Task don't handle rollback properly if task is killed by user or other error

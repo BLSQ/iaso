@@ -15,16 +15,17 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
 
     def test_list_ok(self):
         self.client.force_authenticate(self.user_ash_ketchum)
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(9):
             # get_queryset
             #   1. SELECT user_editable_org_unit_type_ids
-            #   2. COUNT(*) OrgUnitChangeRequestConfiguration
-            #   3. SELECT OrgUnitChangeRequestConfiguration
-            #   4. PREFETCH OrgUnitChangeRequestConfiguration.possible_types
-            #   5. PREFETCH OrgUnitChangeRequestConfiguration.possible_parent_types
-            #   6. PREFETCH OrgUnitChangeRequestConfiguration.group_sets
-            #   7. PREFETCH OrgUnitChangeRequestConfiguration.editable_reference_forms
-            #   8. PREFETCH OrgUnitChangeRequestConfiguration.other_groups
+            #   2. SELECT user_roles_editable_org_unit_type_ids
+            #   3. COUNT(*) OrgUnitChangeRequestConfiguration
+            #   4. SELECT OrgUnitChangeRequestConfiguration
+            #   5. PREFETCH OrgUnitChangeRequestConfiguration.possible_types
+            #   6. PREFETCH OrgUnitChangeRequestConfiguration.possible_parent_types
+            #   7. PREFETCH OrgUnitChangeRequestConfiguration.group_sets
+            #   8. PREFETCH OrgUnitChangeRequestConfiguration.editable_reference_forms
+            #   9. PREFETCH OrgUnitChangeRequestConfiguration.other_groups
             response = self.client.get(f"{self.MOBILE_OUCRC_API_URL}?app_id={self.app_id}")
             self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(3, len(response.data["results"]))  # the 3 OUCRCs from setup

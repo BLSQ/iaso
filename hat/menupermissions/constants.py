@@ -257,5 +257,5 @@ READ_EDIT_PERMISSIONS = {
         "no_admin": "iaso_polio_vaccine_authorizations_read_only",
         "admin": "iaso_polio_vaccine_authorizations_admin",
     },
-    "iaso_user_permissions": {"user_managed": "iaso_users_managed", "admin": "iaso_users"},
+    "iaso_user_permissions": {"geo_limited": "iaso_users_managed", "all": "iaso_users"},
 }

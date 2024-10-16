@@ -104,7 +104,7 @@ else:
             name="reset_password_complete",
         ),
         path("sync/", include("hat.sync.urls")),
-        path("model-diagram/", ModelDataView.as_view(), name="model-diagram"),
+        path("models/", ModelDataView.as_view(), name="models"),
     ]
 
     for plugin_name in settings.PLUGINS:

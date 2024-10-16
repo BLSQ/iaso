@@ -93,10 +93,47 @@
             font-weight: bold;
             cursor: pointer;
         }
+
+        #model-list {
+            position: fixed;
+            top: 10px;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 0 5px 5px 0;
+            height: calc(100vh - 20px);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%);
+            width: 320px;
+            /* Add a fixed width to the sidebar */
+        }
+
+        #model-list.open {
+            transform: translateX(0);
+            /* Open state */
+        }
+
+        #toggle-sidebar {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1001;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 25px;
+            font-weight: bold;
+            transition: left 0.3s ease-in-out;
+        }
     </style>
 </head>
 
 <body>
+    <button id="toggle-sidebar">☰</button>
     <div id="model-list"></div>
     <div id="diagram"></div>
     <script>
@@ -153,7 +190,7 @@
         const simulation = d3.forceSimulation(modelData.nodes)
             .force("link", d3.forceLink(modelData.links).id(d => d.id).distance(150))
             .force("charge", d3.forceManyBody().strength(-2000))
-            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("center", d3.forceCenter((width / 2) - 100, height / 2))
             .force("x", d3.forceX(width / 2).strength(0.2))
             .force("y", d3.forceY(height / 2).strength(0.2))
             .force("collision", d3.forceCollide().radius(80));
@@ -397,6 +434,19 @@
         svg.call(zoom.transform, d3.zoomIdentity);
         initialSetup();
 
+        const toggleSidebar = document.getElementById('toggle-sidebar');
+        const modelListElement = document.getElementById('model-list');
+
+        toggleSidebar.addEventListener('click', () => {
+            modelListElement.classList.toggle('open');
+            if (modelListElement.classList.contains('open')) {
+                toggleSidebar.style.left = '280px'; // 200px (sidebar width) + 10px (padding)
+                toggleSidebar.textContent = '×';
+            } else {
+                toggleSidebar.style.left = '10px';
+                toggleSidebar.textContent = '☰';
+            }
+        });
     </script>
 </body>
 

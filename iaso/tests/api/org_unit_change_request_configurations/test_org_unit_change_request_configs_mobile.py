@@ -1,6 +1,6 @@
-import json
-
 from rest_framework import status
+
+from django.contrib.auth.models import Group
 
 from iaso import models as m
 from iaso.tests.api.org_unit_change_request_configurations.common_base_with_setup import OUCRCAPIBase
@@ -39,14 +39,24 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         new_org_unit_type_3.projects.add(self.project_johto)
         self.assertEqual(self.project_johto.unit_types.count(), 6)
 
+        # Restrict write permissions on Org Units at the "Profile" level.
         self.user_ash_ketchum.iaso_profile.editable_org_unit_types.set(
             # Only org units of this type are now writable for this user.
-            [self.ou_type_fire_pokemons, new_org_unit_type_3]
+            [self.ou_type_fire_pokemons]
         )
+
+        # Restrict write permissions on Org Units at the "Role" level.
+        group = Group.objects.create(name="Group")
+        user_role = m.UserRole.objects.create(group=group, account=self.account_pokemon)
+        user_role.editable_org_unit_types.set(
+            # Only org units of this type are now writable for this user.
+            [new_org_unit_type_3]
+        )
+        self.user_ash_ketchum.iaso_profile.user_roles.set([user_role])
 
         self.client.force_authenticate(self.user_ash_ketchum)
 
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(10):
             response = self.client.get(f"{self.MOBILE_OUCRC_API_URL}?app_id={self.app_id}")
             self.assertJSONResponse(response, status.HTTP_200_OK)
 

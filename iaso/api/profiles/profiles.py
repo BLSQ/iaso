@@ -17,9 +17,10 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from hat.audit.models import PROFILE_API
 from iaso.api.profiles.audit import ProfileAuditLogger
+from iaso.api.validation_utils import validate_org_unit_types_for_user
 from iaso.utils import is_mobile_request
 from phonenumber_field.phonenumber import PhoneNumber
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, status, viewsets, serializers
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
@@ -27,7 +28,7 @@ from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
-from iaso.models import OrgUnit, Profile, Project, UserRole
+from iaso.models import OrgUnit, Profile, Project, UserRole, OrgUnitType
 from iaso.utils.module_permissions import account_module_permissions
 
 PK_ME = "me"
@@ -392,10 +393,20 @@ class ProfilesViewSet(viewsets.ViewSet):
             org_units = self.validate_org_units(request, profile)
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, profile)
+            request_user = request.user
+            org_unit_types = request.data.get("editable_org_unit_types", [])
+            validated_org_unit_types = self.validate_editable_org_unit_types(
+                request_user=request_user, target_user=user, org_unit_types=org_unit_types
+            )
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+        except serializers.ValidationError as error:
+            return JsonResponse(
+                {"errorKey": error.detail, "errorMessage": error.detail},
+                status=error.status_code,
             )
 
         profile = self.update_user_profile(
@@ -407,6 +418,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             user_roles=user_roles_data["user_roles"],
             user_roles_groups=user_roles_data["groups"],
             projects=projects,
+            org_unit_types=validated_org_unit_types,
         )
 
         audit_logger.log_modification(
@@ -495,6 +507,40 @@ class ProfilesViewSet(viewsets.ViewSet):
             result.append(item)
         return result
 
+    def validate_editable_org_unit_types(self, request_user: User, target_user: User, org_unit_types: list):
+        if not org_unit_types:
+            return org_unit_types
+
+        found_org_unit_types = []
+        for org_unit_type in org_unit_types:
+            found = get_object_or_404(OrgUnitType, pk=org_unit_type)
+            found_org_unit_types.append(found)
+
+        # First, we need to check if the user can even see these OrgUnitTypes
+        # = are there some project-level restrictions?
+        validate_org_unit_types_for_user(request_user, found_org_unit_types)
+        validate_org_unit_types_for_user(target_user, found_org_unit_types)
+
+        # Then, we need to make sure that the user who made the request is not granting more permissions than he has
+        creator_editable_org_unit_types = request_user.iaso_profile.fetch_all_editable_org_unit_types()
+        if not creator_editable_org_unit_types:
+            # If there is no restriction, it means that the user has access to everything, so it's ok
+            return found_org_unit_types
+
+        for found_org_unit_type in found_org_unit_types:
+            if found_org_unit_type not in creator_editable_org_unit_types:
+                raise serializers.ValidationError(
+                    f"The user doesn't have access to the OrgUnitType {found_org_unit_type.id}"
+                )
+
+        # For updates, we also don't want a user to remove access to somebody if this user himself doesn't have access to that OUT
+        target_editable_org_unit_types = target_user.iaso_profile.fetch_all_editable_org_unit_types()
+        if not target_editable_org_unit_types:
+            # If the target doesn't have any yet, then nothing can be removed, it's ok
+            return found_org_unit_types
+
+        return found_org_unit_types
+
     @staticmethod
     def update_user_own_profile(request):
         audit_logger = ProfileAuditLogger()
@@ -513,7 +559,16 @@ class ProfilesViewSet(viewsets.ViewSet):
         return Response(profile.as_dict())
 
     def update_user_profile(
-        self, request, profile, user, user_roles, user_roles_groups, projects, org_units, user_permissions
+        self,
+        request,
+        profile,
+        user,
+        user_roles,
+        user_roles_groups,
+        projects,
+        org_units,
+        user_permissions,
+        org_unit_types,
     ):
         username = request.data.get("user_name")
         user.first_name = request.data.get("first_name", "")
@@ -541,6 +596,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.user_roles.set(user_roles)
         profile.projects.set(projects)
         profile.org_units.set(org_units)
+        profile.editable_org_unit_types.set(org_unit_types)
         profile.save()
         return profile
 
@@ -714,6 +770,16 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.phone_number = phone_number
 
         profile.save()
+
+        org_unit_types = request.data.get("editable_org_unit_types", [])
+        creator = request.user
+        validated_org_unit_types = self.validate_editable_org_unit_types(
+            request_user=creator, target_user=user, org_unit_types=org_unit_types
+        )
+        if validated_org_unit_types:
+            profile.editable_org_unit_types.set(validated_org_unit_types)
+            profile.save()
+
         audit_logger = ProfileAuditLogger()
         source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
         audit_logger.log_modification(instance=profile, old_data_dump=None, request_user=request.user, source=source)

@@ -1,16 +1,6 @@
 from rest_framework import serializers
 
-from iaso.models import OrgUnitType, GroupSet, Form, Group
-
-
-def validate_org_unit_types(user, org_unit_types):
-    if user.is_superuser:
-        return  # There is no need to check if it's a superuser
-    if org_unit_types:
-        org_unit_types_for_user = OrgUnitType.objects.filter_for_user_and_app_id(user=user).values_list("id", flat=True)
-        for org_unit_type in org_unit_types:
-            if org_unit_type.id not in org_unit_types_for_user:
-                raise serializers.ValidationError(f"The user doesn't have access to the OrgUnitType {org_unit_type.id}")
+from iaso.models import GroupSet, Form, Group
 
 
 def validate_group_sets(user, group_sets):

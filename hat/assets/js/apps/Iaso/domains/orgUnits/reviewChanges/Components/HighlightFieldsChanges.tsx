@@ -63,7 +63,6 @@ export const HighlightFields: FunctionComponent<Props> = ({
             };
         });
     }, [fieldType, oldFieldValues, newFieldValues]);
-
     return (
         <TableRow sx={{ verticalAlign: 'top' }}>
             <TableCell>{field.label}</TableCell>

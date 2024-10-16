@@ -68,6 +68,7 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
                         instanceId={`${instance.id}`}
                         height="150px"
                         titleVariant="subtitle2"
+                        titleColor="inherit"
                     />
                 </Box>
             ))}
@@ -182,21 +183,27 @@ export const useNewFields = (
                         <></>
                     ),
             },
+            new_location_accuracy: {
+                label: formatMessage(MESSAGES.accuracy),
+                order: 6,
+                fieldType: '',
+                formatValue: val => <span>{val.toString()}</span>,
+            },
             new_opening_date: {
                 label: formatMessage(MESSAGES.openingDate),
-                order: 6,
+                order: 7,
                 fieldType: '',
                 formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_closed_date: {
                 label: formatMessage(MESSAGES.closingDate),
-                order: 7,
+                order: 8,
                 fieldType: '',
                 formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_reference_instances: {
                 label: formatMessage(MESSAGES.multiReferenceInstancesLabel),
-                order: 8,
+                order: 9,
                 fieldType: '',
                 formatValue: val => (
                     <ReferenceInstances

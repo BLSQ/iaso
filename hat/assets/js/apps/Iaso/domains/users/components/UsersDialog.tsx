@@ -17,9 +17,11 @@ import React, {
 import { MutateFunction, useQueryClient } from 'react-query';
 
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import { SHOW_DEV_FEATURES } from '../../../utils/featureFlags';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
+import { userHasPermission } from '../utils';
 import PermissionsAttribution from './PermissionsAttribution';
 import { useInitialUser } from './useInitialUser';
 import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
@@ -30,9 +32,6 @@ import { WarningModal } from './WarningModal/WarningModal';
 const useStyles = makeStyles(theme => ({
     tabs: {
         marginBottom: theme.spacing(3),
-    },
-    tab: {
-        padding: 0,
     },
     root: {
         position: 'relative',
@@ -153,7 +152,8 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         }
         return '';
     }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
-
+    const currentUser = useCurrentUser();
+    const hasDevFeatures = userHasPermission(SHOW_DEV_FEATURES, currentUser);
     return (
         <>
             <WarningModal
@@ -214,13 +214,15 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
-                    <Tab
-                        classes={{
-                            root: classes.tab,
-                        }}
-                        value="orgUnitWriteTypes"
-                        label={formatMessage(MESSAGES.orgUnitWriteTypes)}
-                    />
+                    {hasDevFeatures && (
+                        <Tab
+                            classes={{
+                                root: classes.tab,
+                            }}
+                            value="orgUnitWriteTypes"
+                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
+                        />
+                    )}
                 </Tabs>
                 <div className={classes.root} id="user-profile-dialog">
                     <div

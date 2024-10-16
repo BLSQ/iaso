@@ -6,14 +6,15 @@ from django.apps import apps
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin, auth
+from django.db import models
+from django.shortcuts import render
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView, TemplateView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from django.shortcuts import render
 
-from iaso.views import health, page
+from iaso.views import ModelDataView, health, page
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
@@ -103,6 +104,7 @@ else:
             name="reset_password_complete",
         ),
         path("sync/", include("hat.sync.urls")),
+        path("model-diagram/", ModelDataView.as_view(), name="model-diagram"),
     ]
 
     for plugin_name in settings.PLUGINS:

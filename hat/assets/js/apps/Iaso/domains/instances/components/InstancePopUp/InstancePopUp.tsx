@@ -1,4 +1,5 @@
 import { Theme } from '@mui/material/styles';
+import L from 'leaflet';
 import React, {
     createRef,
     FunctionComponent,
@@ -22,7 +23,9 @@ import InstanceDetailsField from '../InstanceDetailsField';
 import InstanceDetailsInfos from '../InstanceDetailsInfos';
 
 import { baseUrls } from '../../../../constants/urls';
+import { usePopupState } from '../../../../utils/map/usePopupState';
 import { getOrgUnitsTree } from '../../../orgUnits/utils';
+import { useGetInstance } from '../../../registry/hooks/useGetInstances';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
 
@@ -43,24 +46,27 @@ const useStyles = makeStyles((theme: Theme) => ({
 type Props = {
     replaceLocation?: (instance: Instance) => void;
     displayUseLocation?: boolean;
-    currentInstance: Instance;
-    isLoading: boolean;
+    instanceId: number;
 };
 
 export const InstancePopup: FunctionComponent<Props> = ({
     replaceLocation = () => null,
     displayUseLocation = false,
-    currentInstance,
-    isLoading,
+    instanceId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const popup = createRef();
+    const popup = createRef<L.Popup>();
+    const isOpen = usePopupState(popup);
     const map = useMap();
-
+    const { data: currentInstance, isLoading } = useGetInstance(
+        isOpen ? instanceId : undefined,
+    );
     const confirmDialog = useCallback(() => {
-        replaceLocation(currentInstance);
-        map.closePopup(popup.current);
+        if (currentInstance) {
+            replaceLocation(currentInstance);
+            map.closePopup(popup.current);
+        }
     }, [currentInstance, map, popup, replaceLocation]);
 
     const hasHero = (currentInstance?.files?.length ?? 0) > 0;

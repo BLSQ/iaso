@@ -4,10 +4,10 @@ import { commonStyles } from 'bluesquare-components';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { MapContainer, ScaleControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
+
 import { useSelector } from 'react-redux';
 
 import {
-    circleColorMarkerOptions,
     clusterCustomMarker,
     defaultCenter,
     defaultZoom,
@@ -24,7 +24,6 @@ import { InstancePopup } from '../InstancePopUp/InstancePopUp';
 import { useShowWarning } from './useShowWarning';
 
 import tiles from '../../../../constants/mapTiles';
-import { useGetInstance } from '../../../registry/hooks/useGetInstances';
 
 const boundsOptions = { padding: [50, 50] };
 
@@ -51,11 +50,6 @@ export const InstancesMap: FunctionComponent<Props> = ({
     const classes = useStyles();
     const [isClusterActive, setIsClusterActive] = useState<boolean>(true);
 
-    const [currentInstanceId, setCurrentInstanceId] = useState<
-        number | undefined
-    >();
-    const { data: currentInstance, isLoading } =
-        useGetInstance(currentInstanceId);
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const notifications = useSelector((state: PartialReduxState) =>
         state.snackBar ? state.snackBar.notifications : [],
@@ -102,24 +96,20 @@ export const InstancesMap: FunctionComponent<Props> = ({
                         iconCreateFunction={clusterCustomMarker}
                     >
                         <MarkersListComponent
-                            markerProps={() => ({
-                                ...circleColorMarkerOptions('red'),
-                            })}
-                            popupProps={() => ({
-                                currentInstance,
-                                isLoading,
+                            popupProps={instance => ({
+                                instanceId: instance.id,
                             })}
                             items={instances}
-                            onMarkerClick={i => setCurrentInstanceId(i.id)}
                             PopupComponent={InstancePopup}
-                            isCircle
                         />
                     </MarkerClusterGroup>
                 )}
                 {!isClusterActive && (
                     <MarkersListComponent
                         items={instances}
-                        onMarkerClick={i => setCurrentInstanceId(i.id)}
+                        popupProps={instance => ({
+                            instanceId: instance.id,
+                        })}
                         PopupComponent={InstancePopup}
                     />
                 )}

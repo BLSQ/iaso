@@ -1,13 +1,13 @@
-from typing import Any
-from django.conf import settings
-from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
 from rest_framework import permissions, serializers, status
+from rest_framework.response import Response
+
 from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
-from iaso.models import OrgUnitType, UserRole
+from django.shortcuts import get_object_or_404
+
 from .common import TimestampField, ModelViewSet
 from hat.menupermissions import models as permission
+from iaso.models import Project, OrgUnitType, UserRole
 
 
 class HasUserRolePermission(permissions.BasePermission):
@@ -97,6 +97,16 @@ class UserRoleSerializer(serializers.ModelSerializer):
         user_role.save()
         user_role.editable_org_unit_types.set(editable_org_unit_types)
         return user_role
+
+    def validate_editable_org_unit_types(self, editable_org_unit_types):
+        account = self.context.get("request").user.iaso_profile.account
+        project_org_unit_types = set(Project.objects.get(account=account).unit_types.values_list("id", flat=True))
+        for org_unit_type in editable_org_unit_types:
+            if org_unit_type.pk not in project_org_unit_types:
+                raise serializers.ValidationError(
+                    f"`{org_unit_type.name} ({org_unit_type.pk})` is not a valid Org Unit Type fot this account."
+                )
+        return editable_org_unit_types
 
 
 class UserRolesViewSet(ModelViewSet):

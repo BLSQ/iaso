@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { TableBody, TableRow, TableCell } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import classNames from 'classnames';
 import { formatLabel } from '../../utils';
 import { FileContent } from '../../types/instance';
 
@@ -80,23 +81,21 @@ const InstanceLogContentBodyTable = memo(
                                         </span>
                                     </TableCell>
                                     <TableCell
-                                        className={
-                                            (classes.tableCell,
-                                            fileContent?.logA?.deleted
-                                                ? classes.deletedInfos
-                                                : undefined)
-                                        }
+                                        className={classNames(
+                                            classes.tableCell,
+                                            fileContent?.logA?.deleted &&
+                                                classes.deletedInfos,
+                                        )}
                                         align="left"
                                     >
                                         {fileContent?.logA.json[question.name]}
                                     </TableCell>
                                     <TableCell
-                                        className={
-                                            (classes.tableCell,
-                                            fileContent?.logB?.deleted
-                                                ? classes.deletedInfos
-                                                : undefined)
-                                        }
+                                        className={classNames(
+                                            classes.tableCell,
+                                            fileContent?.logB?.deleted &&
+                                                classes.deletedInfos,
+                                        )}
                                         align="left"
                                     >
                                         {fileContent?.logB.json[question.name]}

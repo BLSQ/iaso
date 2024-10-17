@@ -48,7 +48,7 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                     <TableCell align="left" className={classes.tableCellHead}>
                         <Typography
                             color={
-                                fileContent?.logA?.deleted ? 'error' : undefined
+                                fileContent?.logA?.deleted ? 'error' : 'inherit'
                             }
                         >
                             {formatMessage(MESSAGES.instanceLogsVersionA)}

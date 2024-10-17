@@ -77,6 +77,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.files',
         defaultMessage: 'Files',
     },
+    updated: {
+        id: 'iaso.instance.updated_at',
+        defaultMessage: 'Updated',
+    },
+    deleted: {
+        id: 'iaso.label.deleted',
+        defaultMessage: 'Deleted',
+    },
+    yes: {
+        defaultMessage: 'Yes',
+        id: 'iaso.label.yes',
+    },
+    no: {
+        defaultMessage: 'No',
+        id: 'iaso.label.no',
+    },
+    form_version: {
+        id: 'iaso.mappings.label.formVersion',
+        defaultMessage: 'Form version',
+    },
 });
 
 export default MESSAGES;

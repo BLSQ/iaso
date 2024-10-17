@@ -1,23 +1,23 @@
-import React, { FunctionComponent } from 'react';
 import { Box, Typography, TypographyVariant } from '@mui/material';
 import {
-    useSafeIntl,
-    LoadingSpinner,
     IconButton as IconButtonComponent,
+    LoadingSpinner,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 
+import { Accordion } from '../../../../components/Accordion/Accordion';
+import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
+import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
-import MESSAGES from '../messages';
+import { baseUrls } from '../../../../constants/urls';
 import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
 import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
 import InstanceFileContent from '../../components/InstanceFileContent';
-import { Instance } from '../../types/instance';
 import InstancesFilesList from '../../components/InstancesFilesListComponent';
+import { Instance } from '../../types/instance';
 import { getInstancesFilesList } from '../../utils';
-import { Accordion } from '../../../../components/Accordion/Accordion';
-import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
-import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
-import { baseUrls } from '../../../../constants/urls';
+import MESSAGES from '../messages';
 
 type Props = {
     data?: Instance;
@@ -26,6 +26,7 @@ type Props = {
     showTitle?: boolean;
     titleVariant?: TypographyVariant;
     height?: string | number;
+    titleColor?: string;
 };
 
 const styles = {
@@ -46,6 +47,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     showTitle = true,
     titleVariant = 'h5',
     height = '70vh',
+    titleColor = 'secondary',
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -68,7 +70,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
         <>
             {showTitle && (
                 <Box display="flex" alignItems="center">
-                    <Typography variant={titleVariant} color="secondary">
+                    <Typography variant={titleVariant} color={titleColor}>
                         {`${formatMessage(MESSAGES.submissionTitle)} - ${
                             data?.id
                         }`}

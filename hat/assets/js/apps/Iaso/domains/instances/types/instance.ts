@@ -56,6 +56,7 @@ export type Instance = {
     is_instance_of_reference_form: boolean;
     is_reference_instance: boolean;
     entity: Beneficiary;
+    source_created_at: number;
 };
 
 export type InstanceLogDetail = {

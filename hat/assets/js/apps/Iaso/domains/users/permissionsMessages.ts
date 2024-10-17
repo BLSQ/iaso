@@ -232,7 +232,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_entity_type_write: {
         id: 'iaso.permissions.iaso_entity_type_write',
-        defaultMessage: 'Entity types - read and write',
+        defaultMessage: 'Entity types management',
     },
     iaso_entity_type_write_tooltip: {
         id: 'iaso.permissions.tooltip.iaso_entity_type_write',
@@ -607,13 +607,13 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.readEdit.no_admin',
         defaultMessage: 'No-admin',
     },
-    admin: {
-        id: 'iaso.permissions.readEdit.admin',
-        defaultMessage: 'Admin',
+    all: {
+        id: 'iaso.permissions.readEdit.all',
+        defaultMessage: 'All',
     },
-    user_managed: {
-        id: 'iaso.permissions.readEdit.user_managed',
-        defaultMessage: 'Managed',
+    geo_limited: {
+        id: 'iaso.permissions.readEdit.geo_limited',
+        defaultMessage: 'Geo-limited',
     },
     iaso_submission_permissions: {
         id: 'iaso.permissions.readEdit.submission_permissions',

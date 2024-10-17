@@ -25,6 +25,7 @@ export type UserDialogData = {
     phone_number: ValueAndErrors<string | null>;
     country_code: ValueAndErrors<string | null>;
     projects: ValueAndErrors<Project[] | null>;
+    editable_org_unit_type_ids: ValueAndErrors<number[] | null>;
 };
 
 export type InitialUserData = Partial<Profile> & { is_superuser?: boolean };

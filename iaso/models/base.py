@@ -1508,12 +1508,15 @@ class Profile(models.Model):
             return True
         return False
 
+    def get_editable_org_unit_type_ids(self) -> set[int]:
+        ids_in_user_roles = set(self.user_roles.values_list("editable_org_unit_types", flat=True))
+        ids_in_user_profile = set(self.editable_org_unit_types.values_list("id", flat=True))
+        return ids_in_user_profile.union(ids_in_user_roles)
+
     def has_org_unit_write_permission(
-        self, org_unit_type_id: int, prefetched_editable_org_unit_type_ids: list = None
+        self, org_unit_type_id: int, prefetched_editable_org_unit_type_ids: set[int] = None
     ) -> bool:
-        editable_org_unit_type_ids = prefetched_editable_org_unit_type_ids or list(
-            self.editable_org_unit_types.values_list("id", flat=True)
-        )
+        editable_org_unit_type_ids = prefetched_editable_org_unit_type_ids or self.get_editable_org_unit_type_ids()
         if not editable_org_unit_type_ids:
             return True
         return org_unit_type_id in editable_org_unit_type_ids
@@ -1674,6 +1677,11 @@ class UserRole(models.Model):
     group = models.OneToOneField(auth.models.Group, on_delete=models.CASCADE, related_name="iaso_user_role")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Each user can have restricted write access to OrgUnits, based on their type.
+    # By default, empty `editable_org_unit_types` means access to everything.
+    editable_org_unit_types = models.ManyToManyField(
+        "OrgUnitType", related_name="editable_by_user_role_set", blank=True
+    )
 
     def __str__(self) -> str:
         return self.group.name

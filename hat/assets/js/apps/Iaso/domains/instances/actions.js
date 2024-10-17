@@ -1,9 +1,4 @@
-import {
-    getRequest,
-    patchRequest,
-    postRequest,
-    putRequest,
-} from 'Iaso/libs/Api.ts';
+import { getRequest, postRequest, putRequest } from 'Iaso/libs/Api.ts';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher.ts';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
@@ -21,11 +16,6 @@ export const setInstancesFetching = isFetching => ({
     payload: isFetching,
 });
 
-export const setCurrentInstance = instance => ({
-    type: SET_CURRENT_INSTANCE,
-    payload: instance,
-});
-
 export const fetchEditUrl = (currentInstance, location) => dispatch => {
     dispatch(setInstancesFetching(true));
     const url = `/api/enketo/edit/${currentInstance.uuid}?return_url=${location}`;
@@ -36,38 +26,6 @@ export const fetchEditUrl = (currentInstance, location) => dispatch => {
         .catch(err => {
             openSnackBar(errorSnackBar('fetchEnketoError', null, err));
         })
-        .then(() => {
-            dispatch(setInstancesFetching(false));
-        });
-};
-
-export const fetchInstanceDetail = instanceId => dispatch => {
-    dispatch(setInstancesFetching(true));
-    return getRequest(`/api/instances/${instanceId}/`)
-        .then(res => {
-            dispatch(setCurrentInstance(res));
-            return res;
-        })
-        .catch(err =>
-            openSnackBar(errorSnackBar('fetchInstanceError', null, err)),
-        )
-        .then(res => {
-            dispatch(setInstancesFetching(false));
-            return res;
-        });
-};
-
-export const reAssignInstance = (currentInstance, payload) => dispatch => {
-    dispatch(setInstancesFetching(true));
-    const effectivePayload = { ...payload };
-    if (!payload.period) delete effectivePayload.period;
-    patchRequest(`/api/instances/${currentInstance.id}/`, effectivePayload)
-        .then(() => {
-            dispatch(fetchInstanceDetail(currentInstance.id));
-        })
-        .catch(err =>
-            openSnackBar(errorSnackBar('assignInstanceError', null, err)),
-        )
         .then(() => {
             dispatch(setInstancesFetching(false));
         });

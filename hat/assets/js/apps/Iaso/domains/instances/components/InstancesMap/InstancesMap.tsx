@@ -1,17 +1,13 @@
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { MapContainer, ScaleControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import {
+    circleColorMarkerOptions,
     clusterCustomMarker,
     defaultCenter,
     defaultZoom,
@@ -23,13 +19,12 @@ import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLay
 import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
 import { MapToggleCluster } from '../../../../components/maps/tools/MapToggleCluster';
 import { Tile } from '../../../../components/maps/tools/TilesSwitchControl';
-import { fetchInstanceDetail } from '../../../../utils/requests';
-import { setCurrentInstance } from '../../actions';
 import { Instance } from '../../types/instance';
 import { InstancePopup } from '../InstancePopUp/InstancePopUp';
 import { useShowWarning } from './useShowWarning';
 
 import tiles from '../../../../constants/mapTiles';
+import { useGetInstance } from '../../../registry/hooks/useGetInstances';
 
 const boundsOptions = { padding: [50, 50] };
 
@@ -55,28 +50,15 @@ export const InstancesMap: FunctionComponent<Props> = ({
 }) => {
     const classes = useStyles();
     const [isClusterActive, setIsClusterActive] = useState<boolean>(true);
+
+    const [currentInstanceId, setCurrentInstanceId] = useState<
+        number | undefined
+    >();
+    const { data: currentInstance, isLoading } =
+        useGetInstance(currentInstanceId);
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const notifications = useSelector((state: PartialReduxState) =>
         state.snackBar ? state.snackBar.notifications : [],
-    );
-
-    const dispatch = useDispatch();
-    const dispatchInstance = useCallback(
-        instance => {
-            dispatch(setCurrentInstance(instance));
-        },
-        [dispatch],
-    );
-    // We need redux here for the PopUp. Refactoring the pop up may be complex since it is used in MarkerClusterGroup,
-    // which is itself widely used
-    const fetchAndDispatchDetail = useCallback(
-        instance => {
-            dispatchInstance(null);
-            fetchInstanceDetail(instance.id).then((i: Instance) =>
-                dispatchInstance(i),
-            );
-        },
-        [dispatchInstance],
     );
     useShowWarning({ instances, notifications, fetching });
 
@@ -89,7 +71,7 @@ export const InstancesMap: FunctionComponent<Props> = ({
 
     if (fetching) return null;
     return (
-        <Box className={classes.root}>
+        <Box className={classes.root} mt={2}>
             <MapToggleCluster
                 isClusterActive={isClusterActive}
                 setIsClusterActive={setIsClusterActive}
@@ -120,16 +102,24 @@ export const InstancesMap: FunctionComponent<Props> = ({
                         iconCreateFunction={clusterCustomMarker}
                     >
                         <MarkersListComponent
+                            markerProps={() => ({
+                                ...circleColorMarkerOptions('red'),
+                            })}
+                            popupProps={() => ({
+                                currentInstance,
+                                isLoading,
+                            })}
                             items={instances}
-                            onMarkerClick={fetchAndDispatchDetail}
+                            onMarkerClick={i => setCurrentInstanceId(i.id)}
                             PopupComponent={InstancePopup}
+                            isCircle
                         />
                     </MarkerClusterGroup>
                 )}
                 {!isClusterActive && (
                     <MarkersListComponent
                         items={instances}
-                        onMarkerClick={fetchAndDispatchDetail}
+                        onMarkerClick={i => setCurrentInstanceId(i.id)}
                         PopupComponent={InstancePopup}
                     />
                 )}

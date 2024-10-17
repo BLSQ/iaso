@@ -1,6 +1,11 @@
-import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
+import { Theme } from '@mui/material/styles';
+import React, {
+    createRef,
+    FunctionComponent,
+    useCallback,
+    useMemo,
+} from 'react';
 import { Popup, useMap } from 'react-leaflet';
-import { useSelector } from 'react-redux';
 
 import { Box, Card, CardContent, CardMedia, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -21,9 +26,9 @@ import { getOrgUnitsTree } from '../../../orgUnits/utils';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    ...mapPopupStyles(theme),
+const useStyles = makeStyles((theme: Theme) => ({
+    ...(commonStyles(theme) as Record<string, any>),
+    ...(mapPopupStyles(theme) as Record<string, any>),
     actionBox: {
         padding: theme.spacing(1, 0, 0, 0),
     },
@@ -38,24 +43,25 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     replaceLocation?: (instance: Instance) => void;
     displayUseLocation?: boolean;
+    currentInstance: Instance;
+    isLoading: boolean;
 };
 
 export const InstancePopup: FunctionComponent<Props> = ({
     replaceLocation = () => null,
     displayUseLocation = false,
+    currentInstance,
+    isLoading,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const popup: any = useRef();
+    const popup = createRef();
     const map = useMap();
-    const currentInstance = useSelector(
-        (state: any) => state.instances.current,
-    );
 
     const confirmDialog = useCallback(() => {
         replaceLocation(currentInstance);
         map.closePopup(popup.current);
-    }, [currentInstance, map, replaceLocation]);
+    }, [currentInstance, map, popup, replaceLocation]);
 
     const hasHero = (currentInstance?.files?.length ?? 0) > 0;
 
@@ -68,7 +74,7 @@ export const InstancePopup: FunctionComponent<Props> = ({
 
     return (
         <Popup className={classes.popup} ref={popup} pane="popupPane">
-            {!currentInstance && <LoadingSpinner />}
+            {isLoading && <LoadingSpinner />}
             {currentInstance && (
                 <Card className={classes.popupCard}>
                     {hasHero && (

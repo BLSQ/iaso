@@ -52,7 +52,7 @@ export const fetchOrgUnitDetail = orgUnitId =>
         });
 
 export const fetchInstanceDetail = instanceId =>
-    getRequest(`/api/instances/${instanceId}`)
+    getRequest(`/api/instances/${instanceId}/`)
         .then(instance => instance)
         .catch(error => {
             openSnackBar(errorSnackBar('fetchInstanceError', null, error));

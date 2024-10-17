@@ -1,6 +1,7 @@
-import React, { Component, FunctionComponent } from 'react';
+import React, { Component, FunctionComponent, useState } from 'react';
 import MarkersListComponent from '../../../../../components/maps/markers/MarkersListComponent';
 import { circleColorMarkerOptions } from '../../../../../utils/map/mapUtils';
+import { useGetInstance } from '../../../../registry/hooks/useGetInstances';
 import { OrgUnit } from '../../../types/orgUnit';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 
@@ -9,25 +10,30 @@ type Props = {
     locationsList: any[];
     color?: string;
     keyId: string | number;
-    fetchDetail: (orgUnit: OrgUnit) => void;
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
 };
 
 export const MarkerList: FunctionComponent<Props> = ({
     locationsList,
-    fetchDetail,
     color = '#000000',
     keyId,
     updateOrgUnitLocation,
     PopupComponent = OrgUnitPopupComponent,
 }) => {
+    const [currentInstanceId, setCurrentInstanceId] = useState<
+        number | undefined
+    >();
+    const { data: currentInstance, isLoading } =
+        useGetInstance(currentInstanceId);
     return (
         <MarkersListComponent
             key={keyId}
             items={locationsList}
-            onMarkerClick={fetchDetail}
+            onMarkerClick={i => setCurrentInstanceId(i.id)}
             PopupComponent={PopupComponent}
             popupProps={() => ({
+                currentInstance,
+                isLoading,
                 displayUseLocation: true,
                 replaceLocation: selectedOrgUnit =>
                     updateOrgUnitLocation(selectedOrgUnit),

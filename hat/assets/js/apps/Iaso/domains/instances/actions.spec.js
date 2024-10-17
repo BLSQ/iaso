@@ -1,7 +1,5 @@
 import {
-    SET_CURRENT_INSTANCE,
     SET_INSTANCES_FILTER_UDPATED,
-    setCurrentInstance,
     setInstancesFilterUpdated,
 } from './actions';
 
@@ -19,18 +17,6 @@ describe('Instances actions', () => {
             payload,
         };
         const action = setInstancesFilterUpdated(payload);
-        expect(action).to.eql(expectedAction);
-    });
-    it('should create an action to set current instance', () => {
-        const payload = {
-            id: 0,
-            name: 'LINK',
-        };
-        const expectedAction = {
-            type: SET_CURRENT_INSTANCE,
-            payload,
-        };
-        const action = setCurrentInstance(payload);
         expect(action).to.eql(expectedAction);
     });
     // it('should call getRequest on fetchEditUrl', () => {

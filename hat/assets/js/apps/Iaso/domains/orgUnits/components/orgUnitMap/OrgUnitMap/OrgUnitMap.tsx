@@ -106,7 +106,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const [state, setStateField, , setState] = useFormState(
         initialState(currentUser),
     );
-    const { fetchInstanceDetail, fetchSubOrgUnitDetail } = useRedux();
+    const { fetchSubOrgUnitDetail } = useRedux();
     const setAncestor = useCallback(() => {
         const ancestor = getAncestorWithGeojson(currentOrgUnit);
         if (ancestor) {
@@ -581,7 +581,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
                         <FormsMarkers
                             forms={state.formsSelected.value}
-                            fetchInstanceDetail={fetchInstanceDetail}
                             updateOrgUnitLocation={updateOrgUnitLocation}
                         />
                     </>

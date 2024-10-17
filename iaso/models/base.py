@@ -1,5 +1,3 @@
-import datetime
-import mimetypes
 import operator
 import random
 import re
@@ -15,7 +13,6 @@ import django_cte
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
 from django.contrib import auth
-from django.contrib.auth import models as authModels
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
@@ -33,7 +30,6 @@ from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers.phonenumberutil import region_code_for_number
 
-from hat.audit.models import INSTANCE_API, log_modification
 from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
@@ -43,7 +39,6 @@ from iaso.utils.file_utils import get_file_type
 from .. import periods
 from ..utils.emoji import fix_emoji
 from ..utils.jsonlogic import jsonlogic_to_q
-from ..utils.models.common import get_creator_name
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .project import Project
@@ -1467,7 +1462,7 @@ class Profile(models.Model):
                 "phone_number": self.phone_number.as_e164 if self.phone_number else None,
                 "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
                 "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
-                "editable_org_unit_type_ids": list(self.editable_org_unit_types.values_list("id", flat=True)),
+                "editable_org_unit_type_ids": [out.pk for out in self.editable_org_unit_types.all()],
             }
         else:
             return {
@@ -1490,7 +1485,7 @@ class Profile(models.Model):
                 "phone_number": self.phone_number.as_e164 if self.phone_number else None,
                 "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
                 "projects": [p.as_dict() for p in self.projects.all()],
-                "editable_org_unit_type_ids": list(self.editable_org_unit_types.values_list("id", flat=True)),
+                "editable_org_unit_type_ids": [out.pk for out in self.editable_org_unit_types.all()],
             }
 
     def as_short_dict(self):
@@ -1504,7 +1499,7 @@ class Profile(models.Model):
             "user_id": self.user.id,
             "phone_number": self.phone_number.as_e164 if self.phone_number else None,
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
-            "editable_org_unit_type_ids": list(self.editable_org_unit_types.values_list("id", flat=True)),
+            "editable_org_unit_type_ids": [out.pk for out in self.editable_org_unit_types.all()],
         }
 
     def has_a_team(self):
@@ -1512,6 +1507,16 @@ class Profile(models.Model):
         if team:
             return True
         return False
+
+    def has_org_unit_write_permission(
+        self, org_unit_type_id: int, prefetched_editable_org_unit_type_ids: list = None
+    ) -> bool:
+        editable_org_unit_type_ids = prefetched_editable_org_unit_type_ids or list(
+            self.editable_org_unit_types.values_list("id", flat=True)
+        )
+        if not editable_org_unit_type_ids:
+            return True
+        return org_unit_type_id in editable_org_unit_type_ids
 
 
 class ExportRequest(models.Model):

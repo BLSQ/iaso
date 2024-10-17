@@ -423,8 +423,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         errors = []
         org_unit = get_object_or_404(self.get_queryset(), id=pk)
+        profile = request.user.iaso_profile
 
         self.check_object_permissions(request, org_unit)
+
+        if org_unit.org_unit_type and not profile.has_org_unit_write_permission(org_unit.org_unit_type.pk):
+            errors.append(
+                {
+                    "errorKey": "org_unit_type_id",
+                    "errorMessage": _("You cannot create or edit an Org unit of this type"),
+                }
+            )
 
         original_copy = deepcopy(org_unit)
 
@@ -528,7 +537,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.parent = parent_org_unit
                 else:
                     # User that are restricted to parts of the hierarchy cannot create root orgunit
-                    profile = request.user.iaso_profile
                     if profile.org_units.all():
                         errors.append(
                             {
@@ -674,8 +682,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             org_unit.validation_status = validation_status
 
-        org_unit_type_id = request.data.get("org_unit_type_id", None)
-
         reference_instance_id = request.data.get("reference_instance_id", None)
 
         parent_id = request.data.get("parent_id", None)
@@ -697,8 +703,18 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if latitude and longitude:
             org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
 
+        org_unit_type_id = request.data.get("org_unit_type_id", None)
+
         if not org_unit_type_id:
             errors.append({"errorKey": "org_unit_type_id", "errorMessage": _("Org unit type is required")})
+
+        if not profile.has_org_unit_write_permission(org_unit_type_id):
+            errors.append(
+                {
+                    "errorKey": "org_unit_type_id",
+                    "errorMessage": _("You cannot create or edit an Org unit of this type"),
+                }
+            )
 
         if parent_id:
             parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)

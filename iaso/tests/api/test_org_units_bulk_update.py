@@ -60,7 +60,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
-        cls.jedi_squad_endor = m.OrgUnit.objects.create(
+        cls.jedi_squad_endor_1 = m.OrgUnit.objects.create(
             parent=cls.jedi_council_endor,
             org_unit_type=cls.jedi_squad,
             version=sw_version_1,
@@ -72,7 +72,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="F9w3VW1cQmb",
         )
-        cls.jedi_squad_endor = m.OrgUnit.objects.create(
+        cls.jedi_squad_endor_2 = m.OrgUnit.objects.create(
             parent=cls.jedi_council_endor,
             org_unit_type=cls.jedi_squad,
             version=sw_version_1,
@@ -245,6 +245,47 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
 
         self.assertEqual(5, am.Modification.objects.count())
+
+    @tag("iaso_only")
+    def test_org_unit_bulkupdate_select_all_with_restricted_write_permission_for_user(self):
+        """
+        Check that we cannot bulk edit all org units if writing rights are limited
+        by a set of org unit types that we are allowed to modify.
+        """
+        self.yoda.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type are now writable.
+            [self.jedi_squad]
+        )
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.post(
+            f"/api/tasks/create/orgunitsbulkupdate/",
+            data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_bulk_update")
+        self.assertEqual(task.launcher, self.yoda)
+
+        # Run the task.
+        self.runAndValidateTask(task, "SUCCESS")
+
+        self.assertEqual(2, am.Modification.objects.count())
+
+        task.refresh_from_db()
+        self.assertIn("2 modified", task.progress_message)
+        self.assertIn("3 skipped", task.progress_message)
+
+        self.yoda.iaso_profile.editable_org_unit_types.clear()
+
+        for org_unit in [self.jedi_squad_endor_1, self.jedi_squad_endor_2]:
+            org_unit.refresh_from_db()
+            self.assertEqual(org_unit.validation_status, m.OrgUnit.VALIDATION_REJECTED)
+
+        for org_unit in [self.jedi_council_corruscant, self.jedi_council_endor, self.jedi_council_brussels]:
+            org_unit.refresh_from_db()
+            self.assertEqual(org_unit.validation_status, m.OrgUnit.VALIDATION_VALID)
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_with_search(self):

@@ -6,15 +6,18 @@ from django.contrib.auth.models import Permission, Group
 class UserRoleAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        account = m.Account.objects.create(name="Account")
-        cls.account = account
-        sw_source = m.DataSource.objects.create(name="Galactic Empire")
-        cls.sw_source = sw_source
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type", short_name="OUT")
+
+        cls.account = account = m.Account.objects.create(name="Account")
+        cls.project = project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
+        project.unit_types.set([cls.org_unit_type])
+
+        cls.sw_source = sw_source = m.DataSource.objects.create(name="Galactic Empire")
+        sw_source.projects.set([project])
+
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         account.default_version = sw_version
         account.save()
-
-        cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type", short_name="OUT")
 
         cls.user = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_user_roles"])
         cls.user_with_no_permissions = cls.create_user_with_profile(username="userNoPermission", account=account)
@@ -113,8 +116,30 @@ class UserRoleAPITestCase(APITestCase):
             [{"id": self.org_unit_type.id, "name": "Org unit type", "short_name": "OUT"}],
         )
 
+    def test_partial_update_invalid_org_unit_type(self):
+        invalid_org_unit_type = m.OrgUnitType.objects.create(
+            name="This org unit type is not linked to the account", short_name="Invalid"
+        )
+
+        self.client.force_authenticate(self.user)
+        payload = {
+            "name": self.user_role.group.name,
+            "editable_org_unit_types": [invalid_org_unit_type.pk],
+        }
+
+        response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
+
+        r = self.assertJSONResponse(response, 400)
+        self.assertEqual(
+            r["editable_org_unit_types"],
+            [
+                f"`{invalid_org_unit_type.name} ({invalid_org_unit_type.pk})` is not a valid Org Unit Type fot this account."
+            ],
+        )
+
     def test_partial_update_no_modification(self):
         new_org_unit_type = m.OrgUnitType.objects.create(name="New org unit type", short_name="NOUT")
+        self.project.unit_types.add(new_org_unit_type.pk)
 
         self.client.force_authenticate(self.user)
         payload = {

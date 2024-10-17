@@ -1,7 +1,7 @@
 import { Grid, Typography } from '@mui/material';
 import { LoadingSpinner, useRedirectTo } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { Checkboxes } from '../../../components/forms/Checkboxes';
@@ -48,43 +48,60 @@ const AddTask = ({
         MESSAGES.importFromDhis2Error,
     );
 
-    const reset = () => {
+    const reset = useCallback(() => {
         setFormState(initialFormState(sourceCredentials));
         setWithExistingDhis2Settings(true);
-    };
+    }, [setFormState, sourceCredentials]);
 
-    const submit = async (closeDialogCallBack, redirect = false) => {
-        const body = {
-            source_id: sourceId,
-            source_version_number: sourceVersionNumber,
-            force: false,
-            validate_status: form.validate_status.value,
-            continue_on_error: form.continue_on_error.value,
-            description: form.versionDescription.value || null,
-        };
-        if (!withExistingDhis2Settings) {
-            body.dhis2_password = form.dhis2_password.value;
-            body.dhis2_url = form.dhis2_url.value;
-            body.dhis2_login = form.dhis2_login.value;
-        }
+    const submit = useCallback(
+        async (closeDialogCallBack, redirect = false) => {
+            const body = {
+                source_id: sourceId,
+                source_version_number: sourceVersionNumber,
+                force: false,
+                validate_status: form.validate_status.value,
+                continue_on_error: form.continue_on_error.value,
+                description: form.versionDescription.value || null,
+            };
 
-        await mutation.mutateAsync(body);
-        closeDialogCallBack();
-        if (redirect) {
-            redirectTo(baseUrls.tasks, {
-                order: '-created_at',
-            });
-        }
-        reset();
-    };
+            if (!withExistingDhis2Settings) {
+                body.dhis2_password = form.dhis2_password.value;
+                body.dhis2_url = form.dhis2_url.value;
+                body.dhis2_login = form.dhis2_login.value;
+            }
+
+            await mutation.mutateAsync(body);
+            closeDialogCallBack();
+
+            if (redirect) {
+                redirectTo(baseUrls.tasks, {
+                    order: '-created_at',
+                });
+            }
+
+            reset();
+        },
+        [
+            sourceId,
+            sourceVersionNumber,
+            form,
+            withExistingDhis2Settings,
+            mutation,
+            redirectTo,
+            reset,
+        ],
+    );
 
     const onConfirm = async closeDialog => {
         await submit(closeDialog);
     };
 
-    const onRedirect = async closeDialog => {
-        await submit(closeDialog, true);
-    };
+    const onRedirect = useCallback(
+        async closeDialog => {
+            await submit(closeDialog, true);
+        },
+        [submit],
+    );
 
     const titleMessage = sourceVersionNumber ? (
         <FormattedMessage
@@ -185,13 +202,16 @@ const AddTask = ({
         currentUser,
     );
 
-    const additionalButtonProps = hasTaskPermission
-        ? {
-              additionalButton: true,
-              additionalMessage: MESSAGES.goToCurrentTask,
-              onAdditionalButtonClick: onRedirect,
-          }
-        : {};
+    const additionalButtonProps = useMemo(() => {
+        return hasTaskPermission
+            ? {
+                  additionalButton: true,
+                  additionalMessage: MESSAGES.goToCurrentTask,
+                  onAdditionalButtonClick: onRedirect,
+              }
+            : {};
+    }, [hasTaskPermission, onRedirect]);
+
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}

@@ -5,7 +5,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
@@ -44,37 +44,52 @@ const ImportGeoPkgDialog = ({
         MESSAGES.importGpkgSuccess,
         MESSAGES.importGpkgError,
     );
-    const reset = () => {
+    const reset = useCallback(() => {
         setFormState(initialFormState());
-    };
+    }, [setFormState]);
 
-    const submit = async (closeDialogCallBack, redirect = false) => {
-        const body = {
-            file: form.file.value,
-            project: form.project.value,
-            data_source: sourceId,
-            version_number:
-                versionNumber !== null && versionNumber !== undefined
-                    ? versionNumber.toString()
-                    : '',
-            description: form.versionDescription.value || '',
-        };
-        await mutation.mutateAsync(body);
-        closeDialogCallBack();
+    const submit = useCallback(
+        async (closeDialogCallBack, redirect = false) => {
+            const body = {
+                file: form.file.value,
+                project: form.project.value,
+                data_source: sourceId,
+                version_number:
+                    versionNumber !== null && versionNumber !== undefined
+                        ? versionNumber.toString()
+                        : '',
+                description: form.versionDescription.value || '',
+            };
+            await mutation.mutateAsync(body);
+            closeDialogCallBack();
 
-        if (redirect) {
-            reset();
-            redirectTo(baseUrls.tasks);
-        }
-    };
+            if (redirect) {
+                reset();
+                redirectTo(baseUrls.tasks);
+            }
+        },
+        [
+            form.file.value,
+            form.project.value,
+            form.versionDescription.value,
+            mutation,
+            redirectTo,
+            reset,
+            sourceId,
+            versionNumber,
+        ],
+    );
 
     const onConfirm = async closeDialog => {
         await submit(closeDialog);
     };
 
-    const onRedirect = async closeDialog => {
-        await submit(closeDialog, true);
-    };
+    const onRedirect = useCallback(
+        async closeDialog => {
+            await submit(closeDialog, true);
+        },
+        [submit],
+    );
 
     const titleMessage = versionNumber ? (
         <FormattedMessage
@@ -95,13 +110,17 @@ const ImportGeoPkgDialog = ({
         currentUser,
     );
 
-    const additionalButtonProps = hasTaskPermission
-        ? {
-              additionalButton: true,
-              additionalMessage: MESSAGES.goToCurrentTask,
-              onAdditionalButtonClick: onRedirect,
-          }
-        : {};
+    const additionalButtonProps = useMemo(
+        () =>
+            hasTaskPermission
+                ? {
+                      additionalButton: true,
+                      additionalMessage: MESSAGES.goToCurrentTask,
+                      onAdditionalButtonClick: onRedirect,
+                  }
+                : {},
+        [hasTaskPermission, onRedirect],
+    );
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}

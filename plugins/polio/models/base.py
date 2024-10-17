@@ -1,6 +1,7 @@
 import datetime
 import json
 import math
+import os
 from collections import defaultdict
 from datetime import date
 from typing import Any, Tuple, Union
@@ -8,9 +9,11 @@ from uuid import uuid4
 
 import django.db.models.manager
 import pandas as pd
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.files.base import File
+from django.core.files.storage import FileSystemStorage
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
@@ -1075,16 +1078,14 @@ class NotificationManager(models.Manager):
         return OrgUnit.objects.filter(pk__in=countries_pk).defer("geom", "simplified_geom").order_by("name")
 
 
-class CustomPublicStorage(S3Boto3Storage):
-    default_acl = "public-read"
-    file_overwrite = False
-    querystring_auth = False
-
-    def get_available_name(self, name, max_length=None):
-        # This method ensures that files with the same name are not overwritten
-        if self.file_overwrite:
-            return super().get_available_name(name, max_length)
-        return name
+class CustomPublicStorage(S3Boto3Storage if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME") else FileSystemStorage):
+    if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME"):
+        default_acl = "public-read"
+        file_overwrite = False
+        querystring_auth = False
+        bucket_name = os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME", "")
+    else:
+        location = settings.MEDIA_ROOT
 
 
 ## Terminology
@@ -1124,7 +1125,7 @@ class VaccineRequestForm(SoftDeletableModel):
     comment = models.TextField(blank=True, null=True)
     target_population = models.PositiveIntegerField(null=True, blank=True)
 
-    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/vrf/")
+    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/vrf/", null=True, blank=True)
 
     objects = DefaultSoftDeletableManager()
 
@@ -1159,7 +1160,9 @@ class VaccinePreAlert(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/prealert/")
+    document = models.FileField(
+        storage=CustomPublicStorage(), upload_to="public_documents/prealert/", null=True, blank=True
+    )
 
     objects = DefaultSoftDeletableManager()
 
@@ -1245,7 +1248,9 @@ class OutgoingStockMovement(models.Model):
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     missing_vials = models.PositiveIntegerField()
 
-    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/forma/")
+    document = models.FileField(
+        storage=CustomPublicStorage(), upload_to="public_documents/forma/", null=True, blank=True
+    )
 
 
 class DestructionReport(models.Model):
@@ -1256,7 +1261,9 @@ class DestructionReport(models.Model):
     unusable_vials_destroyed = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
 
-    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/")
+    document = models.FileField(
+        storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/", null=True, blank=True
+    )
 
 
 class IncidentReport(models.Model):
@@ -1282,7 +1289,9 @@ class IncidentReport(models.Model):
     unusable_vials = models.PositiveIntegerField()
     usable_vials = models.PositiveIntegerField()
 
-    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/")
+    document = models.FileField(
+        storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/", null=True, blank=True
+    )
 
 
 class Notification(models.Model):

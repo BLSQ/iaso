@@ -2,6 +2,7 @@ from logging import getLogger
 from typing import Any
 
 from django import forms
+from django.core.files.base import ContentFile
 from django.db.models import Max, Min, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
@@ -266,6 +267,7 @@ class NestedCountrySerializer(serializers.ModelSerializer):
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
     rounds = NestedRoundPostSerializer(many=True)
     campaign = serializers.CharField()
+    document = serializers.FileField(required=False)
 
     class Meta:
         model = VaccineRequestForm
@@ -287,6 +289,7 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
             "comment",
             "target_population",
             "vrf_type",
+            "document",
         ]
 
         read_only_fields = ["created_at", "updated_at"]
@@ -340,6 +343,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
     country_id = serializers.IntegerField(source="campaign.country.id")
     obr_name = serializers.CharField(source="campaign.obr_name")
     rounds = NestedRoundSerializer(many=True)
+    document = serializers.FileField(required=False)
 
     class Meta:
         model = VaccineRequestForm
@@ -367,6 +371,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
             "obr_name",
             "target_population",
             "vrf_type",
+            "document",
         ]
 
 

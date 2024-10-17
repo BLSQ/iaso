@@ -18,6 +18,7 @@ import { useUrlParams } from '../../../../../../../../../hat/assets/js/apps/Iaso
 import {
     deleteRequest,
     getRequest,
+    iasoFetch,
     patchRequest,
     postRequest,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
@@ -46,6 +47,8 @@ import {
     VRF,
     VRFFormData,
 } from '../../types';
+import moment from 'moment';
+import { PostArg } from 'hat/assets/js/apps/Iaso/types/general';
 
 const defaults = {
     order: '-start_date',
@@ -190,17 +193,93 @@ const getRoundsForApi = (
     return rounds.split(',').map(r => ({ number: parseInt(r, 10) }));
 };
 
+// export const saveVrf = (
+//     vrf: Optional<Partial<VRFFormData>>,
+// ): Promise<any>[] => {
+//     const payload: Partial<VRF> = {
+//         ...vrf,
+//         rounds: getRoundsForApi(vrf?.rounds),
+//     };
+//     if (vrf?.id) {
+//         return [patchRequest(`${apiUrl}${vrf?.id}/`, payload)];
+//     }
+//     return [postRequest(apiUrl, payload)];
+// };
+
+export const patchRequest2 = (
+    arg1: PostArg
+): Promise<any> => {
+    const { url, data = {}, fileData = {}, signal = null } = arg1;
+
+    let init: Record<string, unknown> = {};
+    if (Object.keys(fileData).length > 0) {
+        const formData = new FormData();
+        Object.entries(data).forEach(([key, value]) => {
+            let converted_value = value;
+            if (typeof converted_value === 'object') {
+                converted_value = JSON.stringify(converted_value);
+            }
+            formData.append(key, converted_value);
+        });
+        Object.entries(fileData).forEach(([key, value]) => {
+            if (key === 'files' && Array.isArray(value) && value.length > 0) {
+                formData.append('document', value[0]); // Use 'document' key
+            } else if (Array.isArray(value)) {
+                value.forEach((blob, index) => {
+                    formData.append(`${key}[${index}]`, blob);
+                });
+            } else {
+                formData.append(key, value);
+            }
+        });
+        init = {
+            method: 'PATCH',
+            body: formData,
+            signal,
+        };
+    } else {
+        init = {
+            method: 'PATCH',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept-Language': moment.locale(),
+            },
+            signal,
+        };
+    }
+
+    return iasoFetch(url, init).then(response => response.json());
+};
+
 export const saveVrf = (
     vrf: Optional<Partial<VRFFormData>>,
 ): Promise<any>[] => {
-    const payload: Partial<VRF> = {
-        ...vrf,
-        rounds: getRoundsForApi(vrf?.rounds),
+    const filteredParams = vrf
+        ? Object.fromEntries(
+            Object.entries(vrf).filter(
+                ([key, value]) => value !== undefined && value !== null && key !== 'document',
+            ),
+        )
+        : {};
+
+    const requestBody: any = {
+        url: `${apiUrl}${vrf?.id ? `${vrf.id}/` : ''}`,
+        data: filteredParams,
     };
-    if (vrf?.id) {
-        return [patchRequest(`${apiUrl}${vrf?.id}/`, payload)];
+
+    if (vrf?.document) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+        const { files, ...data } = filteredParams;
+        const fileData = { files: vrf.document };
+        requestBody.data = data;
+        requestBody.fileData = fileData;
     }
-    return [postRequest(apiUrl, payload)];
+
+    if (vrf?.id) {
+        return [patchRequest2(requestBody)];
+    }
+    return [postRequest(requestBody)];
 };
 
 export const handleVrfPromiseErrors = (

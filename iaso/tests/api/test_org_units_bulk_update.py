@@ -260,7 +260,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
         response = self.client.post(
             f"/api/tasks/create/orgunitsbulkupdate/",
-            data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_VALID},
+            data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
         self.assertJSONResponse(response, 201)
@@ -271,10 +271,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         # Run the task.
         self.runAndValidateTask(task, "SUCCESS")
 
-        for org_unit in [self.jedi_squad_endor_1, self.jedi_squad_endor_2]:
-            org_unit.refresh_from_db()
-            self.assertEqual(org_unit.validation_status, m.OrgUnit.VALIDATION_VALID)
-
         self.assertEqual(2, am.Modification.objects.count())
 
         task.refresh_from_db()
@@ -282,6 +278,14 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertIn("3 skipped", task.progress_message)
 
         self.yoda.iaso_profile.editable_org_unit_types.clear()
+
+        for org_unit in [self.jedi_squad_endor_1, self.jedi_squad_endor_2]:
+            org_unit.refresh_from_db()
+            self.assertEqual(org_unit.validation_status, m.OrgUnit.VALIDATION_REJECTED)
+
+        for org_unit in [self.jedi_council_corruscant, self.jedi_council_endor, self.jedi_council_brussels]:
+            org_unit.refresh_from_db()
+            self.assertEqual(org_unit.validation_status, m.OrgUnit.VALIDATION_VALID)
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_with_search(self):

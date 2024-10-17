@@ -540,8 +540,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                         titleMessage={formatMessage(
                                             MESSAGES.ouParent,
                                         )}
-                                        currentOrgUnit={
-                                            state.ancestorWithGeoJson.value
+                                        orgUnitId={
+                                            state.ancestorWithGeoJson.value.id
                                         }
                                     />
                                 </GeoJSON>

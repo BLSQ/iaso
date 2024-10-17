@@ -62,6 +62,7 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
                                                 MESSAGES.ouChild,
                                             )}
                                             displayUseLocation
+                                            orgUnitId={o.id}
                                             replaceLocation={selectedOrgUnit =>
                                                 updateOrgUnitLocation(
                                                     selectedOrgUnit,

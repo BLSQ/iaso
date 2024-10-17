@@ -1,10 +1,5 @@
 import { Box, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import {
-    commonStyles,
-    IntlFormatMessage,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import {
     GeoJSON,
@@ -15,17 +10,11 @@ import {
 } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 
-// COMPONENTS
-
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
-import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
-import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
 import OrgUnitPopupComponent from './OrgUnitPopupComponent';
-// COMPONENTS
 
-// UTILS
 import {
     Bounds,
     circleColorMarkerOptions,
@@ -33,16 +22,10 @@ import {
     getLatLngBounds,
     getShapesBounds,
 } from '../../../utils/map/mapUtils';
-// UTILS
 
-// TYPES
 import { DropdownOptions } from '../../../types/utils';
 import { OrgUnit } from '../types/orgUnit';
-// TYPES
 
-// HOOKS
-import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
-// HOOKS
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import { MapToggleCluster } from '../../../components/maps/tools/MapToggleCluster';
@@ -63,21 +46,6 @@ type Props = {
     getSearchColor: (index: number) => string;
     orgUnits: Locations;
 };
-
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    ...innerDrawerStyles(theme),
-    innerDrawerToolbar: {
-        ...innerDrawerStyles(theme).innerDrawerToolbar,
-        '& section': {
-            width: '100%',
-        },
-    },
-    commentContainer: {
-        height: '60vh',
-        overflowY: 'auto',
-    },
-}));
 
 const getFullOrgUnits = orgUnits => {
     let fullOrUnits = [];
@@ -111,14 +79,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
     getSearchColor,
     orgUnits,
 }) => {
-    const classes: Record<string, string> = useStyles();
     const { data: orgUnitTypes } = useGetOrgUnitTypes();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const [isClusterActive, setIsClusterActive] = useState<boolean>(true);
-    const [currentOrgUnitId, setCurrentOrgUnitId] = useState<
-        number | undefined
-    >();
-    const { data: currentOrgUnit } = useGetOrgUnitDetail(currentOrgUnitId);
 
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -151,9 +114,8 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                     ...circleColorMarkerOptions(color),
                                 })}
                                 items={orgUnitsBySearch}
-                                onMarkerClick={o => setCurrentOrgUnitId(o.id)}
-                                popupProps={() => ({
-                                    currentOrgUnit,
+                                popupProps={instance => ({
+                                    orgUnitId: instance.id,
                                 })}
                                 PopupComponent={OrgUnitPopupComponent}
                                 tooltipProps={e => ({
@@ -181,9 +143,8 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                         ),
                     })}
                     items={orgUnitsBySearch}
-                    onMarkerClick={o => setCurrentOrgUnitId(o.id)}
-                    popupProps={() => ({
-                        currentOrgUnit,
+                    popupProps={instance => ({
+                        orgUnitId: instance.id,
                     })}
                     PopupComponent={OrgUnitPopupComponent}
                     tooltipProps={e => ({
@@ -194,7 +155,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                 />
             </Pane>
         ));
-    }, [currentOrgUnit, getSearchColor, isClusterActive, orgUnits.locations]);
+    }, [getSearchColor, isClusterActive, orgUnits.locations]);
 
     if (!bounds && orgUnitsTotal.length > 0) {
         return (
@@ -218,13 +179,13 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
             <InnerDrawer
                 defaultActiveOption="comments"
                 withTopBorder
-                commentsOptionComponent={
-                    <OrgUnitsMapComments
-                        className={classes.commentContainer}
-                        maxPages={4}
-                        orgUnit={currentOrgUnit}
-                    />
-                }
+                // commentsOptionComponent={
+                //     <OrgUnitsMapComments
+                //         className={classes.commentContainer}
+                //         maxPages={4}
+                //         orgUnit={currentOrgUnit}
+                //     />
+                // }
             >
                 <Box position="relative">
                     <MapToggleCluster
@@ -266,13 +227,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                             ),
                                         }}
                                         data={o.geo_json}
-                                        eventHandlers={{
-                                            click: () =>
-                                                setCurrentOrgUnitId(o.id),
-                                        }}
                                     >
                                         <OrgUnitPopupComponent
-                                            currentOrgUnit={currentOrgUnit}
+                                            orgUnitId={o.id}
                                         />
                                         <Tooltip pane="popupPane">
                                             {o.name}
@@ -305,13 +262,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                                 ),
                                             }}
                                             data={o.geo_json}
-                                            eventHandlers={{
-                                                click: () =>
-                                                    setCurrentOrgUnitId(o.id),
-                                            }}
                                         >
                                             <OrgUnitPopupComponent
-                                                currentOrgUnit={currentOrgUnit}
+                                                orgUnitId={o.id}
                                             />
                                             <Tooltip pane="popupPane">
                                                 {o.name}

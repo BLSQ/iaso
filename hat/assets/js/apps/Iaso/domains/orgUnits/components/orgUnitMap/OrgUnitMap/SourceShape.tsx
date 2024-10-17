@@ -32,6 +32,7 @@ export const SourceShape: FunctionComponent<Props> = ({
                 titleMessage={formatMessage(MESSAGES.ouLinked)}
                 displayUseLocation
                 replaceLocation={replaceLocation}
+                orgUnitId={shape.id}
             />
         </GeoJSON>
     );

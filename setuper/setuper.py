@@ -41,7 +41,7 @@ def setup_account(account_name, server_url, username, password):
         "user_first_name": account_name,
         "user_last_name": account_name,
         "password": account_name,
-        "modules": ["DEFAULT", "REGISTRY", "PLANNING", "ENTITIES", "DATA_COLLECTION_FORMS"],
+        "modules": ["DEFAULT", "REGISTRY", "PLANNING", "ENTITIES", "DATA_COLLECTION_FORMS", "DHIS2_MAPPING"],
     }
     iaso_admin_client = admin_login(server_url, username, password)
     iaso_admin_client.post("/api/setupaccount/", json=data)

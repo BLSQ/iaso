@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { TableBody, TableRow, TableCell } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import classNames from 'classnames';
 import { formatLabel } from '../../utils';
 import { FileContent } from '../../types/instance';
 
@@ -16,6 +17,9 @@ const useStyles = makeStyles(theme => ({
         borderRight: 'none !important',
         // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+    },
+    deletedInfos: {
+        color: '#D22B2B !important',
     },
     tableCellLabelName: {
         // @ts-ignore
@@ -77,13 +81,21 @@ const InstanceLogContentBodyTable = memo(
                                         </span>
                                     </TableCell>
                                     <TableCell
-                                        className={classes.tableCell}
+                                        className={classNames(
+                                            classes.tableCell,
+                                            fileContent?.logA?.deleted &&
+                                                classes.deletedInfos,
+                                        )}
                                         align="left"
                                     >
                                         {fileContent?.logA.json[question.name]}
                                     </TableCell>
                                     <TableCell
-                                        className={classes.tableCell}
+                                        className={classNames(
+                                            classes.tableCell,
+                                            fileContent?.logB?.deleted &&
+                                                classes.deletedInfos,
+                                        )}
                                         align="left"
                                     >
                                         {fileContent?.logB.json[question.name]}

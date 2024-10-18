@@ -20,6 +20,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+.venv/
 build/
 develop-eggs/
 dist/
@@ -182,9 +183,11 @@ venv
 /lib/**/*
 pyvenv.cfg
 originals
+/site/**/*/
 
 *.code-workspace
 /setuper/credentials.py
 /setuper/generated/
 plugins/trypelim
+
 

@@ -716,12 +716,34 @@ def import_data(instances, user, app_id):
 
         # TODO: check that planning_id is valid
         instance.planning_id = instance_data.get("planningId", None)
-        entityUuid = instance_data.get("entityUuid", None)
-        entityTypeId = instance_data.get("entityTypeId", None)
-        if entityUuid and entityTypeId:
-            entity, created = Entity.objects_include_deleted.get_or_create(
-                uuid=entityUuid, entity_type_id=entityTypeId, account=project.account
-            )
+        entity_uuid = instance_data.get("entityUuid", None)
+        entity_type_id = instance_data.get("entityTypeId", None)
+        if entity_uuid and entity_type_id:
+            # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
+            # If a non-deleted entity was found, ignore potential duplicates.
+            filters = {
+                "uuid": entity_uuid,
+                "entity_type_id": entity_type_id,
+                "account": project.account,
+            }
+            existing_entities = list(Entity.objects_include_deleted.filter(**filters))
+
+            if len(existing_entities) == 0:
+                entity = Entity.objects.create(**filters)
+            elif len(existing_entities) == 1:
+                entity = existing_entities[0]
+            else:
+                # In case of duplicates, try to take the "best" one. Best one would
+                # be one that's not deleted and that has valid attributes with a
+                # file attached. We first assign the first one to avoid having None.
+                # If there are multiple non-deleted entities, we send a Sentry,
+                # but don't break the upload.
+                if len([e for e in existing_entities if e.deleted_at is None]) > 1:
+                    logger.exception(
+                        f"Multiple non-deleted entities for UUID {entity_uuid}, entity_type_id {entity_type_id}"
+                    )
+
+                entity = sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
 
             if entity.deleted_at:
                 logger.info(
@@ -780,3 +802,20 @@ def import_data(instances, user, app_id):
                 oucr.new_reference_instances.set(new_reference_instances)
                 oucr.requested_fields = ["new_reference_instances"]
                 oucr.save()
+
+
+def _entity_correctness_score(entity):
+    """
+    A small function that allows sorting entities to pick the right one for
+    incoming data in case of duplicates. A deleted one is always less than an active
+    one, etc.
+    """
+    score = 0
+    if not entity.deleted_at:
+        score += 100
+    if entity.attributes:
+        score += 10
+    if entity.attributes.file and not entity.attributes.file == "":
+        score += 1
+
+    return score

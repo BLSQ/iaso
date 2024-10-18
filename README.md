@@ -7,6 +7,8 @@
 ![Cypress tests](https://img.shields.io/github/actions/workflow/status/BLSQ/iaso/cypress.yml?label=cypress%20tests)
 
 
+Full documentation is at [docs.openiaso.com](https://docs.openiaso.com/)
+
 Introduction
 ============
 

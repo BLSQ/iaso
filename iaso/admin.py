@@ -1,26 +1,26 @@
-import requests
 from copy import copy
 from typing import Any, Protocol
 
-from django.http import HttpResponseRedirect
-from django.urls import reverse
+import requests
 from django import forms as django_forms
-from django.contrib.admin import widgets, RelatedOnlyFieldListFilter
+from django.contrib.admin import RelatedOnlyFieldListFilter, widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
-from hat.audit.models import DJANGO_ADMIN
 
+from hat.audit.models import DJANGO_ADMIN
+from iaso.models.json_config import Config  # type: ignore
 from iaso.utils.admin.custom_filters import (
     DuplicateUUIDFilter,
     EntityEmptyAttributesFilter,
     has_relation_filter_factory,
 )
-from iaso.models.json_config import Config  # type: ignore
 
 from .models import (
     Account,
@@ -367,6 +367,8 @@ class InstanceFileAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ("name", "app_id", "account", "needs_authentication", "feature_flags_list")
+    autocomplete_fields = ["account"]
+    search_fields = ["name"]
 
     @admin.display(description="Feature flags")
     @admin_attr_decorator
@@ -391,6 +393,7 @@ class LinkAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class MappingAdmin(admin.GeoModelAdmin):
     list_filter = ("form_id",)
+    autocomplete_fields = ["data_source"]
 
 
 @admin.register(MappingVersion)
@@ -426,6 +429,7 @@ class ProfileAdmin(admin.GeoModelAdmin):
     list_select_related = ("user", "account")
     list_filter = ("account",)
     list_display = ("id", "user", "account", "language")
+    autocomplete_fields = ["account"]
 
 
 @admin.register(ExportRequest)
@@ -494,8 +498,11 @@ class TaskAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class SourceVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
-    list_display = ("id", "data_source", "number", "created_at")
-    list_filter = ("data_source",)
+    list_display = ["__str__", "data_source", "number", "created_at", "updated_at"]
+    list_filter = ["data_source", "created_at", "updated_at"]
+    search_fields = ["data_source__name", "number", "description"]
+    autocomplete_fields = ["data_source"]
+    date_hierarchy = "created_at"
 
 
 @admin.register(Entity)
@@ -752,6 +759,7 @@ class AlgorithmRunAdmin(admin.ModelAdmin):
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ["account"]
 
 
 @admin.register(EntityDuplicate)
@@ -952,19 +960,41 @@ class DataSourceAdmin(admin.ModelAdmin):
             "widget": forms.CheckboxSelectMultiple,
         }
     }
+    list_display = ["name", "description", "created_at", "updated_at"]
+    list_filter = ["created_at", "updated_at", "public"]
+    search_fields = ["name", "description"]
+    date_hierarchy = "created_at"
 
 
-admin.site.register(Account)
+@admin.register(Account)
+class AccountAdmin(admin.ModelAdmin):
+    search_fields = ["name", "id"]
+    list_display = ["name", "created_at", "updated_at"]
+    autocomplete_fields = ["default_version"]
+
+
+@admin.register(UserRole)
+class UserRoleAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["account"]
+
+
+@admin.register(OrgUnitChangeRequestConfiguration)
+class OrgUnitChangeRequestConfigurationAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["project"]
+
+
+@admin.register(GroupSet)
+class GroupSetAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["source_version"]
+
+
 admin.site.register(AccountFeatureFlag)
 admin.site.register(Device)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(ExternalCredentials)
-admin.site.register(GroupSet)
 admin.site.register(DevicePosition)
 admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
-admin.site.register(UserRole)
-admin.site.register(OrgUnitChangeRequestConfiguration)
 admin.site.register(TenantUser)

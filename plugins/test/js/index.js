@@ -8,7 +8,6 @@ import {
 } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { getRequest } from 'Iaso/libs/Api';
 import tableColumns from './columns';
@@ -21,7 +20,6 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const TestApp = () => {
-    const dispatch = useDispatch();
     const classes = useStyles();
     const intl = useSafeIntl();
     const [fetching, setFetching] = useState(true);

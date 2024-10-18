@@ -27,7 +27,7 @@ export const createInstance = (currentForm, payload) => {
     );
 };
 
-export const createExportRequest = (filterParams, selection) => () => {
+export const createExportRequest = (filterParams, selection) => {
     const filters = {
         ...filterParams,
     };

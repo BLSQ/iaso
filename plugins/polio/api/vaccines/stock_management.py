@@ -482,6 +482,8 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
 
 
 class IncidentReportSerializer(serializers.ModelSerializer):
+    document = serializers.FileField(required=False)
+
     class Meta:
         model = IncidentReport
         fields = "__all__"

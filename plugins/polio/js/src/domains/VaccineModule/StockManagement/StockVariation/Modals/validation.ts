@@ -158,5 +158,8 @@ export const useIncidentValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };

@@ -252,6 +252,52 @@ export const patchRequest2 = (
     return iasoFetch(url, init).then(response => response.json());
 };
 
+export const postRequest2 = (
+    arg1: PostArg
+): Promise<any> => {
+    const { url, data = {}, fileData = {}, signal = null } = arg1;
+
+    let init: Record<string, unknown> = {};
+    if (Object.keys(fileData).length > 0) {
+        const formData = new FormData();
+        Object.entries(data).forEach(([key, value]) => {
+            let converted_value = value;
+            if (typeof converted_value === 'object') {
+                converted_value = JSON.stringify(converted_value);
+            }
+            formData.append(key, converted_value);
+        });
+        Object.entries(fileData).forEach(([key, value]) => {
+            if (key === 'files' && Array.isArray(value) && value.length > 0) {
+                formData.append('document', value[0]); // Use 'document' key
+            } else if (Array.isArray(value)) {
+                value.forEach((blob, index) => {
+                    formData.append(`${key}[${index}]`, blob);
+                });
+            } else {
+                formData.append(key, value);
+            }
+        });
+        init = {
+            method: 'POST',
+            body: formData,
+            signal,
+        };
+    } else {
+        init = {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept-Language': moment.locale(),
+            },
+            signal,
+        };
+    }
+
+    return iasoFetch(url, init).then(response => response.json());
+};
+
 export const saveVrf = (
     vrf: Optional<Partial<VRFFormData>>,
 ): Promise<any>[] => {
@@ -279,7 +325,7 @@ export const saveVrf = (
     if (vrf?.id) {
         return [patchRequest2(requestBody)];
     }
-    return [postRequest(requestBody)];
+    return [postRequest2(requestBody)];
 };
 
 export const handleVrfPromiseErrors = (

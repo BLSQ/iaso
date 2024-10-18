@@ -9,8 +9,6 @@ import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/ho
 import {
     deleteRequest,
     getRequest,
-    patchRequest,
-    postRequest,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import {
     useSnackMutation,
@@ -28,7 +26,7 @@ import {
     CAMPAIGNS_ENDPOINT,
     useGetCampaigns,
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
-import { patchRequest2 } from '../../SupplyChain/hooks/api/vrf';
+import { patchRequest2, postRequest2 } from '../../SupplyChain/hooks/api/vrf';
 
 const defaults = {
     order: 'country',
@@ -333,7 +331,7 @@ const createEditFormA = async (body: any) => {
             requestBody
         );
     }
-    return postRequest(requestBody);
+    return postRequest2(requestBody);
 };
 
 export const useSaveFormA = () => {
@@ -345,6 +343,7 @@ export const useSaveFormA = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
+            'document'
         ],
     });
 };
@@ -385,7 +384,7 @@ const createEditDestruction = async (body: any) => {
             requestBody
         );
     }
-    return postRequest(requestBody);
+    return postRequest2(requestBody);
 };
 
 export const useSaveDestruction = () => {
@@ -397,6 +396,7 @@ export const useSaveDestruction = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
+            'document'
         ],
     });
 };
@@ -407,10 +407,37 @@ const createEditIncident = async (body: any) => {
         const lotNumbersArray = commaSeparatedIdsToStringArray(lot_numbers);
         copy.lot_numbers = lotNumbersArray;
     }
+
+    const filteredParams = copy
+        ? Object.fromEntries(
+            Object.entries(copy).filter(
+                ([key, value]) => value !== undefined && value !== null && key !== 'document',
+            ),
+        )
+        : {};
+
+
+    const requestBody: any = {
+        url: `${modalUrl}incident_report/`,
+        data: filteredParams,
+    };
+
+    if (copy?.document) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+        const { files, ...data } = filteredParams;
+        const fileData = { files: copy.document };
+        requestBody.data = data;
+        requestBody.fileData = fileData;
+    } 
+
+    
     if (body.id) {
-        return patchRequest(`${modalUrl}incident_report/${body.id}/`, copy);
+        requestBody['url'] = `${modalUrl}incident_report/${body.id}/`
+        return patchRequest2(
+            requestBody
+        );
     }
-    return postRequest(`${modalUrl}incident_report/`, copy);
+    return postRequest2(requestBody);
 };
 
 export const useSaveIncident = () => {
@@ -422,6 +449,7 @@ export const useSaveIncident = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
+            'document'
         ],
     });
 };

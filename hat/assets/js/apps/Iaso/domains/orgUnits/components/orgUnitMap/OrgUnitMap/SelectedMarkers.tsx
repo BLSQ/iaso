@@ -10,13 +10,11 @@ import { MappedOrgUnit } from './types';
 
 type Props = {
     data: MappedOrgUnit[];
-    fetchSubOrgUnitDetail: (orgUnit: OrgUnit) => void;
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
 };
 
 export const SelectedMarkers: FunctionComponent<Props> = ({
     data,
-    fetchSubOrgUnitDetail,
     updateOrgUnitLocation,
 }) => {
     return (
@@ -39,7 +37,9 @@ export const SelectedMarkers: FunctionComponent<Props> = ({
                     >
                         <MarkerList
                             locationsList={mappedOrgUnit.orgUnits.locations}
-                            fetchDetail={a => fetchSubOrgUnitDetail(a)}
+                            popupProps={o => ({
+                                instanceId: o.id,
+                            })}
                             color={mappedOrgUnit.color}
                             keyId={mappedOrgUnit.id}
                             updateOrgUnitLocation={updateOrgUnitLocation}

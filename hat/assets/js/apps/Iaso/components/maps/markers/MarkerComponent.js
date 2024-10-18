@@ -31,7 +31,10 @@ const MarkerComponent = props => {
             icon={marker || customMarker}
             position={[item.latitude, item.longitude, item.altitude]}
             eventHandlers={{
-                click: () => onClick(item),
+                click: e => {
+                    e.originalEvent.stopPropagation();
+                    onClick(item);
+                },
                 dragend: e => onDragend(e.target),
                 dblclick: e => onDblclick(e, item),
             }}

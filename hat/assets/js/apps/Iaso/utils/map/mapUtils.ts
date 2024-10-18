@@ -115,7 +115,7 @@ export const customMarker = L.divIcon(customMarkerOptions);
 
 export const circleColorMarkerOptions = (
     color: string,
-    radius = 8,
+    radius = 10,
 ): Record<string, any> => ({
     className: 'marker-custom color circle-marker',
     pathOptions: {

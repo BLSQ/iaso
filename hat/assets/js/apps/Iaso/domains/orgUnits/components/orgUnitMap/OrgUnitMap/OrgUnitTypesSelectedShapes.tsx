@@ -13,7 +13,6 @@ type Props = {
     orgUnitTypes: (OrgunitType & { color: string })[];
     mappedOrgUnitTypesSelected: MappedOrgUnit[];
     mappedSourcesSelected: MappedOrgUnit[];
-    fetchSubOrgUnitDetail: (orgUnit: OrgUnit) => void;
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
 };
 
@@ -21,7 +20,6 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
     orgUnitTypes,
     mappedOrgUnitTypesSelected,
     mappedSourcesSelected,
-    fetchSubOrgUnitDetail,
     updateOrgUnitLocation,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -49,10 +47,6 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
                                     <GeoJSON
                                         key={o.id}
                                         data={o.geo_json}
-                                        eventHandlers={{
-                                            click: () =>
-                                                fetchSubOrgUnitDetail(o),
-                                        }}
                                         style={() => ({
                                             color: ot.color,
                                         })}
@@ -62,6 +56,7 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
                                                 MESSAGES.ouChild,
                                             )}
                                             displayUseLocation
+                                            orgUnitId={o.id}
                                             replaceLocation={selectedOrgUnit =>
                                                 updateOrgUnitLocation(
                                                     selectedOrgUnit,
@@ -78,9 +73,6 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
                                         shape={o}
                                         key={o.id}
                                         replaceLocation={updateOrgUnitLocation}
-                                        onClick={() => {
-                                            fetchSubOrgUnitDetail(o);
-                                        }}
                                     />
                                 )),
                             )}

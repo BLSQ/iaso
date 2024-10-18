@@ -5,7 +5,6 @@ import MESSAGES from '../../../messages';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 
 type Props = {
-    onClick: () => void;
     replaceLocation: (orgUnit: any) => void;
     source: any;
     shape: any;
@@ -14,7 +13,6 @@ type Props = {
 export const SourceShape: FunctionComponent<Props> = ({
     source,
     shape,
-    onClick,
     replaceLocation,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -24,14 +22,12 @@ export const SourceShape: FunctionComponent<Props> = ({
                 color: source.color,
             }}
             data={shape.geo_json}
-            eventHandlers={{
-                click: onClick,
-            }}
         >
             <OrgUnitPopupComponent
                 titleMessage={formatMessage(MESSAGES.ouLinked)}
                 displayUseLocation
                 replaceLocation={replaceLocation}
+                orgUnitId={shape.id}
             />
         </GeoJSON>
     );

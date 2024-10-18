@@ -9,28 +9,28 @@ type Props = {
     locationsList: any[];
     color?: string;
     keyId: string | number;
-    fetchDetail: (orgUnit: OrgUnit) => void;
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
+    popupProps?: any;
 };
 
 export const MarkerList: FunctionComponent<Props> = ({
     locationsList,
-    fetchDetail,
     color = '#000000',
     keyId,
     updateOrgUnitLocation,
     PopupComponent = OrgUnitPopupComponent,
+    popupProps,
 }) => {
     return (
         <MarkersListComponent
             key={keyId}
             items={locationsList}
-            onMarkerClick={fetchDetail}
             PopupComponent={PopupComponent}
             popupProps={() => ({
                 displayUseLocation: true,
                 replaceLocation: selectedOrgUnit =>
                     updateOrgUnitLocation(selectedOrgUnit),
+                ...popupProps,
             })}
             isCircle
             markerProps={() => ({

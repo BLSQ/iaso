@@ -4,7 +4,6 @@ import { theme } from 'bluesquare-components';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { Provider } from 'react-redux';
 
 import './libs/polyfills';
 
@@ -19,7 +18,6 @@ import {
 } from './domains/app/contexts/ThemeConfigContext';
 import App from './domains/app/index';
 import { Plugin } from './domains/app/types';
-import { store } from './redux/store.js';
 import { getGlobalOverrides, getOverriddenTheme } from './styles';
 import { PluginsContext, getPlugins } from './utils';
 
@@ -56,27 +54,24 @@ const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
                         <CssBaseline />
                         <GlobalStyles styles={getGlobalOverrides(theme)} />
                         <SidebarProvider>
-                            <Provider store={store}>
-                                <LocaleProvider>
-                                    <LocalizedAppComponent>
-                                        <SnackbarProvider
-                                            maxSnack={3}
-                                            autoHideDuration={4000}
-                                            anchorOrigin={{
-                                                vertical: 'bottom',
-                                                horizontal: 'center',
-                                            }}
-                                        >
-                                            <App
-                                                userHomePage={
-                                                    pluginHomePage ||
-                                                    userHomePage
-                                                }
-                                            />
-                                        </SnackbarProvider>
-                                    </LocalizedAppComponent>
-                                </LocaleProvider>
-                            </Provider>
+                            <LocaleProvider>
+                                <LocalizedAppComponent>
+                                    <SnackbarProvider
+                                        maxSnack={3}
+                                        autoHideDuration={4000}
+                                        anchorOrigin={{
+                                            vertical: 'bottom',
+                                            horizontal: 'center',
+                                        }}
+                                    >
+                                        <App
+                                            userHomePage={
+                                                pluginHomePage || userHomePage
+                                            }
+                                        />
+                                    </SnackbarProvider>
+                                </LocalizedAppComponent>
+                            </LocaleProvider>
                         </SidebarProvider>
                     </ThemeProvider>
                 </ThemeConfigContext.Provider>

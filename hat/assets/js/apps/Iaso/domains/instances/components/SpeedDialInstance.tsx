@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 
 import { LoadingSpinner } from 'bluesquare-components';
+import { UseMutateAsyncFunction } from 'react-query';
 import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
@@ -24,6 +25,7 @@ import {
     useLockAction,
 } from '../hooks/speedDialActions';
 import { useGetFormDefForInstance } from '../hooks/speeddials';
+import { ReassignInstancePayload } from '../hooks/useReassignInstance';
 import { Instance } from '../types/instance';
 import SpeedDialInstanceActions from './SpeedDialInstanceActions';
 
@@ -33,6 +35,12 @@ type Props = {
         instanceId: string;
         referenceFormId?: string;
     };
+    reassignInstance: UseMutateAsyncFunction<
+        unknown,
+        unknown,
+        ReassignInstancePayload,
+        unknown
+    >;
 };
 
 const SpeedDialInstance: FunctionComponent<Props> = props => {
@@ -44,6 +52,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
             is_instance_of_reference_form: isInstanceOfReferenceForm,
             is_reference_instance: isReferenceInstance,
         },
+        reassignInstance,
     } = props;
     const { data: formDef } = useGetFormDefForInstance(formId);
     const currentUser = useCurrentUser();
@@ -79,7 +88,11 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
     const isLinkActionEnabled =
         hasfeatureFlag && isInstanceOfReferenceForm && hasOrgUnitPermission;
 
-    const baseActions = useBaseActions(currentInstance, formDef);
+    const baseActions = useBaseActions(
+        currentInstance,
+        reassignInstance,
+        formDef,
+    );
 
     const editLocationWithInstanceGps =
         useEditLocationWithGpsAction(currentInstance);

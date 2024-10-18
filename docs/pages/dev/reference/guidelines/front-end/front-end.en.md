@@ -21,9 +21,8 @@ Don't be afraid to split your code into smaller parts, using understandable nami
 
 ## Legacy
 
-Class component, redux, provider are still old way to create features in IASO.  
+Class component, proptypes are still old way to create features in IASO.  
 Please use `hooks`, `typescript` and `arrow component`.  
-Redux can still be used with state that needs to be available everywhere in the application (current user, UI constants and states, ...).  
 We already have a lot of typing done in each domain of the application (forms, submissions, org units, ... )
 
 ## Bluesquare-components
@@ -37,7 +36,7 @@ To make it available too everybody you have to build new files with `npm run cle
 ## Architecture
 
 Main index file is located here: `hat/assets/js/apps/Iaso/index`  
-This is the entrypoint of the app, setting up providers, theme, react-query query client, custom plugins, redux,...  
+This is the entrypoint of the app, setting up providers, theme, react-query query client, custom plugins,...  
 
 **`components`**  
 Used to store generic components that can be used everywhere, like `inputComponent`, `buttons`, ...

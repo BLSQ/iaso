@@ -6,12 +6,11 @@ import LockIcon from '@mui/icons-material/Lock';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { DialogContentText } from '@mui/material';
 import { ExportButton, useSafeIntl } from 'bluesquare-components';
-import React, { ReactElement, useCallback, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { ReactElement, useMemo } from 'react';
+import { UseMutateAsyncFunction } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { Nullable } from '../../../types/utils';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
-import { reAssignInstance } from '../actions';
 import { ReAssignDialog } from '../components/CreateReAssignDialogComponent';
 import EnketoIcon from '../components/EnketoIcon';
 import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
@@ -19,6 +18,7 @@ import { usePostLockInstance } from '../hooks';
 import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
 import { FormDef, useLinkOrgUnitToReferenceSubmission } from './speeddials';
+import { ReassignInstancePayload } from './useReassignInstance';
 
 export type SpeedDialAction = {
     id: string;
@@ -28,15 +28,14 @@ export type SpeedDialAction = {
 
 export const useBaseActions = (
     currentInstance: Instance,
+    reassignInstance: UseMutateAsyncFunction<
+        unknown,
+        unknown,
+        ReassignInstancePayload,
+        unknown
+    >,
     formDef?: FormDef,
 ): SpeedDialAction[] => {
-    const dispatch = useDispatch();
-    const onReAssignInstance = useCallback(
-        (...props) => {
-            dispatch(reAssignInstance(...props));
-        },
-        [dispatch],
-    );
     return useMemo(() => {
         return [
             {
@@ -44,13 +43,9 @@ export const useBaseActions = (
                 icon: (
                     <ExportInstancesDialogComponent
                         // @ts-ignore
-                        renderTrigger={(
-                            openDialog,
-                            isInstancesFilterUpdated,
-                        ) => (
+                        renderTrigger={openDialog => (
                             <ExportButton
                                 onClick={openDialog}
-                                isDisabled={isInstancesFilterUpdated}
                                 batchExport={false}
                             />
                         )}
@@ -71,13 +66,13 @@ export const useBaseActions = (
                         currentInstance={currentInstance}
                         orgUnitTypes={formDef?.orgUnitTypeIds}
                         formType={formDef}
-                        onCreateOrReAssign={onReAssignInstance}
+                        onCreateOrReAssign={reassignInstance}
                     />
                 ),
                 disabled: currentInstance && currentInstance.deleted,
             },
         ];
-    }, [currentInstance, formDef, onReAssignInstance]);
+    }, [currentInstance, formDef, reassignInstance]);
 };
 
 export const useEditLocationWithGpsAction = (

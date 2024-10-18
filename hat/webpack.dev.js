@@ -152,7 +152,6 @@ module.exports = {
             'moment',
             'leaflet',
             'leaflet-draw',
-            'react-redux',
             'prop-types',
             'typescript',
             'video.js',

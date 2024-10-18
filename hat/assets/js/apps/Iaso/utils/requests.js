@@ -43,16 +43,8 @@ export const fetchAssociatedOrgUnits = (
         });
 };
 
-export const fetchOrgUnitDetail = orgUnitId =>
-    getRequest(`/api/orgunits/${orgUnitId}/`)
-        .then(orgUnit => orgUnit)
-        .catch(error => {
-            openSnackBar(errorSnackBar('fetchOrgUnitError', null, error));
-            console.error('Error while fetching org unit detail:', error);
-        });
-
 export const fetchInstanceDetail = instanceId =>
-    getRequest(`/api/instances/${instanceId}`)
+    getRequest(`/api/instances/${instanceId}/`)
         .then(instance => instance)
         .catch(error => {
             openSnackBar(errorSnackBar('fetchInstanceError', null, error));

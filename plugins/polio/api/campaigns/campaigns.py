@@ -1093,6 +1093,7 @@ class CampaignViewSet(ModelViewSet):
             {"title": "Admin 0", "width": 25},
             {"title": "OBR Name", "width": 25},
             {"title": "Round Number", "width": 35},
+            {"title": "Start date", "width": 35},
             {"title": "Vaccine", "width": 35},
         ]
 
@@ -1146,6 +1147,7 @@ class CampaignViewSet(ModelViewSet):
             org_unit.get("org_unit_parent_of_parent_name"),
             org_unit.get("obr_name"),
             org_unit.get("round_number"),
+            org_unit.get("start_date"),
             org_unit.get("vaccine"),
         ]
 
@@ -1219,6 +1221,7 @@ class CampaignViewSet(ModelViewSet):
                 item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
                 item["obr_name"] = campaign.obr_name
                 item["round_number"] = "R" + str(round.number)
+                item["start_date"] = round.started_at
                 item["vaccine"] = scope.vaccine
                 org_units_list.append(item)
         return org_units_list

@@ -3,17 +3,17 @@ import { act } from 'react-dom/test-utils';
 
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { expect } from 'chai';
-import { renderWithMuiTheme } from 'hat/assets/js/test/utils/muiTheme';
 import {
     renderWithIntl,
     withQueryClientProvider,
 } from '../../../../../test/utils';
+import { renderWithMuiTheme } from '../../../../../test/utils/muiTheme';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
 import formVersionFixture from '../fixtures/formVersions.json';
 import MESSAGES from '../messages';
-import { FormVersionsDialogComponent } from './FormVersionsDialogComponent';
+import FormVersionsDialogComponent from './FormVersionsDialogComponent';
 
 let connectedWrapper;
 
@@ -60,8 +60,8 @@ const renderComponent = () =>
         ),
     );
 
-describe.only('FormVersionsDialog connected component', () => {
-    describe.only('with a new form version', () => {
+describe('FormVersionsDialog connected component', () => {
+    describe('with a new form version', () => {
         before(() => {
             connectedWrapper = mount(
                 withQueryClientProvider(

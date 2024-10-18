@@ -1,6 +1,6 @@
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { Box, Grid, Paper, Typography } from '@mui/material';
-import { IconButton, useSafeIntl } from 'bluesquare-components';
+import { FilesUpload, IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent, useCallback } from 'react';
@@ -13,6 +13,7 @@ import { dosesPerVial } from '../../hooks/utils';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { grayText, usePaperStyles } from '../shared';
+import { accept, processErrorDocsBase } from '../VaccineRequestForm/VaccineRequestForm' 
 
 type Props = {
     index: number;
@@ -22,7 +23,7 @@ type Props = {
 export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
     const classes: Record<string, string> = usePaperStyles();
     const { formatMessage } = useSafeIntl();
-    const { values, setFieldValue, setFieldTouched } =
+    const { values, setFieldValue, setFieldTouched, errors } =
         useFormikContext<SupplyChainFormData>();
     const { pre_alerts } = values as SupplyChainFormData;
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
@@ -36,6 +37,8 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                   doses_per_vial,
           )
         : 0;
+
+    const processDocumentErrors = useCallback(processErrorDocsBase, [errors]);
 
     const onDelete = useCallback(() => {
         if (values?.pre_alerts?.[index].id) {
@@ -139,6 +142,29 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                     )}:`}{' '}
                                     <NumberCell value={current_vials_shipped} />
                                 </Typography>
+                            </Box>
+                        </Grid>
+
+                        <Grid item xs={12} lg={12}>
+                            <Box mt={2}>
+                                <FilesUpload
+                                    accept={accept}
+                                    files={values?.pre_alerts?.[index]?.document ? [values.pre_alerts[index]?.document] : []}
+                                    onFilesSelect={files => {
+                                        if (files.length) {
+                                            setFieldTouched(`pre_alerts[${index}].document`, true);
+                                            setFieldValue(`pre_alerts[${index}].document`, files);
+                                        }
+                                        console.log("File selected :" + files.length)
+                                        console.dir(files)
+                                    }}
+                                    multi={false}
+                                    errors={processDocumentErrors(errors[index]?.document)}
+
+                                    placeholder={formatMessage(
+                                        MESSAGES.document,
+                                    )}
+                                />
                             </Box>
                         </Grid>
                     </Grid>

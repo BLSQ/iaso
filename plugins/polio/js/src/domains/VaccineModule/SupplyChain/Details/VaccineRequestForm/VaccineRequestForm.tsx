@@ -19,6 +19,16 @@ import { Accept } from 'react-dropzone';
 
 type Props = { className?: string; vrfData: any };
 
+export const accept: Accept = {
+    'application/pdf': ['.pdf'],
+};
+
+export const processErrorDocsBase = (err_docs) => {
+    if (!err_docs) return [];
+    if (!Array.isArray(err_docs)) return [err_docs]; 
+    else return err_docs;
+};
+
 export const VaccineRequestForm: FunctionComponent<Props> = ({
     className,
     vrfData,
@@ -70,9 +80,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         [setFieldTouched, setFieldValue, values?.vrf?.comment, vrfDataComment],
     );
 
-    const accept: Accept = {
-        'application/pdf': ['.pdf'],
-    };
+    
     
     const resetOnCountryChange = useCallback(() => {
         setFieldValue('vrf.campaign', undefined);
@@ -94,11 +102,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     const isNormalType = values?.vrf?.vrf_type === 'Normal';
 
 
-    const processDocumentErrors = useCallback((err_docs) => {
-        if (!err_docs) return [];
-        if (!Array.isArray(err_docs)) return [err_docs]; 
-        else return err_docs;
-    }, [errors]);
+    const processDocumentErrors = useCallback(processErrorDocsBase, [errors]);
 
 
     return (

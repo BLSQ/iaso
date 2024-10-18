@@ -646,6 +646,10 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localho
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXTENDED = True
 
+DRF_NESTED_MULTIPART_PARSER = {
+    "querydict": False,
+}
+
 # Plugin config
 print("Enabled plugins:", PLUGINS)
 for plugin_name in PLUGINS:

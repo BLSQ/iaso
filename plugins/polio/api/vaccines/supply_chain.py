@@ -11,6 +11,7 @@ from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
+from nested_multipart_parser.drf import DrfNestedParser
 
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
@@ -101,6 +102,8 @@ class BasePostPatchSerializer(serializers.ModelSerializer):
 
 
 class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
+    document = serializers.FileField(required=False)
+
     class Meta:
         model = VaccinePreAlert
         fields = [
@@ -110,6 +113,7 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             "doses_shipped",
             "doses_per_vial",
             "vials_shipped",
+            "document",
         ]
 
 
@@ -121,6 +125,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     doses_shipped = serializers.IntegerField(required=False)
     doses_per_vial = serializers.IntegerField(required=False, read_only=True)
     vials_shipped = serializers.IntegerField(required=False, read_only=True)
+    document = serializers.FileField(required=False)
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
         fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id"]
@@ -599,6 +604,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     permission_classes = [VaccineSupplyChainReadWritePerm]
     http_method_names = ["get", "post", "delete", "patch"]
+    parser_classes = (DrfNestedParser,)
 
     filter_backends = [
         SearchFilter,

@@ -1,7 +1,8 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     AddButton,
     ConfirmCancelModal,
+    FilesUpload,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -15,6 +16,7 @@ import { DateInput, NumberInput } from '../../../../../components/Inputs';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { useFormAValidation } from './validation';
+import { accept, processErrorDocsBase } from '../../../SupplyChain/Details/VaccineRequestForm/VaccineRequestForm';
 
 type Props = {
     formA?: any;
@@ -48,10 +50,13 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             // unusable_vials: formA?.unusable_vials,
             missing_vials: formA?.missing_vials,
             vaccine_stock: vaccineStockId,
+            document:formA?.document
         },
         onSubmit: values => save(values),
         validationSchema,
     });
+    const processDocumentErrors = useCallback(processErrorDocsBase, [formik.errors]);
+
     const { data: campaignOptions, isFetching: isFetchingCampaigns } =
         useCampaignOptions(countryName, formik.values.campaign);
     const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;
@@ -116,6 +121,24 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         component={NumberInput}
                         required
                     />
+                </Box>
+                <Box mb={2}>
+                <FilesUpload
+                    accept={accept}
+                    files={formik.values.document ? [formik.values.document] : []}
+                    onFilesSelect={files => {
+                        if (files.length) {
+                            formik.setFieldTouched(`document`, true);
+                            formik.setFieldValue(`document`, files);
+                        }
+                    }}
+                    multi={false}
+                    errors={processDocumentErrors(formik.errors.document)}
+
+                    placeholder={formatMessage(
+                        MESSAGES.document,
+                    )}
+                />
                 </Box>
             </ConfirmCancelModal>
         </FormikProvider>

@@ -64,7 +64,6 @@ export const saveTab = (
                         const file = new File([filePath], fileName || 'document');
                         formData.append(`pre_alerts[${index}].${key}`, file);
                     }
-                    formData.append(`pre_alerts[${index}].document`, item[key][0]);
                     
                 } else {
                     formData.append(`pre_alerts[${index}].${key}`, item[key]); 

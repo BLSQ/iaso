@@ -79,6 +79,9 @@ export const useFormAValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };
 

@@ -155,8 +155,6 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                             setFieldTouched(`pre_alerts[${index}].document`, true);
                                             setFieldValue(`pre_alerts[${index}].document`, files);
                                         }
-                                        console.log("File selected :" + files.length)
-                                        console.dir(files)
                                     }}
                                     multi={false}
                                     errors={processDocumentErrors(errors[index]?.document)}

@@ -105,8 +105,4 @@ export type Users = {
     current: User;
 };
 
-export type ReduxState = {
-    users: Users;
-};
-
 export type PeriodType = 'quarter' | 'year' | 'semester';

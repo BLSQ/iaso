@@ -11,7 +11,6 @@ import {
 import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
     FORMS_PREFIX,
@@ -104,7 +103,6 @@ const OrgUnitDetail = () => {
     const classes = useStyles();
     const params = useParamsObject(baseUrl);
     const goBack = useGoBack(baseUrls.orgUnits);
-    const dispatch = useDispatch();
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
@@ -323,7 +321,7 @@ const OrgUnitDetail = () => {
                 }
             }
         }
-    }, [originalOrgUnit, dispatch, isNewOrgunit, params, redirectToReplace]);
+    }, [originalOrgUnit, isNewOrgunit, params, redirectToReplace]);
 
     // Set selected sources for current org unit
     useEffect(() => {
@@ -355,14 +353,7 @@ const OrgUnitDetail = () => {
                 fetch();
             }
         }
-    }, [
-        originalOrgUnit,
-        dispatch,
-        links,
-        sources,
-        isNewOrgunit,
-        sourcesSelected,
-    ]);
+    }, [originalOrgUnit, links, sources, isNewOrgunit, sourcesSelected]);
 
     return (
         <section className={classes.root}>

@@ -43,13 +43,9 @@ export const useBaseActions = (
                 icon: (
                     <ExportInstancesDialogComponent
                         // @ts-ignore
-                        renderTrigger={(
-                            openDialog,
-                            isInstancesFilterUpdated,
-                        ) => (
+                        renderTrigger={openDialog => (
                             <ExportButton
                                 onClick={openDialog}
-                                isDisabled={isInstancesFilterUpdated}
                                 batchExport={false}
                             />
                         )}

@@ -5,8 +5,6 @@ import React, { FunctionComponent, useMemo, useState } from 'react';
 import { MapContainer, ScaleControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 
-import { useSelector } from 'react-redux';
-
 import {
     clusterCustomMarker,
     defaultCenter,
@@ -32,11 +30,6 @@ type Props = {
     fetching: boolean;
 };
 
-type PartialReduxState = {
-    map: { isClusterActive: boolean; currentTile: Tile };
-    snackBar: { notifications: any[] };
-};
-
 const useStyles = makeStyles(theme => ({
     root: {
         ...commonStyles(theme).mapContainer,
@@ -51,10 +44,8 @@ export const InstancesMap: FunctionComponent<Props> = ({
     const [isClusterActive, setIsClusterActive] = useState<boolean>(true);
 
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
-    const notifications = useSelector((state: PartialReduxState) =>
-        state.snackBar ? state.snackBar.notifications : [],
-    );
-    useShowWarning({ instances, notifications, fetching });
+    // This should be fixed, notification reducer as been removed a while ago
+    useShowWarning({ instances, notifications: [], fetching });
 
     const bounds = useMemo(() => {
         if (instances) {

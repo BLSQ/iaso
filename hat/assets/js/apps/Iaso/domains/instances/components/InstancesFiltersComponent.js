@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { Box, Button, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -21,7 +20,6 @@ import { periodTypeOptions } from '../../periods/constants';
 import { Period } from '../../periods/models.ts';
 import { isValidPeriod } from '../../periods/utils';
 
-import { setInstancesFilterUpdated } from '../actions';
 import { INSTANCE_STATUSES } from '../constants';
 
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
@@ -81,8 +79,9 @@ const InstancesFiltersComponent = ({
     formDetails,
     tableColumns,
     tab,
+    isInstancesFilterUpdated,
+    setIsInstancesFilterUpdated,
 }) => {
-    const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
 
@@ -121,9 +120,6 @@ const InstancesFiltersComponent = ({
     }, [defaultFilters]);
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypes();
-    const isInstancesFilterUpdated = useSelector(
-        state => state.instances.isInstancesFilterUpdated,
-    );
     const { data, isFetching: fetchingForms } = useGetForms();
     const formsList = useMemo(() => data?.forms ?? [], [data]);
     const formId =
@@ -140,7 +136,7 @@ const InstancesFiltersComponent = ({
     );
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
-            dispatch(setInstancesFilterUpdated(false));
+            setIsInstancesFilterUpdated(false);
             const searchParams = {
                 ...params,
                 ...getInstancesFilterValues(formState),
@@ -165,7 +161,7 @@ const InstancesFiltersComponent = ({
         }
     }, [
         isInstancesFilterUpdated,
-        dispatch,
+        setIsInstancesFilterUpdated,
         params,
         formState,
         onSearch,
@@ -190,9 +186,9 @@ const InstancesFiltersComponent = ({
             if (key === 'levels') {
                 setInitialOrgUnitId(value);
             }
-            dispatch(setInstancesFilterUpdated(true));
+            setIsInstancesFilterUpdated(true);
         },
-        [dispatch, setFormState, setFormIds],
+        [setFormState, setFormIds, setIsInstancesFilterUpdated],
     );
 
     const startPeriodError = useMemo(() => {
@@ -601,6 +597,8 @@ InstancesFiltersComponent.propTypes = {
     periodType: PropTypes.string,
     possibleFields: PropTypes.array,
     formDetails: PropTypes.object,
+    setIsInstancesFilterUpdated: PropTypes.func.isRequired,
+    isInstancesFilterUpdated: PropTypes.bool.isRequired,
 };
 
 export default InstancesFiltersComponent;

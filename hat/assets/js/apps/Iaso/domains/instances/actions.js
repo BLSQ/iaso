@@ -2,14 +2,6 @@ import { postRequest, putRequest } from 'Iaso/libs/Api.ts';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher.ts';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
-export const SET_INSTANCES_FETCHING = 'SET_INSTANCES_FETCHING';
-export const SET_INSTANCES_FILTER_UDPATED = 'SET_INSTANCES_FILTER_UDPATED';
-
-export const setInstancesFilterUpdated = isUpdated => ({
-    type: SET_INSTANCES_FILTER_UDPATED,
-    payload: isUpdated,
-});
-
 /* Submission Creation workflow
  *  1. this function call backend create Instance in DB
  *  2. backend contact enketo to generate a Form page
@@ -18,7 +10,7 @@ export const setInstancesFilterUpdated = isUpdated => ({
  *  5. After submission Enketo/Backend redirect to the submission detail page
  *  See enketo/README.md for full details.
  */
-export const createInstance = (currentForm, payload) => () => {
+export const createInstance = (currentForm, payload) => {
     // if (!payload.period) delete payload.period;
     return postRequest('/api/enketo/create/', {
         org_unit_id: payload.org_unit,
@@ -62,25 +54,22 @@ export const createExportRequest = (filterParams, selection) => () => {
         });
 };
 
-export const bulkDelete =
-    (selection, filters, isUnDeleteAction, successFn) => () => {
-        return postRequest('/api/instances/bulkdelete/', {
-            select_all: selection.selectAll,
-            selected_ids: selection.selectedItems.map(i => i.id),
-            unselected_ids: selection.unSelectedItems.map(i => i.id),
-            is_deletion: !isUnDeleteAction,
-            ...filters,
+export const bulkDelete = (selection, filters, isUnDeleteAction, successFn) => {
+    return postRequest('/api/instances/bulkdelete/', {
+        select_all: selection.selectAll,
+        selected_ids: selection.selectedItems.map(i => i.id),
+        unselected_ids: selection.unSelectedItems.map(i => i.id),
+        is_deletion: !isUnDeleteAction,
+        ...filters,
+    })
+        .then(res => {
+            openSnackBar(succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull'));
+            successFn();
+            return res;
         })
-            .then(res => {
-                openSnackBar(
-                    succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull'),
-                );
-                successFn();
-                return res;
-            })
-            .catch(error => {
-                openSnackBar(
-                    errorSnackBar('saveMultiEditOrgUnitsError', null, error),
-                );
-            });
-    };
+        .catch(error => {
+            openSnackBar(
+                errorSnackBar('saveMultiEditOrgUnitsError', null, error),
+            );
+        });
+};

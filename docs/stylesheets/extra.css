@@ -1,0 +1,38 @@
+:root {
+    --md-primary-fg-color:#192041;
+    --md-accent-fg-color: #FFC200;
+  }
+
+.md-footer {
+    display: none !important;
+  }
+#pdf-download-container {
+    padding-top: 20px;
+    text-align: left;
+    padding-left: 12px;
+    display: flex;
+    align-items: center;
+}
+#pdf-download {
+    background-color: #FFC200;;
+    color:#192041;;
+    border-radius: 4px;
+    vertical-align: middle;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 0.7rem;
+    cursor:pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#pdf-download svg{
+    vertical-align: middle; 
+}
+
+#button-text{
+    margin-right: 8px;
+    display: inline-block; 
+}

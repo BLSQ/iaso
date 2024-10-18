@@ -1,7 +1,6 @@
-import React, { Component, FunctionComponent, useState } from 'react';
+import React, { Component, FunctionComponent } from 'react';
 import MarkersListComponent from '../../../../../components/maps/markers/MarkersListComponent';
 import { circleColorMarkerOptions } from '../../../../../utils/map/mapUtils';
-import { useGetInstance } from '../../../../registry/hooks/useGetInstances';
 import { OrgUnit } from '../../../types/orgUnit';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 
@@ -11,6 +10,7 @@ type Props = {
     color?: string;
     keyId: string | number;
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
+    popupProps?: any;
 };
 
 export const MarkerList: FunctionComponent<Props> = ({
@@ -19,24 +19,18 @@ export const MarkerList: FunctionComponent<Props> = ({
     keyId,
     updateOrgUnitLocation,
     PopupComponent = OrgUnitPopupComponent,
+    popupProps,
 }) => {
-    const [currentInstanceId, setCurrentInstanceId] = useState<
-        number | undefined
-    >();
-    const { data: currentInstance, isLoading } =
-        useGetInstance(currentInstanceId);
     return (
         <MarkersListComponent
             key={keyId}
             items={locationsList}
-            onMarkerClick={i => setCurrentInstanceId(i.id)}
             PopupComponent={PopupComponent}
             popupProps={() => ({
-                currentInstance,
-                isLoading,
                 displayUseLocation: true,
                 replaceLocation: selectedOrgUnit =>
                     updateOrgUnitLocation(selectedOrgUnit),
+                ...popupProps,
             })}
             isCircle
             markerProps={() => ({

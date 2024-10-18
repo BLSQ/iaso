@@ -35,6 +35,9 @@ export const FormsMarkers: FunctionComponent<Props> = ({
                             color={f.color}
                             keyId={f.id}
                             PopupComponent={InstancePopup}
+                            popupProps={i => ({
+                                instanceId: i.id,
+                            })}
                             updateOrgUnitLocation={updateOrgUnitLocation}
                         />
                     </Pane>

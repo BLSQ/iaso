@@ -48,7 +48,6 @@ import { SourcesSelectedShapes } from './SourcesSelectedShapes';
 import { buttonsInitialState } from './constants';
 import { MappedOrgUnit } from './types';
 import { useGetBounds } from './useGetBounds';
-import { useRedux } from './useRedux';
 import { getAncestorWithGeojson, initialState } from './utils';
 
 export const zoom = 5;
@@ -106,7 +105,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const [state, setStateField, , setState] = useFormState(
         initialState(currentUser),
     );
-    const { fetchSubOrgUnitDetail } = useRedux();
     const setAncestor = useCallback(() => {
         const ancestor = getAncestorWithGeojson(currentOrgUnit);
         if (ancestor) {
@@ -553,7 +551,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             <SourcesSelectedShapes
                                 mappedSourcesSelected={mappedSourcesSelected}
                                 updateOrgUnitLocation={updateOrgUnitLocation}
-                                fetchSubOrgUnitDetail={fetchSubOrgUnitDetail}
                             />
                             <OrgUnitTypesSelectedShapes
                                 orgUnitTypes={orgUnitTypes}
@@ -561,7 +558,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                     mappedOrgUnitTypesSelected
                                 }
                                 mappedSourcesSelected={mappedSourcesSelected}
-                                fetchSubOrgUnitDetail={fetchSubOrgUnitDetail}
                                 updateOrgUnitLocation={updateOrgUnitLocation}
                             />
                         </>
@@ -570,12 +566,10 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     <>
                         <SelectedMarkers
                             data={mappedOrgUnitTypesSelected}
-                            fetchSubOrgUnitDetail={fetchSubOrgUnitDetail}
                             updateOrgUnitLocation={updateOrgUnitLocation}
                         />
                         <SelectedMarkers
                             data={mappedSourcesSelected}
-                            fetchSubOrgUnitDetail={fetchSubOrgUnitDetail}
                             updateOrgUnitLocation={updateOrgUnitLocation}
                         />
 

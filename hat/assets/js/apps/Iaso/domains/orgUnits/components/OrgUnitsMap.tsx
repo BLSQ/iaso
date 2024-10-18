@@ -1,5 +1,10 @@
 import { Box, Grid } from '@mui/material';
-import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
+import { makeStyles } from '@mui/styles';
+import {
+    commonStyles,
+    IntlFormatMessage,
+    useSafeIntl,
+} from 'bluesquare-components';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import {
     GeoJSON,
@@ -33,6 +38,7 @@ import { InnerDrawer } from '../../../components/nav/InnerDrawer/Index';
 import tiles from '../../../constants/mapTiles';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 import MESSAGES from '../messages';
+import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
 
 type OrgUnitWithSearchIndex = Omit<OrgUnit, 'search_index'> & {
     search_index: number;
@@ -55,6 +61,14 @@ const getFullOrgUnits = orgUnits => {
     });
     return fullOrUnits;
 };
+
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
+    commentContainer: {
+        height: '60vh',
+        overflowY: 'auto',
+    },
+}));
 
 const getOrgUnitsBounds = (orgUnits: Locations): Bounds | undefined => {
     const orgUnitsLocations = getFullOrgUnits(orgUnits.locations);
@@ -79,10 +93,14 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
     getSearchColor,
     orgUnits,
 }) => {
+    const classes = useStyles();
     const { data: orgUnitTypes } = useGetOrgUnitTypes();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const [isClusterActive, setIsClusterActive] = useState<boolean>(true);
 
+    const [selectedOrgUnit, setSelectedOrgUnit] = useState<
+        OrgUnit | undefined
+    >();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
 
@@ -123,6 +141,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                 })}
                                 TooltipComponent={Tooltip}
                                 isCircle
+                                onMarkerClick={o => setSelectedOrgUnit(o)}
                             />
                         </Pane>
                     </MarkerClusterGroup>
@@ -152,6 +171,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                     })}
                     TooltipComponent={Tooltip}
                     isCircle
+                    onMarkerClick={o => setSelectedOrgUnit(o)}
                 />
             </Pane>
         ));
@@ -179,13 +199,13 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
             <InnerDrawer
                 defaultActiveOption="comments"
                 withTopBorder
-                // commentsOptionComponent={
-                //     <OrgUnitsMapComments
-                //         className={classes.commentContainer}
-                //         maxPages={4}
-                //         orgUnit={currentOrgUnit}
-                //     />
-                // }
+                commentsOptionComponent={
+                    <OrgUnitsMapComments
+                        className={classes.commentContainer}
+                        maxPages={4}
+                        orgUnit={selectedOrgUnit}
+                    />
+                }
             >
                 <Box position="relative">
                     <MapToggleCluster
@@ -227,6 +247,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                             ),
                                         }}
                                         data={o.geo_json}
+                                        onClick={() => setSelectedOrgUnit(o)}
                                     >
                                         <OrgUnitPopupComponent
                                             orgUnitId={o.id}
@@ -262,6 +283,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                                 ),
                                             }}
                                             data={o.geo_json}
+                                            onClick={() =>
+                                                setSelectedOrgUnit(o)
+                                            }
                                         >
                                             <OrgUnitPopupComponent
                                                 orgUnitId={o.id}

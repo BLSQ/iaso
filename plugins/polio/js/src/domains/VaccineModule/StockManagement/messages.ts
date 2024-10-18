@@ -344,6 +344,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.incident.inventoryUnusableMovement',
         defaultMessage: 'Unusable vials in: {movement}',
     },
+    document: {
+        id: 'iaso.polio.label.document',
+        defaultMessage: 'Document',
+    },
 });
 
 export default MESSAGES;

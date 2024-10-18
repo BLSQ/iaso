@@ -111,6 +111,9 @@ const useVrfShape = () => {
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         comments: yup.string().nullable(),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };
 

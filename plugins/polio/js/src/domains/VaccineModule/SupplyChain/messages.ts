@@ -338,6 +338,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.targetPopulation',
         defaultMessage: 'Target population',
     },
+    document: {
+        id: 'iaso.polio.label.document',
+        defaultMessage: 'Document',
+    },
 });
 
 export default MESSAGES;

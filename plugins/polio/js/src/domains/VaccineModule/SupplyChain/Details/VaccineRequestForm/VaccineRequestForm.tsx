@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
-import { useSafeIntl } from 'bluesquare-components';
+import { FilesUpload, useSafeIntl } from 'bluesquare-components';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
@@ -15,8 +15,19 @@ import {
 } from '../../hooks/api/vrf';
 import { useSharedStyles } from '../shared';
 import { useSkipEffectUntilValue } from '../../hooks/utils';
+import { Accept } from 'react-dropzone';
 
 type Props = { className?: string; vrfData: any };
+
+export const accept: Accept = {
+    'application/pdf': ['.pdf'],
+};
+
+export const processErrorDocsBase = (err_docs) => {
+    if (!err_docs) return [];
+    if (!Array.isArray(err_docs)) return [err_docs]; 
+    else return err_docs;
+};
 
 export const VaccineRequestForm: FunctionComponent<Props> = ({
     className,
@@ -37,7 +48,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         },
     ];
 
-    const { values, setFieldTouched, setFieldValue } = useFormikContext<any>();
+    const { values, setFieldTouched, setFieldValue, errors } = useFormikContext<any>();
     const {
         campaigns,
         vaccines,
@@ -69,6 +80,8 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         [setFieldTouched, setFieldValue, values?.vrf?.comment, vrfDataComment],
     );
 
+    
+    
     const resetOnCountryChange = useCallback(() => {
         setFieldValue('vrf.campaign', undefined);
         setFieldValue('vrf.vaccine_type', undefined);
@@ -87,6 +100,10 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     useSkipEffectUntilValue(values?.vrf?.vaccine_type, resetOnVaccineChange);
 
     const isNormalType = values?.vrf?.vrf_type === 'Normal';
+
+
+    const processDocumentErrors = useCallback(processErrorDocsBase, [errors]);
+
 
     return (
         <Box className={className} mb={3}>
@@ -309,11 +326,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 container
                                 item
                                 xs={12}
-                                md={9}
-                                lg={6}
                                 spacing={2}
                             >
-                                <Grid item xs={12}>
+                                <Grid item xs={12} lg={6}>
                                     {/* With MUI 5, the spacing isn't taken into account if there's only one <Grid> item
                                       so the <Box> is used to compensate and align the TextArea with the other fields
                                     */}
@@ -326,6 +341,30 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                             )}
                                             onChange={onCommentChange}
                                             debounceTime={0}
+                                        />
+                                    </Box>
+                                    
+                                </Grid>
+
+                                <Grid item xs={12} lg={6}>
+                                    <Box mt={2}>
+                                        <FilesUpload
+                                            accept={accept}
+                                            files={[values?.vrf?.document] ?? []}
+                                            onFilesSelect={files => {
+                                                if (files.length) {
+                                                    setFieldTouched('vrf.document', true);
+                                                    setFieldValue('vrf.document', files);
+                                                }
+                                                console.log("File selected :" + files.length)
+                                                console.dir(files)
+                                            }}
+                                            multi={false}
+                                            errors={processDocumentErrors(errors.document)}
+
+                                            placeholder={formatMessage(
+                                                MESSAGES.document,
+                                            )}
                                         />
                                     </Box>
                                 </Grid>

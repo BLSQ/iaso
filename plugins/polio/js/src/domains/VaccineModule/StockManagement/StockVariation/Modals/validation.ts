@@ -115,6 +115,9 @@ export const useDestructionValidation = () => {
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };
 export const useIncidentValidation = () => {

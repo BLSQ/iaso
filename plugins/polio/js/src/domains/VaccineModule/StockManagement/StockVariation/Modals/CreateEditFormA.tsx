@@ -123,22 +123,22 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                     />
                 </Box>
                 <Box mb={2}>
-                <FilesUpload
-                    accept={accept}
-                    files={formik.values.document ? [formik.values.document] : []}
-                    onFilesSelect={files => {
-                        if (files.length) {
-                            formik.setFieldTouched(`document`, true);
-                            formik.setFieldValue(`document`, files);
-                        }
-                    }}
-                    multi={false}
-                    errors={processDocumentErrors(formik.errors.document)}
+                    <FilesUpload
+                        accept={accept}
+                        files={formik.values.document ? [formik.values.document] : []}
+                        onFilesSelect={files => {
+                            if (files.length) {
+                                formik.setFieldTouched(`document`, true);
+                                formik.setFieldValue(`document`, files);
+                            }
+                        }}
+                        multi={false}
+                        errors={processDocumentErrors(formik.errors.document)}
 
-                    placeholder={formatMessage(
-                        MESSAGES.document,
-                    )}
-                />
+                        placeholder={formatMessage(
+                            MESSAGES.document,
+                        )}
+                    />
                 </Box>
             </ConfirmCancelModal>
         </FormikProvider>

@@ -493,6 +493,8 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
 
 
 class DestructionReportSerializer(serializers.ModelSerializer):
+    document = serializers.FileField(required=False)
+
     class Meta:
         model = DestructionReport
         fields = "__all__"

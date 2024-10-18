@@ -355,10 +355,37 @@ const createEditDestruction = async (body: any) => {
         const lotNumbersArray = commaSeparatedIdsToStringArray(lot_numbers);
         copy.lot_numbers = lotNumbersArray;
     }
+
+    const filteredParams = copy
+        ? Object.fromEntries(
+            Object.entries(copy).filter(
+                ([key, value]) => value !== undefined && value !== null && key !== 'document',
+            ),
+        )
+        : {};
+
+
+    const requestBody: any = {
+        url: `${modalUrl}destruction_report/`,
+        data: filteredParams,
+    };
+
+    if (copy?.document) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+        const { files, ...data } = filteredParams;
+        const fileData = { files: copy.document };
+        requestBody.data = data;
+        requestBody.fileData = fileData;
+    } 
+
+    
     if (body.id) {
-        return patchRequest(`${modalUrl}destruction_report/${body.id}/`, copy);
+        requestBody['url'] = `${modalUrl}destruction_report/${body.id}/`
+        return patchRequest2(
+            requestBody
+        );
     }
-    return postRequest(`${modalUrl}destruction_report/`, copy);
+    return postRequest(requestBody);
 };
 
 export const useSaveDestruction = () => {

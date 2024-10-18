@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Model Diagram</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body,
+        html,
+        #diagram {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            /* Hide scrollbars */
+        }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 1px;
+        }
+
+        #model-list {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 3px;
+            pointer-events: none;
+            z-index: 1001;
+        }
+
+        .node-title {
+            fill: #fff;
+            stroke: #333;
+            stroke-width: 1.5px;
+        }
+
+        .node-title-text {
+            fill: #333;
+            font-weight: bold;
+            font-size: 16px;
+            dominant-baseline: middle;
+            text-anchor: middle;
+        }
+
+        .fields-group {
+            overflow: hidden;
+        }
+
+        .node-fields {
+            fill: #f0f0f0;
+            stroke: #333;
+            stroke-width: 1px;
+        }
+
+        .field-text {
+            fill: #000;
+            font-size: 11px;
+            dominant-baseline: hanging;
+        }
+
+        .node-container .fields-group {
+            display: none;
+        }
+
+        .node-container.expanded .fields-group {
+            display: block;
+        }
+
+        .node-container {
+            cursor: pointer;
+        }
+
+        .toggle-icon {
+            fill: #333;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #model-list {
+            position: fixed;
+            top: 10px;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 0 5px 5px 0;
+            height: calc(100vh - 20px);
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(-100%);
+            width: 320px;
+            /* Add a fixed width to the sidebar */
+        }
+
+        #model-list.open {
+            transform: translateX(0);
+            /* Open state */
+        }
+
+        #toggle-sidebar {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1001;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 25px;
+            font-weight: bold;
+            transition: left 0.3s ease-in-out;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="toggle-sidebar">☰</button>
+    <div id="model-list"></div>
+    <div id="diagram"></div>
+    <script>
+        const modelData = JSON.parse('{{ model_data|escapejs }}');
+        console.log('modelData', modelData);
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const presentModels = [...new Set(modelData.nodes.map(node => node.id))];
+
+        const defaultVisibleModels = [
+            'Profile',
+            'Account',
+            'Group',
+            'User',
+            'GroupSet',
+            'Instance',
+            'Form',
+            'DataSource',
+            'Project',
+            'FormVersion',
+            'OrgUnit',
+            'OrgUnitType',
+            'FormVersion',
+            'SourceVersion'
+        ];
+
+        const modelList = d3.select("#model-list");
+        presentModels.forEach(model => {
+            const label = modelList.append("label").style("display", "block");
+            label.append("input")
+                .attr("type", "checkbox")
+                .property("checked", defaultVisibleModels.includes(model))
+                .attr("id", `checkbox-${model}`)
+                .on("change", updateVisibility);
+            label.append("span").text(` ${model}`);
+        });
+
+        const svg = d3.select("#diagram")
+            .append("svg")
+            .attr("width", "100%")
+            .attr("height", "100%")
+            .attr("viewBox", [0, 0, width, height]);
+
+        const g = svg.append("g");
+
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+
+        svg.call(zoom);
+
+        const simulation = d3.forceSimulation(modelData.nodes)
+            .force("link", d3.forceLink(modelData.links).id(d => d.id).distance(150))
+            .force("charge", d3.forceManyBody().strength(-2000))
+            .force("center", d3.forceCenter((width / 2) - 100, height / 2))
+            .force("x", d3.forceX(width / 2).strength(0.2))
+            .force("y", d3.forceY(height / 2).strength(0.2))
+            .force("collision", d3.forceCollide().radius(80));
+
+        const link = g.append("g")
+            .selectAll("line")
+            .data(modelData.links)
+            .enter().append("line")
+            .attr("class", "link");
+
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        const nodeWidth = 300;
+        const nodeHeight = 30;
+        const fieldHeight = 20;
+
+        const node = g.append("g")
+            .selectAll(".node-container")
+            .data(modelData.nodes)
+            .enter().append("g")
+            .attr("class", "node-container")
+            .on("click", toggleFields)
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        node.append("rect")
+            .attr("class", "node-title")
+            .attr("width", nodeWidth)
+            .attr("height", nodeHeight)
+            .attr("x", -nodeWidth / 2)
+            .attr("y", -nodeHeight / 2);
+
+        node.append("text")
+            .attr("class", "node-title-text")
+            .attr("x", 0)
+            .attr("y", 0)
+            .text(d => d.id);
+
+        node.append("text")
+            .attr("class", "toggle-icon")
+            .attr("x", nodeWidth / 2 - 20)
+            .attr("y", 0)
+            .text("+")
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle");
+        const fieldsGroup = node.append("g")
+            .attr("class", "fields-group")
+            .attr("transform", `translate(${-nodeWidth / 2}, ${nodeHeight / 2})`);
+
+        fieldsGroup.append("rect")
+            .attr("class", "node-fields")
+            .attr("width", nodeWidth)
+            .attr("height", 0);
+
+        fieldsGroup.each(function (d) {
+            const group = d3.select(this);
+
+            // Sort fields: FK and Many-to-Many first, then others
+            const sortedFields = d.fields.sort((a, b) => {
+                const aImportance = a.type.includes('ForeignKey') || a.type.includes('ManyToManyField') ? 0 : 1;
+                const bImportance = b.type.includes('ForeignKey') || b.type.includes('ManyToManyField') ? 0 : 1;
+                return aImportance - bImportance;
+            });
+
+            sortedFields.forEach((field, index) => {
+                const fieldGroup = group.append("g")
+                    .attr("transform", `translate(0, ${index * (fieldHeight + 1)})`);
+
+                // Add separator line
+                fieldGroup.append("line")
+                    .attr("x1", 0)
+                    .attr("y1", 0)
+                    .attr("x2", nodeWidth)
+                    .attr("y2", 0)
+                    .attr("stroke", "#ccc")
+                    .attr("stroke-width", 1);
+
+                fieldGroup.append("rect")
+                    .attr("class", "field-text-background")
+                    .attr("width", nodeWidth)
+                    .attr("fill", "transparent")
+                    .attr("height", fieldHeight)
+                    .attr("y", 1);
+
+                const text = fieldGroup.append("text")
+                    .attr("class", "field-text")
+                    .attr("x", 5)
+                    .attr("y", 6);
+
+                const isImportant = field.type.includes('ForeignKey') || field.type.includes('ManyToManyField');
+
+                if (isImportant) {
+                    text.append("tspan")
+                        .attr("font-weight", "bold")
+                        .text(`${field.name}: ${field.type}`);
+                } else {
+                    text.text(`${field.name}: ${field.type}`);
+                }
+
+                // Improved text wrapping and truncation
+                const maxLength = 45;
+                let fullText = text.text();
+                if (fullText.length > maxLength) {
+                    if (isImportant) {
+                        text.select("tspan").text(fullText.substring(0, maxLength) + "...");
+                    } else {
+                        text.text(fullText.substring(0, maxLength) + "...");
+                    }
+                }
+
+                fieldGroup.on("mouseover", function (event) {
+                    tooltip.transition().duration(200).style("opacity", .9);
+                    tooltip.html(`${field.name}: ${field.type}`)
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                    .on("mouseout", function () {
+                        tooltip.transition().duration(500).style("opacity", 0);
+                    });
+            });
+        });
+
+
+        function toggleFields(event, d) {
+
+            if (event.defaultPrevented) return;
+            event.stopPropagation();
+            const nodeContainer = d3.select(this);
+            const isExpanded = nodeContainer.classed("expanded");
+
+            // Toggle expanded class
+            nodeContainer.classed("expanded", !isExpanded);
+
+            // Update toggle icon
+            nodeContainer.select(".toggle-icon")
+                .text(isExpanded ? "+" : "-");
+
+            // Bring the clicked node to the front
+            nodeContainer.raise();
+
+            const fieldsGroup = nodeContainer.select(".fields-group");
+            const fieldsRect = fieldsGroup.select(".node-fields");
+
+            simulation.stop();
+
+            if (!isExpanded) {
+                const totalFieldHeight = d.fields.length * (fieldHeight + 1) + 1;  // Add 1px for the last separator
+                fieldsRect.attr("height", totalFieldHeight);
+                fieldsGroup.selectAll(".field-text-background, .field-text, line")
+                    .attr("opacity", 1);
+            } else {
+                fieldsRect.attr("height", 0);
+                fieldsGroup.selectAll(".field-text-background, .field-text, line")
+                    .attr("opacity", 0);
+            }
+
+            simulation.alpha(0.3).restart();
+        }
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+        });
+
+        function updateVisibility() {
+            const visibleModels = presentModels.filter(model =>
+                document.getElementById(`checkbox-${model}`).checked
+            );
+
+            node.style("display", d =>
+                visibleModels.includes(d.id) ? "inline" : "none"
+            );
+
+            link.style("display", d =>
+                visibleModels.includes(d.source.id) && visibleModels.includes(d.target.id) ? "inline" : "none"
+            );
+
+            simulation.alpha(0.3).restart();
+        }
+
+        function initialSetup() {
+            presentModels.forEach(model => {
+                const checkbox = document.getElementById(`checkbox-${model}`);
+                if (checkbox) {
+                    checkbox.checked = defaultVisibleModels.includes(model);
+                }
+            });
+            updateVisibility();
+
+            const visibleNodes = modelData.nodes.filter(node => defaultVisibleModels.includes(node.id));
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) * 0.35;
+
+            visibleNodes.forEach((node, i) => {
+                const angle = (i / visibleNodes.length) * 2 * Math.PI;
+                node.x = centerX + radius * Math.cos(angle);
+                node.y = centerY + radius * Math.sin(angle);
+            });
+
+            simulation.alpha(1).restart();
+
+            // Stop the simulation after a short delay
+            setTimeout(() => {
+                simulation.stop();
+                // Fix positions of all nodes
+                simulation.nodes().forEach(node => {
+                    node.fx = node.x;
+                    node.fy = node.y;
+                });
+            }, 3000); // Adjust this value to control how long the initial animation runs
+        }
+
+        // Update the initial zoom to fit the content
+        svg.call(zoom.transform, d3.zoomIdentity);
+        initialSetup();
+
+        const toggleSidebar = document.getElementById('toggle-sidebar');
+        const modelListElement = document.getElementById('model-list');
+
+        toggleSidebar.addEventListener('click', () => {
+            modelListElement.classList.toggle('open');
+            if (modelListElement.classList.contains('open')) {
+                toggleSidebar.style.left = '280px'; // 200px (sidebar width) + 10px (padding)
+                toggleSidebar.textContent = '×';
+            } else {
+                toggleSidebar.style.left = '10px';
+                toggleSidebar.textContent = '☰';
+            }
+        });
+    </script>
+</body>
+
+</html>

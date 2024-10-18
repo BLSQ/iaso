@@ -14,7 +14,6 @@ import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
-import { MapInfo } from './MapInfo';
 import { MapLegend } from './MapLegend';
 import { OrgUnitPopup } from './OrgUnitPopup';
 
@@ -188,7 +187,8 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
                 />
                 <MapLegend />
-                <MapInfo />
+                {/* TODO uncomment when feature is reinstated */}
+                {/* <MapInfo /> */}
                 {selectedLocation && (
                     <OrgUnitPopup
                         top={anchorPoint.y}

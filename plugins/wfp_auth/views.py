@@ -117,8 +117,11 @@ class WFP2Adapter(Auth0OAuth2Adapter):
         # `self.request.query_params` is not set yet. Using `request.query_params` results in:
         # `'WSGIRequest' object has no attribute 'query_params'`
         app_id = request.GET.get(APP_ID, None)
+
         if app_id:
             account = get_object_or_404(Project, app_id=app_id).account
+            if app_id != self.settings["IASO_ACCOUNT_NAME"]:
+                uid = f"{app_id}_{uid}"
         else:
             account = Account.objects.get(name=self.settings["IASO_ACCOUNT_NAME"])
 

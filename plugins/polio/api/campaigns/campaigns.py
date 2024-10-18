@@ -414,7 +414,12 @@ class CampaignSerializer(serializers.ModelSerializer):
         return campaign
 
     # Vaccines with real scope
-    vaccines = serializers.CharField(read_only=True)
+    vaccines = serializers.SerializerMethodField(read_only=True)
+
+    def get_vaccines(self, obj):
+        if obj.vaccines:
+            return ",".join([vaccine.strip() for vaccine in obj.vaccines.split(",")])
+        return ""
 
     class Meta:
         model = Campaign

@@ -3,10 +3,8 @@ import { act } from 'react-dom/test-utils';
 
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { expect } from 'chai';
-import {
-    renderWithIntl,
-    withQueryClientProvider,
-} from '../../../../../test/utils';
+import { withQueryClientProvider } from '../../../../../test/utils';
+import { renderWithIntl } from '../../../../../test/utils/intl';
 import { renderWithMuiTheme } from '../../../../../test/utils/muiTheme';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
@@ -37,9 +35,9 @@ const awaitUseEffect = async wrapper => {
 
 const renderComponent = () =>
     mount(
-        withQueryClientProvider(
-            renderWithIntl(
-                renderWithMuiTheme(
+        renderWithIntl(
+            renderWithMuiTheme(
+                withQueryClientProvider(
                     <FormVersionsDialogComponent
                         formId={formId}
                         formVersion={fakeFormVersion}
@@ -64,9 +62,9 @@ describe('FormVersionsDialog connected component', () => {
     describe('with a new form version', () => {
         before(() => {
             connectedWrapper = mount(
-                withQueryClientProvider(
-                    renderWithIntl(
-                        renderWithMuiTheme(
+                renderWithIntl(
+                    renderWithMuiTheme(
+                        withQueryClientProvider(
                             <FormVersionsDialogComponent
                                 formId={formId}
                                 titleMessage={MESSAGES.createFormVersion}

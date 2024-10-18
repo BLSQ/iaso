@@ -9,18 +9,12 @@ import {
     instancesInitialState,
     instancesReducer,
 } from '../domains/instances/reducer';
-import {
-    orgUnitsInitialState,
-    orgUnitsReducer,
-} from '../domains/orgUnits/reducer';
 
 const store = createStore(
     {
-        orgUnits: orgUnitsInitialState,
         instances: instancesInitialState,
     },
     {
-        orgUnits: orgUnitsReducer,
         instances: instancesReducer,
     },
     [

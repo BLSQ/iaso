@@ -23,7 +23,6 @@ import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { fetchAssociatedOrgUnits } from '../../utils/requests';
 import { useCheckUserHasWritePermissionOnOrgunit } from '../../utils/usersUtils.ts';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
-import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitImages } from './components/OrgUnitImages.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
@@ -247,12 +246,11 @@ const OrgUnitDetail = () => {
             const group_ids = mappedRevision.groups.map(g => g.id);
             mappedRevision.groups = group_ids;
             saveOu(mappedRevision).then(res => {
-                dispatch(resetOrgUnits());
                 refreshOrgUnitQueryCache(res);
                 onSuccess();
             });
         },
-        [currentOrgUnit, dispatch, refreshOrgUnitQueryCache, saveOu],
+        [currentOrgUnit, refreshOrgUnitQueryCache, saveOu],
     );
 
     const handleSaveOrgUnit = useCallback(
@@ -270,7 +268,6 @@ const OrgUnitDetail = () => {
                 .then(ou => {
                     setCurrentOrgUnit(ou);
                     setOrgUnitLocationModified(false);
-                    dispatch(resetOrgUnits());
                     if (isNewOrgunit) {
                         redirectToReplace(baseUrl, {
                             ...params,
@@ -284,7 +281,6 @@ const OrgUnitDetail = () => {
         },
         [
             currentOrgUnit,
-            dispatch,
             isNewOrgunit,
             params,
             redirectToReplace,

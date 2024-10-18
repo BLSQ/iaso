@@ -1,18 +1,17 @@
-import { expect } from 'chai';
-import React from 'react';
-import nock from 'nock';
-import { ErrorBoundary, theme } from 'bluesquare-components';
 import { ThemeProvider } from '@mui/material';
+import { ErrorBoundary, theme } from 'bluesquare-components';
+import { expect } from 'chai';
 import { shallow } from 'enzyme';
+import nock from 'nock';
+import React from 'react';
 import {
-    renderWithMutableStore,
     mockedStore,
+    renderWithMutableStore,
 } from '../../../../../test/utils/redux';
 import { mockRequest } from '../../../../../test/utils/requests';
-import ProtectedRoute from './ProtectedRoute';
-import { redirectTo as redirectToAction } from '../../../routing/actions.ts';
-import SidebarMenu from '../../app/components/SidebarMenuComponent';
 import * as Permission from '../../../utils/permissions.ts';
+import SidebarMenu from '../../app/components/SidebarMenuComponent';
+import ProtectedRoute from './ProtectedRoute';
 
 const cookieStub = require('../../../utils/cookies');
 
@@ -63,7 +62,6 @@ const unauthorizedDispatchSpy = sinon.spy(
     storeWithUnauthorizedUser,
     'dispatch',
 );
-const redirectSpy = sinon.spy(redirectToAction);
 
 const fakeGetItem = key => {
     if (key === 'django_language') {
@@ -100,7 +98,6 @@ describe('ProtectedRoutes', () => {
         setCookieSpy.resetHistory();
         updatedDispatchSpy.resetHistory();
         unauthorizedDispatchSpy.resetHistory();
-        redirectSpy.resetHistory();
         nock.cleanAll();
         nock.abortPendingRequests();
         mockRequest('get', '/api/profiles/me', user);

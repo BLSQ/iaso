@@ -28,7 +28,7 @@ import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor.ts';
 import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace.ts';
 import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';
-import { useGetForms, useInstancesFiltersData } from '../hooks';
+import { useGetForms } from '../hooks';
 import { parseJson } from '../utils/jsonLogicParse.ts';
 
 import { Popper } from '../../forms/fields/components/Popper.tsx';
@@ -36,15 +36,16 @@ import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnit
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
 import MESSAGES from '../messages';
 
-import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
+import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction.tsx';
 import { LocationLimit } from '../../../utils/map/LocationLimit';
+import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
 import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
 import { ColumnSelect } from './ColumnSelect.tsx';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -69,7 +70,6 @@ const filterDefault = params => ({
 });
 
 const InstancesFiltersComponent = ({
-    params: { formIds },
     params,
     onSearch,
     possibleFields,
@@ -87,7 +87,6 @@ const InstancesFiltersComponent = ({
     const classes = useStyles();
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
-    const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
     const defaultFilters = useMemo(() => {
@@ -120,8 +119,8 @@ const InstancesFiltersComponent = ({
         });
         setInitialOrgUnitId(params?.levels);
     }, [defaultFilters]);
-
-    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
+    const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
+        useGetOrgUnitTypes();
     const isInstancesFilterUpdated = useSelector(
         state => state.instances.isInstancesFilterUpdated,
     );
@@ -139,7 +138,6 @@ const InstancesFiltersComponent = ({
         fields,
         queryBuilderListToReplace,
     );
-    useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
             dispatch(setInstancesFilterUpdated(false));
@@ -262,7 +260,6 @@ const InstancesFiltersComponent = ({
         startPeriodError ||
         endPeriodError ||
         hasLocationLimitError;
-
     return (
         <div className={classes.marginBottom}>
             <UserOrgUnitRestriction />
@@ -393,12 +390,9 @@ const InstancesFiltersComponent = ({
                         onChange={handleFormChange}
                         value={formState.orgUnitTypeId.value || null}
                         type="select"
-                        options={orgUnitTypes.map(t => ({
-                            label: t.name,
-                            value: t.id,
-                        }))}
+                        options={orgUnitTypes || []}
                         label={MESSAGES.org_unit_type_id}
-                        loading={fetchingOrgUnitTypes}
+                        loading={isFetchingOuTypes}
                     />
                     <InputComponent
                         type="select"

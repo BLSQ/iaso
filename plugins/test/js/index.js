@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
-    LoadingSpinner,
     commonStyles,
+    LoadingSpinner,
     Table,
+    useSafeIntl,
 } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
+import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
-import { redirectTo } from 'Iaso/routing/actions';
 import { getRequest } from 'Iaso/libs/Api';
 import tableColumns from './columns';
 import MESSAGES from './messages';
@@ -56,7 +55,7 @@ const TestApp = () => {
                     baseUrl={baseUrl}
                     params={{}}
                     redirectTo={(key, params) =>
-                        dispatch(redirectTo(key, params))
+                        console.log('redirectTo', key, params)
                     }
                 />
             </Box>

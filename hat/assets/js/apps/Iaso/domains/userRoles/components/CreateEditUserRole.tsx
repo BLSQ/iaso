@@ -1,28 +1,31 @@
-import React, { FunctionComponent, useState } from 'react';
-import { useFormik, FormikProvider } from 'formik';
 import {
     AddButton,
-    useSafeIntl,
     ConfirmCancelModal,
     makeFullModal,
+    useSafeIntl,
 } from 'bluesquare-components';
+import { FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
+import React, { FunctionComponent, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import InputComponent from '../../../components/forms/InputComponent';
+import {
+    useApiErrorValidation,
+    useTranslatedErrors,
+} from '../../../libs/validation';
+import { hasFeatureFlag, SHOW_DEV_FEATURES } from '../../../utils/featureFlags';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import {
     SaveUserRoleQuery,
     useSaveUserRole,
 } from '../hooks/requests/useSaveUserRole';
 import MESSAGES from '../messages';
-import { useUserRoleValidation } from '../validation';
-import {
-    useApiErrorValidation,
-    useTranslatedErrors,
-} from '../../../libs/validation';
-import InputComponent from '../../../components/forms/InputComponent';
-import { PermissionsAttribution } from './PermissionsAttribution';
-import { EditIconButton } from '../../../components/Buttons/EditIconButton';
-import UserRoleDialogInfoComponent from './UserRoleDialogInfoComponent';
 import { Permission } from '../types/userRoles';
+import { useUserRoleValidation } from '../validation';
+import { OrgUnitWriteTypes } from './OrgUnitWriteTypes';
+import { PermissionsAttribution } from './PermissionsAttribution';
+import UserRoleDialogInfoComponent from './UserRoleDialogInfoComponent';
 
 type ModalMode = 'create' | 'edit';
 type Props = Partial<SaveUserRoleQuery> & {
@@ -38,6 +41,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
     isOpen,
     id,
     name,
+    editable_org_unit_type_ids,
     permissions = [],
 }) => {
     const [userRolePermissions, setUserRolePermissoins] =
@@ -68,6 +72,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         initialValues: {
             id,
             name,
+            editable_org_unit_type_ids,
             permissions,
         },
         enableReinitialize: true,
@@ -109,7 +114,8 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         setUserRolePermissoins(newPermissions);
         setFieldValue('permissions', newPermissions);
     };
-
+    const currentUser = useCurrentUser();
+    const hasDevFeatures = hasFeatureFlag(currentUser, SHOW_DEV_FEATURES);
     return (
         <>
             {dialogType === 'create' && (
@@ -149,6 +155,17 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                         label={MESSAGES.name}
                         required
                     />
+                    {hasDevFeatures && (
+                        <OrgUnitWriteTypes
+                            userRole={values}
+                            handleChange={newEditableOrgUnitTypeIds => {
+                                onChange(
+                                    'editable_org_unit_type_ids',
+                                    newEditableOrgUnitTypeIds,
+                                );
+                            }}
+                        />
+                    )}
                     <PermissionsAttribution
                         userRolePermissions={userRolePermissions}
                         handleChange={newPermissions => {
@@ -172,5 +189,6 @@ const editUserRoleModalWithIcon = makeFullModal(
 
 export {
     createUserRoleModalWithButton as CreateUserRoleDialog,
-    editUserRoleModalWithIcon as EditUserRoleDialog,
+    editUserRoleModalWithIcon as EditUserRoleDialog
 };
+

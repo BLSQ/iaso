@@ -28,7 +28,7 @@ export const UserOrgUnitWriteTypes: FunctionComponent<Props> = ({
                 <InputComponent
                     multi
                     clearable
-                    keyValue="allow_creating_sub_unit_type_ids"
+                    keyValue="editable_org_unit_type_ids"
                     onChange={(_, value) =>
                         handleChange(commaSeparatedIdsToArray(value))
                     }

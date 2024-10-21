@@ -58,9 +58,8 @@ def setup_account(account_name, server_url, username, password):
 
 
 def validate_account_name(name: str) -> str:
-    random_name = "".join(random.choices(string.ascii_lowercase, k=7))
     if not name:  # the user didn't pass a name as parameter
-        return random_name
+        return "".join(random.choices(string.ascii_lowercase, k=7))
 
     # In all the places where this name is used, the shortest field is the Django User.username (150 chars)
     # However, the setuper can create multiple accounts with a '.xx' suffix, so we need to keep some space

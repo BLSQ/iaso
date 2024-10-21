@@ -925,8 +925,12 @@ class CampaignViewSet(ModelViewSet):
             if round_start_to:
                 query_rounds &= Q(started_at__lte=round_start_to)
 
-        rounds = []
-        rounds = Round.objects.filter(query_rounds)
+        rounds = (
+            Round.objects.select_related("campaign")
+            .filter(query_rounds)
+            .exclude(Q(campaign__isnull=True) | Q(campaign__is_test=True))
+        )
+
         # get filtered rounds
         rounds = self.get_filtered_rounds(rounds, request.GET)
         # The csv file name base on the start from and start to dates
@@ -935,7 +939,7 @@ class CampaignViewSet(ModelViewSet):
             if round_start_from
             else ("--start-from-" + current_date.strftime("%d-%m-%Y") if not round_start_to else "")
         )
-        start_to_name = "--start-to " + round_start_to.strftime("%d-%m-%Y") if round_start_to else ""
+        start_to_name = "--start-to-" + round_start_to.strftime("%d-%m-%Y") if round_start_to else ""
 
         filename = "%s%s%s" % (
             "all-rounds-scopes",
@@ -947,10 +951,7 @@ class CampaignViewSet(ModelViewSet):
         org_units_list = []
         # loop on filtered rounds and make the org_units_list to be pushed in the csv file
         for round in rounds:
-            campaign = round.campaign
-            if not campaign:
-                continue
-            org_units_list += self.get_org_units_list(round, campaign)
+            org_units_list += self.get_org_units_list(round, round.campaign)
 
         response = StreamingHttpResponse(
             streaming_content=(iter_items(org_units_list, Echo(), columns, self.get_row)), content_type=CONTENT_TYPE_CSV

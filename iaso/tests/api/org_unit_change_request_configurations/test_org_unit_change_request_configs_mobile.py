@@ -57,7 +57,7 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
 
         self.client.force_authenticate(self.user_ash_ketchum)
 
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(9):
             response = self.client.get(f"{self.MOBILE_OUCRC_API_URL}?app_id={self.app_id}")
             self.assertJSONResponse(response, status.HTTP_200_OK)
 

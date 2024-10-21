@@ -73,11 +73,19 @@ Once the script has run, you can log in to your server using the account name as
          # If you updated credentials.py:
          python3 setuper.py
 
-2. If you want to create additional projects like:
+   There are some optional parameters you can pass to this command:
+
+   - If you want to create additional projects like:
       - Planning
       - Georegistry/Géoregistre
       - Vaccination
 
-    You will need to add param `--additional_projects`:
+       You will need to add param `--additional_projects` or `-a`:
 
-        python3 setuper.py --additional_projects
+           python3 setuper.py --additional_projects
+
+   - If you want to choose the name that will be used for the account/project/user/... (max 147 characters, only a-z, A-Z, 0-9)
+
+       You will need to add param `-n <name>`:
+
+           python3 setuper.py -n ThisNameWasCarefullyChosen

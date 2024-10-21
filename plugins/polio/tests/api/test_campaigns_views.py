@@ -71,8 +71,8 @@ class CampaignCreateAllRoundsScopesCsvViewTestCase(APITestCase):
 
         response_csv = response.getvalue().decode("utf-8")
         expected_csv = (
-            "ID,Admin 2,Admin 1,Admin 0,OBR Name,Round Number,Vaccine\r\n"
-            f"{self.org_unit_c.id},C,B,A,Campaign OBR name,R1,\r\n"
+            "ID,Admin 2,Admin 1,Admin 0,OBR Name,Round Number,Start date,Vaccine\r\n"
+            f"{self.org_unit_c.id},C,B,A,Campaign OBR name,R1,2024-10-21,\r\n"
         )
         self.assertEqual(response_csv, expected_csv)
 
@@ -87,7 +87,7 @@ class CampaignCreateAllRoundsScopesCsvViewTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         response_csv = response.getvalue().decode("utf-8")
-        expected_csv = "ID,Admin 2,Admin 1,Admin 0,OBR Name,Round Number,Vaccine\r\n"
+        expected_csv = "ID,Admin 2,Admin 1,Admin 0,OBR Name,Round Number,Start date,Vaccine\r\n"
         self.assertEqual(response_csv, expected_csv)
 
     def test_test_get_create_all_rounds_scopes_csv_should_exlude_rounds_without_campaigns(self):
@@ -101,5 +101,5 @@ class CampaignCreateAllRoundsScopesCsvViewTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         response_csv = response.getvalue().decode("utf-8")
-        expected_csv = "ID,Admin 2,Admin 1,Admin 0,OBR Name,Round Number,Vaccine\r\n"
+        expected_csv = "ID,Admin 2,Admin 1,Admin 0,OBR Name,Round Number,Start date,Vaccine\r\n"
         self.assertEqual(response_csv, expected_csv)

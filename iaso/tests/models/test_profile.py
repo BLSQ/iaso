@@ -70,3 +70,26 @@ class ProfileModelTestCase(TestCase):
                 )
             )
         self.profile1.user_roles.clear()
+
+    def test_with_editable_org_unit_types(self):
+        org_unit_type_country = m.OrgUnitType.objects.create(name="Country")
+        org_unit_type_region = m.OrgUnitType.objects.create(name="Region")
+        org_unit_type_district = m.OrgUnitType.objects.create(name="District")
+
+        group_1 = Group.objects.create(name="Group 1")
+        user_role_1 = m.UserRole.objects.create(group=group_1, account=self.account)
+        user_role_1.editable_org_unit_types.set([org_unit_type_country])
+
+        group_2 = Group.objects.create(name="Group 2")
+        user_role_2 = m.UserRole.objects.create(group=group_2, account=self.account)
+        user_role_2.editable_org_unit_types.set([org_unit_type_region])
+
+        self.profile1.user_roles.set([user_role_1, user_role_2])
+        self.profile1.editable_org_unit_types.set([org_unit_type_district])
+
+        profile = m.Profile.objects.filter(id=self.profile1.pk).with_editable_org_unit_types().first()
+
+        self.assertEqual(profile.annotated_editable_org_unit_types_ids, [org_unit_type_district.pk])
+        self.assertCountEqual(
+            profile.annotated_user_roles_editable_org_unit_type_ids, [org_unit_type_country.pk, org_unit_type_region.pk]
+        )

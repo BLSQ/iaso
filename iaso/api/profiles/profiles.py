@@ -220,7 +220,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
-        return Profile.objects.filter(account=account).prefetch_related("editable_org_unit_types")
+        return Profile.objects.filter(account=account).with_editable_org_unit_types()
 
     def list(self, request):
         limit = request.GET.get("limit", None)
@@ -260,7 +260,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             teams=teams,
             managed_users_only=managed_users_only,
             ids=ids,
-        )
+        ).order_by("id")
 
         queryset = queryset.prefetch_related(
             "user",

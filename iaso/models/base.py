@@ -1405,6 +1405,21 @@ class InstanceFile(models.Model):
         }
 
 
+class ProfileQuerySet(models.QuerySet):
+    def with_editable_org_unit_types(self):
+        qs = self
+        return qs.annotate(
+            annotated_editable_org_unit_types_ids=ArrayAgg(
+                "editable_org_unit_types__id", distinct=True, filter=Q(editable_org_unit_types__isnull=False)
+            ),
+            annotated_user_roles_editable_org_unit_type_ids=ArrayAgg(
+                "user_roles__editable_org_unit_types__id",
+                distinct=True,
+                filter=Q(user_roles__editable_org_unit_types__isnull=False),
+            ),
+        )
+
+
 class Profile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")
@@ -1424,6 +1439,8 @@ class Profile(models.Model):
         "OrgUnitType", related_name="editable_by_iaso_profile_set", blank=True
     )
 
+    objects = models.Manager.from_queryset(ProfileQuerySet)()
+
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
 
@@ -1440,6 +1457,16 @@ class Profile(models.Model):
         )
         all_permissions = user_group_permissions + user_permissions
         permissions = list(set(all_permissions))
+        try:
+            editable_org_unit_type_ids = self.annotated_editable_org_unit_types_ids
+        except AttributeError:
+            editable_org_unit_type_ids = [out.pk for out in self.editable_org_unit_types.all()]
+        try:
+            user_roles_editable_org_unit_type_ids = self.annotated_user_roles_editable_org_unit_type_ids
+        except AttributeError:
+            user_roles_editable_org_unit_type_ids = (
+                list(self.user_roles.values_list("editable_org_unit_types", flat=True)),
+            )
         if not small:
             return {
                 "id": self.id,
@@ -1462,7 +1489,8 @@ class Profile(models.Model):
                 "phone_number": self.phone_number.as_e164 if self.phone_number else None,
                 "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
                 "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
-                "editable_org_unit_type_ids": [out.pk for out in self.editable_org_unit_types.all()],
+                "editable_org_unit_type_ids": editable_org_unit_type_ids,
+                "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
             }
         else:
             return {
@@ -1485,10 +1513,21 @@ class Profile(models.Model):
                 "phone_number": self.phone_number.as_e164 if self.phone_number else None,
                 "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
                 "projects": [p.as_dict() for p in self.projects.all()],
-                "editable_org_unit_type_ids": [out.pk for out in self.editable_org_unit_types.all()],
+                "editable_org_unit_type_ids": editable_org_unit_type_ids,
+                "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
             }
 
     def as_short_dict(self):
+        try:
+            editable_org_unit_type_ids = self.annotated_editable_org_unit_types_ids
+        except AttributeError:
+            editable_org_unit_type_ids = [out.pk for out in self.editable_org_unit_types.all()]
+        try:
+            user_roles_editable_org_unit_type_ids = self.annotated_user_roles_editable_org_unit_type_ids
+        except AttributeError:
+            user_roles_editable_org_unit_type_ids = (
+                list(self.user_roles.values_list("editable_org_unit_types", flat=True)),
+            )
         return {
             "id": self.id,
             "first_name": self.user.first_name,
@@ -1499,7 +1538,8 @@ class Profile(models.Model):
             "user_id": self.user.id,
             "phone_number": self.phone_number.as_e164 if self.phone_number else None,
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
-            "editable_org_unit_type_ids": [out.pk for out in self.editable_org_unit_types.all()],
+            "editable_org_unit_type_ids": editable_org_unit_type_ids,
+            "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
         }
 
     def has_a_team(self):

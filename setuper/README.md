@@ -61,13 +61,17 @@ Once the script has run, you can log in to your server using the account name as
 
            pip install -r requirements.txt
 
-    - Update `credentials.py` because we need a user with API access (use your superuser credentials)
+    - Optional: update `credentials.py` because we need a user with API access (use your superuser credentials)
 
           cp data/sample-credentials.py credentials.py
 
 1. Run the setuper
 
-        python3 setuper.py
+         # If you did not update credentials.py:
+         python3 setuper.py -u <username> -p <password> -s <server_url>
+
+         # If you updated credentials.py:
+         python3 setuper.py
 
 2. If you want to create additional projects like:
       - Planning

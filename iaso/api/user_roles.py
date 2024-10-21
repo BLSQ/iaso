@@ -100,11 +100,11 @@ class UserRoleSerializer(serializers.ModelSerializer):
 
     def validate_editable_org_unit_types(self, editable_org_unit_types):
         account = self.context.get("request").user.iaso_profile.account
-        project_org_unit_types = set(Project.objects.get(account=account).unit_types.values_list("id", flat=True))
+        project_org_unit_types = set(Project.objects.filter(account=account).values_list("unit_types__id", flat=True))
         for org_unit_type in editable_org_unit_types:
             if org_unit_type.pk not in project_org_unit_types:
                 raise serializers.ValidationError(
-                    f"`{org_unit_type.name} ({org_unit_type.pk})` is not a valid Org Unit Type fot this account."
+                    f"`{org_unit_type.name} ({org_unit_type.pk})` is not a valid Org Unit Type for this account."
                 )
         return editable_org_unit_types
 

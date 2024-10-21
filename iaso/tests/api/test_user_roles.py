@@ -133,7 +133,7 @@ class UserRoleAPITestCase(APITestCase):
         self.assertEqual(
             r["editable_org_unit_types"],
             [
-                f"`{invalid_org_unit_type.name} ({invalid_org_unit_type.pk})` is not a valid Org Unit Type fot this account."
+                f"`{invalid_org_unit_type.name} ({invalid_org_unit_type.pk})` is not a valid Org Unit Type for this account."
             ],
         )
 

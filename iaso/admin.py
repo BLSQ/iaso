@@ -1,15 +1,17 @@
 from copy import copy
 from typing import Any, Protocol
 
-import requests
 from django import forms as django_forms
-from django.contrib.admin import RelatedOnlyFieldListFilter, widgets
+from django.contrib import admin
+from django.contrib.admin import widgets
+from django.contrib.admin.widgets import AutocompleteSelect
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.http import HttpResponseRedirect
-from django.urls import reverse
+from django.db.models import Count, Q
+from django.http import HttpResponseRedirect, JsonResponse
+from django.urls import path, reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
@@ -988,6 +990,85 @@ class GroupSetAdmin(admin.ModelAdmin):
     autocomplete_fields = ["source_version"]
 
 
+@admin.register(TenantUser)
+class TenantUserAdmin(admin.ModelAdmin):
+    list_display = (
+        "main_user",
+        "account_user",
+        "account",
+        "created_at",
+        "updated_at",
+        "all_accounts_count",
+        "is_self_account",
+    )
+    list_filter = ("account_user__iaso_profile__account",)
+    search_fields = ("main_user__username", "account_user__username", "account_user__iaso_profile__account__name")
+    raw_id_fields = ("main_user", "account_user")
+    readonly_fields = ("created_at", "updated_at", "account", "all_account_users", "other_accounts")
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path("main-user-autocomplete/", self.main_user_autocomplete, name="main-user-autocomplete"),
+        ]
+        return custom_urls + urls
+
+    def main_user_autocomplete(self, request):
+        term = request.GET.get("term", "")
+        queryset = (
+            TenantUser.objects.filter(Q(main_user__username__icontains=term) | Q(main_user__email__icontains=term))
+            .values_list("main_user__id", "main_user__username")
+            .distinct()[:10]
+        )
+        results = [{"id": user_id, "text": username} for user_id, username in queryset]
+        return JsonResponse({"results": results})
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "main_user":
+            kwargs["widget"] = AutocompleteSelect(
+                db_field.remote_field, self.admin_site, attrs={"data-ajax--url": "main-user-autocomplete/"}
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def account(self, obj):
+        return obj.account
+
+    account.admin_order_field = "account_user__iaso_profile__account"
+    account.short_description = "Account"
+
+    def all_accounts_count(self, obj):
+        return obj.main_user.tenant_users.count()
+
+    all_accounts_count.short_description = "Total Accounts"
+
+    def is_self_account(self, obj):
+        return obj.main_user == obj.account_user
+
+    is_self_account.boolean = True
+    is_self_account.short_description = "Self Account"
+
+    def all_account_users(self, obj):
+        users = obj.get_all_account_users()
+        return format_html("<br>".join(user.username for user in users))
+
+    all_account_users.short_description = "All Account Users"
+
+    def other_accounts(self, obj):
+        accounts = obj.get_other_accounts()
+        return format_html("<br>".join(str(account) for account in accounts))
+
+    other_accounts.short_description = "Other Accounts"
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("main_user", "account_user__iaso_profile__account")
+
+    class Media:
+        js = ("admin/js/vendor/select2/select2.full.min.js", "admin/js/autocomplete.js")
+        css = {
+            "all": ("admin/css/vendor/select2/select2.min.css",),
+        }
+
+
 admin.site.register(AccountFeatureFlag)
 admin.site.register(Device)
 admin.site.register(DeviceOwnership)
@@ -997,4 +1078,3 @@ admin.site.register(DevicePosition)
 admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
-admin.site.register(TenantUser)

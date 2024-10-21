@@ -5,11 +5,11 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { InputWithInfos } from '../../../components/InputWithInfos';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { SaveUserRoleQuery } from '../hooks/requests/useSaveUserRole';
 import MESSAGES from '../messages';
-import { UserRole } from '../types/userRoles';
 
 type Props = {
-    userRole: UserRole;
+    userRole: Partial<SaveUserRoleQuery>;
     handleChange: (ouTypesIds: number[]) => void;
 };
 
@@ -28,7 +28,7 @@ export const OrgUnitWriteTypes: FunctionComponent<Props> = ({
                 <InputComponent
                     multi
                     clearable
-                    keyValue="allow_creating_sub_unit_type_ids"
+                    keyValue="editable_org_unit_type_ids"
                     onChange={(_, value) =>
                         handleChange(commaSeparatedIdsToArray(value))
                     }

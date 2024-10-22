@@ -65,8 +65,8 @@ export const saveTab = (
                         formData.append(`pre_alerts[${index}].${key}`, file);
                     }
                     
-                } else {
-                    formData.append(`pre_alerts[${index}].${key}`, item[key]); 
+                } else if (item[key] !== null && item[key] !== undefined) {
+                    formData.append(`pre_alerts[${index}].${key}`, item[key]);
                 }
             });
         });

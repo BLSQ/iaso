@@ -1,3 +1,4 @@
+import json
 from logging import getLogger
 from typing import Any
 
@@ -7,11 +8,11 @@ from django.db.models import Max, Min, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from nested_multipart_parser.drf import DrfNestedParser
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
-from nested_multipart_parser.drf import DrfNestedParser
 
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
@@ -298,6 +299,20 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
         ]
 
         read_only_fields = ["created_at", "updated_at"]
+
+    def to_internal_value(self, data):
+        # Manually invoke validate_rounds if 'rounds' is a string
+        if "rounds" in data and isinstance(data["rounds"], str):
+            try:
+                rounds = json.loads(data["rounds"].replace("'", '"'))
+                data["rounds"] = [{"number": num} for num in rounds]
+            except Exception as e:
+                raise serializers.ValidationError(f"Invalid rounds data: {e}")
+        return super().to_internal_value(data)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print("VaccineRequestFormPostSerializer instance created with data: %s", self.initial_data)
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)

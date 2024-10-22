@@ -134,7 +134,7 @@ export const useCheckUserHasWriteTypePermission = (): ((
     };
 };
 
-export const useGetUserHasWritePermissionOnOrgunit = (
+export const useCheckUserHasWritePermissionOnOrgunit = (
     orgUnitTypeId?: number,
 ): boolean => {
     const getHasWriteByTypePermission = useCheckUserHasWriteTypePermission();

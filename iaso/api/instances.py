@@ -815,7 +815,7 @@ def _entity_correctness_score(entity):
         score += 100
     if entity.attributes:
         score += 10
-    if entity.attributes.file and not entity.attributes.file == "":
+    if entity.attributes and entity.attributes.file and not entity.attributes.file == "":
         score += 1
 
     return score

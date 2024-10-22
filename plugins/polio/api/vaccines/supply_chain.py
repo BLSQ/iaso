@@ -12,6 +12,7 @@ from nested_multipart_parser.drf import DrfNestedParser
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
+from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
@@ -619,7 +620,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     permission_classes = [VaccineSupplyChainReadWritePerm]
     http_method_names = ["get", "post", "delete", "patch"]
-    parser_classes = (DrfNestedParser,)
+    parser_classes = (JSONParser, DrfNestedParser)
 
     filter_backends = [
         SearchFilter,

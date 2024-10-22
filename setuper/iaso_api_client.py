@@ -86,9 +86,11 @@ class IasoClient:
             time.sleep(self.ASYNC_TASK_WAIT_STEP)
             count += self.ASYNC_TASK_WAIT_STEP
             print("\t\tWaiting:", count, "s elapsed", task.get("progress_message"))
-        raise Exception(
-            f"Couldn't find an available worker after {self.ASYNC_TASK_TIMEOUT} seconds. Please make sure a worker is running."
-        )
+
+        if not imported:
+            raise Exception(
+                f"Couldn't find an available worker after {self.ASYNC_TASK_TIMEOUT} seconds. Please make sure a worker is running."
+            )
 
     def log(self, arg1, arg2=None):
         if self.debug:

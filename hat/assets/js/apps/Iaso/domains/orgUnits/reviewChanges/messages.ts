@@ -213,6 +213,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.paymentStatus',
         defaultMessage: 'Payment status',
     },
+    accuracy: {
+        id: 'iaso.label.accuracy',
+        defaultMessage: 'Accuracy',
+    },
 });
 
 export default MESSAGES;

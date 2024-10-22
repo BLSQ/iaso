@@ -104,7 +104,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
     const { data: allProjects } = useGetProjectsDropdownOptions();
     const { data: allOrgUnitTypes, isLoading: isLoadingOrgUitTypes } =
-        useGetOrgUnitTypesDropdownOptions();
+        useGetOrgUnitTypesDropdownOptions(undefined, true);
     const { mutateAsync: saveType } = useSaveOrgUnitType();
 
     const getFilteredForms = (projects, forms) => {

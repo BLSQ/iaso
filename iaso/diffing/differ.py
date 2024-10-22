@@ -58,11 +58,12 @@ class Differ:
         if not ignore_groups:
             groups_with_with_groupset = []
             for group_set in GroupSet.objects.filter(source_version=version):
-                field_names.append("groupset:" + group_set.source_ref + ":" + group_set.name)
-                for group in group_set.groups.all():
-                    groups_with_with_groupset.append(group.id)
+                if group_set.source_ref:
+                    field_names.append("groupset:" + group_set.source_ref + ":" + group_set.name)
+                    for group in group_set.groups.all():
+                        groups_with_with_groupset.append(group.id)
             for group in Group.objects.filter(source_version=version):
-                if group.id not in groups_with_with_groupset:
+                if group.id not in groups_with_with_groupset and group.source_ref:
                     field_names.append("group:" + group.source_ref + ":" + group.name)
 
         self.iaso_logger.info("will compare the following fields ", field_names)

@@ -342,6 +342,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.document',
         defaultMessage: 'Document',
     },
+    uniquePoNumberWarning: {
+        id: 'iaso.polio.label.uniquePoNumberWarning',
+        defaultMessage: 'This PO number is already in use',
+    },
+    PoNumberNoPrefix: {
+        id: 'iaso.polio.label.PoNumberNoPrefix',
+        defaultMessage: 'Please input PO number without prefix',
+    },
 });
 
 export default MESSAGES;

@@ -10,7 +10,7 @@ type Props = {
     showNote?: boolean;
 };
 
-export const InstanceFileContent: FunctionComponent<Props> = ({
+const InstanceFileContent: FunctionComponent<Props> = ({
     instance,
     showQuestionKey = true,
     showNote = true,
@@ -34,3 +34,5 @@ export const InstanceFileContent: FunctionComponent<Props> = ({
         </ErrorBoundary>
     );
 };
+
+export default InstanceFileContent;

@@ -8,7 +8,9 @@ import MESSAGES from '../messages';
 import { useGetFields } from './useGetFields';
 import { useGetBeneficiaryTypesDropdown } from './requests';
 
-export const useGetBeneficiaryFields = (beneficiary: Beneficiary) => {
+export const useGetBeneficiaryFields = (
+    beneficiary: Beneficiary | undefined,
+) => {
     const { formatMessage } = useSafeIntl();
 
     const { data: beneficiaryTypes } = useGetBeneficiaryTypesDropdown();
@@ -37,7 +39,7 @@ export const useGetBeneficiaryFields = (beneficiary: Beneficiary) => {
         () => [
             {
                 label: formatMessage(MESSAGES.nfcCards),
-                value: `${beneficiary?.attributes?.nfc_cards ?? 0}`,
+                value: `${beneficiary?.nfc_cards ?? 0}`,
                 key: 'nfcCards',
             },
             {
@@ -46,7 +48,7 @@ export const useGetBeneficiaryFields = (beneficiary: Beneficiary) => {
                 key: 'uuid',
             },
         ],
-        [beneficiary?.attributes?.nfc_cards, beneficiary?.uuid, formatMessage],
+        [beneficiary?.nfc_cards, beneficiary?.uuid, formatMessage],
     );
 
     return {

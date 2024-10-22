@@ -76,7 +76,7 @@ const InstanceDetails: FunctionComponent = () => {
     const classes: ClassNames = useStyles();
     const goBack = useGoBack(baseUrls.instances);
 
-    const params = useParamsObject(baseUrls.instanceDetail) as {
+    const params = useParamsObject(baseUrls.instanceDetail) as unknown as {
         instanceId: string;
     };
     const { instanceId } = params;

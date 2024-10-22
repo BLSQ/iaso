@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Box, TableCell, TableHead, TableRow } from '@mui/material';

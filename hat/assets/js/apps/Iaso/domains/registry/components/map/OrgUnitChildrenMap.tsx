@@ -54,7 +54,6 @@ type Props = {
     setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
     selectedChildrenId: string | undefined;
     isFetchingOrgUnit: boolean;
-    // eslint-disable-next-line no-unused-vars
     handleOrgUnitChange: (newOrgUnit: OrgUnit) => void;
 };
 

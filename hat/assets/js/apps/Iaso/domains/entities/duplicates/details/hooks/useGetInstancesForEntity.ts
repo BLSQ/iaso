@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { getRequest } from '../../../../../libs/Api';
@@ -19,7 +18,7 @@ export const useGetInstancesForEntity = ({
         entityId?: string;
         with_descriptor?: 'true' | 'false';
     } = {
-        order: '-created_at',
+        order: 'source_created_at',
         with_descriptor: 'true',
     };
     if (entityId) {

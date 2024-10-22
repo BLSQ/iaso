@@ -1,45 +1,45 @@
-import React, {
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-    useMemo,
-    FunctionComponent,
-    ReactNode,
-} from 'react';
 import {
+    IntlMessage,
     useSafeIntl,
     useSkipEffectOnMount,
-    IntlMessage,
 } from 'bluesquare-components';
+import { isUndefined, mapValues } from 'lodash';
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
-import { isUndefined, mapValues } from 'lodash';
+import React, {
+    FunctionComponent,
+    ReactNode,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 
-import { useGetFormsByProjects } from '../../../instances/hooks';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
-import MESSAGES from '../messages';
-import {
-    userHasOneOfPermissions,
-    userHasPermission,
-} from '../../../users/utils';
+import { InputWithInfos } from '../../../../components/InputWithInfos';
 import { useFormState } from '../../../../hooks/form';
+import { DropdownOptions } from '../../../../types/utils';
 import {
     commaSeparatedIdsToArray,
     isFieldValid,
     isFormValid,
 } from '../../../../utils/forms';
-import { requiredFields } from '../config/requiredFields';
+import * as Permission from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
+import { Form } from '../../../forms/types/forms';
+import { useGetFormsByProjects } from '../../../instances/hooks';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
+import {
+    userHasOneOfPermissions,
+    userHasPermission,
+} from '../../../users/utils';
+import { OrgunitType } from '../../types/orgunitTypes';
+import { requiredFields } from '../config/requiredFields';
 import { useGetOrgUnitTypesDropdownOptions } from '../hooks/useGetOrgUnitTypesDropdownOptions';
 import { useSaveOrgUnitType } from '../hooks/useSaveOrgUnitType';
-import { useCurrentUser } from '../../../../utils/usersUtils';
-import { OrgunitType } from '../../types/orgunitTypes';
-import { DropdownOptions } from '../../../../types/utils';
-import { Form } from '../../../forms/types/forms';
-import * as Permission from '../../../../utils/permissions';
-import { InputWithInfos } from '../../../../components/InputWithInfos';
+import MESSAGES from '../messages';
 
 const mapOrgUnitType = orgUnitType => {
     return {
@@ -58,7 +58,6 @@ const mapOrgUnitType = orgUnitType => {
 type Props = {
     orgUnitType?: OrgunitType;
     titleMessage: IntlMessage;
-    // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: { openDialog: () => void }) => ReactNode;
 };
 
@@ -105,7 +104,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
     const { data: allProjects } = useGetProjectsDropdownOptions();
     const { data: allOrgUnitTypes, isLoading: isLoadingOrgUitTypes } =
-        useGetOrgUnitTypesDropdownOptions();
+        useGetOrgUnitTypesDropdownOptions(undefined, true);
     const { mutateAsync: saveType } = useSaveOrgUnitType();
 
     const getFilteredForms = (projects, forms) => {

@@ -56,6 +56,6 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(list(response.json()["permissions"].keys()), ["org_units", "admin"])
         self.assertTrue(
-            set([permission["codename"] for permission in response.json()["permissions"]["org_units"]])
-            <= set(PERMISSIONS_PRESENTATION["org_units"]),
+            [permission["codename"] for permission in response.json()["permissions"]["org_units"]]
+            <= PERMISSIONS_PRESENTATION["org_units"],
         )

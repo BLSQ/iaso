@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import {
     Box,

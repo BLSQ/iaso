@@ -39,7 +39,9 @@ const useStyles = makeStyles(theme => {
 });
 const baseUrl = baseUrls.stockManagementDetails;
 export const VaccineStockManagementDetails: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as StockManagementDetailsParams;
+    const params = useParamsObject(
+        baseUrl,
+    ) as unknown as StockManagementDetailsParams;
     const goBack = useGoBack(baseUrls.stockManagement);
     const redirectTo = useRedirectTo();
     const { formatMessage } = useSafeIntl();
@@ -68,6 +70,8 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
             tab: 'forma',
         });
     }, [params, redirectTo]);
+
+    const isBopv = summary?.vaccine_type === 'bOPV';
 
     const title = `${formatMessage(MESSAGES.stockDetails)}: ${
         summary?.country_name ?? textPlaceholder
@@ -116,11 +120,13 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                         value={USABLE_VIALS}
                         label={formatMessage(MESSAGES.usable)}
                     />
-                    <Tab
-                        key={UNUSABLE_VIALS}
-                        value={UNUSABLE_VIALS}
-                        label={formatMessage(MESSAGES.unusable)}
-                    />
+                    {!isBopv && (
+                        <Tab
+                            key={UNUSABLE_VIALS}
+                            value={UNUSABLE_VIALS}
+                            label={formatMessage(MESSAGES.unusable)}
+                        />
+                    )}
                 </Tabs>
                 <Paper elevation={2} className={classes.marginTop}>
                     <Box pt={2} px={2}>

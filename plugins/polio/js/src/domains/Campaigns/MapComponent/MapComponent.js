@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, { useMemo } from 'react';
 import { TileLayer, MapContainer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';

@@ -4,8 +4,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.models import Group, SourceVersion, DataSource, Project
-from .common import ModelViewSet, TimestampField, HasPermission
+from iaso.models import DataSource, Group, Project, SourceVersion
+
+from .common import HasPermission, ModelViewSet, TimestampField
 
 
 class HasGroupPermission(permissions.BasePermission):
@@ -124,6 +125,11 @@ class GroupsViewSet(ModelViewSet):
             if default_version == "true":
                 queryset = queryset.filter(source_version=self.request.user.iaso_profile.account.default_version)
 
+            project_ids = self.request.GET.get("projectIds", None)
+            if project_ids:
+                versions = SourceVersion.objects.filter(data_source__projects__in=project_ids.split(","))
+                queryset = queryset.filter(source_version__in=versions)
+
         block_of_countries = self.request.GET.get("blockOfCountries", None)
         if block_of_countries:  # Filter only org unit groups containing only countries as orgUnits
             queryset = queryset.filter(block_of_countries=block_of_countries)
@@ -152,7 +158,7 @@ class GroupsViewSet(ModelViewSet):
 
         if user and user.is_authenticated:
             account = user.iaso_profile.account
-            # Filter on version ids (linked to the account)
+            # Filter on version ids (linked to the account)""
             versions = SourceVersion.objects.filter(data_source__projects__account=account)
 
         else:

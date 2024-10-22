@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
@@ -22,6 +21,7 @@ import {
 } from '../../constants/urls.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { fetchAssociatedOrgUnits } from '../../utils/requests';
+import { useCheckUserHasWritePermissionOnOrgunit } from '../../utils/usersUtils.ts';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
 import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
@@ -44,9 +44,6 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-import { userHasPermission } from '../users/utils';
-import { ORG_UNITS } from '../../utils/permissions.ts';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -114,8 +111,6 @@ const OrgUnitDetail = () => {
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
     const redirectToReplace = useRedirectToReplace();
-    const currentUser = useCurrentUser();
-    const showLogButtons = userHasPermission(ORG_UNITS, currentUser);
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
@@ -124,6 +119,9 @@ const OrgUnitDetail = () => {
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
         useState(false);
 
+    const showLogButtons = useCheckUserHasWritePermissionOnOrgunit(
+        currentOrgUnit?.org_unit_type_id,
+    );
     const formParams = useOrgUnitTabParams(params, FORMS_PREFIX);
     const linksParams = useOrgUnitTabParams(params, LINKS_PREFIX);
     const childrenParams = useOrgUnitTabParams(params, OU_CHILDREN_PREFIX);
@@ -214,7 +212,6 @@ const OrgUnitDetail = () => {
         params.levels,
         params.tab,
     );
-
     const goToRevision = useCallback(
         (orgUnitRevision, onSuccess) => {
             const {

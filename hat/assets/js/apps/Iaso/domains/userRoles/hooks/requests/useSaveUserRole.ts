@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseMutationResult } from 'react-query';
 import { isEmpty } from 'lodash';
 import { putRequest, postRequest } from '../../../../libs/Api';
@@ -14,9 +13,7 @@ export type SaveUserRoleQuery = {
 const convertToApi = data => {
     const { permissions, ...converted } = data;
     if (!isEmpty(permissions)) {
-        converted.permissions = permissions.map(
-            permission => permission.codename,
-        );
+        converted.permissions = permissions;
     }
     return converted;
 };

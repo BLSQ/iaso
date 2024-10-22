@@ -1,6 +1,5 @@
 import { ScaleThreshold } from '../../../components/LegendBuilder/types';
 
-/* eslint-disable camelcase */
 type FeatureFlag = {
     id: number;
     name: string;

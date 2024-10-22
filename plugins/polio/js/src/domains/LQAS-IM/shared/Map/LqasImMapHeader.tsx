@@ -1,12 +1,12 @@
-import React, { FunctionComponent } from 'react';
 import { Box, Divider, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
+import React, { FunctionComponent } from 'react';
+import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import MESSAGES from '../../../../constants/messages';
 import { LqasImDates } from './LqasImDates';
-import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 
 export type LqasImRefDate = {
     date: string;
@@ -18,7 +18,6 @@ type Props = {
     startDate: LqasImRefDate;
     endDate: LqasImRefDate;
     options: DropdownOptions<number>[];
-    // eslint-disable-next-line no-unused-vars
     onRoundSelect: (round: number) => void;
     campaignObrName?: string;
     isFetching: boolean;

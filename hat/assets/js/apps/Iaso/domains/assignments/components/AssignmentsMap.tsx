@@ -1,10 +1,10 @@
-import React, { FunctionComponent, useRef, useState, useMemo } from 'react';
+import React, { FunctionComponent, useMemo, useRef, useState } from 'react';
 import {
-    MapContainer,
     GeoJSON,
+    MapContainer,
     Pane,
-    Tooltip,
     ScaleControl,
+    Tooltip,
 } from 'react-leaflet';
 
 import { Box } from '@mui/material';
@@ -12,33 +12,32 @@ import { LoadingSpinner } from 'bluesquare-components';
 
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { MapLegend } from './MapLegend';
-import { MapInfo } from './MapInfo';
-import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { OrgUnitPopup } from './OrgUnitPopup';
 
+import tiles from '../../../constants/mapTiles';
 import {
     disabledColor,
-    unSelectedColor,
     parentColor,
+    unSelectedColor,
 } from '../constants/colors';
-import tiles from '../../../constants/mapTiles';
 
 import {
     Bounds,
     circleColorMarkerOptions,
-    getShapesBounds,
     getLatLngBounds,
+    getShapesBounds,
 } from '../../../utils/map/mapUtils';
 import { Profile } from '../../../utils/usersUtils';
 
-import { DropdownTeamsOptions } from '../types/team';
-import { AssignmentParams, AssignmentsApi } from '../types/assigment';
-import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
-import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
+import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import { DropdownOptions } from '../../../types/utils';
+import { AssignmentParams, AssignmentsApi } from '../types/assigment';
+import { DropdownTeamsOptions } from '../types/team';
+import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
 
 const defaultViewport = {
     center: [1, 20],
@@ -48,9 +47,7 @@ const defaultViewport = {
 type AnchorPoint = { x: number; y: number };
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
-    // eslint-disable-next-line no-unused-vars
     handleParentClick: (shape: OrgUnitShape) => void;
     teams: DropdownTeamsOptions[];
     locations: Locations | undefined;
@@ -190,7 +187,8 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
                 />
                 <MapLegend />
-                <MapInfo />
+                {/* TODO uncomment when feature is reinstated */}
+                {/* <MapInfo /> */}
                 {selectedLocation && (
                     <OrgUnitPopup
                         top={anchorPoint.y}

@@ -1,17 +1,16 @@
-import React, { FunctionComponent } from 'react';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import { TabWithInfoIcon } from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TabWithInfoIcon';
-import MESSAGES from '../messages';
 import { PREALERT, VAR, VRF } from '../constants';
+import MESSAGES from '../messages';
 import { TabValue } from '../types';
 
 type Props = {
     tab: TabValue;
     isNew: boolean;
     isNormal: boolean;
-    // eslint-disable-next-line no-unused-vars
     onChangeTab: (_event: any, newTab: TabValue) => void;
 };
 

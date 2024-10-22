@@ -1,21 +1,19 @@
+import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
-import { useSafeIntl } from 'bluesquare-components';
+import MESSAGES from '../../../messages';
+import { OrgUnit } from '../../../types/orgUnit';
+import { OrgunitType } from '../../../types/orgunitTypes';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 import { orgunitsPane } from './OrgUnitMap';
-import MESSAGES from '../../../messages';
 import { SourceShape } from './SourceShape';
-import { OrgunitType } from '../../../types/orgunitTypes';
 import { MappedOrgUnit } from './types';
-import { OrgUnit } from '../../../types/orgUnit';
 
 type Props = {
     orgUnitTypes: (OrgunitType & { color: string })[];
     mappedOrgUnitTypesSelected: MappedOrgUnit[];
     mappedSourcesSelected: MappedOrgUnit[];
-    // eslint-disable-next-line no-unused-vars
     fetchSubOrgUnitDetail: (orgUnit: OrgUnit) => void;
-    // eslint-disable-next-line no-unused-vars
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
 };
 

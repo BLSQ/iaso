@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { useContext, useMemo } from 'react';
 
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
@@ -423,4 +422,4 @@ export const useMenuItems = (): MenuItems => {
     }, [admin, basicItems, currentUser, pluginsMenu]);
     return items;
 };
-export const DOC_URL = 'https://docs.openiaso.com/en/latest/';
+export const DOC_URL = 'https://docs.openiaso.com';

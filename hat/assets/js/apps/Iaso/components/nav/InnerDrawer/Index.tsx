@@ -53,7 +53,6 @@ type Props = {
     commentsDisabled?: boolean;
     defaultActiveOption?: 'settings' | 'filters' | 'edit' | 'comments';
     setCurrentOption?: (
-        // eslint-disable-next-line no-unused-vars
         option: 'settings' | 'filters' | 'edit' | 'comments',
     ) => void;
 };
@@ -69,7 +68,6 @@ export const InnerDrawer: FunctionComponent<Props> = ({
     withTopBorder = false,
     commentsDisabled = false,
     defaultActiveOption = 'settings',
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     setCurrentOption = _option => null,
     children = null,
 }) => {

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseMutationResult } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
@@ -21,11 +20,9 @@ export type UpdatePaymentLotQuery = {
 export type SavePaymentLotQuery = CreatePaymentLotQuery | UpdatePaymentLotQuery;
 
 type CreateEditPaymentLotFunction<T extends 'create' | 'edit'> = (
-    // eslint-disable-next-line no-unused-vars
     body: T extends 'create'
         ? SavePaymentLotQuery
         : Partial<SavePaymentLotQuery>,
-    // eslint-disable-next-line no-unused-vars
     type: T,
 ) => Promise<any>;
 

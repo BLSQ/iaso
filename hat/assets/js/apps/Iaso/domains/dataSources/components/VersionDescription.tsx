@@ -1,11 +1,10 @@
-import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
+import React, { FunctionComponent } from 'react';
 import InputComponent from '../../../components/forms/InputComponent';
+import MESSAGES from '../messages';
 
 type Props = {
     formValue: string;
-    // eslint-disable-next-line no-unused-vars
     onChangeDescription: (field: string, value: string) => void;
 };
 

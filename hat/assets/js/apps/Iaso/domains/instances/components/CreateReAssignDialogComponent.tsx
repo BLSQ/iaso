@@ -1,16 +1,16 @@
-import React, { FunctionComponent, useState } from 'react';
-import {
-    ConfirmCancelModal,
-    useSafeIntl,
-    AddButton,
-    makeFullModal,
-} from 'bluesquare-components';
 import UpdateIcon from '@mui/icons-material/Update';
+import {
+    AddButton,
+    ConfirmCancelModal,
+    makeFullModal,
+    useSafeIntl,
+} from 'bluesquare-components';
+import React, { FunctionComponent, useState } from 'react';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import PeriodPicker from '../../periods/components/PeriodPicker';
 import { Period } from '../../periods/models';
 import { isValidPeriod } from '../../periods/utils';
 import MESSAGES from '../messages';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import PeriodPicker from '../../periods/components/PeriodPicker';
 import { Instance } from '../types/instance';
 
 type Props = {
@@ -28,9 +28,7 @@ type Props = {
         org_unit?: any;
     };
     onCreateOrReAssign: (
-        // eslint-disable-next-line no-unused-vars
         instanceOrForm: Instance | { id: number },
-        // eslint-disable-next-line no-unused-vars,camelcase
         payload: { period: any; org_unit: any },
     ) => void;
     orgUnitTypes: number[];

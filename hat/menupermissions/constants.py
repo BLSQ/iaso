@@ -228,3 +228,34 @@ PERMISSIONS_PRESENTATION = {
         "iaso_mobile_app_offline_setup",
     ],
 }
+
+READ_EDIT_PERMISSIONS = {
+    "iaso_submission_permissions": {"read": "iaso_submissions", "write": "iaso_update_submission"},
+    "iaso_org_unit_permissions": {"read": "iaso_org_units_read", "write": "iaso_org_units"},
+    "iaso_registry_permissions": {"read": "iaso_registry_read", "write": "iaso_registry_write"},
+    "iaso_source_permissions": {"read": "iaso_sources", "write": "iaso_write_sources"},
+    "iaso_entity_duplicate_permissions": {
+        "read": "iaso_entity_duplicates_read",
+        "write": "iaso_entity_duplicates_write",
+    },
+    "iaso_planning_permissions": {"read": "iaso_planning_read", "write": "iaso_planning_write"},
+    "iaso_page_permissions": {"read": "iaso_pages", "write": "iaso_page_write"},
+    "iaso_polio_budget_permissions": {"read": "iaso_polio_budget", "write": "iaso_polio_budget_admin"},
+    "iaso_polio_chronogram_permissions": {
+        "read": "iaso_polio_chronogram_restricted_write",
+        "write": "iaso_polio_chronogram",
+    },
+    "iaso_polio_vaccine_supply_chain_permissions": {
+        "read": "iaso_polio_vaccine_supply_chain_read",
+        "write": "iaso_polio_vaccine_supply_chain_write",
+    },
+    "iaso_polio_vaccine_stock_management_permissions": {
+        "read": "iaso_polio_vaccine_stock_management_read",
+        "write": "iaso_polio_vaccine_stock_management_write",
+    },
+    "iaso_polio_vaccine_authorization_permissions": {
+        "no_admin": "iaso_polio_vaccine_authorizations_read_only",
+        "admin": "iaso_polio_vaccine_authorizations_admin",
+    },
+    "iaso_user_permissions": {"geo_limited": "iaso_users_managed", "all": "iaso_users"},
+}

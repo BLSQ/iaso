@@ -12,7 +12,6 @@ import {
 import { ReviewOrgUnitFieldChanges } from './ReviewOrgUnitFieldChanges';
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     setSelected: (key: string) => void;
     field: NewOrgUnitField;
     newFieldValues: NestedGroup[];
@@ -64,7 +63,6 @@ export const HighlightFields: FunctionComponent<Props> = ({
             };
         });
     }, [fieldType, oldFieldValues, newFieldValues]);
-
     return (
         <TableRow sx={{ verticalAlign: 'top' }}>
             <TableCell>{field.label}</TableCell>

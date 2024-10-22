@@ -3,7 +3,6 @@ import { makeStyles } from '@mui/styles';
 import {
     AddButton as AddButtonComponent,
     commonStyles,
-    LoadingSpinner,
     Table,
     useRedirectTo,
     useSafeIntl,
@@ -39,7 +38,6 @@ const GroupSets = () => {
     };
     return (
         <>
-            {isLoading && <LoadingSpinner />}
             <TopBar
                 title={formatMessage(MESSAGES.groupSets)}
                 displayBackButton={false}
@@ -65,11 +63,13 @@ const GroupSets = () => {
                         columns={tableColumns}
                         count={data?.count ?? 0}
                         baseUrl={baseUrl}
-                        params={params}
                         redirectTo={(_, newParams) =>
                             redirectTo(baseUrl, newParams)
                         }
                         marginTop={false}
+                        extraProps={{
+                            loading: isLoading,
+                        }}
                     />
                 )}
             </Box>

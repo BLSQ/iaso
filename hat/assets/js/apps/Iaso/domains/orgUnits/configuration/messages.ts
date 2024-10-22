@@ -128,7 +128,7 @@ const MESSAGES = defineMessages({
     },
     possibleParentTypeIds: {
         id: 'iaso.oucrc.possibleParentTypeIds',
-        defaultMessage: 'Possible New Parent Types',
+        defaultMessage: 'Parent',
     },
     groupSetIds: {
         id: 'iaso.oucrc.groupSetIds',

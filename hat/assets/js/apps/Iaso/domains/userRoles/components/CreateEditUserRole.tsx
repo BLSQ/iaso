@@ -19,10 +19,10 @@ import {
     useTranslatedErrors,
 } from '../../../libs/validation';
 import InputComponent from '../../../components/forms/InputComponent';
-import { PermissionsSwitches } from './PermissionsSwitches';
-import { Permission } from '../types/userRoles';
+import { PermissionsAttribution } from './PermissionsAttribution';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import UserRoleDialogInfoComponent from './UserRoleDialogInfoComponent';
+import { Permission } from '../types/userRoles';
 
 type ModalMode = 'create' | 'edit';
 type Props = Partial<SaveUserRoleQuery> & {
@@ -130,7 +130,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                     onCancel={() => {
                         resetForm();
                     }}
-                    maxWidth="sm"
+                    maxWidth="md"
                     cancelMessage={MESSAGES.cancel}
                     confirmMessage={MESSAGES.save}
                     open={open}
@@ -149,7 +149,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                         label={MESSAGES.name}
                         required
                     />
-                    <PermissionsSwitches
+                    <PermissionsAttribution
                         userRolePermissions={userRolePermissions}
                         handleChange={newPermissions => {
                             handlePermissionsChange(newPermissions);

@@ -1,25 +1,25 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    SetStateAction,
-    Dispatch,
-} from 'react';
-import {
-    useSafeIntl,
-    Table,
-    AddButton,
-    IntlFormatMessage,
-} from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import {
+    AddButton,
+    IntlFormatMessage,
+    Table,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { cloneDeep } from 'lodash';
+import React, {
+    Dispatch,
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useMemo,
+} from 'react';
 
-import { Mapping, ChangesOption, Change, ReferenceForm } from '../../types';
 import { DropdownOptions } from '../../../../types/utils';
+import { Change, ChangesOption, Mapping, ReferenceForm } from '../../types';
 
-import MESSAGES from '../../messages';
 import { PossibleField } from '../../../forms/types/forms';
+import MESSAGES from '../../messages';
 
 import { useGetChangesModalColumns } from '../../config/changes';
 
@@ -33,15 +33,12 @@ type Props = {
     isFetchingSourcePossibleFields: boolean;
     form?: number;
     setIsTouched: Dispatch<SetStateAction<boolean>>;
-    // eslint-disable-next-line no-unused-vars
     handleChangeForm: (_, value: string) => void;
     changes?: Change[];
     change?: Change;
-    // eslint-disable-next-line no-unused-vars
     handleChangeSourceVersion: (_, value: string) => void;
     sourceVersion: string;
     sourceVersionsDropdownOptions: DropdownOptions<string>[];
-    // eslint-disable-next-line no-unused-vars
     handleChangeTargetVersion: (_, value: string) => void;
     targetVersion: string;
     targetVersionsDropdownOptions: DropdownOptions<string>[];

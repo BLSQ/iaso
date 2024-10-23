@@ -193,34 +193,21 @@ const getRoundsForApi = (
     return rounds.split(',').map(r => ({ number: parseInt(r, 10) }));
 };
 
-// export const saveVrf = (
-//     vrf: Optional<Partial<VRFFormData>>,
-// ): Promise<any>[] => {
-//     const payload: Partial<VRF> = {
-//         ...vrf,
-//         rounds: getRoundsForApi(vrf?.rounds),
-//     };
-//     if (vrf?.id) {
-//         return [patchRequest(`${apiUrl}${vrf?.id}/`, payload)];
-//     }
-//     return [postRequest(apiUrl, payload)];
-// };
-
 export const patchRequest2 = (
     arg1: PostArg
 ): Promise<any> => {
     const { url, data = {}, fileData = {}, signal = null } = arg1;
 
     let init: Record<string, unknown> = {};
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+        let converted_value = value;
+        if (typeof converted_value === 'object') {
+            converted_value = JSON.stringify(converted_value);
+        }
+        formData.append(key, converted_value);
+    });
     if (Object.keys(fileData).length > 0) {
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-            let converted_value = value;
-            if (typeof converted_value === 'object') {
-                converted_value = JSON.stringify(converted_value);
-            }
-            formData.append(key, converted_value);
-        });
         Object.entries(fileData).forEach(([key, value]) => {
             if (key === 'files' && Array.isArray(value) && value.length > 0) {
                 formData.append('document', value[0]); // Use 'document' key
@@ -238,11 +225,11 @@ export const patchRequest2 = (
             signal,
         };
     } else {
+  
         init = {
             method: 'PATCH',
-            body: JSON.stringify(data),
+            body: formData,
             headers: {
-                'Content-Type': 'multipart/form-data',
                 'Accept-Language': moment.locale(),
             },
             signal,
@@ -256,17 +243,17 @@ export const postRequest2 = (
     arg1: PostArg
 ): Promise<any> => {
     const { url, data = {}, fileData = {}, signal = null } = arg1;
-
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+        let converted_value = value;
+        if (typeof converted_value === 'object') {
+            converted_value = JSON.stringify(converted_value);
+        }
+        formData.append(key, converted_value);
+    });
     let init: Record<string, unknown> = {};
     if (Object.keys(fileData).length > 0) {
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-            let converted_value = value;
-            if (typeof converted_value === 'object') {
-                converted_value = JSON.stringify(converted_value);
-            }
-            formData.append(key, converted_value);
-        });
+
         Object.entries(fileData).forEach(([key, value]) => {
             if (key === 'files' && Array.isArray(value) && value.length > 0) {
                 formData.append('document', value[0]); // Use 'document' key
@@ -286,9 +273,8 @@ export const postRequest2 = (
     } else {
         init = {
             method: 'POST',
-            body: JSON.stringify(data),
+            body: formData,
             headers: {
-                'Content-Type': 'multipart/form-data',
                 'Accept-Language': moment.locale(),
             },
             signal,
@@ -309,6 +295,14 @@ export const saveVrf = (
         )
         : {};
 
+    const {rounds} = filteredParams;
+    if(Array.isArray(rounds)){
+        if(rounds.length >0){
+            filteredParams.rounds = rounds.join(',')
+        }else{
+            filteredParams.rounds=""
+        }
+    }
     const requestBody: any = {
         url: `${apiUrl}${vrf?.id ? `${vrf.id}/` : ''}`,
         data: filteredParams,

@@ -23,29 +23,27 @@ class PermissionSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "codename")
 
 
-class OrgUnitTypeNestedReadSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OrgUnitType
-        fields = ["id", "name", "short_name"]
-
-
 class UserRoleSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField("get_permissions")
     name = serializers.CharField(source="group.name")
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+    editable_org_unit_type_ids = serializers.PrimaryKeyRelatedField(
+        source="editable_org_unit_types",
+        queryset=OrgUnitType.objects.all(),
+        required=False,
+        allow_null=True,
+        many=True,
+    )
 
     class Meta:
         model = UserRole
-        fields = ["id", "name", "permissions", "editable_org_unit_types", "created_at", "updated_at"]
+        fields = ["id", "name", "permissions", "editable_org_unit_type_ids", "created_at", "updated_at"]
 
     def to_representation(self, instance):
         user_role = super().to_representation(instance)
         account_id = user_role["name"].split("_")[0]
         user_role["name"] = user_role["name"].removeprefix(f"{account_id}_")
-        user_role["editable_org_unit_types"] = OrgUnitTypeNestedReadSerializer(
-            instance.editable_org_unit_types.only("id", "name", "short_name").order_by("id"), many=True
-        ).data
         return user_role
 
     def get_permissions(self, obj):
@@ -98,7 +96,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
         user_role.editable_org_unit_types.set(editable_org_unit_types)
         return user_role
 
-    def validate_editable_org_unit_types(self, editable_org_unit_types):
+    def validate_editable_org_unit_type_ids(self, editable_org_unit_types) -> QuerySet[OrgUnitType]:
         account = self.context.get("request").user.iaso_profile.account
         project_org_unit_types = set(Project.objects.filter(account=account).values_list("unit_types__id", flat=True))
         for org_unit_type in editable_org_unit_types:

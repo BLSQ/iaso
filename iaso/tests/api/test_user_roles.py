@@ -47,16 +47,14 @@ class UserRoleAPITestCase(APITestCase):
     def test_create_user_role(self):
         self.client.force_authenticate(self.user)
 
-        payload = {"name": "New user role name", "editable_org_unit_types": [self.org_unit_type.id]}
+        payload = {"name": "New user role name", "editable_org_unit_type_ids": [self.org_unit_type.id]}
         response = self.client.post("/api/userroles/", data=payload, format="json")
 
         r = self.assertJSONResponse(response, 201)
 
         self.assertEqual(r["name"], payload["name"])
         self.assertIsNotNone(r["id"])
-        self.assertEqual(
-            r["editable_org_unit_types"], [{"id": self.org_unit_type.id, "name": "Org unit type", "short_name": "OUT"}]
-        )
+        self.assertEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id])
 
     def test_create_user_role_without_name(self):
         self.client.force_authenticate(self.user)
@@ -76,9 +74,7 @@ class UserRoleAPITestCase(APITestCase):
         self.user_role.refresh_from_db()
         expected_name = self.user_role.group.name.removeprefix(f"{self.account.id}_")
         self.assertEqual(r["name"], expected_name)
-        self.assertEqual(
-            r["editable_org_unit_types"], [{"id": self.org_unit_type.id, "name": "Org unit type", "short_name": "OUT"}]
-        )
+        self.assertEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id])
 
     def test_retrieve_user_role_read_only(self):
         self.client.force_authenticate(self.user_with_no_permissions)
@@ -87,9 +83,7 @@ class UserRoleAPITestCase(APITestCase):
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["id"], self.user_role.pk)
-        self.assertEqual(
-            r["editable_org_unit_types"], [{"id": self.org_unit_type.id, "name": "Org unit type", "short_name": "OUT"}]
-        )
+        self.assertEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id])
 
     def test_list_without_search(self):
         self.client.force_authenticate(self.user)
@@ -112,8 +106,8 @@ class UserRoleAPITestCase(APITestCase):
         expected_name = self.user_role.group.name.removeprefix(f"{self.account.id}_")
         self.assertEqual(r["results"][0]["name"], expected_name)
         self.assertEqual(
-            r["results"][0]["editable_org_unit_types"],
-            [{"id": self.org_unit_type.id, "name": "Org unit type", "short_name": "OUT"}],
+            r["results"][0]["editable_org_unit_type_ids"],
+            [self.org_unit_type.id],
         )
 
     def test_partial_update_invalid_org_unit_type(self):
@@ -124,14 +118,14 @@ class UserRoleAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         payload = {
             "name": self.user_role.group.name,
-            "editable_org_unit_types": [invalid_org_unit_type.pk],
+            "editable_org_unit_type_ids": [invalid_org_unit_type.pk],
         }
 
         response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
 
         r = self.assertJSONResponse(response, 400)
         self.assertEqual(
-            r["editable_org_unit_types"],
+            r["editable_org_unit_type_ids"],
             [
                 f"`{invalid_org_unit_type.name} ({invalid_org_unit_type.pk})` is not a valid Org Unit Type for this account."
             ],
@@ -144,20 +138,14 @@ class UserRoleAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         payload = {
             "name": self.user_role.group.name,
-            "editable_org_unit_types": [self.org_unit_type.id, new_org_unit_type.id],
+            "editable_org_unit_type_ids": [self.org_unit_type.id, new_org_unit_type.id],
         }
 
         response = self.client.put(f"/api/userroles/{self.user_role.id}/", data=payload, format="json")
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["name"], payload["name"])
-        self.assertEqual(
-            r["editable_org_unit_types"],
-            [
-                {"id": self.org_unit_type.id, "name": "Org unit type", "short_name": "OUT"},
-                {"id": new_org_unit_type.id, "name": "New org unit type", "short_name": "NOUT"},
-            ],
-        )
+        self.assertEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id, new_org_unit_type.id])
 
     def test_partial_update_no_permission(self):
         self.client.force_authenticate(self.user_with_no_permissions)

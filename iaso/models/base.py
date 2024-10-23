@@ -1449,11 +1449,11 @@ class Profile(models.Model):
 
     def get_user_roles_editable_org_unit_type_ids(self):
         try:
-            return self.annotated_user_roles_editable_org_unit_type_ids or []
+            return self.annotated_user_roles_editable_org_unit_type_ids
         except AttributeError:
             return list(
                 self.user_roles.values_list("editable_org_unit_types__id", flat=True)
-                .distinct()
+                .distinct("id")
                 .exclude(editable_org_unit_types__id__isnull=True)
             )
 

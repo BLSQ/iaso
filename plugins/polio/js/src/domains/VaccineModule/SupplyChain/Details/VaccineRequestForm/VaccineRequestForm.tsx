@@ -321,6 +321,28 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         disabled={false}
                                     />
                                 </Grid>
+                                <Grid item xs={6} md={3}>
+                                <Box>
+                                        <FilesUpload
+                                            accept={accept}
+                                            files={values?.vrf?.document? [values?.vrf?.document]: []}
+                                            onFilesSelect={files => {
+                                                if (files.length) {
+                                                    setFieldTouched('vrf.document', true);
+                                                    setFieldValue('vrf.document', files);
+                                                }
+                                                console.log("File selected :" + files.length)
+                                                console.dir(files)
+                                            }}
+                                            multi={false}
+                                            errors={processDocumentErrors(errors.document)}
+
+                                            placeholder={formatMessage(
+                                                MESSAGES.document,
+                                            )}
+                                        />
+                                    </Box>
+                                </Grid>
                             </Grid>
                             <Grid
                                 container
@@ -346,28 +368,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     
                                 </Grid>
 
-                                <Grid item xs={12} lg={6}>
-                                    <Box mt={2}>
-                                        <FilesUpload
-                                            accept={accept}
-                                            files={[values?.vrf?.document] ?? []}
-                                            onFilesSelect={files => {
-                                                if (files.length) {
-                                                    setFieldTouched('vrf.document', true);
-                                                    setFieldValue('vrf.document', files);
-                                                }
-                                                console.log("File selected :" + files.length)
-                                                console.dir(files)
-                                            }}
-                                            multi={false}
-                                            errors={processDocumentErrors(errors.document)}
-
-                                            placeholder={formatMessage(
-                                                MESSAGES.document,
-                                            )}
-                                        />
-                                    </Box>
-                                </Grid>
+                                {/* <Grid item xs={12} lg={6}>
+                           
+                                </Grid> */}
                             </Grid>
                         </>
                     )}

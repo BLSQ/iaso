@@ -145,8 +145,8 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                             </Box>
                         </Grid>
 
-                        <Grid item xs={12} lg={12}>
-                            <Box mt={2}>
+                        <Grid item xs={12} md={4}>
+                            <Box>
                                 <FilesUpload
                                     accept={accept}
                                     files={values?.pre_alerts?.[index]?.document ? [values.pre_alerts[index]?.document] : []}

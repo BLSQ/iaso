@@ -16,7 +16,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import GenericReadWritePerm, ModelViewSet
+from iaso.api.common import GenericReadWritePerm, ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
@@ -319,7 +319,7 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
         # Manually invoke validate_rounds if 'rounds' is a string
         if "rounds" in data and isinstance(data["rounds"], str):
             try:
-                rounds = json.loads(data["rounds"].replace("'", '"'))
+                rounds = parse_comma_separated_numeric_values(data["rounds"], "rounds")
                 data["rounds"] = [{"number": num} for num in rounds]
             except Exception as e:
                 raise serializers.ValidationError(f"Invalid rounds data: {e}")

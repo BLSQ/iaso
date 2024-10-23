@@ -242,7 +242,7 @@ export const patchRequest2 = (
             method: 'PATCH',
             body: JSON.stringify(data),
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data',
                 'Accept-Language': moment.locale(),
             },
             signal,
@@ -288,7 +288,7 @@ export const postRequest2 = (
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data',
                 'Accept-Language': moment.locale(),
             },
             signal,

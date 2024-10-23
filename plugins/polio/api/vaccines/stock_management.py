@@ -449,6 +449,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "usable_vials_used",
             "lot_numbers",
             "missing_vials",
+            "comment",
         ]
 
     def extract_campaign_data(self, validated_data):

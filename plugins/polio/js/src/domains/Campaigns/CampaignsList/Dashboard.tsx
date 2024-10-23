@@ -1,11 +1,14 @@
 import { Box } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, useMemo } from 'react';
+import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../../../styles/theme';
-import { CampaignsFilters } from '../../Calendar/campaignCalendar/CampaignsFilters';
+import {
+    CampaignsFilters,
+    getRedirectUrl,
+} from '../../Calendar/campaignCalendar/CampaignsFilters';
 import {
     Options as GetCampaignOptions,
     useCampaignParams,
@@ -28,7 +31,8 @@ export const Dashboard: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const paramsToUse = useActiveParams(params);
     const apiParams: GetCampaignOptions = useCampaignParams(paramsToUse);
-
+    const [campaignType, setCampaignType] = useState(params.campaignType);
+    const [isTypeSet, setIsTypeSet] = useState(!!params.campaignType);
     const { data: rawCampaigns, isFetching } = useGetCampaigns(
         apiParams,
         undefined,
@@ -70,6 +74,19 @@ export const Dashboard: FunctionComponent = () => {
         handleClickRestoreRow: handleRestoreDialogConfirm,
         params,
     });
+    const redirectToReplace = useRedirectToReplace();
+    const redirectUrl = getRedirectUrl(false, false);
+    useEffect(() => {
+        if (!params.campaignType && !isTypeSet) {
+            setCampaignType('polio');
+            setIsTypeSet(true);
+            redirectToReplace(redirectUrl, {
+                ...params,
+                campaignType: 'polio',
+            });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     return (
         <>
             <TopBar
@@ -77,7 +94,11 @@ export const Dashboard: FunctionComponent = () => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <CampaignsFilters params={params} />
+                <CampaignsFilters
+                    params={params}
+                    setCampaignType={setCampaignType}
+                    campaignType={campaignType}
+                />
                 <Box mb={2}>
                     <DashboardButtons exportToCSV={exportToCSV} />
                 </Box>

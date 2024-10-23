@@ -392,6 +392,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     start_date = serializers.SerializerMethodField()
     end_date = serializers.SerializerMethodField()
     doses_shipped = serializers.SerializerMethodField()
+    doses_received = serializers.SerializerMethodField()
     eta = serializers.SerializerMethodField()
     var = serializers.SerializerMethodField()
 
@@ -408,6 +409,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "doses_shipped",
+            "doses_received",
             "eta",
             "var",
             "created_at",
@@ -463,6 +465,9 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
 
     def get_doses_shipped(self, obj):
         return obj.total_doses_shipped()
+
+    def get_doses_received(self, obj):
+        return obj.total_doses_received()
 
     # Comma Separated List of all estimated arrival times
     def get_eta(self, obj):

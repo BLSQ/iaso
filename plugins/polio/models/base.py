@@ -1127,6 +1127,11 @@ class VaccineRequestForm(SoftDeletableModel):
             "total_doses_shipped"
         ]
 
+    def total_doses_received(self):
+        return self.vaccinearrivalreport_set.all().aggregate(total_doses_received=Coalesce(Sum("doses_received"), 0))[
+            "total_doses_received"
+        ]
+
     def __str__(self):
         return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 

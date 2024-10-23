@@ -403,6 +403,7 @@
     "iaso.polio.label.doses_received": "Doses received",
     "iaso.polio.label.doses_shipped": "Doses shipped",
     "iaso.polio.label.dosesPerVial": "Doses per vial",
+    "iaso.polio.label.dosesReceived": "Doses received",
     "iaso.polio.label.dosesRequested": "Doses requested",
     "iaso.polio.label.dosesShipped": "Doses shipped",
     "iaso.polio.label.downloadScopesToCsv": "Download scopes",

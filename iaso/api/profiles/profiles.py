@@ -509,11 +509,28 @@ class ProfilesViewSet(viewsets.ViewSet):
             result.append(item)
         return result
 
-    def validate_editable_org_unit_types(self, request):
+    def validate_editable_org_unit_types(self, request) -> QuerySet[OrgUnitType]:
         editable_org_unit_type_ids = request.data.get("editable_org_unit_type_ids", [])
         editable_org_unit_types = OrgUnitType.objects.filter(pk__in=editable_org_unit_type_ids)
+
         if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
             raise ValidationError("Invalid editable org unit type submitted.")
+
+        if not request.user.has_perm(permission.USERS_ADMIN):
+            user_editable_org_unit_type_ids = request.user.iaso_profile.get_editable_org_unit_type_ids()
+            invalid_ids = [
+                org_unit_type_id
+                for org_unit_type_id in editable_org_unit_type_ids
+                if not request.user.iaso_profile.has_org_unit_write_permission(
+                    org_unit_type_id, user_editable_org_unit_type_ids
+                )
+            ]
+            if invalid_ids:
+                invalid_names = ", ".join(
+                    name for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list("name", flat=True)
+                )
+                raise ValidationError(f"The user does not have rights on the following org unit types: {invalid_names}")
+
         return editable_org_unit_types
 
     @staticmethod

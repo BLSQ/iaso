@@ -1,6 +1,5 @@
 import { closeSnackbar } from 'notistack';
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { openSnackBar } from '../../../../components/snackBars/EventDispatcher';
 import { warningSnackBar } from '../../../../constants/snackBars';
 import { getLatLngBounds } from '../../../../utils/map/mapUtils';
@@ -17,7 +16,6 @@ export const useShowWarning = ({
     notifications,
     fetching,
 }: SetWarningParams): void => {
-    const dispatch = useDispatch();
     const bounds = getLatLngBounds(instances);
     const isWarningDisplayed = notifications.find(n => n.id === snackbarKey);
     const shouldShowWarning =
@@ -33,5 +31,5 @@ export const useShowWarning = ({
                 closeSnackbar(snackbarKey);
             }
         };
-    }, [bounds, dispatch, isWarningDisplayed, shouldShowWarning]);
+    }, [bounds, isWarningDisplayed, shouldShowWarning]);
 };

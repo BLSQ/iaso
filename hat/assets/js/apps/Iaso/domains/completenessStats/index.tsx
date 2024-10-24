@@ -14,7 +14,6 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
@@ -59,7 +58,6 @@ export const CompletenessStats: FunctionComponent = () => {
     ) as CompletenessRouterParams;
 
     const [tab, setTab] = useState<'list' | 'map'>(params.tab ?? 'list');
-    const dispatch = useDispatch();
     const redirectTo = useRedirectTo();
     const { formatMessage } = useSafeIntl();
     const { data: completenessStats, isFetching } =
@@ -90,7 +88,7 @@ export const CompletenessStats: FunctionComponent = () => {
                 closeSnackbar(snackbarKey);
             }
         };
-    }, [dispatch, displayWarning]);
+    }, [displayWarning]);
     const csvUrl = useMemo(
         () =>
             `/api/v2/completeness_stats.csv?${buildQueryString(params, true)}`,

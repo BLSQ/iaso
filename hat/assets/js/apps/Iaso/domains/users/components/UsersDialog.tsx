@@ -17,7 +17,6 @@ import React, {
 import { MutateFunction, useQueryClient } from 'react-query';
 
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
-import { hasFeatureFlag, SHOW_DEV_FEATURES } from '../../../utils/featureFlags';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
@@ -151,8 +150,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         }
         return '';
     }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
-    const currentUser = useCurrentUser();
-    const hasDevFeatures = hasFeatureFlag(currentUser, SHOW_DEV_FEATURES);
     return (
         <>
             <WarningModal
@@ -213,15 +210,13 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
-                    {hasDevFeatures && (
-                        <Tab
-                            classes={{
-                                root: classes.tab,
-                            }}
-                            value="orgUnitWriteTypes"
-                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
-                        />
-                    )}
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="orgUnitWriteTypes"
+                        label={formatMessage(MESSAGES.orgUnitWriteTypes)}
+                    />
                 </Tabs>
                 <div className={classes.root} id="user-profile-dialog">
                     <div

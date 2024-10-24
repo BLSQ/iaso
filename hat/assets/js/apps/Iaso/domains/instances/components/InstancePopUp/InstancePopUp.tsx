@@ -1,6 +1,12 @@
-import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
+import { Theme } from '@mui/material/styles';
+import L from 'leaflet';
+import React, {
+    createRef,
+    FunctionComponent,
+    useCallback,
+    useMemo,
+} from 'react';
 import { Popup, useMap } from 'react-leaflet';
-import { useSelector } from 'react-redux';
 
 import { Box, Card, CardContent, CardMedia, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -17,13 +23,15 @@ import InstanceDetailsField from '../InstanceDetailsField';
 import InstanceDetailsInfos from '../InstanceDetailsInfos';
 
 import { baseUrls } from '../../../../constants/urls';
+import { usePopupState } from '../../../../utils/map/usePopupState';
 import { getOrgUnitsTree } from '../../../orgUnits/utils';
+import { useGetInstance } from '../../../registry/hooks/useGetInstances';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    ...mapPopupStyles(theme),
+const useStyles = makeStyles((theme: Theme) => ({
+    ...(commonStyles(theme) as Record<string, any>),
+    ...(mapPopupStyles(theme) as Record<string, any>),
     actionBox: {
         padding: theme.spacing(1, 0, 0, 0),
     },
@@ -38,24 +46,28 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     replaceLocation?: (instance: Instance) => void;
     displayUseLocation?: boolean;
+    instanceId: number;
 };
 
 export const InstancePopup: FunctionComponent<Props> = ({
     replaceLocation = () => null,
     displayUseLocation = false,
+    instanceId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const popup: any = useRef();
+    const popup = createRef<L.Popup>();
+    const isOpen = usePopupState(popup);
     const map = useMap();
-    const currentInstance = useSelector(
-        (state: any) => state.instances.current,
+    const { data: currentInstance, isLoading } = useGetInstance(
+        isOpen ? instanceId : undefined,
     );
-
     const confirmDialog = useCallback(() => {
-        replaceLocation(currentInstance);
-        map.closePopup(popup.current);
-    }, [currentInstance, map, replaceLocation]);
+        if (currentInstance) {
+            replaceLocation(currentInstance);
+            map.closePopup(popup.current);
+        }
+    }, [currentInstance, map, popup, replaceLocation]);
 
     const hasHero = (currentInstance?.files?.length ?? 0) > 0;
 
@@ -68,7 +80,7 @@ export const InstancePopup: FunctionComponent<Props> = ({
 
     return (
         <Popup className={classes.popup} ref={popup} pane="popupPane">
-            {!currentInstance && <LoadingSpinner />}
+            {isLoading && <LoadingSpinner />}
             {currentInstance && (
                 <Card className={classes.popupCard}>
                     {hasHero && (

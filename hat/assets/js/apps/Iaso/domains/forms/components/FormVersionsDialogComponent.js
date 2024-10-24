@@ -1,17 +1,17 @@
 import { Box, Grid, Typography } from '@mui/material';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
-import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
-import { useFormState } from '../../../hooks/form';
-import { createFormVersion, updateFormVersion } from '../../../utils/requests';
-import { errorTypes, getPeriodsErrors } from '../../periods/utils';
-import MESSAGES from '../messages';
 import { openSnackBar } from '../../../components/snackBars/EventDispatcher.ts';
 import { succesfullSnackBar } from '../../../constants/snackBars';
+import { useFormState } from '../../../hooks/form';
+import { createFormVersion, updateFormVersion } from '../../../utils/requests';
+import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
+import { errorTypes, getPeriodsErrors } from '../../periods/utils';
+import MESSAGES from '../messages';
 
 const emptyVersion = (id = null) => ({
     id,

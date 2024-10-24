@@ -5,9 +5,11 @@ export type UserRole = {
     name: string;
     created_at: string;
     updated_at?: string;
+    editable_org_unit_type_ids?: number[];
 };
 export type UserRolesFilterParams = {
     name?: string;
+    accountId?: number;
 };
 
 export type UserRoleParams = UrlParams &

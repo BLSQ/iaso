@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import { Box, Button, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -21,14 +20,13 @@ import { periodTypeOptions } from '../../periods/constants';
 import { Period } from '../../periods/models.ts';
 import { isValidPeriod } from '../../periods/utils';
 
-import { setInstancesFilterUpdated } from '../actions';
 import { INSTANCE_STATUSES } from '../constants';
 
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor.ts';
 import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace.ts';
 import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';
-import { useGetForms, useInstancesFiltersData } from '../hooks';
+import { useGetForms } from '../hooks';
 import { parseJson } from '../utils/jsonLogicParse.ts';
 
 import { Popper } from '../../forms/fields/components/Popper.tsx';
@@ -36,15 +34,16 @@ import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnit
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
 import MESSAGES from '../messages';
 
-import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
+import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction.tsx';
 import { LocationLimit } from '../../../utils/map/LocationLimit';
+import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
 import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
 import { ColumnSelect } from './ColumnSelect.tsx';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -69,7 +68,6 @@ const filterDefault = params => ({
 });
 
 const InstancesFiltersComponent = ({
-    params: { formIds },
     params,
     onSearch,
     possibleFields,
@@ -82,12 +80,12 @@ const InstancesFiltersComponent = ({
     tableColumns,
     tab,
 }) => {
-    const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
 
+    const [isInstancesFilterUpdated, setIsInstancesFilterUpdated] =
+        useState(false);
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
-    const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
     const defaultFilters = useMemo(() => {
@@ -120,11 +118,8 @@ const InstancesFiltersComponent = ({
         });
         setInitialOrgUnitId(params?.levels);
     }, [defaultFilters]);
-
-    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
-    const isInstancesFilterUpdated = useSelector(
-        state => state.instances.isInstancesFilterUpdated,
-    );
+    const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
+        useGetOrgUnitTypes();
     const { data, isFetching: fetchingForms } = useGetForms();
     const formsList = useMemo(() => data?.forms ?? [], [data]);
     const formId =
@@ -139,10 +134,9 @@ const InstancesFiltersComponent = ({
         fields,
         queryBuilderListToReplace,
     );
-    useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
-            dispatch(setInstancesFilterUpdated(false));
+            setIsInstancesFilterUpdated(false);
             const searchParams = {
                 ...params,
                 ...getInstancesFilterValues(formState),
@@ -167,7 +161,7 @@ const InstancesFiltersComponent = ({
         }
     }, [
         isInstancesFilterUpdated,
-        dispatch,
+        setIsInstancesFilterUpdated,
         params,
         formState,
         onSearch,
@@ -192,9 +186,9 @@ const InstancesFiltersComponent = ({
             if (key === 'levels') {
                 setInitialOrgUnitId(value);
             }
-            dispatch(setInstancesFilterUpdated(true));
+            setIsInstancesFilterUpdated(true);
         },
-        [dispatch, setFormState, setFormIds],
+        [setFormState, setFormIds, setIsInstancesFilterUpdated],
     );
 
     const startPeriodError = useMemo(() => {
@@ -262,7 +256,6 @@ const InstancesFiltersComponent = ({
         startPeriodError ||
         endPeriodError ||
         hasLocationLimitError;
-
     return (
         <div className={classes.marginBottom}>
             <UserOrgUnitRestriction />
@@ -393,12 +386,9 @@ const InstancesFiltersComponent = ({
                         onChange={handleFormChange}
                         value={formState.orgUnitTypeId.value || null}
                         type="select"
-                        options={orgUnitTypes.map(t => ({
-                            label: t.name,
-                            value: t.id,
-                        }))}
+                        options={orgUnitTypes || []}
                         label={MESSAGES.org_unit_type_id}
-                        loading={fetchingOrgUnitTypes}
+                        loading={isFetchingOuTypes}
                     />
                     <InputComponent
                         type="select"

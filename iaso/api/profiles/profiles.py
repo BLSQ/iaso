@@ -1,7 +1,8 @@
+import copy
 from typing import Any, List, Optional, Union
 
 from django.conf import settings
-from django.contrib.auth import models, update_session_auth_hash
+from django.contrib.auth import login, models, update_session_auth_hash
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.exceptions import BadRequest, ObjectDoesNotExist
@@ -27,7 +28,7 @@ from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
-from iaso.models import OrgUnit, OrgUnitType, Profile, Project, UserRole
+from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
 from iaso.utils import is_mobile_request
 from iaso.utils.module_permissions import account_module_permissions
 
@@ -220,7 +221,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
-        return Profile.objects.filter(account=account)
+        return Profile.objects.filter(account=account).with_editable_org_unit_types()
 
     def list(self, request):
         limit = request.GET.get("limit", None)
@@ -260,11 +261,12 @@ class ProfilesViewSet(viewsets.ViewSet):
             teams=teams,
             managed_users_only=managed_users_only,
             ids=ids,
-        )
+        ).order_by("id")
 
         queryset = queryset.prefetch_related(
             "user",
             "user_roles",
+            "user__tenant_user",
             "org_units",
             "org_units__version",
             "org_units__version__data_source",
@@ -275,6 +277,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             "org_units__parent__org_unit_type",
             "org_units__parent__parent__org_unit_type",
             "projects",
+            "editable_org_unit_types",
         )
         if request.GET.get("csv"):
             return self.list_export(queryset=queryset, file_format=FileFormatEnum.CSV)
@@ -354,11 +357,18 @@ class ProfilesViewSet(viewsets.ViewSet):
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
         if pk == PK_ME:
+            # if the user is a main_user, login as an account user
+            # TODO: This is not a clean side-effect and should be improved.
+            if request.user.tenant_users.exists():
+                account_user = request.user.tenant_users.first().account_user
+                account_user.backend = "django.contrib.auth.backends.ModelBackend"
+                login(request, account_user)
+
             try:
                 profile = request.user.iaso_profile
                 profile_dict = profile.as_dict()
                 return Response(profile_dict)
-            except ObjectDoesNotExist:
+            except Profile.DoesNotExist:
                 return Response(
                     {
                         "first_name": request.user.first_name,
@@ -500,13 +510,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         return result
 
     def validate_editable_org_unit_types(self, request):
-        result = []
-        editable_org_unit_type_ids = request.data.get("editable_org_unit_type_ids", None)
-        if editable_org_unit_type_ids:
-            for editable_org_unit_type_id in editable_org_unit_type_ids:
-                item = get_object_or_404(OrgUnitType, pk=editable_org_unit_type_id)
-                result.append(item)
-        return result
+        editable_org_unit_type_ids = request.data.get("editable_org_unit_type_ids", [])
+        editable_org_unit_types = OrgUnitType.objects.filter(pk__in=editable_org_unit_type_ids)
+        if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
+            raise ValidationError("Invalid editable org unit type submitted.")
+        return editable_org_unit_types
 
     @staticmethod
     def update_user_own_profile(request):
@@ -659,17 +667,57 @@ class ProfilesViewSet(viewsets.ViewSet):
         return self.EMAIL_SUBJECT_FR if language == "fr" else self.EMAIL_SUBJECT_EN
 
     def create(self, request):
+        current_profile = request.user.iaso_profile
+        current_account = current_profile.account
+
         username = request.data.get("user_name")
         password = request.data.get("password", "")
         send_email_invitation = request.data.get("send_email_invitation")
 
         if not username:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
+        else:
+            existing_user = User.objects.filter(username__iexact=username)
+            if existing_user:
+                return JsonResponse(
+                    {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
+                )
         if not password and not send_email_invitation:
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
-        existing_user = User.objects.filter(username__iexact=username)
-        if existing_user:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
+        main_user = None
+        try:
+            existing_user = User.objects.get(username__iexact=username)
+            user_in_same_account = False
+            try:
+                if existing_user.iaso_profile and existing_user.iaso_profile.account == current_account:
+                    user_in_same_account = True
+            except User.iaso_profile.RelatedObjectDoesNotExist:
+                # User doesn't have an iaso_profile, so they're not in the same account
+                pass
+
+            if user_in_same_account:
+                return JsonResponse(
+                    {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
+                )
+            else:
+                # TODO: invitation
+                # TODO what if already main user?
+                old_username = username
+                username = f"{username}_{current_account.name.lower().replace(' ', '_')}"
+
+                # duplicate existing_user into main user and account user
+                main_user = copy.copy(existing_user)
+
+                existing_user.username = f"{old_username}_{'unknown' if not hasattr(existing_user, 'iaso_profile') else existing_user.iaso_profile.account.name.lower().replace(' ', '_')}"
+                existing_user.set_unusable_password()
+                existing_user.save()
+
+                main_user.pk = None
+                main_user.save()
+
+                TenantUser.objects.create(main_user=main_user, account_user=existing_user)
+        except User.DoesNotExist:
+            pass  # no existing user, simply create a new user
 
         user = User()
         user.first_name = request.data.get("first_name", "")
@@ -678,14 +726,15 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.email = request.data.get("email", "")
         permissions = request.data.get("user_permissions", [])
 
-        current_profile = request.user.iaso_profile
-        current_account = current_profile.account
-
         modules_permissions = self.module_permissions(current_account)
 
         if password != "":
             user.set_password(password)
         user.save()
+
+        if main_user:
+            TenantUser.objects.create(main_user=main_user, account_user=user)
+
         for permission_codename in permissions:
             if permission_codename in modules_permissions:
                 permission = get_object_or_404(Permission, codename=permission_codename)
@@ -695,7 +744,6 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         # Create an Iaso profile for the new user and attach it to the same account
         # as the currently authenticated user
-        current_profile = request.user.iaso_profile
         user.profile = Profile.objects.create(
             user=user,
             account=current_account,
@@ -715,7 +763,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_roles = request.data.get("user_roles", [])
         for user_role_id in user_roles:
             # Get only a user role linked to the account's user
-            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
+            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_account)
             user_group_item = get_object_or_404(models.Group, pk=user_role_item.group.id)
             profile.user.groups.add(user_group_item)
             profile.user_roles.add(user_role_item)

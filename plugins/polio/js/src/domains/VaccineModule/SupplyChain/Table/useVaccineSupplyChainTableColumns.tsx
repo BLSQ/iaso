@@ -81,6 +81,15 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 },
             },
             {
+                Header: formatMessage(MESSAGES.dosesReceived),
+                accessor: 'doses_received',
+                Cell: ({
+                    row: { original },
+                }: ColumnCell<SupplyChainList>): ReactElement => {
+                    return <NumberCell value={original.doses_received} />;
+                },
+            },
+            {
                 Header: formatMessage(MESSAGES.poNumbers),
                 accessor: 'po_numbers',
                 Cell: ({

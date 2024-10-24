@@ -100,6 +100,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             usable_vials_used=10,
             lot_numbers=["LOT123"],
             missing_vials=2,
+            comment="Hello world",
         )
         cls.destruction_report = pm.DestructionReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -108,6 +109,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             destruction_report_date=cls.now,
             unusable_vials_destroyed=3,
             lot_numbers=["LOT456"],
+            comment="Goodbye World",
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,

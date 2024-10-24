@@ -74,6 +74,7 @@ export type SupplyChainList = {
     country: { name: string; id: number };
     created_at: string;
     doses_shipped: number;
+    doses_received: number;
     end_date: string;
     obr_name: string;
     po_numbers: string;

@@ -529,7 +529,6 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def check_profile_editable_org_unit_types(self, iaso_profile: Profile, org_unit_type_ids_to_check: Set[int]):
         user_editable_org_unit_type_ids = iaso_profile.get_editable_org_unit_type_ids()
-
         invalid_ids = [
             org_unit_type_id
             for org_unit_type_id in org_unit_type_ids_to_check

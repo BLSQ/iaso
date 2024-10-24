@@ -11,7 +11,11 @@ import { Box } from '@mui/material';
 import { Vaccine } from '../../../../../constants/types';
 import MESSAGES from '../../messages';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
-import { DateInput, NumberInput, TextInput } from '../../../../../components/Inputs';
+import {
+    DateInput,
+    NumberInput,
+    TextInput,
+} from '../../../../../components/Inputs';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { useFormAValidation } from './validation';
@@ -48,13 +52,11 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             // unusable_vials: formA?.unusable_vials,
             missing_vials: formA?.missing_vials,
             vaccine_stock: vaccineStockId,
-            comment:formA?.comment ?? null
-
+            comment: formA?.comment ?? null,
         },
         onSubmit: values => save(values),
         validationSchema,
     });
-    console.log(formik.values)
     const { data: campaignOptions, isFetching: isFetchingCampaigns } =
         useCampaignOptions(countryName, formik.values.campaign);
     const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;

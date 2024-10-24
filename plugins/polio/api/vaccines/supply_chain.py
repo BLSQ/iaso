@@ -515,6 +515,14 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.annotate(doses_shipped=Coalesce(Sum("vaccineprealert__doses_shipped"), 0)).order_by(
                 "-doses_shipped"
             )
+        elif current_order == "doses_received":
+            queryset = queryset.annotate(
+                doses_received=Coalesce(Sum("vaccinearrivalreport__doses_received"), 0)
+            ).order_by("doses_received")
+        elif current_order == "-doses_received":
+            queryset = queryset.annotate(
+                doses_received=Coalesce(Sum("vaccinearrivalreport__doses_received"), 0)
+            ).order_by("-doses_received")
         elif current_order == "obr_name":
             queryset = queryset.order_by("campaign__obr_name")
         elif current_order == "-obr_name":

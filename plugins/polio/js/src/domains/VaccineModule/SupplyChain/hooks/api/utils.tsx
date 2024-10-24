@@ -49,21 +49,50 @@ export const saveTab = (
             toCreate.push(dataToPass);
         }
     });
+
+    const createOrUpdateRequest = (url: string, data: any) => {
+        const formData = new FormData();
+
+        data.forEach((item: any, index: number) => {
+            Object.keys(item).forEach(key => {
+                if (key === 'document' && item[key]) {
+                    if (Array.isArray(item[key])) {
+                        formData.append(`pre_alerts[${index}].${key}`, item[key][0]);
+                    } else if (typeof item[key] === 'string') {
+                        const filePath = item[key];
+                        const fileName = filePath.split('/').pop();
+                        const file = new File([filePath], fileName || 'document');
+                        formData.append(`pre_alerts[${index}].${key}`, file);
+                    }
+                    
+                } else if (item[key] !== null && item[key] !== undefined) {
+                    formData.append(`pre_alerts[${index}].${key}`, item[key]);
+                }
+            });
+        });
+
+        
+        const method = url.includes('update') ? 'PATCH' : url.includes('add') ? 'POST' : 'GET';
+        return fetch(url, {
+            method,
+            body: formData,
+        });
+    };
+
     if (toUpdate.length > 0) {
         promises.push(
-            patchRequest(
+            createOrUpdateRequest(
                 `${apiUrl}${supplyChainData?.vrf?.id}/update_${key}/`,
-                {
-                    [key]: toUpdate,
-                },
+                toUpdate,
             ),
         );
     }
     if (toCreate.length > 0) {
         promises.push(
-            postRequest(`${apiUrl}${supplyChainData?.vrf?.id}/add_${key}/`, {
-                [key]: toCreate,
-            }),
+            createOrUpdateRequest(
+                `${apiUrl}${supplyChainData?.vrf?.id}/add_${key}/`,
+                toCreate,
+            ),
         );
     }
     if (toDelete.length > 0) {

@@ -166,6 +166,9 @@ const useVrfShape = () => {
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         comments: yup.string().nullable(),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };
 
@@ -196,6 +199,9 @@ const usePreAlertShape = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };
 const useArrivalReportShape = () => {

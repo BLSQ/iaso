@@ -79,6 +79,8 @@ export type User = {
     user_id: number;
     dhis2_id?: string;
     editable_org_unit_type_ids?: number[];
+    user_roles: number[];
+    user_roles_editable_org_unit_type_ids?: number[];
 };
 
 export const getDisplayName = (
@@ -117,14 +119,17 @@ export const useCheckUserHasWriteTypePermission = (): ((
 ) => boolean) => {
     const currentUser = useCurrentUser();
     return (orgUnitTypeId?: number) => {
-        return Boolean(
-            currentUser &&
-                (!currentUser.editable_org_unit_type_ids ||
-                    currentUser.editable_org_unit_type_ids?.length === 0 ||
-                    (orgUnitTypeId &&
-                        currentUser.editable_org_unit_type_ids?.includes(
-                            orgUnitTypeId,
-                        ))),
+        if (!currentUser) return false;
+
+        const editableTypeIds = [
+            ...(currentUser.editable_org_unit_type_ids ?? []),
+            ...(currentUser.user_roles_editable_org_unit_type_ids ?? []),
+        ];
+
+        return (
+            editableTypeIds.length === 0 ||
+            (orgUnitTypeId !== undefined &&
+                editableTypeIds.includes(orgUnitTypeId))
         );
     };
 };

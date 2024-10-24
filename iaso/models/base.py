@@ -1447,6 +1447,16 @@ class Profile(models.Model):
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
 
+    def get_user_roles_editable_org_unit_type_ids(self):
+        try:
+            return self.annotated_user_roles_editable_org_unit_type_ids
+        except AttributeError:
+            return list(
+                self.user_roles.values_list("editable_org_unit_types__id", flat=True)
+                .distinct("id")
+                .exclude(editable_org_unit_types__id__isnull=True)
+            )
+
     def as_dict(self, small=False):
         user_roles = self.user_roles.all()
         user_group_permissions = list(
@@ -1461,12 +1471,9 @@ class Profile(models.Model):
             editable_org_unit_type_ids = self.annotated_editable_org_unit_types_ids
         except AttributeError:
             editable_org_unit_type_ids = [out.pk for out in self.editable_org_unit_types.all()]
-        try:
-            user_roles_editable_org_unit_type_ids = self.annotated_user_roles_editable_org_unit_type_ids
-        except AttributeError:
-            user_roles_editable_org_unit_type_ids = (
-                list(self.user_roles.values_list("editable_org_unit_types", flat=True)),
-            )
+
+        user_roles_editable_org_unit_type_ids = self.get_user_roles_editable_org_unit_type_ids()
+
         if not small:
             return {
                 "id": self.id,
@@ -1522,12 +1529,8 @@ class Profile(models.Model):
             editable_org_unit_type_ids = self.annotated_editable_org_unit_types_ids
         except AttributeError:
             editable_org_unit_type_ids = [out.pk for out in self.editable_org_unit_types.all()]
-        try:
-            user_roles_editable_org_unit_type_ids = self.annotated_user_roles_editable_org_unit_type_ids
-        except AttributeError:
-            user_roles_editable_org_unit_type_ids = (
-                list(self.user_roles.values_list("editable_org_unit_types", flat=True)),
-            )
+
+        user_roles_editable_org_unit_type_ids = self.get_user_roles_editable_org_unit_type_ids()
         return {
             "id": self.id,
             "first_name": self.user.first_name,

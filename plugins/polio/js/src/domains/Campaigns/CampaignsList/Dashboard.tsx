@@ -1,14 +1,11 @@
 import { Box } from '@mui/material';
-import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../../../styles/theme';
-import {
-    CampaignsFilters,
-    getRedirectUrl,
-} from '../../Calendar/campaignCalendar/CampaignsFilters';
+import { CampaignsFilters } from '../../Calendar/campaignCalendar/CampaignsFilters';
 import {
     Options as GetCampaignOptions,
     useCampaignParams,
@@ -32,7 +29,6 @@ export const Dashboard: FunctionComponent = () => {
     const paramsToUse = useActiveParams(params);
     const apiParams: GetCampaignOptions = useCampaignParams(paramsToUse);
     const [campaignType, setCampaignType] = useState(params.campaignType);
-    const [isTypeSet, setIsTypeSet] = useState(!!params.campaignType);
     const { data: rawCampaigns, isFetching } = useGetCampaigns(
         apiParams,
         undefined,
@@ -74,19 +70,7 @@ export const Dashboard: FunctionComponent = () => {
         handleClickRestoreRow: handleRestoreDialogConfirm,
         params,
     });
-    const redirectToReplace = useRedirectToReplace();
-    const redirectUrl = getRedirectUrl(false, false);
-    useEffect(() => {
-        if (!params.campaignType && !isTypeSet) {
-            setCampaignType('polio');
-            setIsTypeSet(true);
-            redirectToReplace(redirectUrl, {
-                ...params,
-                campaignType: 'polio',
-            });
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+
     return (
         <>
             <TopBar

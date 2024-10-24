@@ -1,8 +1,9 @@
+from itertools import chain
+
 import django_filters
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin
 from rest_framework.request import Request
@@ -17,12 +18,12 @@ from iaso.api.org_unit_change_request_configurations.serializers import (
 )
 from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import OrgUnitChangeRequestConfiguration
+from iaso.models import OrgUnitChangeRequestConfiguration, Project
 
 
 class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [HasOrgUnitsChangeRequestConfigurationReadPermission]
-    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
     serializer_class = MobileOrgUnitChangeRequestConfigurationListSerializer
     pagination_class = OrgUnitChangeRequestConfigurationPagination
 
@@ -42,9 +43,64 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
             .prefetch_related(
                 "possible_types", "possible_parent_types", "group_sets", "editable_reference_forms", "other_groups"
             )
-            .order_by("id")
+            .order_by("org_unit_type_id")
         )
 
     @swagger_auto_schema(manual_parameters=[app_id_param])
     def list(self, request: Request, *args, **kwargs) -> Response:
-        return super().list(request, *args, **kwargs)
+        """
+        Because some Org Unit Type restrictions are also configurable at the `Profile` level,
+        we implement the following logic in the list view:
+
+        1. If `Profile.editable_org_unit_types` empty:
+
+            - return `OrgUnitChangeRequestConfiguration` content
+
+        2. If `Profile.editable_org_unit_types` not empty:
+
+            a. for org_unit_type not in `Profile.editable_org_unit_types`:
+
+                - return a dynamic configuration that says `org_units_editable: False`
+                - regardless of any existing `OrgUnitChangeRequestConfiguration`
+
+            b. for org_unit_type in `Profile.editable_org_unit_types`:
+
+                - return either the existing `OrgUnitChangeRequestConfiguration` content or nothing
+
+        """
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
+        queryset = self.get_queryset()
+
+        user_editable_org_unit_type_ids = set(
+            self.request.user.iaso_profile.editable_org_unit_types.values_list("id", flat=True)
+        )
+
+        if user_editable_org_unit_type_ids:
+            project_org_unit_types = set(Project.objects.get(app_id=app_id).unit_types.values_list("id", flat=True))
+            non_editable_org_unit_type_ids = project_org_unit_types - user_editable_org_unit_type_ids
+
+            dynamic_configurations = [
+                OrgUnitChangeRequestConfiguration(org_unit_type_id=org_unit_type_id, org_units_editable=False)
+                for org_unit_type_id in non_editable_org_unit_type_ids
+            ]
+
+            # Because we're merging unsaved instances with a queryset (which is a representation of a database query),
+            # we have to sort the resulting list manually to keep the pagination working properly.
+            queryset = list(
+                chain(
+                    queryset.exclude(org_unit_type__in=non_editable_org_unit_type_ids),
+                    dynamic_configurations,
+                )
+            )
+            # Unsaved instances do not have an `id`, so we're sorting on `org_unit_type_id` in all cases.
+            queryset = sorted(queryset, key=lambda item: item.org_unit_type_id)
+
+        queryset = self.filter_queryset(queryset)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

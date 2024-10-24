@@ -81,10 +81,25 @@ def org_units_bulk_update(
         raise Exception("Modification on read only source are not allowed")
 
     total = queryset.count()
+    editable_org_unit_type_ids = list(user.iaso_profile.editable_org_unit_types.values_list("id", flat=True))
+    skipped_messages = []
 
     # FIXME Task don't handle rollback properly if task is killed by user or other error
     with transaction.atomic():
         for index, org_unit in enumerate(queryset.iterator()):
+            if org_unit.org_unit_type and not user.iaso_profile.has_org_unit_write_permission(
+                org_unit_type_id=org_unit.org_unit_type.pk,
+                prefetched_editable_org_unit_type_ids=editable_org_unit_type_ids,
+            ):
+                skipped_messages.append(
+                    (
+                        f"Org unit `{org_unit.name}` (#{org_unit.pk}) silently skipped "
+                        f"because user `{user.username}` (#{user.pk}) cannot edit "
+                        f"an org unit of type `{org_unit.org_unit_type.name}` (#{org_unit.org_unit_type.pk})."
+                    )
+                )
+                continue
+
             res_string = "%.2f sec, processed %i org units" % (time() - start, index)
             task.report_progress_and_stop_if_killed(progress_message=res_string, end_value=total, progress_value=index)
             update_single_unit_from_bulk(
@@ -96,4 +111,10 @@ def org_units_bulk_update(
                 groups_ids_removed=groups_ids_removed,
             )
 
-        task.report_success(message="%d modified" % total)
+        message = f"{total} modified"
+        if skipped_messages:
+            message = f"{total - len(skipped_messages)} modified\n"
+            message += f"{len(skipped_messages)} skipped\n"
+            message += "\n".join(skipped_messages)
+
+        task.report_success(message=message)

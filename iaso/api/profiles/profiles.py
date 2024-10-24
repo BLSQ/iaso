@@ -1,5 +1,5 @@
 import copy
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, Set
 
 from django.conf import settings
 from django.contrib.auth import login, models, update_session_auth_hash
@@ -448,21 +448,21 @@ class ProfilesViewSet(viewsets.ViewSet):
                 user_permissions.append(get_object_or_404(Permission, codename=permission_codename))
         return user_permissions
 
-    def validate_org_units(self, request, profile):
-        result = []
+    def validate_org_units(self, request, profile) -> QuerySet[OrgUnit]:
+        existing_org_units = set(profile.org_units.values_list("id", flat=True))
         org_units = request.data.get("org_units", [])
-        # Using list to get the value before we clear the list right after
-        existing_org_units = list(profile.org_units.values_list("id", flat=True))
-        managed_org_units = None
+        managed_org_units = []
+        filtered_org_unit_ids = []
+
         if request.user.has_perm(permission.USERS_MANAGED):
             managed_org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list(
                 "id", flat=True
             )
+
         for org_unit in org_units:
             org_unit_id = org_unit.get("id")
             if (
                 managed_org_units
-                and len(managed_org_units) > 0
                 and org_unit_id not in managed_org_units
                 and org_unit_id not in existing_org_units
                 and not request.user.is_superuser
@@ -471,9 +471,15 @@ class ProfilesViewSet(viewsets.ViewSet):
                     f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
                     f"pyramid. Trying to assign {org_unit_id}."
                 )
-            org_unit_item = get_object_or_404(OrgUnit, pk=org_unit_id)
-            result.append(org_unit_item)
-        return result
+            filtered_org_unit_ids.append(org_unit_id)
+
+        filtered_org_units = OrgUnit.objects.filter(id__in=filtered_org_unit_ids)
+
+        if request.user.has_perm(permission.USERS_MANAGED):
+            org_unit_type_ids_to_check = set(filtered_org_units.values_list("org_unit_type_id", flat=True))
+            self.check_profile_editable_org_unit_types(request.user.iaso_profile, org_unit_type_ids_to_check)
+
+        return filtered_org_units
 
     def validate_user_roles(self, request):
         result = {"groups": [], "user_roles": []}
@@ -510,30 +516,32 @@ class ProfilesViewSet(viewsets.ViewSet):
         return result
 
     def validate_editable_org_unit_types(self, request) -> QuerySet[OrgUnitType]:
-        editable_org_unit_type_ids = request.data.get("editable_org_unit_type_ids", [])
+        editable_org_unit_type_ids = set(request.data.get("editable_org_unit_type_ids", []))
         editable_org_unit_types = OrgUnitType.objects.filter(pk__in=editable_org_unit_type_ids)
 
         if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
             raise ValidationError("Invalid editable org unit type submitted.")
 
         if not request.user.has_perm(permission.USERS_ADMIN):
-            user_editable_org_unit_type_ids = request.user.iaso_profile.get_editable_org_unit_type_ids()
-            invalid_ids = [
-                org_unit_type_id
-                for org_unit_type_id in editable_org_unit_type_ids
-                if not request.user.iaso_profile.has_org_unit_write_permission(
-                    org_unit_type_id, user_editable_org_unit_type_ids
-                )
-            ]
-            if invalid_ids:
-                invalid_names = ", ".join(
-                    name for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list("name", flat=True)
-                )
-                raise PermissionDenied(
-                    f"The user does not have rights on the following org unit types: {invalid_names}"
-                )
+            self.check_profile_editable_org_unit_types(request.user.iaso_profile, editable_org_unit_type_ids)
 
         return editable_org_unit_types
+
+    def check_profile_editable_org_unit_types(self, iaso_profile: Profile, org_unit_type_ids_to_check: Set[int]):
+        user_editable_org_unit_type_ids = iaso_profile.get_editable_org_unit_type_ids()
+
+        invalid_ids = [
+            org_unit_type_id
+            for org_unit_type_id in org_unit_type_ids_to_check
+            if org_unit_type_id
+            and not iaso_profile.has_org_unit_write_permission(org_unit_type_id, user_editable_org_unit_type_ids)
+        ]
+
+        if invalid_ids:
+            invalid_names = ", ".join(
+                name for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list("name", flat=True)
+            )
+            raise PermissionDenied(f"The user does not have rights on the following org unit types: {invalid_names}")
 
     @staticmethod
     def update_user_own_profile(request):
@@ -771,12 +779,10 @@ class ProfilesViewSet(viewsets.ViewSet):
             organization=request.data.get("organization", None),
         )
 
-        org_units = request.data.get("org_units", [])
         profile = get_object_or_404(Profile, id=user.profile.pk)
-        profile.org_units.clear()
-        for org_unit in org_units:
-            org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
-            profile.org_units.add(org_unit_item)
+
+        org_units = self.validate_org_units(request, user.profile)
+        profile.org_units.set(org_units)
 
         # link the profile to user roles
         user_roles = request.data.get("user_roles", [])
@@ -804,7 +810,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.phone_number = phone_number
 
         editable_org_unit_types = self.validate_editable_org_unit_types(request)
-        profile.editable_org_unit_types.add(*editable_org_unit_types)
+        profile.editable_org_unit_types.set(editable_org_unit_types)
 
         profile.save()
 

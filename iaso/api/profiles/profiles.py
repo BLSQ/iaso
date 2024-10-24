@@ -266,6 +266,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related(
             "user",
             "user_roles",
+            "user__tenant_user",
             "org_units",
             "org_units__version",
             "org_units__version__data_source",

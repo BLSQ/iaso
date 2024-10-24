@@ -7,6 +7,7 @@ import pytz
 from time import gmtime, strftime
 from typing import Any, List, Union
 
+from iaso.models.storage import StorageDevice, StorageLogEntry
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
 from django.db.models import Exists, Max, OuterRef, Q
@@ -51,6 +52,7 @@ class EntitySerializer(serializers.ModelSerializer):
             "submitter",
             "org_unit",
             "duplicates",
+            "nfc_cards",
         ]
 
     entity_type_name = serializers.SerializerMethodField()
@@ -58,6 +60,7 @@ class EntitySerializer(serializers.ModelSerializer):
     submitter = serializers.SerializerMethodField()
     org_unit = serializers.SerializerMethodField()
     duplicates = serializers.SerializerMethodField()
+    nfc_cards = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
@@ -79,6 +82,12 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def get_duplicates(self, entity: Entity):
         return _get_duplicates(entity)
+
+    def get_nfc_cards(self, entity: Entity):
+        nfc_devices = StorageDevice.objects.filter(entity=entity, type=StorageDevice.NFC)
+        nfc_log_entries_count = StorageLogEntry.objects.filter(device__in=nfc_devices).count()
+
+        return nfc_log_entries_count
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

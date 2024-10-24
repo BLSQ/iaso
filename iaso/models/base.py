@@ -1324,7 +1324,7 @@ class Instance(models.Model):
         }
 
         if with_entity and self.entity_id:
-            result["entity"] = self.entity.as_small_dict()
+            result["entity"] = self.entity.as_small_dict_with_nfc_cards(self)
 
         return result
 

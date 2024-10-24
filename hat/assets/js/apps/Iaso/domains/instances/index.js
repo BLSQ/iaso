@@ -55,8 +55,6 @@ const Instances = () => {
     const { formatMessage } = useSafeIntl();
     const queryClient = useQueryClient();
     const redirectToReplace = useRedirectToReplace();
-    const [isInstancesFilterUpdated, setIsInstancesFilterUpdated] =
-        useState(false);
     const [selection, setSelection] = useState(selectionInitialState);
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
@@ -170,8 +168,6 @@ const Instances = () => {
                     formDetails={formDetails}
                     tableColumns={tableColumns}
                     tab={tab}
-                    setIsInstancesFilterUpdated={setIsInstancesFilterUpdated}
-                    isInstancesFilterUpdated={isInstancesFilterUpdated}
                 />
                 {tab === 'list' && isSingleFormSearch && (
                     <Grid container spacing={0} alignItems="center">

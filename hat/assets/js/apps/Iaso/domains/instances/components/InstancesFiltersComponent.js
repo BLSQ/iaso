@@ -79,12 +79,12 @@ const InstancesFiltersComponent = ({
     formDetails,
     tableColumns,
     tab,
-    isInstancesFilterUpdated,
-    setIsInstancesFilterUpdated,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
 
+    const [isInstancesFilterUpdated, setIsInstancesFilterUpdated] =
+        useState(false);
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
@@ -597,8 +597,6 @@ InstancesFiltersComponent.propTypes = {
     periodType: PropTypes.string,
     possibleFields: PropTypes.array,
     formDetails: PropTypes.object,
-    setIsInstancesFilterUpdated: PropTypes.func.isRequired,
-    isInstancesFilterUpdated: PropTypes.bool.isRequired,
 };
 
 export default InstancesFiltersComponent;

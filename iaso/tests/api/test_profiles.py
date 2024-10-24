@@ -654,7 +654,11 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
 
-    def test_create_for_user_with_org_unit_type_restrictions(self):
+    def test_create_editable_org_unit_type(self):
+        """
+        Test that `Profile.editable_org_unit_type` is constraint at user creation time.
+        """
+
         user = self.jam
 
         self.assertTrue(user.has_perm(permission.USERS_MANAGED))
@@ -1035,7 +1039,10 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
 
-    def test_patch_for_user_with_org_unit_type_restrictions(self):
+    def test_patch_editable_org_unit_type(self):
+        """
+        Test that `Profile.editable_org_unit_type` is constraint at user edition time.
+        """
         user = self.jam
 
         self.assertTrue(user.has_perm(permission.USERS_MANAGED))

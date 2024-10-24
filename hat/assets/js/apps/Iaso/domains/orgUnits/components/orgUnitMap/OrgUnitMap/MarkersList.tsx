@@ -10,7 +10,7 @@ type Props = {
     color?: string;
     keyId: string | number;
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
-    popupProps?: any;
+    popupProps?: (orgUnit: OrgUnit) => Record<string, any>;
 };
 
 export const MarkerList: FunctionComponent<Props> = ({
@@ -26,11 +26,11 @@ export const MarkerList: FunctionComponent<Props> = ({
             key={keyId}
             items={locationsList}
             PopupComponent={PopupComponent}
-            popupProps={() => ({
+            popupProps={orgUnit => ({
                 displayUseLocation: true,
                 replaceLocation: selectedOrgUnit =>
                     updateOrgUnitLocation(selectedOrgUnit),
-                ...popupProps,
+                ...popupProps?.(orgUnit),
             })}
             isCircle
             markerProps={() => ({

@@ -38,7 +38,7 @@ export const SelectedMarkers: FunctionComponent<Props> = ({
                         <MarkerList
                             locationsList={mappedOrgUnit.orgUnits.locations}
                             popupProps={o => ({
-                                instanceId: o.id,
+                                orgUnitId: o.id,
                             })}
                             color={mappedOrgUnit.color}
                             keyId={mappedOrgUnit.id}

@@ -15,19 +15,11 @@ import {
 } from '../../hooks/api/vrf';
 import { useSharedStyles } from '../shared';
 import { useSkipEffectUntilValue } from '../../hooks/utils';
-import { Accept } from 'react-dropzone';
+import { acceptPDF, processErrorDocsBase } from '../utils';
 
 type Props = { className?: string; vrfData: any };
 
-export const accept: Accept = {
-    'application/pdf': ['.pdf'],
-};
 
-export const processErrorDocsBase = (err_docs) => {
-    if (!err_docs) return [];
-    if (!Array.isArray(err_docs)) return [err_docs]; 
-    else return err_docs;
-};
 
 export const VaccineRequestForm: FunctionComponent<Props> = ({
     className,
@@ -324,7 +316,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 <Grid item xs={6} md={3}>
                                 <Box>
                                         <FilesUpload
-                                            accept={accept}
+                                            accept={acceptPDF}
                                             files={values?.vrf?.document? [values?.vrf?.document]: []}
                                             onFilesSelect={files => {
                                                 if (files.length) {

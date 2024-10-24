@@ -13,7 +13,7 @@ import { dosesPerVial } from '../../hooks/utils';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { grayText, usePaperStyles } from '../shared';
-import { accept, processErrorDocsBase } from '../VaccineRequestForm/VaccineRequestForm' 
+import { acceptPDF, processErrorDocsBase } from '../utils';
 
 type Props = {
     index: number;
@@ -148,7 +148,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                         <Grid item xs={12} md={4}>
                             <Box>
                                 <FilesUpload
-                                    accept={accept}
+                                    accept={acceptPDF}
                                     files={values?.pre_alerts?.[index]?.document ? [values.pre_alerts[index]?.document] : []}
                                     onFilesSelect={files => {
                                         if (files.length) {

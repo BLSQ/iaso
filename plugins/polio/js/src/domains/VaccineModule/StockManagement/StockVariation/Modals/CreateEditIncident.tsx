@@ -29,7 +29,7 @@ import { useGetMovementDescription } from '../../hooks/useGetMovementDescription
 import MESSAGES from '../../messages';
 import { useIncidentOptions } from './useIncidentOptions';
 import { useIncidentValidation } from './validation';
-import { accept, processErrorDocsBase } from '../../../SupplyChain/Details/VaccineRequestForm/VaccineRequestForm';
+import { acceptPDF, processErrorDocsBase } from '../../../SupplyChain/Details/utils';
 
 type Props = {
     incident?: any;
@@ -399,7 +399,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                 </Box>
                 <Box mb={2}>
                     <FilesUpload
-                        accept={accept}
+                        accept={acceptPDF}
                         files={formik.values.document ? [formik.values.document] : []}
                         onFilesSelect={files => {
                             if (files.length) {

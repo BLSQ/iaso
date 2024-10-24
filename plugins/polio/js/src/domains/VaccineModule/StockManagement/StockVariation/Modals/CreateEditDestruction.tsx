@@ -19,7 +19,7 @@ import {
 import { useSaveDestruction } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { useDestructionValidation } from './validation';
-import { accept, processErrorDocsBase } from '../../../SupplyChain/Details/VaccineRequestForm/VaccineRequestForm';
+import { acceptPDF, processErrorDocsBase } from '../../../SupplyChain/Details/utils';
 
 type Props = {
     destruction?: any;
@@ -124,7 +124,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 </Box> */}
                 <Box mb={2}>
                     <FilesUpload
-                        accept={accept}
+                        accept={acceptPDF}
                         files={formik.values.document ? [formik.values.document] : []}
                         onFilesSelect={files => {
                             if (files.length) {

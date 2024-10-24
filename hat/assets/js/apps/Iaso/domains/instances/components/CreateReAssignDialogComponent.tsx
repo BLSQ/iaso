@@ -6,12 +6,13 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import React, { FunctionComponent, useState } from 'react';
+import { UseMutateAsyncFunction } from 'react-query';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import PeriodPicker from '../../periods/components/PeriodPicker';
 import { Period } from '../../periods/models';
 import { isValidPeriod } from '../../periods/utils';
+import { ReassignInstancePayload } from '../hooks/useReassignInstance';
 import MESSAGES from '../messages';
-import { Instance } from '../types/instance';
 
 type Props = {
     titleMessage: any;
@@ -27,10 +28,12 @@ type Props = {
         // eslint-disable-next-line camelcase
         org_unit?: any;
     };
-    onCreateOrReAssign: (
-        instanceOrForm: Instance | { id: number },
-        payload: { period: any; org_unit: any },
-    ) => void;
+    onCreateOrReAssign: UseMutateAsyncFunction<
+        unknown,
+        unknown,
+        ReassignInstancePayload,
+        unknown
+    >;
     orgUnitTypes: number[];
     isOpen: boolean;
     closeDialog: () => void;
@@ -87,7 +90,8 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
 
     const onConfirm = () => {
         const currentFormOrInstanceProp = currentInstance || formType;
-        onCreateOrReAssign(currentFormOrInstanceProp, {
+        onCreateOrReAssign({
+            currentInstance: currentFormOrInstanceProp,
             period: fieldValue.period.value,
             org_unit: fieldValue.orgUnit.value?.id,
         });

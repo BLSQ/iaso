@@ -18,7 +18,10 @@ import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { baseUrls } from '../../constants/urls';
 import { getRequest } from '../../libs/Api';
 import { useSnackQuery } from '../../libs/apiHooks';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import {
+    ParamsWithAccountId,
+    useParamsObject,
+} from '../../routing/hooks/useParamsObject';
 import { ClassNames } from '../../types/utils';
 import { BeneficiaryBaseInfo } from '../entities/components/BeneficiaryBaseInfo';
 import { useGetBeneficiaryFields } from '../entities/hooks/useGetBeneficiaryFields';
@@ -30,6 +33,10 @@ import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistor
 import InstanceFileContent from './components/InstanceFileContent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import SpeedDialInstance from './components/SpeedDialInstance';
+import {
+    ReassignInstancePayload,
+    useReassignInstance,
+} from './hooks/useReassignInstance';
 import MESSAGES from './messages';
 import { getInstancesFilesList } from './utils';
 
@@ -72,20 +79,27 @@ export const useGetInstanceLogs = (
 
 const InstanceDetails: FunctionComponent = () => {
     const [showDial, setShowDial] = useState(true);
+
+    const { mutateAsync: reassignInstance, isLoading: isReassigning } =
+        useReassignInstance<ReassignInstancePayload>();
+
     const { formatMessage } = useSafeIntl();
     const classes: ClassNames = useStyles();
     const goBack = useGoBack(baseUrls.instances);
 
-    const params = useParamsObject(baseUrls.instanceDetail) as unknown as {
+    const params = useParamsObject(
+        baseUrls.instanceDetail,
+    ) as ParamsWithAccountId & {
         instanceId: string;
     };
     const { instanceId } = params;
     const { data: currentInstance, isLoading: isLoadingInstance } =
         useGetInstance(instanceId);
     const { isLoading: isLoadingBeneficiaryFields, fields: beneficiaryFields } =
-        useGetBeneficiaryFields(currentInstance && currentInstance.entity);
+        useGetBeneficiaryFields(currentInstance?.entity);
 
     const isLoading =
+        isReassigning ||
         isLoadingInstance ||
         (currentInstance?.entity && isLoadingBeneficiaryFields);
 
@@ -113,6 +127,7 @@ const InstanceDetails: FunctionComponent = () => {
                         <SpeedDialInstance
                             currentInstance={currentInstance}
                             params={params}
+                            reassignInstance={reassignInstance}
                         />
                     )}
                     <Grid container spacing={4}>

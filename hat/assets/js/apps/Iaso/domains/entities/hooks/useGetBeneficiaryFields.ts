@@ -1,12 +1,12 @@
-import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
+import { useMemo } from 'react';
 
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
+import MESSAGES from '../messages';
 import { Beneficiary } from '../types/beneficiary';
 import { Field } from '../types/fields';
-import MESSAGES from '../messages';
-import { useGetFields } from './useGetFields';
 import { useGetBeneficiaryTypesDropdown } from './requests';
+import { useGetFields } from './useGetFields';
 
 export const useGetBeneficiaryFields = (
     beneficiary: Beneficiary | undefined,

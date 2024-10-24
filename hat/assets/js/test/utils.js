@@ -1,8 +1,6 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import TestUtils, { act } from 'react-dom/test-utils';
 import { IntlProvider } from 'react-intl';
-import { Provider } from 'react-redux';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter, Route } from 'react-router-dom';
 import InputComponent from '../apps/Iaso/components/forms/InputComponent.tsx';
@@ -29,18 +27,6 @@ export function withQueryClientProvider(component) {
 export function withRouter(component) {
     const route = <Route path="/*" element={component} key="key" />;
     return <BrowserRouter routes={[route]} />;
-}
-
-export function renderWithStore(store, component, node = null) {
-    const wrappedComp = (
-        <Provider store={store}>
-            <IntlProvider locale="en">{component}</IntlProvider>
-        </Provider>
-    );
-    if (!node) {
-        node = document.createElement('div'); // eslint-disable-line
-    }
-    return ReactDOM.render(wrappedComp, node); // eslint-disable-line
 }
 
 export const awaitUseEffect = async wrapper => {

@@ -1,5 +1,5 @@
-import { UseQueryResult } from 'react-query';
 import { getSort } from 'bluesquare-components';
+import { UseQueryResult } from 'react-query';
 
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';

@@ -1547,8 +1547,12 @@ class Profile(models.Model):
         return False
 
     def get_editable_org_unit_type_ids(self) -> set[int]:
-        ids_in_user_roles = set(self.user_roles.values_list("editable_org_unit_types", flat=True))
-        ids_in_user_profile = set(self.editable_org_unit_types.values_list("id", flat=True))
+        ids_in_user_roles = set(
+            self.user_roles.exclude(**{"editable_org_unit_types": None}).values_list(
+                "editable_org_unit_types", flat=True
+            )
+        )
+        ids_in_user_profile = set(self.editable_org_unit_types.exclude(**{"id": None}).values_list("id", flat=True))
         return ids_in_user_profile.union(ids_in_user_roles)
 
     def has_org_unit_write_permission(

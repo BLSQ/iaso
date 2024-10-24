@@ -193,12 +193,12 @@ const getRoundsForApi = (
     return rounds.split(',').map(r => ({ number: parseInt(r, 10) }));
 };
 
-export const patchRequest2 = (
+const createFormDataRequest = (
+    method: 'PATCH' | 'POST',
     arg1: PostArg
 ): Promise<any> => {
     const { url, data = {}, fileData = {}, signal = null } = arg1;
 
-    let init: Record<string, unknown> = {};
     const formData = new FormData();
     Object.entries(data).forEach(([key, value]) => {
         let converted_value = value;
@@ -207,6 +207,16 @@ export const patchRequest2 = (
         }
         formData.append(key, converted_value);
     });
+
+    let init: Record<string, unknown> = {
+        method,
+        body: formData,
+        signal,
+        headers: {
+            'Accept-Language': moment.locale(),
+        },
+    };
+
     if (Object.keys(fileData).length > 0) {
         Object.entries(fileData).forEach(([key, value]) => {
             if (key === 'files' && Array.isArray(value) && value.length > 0) {
@@ -219,69 +229,17 @@ export const patchRequest2 = (
                 formData.append(key, value);
             }
         });
-        init = {
-            method: 'PATCH',
-            body: formData,
-            signal,
-        };
-    } else {
-  
-        init = {
-            method: 'PATCH',
-            body: formData,
-            headers: {
-                'Accept-Language': moment.locale(),
-            },
-            signal,
-        };
-    }
+    } 
 
     return iasoFetch(url, init).then(response => response.json());
 };
 
-export const postRequest2 = (
-    arg1: PostArg
-): Promise<any> => {
-    const { url, data = {}, fileData = {}, signal = null } = arg1;
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-        let converted_value = value;
-        if (typeof converted_value === 'object') {
-            converted_value = JSON.stringify(converted_value);
-        }
-        formData.append(key, converted_value);
-    });
-    let init: Record<string, unknown> = {};
-    if (Object.keys(fileData).length > 0) {
+export const patchRequest2 = (arg1: PostArg): Promise<any> => {
+    return createFormDataRequest('PATCH', arg1);
+};
 
-        Object.entries(fileData).forEach(([key, value]) => {
-            if (key === 'files' && Array.isArray(value) && value.length > 0) {
-                formData.append('document', value[0]); // Use 'document' key
-            } else if (Array.isArray(value)) {
-                value.forEach((blob, index) => {
-                    formData.append(`${key}[${index}]`, blob);
-                });
-            } else {
-                formData.append(key, value);
-            }
-        });
-        init = {
-            method: 'POST',
-            body: formData,
-            signal,
-        };
-    } else {
-        init = {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept-Language': moment.locale(),
-            },
-            signal,
-        };
-    }
-
-    return iasoFetch(url, init).then(response => response.json());
+export const postRequest2 = (arg1: PostArg): Promise<any> => {
+    return createFormDataRequest('POST', arg1);
 };
 
 export const saveVrf = (

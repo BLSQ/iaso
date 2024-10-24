@@ -71,12 +71,10 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
         queryset = self.get_queryset()
 
-        user_editable_org_unit_type_ids = set(
-            self.request.user.iaso_profile.editable_org_unit_types.values_list("id", flat=True)
-        )
+        user_editable_org_unit_type_ids = self.request.user.iaso_profile.get_editable_org_unit_type_ids()
 
         if user_editable_org_unit_type_ids:
-            project_org_unit_types = set(Project.objects.get(app_id=app_id).unit_types.values_list("id", flat=True))
+            project_org_unit_types = set(Project.objects.filter(app_id=app_id).values_list("unit_types__id", flat=True))
             non_editable_org_unit_type_ids = project_org_unit_types - user_editable_org_unit_type_ids
 
             dynamic_configurations = [

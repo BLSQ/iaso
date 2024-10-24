@@ -1,6 +1,6 @@
-import json
-
 from rest_framework import status
+
+from django.contrib.auth.models import Group
 
 from iaso import models as m
 from iaso.tests.api.org_unit_change_request_configurations.common_base_with_setup import OUCRCAPIBase
@@ -15,16 +15,17 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
 
     def test_list_ok(self):
         self.client.force_authenticate(self.user_ash_ketchum)
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(9):
             # get_queryset
             #   1. SELECT user_editable_org_unit_type_ids
-            #   2. COUNT(*) OrgUnitChangeRequestConfiguration
-            #   3. SELECT OrgUnitChangeRequestConfiguration
-            #   4. PREFETCH OrgUnitChangeRequestConfiguration.possible_types
-            #   5. PREFETCH OrgUnitChangeRequestConfiguration.possible_parent_types
-            #   6. PREFETCH OrgUnitChangeRequestConfiguration.group_sets
-            #   7. PREFETCH OrgUnitChangeRequestConfiguration.editable_reference_forms
-            #   8. PREFETCH OrgUnitChangeRequestConfiguration.other_groups
+            #   2. SELECT user_roles_editable_org_unit_type_ids
+            #   3. COUNT(*) OrgUnitChangeRequestConfiguration
+            #   4. SELECT OrgUnitChangeRequestConfiguration
+            #   5. PREFETCH OrgUnitChangeRequestConfiguration.possible_types
+            #   6. PREFETCH OrgUnitChangeRequestConfiguration.possible_parent_types
+            #   7. PREFETCH OrgUnitChangeRequestConfiguration.group_sets
+            #   8. PREFETCH OrgUnitChangeRequestConfiguration.editable_reference_forms
+            #   9. PREFETCH OrgUnitChangeRequestConfiguration.other_groups
             response = self.client.get(f"{self.MOBILE_OUCRC_API_URL}?app_id={self.app_id}")
             self.assertJSONResponse(response, status.HTTP_200_OK)
             self.assertEqual(3, len(response.data["results"]))  # the 3 OUCRCs from setup
@@ -39,10 +40,20 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         new_org_unit_type_3.projects.add(self.project_johto)
         self.assertEqual(self.project_johto.unit_types.count(), 6)
 
+        # Restrict write permissions on Org Units at the "Profile" level.
         self.user_ash_ketchum.iaso_profile.editable_org_unit_types.set(
             # Only org units of this type are now writable for this user.
-            [self.ou_type_fire_pokemons, new_org_unit_type_3]
+            [self.ou_type_fire_pokemons]
         )
+
+        # Restrict write permissions on Org Units at the "Role" level.
+        group = Group.objects.create(name="Group")
+        user_role = m.UserRole.objects.create(group=group, account=self.account_pokemon)
+        user_role.editable_org_unit_types.set(
+            # Only org units of this type are now writable for this user.
+            [new_org_unit_type_3]
+        )
+        self.user_ash_ketchum.iaso_profile.user_roles.set([user_role])
 
         self.client.force_authenticate(self.user_ash_ketchum)
 

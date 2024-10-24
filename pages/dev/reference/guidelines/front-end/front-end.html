@@ -829,9 +829,8 @@ On each file you can have only one component.<br />
 Use constants, and config files to store static data.<br />
 Don't be afraid to split your code into smaller parts, using understandable naming convention. It will help to understand what you are doing in your code.  </p>
 <h2 id="legacy">Legacy<a class="headerlink" href="#legacy" title="Permanent link">#</a></h2>
-<p>Class component, redux, provider are still old way to create features in IASO.<br />
+<p>Class component, proptypes are still old way to create features in IASO.<br />
 Please use <code>hooks</code>, <code>typescript</code> and <code>arrow component</code>.<br />
-Redux can still be used with state that needs to be available everywhere in the application (current user, UI constants and states, ...).<br />
 We already have a lot of typing done in each domain of the application (forms, submissions, org units, ... )</p>
 <h2 id="bluesquare-components">Bluesquare-components<a class="headerlink" href="#bluesquare-components" title="Permanent link">#</a></h2>
 <p>Lots of components used in IASO has been moved to a separate <a href="https://github.com/BLSQ/bluesquare-components">repo</a>.<br />
@@ -841,7 +840,7 @@ This will use directly the code from your local repo.<br />
 To make it available too everybody you have to build new files with <code>npm run clean &amp;&amp; npm run build</code> in bluesquare-component folder. </p>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">#</a></h2>
 <p>Main index file is located here: <code>hat/assets/js/apps/Iaso/index</code><br />
-This is the entrypoint of the app, setting up providers, theme, react-query query client, custom plugins, redux,...  </p>
+This is the entrypoint of the app, setting up providers, theme, react-query query client, custom plugins,...  </p>
 <p><strong><code>components</code></strong><br />
 Used to store generic components that can be used everywhere, like <code>inputComponent</code>, <code>buttons</code>, ...</p>
 <p><strong><code>domains</code></strong><br />

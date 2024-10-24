@@ -6,6 +6,14 @@ import moment from 'moment';
 
 import React, { ReactElement } from 'react';
 import { apiDateFormats } from '../../utils/dates';
+import { Box, SxProps } from '@mui/material';
+import { SxStyles } from '../../types/general';
+
+export const styleEven = {backgroundColor:"blue"}
+export const styleOdds = {backgroundColor:"red"}
+export const sxLineStyle = {styleEven:{...styleEven}, styleOdds:{...styleOdds}}
+
+
 /* DateTimeCell
    For use in Table's columns to display DateTime
  */
@@ -43,16 +51,26 @@ export const convertToDate = (value: string | null | undefined): string =>
 export const DateCell = (cellInfo: { value?: string | null }): string =>
     convertToDate(cellInfo?.value);
 
+const formatStyles = (index:number,colorLines:boolean) : SxStyles|undefined => {
+    if(!colorLines){
+        return undefined
+    }
+    return index%2 > 0 ? sxLineStyle.styleEven : sxLineStyle.styleOdds
+}
+
 /** Takes multiple date that come in the for of a string, converts them and shows one line for each date */
-export const MultiDateCell = (cellInfo: {
-    value?: string | null;
+export const MultiDateCell = ({
+    value,
+    colorLines = false
+}:{
+    value?: string | null,
+    colorLines?:boolean
 }): ReactElement => {
-    const value = cellInfo?.value ?? '';
-    const valueAsList = value.split(',');
+    const valueAsList = (value??'').split(',');
     return (
         <>
             {valueAsList.map((lineData, index) => (
-                <div key={`${lineData}${index}`}>{convertToDate(lineData)}</div>
+                <Box key={`${lineData}${index}`} sx={formatStyles(index,colorLines)}>{convertToDate(lineData)}</Box>
             ))}
         </>
     );

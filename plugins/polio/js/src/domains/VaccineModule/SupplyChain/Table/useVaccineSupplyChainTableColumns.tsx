@@ -12,6 +12,8 @@ import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/
 import {
     DateCell,
     MultiDateCell,
+    styleEven,
+    styleOdds,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
@@ -20,6 +22,10 @@ import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Ia
 import { POLIO_SUPPLY_CHAIN_WRITE } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import { SupplyChainList } from '../types';
 import { ColumnCell } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { Box } from '@mui/material';
+
+
+
 
 export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -90,11 +96,12 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                     const poNumbersList = poNumbers.split(',');
                     return (
                         <>
-                            {poNumbersList.map(poNumber => (
-                                <div key={poNumber}>
+                            {poNumbersList.map((poNumber,i) => {
+                                return (
+                                <Box key={poNumber} sx={i%2 > 0 ? styleEven : styleOdds}>
                                     {poNumber ?? textPlaceholder}
-                                </div>
-                            ))}
+                                </Box>
+                            )})}
                         </>
                     );
                 },
@@ -102,12 +109,12 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.estimatedDateOfArrival),
                 accessor: 'eta',
-                Cell: MultiDateCell,
+                Cell: (settings)=> MultiDateCell({value:settings.row.original.eta,colorLines:true}),
             },
             {
                 Header: 'VAR',
                 accessor: 'var',
-                Cell: MultiDateCell,
+                Cell: (settings)=> MultiDateCell({value:settings.row.original.var,colorLines:true}),
             },
         ];
         if (userHasPermission(POLIO_SUPPLY_CHAIN_WRITE, currentUser)) {

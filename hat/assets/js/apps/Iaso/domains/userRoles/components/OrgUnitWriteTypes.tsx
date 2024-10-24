@@ -5,16 +5,16 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { InputWithInfos } from '../../../components/InputWithInfos';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { SaveUserRoleQuery } from '../hooks/requests/useSaveUserRole';
 import MESSAGES from '../messages';
-import { UserDialogData } from '../types';
 
 type Props = {
-    currentUser: UserDialogData;
+    userRole: Partial<SaveUserRoleQuery>;
     handleChange: (ouTypesIds: number[]) => void;
 };
 
-export const UserOrgUnitWriteTypes: FunctionComponent<Props> = ({
-    currentUser,
+export const OrgUnitWriteTypes: FunctionComponent<Props> = ({
+    userRole,
     handleChange,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -33,7 +33,7 @@ export const UserOrgUnitWriteTypes: FunctionComponent<Props> = ({
                         handleChange(commaSeparatedIdsToArray(value))
                     }
                     loading={isLoadingOrgUitTypes}
-                    value={currentUser.editable_org_unit_type_ids?.value ?? []}
+                    value={userRole.editable_org_unit_type_ids ?? []}
                     type="select"
                     options={orgUnitTypes}
                     label={MESSAGES.orgUnitWriteTypes}

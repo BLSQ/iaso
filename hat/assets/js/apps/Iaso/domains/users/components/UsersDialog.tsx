@@ -17,11 +17,10 @@ import React, {
 import { MutateFunction, useQueryClient } from 'react-query';
 
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
-import { SHOW_DEV_FEATURES } from '../../../utils/featureFlags';
+import { hasFeatureFlag, SHOW_DEV_FEATURES } from '../../../utils/featureFlags';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
-import { userHasPermission } from '../utils';
 import PermissionsAttribution from './PermissionsAttribution';
 import { useInitialUser } from './useInitialUser';
 import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
@@ -153,7 +152,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         return '';
     }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
     const currentUser = useCurrentUser();
-    const hasDevFeatures = userHasPermission(SHOW_DEV_FEATURES, currentUser);
+    const hasDevFeatures = hasFeatureFlag(currentUser, SHOW_DEV_FEATURES);
     return (
         <>
             <WarningModal

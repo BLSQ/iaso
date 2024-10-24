@@ -1,5 +1,5 @@
 import { get } from 'lodash';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
@@ -33,6 +33,10 @@ export const Select: FunctionComponent<Props> = ({
     const hasError =
         form.errors &&
         Boolean(get(form.errors, field.name) && get(form.touched, field.name));
+    const errors = useMemo(
+        () => [get(form.errors, field.name)],
+        [field.name, form.errors],
+    );
 
     return (
         <InputComponent
@@ -54,7 +58,7 @@ export const Select: FunctionComponent<Props> = ({
                     form.setFieldValue(field.name, value);
                 }
             }}
-            errors={hasError ? [get(form.errors, field.name)] : []}
+            errors={hasError ? errors : []}
             freeSolo={freeSolo}
         />
     );

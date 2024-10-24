@@ -682,8 +682,10 @@ class ProfileAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/profiles/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data, ["The user does not have rights on the following org unit types: Jedi Council"])
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
+        )
 
     @override_settings(DEFAULT_FROM_EMAIL="sender@test.com", DNS_DOMAIN="iaso-test.bluesquare.org")
     def test_create_profile_with_send_email(self):
@@ -1068,8 +1070,10 @@ class ProfileAPITestCase(APITestCase):
             "editable_org_unit_type_ids": [self.jedi_council.id],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data, ["The user does not have rights on the following org unit types: Jedi Council"])
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
+        )
 
     def test_user_with_managed_permission_cannot_create_users(self):
         self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])

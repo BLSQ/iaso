@@ -529,7 +529,9 @@ class ProfilesViewSet(viewsets.ViewSet):
                 invalid_names = ", ".join(
                     name for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list("name", flat=True)
                 )
-                raise ValidationError(f"The user does not have rights on the following org unit types: {invalid_names}")
+                raise PermissionDenied(
+                    f"The user does not have rights on the following org unit types: {invalid_names}"
+                )
 
         return editable_org_unit_types
 

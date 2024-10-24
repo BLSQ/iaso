@@ -624,6 +624,7 @@ class ProfileAPITestCase(APITestCase):
             "email": "unittest_last_name",
             "org_units": [{"id": self.jedi_council_corruscant.id}],
             "user_permissions": ["iaso_forms"],
+            "editable_org_unit_type_ids": [self.jedi_squad.id],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
@@ -634,6 +635,9 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response_data["is_superuser"], False)
 
         profile = m.Profile.objects.get(pk=response_data["id"])
+        self.assertEqual(profile.editable_org_unit_types.count(), 1)
+        self.assertEqual(profile.editable_org_unit_types.first(), self.jedi_squad)
+
         user = profile.user
         self.assertEqual(user.username, data["user_name"])
         self.assertEqual(user.first_name, data["first_name"])

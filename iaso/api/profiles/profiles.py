@@ -801,7 +801,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         if phone_number is not None:
             profile.phone_number = phone_number
 
+        editable_org_unit_types = self.validate_editable_org_unit_types(request)
+        profile.editable_org_unit_types.add(*editable_org_unit_types)
+
         profile.save()
+
         audit_logger = ProfileAuditLogger()
         source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
         audit_logger.log_modification(instance=profile, old_data_dump=None, request_user=request.user, source=source)

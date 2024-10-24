@@ -5,6 +5,7 @@ from django import forms as django_forms
 from django.contrib import admin
 from django.contrib.admin import widgets
 from django.contrib.admin.widgets import AutocompleteSelect
+from django.contrib.auth import get_user_model
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
@@ -1008,27 +1009,7 @@ class TenantUserAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         urls = super().get_urls()
-        custom_urls = [
-            path("main-user-autocomplete/", self.main_user_autocomplete, name="main-user-autocomplete"),
-        ]
-        return custom_urls + urls
-
-    def main_user_autocomplete(self, request):
-        term = request.GET.get("term", "")
-        queryset = (
-            TenantUser.objects.filter(Q(main_user__username__icontains=term) | Q(main_user__email__icontains=term))
-            .values_list("main_user__id", "main_user__username")
-            .distinct()[:10]
-        )
-        results = [{"id": user_id, "text": username} for user_id, username in queryset]
-        return JsonResponse({"results": results})
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "main_user":
-            kwargs["widget"] = AutocompleteSelect(
-                db_field.remote_field, self.admin_site, attrs={"data-ajax--url": "main-user-autocomplete/"}
-            )
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+        return urls
 
     def account(self, obj):
         return obj.account

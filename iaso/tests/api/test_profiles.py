@@ -654,6 +654,33 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
 
+    def test_create_for_user_with_org_unit_type_restrictions(self):
+        user = self.jam
+
+        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
+        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+
+        user.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type is now writable.
+            [self.jedi_squad]
+        )
+
+        self.client.force_authenticate(user)
+
+        data = {
+            "user_name": "user_name",
+            "password": "password",
+            "first_name": "first_name",
+            "last_name": "last_name",
+            "email": "test@test.com",
+            "org_units": [{"id": self.jedi_council_corruscant.id}],
+            "editable_org_unit_type_ids": [self.jedi_council.id],
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, ["The user does not have rights on the following org unit types: Jedi Council"])
+
     @override_settings(DEFAULT_FROM_EMAIL="sender@test.com", DNS_DOMAIN="iaso-test.bluesquare.org")
     def test_create_profile_with_send_email(self):
         self.client.force_authenticate(self.jim)

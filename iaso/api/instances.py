@@ -385,6 +385,7 @@ class InstancesViewSet(viewsets.ViewSet):
             queryset = queryset.prefetch_related("org_unit__reference_instances")
             queryset = queryset.prefetch_related("org_unit__org_unit_type__reference_forms")
             queryset = queryset.prefetch_related("org_unit__version__data_source")
+            queryset = queryset.prefetch_related("project")
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)

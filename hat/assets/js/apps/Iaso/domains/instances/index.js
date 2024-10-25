@@ -10,7 +10,6 @@ import {
 } from 'bluesquare-components';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { useDispatch } from 'react-redux';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
 import snackMessages from '../../components/snackBars/messages';
@@ -54,10 +53,8 @@ const Instances = () => {
     const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
     const queryClient = useQueryClient();
     const redirectToReplace = useRedirectToReplace();
-
     const [selection, setSelection] = useState(selectionInitialState);
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
@@ -199,12 +196,7 @@ const Instances = () => {
                                             currentForm,
                                             payload,
                                         ) =>
-                                            dispatch(
-                                                createInstance(
-                                                    currentForm,
-                                                    payload,
-                                                ),
-                                            )
+                                            createInstance(currentForm, payload)
                                         }
                                     />
                                 </Box>

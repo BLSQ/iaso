@@ -12,7 +12,11 @@ import { Box } from '@mui/material';
 import { Vaccine } from '../../../../../constants/types';
 import MESSAGES from '../../messages';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
-import { DateInput, NumberInput } from '../../../../../components/Inputs';
+import {
+    DateInput,
+    NumberInput,
+    TextInput,
+} from '../../../../../components/Inputs';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { useFormAValidation } from './validation';
@@ -51,6 +55,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             missing_vials: formA?.missing_vials,
             vaccine_stock: vaccineStockId,
             document:formA?.document
+            comment: formA?.comment ?? null,
         },
         onSubmit: values => save(values),
         validationSchema,
@@ -120,6 +125,15 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         name="usable_vials_used"
                         component={NumberInput}
                         required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.comment)}
+                        name="comment"
+                        multiline
+                        component={TextInput}
+                        shrinkLabel={false}
                     />
                 </Box>
                 <Box mb={2}>

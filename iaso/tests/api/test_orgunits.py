@@ -607,6 +607,22 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.set_up_org_unit_creation()
         self.assertJSONResponse(response, 403)
 
+    def test_create_org_unit_with_restricted_write_permission_for_user(self):
+        """
+        Check that we cannot create an org unit if writing rights are limited
+        by a set of org unit types that we are allowed to modify.
+        """
+        self.yoda.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type are now writable.
+            [self.jedi_squad]
+        )
+        self.client.force_authenticate(self.yoda)
+        response = self.set_up_org_unit_creation()
+        json_response = self.assertJSONResponse(response, 400)
+        self.assertEqual(json_response[0]["errorKey"], "org_unit_type_id")
+        self.assertEqual(json_response[0]["errorMessage"], "You cannot create or edit an Org unit of this type")
+        self.yoda.iaso_profile.editable_org_unit_types.clear()
+
     def test_create_org_unit(self):
         """Check that we can create org unit with only org units management permission"""
         self.client.force_authenticate(self.yoda)
@@ -998,6 +1014,31 @@ class OrgUnitAPITestCase(APITestCase):
             data=data,
         )
         self.assertJSONResponse(response, 403)
+
+    def test_edit_org_unit_with_restricted_write_permission_for_user(self):
+        """
+        Check that we cannot edit an org unit if writing rights are limited
+        by a set of org unit types that we are allowed to modify.
+        """
+        org_unit = m.OrgUnit.objects.create(
+            name="Foo",
+            org_unit_type=self.jedi_council,
+            version=self.star_wars.default_version,
+        )
+        self.yoda.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type are now writable.
+            [self.jedi_squad]
+        )
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data={"name": "New name"},
+        )
+        json_response = self.assertJSONResponse(response, 400)
+        self.assertEqual(json_response[0]["errorKey"], "org_unit_type_id")
+        self.assertEqual(json_response[0]["errorMessage"], "You cannot create or edit an Org unit of this type")
+        self.yoda.iaso_profile.editable_org_unit_types.clear()
 
     def test_edit_org_unit_edit_bad_group_fail(self):
         """Check for a previous bug if an org unit is already member of a bad group

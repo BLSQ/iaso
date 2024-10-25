@@ -7,13 +7,11 @@ import { MappedOrgUnit } from './types';
 type Props = {
     mappedSourcesSelected: MappedOrgUnit[];
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
-    fetchSubOrgUnitDetail: (orgUnit: OrgUnit) => void;
 };
 
 export const SourcesSelectedShapes: FunctionComponent<Props> = ({
     mappedSourcesSelected,
     updateOrgUnitLocation,
-    fetchSubOrgUnitDetail,
 }) => {
     return (
         <>
@@ -30,9 +28,6 @@ export const SourcesSelectedShapes: FunctionComponent<Props> = ({
                                     shape={o}
                                     key={o.id}
                                     replaceLocation={updateOrgUnitLocation}
-                                    onClick={() => {
-                                        fetchSubOrgUnitDetail(o);
-                                    }}
                                 />
                             ))}
                         </Pane>

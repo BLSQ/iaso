@@ -313,7 +313,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         )
 
     @tag("iaso_only")
-    def test_profile_bulkupdate_should_fail_for_restriced_editable_org_unit_types(self):
+    def test_profile_bulkupdate_should_fail_with_restricted_editable_org_unit_types(self):
         user = self.obi_wan
         self.assertTrue(user.has_perm(permission.USERS_MANAGED))
         self.assertFalse(user.has_perm(permission.USERS_ADMIN))

@@ -537,7 +537,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(user_user_role.id, self.user_role.id)
         self.assertEqual(user_user_role.group.name, self.group.name)
 
-    def test_create_user_with_unauthorized_field_org_units(self):
+    def test_create_user_should_fail_with_restricted_editable_org_unit_types_for_field_orgunits(self):
         """
         The user is restricted to one org unit type.
         Creating a user with unauthorized values in `org_units` should fail.
@@ -571,7 +571,7 @@ class ProfileAPITestCase(APITestCase):
             response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
         )
 
-    def test_create_user_with_unauthorized_field_editable_org_unit_type_ids(self):
+    def test_create_user_should_fail_with_restricted_editable_org_unit_types_for_field_editableorgunittypeids(self):
         """
         The user is restricted to one org unit type.
         Creating a user with unauthorized values in `editable_org_unit_type_ids` should fail.
@@ -1074,7 +1074,7 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
 
-    def test_update_user_with_unauthorized_field_editable_org_unit_type_ids(self):
+    def test_update_user_should_fail_with_restricted_editable_org_unit_types_for_field_editableorgunittypeids(self):
         """
         The user is restricted to one org unit type.
         Updating a user with unauthorized values in `editable_org_unit_type_ids` should fail.

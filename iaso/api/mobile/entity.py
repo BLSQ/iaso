@@ -71,19 +71,12 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
             "json",
         ]
 
-    form_id = serializers.IntegerField(read_only=True, source="form.id")
+    form_id = serializers.IntegerField(read_only=True)
     id = serializers.CharField(read_only=True, source="uuid")
-    org_unit_id = serializers.CharField(read_only=True, source="org_unit.id")
-    form_version_id = serializers.SerializerMethodField()
+    org_unit_id = serializers.IntegerField(read_only=True)
+    form_version_id = serializers.IntegerField(read_only=True)
     created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
     updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
-
-    def get_form_version_id(self, obj):
-        if obj.json is None:
-            return None
-        possible_form_versions = self.context.get("possible_form_versions")
-        key = "%s|%s" % (obj.json.get("_version"), str(obj.form.id))
-        return possible_form_versions.get(key)
 
 
 class MobileEntitySerializer(serializers.ModelSerializer):
@@ -104,28 +97,25 @@ class MobileEntitySerializer(serializers.ModelSerializer):
     instances = serializers.SerializerMethodField()
     id = serializers.CharField(read_only=True, source="uuid")
     defining_instance_id = serializers.CharField(read_only=True, source="attributes.uuid")
-    entity_type_id = serializers.CharField(read_only=True, source="entity_type.id")
+    entity_type_id = serializers.IntegerField(read_only=True)
 
     def get_instances(self, entity):
-        possible_form_versions = self.context.get("possible_form_versions")
         ok_instances = []
 
         for inst in entity.instances.all():
-            if inst.deleted == False:
-                if not inst.json:
-                    continue
-
-                key = "%s|%s" % (inst.json.get("_version"), str(inst.form_id))
-                form_version = possible_form_versions.get(key, None)
-
-                if form_version is not None:
+            if inst.deleted == False and inst.json:
+                if inst.form_version is not None:
                     ok_instances.append(inst)
 
-        return MobileEntityAttributesSerializer(ok_instances, many=True, context=self.context).data  # type: ignore
-
-    @staticmethod
-    def get_entity_type_name(obj: Entity):
-        return obj.entity_type.name if obj.entity_type else None
+        # TODO: Next step, move this to a prefetch to do everything in 1 query.
+        # Good idea? Not so sure.
+        # ok_instances = (
+        #     entity.instances.exclude(deleted=True)
+        #     .exclude(json__isnull=True)
+        #     .exclude(json__exact="")
+        #     .exclude(form_version_id__isnull=True)
+        # )
+        return MobileEntityAttributesSerializer(ok_instances, many=True).data  # type: ignore
 
 
 class MobileEntitiesSetPagination(Paginator):
@@ -166,36 +156,22 @@ class MobileEntityViewSet(ModelViewSet):
     def get_serializer_class(self):
         return MobileEntitySerializer
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        user = self.request.user
-        possible_form_versions = FormVersion.objects.filter(
-            form__projects__account=user.iaso_profile.account
-        ).distinct()
-        possible_form_versions_dict = {}
-        for version in possible_form_versions:
-            key = "%s|%s" % (version.version_id, str(version.form_id))
-            possible_form_versions_dict[key] = version.id
-        context["possible_form_versions"] = possible_form_versions_dict
-
-        return context
-
     def get_queryset(self):
         user = self.request.user
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
 
-        # queryset = filter_on_user_and_app_id(Entity.objects, user, app_id)
+        if user.id in [386, 394, 320]:  # TEMP: Activate entity download for Bram
+            queryset = filter_on_user_and_app_id(Entity.objects, user, app_id)
 
-        # queryset = filter_for_mobile_entity(queryset, self.request)
+            queryset = filter_for_mobile_entity(queryset, self.request)
 
-        # queryset = queryset.select_related("entity_type").prefetch_related(
-        #     "instances__org_unit",
-        #     "attributes__org_unit",
-        #     "instances__form__form_versions",
-        #     "attributes__form__form_versions",
-        # )
-        # return queryset.order_by("id")
-        return Entity.objects.none()
+            queryset = queryset.select_related("entity_type").prefetch_related(
+                "instances__form_version",
+                "attributes__form__form_versions",
+            )
+            return queryset.order_by("id")
+        else:
+            return Entity.objects.none()
 
 
 class DeletedMobileEntitySerializer(serializers.ModelSerializer):

@@ -52,7 +52,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
             // lot_numbers: destruction?.lot_numbers,
             vaccine_stock: vaccineStockId,
-            document:destruction?.document
+            document:destruction?.document,
             comment:destruction?.comment ?? null
         },
         onSubmit: values => save(values),

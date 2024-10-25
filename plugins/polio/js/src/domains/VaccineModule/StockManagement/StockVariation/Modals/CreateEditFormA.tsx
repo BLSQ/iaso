@@ -54,7 +54,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             // unusable_vials: formA?.unusable_vials,
             missing_vials: formA?.missing_vials,
             vaccine_stock: vaccineStockId,
-            document:formA?.document
+            document:formA?.document,
             comment: formA?.comment ?? null,
         },
         onSubmit: values => save(values),

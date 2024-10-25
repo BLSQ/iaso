@@ -111,6 +111,7 @@ These processes ensure that all stakeholders have an accurate picture of the vac
 The stock management page.
 
 ### Vials Received
+
 Calculated by summing up all the vials received from VaccineArrivalReports. The method `get_vials_received()` in the VaccineStockCalculator class iterates through the list of vaccines received and sums up the 'vials_in' values.
 
 ### Vials Used
@@ -135,15 +136,18 @@ Details for a country/vaccine type.
 
 ### Stock balance
 
-The stock balance is calculated using the `/api/polio/vaccine/vaccine_stock/{id}/summary/` endpoint. This endpoint returns a JSON object with the following key fields:
+The stock balance is calculated using the `/api/polio/vaccine/vaccine_stock/{id}/summary/` endpoint. This endpoint returns a JSON object with the following key fields
 
 ### Usable vials
+
 Calculated by the `get_total_of_usable_vials()` method in the VaccineStockCalculator class. This method computes the difference between all incoming and outgoing usable vials, considering various stock movements such as arrivals, usage, and corrections.
 
 ### Unusable vials
+
 Calculated by the `get_total_of_unusable_vials()` method in the VaccineStockCalculator class. Similar to usable vials, this method computes the difference between all incoming and outgoing unusable vials, considering incidents, destructions, and other relevant stock movements.
 
 ### Usable doses
+
 Derived from the total_usable_vials. The number of doses is calculated by multiplying the number of usable vials by the doses per vial for the specific vaccine type. This conversion is handled within the VaccineStockCalculator class.
 
 ### Unusable doses

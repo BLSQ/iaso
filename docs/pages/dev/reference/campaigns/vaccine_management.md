@@ -104,6 +104,13 @@ To make things clearer, let's walk through a typical scenario involving all key 
 
 These processes ensure that all stakeholders have an accurate picture of the vaccine inventory at every stage, from initial shipment to final distribution.
 
+# Screenshots
+
+![image](https://github.com/user-attachments/assets/51f7c245-453c-46f2-b42a-be982220f7b1)
+
+![image2](https://github.com/user-attachments/assets/d1ae0248-43f4-4671-a549-49fdd21b1308)
+
+
 # Overview of the related DB models
 
 ```mermaid

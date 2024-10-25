@@ -104,12 +104,48 @@ To make things clearer, let's walk through a typical scenario involving all key 
 
 These processes ensure that all stakeholders have an accurate picture of the vaccine inventory at every stage, from initial shipment to final distribution.
 
-# Screenshots
+# Screenshots and details on the calculations
 
 ![image](https://github.com/user-attachments/assets/51f7c245-453c-46f2-b42a-be982220f7b1)
 
+## Vials Received:
+Calculated by summing up all the vials received from VaccineArrivalReports. The method `get_vials_received()` in the VaccineStockCalculator class iterates through the list of vaccines received and sums up the 'vials_in' values.
+
+## Vials Used:
+
+Calculated by summing up all the vials used from OutgoingStockMovements. The method `get_vials_used()` in the VaccineStockCalculator class iterates through the list of used vials and sums up the 'vials_in' values.
+
+## Stock of usable vials:
+
+Calculated by the `get_total_of_usable_vials()` method in the VaccineStockCalculator class. It considers all movements of usable vials, including incoming (vials_in) and outgoing (vials_out) movements. The total is the sum of all incoming vials minus the sum of all outgoing vials.
+
+## Stock of unusable vials:
+
+Calculated by the `get_total_of_unusable_vials()` method in the VaccineStockCalculator class. Similar to usable vials, it considers all movements of unusable vials, including incoming (vials_in) and outgoing (vials_out) movements. The total is the sum of all incoming unusable vials minus the sum of all outgoing unusable vials.
+
+## Vials destroyed:
+
+Calculated by the `get_vials_destroyed()` method in the VaccineStockCalculator class. It sums up all the unusable vials destroyed as recorded in DestructionReports associated with the VaccineStock.
+
 ![image2](https://github.com/user-attachments/assets/d1ae0248-43f4-4671-a549-49fdd21b1308)
 
+Stock balance
+
+The stock balance is calculated using the `/api/polio/vaccine/vaccine_stock/{id}/summary/` endpoint. This endpoint returns a JSON object with the following key fields:
+
+1. Usable vials (total_usable_vials):
+   Calculated by the `get_total_of_usable_vials()` method in the VaccineStockCalculator class. This method computes the difference between all incoming and outgoing usable vials, considering various stock movements such as arrivals, usage, and corrections.
+
+2. Unusable vials (total_unusable_vials):
+   Calculated by the `get_total_of_unusable_vials()` method in the VaccineStockCalculator class. Similar to usable vials, this method computes the difference between all incoming and outgoing unusable vials, considering incidents, destructions, and other relevant stock movements.
+
+3. Usable doses (total_usable_doses):
+   Derived from the total_usable_vials. The number of doses is calculated by multiplying the number of usable vials by the doses per vial for the specific vaccine type. This conversion is handled within the VaccineStockCalculator class.
+
+4. Unusable doses (total_unusable_doses):
+   Derived from the total_unusable_vials. The number of unusable doses is calculated by multiplying the number of unusable vials by the doses per vial for the specific vaccine type. This conversion is also handled within the VaccineStockCalculator class.
+
+These calculations take into account all relevant stock movements, including arrivals, usage, incidents, and destructions, providing a comprehensive view of the current vaccine stock status.
 
 # Overview of the related DB models
 

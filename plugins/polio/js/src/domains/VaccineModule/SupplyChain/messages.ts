@@ -342,6 +342,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.targetPopulation',
         defaultMessage: 'Target population',
     },
+    document: {
+        id: 'iaso.polio.label.document',
+        defaultMessage: 'Document',
+    },
     uniquePoNumberWarning: {
         id: 'iaso.polio.label.uniquePoNumberWarning',
         defaultMessage: 'This PO number is already in use',

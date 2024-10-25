@@ -17,7 +17,7 @@ def saveUserProfile(user):
     user.iaso_profile.save()
 
 
-class OrgUnitsBulkUpdateAPITestCase(APITestCase):
+class ProfileBulkUpdateAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")

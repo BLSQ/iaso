@@ -93,7 +93,7 @@ To make things clearer, let's walk through a typical scenario involving all key 
 4. **Incident Report**: If some of the received vials are found to be damaged, say 100 vials containing 10 doses each, these are marked as unusable in an `IncidentReport`, resulting in 1,000 doses being deducted from the usable stock.
 5. **Outgoing Stock**: After checking the stock, `OutgoingStockMovement` records are created to distribute 1,000 doses to health facilities. This is recorded to reflect the movement of vaccines out of the central storage.
 6. **Destruction Report**: A `DestructionReport` records that 200 vials expired during storage, which further impacts the usable stock.
-7. **Final Stock Calculation**: Initially shipped doses were 10,000. After arrival, usable doses were noted to be 9,800. After adjusting for incidents (1,000 unusable doses) and accounting for outgoing movements and destructions, the total usable doses are now 7,800.
+7. **Final Stock Calculation**: Initially shipped doses were 10,000. After arrival, usable doses were noted to be 9,800. After adjusting for incidents (1,000 unusable doses) and accounting for outgoing movements and destructions, the total usable doses are now 7,600.
 
 ## Summary
 

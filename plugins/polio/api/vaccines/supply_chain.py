@@ -392,6 +392,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     start_date = serializers.SerializerMethodField()
     end_date = serializers.SerializerMethodField()
     doses_shipped = serializers.SerializerMethodField()
+    doses_received = serializers.SerializerMethodField()
     eta = serializers.SerializerMethodField()
     var = serializers.SerializerMethodField()
 
@@ -408,6 +409,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "doses_shipped",
+            "doses_received",
             "eta",
             "var",
             "created_at",
@@ -464,6 +466,9 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     def get_doses_shipped(self, obj):
         return obj.total_doses_shipped()
 
+    def get_doses_received(self, obj):
+        return obj.total_doses_received()
+
     # Comma Separated List of all estimated arrival times
     def get_eta(self, obj):
         pre_alerts, arrival_report_matching, arrival_reports = self.get_prefetched_data(obj)
@@ -510,6 +515,14 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.annotate(doses_shipped=Coalesce(Sum("vaccineprealert__doses_shipped"), 0)).order_by(
                 "-doses_shipped"
             )
+        elif current_order == "doses_received":
+            queryset = queryset.annotate(
+                doses_received=Coalesce(Sum("vaccinearrivalreport__doses_received"), 0)
+            ).order_by("doses_received")
+        elif current_order == "-doses_received":
+            queryset = queryset.annotate(
+                doses_received=Coalesce(Sum("vaccinearrivalreport__doses_received"), 0)
+            ).order_by("-doses_received")
         elif current_order == "obr_name":
             queryset = queryset.order_by("campaign__obr_name")
         elif current_order == "-obr_name":

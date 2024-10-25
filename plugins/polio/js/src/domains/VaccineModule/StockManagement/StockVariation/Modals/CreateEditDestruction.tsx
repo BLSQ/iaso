@@ -50,6 +50,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
             // lot_numbers: destruction?.lot_numbers,
             vaccine_stock: vaccineStockId,
+            comment:destruction?.comment ?? null
         },
         onSubmit: values => save(values),
         validationSchema,
@@ -107,6 +108,15 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         name="unusable_vials_destroyed"
                         component={NumberInput}
                         required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.comment)}
+                        name="comment"
+                        multiline
+                        component={TextInput}
+                        shrinkLabel={false}
                     />
                 </Box>
                 {/* <Box>

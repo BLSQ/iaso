@@ -1127,6 +1127,11 @@ class VaccineRequestForm(SoftDeletableModel):
             "total_doses_shipped"
         ]
 
+    def total_doses_received(self):
+        return self.vaccinearrivalreport_set.all().aggregate(total_doses_received=Coalesce(Sum("doses_received"), 0))[
+            "total_doses_received"
+        ]
+
     def __str__(self):
         return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 
@@ -1227,6 +1232,7 @@ class OutgoingStockMovement(models.Model):
     usable_vials_used = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     missing_vials = models.PositiveIntegerField()
+    comment = models.TextField(blank=True, null=True)
 
 
 class DestructionReport(models.Model):
@@ -1236,6 +1242,7 @@ class DestructionReport(models.Model):
     destruction_report_date = models.DateField()
     unusable_vials_destroyed = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
+    comment = models.TextField(blank=True, null=True)
 
 
 class IncidentReport(models.Model):

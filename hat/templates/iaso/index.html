@@ -12,7 +12,7 @@
   <script>
     window.STATIC_URL = "{{ STATIC_URL }}";
     window.IASO_VERSION = "{{ VERSION }}";
-    window.SENTRY_DSN = '{{ settings.SENTRY_URL }}';
+    window.SENTRY_DSN = '{{ SENTRY_URL }}';
     const PLUGINS_ENABLED = {{ PLUGINS_ENABLED| safe }};
     const USER_HOME_PAGE = "{{ USER_HOME_PAGE |default:"" }}";
     // From context processor

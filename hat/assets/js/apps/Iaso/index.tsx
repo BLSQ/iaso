@@ -54,11 +54,8 @@ if (window.SENTRY_DSN) {
             }),
         ],
     });
-}
-const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
-    const plugins: Plugin[] = getPlugins(enabledPluginsName);
-    // Arbitrarily take the home page of the first plugin in the list
-    const pluginHomePage = plugins.map(plugin => plugin.homeUrl)[0];
+
+    console.log('Sentry config ok');
     const replay = Sentry.getReplay();
     if (replay) {
         console.log('Starting replay');
@@ -68,6 +65,11 @@ const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
             replay.stop();
         }, 10000);
     }
+}
+const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
+    const plugins: Plugin[] = getPlugins(enabledPluginsName);
+    // Arbitrarily take the home page of the first plugin in the list
+    const pluginHomePage = plugins.map(plugin => plugin.homeUrl)[0];
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>

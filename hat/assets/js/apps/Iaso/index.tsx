@@ -54,7 +54,6 @@ if (window.SENTRY_DSN) {
             }),
         ],
     });
-    Sentry.startSession();
 }
 const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
     const plugins: Plugin[] = getPlugins(enabledPluginsName);

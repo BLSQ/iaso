@@ -1,12 +1,11 @@
-import React from 'react';
-import { Select, PasswordInput } from 'bluesquare-components';
+import { PasswordInput, Select } from 'bluesquare-components';
 import { expect } from 'chai';
-import { renderWithMuiTheme } from '../../../../../test/utils/muiTheme';
-import { renderWithIntl } from '../../../../../test/utils/intl';
-import UsersInfos from './UsersInfos';
-import MESSAGES from '../messages';
-import { renderWithStore } from '../../../../../test/utils/redux';
+import React from 'react';
 import { withQueryClientProvider } from '../../../../../test/utils';
+import { renderWithIntl } from '../../../../../test/utils/intl';
+import { renderWithMuiTheme } from '../../../../../test/utils/muiTheme';
+import MESSAGES from '../messages';
+import UsersInfos from './UsersInfos';
 
 let component;
 let inputs;
@@ -33,13 +32,11 @@ const renderComponent = initialData => {
         renderWithIntl(
             renderWithMuiTheme(
                 withQueryClientProvider(
-                    renderWithStore(
-                        <UsersInfos
-                            currentUser={currentUser}
-                            setFieldValue={setFieldValue}
-                            initialData={initialData}
-                        />,
-                    ),
+                    <UsersInfos
+                        currentUser={currentUser}
+                        setFieldValue={setFieldValue}
+                        initialData={initialData}
+                    />,
                 ),
             ),
         ),

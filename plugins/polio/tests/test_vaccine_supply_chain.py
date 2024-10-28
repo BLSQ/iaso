@@ -1,13 +1,13 @@
 import datetime
+
+from django.contrib.auth.models import AnonymousUser
 from django.utils.timezone import now
 
 import hat.menupermissions.models as permissions
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio import models as pm
-from django.contrib.auth.models import AnonymousUser
-from plugins.polio.api.vaccines.supply_chain import PA_SET, AR_SET
-
+from plugins.polio.api.vaccines.supply_chain import AR_SET, PA_SET
 
 BASE_URL = "/api/polio/vaccine/request_forms/"
 
@@ -390,7 +390,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
                         "date_pre_alert_reception": "2021-01-01",
                         "estimated_arrival_time": "2021-01-02",
                         "doses_shipped": 500000,
-                        "po_number": "PO-1234",
+                        "po_number": "1234",
                         "lot_numbers": ["LOT-1234", "LOT-5678"],
                     }
                 ],
@@ -403,7 +403,31 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         self.assertEqual(len(res["pre_alerts"]), 1)
         self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 500000)
-        self.assertEqual(res["pre_alerts"][0]["po_number"], "PO-1234")
+        self.assertEqual(res["pre_alerts"][0]["po_number"], "1234")
+
+    def test_bad_po_number_raises_error(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form and its pre-alerts
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        response = self.client.post(
+            BASE_URL + f"{request_form.id}/add_pre_alerts/",
+            data={
+                "pre_alerts": [
+                    {
+                        "date_pre_alert_reception": "2021-01-01",
+                        "estimated_arrival_time": "2021-01-02",
+                        "doses_shipped": 500000,
+                        "po_number": "PO-1234",
+                        "lot_numbers": ["LOT-1234", "LOT-5678"],
+                    }
+                ],
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
 
     def test_can_add_request_form_vaccine_arrival_reports(self):
         self.client.force_authenticate(user=self.user_rw_perm)

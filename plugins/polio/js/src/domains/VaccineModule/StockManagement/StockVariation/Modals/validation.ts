@@ -79,6 +79,9 @@ export const useFormAValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };
 
@@ -112,6 +115,9 @@ export const useDestructionValidation = () => {
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };
 export const useIncidentValidation = () => {
@@ -152,5 +158,8 @@ export const useIncidentValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };

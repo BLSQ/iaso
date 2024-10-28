@@ -1,5 +1,3 @@
-import datetime
-import mimetypes
 import operator
 import random
 import re
@@ -15,7 +13,6 @@ import django_cte
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
 from django.contrib import auth
-from django.contrib.auth import models as authModels
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
@@ -33,7 +30,6 @@ from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers.phonenumberutil import region_code_for_number
 
-from hat.audit.models import INSTANCE_API, log_modification
 from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
@@ -43,7 +39,6 @@ from iaso.utils.file_utils import get_file_type
 from .. import periods
 from ..utils.emoji import fix_emoji
 from ..utils.jsonlogic import jsonlogic_to_q
-from ..utils.models.common import get_creator_name
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .project import Project
@@ -1110,7 +1105,7 @@ class Instance(models.Model):
     def convert_correlation(self):
         if not self.correlation_id:
             identifier = str(self.id)
-            if self.form.correlation_field is not None and self.json:
+            if self.form.correlation_field and self.json:
                 identifier += self.json.get(self.form.correlation_field, None)
                 identifier = identifier.zfill(3)
             random_number = random.choice("1234567890")
@@ -1410,6 +1405,21 @@ class InstanceFile(models.Model):
         }
 
 
+class ProfileQuerySet(models.QuerySet):
+    def with_editable_org_unit_types(self):
+        qs = self
+        return qs.annotate(
+            annotated_editable_org_unit_types_ids=ArrayAgg(
+                "editable_org_unit_types__id", distinct=True, filter=Q(editable_org_unit_types__isnull=False)
+            ),
+            annotated_user_roles_editable_org_unit_type_ids=ArrayAgg(
+                "user_roles__editable_org_unit_types__id",
+                distinct=True,
+                filter=Q(user_roles__editable_org_unit_types__isnull=False),
+            ),
+        )
+
+
 class Profile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")
@@ -1423,12 +1433,29 @@ class Profile(models.Model):
     user_roles = models.ManyToManyField("UserRole", related_name="iaso_profile", blank=True)
     projects = models.ManyToManyField("Project", related_name="iaso_profile", blank=True)
     phone_number = PhoneNumberField(blank=True)
+    # Each user can have restricted write access to OrgUnits, based on their type.
+    # By default, empty `editable_org_unit_types` means access to everything.
+    editable_org_unit_types = models.ManyToManyField(
+        "OrgUnitType", related_name="editable_by_iaso_profile_set", blank=True
+    )
+
+    objects = models.Manager.from_queryset(ProfileQuerySet)()
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
 
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
+
+    def get_user_roles_editable_org_unit_type_ids(self):
+        try:
+            return self.annotated_user_roles_editable_org_unit_type_ids
+        except AttributeError:
+            return list(
+                self.user_roles.values_list("editable_org_unit_types__id", flat=True)
+                .distinct("id")
+                .exclude(editable_org_unit_types__id__isnull=True)
+            )
 
     def as_dict(self, small=False):
         user_roles = self.user_roles.all()
@@ -1440,6 +1467,12 @@ class Profile(models.Model):
         )
         all_permissions = user_group_permissions + user_permissions
         permissions = list(set(all_permissions))
+        try:
+            editable_org_unit_type_ids = self.annotated_editable_org_unit_types_ids
+        except AttributeError:
+            editable_org_unit_type_ids = [out.pk for out in self.editable_org_unit_types.all()]
+
+        user_roles_editable_org_unit_type_ids = self.get_user_roles_editable_org_unit_type_ids()
 
         other_accounts = []
         user_infos = self.user
@@ -1467,6 +1500,8 @@ class Profile(models.Model):
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
             "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
             "other_accounts": [account.as_dict() for account in other_accounts],
+            "editable_org_unit_type_ids": editable_org_unit_type_ids,
+            "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
         }
 
         if small:
@@ -1480,6 +1515,13 @@ class Profile(models.Model):
             }
 
     def as_short_dict(self):
+        try:
+            editable_org_unit_type_ids = self.annotated_editable_org_unit_types_ids
+        except AttributeError:
+            editable_org_unit_type_ids = [out.pk for out in self.editable_org_unit_types.all()]
+
+        user_roles_editable_org_unit_type_ids = self.get_user_roles_editable_org_unit_type_ids()
+
         user_infos = self.user
         if hasattr(self.user, "tenant_user") and self.user.tenant_user:
             user_infos = self.user.tenant_user.main_user
@@ -1494,6 +1536,8 @@ class Profile(models.Model):
             "user_id": self.user.id,
             "phone_number": self.phone_number.as_e164 if self.phone_number else None,
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
+            "editable_org_unit_type_ids": editable_org_unit_type_ids,
+            "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
         }
 
     def has_a_team(self):
@@ -1501,6 +1545,19 @@ class Profile(models.Model):
         if team:
             return True
         return False
+
+    def get_editable_org_unit_type_ids(self) -> set[int]:
+        ids_in_user_roles = set(self.user_roles.values_list("editable_org_unit_types", flat=True))
+        ids_in_user_profile = set(self.editable_org_unit_types.values_list("id", flat=True))
+        return ids_in_user_profile.union(ids_in_user_roles)
+
+    def has_org_unit_write_permission(
+        self, org_unit_type_id: int, prefetched_editable_org_unit_type_ids: set[int] = None
+    ) -> bool:
+        editable_org_unit_type_ids = prefetched_editable_org_unit_type_ids or self.get_editable_org_unit_type_ids()
+        if not editable_org_unit_type_ids:
+            return True
+        return org_unit_type_id in editable_org_unit_type_ids
 
 
 class ExportRequest(models.Model):
@@ -1658,6 +1715,11 @@ class UserRole(models.Model):
     group = models.OneToOneField(auth.models.Group, on_delete=models.CASCADE, related_name="iaso_user_role")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Each user can have restricted write access to OrgUnits, based on their type.
+    # By default, empty `editable_org_unit_types` means access to everything.
+    editable_org_unit_types = models.ManyToManyField(
+        "OrgUnitType", related_name="editable_by_user_role_set", blank=True
+    )
 
     def __str__(self) -> str:
         return self.group.name

@@ -1,7 +1,8 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     AddButton,
     ConfirmCancelModal,
+    FilesUpload,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -18,6 +19,7 @@ import {
 import { useSaveDestruction } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { useDestructionValidation } from './validation';
+import { acceptPDF, processErrorDocsBase } from '../../../SupplyChain/Details/utils';
 
 type Props = {
     destruction?: any;
@@ -50,10 +52,14 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
             // lot_numbers: destruction?.lot_numbers,
             vaccine_stock: vaccineStockId,
+            document:destruction?.document,
+            comment:destruction?.comment ?? null
         },
         onSubmit: values => save(values),
         validationSchema,
     });
+
+    const processDocumentErrors = useCallback(processErrorDocsBase, [formik.errors]);
 
     const titleMessage = destruction?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
@@ -109,6 +115,15 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.comment)}
+                        name="comment"
+                        multiline
+                        component={TextInput}
+                        shrinkLabel={false}
+                    />
+                </Box>
                 {/* <Box>
                     <Field
                         label={formatMessage(MESSAGES.lot_numbers)}
@@ -117,6 +132,24 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         shrinkLabel={false}
                     />
                 </Box> */}
+                <Box mb={2}>
+                    <FilesUpload
+                        accept={acceptPDF}
+                        files={formik.values.document ? [formik.values.document] : []}
+                        onFilesSelect={files => {
+                            if (files.length) {
+                                formik.setFieldTouched(`document`, true);
+                                formik.setFieldValue(`document`, files);
+                            }
+                        }}
+                        multi={false}
+                        errors={processDocumentErrors(formik.errors.document)}
+
+                        placeholder={formatMessage(
+                            MESSAGES.document,
+                        )}
+                    />
+                </Box>
             </ConfirmCancelModal>
         </FormikProvider>
     );

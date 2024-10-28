@@ -61,19 +61,31 @@ Once the script has run, you can log in to your server using the account name as
 
            pip install -r requirements.txt
 
-    - Update `credentials.py` because we need a user with API access (use your superuser credentials)
+    - Optional: update `credentials.py` because we need a user with API access (use your superuser credentials)
 
           cp data/sample-credentials.py credentials.py
 
 1. Run the setuper
 
-        python3 setuper.py
+         # If you did not update credentials.py:
+         python3 setuper.py -u <username> -p <password> -s <server_url>
 
-2. If you want to create additional projects like:
+         # If you updated credentials.py:
+         python3 setuper.py
+
+   There are some optional parameters you can pass to this command:
+
+   - If you want to create additional projects like:
       - Planning
       - Georegistry/Géoregistre
       - Vaccination
 
-    You will need to add param `--additional_projects`:
+       You will need to add param `--additional_projects` or `-a`:
 
-        python3 setuper.py --additional_projects
+           python3 setuper.py --additional_projects
+
+   - If you want to choose the name that will be used for the account/project/user/... (max 147 characters, only a-z, A-Z, 0-9)
+
+       You will need to add param `-n <name>`:
+
+           python3 setuper.py -n ThisNameWasCarefullyChosen

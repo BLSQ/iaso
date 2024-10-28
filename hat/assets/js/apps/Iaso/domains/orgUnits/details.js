@@ -11,7 +11,6 @@ import {
 import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
     FORMS_PREFIX,
@@ -21,8 +20,8 @@ import {
 } from '../../constants/urls.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { fetchAssociatedOrgUnits } from '../../utils/requests';
+import { useCheckUserHasWritePermissionOnOrgunit } from '../../utils/usersUtils.ts';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
-import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitImages } from './components/OrgUnitImages.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
@@ -43,9 +42,6 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-import { userHasPermission } from '../users/utils';
-import { ORG_UNITS } from '../../utils/permissions.ts';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -107,14 +103,11 @@ const OrgUnitDetail = () => {
     const classes = useStyles();
     const params = useParamsObject(baseUrl);
     const goBack = useGoBack(baseUrls.orgUnits);
-    const dispatch = useDispatch();
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
     const redirectToReplace = useRedirectToReplace();
-    const currentUser = useCurrentUser();
-    const showLogButtons = userHasPermission(ORG_UNITS, currentUser);
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
@@ -123,6 +116,9 @@ const OrgUnitDetail = () => {
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
         useState(false);
 
+    const showLogButtons = useCheckUserHasWritePermissionOnOrgunit(
+        currentOrgUnit?.org_unit_type_id,
+    );
     const formParams = useOrgUnitTabParams(params, FORMS_PREFIX);
     const linksParams = useOrgUnitTabParams(params, LINKS_PREFIX);
     const childrenParams = useOrgUnitTabParams(params, OU_CHILDREN_PREFIX);
@@ -213,7 +209,6 @@ const OrgUnitDetail = () => {
         params.levels,
         params.tab,
     );
-
     const goToRevision = useCallback(
         (orgUnitRevision, onSuccess) => {
             const {
@@ -249,12 +244,11 @@ const OrgUnitDetail = () => {
             const group_ids = mappedRevision.groups.map(g => g.id);
             mappedRevision.groups = group_ids;
             saveOu(mappedRevision).then(res => {
-                dispatch(resetOrgUnits());
                 refreshOrgUnitQueryCache(res);
                 onSuccess();
             });
         },
-        [currentOrgUnit, dispatch, refreshOrgUnitQueryCache, saveOu],
+        [currentOrgUnit, refreshOrgUnitQueryCache, saveOu],
     );
 
     const handleSaveOrgUnit = useCallback(
@@ -272,7 +266,6 @@ const OrgUnitDetail = () => {
                 .then(ou => {
                     setCurrentOrgUnit(ou);
                     setOrgUnitLocationModified(false);
-                    dispatch(resetOrgUnits());
                     if (isNewOrgunit) {
                         redirectToReplace(baseUrl, {
                             ...params,
@@ -286,7 +279,6 @@ const OrgUnitDetail = () => {
         },
         [
             currentOrgUnit,
-            dispatch,
             isNewOrgunit,
             params,
             redirectToReplace,
@@ -329,7 +321,7 @@ const OrgUnitDetail = () => {
                 }
             }
         }
-    }, [originalOrgUnit, dispatch, isNewOrgunit, params, redirectToReplace]);
+    }, [originalOrgUnit, isNewOrgunit, params, redirectToReplace]);
 
     // Set selected sources for current org unit
     useEffect(() => {
@@ -361,14 +353,7 @@ const OrgUnitDetail = () => {
                 fetch();
             }
         }
-    }, [
-        originalOrgUnit,
-        dispatch,
-        links,
-        sources,
-        isNewOrgunit,
-        sourcesSelected,
-    ]);
+    }, [originalOrgUnit, links, sources, isNewOrgunit, sourcesSelected]);
 
     return (
         <section className={classes.root}>

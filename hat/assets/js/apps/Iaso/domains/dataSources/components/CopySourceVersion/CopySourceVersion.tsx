@@ -18,6 +18,9 @@ import {
     useDataSourceVersions,
 } from '../../requests';
 import { WarningMessage } from './CopyVersionWarnings';
+import { userHasPermission } from '../../../users/utils';
+import * as Permission from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 
 type Props = {
     dataSourceId: number;
@@ -74,6 +77,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     dataSourceId,
     dataSourceVersionNumber,
 }) => {
+    const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
     const [destinationSourceId, setDestinationSourceId] =
@@ -92,6 +96,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         [allSourceVersions, destinationSourceId, formatMessage],
     );
     const nextVersionNumber =
+        // eslint-disable-next-line no-unsafe-optional-chaining
         sourceVersionsDropDown[sourceVersionsDropDown?.length - 1]?.value ?? 1;
     const [destinationVersionNumber, setDestinationVersionNumber] =
         useState(nextVersionNumber);
@@ -151,6 +156,11 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             setDestinationVersionNumber(nextVersionNumber);
     }, [destinationVersionNumber, nextVersionNumber]);
 
+    const hasTaskPermission = userHasPermission(
+        Permission.DATA_TASKS,
+        currentUser,
+    );
+
     return (
         <ConfirmCancelDialogComponent
             id="copySourceVersionModal"
@@ -166,13 +176,15 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                     versionNumber: dataSourceVersionNumber,
                 },
             }}
-            additionalButton
-            additionalMessage={MESSAGES.goToCurrentTask}
-            onAdditionalButtonClick={onRedirect}
             onCancel={onCancel}
             dataTestId="copy-source-version-modal"
             allowConfirm={allowConfirm}
-            allowConfimAdditionalButton={allowConfirm}
+            allowConfimAdditionalButton={allowConfirm && hasTaskPermission}
+            additionalButton={hasTaskPermission}
+            additionalMessage={
+                hasTaskPermission ? MESSAGES.goToCurrentTask : undefined
+            }
+            onAdditionalButtonClick={hasTaskPermission ? onRedirect : undefined}
         >
             <>
                 <Box mb={2}>

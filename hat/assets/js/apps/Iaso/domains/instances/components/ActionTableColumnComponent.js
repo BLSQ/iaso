@@ -14,7 +14,10 @@ import {
     SHOW_LINK_INSTANCE_REFERENCE,
 } from '../../../utils/featureFlags';
 import * as Permission from '../../../utils/permissions.ts';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import {
+    useCheckUserHasWritePermissionOnOrgunit,
+    useCurrentUser,
+} from '../../../utils/usersUtils.ts';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
 import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
@@ -103,11 +106,13 @@ const ActionTableColumnComponent = ({ settings }) => {
 
         saveOu(orgUnitPayload).catch(onError);
     };
-
+    const userHasWritePermission = useCheckUserHasWritePermissionOnOrgunit(
+        settings.row.original.org_unit.org_unit_type_id,
+    );
     const showLinkOrgUnitInstanceReferenceButton =
         settings.row.original.is_instance_of_reference_form &&
         hasFeatureFlag(user, SHOW_LINK_INSTANCE_REFERENCE) &&
-        userHasPermission(Permission.ORG_UNITS, user) &&
+        userHasWritePermission &&
         userHasPermission(Permission.SUBMISSIONS_UPDATE, user);
 
     const notLinked =

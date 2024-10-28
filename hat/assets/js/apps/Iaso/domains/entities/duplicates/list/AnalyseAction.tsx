@@ -39,8 +39,9 @@ export const AnalyseAction: FunctionComponent<Props> = ({
             {!latestAnalysis &&
                 !isFetchingLatestAnalysis &&
                 formatMessage(MESSAGES.noAnalysis)}
-            {latestAnalysis && (
-                <>
+
+            <>
+                {latestAnalysis && (
                     <Box mr="auto">
                         <Box display="flex" alignItems="center">
                             <Box display="inline-block" mr={1}>
@@ -67,7 +68,9 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                             </Tooltip>
                         </Box>
                     </Box>
-                    <Grid container spacing={1} justifyContent="flex-end">
+                )}
+                <Grid container spacing={1} justifyContent="flex-end">
+                    {latestAnalysis && (
                         <Grid item>
                             <Box mb={2} mt={2}>
                                 <Button
@@ -86,14 +89,14 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                                 </Button>
                             </Box>
                         </Grid>
-                        <Grid item>
-                            <Box mb={2} mt={2}>
-                                <AnalysisModal iconProps={{}} />
-                            </Box>
-                        </Grid>
+                    )}
+                    <Grid item>
+                        <Box mb={2} mt={2}>
+                            <AnalysisModal iconProps={{}} />
+                        </Box>
                     </Grid>
-                </>
-            )}
+                </Grid>
+            </>
         </Box>
     );
 };

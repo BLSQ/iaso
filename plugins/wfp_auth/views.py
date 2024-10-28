@@ -179,7 +179,7 @@ class WFPCallbackView(OAuth2View):
                 request,
                 social_account.user,
                 email_verification=False,
-                redirect_url=request.GET.get("next", "/dashboard/"),
+                redirect_url=request.GET.get("next", "/"),
             )
         except (
             PermissionDenied,

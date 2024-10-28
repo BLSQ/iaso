@@ -46,6 +46,10 @@ export const useGetUserRolesColumns = (
                                 id={settings.row.original.id}
                                 name={settings.row.original.name}
                                 permissions={settings.row.original.permissions}
+                                editable_org_unit_type_ids={
+                                    settings.row.original
+                                        .editable_org_unit_type_ids
+                                }
                                 iconProps={{}}
                             />
                             <DeleteDialog

@@ -730,14 +730,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         org_units = self.validate_org_units(request, user.profile)
         profile.org_units.set(org_units)
 
-        # link the profile to user roles
-        user_roles = request.data.get("user_roles", [])
-        for user_role_id in user_roles:
-            # Get only a user role linked to the account's user
-            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_account)
-            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group.id)
-            profile.user.groups.add(user_group_item)
-            profile.user_roles.add(user_role_item)
+        user_roles_data = self.validate_user_roles(request)
+        if user_roles_data.get("user_roles"):
+            profile.user_roles.set(user_roles_data["user_roles"])
 
         projects = request.data.get("projects", [])
         profile.projects.clear()

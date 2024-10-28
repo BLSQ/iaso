@@ -414,7 +414,11 @@ REST_FRAMEWORK = {
     ),
 }
 
-SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=3650), "REFRESH_TOKEN_LIFETIME": timedelta(days=3651)}
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=3650),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=3651),
+    "TOKEN_OBTAIN_SERIALIZER": "iaso.serializers.CustomTokenObtainPairSerializer",
+}
 
 AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-central-1")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -645,6 +649,10 @@ CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379"
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXTENDED = True
+
+DRF_NESTED_MULTIPART_PARSER = {
+    "querydict": False,
+}
 
 # Plugin config
 print("Enabled plugins:", PLUGINS)

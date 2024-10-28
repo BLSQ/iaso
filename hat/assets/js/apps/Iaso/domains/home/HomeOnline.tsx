@@ -129,8 +129,16 @@ export const HomeOnline: FunctionComponent = () => {
                             version={(window as any).IASO_VERSION}
                         />
                     </Box>
-                    <Box p={4} display="flex" alignItems="center">
-                        <LangSwitch />
+                    <Box
+                        pr={4}
+                        pt={4}
+                        pb={4}
+                        display="flex"
+                        alignItems="center"
+                    >
+                        <Box pl={2} display="inline-flex">
+                            <LangSwitch />
+                        </Box>
                         <Box pl={2}>
                             <LogoutButton color="primary" />
                         </Box>

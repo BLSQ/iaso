@@ -1474,54 +1474,44 @@ class Profile(models.Model):
 
         user_roles_editable_org_unit_type_ids = self.get_user_roles_editable_org_unit_type_ids()
 
-        if not small:
-            return {
-                "id": self.id,
-                "first_name": self.user.first_name,
-                "user_name": self.user.username,
-                "last_name": self.user.last_name,
-                "email": self.user.email,
-                "account": self.account.as_small_dict(),
-                "permissions": permissions,
-                "user_permissions": user_permissions,
-                "is_superuser": self.user.is_superuser,
-                "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
-                "user_roles": list(role.id for role in user_roles),
-                "user_roles_permissions": list(role.as_dict() for role in user_roles),
-                "language": self.language,
-                "organization": self.organization,
-                "user_id": self.user.id,
-                "dhis2_id": self.dhis2_id,
-                "home_page": self.home_page,
-                "phone_number": self.phone_number.as_e164 if self.phone_number else None,
-                "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
-                "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
-                "editable_org_unit_type_ids": editable_org_unit_type_ids,
-                "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
+        other_accounts = []
+        user_infos = self.user
+        if hasattr(self.user, "tenant_user"):
+            other_accounts = self.user.tenant_user.get_other_accounts()
+            user_infos = self.user.tenant_user.main_user
+
+        result = {
+            "id": self.id,
+            "first_name": user_infos.first_name,
+            "user_name": user_infos.username,
+            "last_name": user_infos.last_name,
+            "email": user_infos.email,
+            "permissions": permissions,
+            "user_permissions": user_permissions,
+            "is_superuser": self.user.is_superuser,
+            "user_roles": list(role.id for role in user_roles),
+            "user_roles_permissions": list(role.as_dict() for role in user_roles),
+            "language": self.language,
+            "organization": self.organization,
+            "user_id": self.user.id,
+            "dhis2_id": self.dhis2_id,
+            "home_page": self.home_page,
+            "phone_number": self.phone_number.as_e164 if self.phone_number else None,
+            "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
+            "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
+            "other_accounts": [account.as_dict() for account in other_accounts],
+            "editable_org_unit_type_ids": editable_org_unit_type_ids,
+            "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
+        }
+
+        if small:
+            return result | {
+                "org_units": [o.as_very_small_dict() for o in self.org_units.all()],
             }
         else:
-            return {
-                "id": self.id,
-                "first_name": self.user.first_name,
-                "user_name": self.user.username,
-                "last_name": self.user.last_name,
-                "email": self.user.email,
-                "permissions": permissions,
-                "user_permissions": user_permissions,
-                "is_superuser": self.user.is_superuser,
-                "org_units": [o.as_very_small_dict() for o in self.org_units.all()],
-                "user_roles": list(role.id for role in user_roles),
-                "user_roles_permissions": list(role.as_dict() for role in user_roles),
-                "language": self.language,
-                "user_id": self.user.id,
-                "dhis2_id": self.dhis2_id,
-                "home_page": self.home_page,
-                "organization": self.organization,
-                "phone_number": self.phone_number.as_e164 if self.phone_number else None,
-                "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
-                "projects": [p.as_dict() for p in self.projects.all()],
-                "editable_org_unit_type_ids": editable_org_unit_type_ids,
-                "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
+            return result | {
+                "account": self.account.as_small_dict(),
+                "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
             }
 
     def as_short_dict(self):
@@ -1531,12 +1521,17 @@ class Profile(models.Model):
             editable_org_unit_type_ids = [out.pk for out in self.editable_org_unit_types.all()]
 
         user_roles_editable_org_unit_type_ids = self.get_user_roles_editable_org_unit_type_ids()
+
+        user_infos = self.user
+        if hasattr(self.user, "tenant_user") and self.user.tenant_user:
+            user_infos = self.user.tenant_user.main_user
+
         return {
             "id": self.id,
-            "first_name": self.user.first_name,
-            "user_name": self.user.username,
-            "last_name": self.user.last_name,
-            "email": self.user.email,
+            "first_name": user_infos.first_name,
+            "user_name": user_infos.username,
+            "last_name": user_infos.last_name,
+            "email": user_infos.email,
             "language": self.language,
             "user_id": self.user.id,
             "phone_number": self.phone_number.as_e164 if self.phone_number else None,

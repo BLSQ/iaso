@@ -1,18 +1,22 @@
+import json
 from logging import getLogger
 from typing import Any
 
 from django import forms
+from django.core.files.base import ContentFile
 from django.db.models import Max, Min, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from nested_multipart_parser.drf import DrfNestedParser
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
+from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import GenericReadWritePerm, ModelViewSet
+from iaso.api.common import GenericReadWritePerm, ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
@@ -100,6 +104,8 @@ class BasePostPatchSerializer(serializers.ModelSerializer):
 
 
 class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
+    document = serializers.FileField(required=False)
+
     class Meta:
         model = VaccinePreAlert
         fields = [
@@ -109,6 +115,7 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             "doses_shipped",
             "doses_per_vial",
             "vials_shipped",
+            "document",
         ]
 
     def validate(self, attrs: Any) -> Any:
@@ -126,6 +133,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     doses_shipped = serializers.IntegerField(required=False)
     doses_per_vial = serializers.IntegerField(required=False, read_only=True)
     vials_shipped = serializers.IntegerField(required=False, read_only=True)
+    document = serializers.FileField(required=False)
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
         fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id"]
@@ -280,6 +288,7 @@ class NestedCountrySerializer(serializers.ModelSerializer):
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
     rounds = NestedRoundPostSerializer(many=True)
     campaign = serializers.CharField()
+    document = serializers.FileField(required=False)
 
     class Meta:
         model = VaccineRequestForm
@@ -301,9 +310,24 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
             "comment",
             "target_population",
             "vrf_type",
+            "document",
         ]
 
         read_only_fields = ["created_at", "updated_at"]
+
+    def to_internal_value(self, data):
+        # Manually invoke validate_rounds if 'rounds' is a string
+        if "rounds" in data and isinstance(data["rounds"], str):
+            try:
+                rounds = parse_comma_separated_numeric_values(data["rounds"], "rounds")
+                data["rounds"] = [{"number": num} for num in rounds]
+            except Exception as e:
+                raise serializers.ValidationError(f"Invalid rounds data: {e}")
+        return super().to_internal_value(data)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print("VaccineRequestFormPostSerializer instance created with data: %s", self.initial_data)
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -354,6 +378,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
     country_id = serializers.IntegerField(source="campaign.country.id")
     obr_name = serializers.CharField(source="campaign.obr_name")
     rounds = NestedRoundSerializer(many=True)
+    document = serializers.FileField(required=False)
 
     class Meta:
         model = VaccineRequestForm
@@ -381,6 +406,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
             "obr_name",
             "target_population",
             "vrf_type",
+            "document",
         ]
 
 
@@ -392,6 +418,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     start_date = serializers.SerializerMethodField()
     end_date = serializers.SerializerMethodField()
     doses_shipped = serializers.SerializerMethodField()
+    doses_received = serializers.SerializerMethodField()
     eta = serializers.SerializerMethodField()
     var = serializers.SerializerMethodField()
 
@@ -408,6 +435,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "doses_shipped",
+            "doses_received",
             "eta",
             "var",
             "created_at",
@@ -464,6 +492,9 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     def get_doses_shipped(self, obj):
         return obj.total_doses_shipped()
 
+    def get_doses_received(self, obj):
+        return obj.total_doses_received()
+
     # Comma Separated List of all estimated arrival times
     def get_eta(self, obj):
         pre_alerts, arrival_report_matching, arrival_reports = self.get_prefetched_data(obj)
@@ -510,6 +541,14 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.annotate(doses_shipped=Coalesce(Sum("vaccineprealert__doses_shipped"), 0)).order_by(
                 "-doses_shipped"
             )
+        elif current_order == "doses_received":
+            queryset = queryset.annotate(
+                doses_received=Coalesce(Sum("vaccinearrivalreport__doses_received"), 0)
+            ).order_by("doses_received")
+        elif current_order == "-doses_received":
+            queryset = queryset.annotate(
+                doses_received=Coalesce(Sum("vaccinearrivalreport__doses_received"), 0)
+            ).order_by("-doses_received")
         elif current_order == "obr_name":
             queryset = queryset.order_by("campaign__obr_name")
         elif current_order == "-obr_name":
@@ -617,6 +656,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     permission_classes = [VaccineSupplyChainReadWritePerm]
     http_method_names = ["get", "post", "delete", "patch"]
+    parser_classes = (JSONParser, DrfNestedParser)
 
     filter_backends = [
         SearchFilter,

@@ -1,7 +1,8 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     AddButton,
     ConfirmCancelModal,
+    FilesUpload,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -11,10 +12,15 @@ import { Box } from '@mui/material';
 import { Vaccine } from '../../../../../constants/types';
 import MESSAGES from '../../messages';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
-import { DateInput, NumberInput } from '../../../../../components/Inputs';
+import {
+    DateInput,
+    NumberInput,
+    TextInput,
+} from '../../../../../components/Inputs';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { useFormAValidation } from './validation';
+import { acceptPDF, processErrorDocsBase } from '../../../SupplyChain/Details/utils';
 
 type Props = {
     formA?: any;
@@ -48,10 +54,14 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             // unusable_vials: formA?.unusable_vials,
             missing_vials: formA?.missing_vials,
             vaccine_stock: vaccineStockId,
+            document:formA?.document,
+            comment: formA?.comment ?? null,
         },
         onSubmit: values => save(values),
         validationSchema,
     });
+    const processDocumentErrors = useCallback(processErrorDocsBase, [formik.errors]);
+
     const { data: campaignOptions, isFetching: isFetchingCampaigns } =
         useCampaignOptions(countryName, formik.values.campaign);
     const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;
@@ -115,6 +125,33 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         name="usable_vials_used"
                         component={NumberInput}
                         required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.comment)}
+                        name="comment"
+                        multiline
+                        component={TextInput}
+                        shrinkLabel={false}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <FilesUpload
+                        accept={acceptPDF}
+                        files={formik.values.document ? [formik.values.document] : []}
+                        onFilesSelect={files => {
+                            if (files.length) {
+                                formik.setFieldTouched(`document`, true);
+                                formik.setFieldValue(`document`, files);
+                            }
+                        }}
+                        multi={false}
+                        errors={processDocumentErrors(formik.errors.document)}
+
+                        placeholder={formatMessage(
+                            MESSAGES.document,
+                        )}
                     />
                 </Box>
             </ConfirmCancelModal>

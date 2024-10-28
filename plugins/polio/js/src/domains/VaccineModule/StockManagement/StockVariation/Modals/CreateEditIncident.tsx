@@ -9,6 +9,7 @@ import {
 import {
     AddButton,
     ConfirmCancelModal,
+    FilesUpload,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -28,6 +29,7 @@ import { useGetMovementDescription } from '../../hooks/useGetMovementDescription
 import MESSAGES from '../../messages';
 import { useIncidentOptions } from './useIncidentOptions';
 import { useIncidentValidation } from './validation';
+import { acceptPDF, processErrorDocsBase } from '../../../SupplyChain/Details/utils';
 
 type Props = {
     incident?: any;
@@ -220,10 +222,13 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             unusable_vials: incident?.unusable_vials || 0,
             movement: getInitialMovement(incident),
             vaccine_stock: vaccineStockId,
+            document: incident?.document
         },
         onSubmit: handleSubmit,
         validationSchema,
     });
+
+    const processDocumentErrors = useCallback(processErrorDocsBase, [formik.errors]);
     const incidentTypeOptions = useIncidentOptions();
     const titleMessage = incident?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
@@ -383,13 +388,33 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         </Box>
                     </>
                 )}
-                <Field
-                    label={formatMessage(MESSAGES.comment)}
-                    name="comment"
-                    multiline
-                    component={TextInput}
-                    shrinkLabel={false}
-                />
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.comment)}
+                        name="comment"
+                        multiline
+                        component={TextInput}
+                        shrinkLabel={false}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <FilesUpload
+                        accept={acceptPDF}
+                        files={formik.values.document ? [formik.values.document] : []}
+                        onFilesSelect={files => {
+                            if (files.length) {
+                                formik.setFieldTouched(`document`, true);
+                                formik.setFieldValue(`document`, files);
+                            }
+                        }}
+                        multi={false}
+                        errors={processDocumentErrors(formik.errors.document)}
+
+                        placeholder={formatMessage(
+                            MESSAGES.document,
+                        )}
+                    />
+                </Box>
             </ConfirmCancelModal>
         </FormikProvider>
     );

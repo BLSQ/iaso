@@ -41,7 +41,11 @@ declare global {
         ) => void;
     }
 }
-if (window.SENTRY_DSN) {
+
+let isSentryInitialized = false;
+const initSentry = () => {
+    if (!window.SENTRY_DSN || isSentryInitialized) return;
+
     Sentry.init({
         dsn: window.SENTRY_DSN,
         replaysSessionSampleRate: 0.1,
@@ -54,8 +58,8 @@ if (window.SENTRY_DSN) {
             }),
         ],
     });
-
-    console.log('Sentry config ok');
+    isSentryInitialized = true;
+    console.log('Sentry initialized');
     const replay = Sentry.getReplay();
     if (replay) {
         console.log('Starting replay');
@@ -65,8 +69,10 @@ if (window.SENTRY_DSN) {
             replay.stop();
         }, 10000);
     }
-}
+};
 const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
+    console.log('Starting iasoApp');
+    initSentry();
     const plugins: Plugin[] = getPlugins(enabledPluginsName);
     // Arbitrarily take the home page of the first plugin in the list
     const pluginHomePage = plugins.map(plugin => plugin.homeUrl)[0];

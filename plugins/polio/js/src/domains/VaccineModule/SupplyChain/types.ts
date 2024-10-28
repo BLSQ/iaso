@@ -30,6 +30,7 @@ export type VRF = {
     target_population?: number;
     comments?: string;
     vrf_type: 'Normal' | 'Missing' | 'Not Required';
+    document?: File;
 };
 
 export type VRFFormData = Omit<VRF, 'rounds'> & {
@@ -46,6 +47,7 @@ export type PreAlert = {
     doses_per_vial: number;
     vials_shipped: number;
     to_delete?: boolean;
+    document?: File;
 };
 
 export type VAR = {

@@ -437,6 +437,7 @@ class VaccineStockSubitemBase(ModelViewSet):
 
 class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name")
+    document = serializers.FileField(required=False)
 
     class Meta:
         model = OutgoingStockMovement
@@ -449,6 +450,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "usable_vials_used",
             "lot_numbers",
             "missing_vials",
+            "document",
             "comment",
         ]
 
@@ -481,6 +483,8 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
 
 
 class IncidentReportSerializer(serializers.ModelSerializer):
+    document = serializers.FileField(required=False)
+
     class Meta:
         model = IncidentReport
         fields = "__all__"
@@ -492,6 +496,8 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
 
 
 class DestructionReportSerializer(serializers.ModelSerializer):
+    document = serializers.FileField(required=False)
+
     class Meta:
         model = DestructionReport
         fields = "__all__"

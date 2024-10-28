@@ -54,7 +54,7 @@ const initSentry = () => {
             Sentry.replayIntegration({
                 networkDetailAllowUrls: [
                     window.location.origin,
-                    `${window.location.origin}/api/`,
+                    `${window.location.origin}/api`,
                 ],
             }),
         ],

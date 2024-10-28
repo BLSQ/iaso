@@ -59,6 +59,15 @@ const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
     const plugins: Plugin[] = getPlugins(enabledPluginsName);
     // Arbitrarily take the home page of the first plugin in the list
     const pluginHomePage = plugins.map(plugin => plugin.homeUrl)[0];
+    const replay = Sentry.getReplay();
+    if (replay) {
+        console.log('Starting replay');
+        replay.start();
+        setTimeout(() => {
+            console.log('Stopping replay');
+            replay.stop();
+        }, 10000);
+    }
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>

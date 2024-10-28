@@ -13,6 +13,9 @@
         "name": "Iaso Dev",
         "server url": ""
     },
+    "logo": {
+        "source": "https://projectpathways.org/assets/images/common/logo/logo-color.svg"
+    },
     "offline enabled": false,
     "redis": {
         "cache": {
@@ -22,5 +25,9 @@
         "main": {
             "host": "redis_main"
         }
+    },
+    "submission": {
+        "method": "POST",
+        "url": "https://localhost:8091/submission"
     }
 }

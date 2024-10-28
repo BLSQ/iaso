@@ -43,6 +43,7 @@ def setup_account(account_name, server_url, username, password):
         "password": account_name,
         "modules": ["DEFAULT", "REGISTRY", "PLANNING", "ENTITIES", "DATA_COLLECTION_FORMS"],
     }
+    print(f"Logging in admin {username} - {password}")
     iaso_admin_client = admin_login(server_url, username, password)
     iaso_admin_client.post("/api/setupaccount/", json=data)
 

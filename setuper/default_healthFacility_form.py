@@ -8,6 +8,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
     print("-- Setting up a default form for Health Facility level")
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    print(f"Org Unit types : {org_unit_types}")
     health_facility_type = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][
         0
     ]

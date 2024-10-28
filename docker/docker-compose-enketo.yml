@@ -3,9 +3,10 @@ services:
   enketo:
     image: enketo/enketo-express:5.0.0
 #    entrypoint: pm2 start --no-daemon app.js -n enketo
-#    environment:
+    environment:
       # uncomment for more debug output
-#       DEBUG: "express"
+       ENKETO_LOGO_SOURCE: "https://i1.wp.com/bluesquarehub.com/wp-content/uploads/2019/11/Bluesquare-horizontal-white.png?w=200&ssl=1"
+       DEBUG: "express"
     depends_on:
       - redis_main
     ports:

@@ -338,6 +338,20 @@ class EnketoSubmissionAPIView(APIView):
 
     def post(self, request, format=None):
         """UPDATE"""
+        form_id = "your-form-id"
+        instance_id = "unique-instance-id"
+        edit_url = f"https://localhost:8091/edit/{instance_id}"
+
+        # Return the expected structure
+        return Response(
+            {
+                "formId": form_id,
+                "instanceId": instance_id,
+                "editUrl": edit_url
+            },
+            #status=status.HTTP_201_CREATED
+            status=status.HTTP_200_OK
+        )
         if request.FILES:
             main_file = request.FILES["xml_submission_file"]
             xml = main_file.read()

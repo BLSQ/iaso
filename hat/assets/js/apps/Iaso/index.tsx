@@ -52,24 +52,16 @@ const initSentry = () => {
         replaysOnErrorSampleRate: 1.0,
         integrations: [
             Sentry.replayIntegration({
-                networkDetailAllowUrls: [window.location.origin],
+                networkDetailAllowUrls: [
+                    window.location.origin,
+                    `${window.location.origin}/api/`,
+                ],
             }),
         ],
     });
     isSentryInitialized = true;
-    console.log('Sentry initialized');
-    const replay = Sentry.getReplay();
-    if (replay) {
-        console.log('Starting replay');
-        replay.start();
-        setTimeout(() => {
-            console.log('Stopping replay');
-            replay.stop();
-        }, 10000);
-    }
 };
 const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
-    console.log('Starting iasoApp');
     initSentry();
     const plugins: Plugin[] = getPlugins(enabledPluginsName);
     // Arbitrarily take the home page of the first plugin in the list

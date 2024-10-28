@@ -223,6 +223,38 @@ class ProfilesViewSet(viewsets.ViewSet):
         account = self.request.user.iaso_profile.account
         return Profile.objects.filter(account=account).with_editable_org_unit_types()
 
+    def retrieve(self, request, *args, **kwargs):
+        pk = kwargs.get("pk")
+        if pk == PK_ME:
+            # if the user is a main_user, login as an account user
+            # TODO: This is not a clean side-effect and should be improved.
+            if request.user.tenant_users.exists():
+                account_user = request.user.tenant_users.first().account_user
+                account_user.backend = "django.contrib.auth.backends.ModelBackend"
+                login(request, account_user)
+
+            try:
+                profile = request.user.iaso_profile
+                profile_dict = profile.as_dict()
+                return Response(profile_dict)
+            except Profile.DoesNotExist:
+                return Response(
+                    {
+                        "first_name": request.user.first_name,
+                        "user_name": request.user.username,
+                        "last_name": request.user.last_name,
+                        "email": request.user.email,
+                        "user_id": request.user.id,
+                        "projects": [],
+                        "is_staff": request.user.is_staff,
+                        "is_superuser": request.user.is_superuser,
+                        "account": None,
+                    }
+                )
+        else:
+            profile = get_object_or_404(self.get_queryset(), pk=pk)
+            return Response(profile.as_dict())
+
     def list(self, request):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -303,351 +335,6 @@ class ProfilesViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
-
-    @staticmethod
-    def list_export(
-        queryset: "QuerySet[Profile]", file_format: FileFormatEnum
-    ) -> Union[HttpResponse, StreamingHttpResponse]:
-        columns = [{"title": column} for column in BULK_CREATE_USER_COLUMNS_LIST]
-
-        def get_row(profile: Profile, **_) -> List[Any]:
-            org_units = profile.org_units.all().order_by("id")
-
-            return [
-                profile.user.username,
-                "",  # Password is left empty on purpose.
-                profile.user.email,
-                profile.user.first_name,
-                profile.user.last_name,
-                ",".join(str(item.pk) for item in org_units),
-                ",".join(item.source_ref for item in org_units if item.source_ref),
-                profile.language,
-                profile.dhis2_id,
-                profile.organization,
-                ",".join(item.codename for item in profile.user.user_permissions.all()),
-                ",".join(
-                    item.group.name.removeprefix(f"{profile.account.pk}_")
-                    for item in profile.user_roles.all().order_by("id")
-                ),
-                ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
-                (f"'{profile.phone_number}'" if profile.phone_number else None),
-            ]
-
-        filename = "users"
-        response: Union[HttpResponse, StreamingHttpResponse]
-        queryset = queryset.order_by("id")
-
-        if file_format == FileFormatEnum.XLSX:
-            filename = filename + ".xlsx"
-            response = HttpResponse(
-                generate_xlsx("Users", columns, queryset, get_row),
-                content_type=CONTENT_TYPE_XLSX,
-            )
-        elif file_format == FileFormatEnum.CSV:
-            filename = f"{filename}.csv"
-            response = StreamingHttpResponse(
-                streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
-            )
-        else:
-            raise ValueError(f"Unknown file format requested: {file_format}")
-
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
-        return response
-
-    def retrieve(self, request, *args, **kwargs):
-        pk = kwargs.get("pk")
-        if pk == PK_ME:
-            # if the user is a main_user, login as an account user
-            # TODO: This is not a clean side-effect and should be improved.
-            if request.user.tenant_users.exists():
-                account_user = request.user.tenant_users.first().account_user
-                account_user.backend = "django.contrib.auth.backends.ModelBackend"
-                login(request, account_user)
-
-            try:
-                profile = request.user.iaso_profile
-                profile_dict = profile.as_dict()
-                return Response(profile_dict)
-            except Profile.DoesNotExist:
-                return Response(
-                    {
-                        "first_name": request.user.first_name,
-                        "user_name": request.user.username,
-                        "last_name": request.user.last_name,
-                        "email": request.user.email,
-                        "user_id": request.user.id,
-                        "projects": [],
-                        "is_staff": request.user.is_staff,
-                        "is_superuser": request.user.is_superuser,
-                        "account": None,
-                    }
-                )
-        else:
-            profile = get_object_or_404(self.get_queryset(), pk=pk)
-            return Response(profile.as_dict())
-
-    def validate_user(self, request, user):
-        username = request.data.get("user_name")
-        if not username:
-            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
-
-        existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
-        if existing_user:
-            # Prevent from username change with existing username
-            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur existant"))
-
-    def validate_user_permissions(self, request, current_account):
-        user_permissions = []
-        module_permissions = self.module_permissions(current_account)
-        for permission_codename in request.data.get("user_permissions", []):
-            if permission_codename in module_permissions:
-                CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
-                user_permissions.append(get_object_or_404(Permission, codename=permission_codename))
-        return user_permissions
-
-    def validate_org_units(self, request, profile) -> QuerySet[OrgUnit]:
-        existing_org_units = set(profile.org_units.values_list("id", flat=True))
-        org_units = request.data.get("org_units", [])
-        managed_org_units = []
-        filtered_org_unit_ids = []
-
-        if request.user.has_perm(permission.USERS_MANAGED):
-            managed_org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list(
-                "id", flat=True
-            )
-
-        for org_unit in org_units:
-            org_unit_id = org_unit.get("id")
-            if (
-                managed_org_units
-                and org_unit_id not in managed_org_units
-                and org_unit_id not in existing_org_units
-                and not request.user.is_superuser
-            ):
-                raise PermissionDenied(
-                    f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
-                    f"pyramid. Trying to assign {org_unit_id}."
-                )
-            filtered_org_unit_ids.append(org_unit_id)
-
-        filtered_org_units = OrgUnit.objects.filter(id__in=filtered_org_unit_ids)
-
-        if request.user.has_perm(permission.USERS_MANAGED):
-            org_unit_type_ids_to_check = set(filtered_org_units.values_list("org_unit_type_id", flat=True))
-            self.check_profile_editable_org_unit_types(request.user.iaso_profile, org_unit_type_ids_to_check)
-
-        return filtered_org_units
-
-    def validate_user_roles(self, request):
-        result = {"groups": [], "user_roles": []}
-        user_roles = request.data.get("user_roles", [])
-        # Get the current connected user
-        current_profile = request.user.iaso_profile
-        for user_role_id in user_roles:
-            # Get only a user role linked to the account's user
-            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
-            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
-            for p in user_group_item.permissions.all():
-                CustomPermissionSupport.assert_right_to_assign(request.user, p.codename)
-            result["groups"].append(user_group_item)
-            result["user_roles"].append(user_role_item)
-        return result
-
-    def validate_projects(self, request, profile):
-        result = []
-        request_user = request.user
-        projects = request.data.get("projects", None)
-        if projects is not None:
-            if not request_user.has_perm(permission.USERS_ADMIN):
-                raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
-                )
-        # This is bit ugly, but it's to maintain the fetaure's behaviour after adding the check in the permission
-        if projects is None:
-            projects = []
-        for project in projects:
-            item = get_object_or_404(Project, pk=project)
-            if profile.account_id != item.account_id:
-                raise BadRequest
-            result.append(item)
-        return result
-
-    def validate_editable_org_unit_types(self, request) -> QuerySet[OrgUnitType]:
-        editable_org_unit_type_ids = set(request.data.get("editable_org_unit_type_ids", []))
-        editable_org_unit_types = OrgUnitType.objects.filter(pk__in=editable_org_unit_type_ids)
-
-        if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
-            raise ValidationError("Invalid editable org unit type submitted.")
-
-        if not request.user.has_perm(permission.USERS_ADMIN):
-            self.check_profile_editable_org_unit_types(request.user.iaso_profile, editable_org_unit_type_ids)
-
-        return editable_org_unit_types
-
-    def check_profile_editable_org_unit_types(self, iaso_profile: Profile, org_unit_type_ids_to_check: Set[int]):
-        user_editable_org_unit_type_ids = iaso_profile.get_editable_org_unit_type_ids()
-        invalid_ids = [
-            org_unit_type_id
-            for org_unit_type_id in org_unit_type_ids_to_check
-            if org_unit_type_id
-            and not iaso_profile.has_org_unit_write_permission(org_unit_type_id, user_editable_org_unit_type_ids)
-        ]
-
-        if invalid_ids:
-            invalid_names = ", ".join(
-                name for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list("name", flat=True)
-            )
-            raise PermissionDenied(f"The user does not have rights on the following org unit types: {invalid_names}")
-
-    @staticmethod
-    def update_user_own_profile(request):
-        audit_logger = ProfileAuditLogger()
-        # allow user to change his own language
-        profile = request.user.iaso_profile
-        old_data = audit_logger.serialize_instance(profile)
-        if "home_page" in request.data:
-            profile.home_page = request.data["home_page"]
-        if "language" in request.data:
-            profile.language = request.data["language"]
-        profile.save()
-        source = f"{PROFILE_API}_mobile_me" if is_mobile_request(request) else f"{PROFILE_API}_me"
-        audit_logger.log_modification(
-            instance=profile, old_data_dump=old_data, request_user=request.user, source=source
-        )
-        return Response(profile.as_dict())
-
-    def update_user_profile(
-        self,
-        request,
-        profile,
-        user,
-        user_roles,
-        user_roles_groups,
-        projects,
-        org_units,
-        user_permissions,
-        editable_org_unit_types,
-    ):
-        username = request.data.get("user_name")
-        user.first_name = request.data.get("first_name", "")
-        user.last_name = request.data.get("last_name", "")
-        user.username = username
-        user.email = request.data.get("email", "")
-        user.groups.set(user_roles_groups)
-        user.save()
-        user.user_permissions.set(user_permissions)
-
-        self.update_password(user, request)
-
-        phone_number = self.extract_phone_number(request)
-
-        if phone_number is not None:
-            profile.phone_number = phone_number
-
-        profile.language = request.data.get("language", "")
-        profile.organization = request.data.get("organization", None)
-        profile.home_page = request.data.get("home_page", "")
-        profile.dhis2_id = request.data.get("dhis2_id", "")
-        if profile.dhis2_id == "":
-            profile.dhis2_id = None
-
-        profile.user_roles.set(user_roles)
-        profile.projects.set(projects)
-        profile.org_units.set(org_units)
-        profile.editable_org_unit_types.set(editable_org_unit_types)
-        profile.save()
-        return profile
-
-    @staticmethod
-    def module_permissions(current_account):
-        # Get all modules linked to the current account
-        account_modules = current_account.modules if current_account.modules else []
-        # Get and return all permissions linked to the modules
-        return account_module_permissions(account_modules)
-
-    @staticmethod
-    def extract_phone_number(request):
-        phone_number = request.data.get("phone_number", None)
-        country_code = request.data.get("country_code", None)
-        number = None
-
-        if (phone_number is not None and country_code is None) or (country_code is not None and phone_number is None):
-            raise ProfileError(
-                field="phone_number",
-                detail=_("Both phone number and country code must be provided"),
-            )
-
-        if phone_number and country_code:
-            number = PhoneNumber.from_string(phone_number, region=country_code.upper())
-            if number and number.is_valid():
-                return number
-            else:
-                raise ProfileError(
-                    field="phone_number",
-                    detail=_("Invalid phone number"),
-                )
-
-    @staticmethod
-    def update_password(user, request):
-        password = request.data.get("password", "")
-        if password != "":
-            user.set_password(password)
-            user.save()
-        if password and request.user == user:
-            # update session hash if you changed your own password, so you don't get logged out
-            # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
-            update_session_auth_hash(request, user)
-
-    def send_email_invitation(self, profile, email_subject, email_message, email_html_message):
-        domain = settings.DNS_DOMAIN
-        token_generator = PasswordResetTokenGenerator()
-        token = token_generator.make_token(profile.user)
-
-        uid = urlsafe_base64_encode(force_bytes(profile.user.pk))
-        create_password_path = reverse("reset_password_confirmation", kwargs={"uidb64": uid, "token": token})
-
-        protocol = "https" if self.request.is_secure() else "http"
-        email_message_text = email_message.format(
-            userName=profile.user.username,
-            url=f"{protocol}://{domain}{create_password_path}",
-            protocol=protocol,
-            domain=domain,
-            account_name=profile.account.name,
-        )
-
-        email_subject_text = email_subject.format(domain=f"{domain}")
-        html_email_template = Template(email_html_message)
-        html_email_context = Context(
-            {
-                "protocol": protocol,
-                "domain": domain,
-                "account_name": profile.account.name,
-                "userName": profile.user.username,
-                "url": f"{protocol}://{domain}{create_password_path}",
-            }
-        )
-
-        rendered_html_email = html_email_template.render(html_email_context)
-
-        send_mail(
-            email_subject_text,
-            email_message_text,
-            settings.DEFAULT_FROM_EMAIL,
-            [profile.user.email],
-            html_message=rendered_html_email,
-        )
-
-    @staticmethod
-    def get_message_by_language(self, language="en"):
-        return self.CREATE_PASSWORD_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_MESSAGE_EN
-
-    @staticmethod
-    def get_html_message_by_language(self, language="en"):
-        return self.CREATE_PASSWORD_HTML_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_HTML_MESSAGE_EN
-
-    @staticmethod
-    def get_subject_by_language(self, language="en"):
-        return self.EMAIL_SUBJECT_FR if language == "fr" else self.EMAIL_SUBJECT_EN
 
     def create(self, request):
         current_profile = request.user.iaso_profile
@@ -829,6 +516,319 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.delete()
         profile.delete()
         return Response(True)
+
+    @staticmethod
+    def update_user_own_profile(request):
+        audit_logger = ProfileAuditLogger()
+        # allow user to change his own language
+        profile = request.user.iaso_profile
+        old_data = audit_logger.serialize_instance(profile)
+        if "home_page" in request.data:
+            profile.home_page = request.data["home_page"]
+        if "language" in request.data:
+            profile.language = request.data["language"]
+        profile.save()
+        source = f"{PROFILE_API}_mobile_me" if is_mobile_request(request) else f"{PROFILE_API}_me"
+        audit_logger.log_modification(
+            instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+        )
+        return Response(profile.as_dict())
+
+    def update_user_profile(
+        self,
+        request,
+        profile,
+        user,
+        user_roles,
+        user_roles_groups,
+        projects,
+        org_units,
+        user_permissions,
+        editable_org_unit_types,
+    ):
+        username = request.data.get("user_name")
+        user.first_name = request.data.get("first_name", "")
+        user.last_name = request.data.get("last_name", "")
+        user.username = username
+        user.email = request.data.get("email", "")
+        user.groups.set(user_roles_groups)
+        user.save()
+        user.user_permissions.set(user_permissions)
+
+        self.update_password(user, request)
+
+        phone_number = self.extract_phone_number(request)
+
+        if phone_number is not None:
+            profile.phone_number = phone_number
+
+        profile.language = request.data.get("language", "")
+        profile.organization = request.data.get("organization", None)
+        profile.home_page = request.data.get("home_page", "")
+        profile.dhis2_id = request.data.get("dhis2_id", "")
+        if profile.dhis2_id == "":
+            profile.dhis2_id = None
+
+        profile.user_roles.set(user_roles)
+        profile.projects.set(projects)
+        profile.org_units.set(org_units)
+        profile.editable_org_unit_types.set(editable_org_unit_types)
+        profile.save()
+        return profile
+
+    @staticmethod
+    def list_export(
+        queryset: "QuerySet[Profile]", file_format: FileFormatEnum
+    ) -> Union[HttpResponse, StreamingHttpResponse]:
+        columns = [{"title": column} for column in BULK_CREATE_USER_COLUMNS_LIST]
+
+        def get_row(profile: Profile, **_) -> List[Any]:
+            org_units = profile.org_units.all().order_by("id")
+
+            return [
+                profile.user.username,
+                "",  # Password is left empty on purpose.
+                profile.user.email,
+                profile.user.first_name,
+                profile.user.last_name,
+                ",".join(str(item.pk) for item in org_units),
+                ",".join(item.source_ref for item in org_units if item.source_ref),
+                profile.language,
+                profile.dhis2_id,
+                profile.organization,
+                ",".join(item.codename for item in profile.user.user_permissions.all()),
+                ",".join(
+                    item.group.name.removeprefix(f"{profile.account.pk}_")
+                    for item in profile.user_roles.all().order_by("id")
+                ),
+                ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
+                (f"'{profile.phone_number}'" if profile.phone_number else None),
+            ]
+
+        filename = "users"
+        response: Union[HttpResponse, StreamingHttpResponse]
+        queryset = queryset.order_by("id")
+
+        if file_format == FileFormatEnum.XLSX:
+            filename = filename + ".xlsx"
+            response = HttpResponse(
+                generate_xlsx("Users", columns, queryset, get_row),
+                content_type=CONTENT_TYPE_XLSX,
+            )
+        elif file_format == FileFormatEnum.CSV:
+            filename = f"{filename}.csv"
+            response = StreamingHttpResponse(
+                streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+            )
+        else:
+            raise ValueError(f"Unknown file format requested: {file_format}")
+
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response
+
+    def validate_user(self, request, user):
+        username = request.data.get("user_name")
+        if not username:
+            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
+
+        existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
+        if existing_user:
+            # Prevent from username change with existing username
+            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur existant"))
+
+    def validate_user_permissions(self, request, current_account):
+        user_permissions = []
+        module_permissions = self.module_permissions(current_account)
+        for permission_codename in request.data.get("user_permissions", []):
+            if permission_codename in module_permissions:
+                CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
+                user_permissions.append(get_object_or_404(Permission, codename=permission_codename))
+        return user_permissions
+
+    def validate_org_units(self, request, profile) -> QuerySet[OrgUnit]:
+        existing_org_units = set(profile.org_units.values_list("id", flat=True))
+        org_units = request.data.get("org_units", [])
+        managed_org_units = []
+        filtered_org_unit_ids = []
+
+        if request.user.has_perm(permission.USERS_MANAGED):
+            managed_org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list(
+                "id", flat=True
+            )
+
+        for org_unit in org_units:
+            org_unit_id = org_unit.get("id")
+            if (
+                managed_org_units
+                and org_unit_id not in managed_org_units
+                and org_unit_id not in existing_org_units
+                and not request.user.is_superuser
+            ):
+                raise PermissionDenied(
+                    f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
+                    f"pyramid. Trying to assign {org_unit_id}."
+                )
+            filtered_org_unit_ids.append(org_unit_id)
+
+        filtered_org_units = OrgUnit.objects.filter(id__in=filtered_org_unit_ids)
+
+        if request.user.has_perm(permission.USERS_MANAGED):
+            org_unit_type_ids_to_check = set(filtered_org_units.values_list("org_unit_type_id", flat=True))
+            self._validate_profile_editable_org_unit_types(request.user.iaso_profile, org_unit_type_ids_to_check)
+
+        return filtered_org_units
+
+    def validate_user_roles(self, request):
+        result = {"groups": [], "user_roles": []}
+        user_roles = request.data.get("user_roles", [])
+        # Get the current connected user
+        current_profile = request.user.iaso_profile
+        for user_role_id in user_roles:
+            # Get only a user role linked to the account's user
+            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
+            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
+            for p in user_group_item.permissions.all():
+                CustomPermissionSupport.assert_right_to_assign(request.user, p.codename)
+            result["groups"].append(user_group_item)
+            result["user_roles"].append(user_role_item)
+        return result
+
+    def validate_projects(self, request, profile):
+        result = []
+        request_user = request.user
+        projects = request.data.get("projects", None)
+        if projects is not None:
+            if not request_user.has_perm(permission.USERS_ADMIN):
+                raise PermissionDenied(
+                    f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
+                )
+        # This is bit ugly, but it's to maintain the fetaure's behaviour after adding the check in the permission
+        if projects is None:
+            projects = []
+        for project in projects:
+            item = get_object_or_404(Project, pk=project)
+            if profile.account_id != item.account_id:
+                raise BadRequest
+            result.append(item)
+        return result
+
+    def validate_editable_org_unit_types(self, request) -> QuerySet[OrgUnitType]:
+        editable_org_unit_type_ids = set(request.data.get("editable_org_unit_type_ids", []))
+        editable_org_unit_types = OrgUnitType.objects.filter(pk__in=editable_org_unit_type_ids)
+
+        if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
+            raise ValidationError("Invalid editable org unit type submitted.")
+
+        if not request.user.has_perm(permission.USERS_ADMIN):
+            self._validate_profile_editable_org_unit_types(request.user.iaso_profile, editable_org_unit_type_ids)
+
+        return editable_org_unit_types
+
+    def _validate_profile_editable_org_unit_types(self, iaso_profile: Profile, org_unit_type_ids_to_check: Set[int]):
+        user_editable_org_unit_type_ids = iaso_profile.get_editable_org_unit_type_ids()
+        invalid_ids = [
+            org_unit_type_id
+            for org_unit_type_id in org_unit_type_ids_to_check
+            if org_unit_type_id
+            and not iaso_profile.has_org_unit_write_permission(org_unit_type_id, user_editable_org_unit_type_ids)
+        ]
+
+        if invalid_ids:
+            invalid_names = ", ".join(
+                name for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list("name", flat=True)
+            )
+            raise PermissionDenied(f"The user does not have rights on the following org unit types: {invalid_names}")
+
+    @staticmethod
+    def module_permissions(current_account):
+        # Get all modules linked to the current account
+        account_modules = current_account.modules if current_account.modules else []
+        # Get and return all permissions linked to the modules
+        return account_module_permissions(account_modules)
+
+    @staticmethod
+    def extract_phone_number(request):
+        phone_number = request.data.get("phone_number", None)
+        country_code = request.data.get("country_code", None)
+        number = None
+
+        if (phone_number is not None and country_code is None) or (country_code is not None and phone_number is None):
+            raise ProfileError(
+                field="phone_number",
+                detail=_("Both phone number and country code must be provided"),
+            )
+
+        if phone_number and country_code:
+            number = PhoneNumber.from_string(phone_number, region=country_code.upper())
+            if number and number.is_valid():
+                return number
+            else:
+                raise ProfileError(
+                    field="phone_number",
+                    detail=_("Invalid phone number"),
+                )
+
+    @staticmethod
+    def update_password(user, request):
+        password = request.data.get("password", "")
+        if password != "":
+            user.set_password(password)
+            user.save()
+        if password and request.user == user:
+            # update session hash if you changed your own password, so you don't get logged out
+            # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
+            update_session_auth_hash(request, user)
+
+    def send_email_invitation(self, profile, email_subject, email_message, email_html_message):
+        domain = settings.DNS_DOMAIN
+        token_generator = PasswordResetTokenGenerator()
+        token = token_generator.make_token(profile.user)
+
+        uid = urlsafe_base64_encode(force_bytes(profile.user.pk))
+        create_password_path = reverse("reset_password_confirmation", kwargs={"uidb64": uid, "token": token})
+
+        protocol = "https" if self.request.is_secure() else "http"
+        email_message_text = email_message.format(
+            userName=profile.user.username,
+            url=f"{protocol}://{domain}{create_password_path}",
+            protocol=protocol,
+            domain=domain,
+            account_name=profile.account.name,
+        )
+
+        email_subject_text = email_subject.format(domain=f"{domain}")
+        html_email_template = Template(email_html_message)
+        html_email_context = Context(
+            {
+                "protocol": protocol,
+                "domain": domain,
+                "account_name": profile.account.name,
+                "userName": profile.user.username,
+                "url": f"{protocol}://{domain}{create_password_path}",
+            }
+        )
+
+        rendered_html_email = html_email_template.render(html_email_context)
+
+        send_mail(
+            email_subject_text,
+            email_message_text,
+            settings.DEFAULT_FROM_EMAIL,
+            [profile.user.email],
+            html_message=rendered_html_email,
+        )
+
+    @staticmethod
+    def get_message_by_language(self, language="en"):
+        return self.CREATE_PASSWORD_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_MESSAGE_EN
+
+    @staticmethod
+    def get_html_message_by_language(self, language="en"):
+        return self.CREATE_PASSWORD_HTML_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_HTML_MESSAGE_EN
+
+    @staticmethod
+    def get_subject_by_language(self, language="en"):
+        return self.EMAIL_SUBJECT_FR if language == "fr" else self.EMAIL_SUBJECT_EN
 
     CREATE_PASSWORD_MESSAGE_EN = """Hello,
 

@@ -1,5 +1,6 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
+import * as Sentry from '@sentry/browser';
 import { theme } from 'bluesquare-components';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -31,6 +32,7 @@ const queryClient = new QueryClient({
 
 declare global {
     interface Window {
+        SENTRY_DSN?: string;
         iasoApp: (
             element: HTMLElement,
             enabledPluginsName: string[],
@@ -39,7 +41,19 @@ declare global {
         ) => void;
     }
 }
-
+if (window.SENTRY_DSN) {
+    Sentry.init({
+        dsn: window.SENTRY_DSN,
+        replaysSessionSampleRate: 0.1,
+        replaysOnErrorSampleRate: 1.0,
+        integrations: [
+            Sentry.replayIntegration({
+                maskAllText: true,
+                blockAllMedia: true,
+            }),
+        ],
+    });
+}
 const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
     const plugins: Plugin[] = getPlugins(enabledPluginsName);
     // Arbitrarily take the home page of the first plugin in the list

@@ -302,7 +302,6 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                             type="select"
                             options={orgUnitTypes || []}
                             label={MESSAGES.org_unit_type}
-                            isSearchable
                         />
                     )}
                 </div>
@@ -327,6 +326,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                                 type="radio"
                                 options={validationStatusOptions || []}
                                 loading={isLoadingValidationStatusOptions}
+                                labelString=""
                             />
                         </div>
                     )}

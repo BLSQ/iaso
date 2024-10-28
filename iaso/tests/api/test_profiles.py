@@ -517,7 +517,7 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 403)
 
-    def test_create_user_with_user_roles(self):
+    def test_create_user_with_user_roles_and_permissions(self):
         self.client.force_authenticate(self.jim)
         data = {
             "user_name": "unittest_user_name",
@@ -536,6 +536,10 @@ class ProfileAPITestCase(APITestCase):
         self.assertValidProfileData(response_data)
         self.assertEqual(user_user_role.id, self.user_role.id)
         self.assertEqual(user_user_role.group.name, self.group.name)
+
+        user = m.User.objects.get(username="unittest_user_name")
+        self.assertEqual(user.user_permissions.count(), 1)
+        self.assertEqual(user.user_permissions.first().codename, "iaso_forms")
 
     def test_create_user_should_fail_with_restricted_editable_org_unit_types_for_field_orgunits(self):
         """

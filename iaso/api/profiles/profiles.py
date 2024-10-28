@@ -386,49 +386,6 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile = get_object_or_404(self.get_queryset(), pk=pk)
             return Response(profile.as_dict())
 
-    def partial_update(self, request, pk=None):
-        if pk == PK_ME:
-            return self.update_user_own_profile(request)
-
-        profile = get_object_or_404(self.get_queryset(), id=pk)
-        user = profile.user
-        # profile.account is safe to use because we never update it through the API
-        current_account = user.iaso_profile.account
-        audit_logger = ProfileAuditLogger()
-        old_data = audit_logger.serialize_instance(profile)
-        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
-        # Validation
-        try:
-            self.validate_user(request, user)
-            user_permissions = self.validate_user_permissions(request, current_account)
-            org_units = self.validate_org_units(request, profile)
-            user_roles_data = self.validate_user_roles(request)
-            projects = self.validate_projects(request, profile)
-            editable_org_unit_types = self.validate_editable_org_unit_types(request)
-        except ProfileError as error:
-            return JsonResponse(
-                {"errorKey": error.field, "errorMessage": error.detail},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        profile = self.update_user_profile(
-            request=request,
-            profile=profile,
-            user=user,
-            user_permissions=user_permissions,
-            org_units=org_units,
-            user_roles=user_roles_data["user_roles"],
-            user_roles_groups=user_roles_data["groups"],
-            projects=projects,
-            editable_org_unit_types=editable_org_unit_types,
-        )
-
-        audit_logger.log_modification(
-            instance=profile, old_data_dump=old_data, request_user=request.user, source=source
-        )
-
-        return Response(profile.as_dict())
-
     def validate_user(self, request, user):
         username = request.data.get("user_name")
         if not username:
@@ -750,9 +707,6 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.last_name = request.data.get("last_name", "")
         user.username = username
         user.email = request.data.get("email", "")
-        permissions = request.data.get("user_permissions", [])
-
-        modules_permissions = self.module_permissions(current_account)
 
         if password != "":
             user.set_password(password)
@@ -760,13 +714,6 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if main_user:
             TenantUser.objects.create(main_user=main_user, account_user=user)
-
-        for permission_codename in permissions:
-            if permission_codename in modules_permissions:
-                permission = get_object_or_404(Permission, codename=permission_codename)
-                user.user_permissions.add(permission)
-        if permissions != []:
-            user.save()
 
         # Create an Iaso profile for the new user and attach it to the same account
         # as the currently authenticated user
@@ -808,6 +755,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         if phone_number is not None:
             profile.phone_number = phone_number
 
+        user_permissions = self.validate_user_permissions(request, current_account)
+        if user_permissions:
+            user.user_permissions.set(user_permissions)
+
         editable_org_unit_types = self.validate_editable_org_unit_types(request)
         profile.editable_org_unit_types.set(editable_org_unit_types)
 
@@ -826,6 +777,49 @@ class ProfilesViewSet(viewsets.ViewSet):
             self.send_email_invitation(profile, email_subject, email_message, email_html_message)
 
         return Response(user.profile.as_dict())
+
+    def partial_update(self, request, pk=None):
+        if pk == PK_ME:
+            return self.update_user_own_profile(request)
+
+        profile = get_object_or_404(self.get_queryset(), id=pk)
+        user = profile.user
+        # profile.account is safe to use because we never update it through the API
+        current_account = user.iaso_profile.account
+        audit_logger = ProfileAuditLogger()
+        old_data = audit_logger.serialize_instance(profile)
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
+        # Validation
+        try:
+            self.validate_user(request, user)
+            user_permissions = self.validate_user_permissions(request, current_account)
+            org_units = self.validate_org_units(request, profile)
+            user_roles_data = self.validate_user_roles(request)
+            projects = self.validate_projects(request, profile)
+            editable_org_unit_types = self.validate_editable_org_unit_types(request)
+        except ProfileError as error:
+            return JsonResponse(
+                {"errorKey": error.field, "errorMessage": error.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        profile = self.update_user_profile(
+            request=request,
+            profile=profile,
+            user=user,
+            user_permissions=user_permissions,
+            org_units=org_units,
+            user_roles=user_roles_data["user_roles"],
+            user_roles_groups=user_roles_data["groups"],
+            projects=projects,
+            editable_org_unit_types=editable_org_unit_types,
+        )
+
+        audit_logger.log_modification(
+            instance=profile, old_data_dump=old_data, request_user=request.user, source=source
+        )
+
+        return Response(profile.as_dict())
 
     def delete(self, request, pk=None):
         profile = get_object_or_404(self.get_queryset(), id=pk)

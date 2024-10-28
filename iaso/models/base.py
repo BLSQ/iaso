@@ -1105,7 +1105,7 @@ class Instance(models.Model):
     def convert_correlation(self):
         if not self.correlation_id:
             identifier = str(self.id)
-            if self.form.correlation_field is not None and self.json:
+            if self.form.correlation_field and self.json:
                 identifier += self.json.get(self.form.correlation_field, None)
                 identifier = identifier.zfill(3)
             random_number = random.choice("1234567890")

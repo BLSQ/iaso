@@ -727,20 +727,30 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         profile = get_object_or_404(Profile, id=user.profile.pk)
 
-        org_units = self.validate_org_units(request, user.profile)
-        profile.org_units.set(org_units)
+        try:
+            user_permissions = self.validate_user_permissions(request, current_account)
+            org_units = self.validate_org_units(request, profile)
+            user_roles_data = self.validate_user_roles(request)
+            projects = self.validate_projects(request, profile)
+            editable_org_unit_types = self.validate_editable_org_unit_types(request)
+        except ProfileError as error:
+            return JsonResponse(
+                {"errorKey": error.field, "errorMessage": error.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        user_roles_data = self.validate_user_roles(request)
-        if user_roles_data.get("user_roles"):
-            profile.user_roles.set(user_roles_data["user_roles"])
+        profile = self.update_user_profile(
+            request=request,
+            profile=profile,
+            user=user,
+            user_permissions=user_permissions,
+            org_units=org_units,
+            user_roles=user_roles_data["user_roles"],
+            user_roles_groups=user_roles_data["groups"],
+            projects=projects,
+            editable_org_unit_types=editable_org_unit_types,
+        )
 
-        projects = request.data.get("projects", [])
-        profile.projects.clear()
-        for project in projects:
-            item = get_object_or_404(Project, pk=project)
-            if profile.account_id != item.account_id:
-                return JsonResponse({"errorKey": "projects", "errorMessage": _("Unauthorized")}, status=400)
-            profile.projects.add(item)
         dhis2_id = request.data.get("dhis2_id", None)
         if dhis2_id == "":
             dhis2_id = None
@@ -749,13 +759,6 @@ class ProfilesViewSet(viewsets.ViewSet):
         phone_number = self.extract_phone_number(request)
         if phone_number is not None:
             profile.phone_number = phone_number
-
-        user_permissions = self.validate_user_permissions(request, current_account)
-        if user_permissions:
-            user.user_permissions.set(user_permissions)
-
-        editable_org_unit_types = self.validate_editable_org_unit_types(request)
-        profile.editable_org_unit_types.set(editable_org_unit_types)
 
         profile.save()
 

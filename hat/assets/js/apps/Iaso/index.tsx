@@ -52,6 +52,8 @@ const initSentry = () => {
         replaysOnErrorSampleRate: 1.0,
         integrations: [
             Sentry.replayIntegration({
+                maskAllText: false,
+                blockAllMedia: false,
                 networkDetailAllowUrls: [
                     window.location.origin,
                     `${window.location.origin}/api`,

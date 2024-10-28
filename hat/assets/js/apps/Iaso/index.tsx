@@ -50,6 +50,7 @@ if (window.SENTRY_DSN) {
             Sentry.replayIntegration({
                 maskAllText: true,
                 blockAllMedia: true,
+                networkDetailAllowUrls: [window.location.origin],
             }),
         ],
     });

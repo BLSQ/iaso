@@ -13,6 +13,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import { useCurrentUser, User } from '../../../utils/usersUtils';
 
 type SentryContextType = {
     hasConsent: boolean;
@@ -37,7 +38,7 @@ export const useSentry = () => {
     }
     return context;
 };
-const initSentry = (consent: boolean) => {
+const initSentry = (consent: boolean, currentUser: User) => {
     // Return early if no consent or no DSN
     if (!consent || !window.SENTRY_CONFIG?.SENTRY_URL) return;
 
@@ -50,6 +51,7 @@ const initSentry = (consent: boolean) => {
             Sentry.replayIntegration({
                 maskAllText: false,
                 blockAllMedia: false,
+                maskAllInputs: false,
                 networkDetailAllowUrls: [
                     window.location.origin,
                     `${window.location.origin}/api`,
@@ -57,10 +59,17 @@ const initSentry = (consent: boolean) => {
             }),
         ],
     });
+
+    Sentry.setUser({
+        id: currentUser.id,
+        username: currentUser.username,
+        email: currentUser.email,
+    });
 };
 
 export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
     const [showDialog, setShowDialog] = useState(false);
+    const currentUser = useCurrentUser();
     const [hasConsent, setHasConsent] = useState(
         () => localStorage.getItem('sentry-consent') === 'true',
     );
@@ -72,12 +81,15 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
         }
     }, []);
 
-    const handleConsent = useCallback((consent: boolean) => {
-        localStorage.setItem('sentry-consent', consent.toString());
-        setHasConsent(consent);
-        initSentry(consent);
-        setShowDialog(false);
-    }, []);
+    const handleConsent = useCallback(
+        (consent: boolean) => {
+            localStorage.setItem('sentry-consent', consent.toString());
+            setHasConsent(consent);
+            initSentry(consent, currentUser);
+            setShowDialog(false);
+        },
+        [currentUser],
+    );
 
     const contextValue = useMemo(
         () => ({ hasConsent, setConsent: handleConsent }),

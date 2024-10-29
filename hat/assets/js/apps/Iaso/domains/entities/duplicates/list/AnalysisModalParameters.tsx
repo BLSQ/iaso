@@ -1,34 +1,137 @@
 import { Grid, Typography } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useState,
+    useMemo,
+} from 'react';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
-import InputComponent from '../../../../components/forms/InputComponent';
+import InputComponent, {
+    InputComponentType,
+} from '../../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
+import { LEVENSHTEIN_PARAMETERS_DROPDOWN } from '../../constants';
 
+type Parameters = { name: string; value: string | number }[];
 type Props = {
-    parameterComponents: string[];
-    parameters: { name: string; value: string | number }[];
-    onChangeParameters: () => void;
-    handleParametersChange: (key: string, value: string, index: number) => void;
-    getFilteredOptions: (
-        index: number,
-    ) => { label: string; value: string | number }[];
-    paramDisabled: boolean[];
-    removeParameter: (index: number) => void;
-    areOptionsAvailable: boolean;
+    parameters: Parameters;
+    setParameters: (parameters: any) => void;
+    setConfirm: (val: boolean) => void;
+    isConfirm: boolean | null;
 };
 const AnalysisModalParameters: FunctionComponent<Props> = ({
-    parameterComponents,
     parameters,
-    onChangeParameters,
-    handleParametersChange,
-    getFilteredOptions,
-    paramDisabled,
-    removeParameter,
-    areOptionsAvailable,
+    setParameters,
+    setConfirm,
+    isConfirm,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const [parameterComponents, setParameterComponents] = useState<string[]>(
+        [],
+    );
+    const [paramDisabled, setParamDisabled] = useState<boolean[]>([]);
+    const [paramValueType, setParamValueType] =
+        useState<InputComponentType>('text');
+    const parametersOptionsAvailable = useMemo(
+        () =>
+            JSON.stringify(
+                LEVENSHTEIN_PARAMETERS_DROPDOWN.map(item => item.label),
+            ) === JSON.stringify(parameters.map(item => item.name)),
+        [parameters],
+    );
+
+    const handleParametersChange = useCallback(
+        (keyValue: string, value: string, index: number) => {
+            setParameters(prevParams => {
+                const updatedParams = [...prevParams];
+
+                if (keyValue === 'parameters') {
+                    const selectedParameter =
+                        LEVENSHTEIN_PARAMETERS_DROPDOWN.find(
+                            option => option.value === value,
+                        );
+                    if (selectedParameter) {
+                        updatedParams[index] = {
+                            ...updatedParams[index],
+                            name: selectedParameter.label,
+                            value: updatedParams[index]?.value || '',
+                        };
+                        setParamDisabled(prev => {
+                            const newStates = [...prev];
+                            newStates[index] = false;
+                            return newStates;
+                        });
+                        setParamValueType(
+                            selectedParameter.value_type as InputComponentType,
+                        );
+                    } else {
+                        updatedParams[index] = { name: '', value: '' };
+                        setParamDisabled(prev => {
+                            const newStates = [...prev];
+                            newStates[index] = true;
+                            return newStates;
+                        });
+                    }
+                } else if (keyValue === 'parameter_value') {
+                    updatedParams[index] = {
+                        ...updatedParams[index],
+                        value,
+                    };
+                }
+                const allParamsFilled = updatedParams.every(
+                    param => param.value !== '',
+                );
+                if (allParamsFilled && isConfirm) {
+                    setConfirm(true);
+                } else {
+                    setConfirm(false);
+                }
+
+                return updatedParams;
+            });
+        },
+        [isConfirm, setConfirm, setParamDisabled, setParameters],
+    );
+
+    const onChangeParameters = useCallback(() => {
+        setParameterComponents(prevParams => [
+            ...prevParams,
+            `parameter_${prevParams.length}`,
+        ]);
+
+        setParameters(prevParams => [...prevParams, { name: '', value: '' }]);
+        setParamDisabled(prev => [...prev, true]);
+    }, [setParameters]);
+
+    const removeParameter = useCallback(
+        index => {
+            setParameterComponents(prevParams =>
+                prevParams.filter((_, i) => i !== index),
+            );
+
+            setParameters(prevParams =>
+                prevParams.filter((_, i) => i !== index),
+            );
+            setParamDisabled(prev => prev.filter((_, i) => i !== index));
+        },
+        [setParameters],
+    );
+
+    const getNotSelectedOptions = useCallback(
+        index => {
+            const selectedValues = parameters.map(param => param.name);
+            const remainParams = LEVENSHTEIN_PARAMETERS_DROPDOWN.filter(
+                option =>
+                    !selectedValues.includes(option.label) ||
+                    parameters[index]?.name === option.label,
+            );
+
+            return remainParams;
+        },
+        [parameters],
+    );
 
     return (
         <>
@@ -80,12 +183,12 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
                                     handleParametersChange(key, value, index)
                                 }
                                 label={MESSAGES.parameters}
-                                options={getFilteredOptions(index)}
+                                options={getNotSelectedOptions(index)}
                             />
                         </Grid>
                         <Grid item xs={5} md={4} alignItems="center">
                             <InputComponent
-                                type="text"
+                                type={paramValueType}
                                 keyValue="parameter_value"
                                 value={param.value}
                                 onChange={(key, value) =>
@@ -120,7 +223,7 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
                 justifyContent="flex-start"
                 marginTop={2}
             />
-            {parameterComponents.length > 0 && !areOptionsAvailable && (
+            {parameterComponents.length > 0 && !parametersOptionsAvailable && (
                 <Grid
                     item
                     xs={6}

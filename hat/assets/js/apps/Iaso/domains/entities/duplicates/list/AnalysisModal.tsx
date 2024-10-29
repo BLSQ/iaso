@@ -1,16 +1,27 @@
-import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
+import {
+    ConfirmCancelModal,
+    IconButton,
+    makeFullModal,
+    useSafeIntl,
+} from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useState,
 } from 'react';
+import { Grid, Typography } from '@mui/material';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import MESSAGES from '../messages';
 import { AnalysisModalButton } from './AnalysisModalButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useGetBeneficiaryTypesDropdown } from '../../hooks/requests';
 import { useStartAnalyse } from '../hooks/api/analyzes';
-import { ALGORITHM_DROPDOWN } from '../../constants';
+import {
+    ALGORITHM_DROPDOWN,
+    LEVENSHTEIN_PARAMETERS_DROPDOWN,
+} from '../../constants';
 import { formatLabel } from '../../../instances/utils';
 import { useGetFormForEntityType } from '../../entityTypes/hooks/requests/forms';
 
@@ -25,7 +36,13 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     const [entityTypeFields, setEntityTypeFields] = useState([]);
     const [referenceForm, setReferenceForm] = useState(undefined);
     const [confirm, setConfirm] = useState(false);
-
+    const [parameterComponents, setParameterComponents] = useState<string[]>(
+        [],
+    );
+    const [parameters, setParameters] = useState<
+        { name: string; value: string | number }[]
+    >([]);
+    const { formatMessage } = useSafeIntl();
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
         useGetBeneficiaryTypesDropdown();
 
@@ -35,9 +52,9 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             algorithm,
             entity_type_id: entityType,
             fields: entityTypeFields,
-            parameters: {},
+            parameters,
         });
-    }, [startAnalyse, algorithm, entityType, entityTypeFields]);
+    }, [startAnalyse, algorithm, entityType, entityTypeFields, parameters]);
 
     const handleChangeEntityType = value => {
         const filteredEntityType = entityTypesDropdown?.find(
@@ -68,6 +85,34 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
         }
     };
 
+    const handleParametersChange = (keyValue, value, index) => {
+        setParameters(prevParams => {
+            const updatedParams = [...prevParams];
+
+            if (keyValue === 'parameters') {
+                const selectedParameter = LEVENSHTEIN_PARAMETERS_DROPDOWN.find(
+                    option => option.value === value,
+                );
+                if (selectedParameter) {
+                    updatedParams[index] = {
+                        ...updatedParams[index],
+                        name: selectedParameter.label,
+                        value: updatedParams[index]?.value || '',
+                    };
+                } else {
+                    updatedParams[index] = { name: '', value: '' };
+                }
+            } else if (keyValue === 'parameter_value') {
+                updatedParams[index] = {
+                    ...updatedParams[index],
+                    value,
+                };
+            }
+
+            return updatedParams;
+        });
+    };
+
     useEffect(() => {
         if (algorithm && entityType && entityTypeFields.length > 0) {
             setConfirm(true);
@@ -79,6 +124,23 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
         formId: referenceForm,
         enabled: isOpen,
     });
+
+    const onChangeParameters = () => {
+        setParameterComponents(prevParams => [
+            ...prevParams,
+            `parameter_${prevParams.length}`,
+        ]);
+
+        setParameters(prevParams => [...prevParams, { name: '', value: '' }]);
+    };
+
+    const removeParameter = index => {
+        setParameterComponents(prevParams =>
+            prevParams.filter((_, i) => i !== index),
+        );
+
+        setParameters(prevParams => prevParams.filter((_, i) => i !== index));
+    };
     return (
         <ConfirmCancelModal
             allowConfirm={confirm}
@@ -87,7 +149,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             onCancel={() => {
                 closeDialog();
             }}
-            maxWidth="xs"
+            maxWidth="sm"
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.confirm}
             open={isOpen}
@@ -96,39 +158,162 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             onClose={() => null}
             dataTestId=""
         >
-            <InputComponent
-                type="select"
-                keyValue="entity_type"
-                value={entityType}
-                onChange={handleChange}
-                label={MESSAGES.entityTypes}
-                options={entityTypesDropdown}
-                loading={isFetchingEntityTypes}
-            />
-            <InputComponent
-                type="select"
-                keyValue="algorithm"
-                value={algorithm}
-                onChange={handleChange}
-                label={MESSAGES.algorithm}
-                options={ALGORITHM_DROPDOWN}
-            />
-            <InputComponent
-                type="select"
-                multi
-                required
-                disabled={isFetchingForm || !referenceForm}
-                keyValue="entity_type_fields"
-                onChange={(key, value) =>
-                    handleChange(key, value ? value.split(',') : null)
-                }
-                value={entityTypeFields}
-                label={MESSAGES.fields}
-                options={possibleFields.map(field => ({
-                    value: field.name,
-                    label: formatLabel(field),
-                }))}
-            />
+            <Grid container>
+                <Grid item xs={12} md={12}>
+                    <InputComponent
+                        type="select"
+                        keyValue="entity_type"
+                        value={entityType}
+                        onChange={handleChange}
+                        label={MESSAGES.entityTypes}
+                        options={entityTypesDropdown}
+                        loading={isFetchingEntityTypes}
+                    />
+                </Grid>
+                <Grid item xs={12} md={12}>
+                    <InputComponent
+                        type="select"
+                        keyValue="algorithm"
+                        value={algorithm}
+                        onChange={handleChange}
+                        label={MESSAGES.algorithm}
+                        options={ALGORITHM_DROPDOWN}
+                    />
+                </Grid>
+                <Grid item xs={12} md={12}>
+                    <InputComponent
+                        type="select"
+                        multi
+                        required
+                        disabled={isFetchingForm || !referenceForm}
+                        keyValue="entity_type_fields"
+                        onChange={(key, value) =>
+                            handleChange(key, value ? value.split(',') : null)
+                        }
+                        value={entityTypeFields}
+                        label={MESSAGES.fields}
+                        options={possibleFields.map(field => ({
+                            value: field.name,
+                            label: formatLabel(field),
+                        }))}
+                    />
+                </Grid>
+                <Grid
+                    item
+                    xs={6}
+                    md={8}
+                    display="flex"
+                    justifyContent="flex-start"
+                    marginTop={2}
+                >
+                    <Typography>
+                        {formatMessage(MESSAGES.parameters)}:
+                    </Typography>
+                </Grid>
+                {parameterComponents.length === 0 && (
+                    <Grid
+                        item
+                        xs={6}
+                        md={4}
+                        display="flex"
+                        justifyContent="flex-end"
+                        marginTop={1}
+                    >
+                        <IconButton
+                            overrideIcon={AddCircleIcon}
+                            onClick={onChangeParameters}
+                            tooltipMessage={MESSAGES.addParameters}
+                            iconSize="large"
+                            color="primary"
+                        />
+                    </Grid>
+                )}
+
+                {parameterComponents.map((parameter, index) => {
+                    const param = parameters[index] || {};
+                    return (
+                        <Grid
+                            container
+                            item
+                            spacing={3}
+                            style={{ marginTop: '-24px' }}
+                            key={parameter}
+                        >
+                            <Grid item xs={5} md={7} alignItems="center">
+                                <InputComponent
+                                    type="select"
+                                    keyValue="parameters"
+                                    value={param.name}
+                                    onChange={(key, value) =>
+                                        handleParametersChange(
+                                            key,
+                                            value,
+                                            index,
+                                        )
+                                    }
+                                    label={MESSAGES.parameters}
+                                    options={LEVENSHTEIN_PARAMETERS_DROPDOWN}
+                                />
+                            </Grid>
+                            <Grid item xs={5} md={4} alignItems="center">
+                                <InputComponent
+                                    type="text"
+                                    keyValue="parameter_value"
+                                    value={param.value}
+                                    onChange={(key, value) =>
+                                        handleParametersChange(
+                                            key,
+                                            value,
+                                            index,
+                                        )
+                                    }
+                                    label={MESSAGES.parameterValue}
+                                />
+                            </Grid>
+                            <Grid
+                                item
+                                xs={2}
+                                md={1}
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                            >
+                                <IconButton
+                                    overrideIcon={RemoveCircleIcon}
+                                    onClick={() => removeParameter(index)}
+                                    tooltipMessage={MESSAGES.removeParameter}
+                                />
+                            </Grid>
+                        </Grid>
+                    );
+                })}
+                <Grid
+                    item
+                    xs={6}
+                    md={8}
+                    display="flex"
+                    justifyContent="flex-start"
+                    marginTop={2}
+                />
+                {parameterComponents.length > 0 && (
+                    <Grid
+                        item
+                        xs={6}
+                        md={4}
+                        display="flex"
+                        justifyContent="flex-end"
+                        marginTop={1}
+                    >
+                        <IconButton
+                            overrideIcon={AddCircleIcon}
+                            onClick={onChangeParameters}
+                            tooltipMessage={MESSAGES.addParameters}
+                            iconSize="large"
+                            color="primary"
+                        />
+                    </Grid>
+                )}
+            </Grid>
         </ConfirmCancelModal>
     );
 };

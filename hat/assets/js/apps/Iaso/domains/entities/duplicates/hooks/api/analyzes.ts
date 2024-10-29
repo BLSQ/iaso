@@ -21,7 +21,7 @@ export type Payload = {
     algorithm: string;
     entity_type_id: number;
     fields: string[];
-    parameters: Record<string, string>;
+    parameters: Record<string, string>[];
 };
 
 export const useStartAnalyse = (): UseMutationResult => {

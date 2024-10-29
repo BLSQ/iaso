@@ -119,7 +119,7 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
         [setParameters],
     );
 
-    const getNotSelectedOptions = useCallback(
+    const notSelectedOptions = useCallback(
         index => {
             const selectedValues = parameters.map(param => param.name);
             const remainParams = LEVENSHTEIN_PARAMETERS_DROPDOWN.filter(
@@ -133,6 +133,27 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
         [parameters],
     );
 
+    const addParametersButton = useMemo(() => {
+        return (
+            <Grid
+                item
+                xs={6}
+                md={4}
+                display="flex"
+                justifyContent="flex-end"
+                marginTop={1}
+            >
+                <IconButton
+                    overrideIcon={AddCircleIcon}
+                    onClick={onChangeParameters}
+                    tooltipMessage={MESSAGES.addParameters}
+                    iconSize="large"
+                    color="primary"
+                />
+            </Grid>
+        );
+    }, [onChangeParameters]);
+
     return (
         <>
             <Grid
@@ -145,24 +166,7 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
             >
                 <Typography>{formatMessage(MESSAGES.parameters)}:</Typography>
             </Grid>
-            {parameterComponents.length === 0 && (
-                <Grid
-                    item
-                    xs={6}
-                    md={4}
-                    display="flex"
-                    justifyContent="flex-end"
-                    marginTop={1}
-                >
-                    <IconButton
-                        overrideIcon={AddCircleIcon}
-                        onClick={onChangeParameters}
-                        tooltipMessage={MESSAGES.addParameters}
-                        iconSize="large"
-                        color="primary"
-                    />
-                </Grid>
-            )}
+            {parameterComponents.length === 0 && addParametersButton}
 
             {parameterComponents.map((parameter, index) => {
                 const param = parameters[index] || {};
@@ -183,7 +187,7 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
                                     handleParametersChange(key, value, index)
                                 }
                                 label={MESSAGES.parameters}
-                                options={getNotSelectedOptions(index)}
+                                options={notSelectedOptions(index)}
                             />
                         </Grid>
                         <Grid item xs={5} md={4} alignItems="center">
@@ -223,24 +227,9 @@ const AnalysisModalParameters: FunctionComponent<Props> = ({
                 justifyContent="flex-start"
                 marginTop={2}
             />
-            {parameterComponents.length > 0 && !parametersOptionsAvailable && (
-                <Grid
-                    item
-                    xs={6}
-                    md={4}
-                    display="flex"
-                    justifyContent="flex-end"
-                    marginTop={1}
-                >
-                    <IconButton
-                        overrideIcon={AddCircleIcon}
-                        onClick={onChangeParameters}
-                        tooltipMessage={MESSAGES.addParameters}
-                        iconSize="large"
-                        color="primary"
-                    />
-                </Grid>
-            )}
+            {parameterComponents.length > 0 &&
+                !parametersOptionsAvailable &&
+                addParametersButton}
         </>
     );
 };

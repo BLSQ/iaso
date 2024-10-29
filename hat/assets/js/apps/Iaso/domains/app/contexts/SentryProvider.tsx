@@ -41,7 +41,7 @@ export const useSentry = () => {
 const initSentry = (consent: boolean) => {
     // Return early if no consent or no DSN
     if (!consent || !window.SENTRY_CONFIG?.SENTRY_URL) return;
-
+    console.log('initSentry');
     Sentry.init({
         dsn: window.SENTRY_CONFIG.SENTRY_URL,
         environment: window.SENTRY_CONFIG.SENTRY_ENVIRONMENT || 'development',
@@ -70,8 +70,7 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
 
     useEffect(() => {
         const hasStoredConsent = localStorage.getItem('sentry-consent');
-        // if (!hasStoredConsent && Boolean(window.SENTRY_CONFIG?.SENTRY_URL)) {
-        if (!hasStoredConsent) {
+        if (!hasStoredConsent && Boolean(window.SENTRY_CONFIG?.SENTRY_URL)) {
             setShowDialog(true);
         }
     }, []);
@@ -87,10 +86,10 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
     }, [currentUser]);
 
     const handleConsent = useCallback((consent: boolean) => {
-        setShowDialog(false);
         localStorage.setItem('sentry-consent', consent.toString());
         setHasConsent(consent);
         initSentry(consent);
+        setShowDialog(false);
     }, []);
 
     const contextValue = useMemo(

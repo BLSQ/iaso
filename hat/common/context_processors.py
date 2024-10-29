@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict
 
 from django.conf import settings
@@ -20,10 +21,14 @@ def logo_path(request: HttpRequest) -> Dict[str, str]:
     return {"logo_path": settings.LOGO_PATH}
 
 
-def sentry_url(request: HttpRequest) -> Dict[str, str]:
-    return {
-        "SENTRY_URL": settings.SENTRY_URL,
+def sentry_config(request: HttpRequest) -> Dict[str, Any]:
+    config = {
+        "sentry_config": {
+            "SENTRY_URL": settings.SENTRY_URL or None,
+            "SENTRY_ENVIRONMENT": settings.ENVIRONMENT or None,
+        }
     }
+    return {"sentry_config": json.dumps(config["sentry_config"])}
 
 
 def theme(request: HttpRequest) -> Dict[str, Any]:

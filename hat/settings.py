@@ -258,7 +258,7 @@ TEMPLATES = [
                 "hat.common.context_processors.favicon_path",
                 "hat.common.context_processors.logo_path",
                 "hat.common.context_processors.theme",
-                "hat.common.context_processors.sentry_url",
+                "hat.common.context_processors.sentry_config",
             ]
         },
     }

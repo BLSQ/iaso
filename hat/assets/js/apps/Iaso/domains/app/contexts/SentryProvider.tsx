@@ -59,6 +59,7 @@ const initSentry = (consent: boolean) => {
             }),
         ],
     });
+    console.log('initSentry DONE');
 };
 
 export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
@@ -72,6 +73,9 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
         const hasStoredConsent = localStorage.getItem('sentry-consent');
         if (!hasStoredConsent && Boolean(window.SENTRY_CONFIG?.SENTRY_URL)) {
             setShowDialog(true);
+        }
+        if (hasStoredConsent) {
+            initSentry(hasStoredConsent === 'true');
         }
     }, []);
 

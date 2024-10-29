@@ -1,10 +1,12 @@
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import Paper from '@mui/material/Paper';
+import Snackbar from '@mui/material/Snackbar';
 import * as Sentry from '@sentry/browser';
 import { browserTracingIntegration } from '@sentry/browser';
+import { useSafeIntl } from 'bluesquare-components';
 import React, {
     createContext,
     FunctionComponent,
@@ -14,6 +16,8 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import { defineMessages } from 'react-intl';
+import { SxStyles } from '../../../types/general';
 
 type SentryContextType = {
     hasConsent: boolean;
@@ -65,11 +69,41 @@ const initSentry = (consent: boolean) => {
     });
 };
 
+const styles: SxStyles = {
+    paper: { p: 2, maxWidth: 900, width: '100%' },
+    title: { p: 0 },
+    buttons: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: 1,
+    },
+};
+
+const MESSAGES = defineMessages({
+    analyticsConsent: {
+        defaultMessage: 'Analytics Consent',
+        id: 'iaso.analytics.consent',
+    },
+    analyticsConsentDescription: {
+        defaultMessage:
+            'We use Sentry to collect session replay data to improve our service quality and debug issues. This includes recording your interactions with our application.',
+        id: 'iaso.analytics.consent.description',
+    },
+    decline: {
+        defaultMessage: 'Decline',
+        id: 'iaso.analytics.consent.decline',
+    },
+    accept: {
+        defaultMessage: 'Accept',
+        id: 'iaso.analytics.consent.accept',
+    },
+});
 export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
     const [showDialog, setShowDialog] = useState(false);
     const [hasConsent, setHasConsent] = useState(
         () => localStorage.getItem('sentry-consent') === 'true',
     );
+    const { formatMessage } = useSafeIntl();
 
     useEffect(() => {
         const hasStoredConsent = localStorage.getItem('sentry-consent');
@@ -95,27 +129,35 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
     return (
         <SentryContext.Provider value={contextValue}>
             {children}
-            <Dialog open={showDialog} onClose={() => handleConsent(false)}>
-                <DialogTitle>Analytics Consent</DialogTitle>
-                <DialogContent>
-                    We use Sentry to collect session replay data to improve our
-                    service quality and debug issues. This includes recording
-                    your interactions with our application. Your privacy is
-                    important to us, and you can change this setting at any
-                    time.
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => handleConsent(false)}>
-                        Decline
-                    </Button>
-                    <Button
-                        onClick={() => handleConsent(true)}
-                        variant="contained"
-                    >
-                        Accept
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <Snackbar
+                open={showDialog}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                sx={{ maxWidth: '100%' }}
+            >
+                <Paper sx={styles.paper}>
+                    <Box mb={2}>
+                        <DialogTitle sx={styles.title}>
+                            {formatMessage(MESSAGES.analyticsConsent)}
+                        </DialogTitle>
+                        <DialogContent sx={styles.content}>
+                            {formatMessage(
+                                MESSAGES.analyticsConsentDescription,
+                            )}
+                        </DialogContent>
+                    </Box>
+                    <Box sx={styles.buttons}>
+                        <Button onClick={() => handleConsent(false)}>
+                            {formatMessage(MESSAGES.decline)}
+                        </Button>
+                        <Button
+                            onClick={() => handleConsent(true)}
+                            variant="contained"
+                        >
+                            {formatMessage(MESSAGES.accept)}
+                        </Button>
+                    </Box>
+                </Paper>
+            </Snackbar>
         </SentryContext.Provider>
     );
 };

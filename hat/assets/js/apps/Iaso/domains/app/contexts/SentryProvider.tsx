@@ -20,7 +20,7 @@ type SentryContextType = {
 };
 
 export type SentryConfig = {
-    SENTRY_DSN?: string;
+    SENTRY_URL?: string;
     SENTRY_ENVIRONMENT?: string;
 };
 
@@ -39,10 +39,10 @@ export const useSentry = () => {
 };
 const initSentry = (consent: boolean) => {
     // Return early if no consent or no DSN
-    if (!consent || !window.SENTRY_CONFIG?.SENTRY_DSN) return;
+    if (!consent || !window.SENTRY_CONFIG?.SENTRY_URL) return;
 
     Sentry.init({
-        dsn: window.SENTRY_CONFIG.SENTRY_DSN,
+        dsn: window.SENTRY_CONFIG.SENTRY_URL,
         environment: window.SENTRY_CONFIG.SENTRY_ENVIRONMENT || 'development',
         replaysSessionSampleRate: 0.1,
         replaysOnErrorSampleRate: 1.0,
@@ -67,11 +67,7 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
 
     useEffect(() => {
         const hasStoredConsent = localStorage.getItem('sentry-consent');
-        console.log('hasStoredConsent', hasStoredConsent);
-        if (
-            hasStoredConsent === null &&
-            Boolean(window.SENTRY_CONFIG?.SENTRY_DSN)
-        ) {
+        if (!hasStoredConsent && Boolean(window.SENTRY_CONFIG?.SENTRY_URL)) {
             setShowDialog(true);
         }
     }, []);

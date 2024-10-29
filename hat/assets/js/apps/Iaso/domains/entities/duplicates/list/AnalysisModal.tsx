@@ -8,6 +8,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    useMemo,
     useState,
 } from 'react';
 import { Grid, Typography } from '@mui/material';
@@ -42,6 +43,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     const [parameters, setParameters] = useState<
         { name: string; value: string | number }[]
     >([]);
+    const [paramDisabled, setParamDisabled] = useState<boolean[]>([]);
     const { formatMessage } = useSafeIntl();
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
         useGetBeneficiaryTypesDropdown();
@@ -99,8 +101,18 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
                         name: selectedParameter.label,
                         value: updatedParams[index]?.value || '',
                     };
+                    setParamDisabled(prev => {
+                        const newStates = [...prev];
+                        newStates[index] = false;
+                        return newStates;
+                    });
                 } else {
                     updatedParams[index] = { name: '', value: '' };
+                    setParamDisabled(prev => {
+                        const newStates = [...prev];
+                        newStates[index] = true;
+                        return newStates;
+                    });
                 }
             } else if (keyValue === 'parameter_value') {
                 updatedParams[index] = {
@@ -108,18 +120,37 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
                     value,
                 };
             }
+            const allParamsFilled = updatedParams.every(
+                param => param.value !== '',
+            );
+            if (
+                allParamsFilled &&
+                algorithm &&
+                entityType &&
+                entityTypeFields.length > 0
+            ) {
+                setConfirm(true);
+            } else {
+                setConfirm(false);
+            }
 
             return updatedParams;
         });
     };
 
     useEffect(() => {
-        if (algorithm && entityType && entityTypeFields.length > 0) {
+        const allParamsFilled = parameters.every(param => param.value !== '');
+        if (
+            allParamsFilled &&
+            algorithm &&
+            entityType &&
+            entityTypeFields.length > 0
+        ) {
             setConfirm(true);
         } else {
             setConfirm(false);
         }
-    }, [algorithm, entityType, entityTypeFields]);
+    }, [algorithm, entityType, entityTypeFields, parameters]);
     const { possibleFields, isFetchingForm } = useGetFormForEntityType({
         formId: referenceForm,
         enabled: isOpen,
@@ -132,6 +163,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
         ]);
 
         setParameters(prevParams => [...prevParams, { name: '', value: '' }]);
+        setParamDisabled(prev => [...prev, true]);
     };
 
     const removeParameter = index => {
@@ -140,7 +172,30 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
         );
 
         setParameters(prevParams => prevParams.filter((_, i) => i !== index));
+        setParamDisabled(prev => prev.filter((_, i) => i !== index));
     };
+
+    const getFilteredOptions = useCallback(
+        index => {
+            const selectedValues = parameters.map(param => param.name);
+            const remainParams = LEVENSHTEIN_PARAMETERS_DROPDOWN.filter(
+                option =>
+                    !selectedValues.includes(option.label) ||
+                    parameters[index]?.name === option.label,
+            );
+
+            return remainParams;
+        },
+        [parameters],
+    );
+    const areOptionsAvailable = useMemo(
+        () =>
+            JSON.stringify(
+                LEVENSHTEIN_PARAMETERS_DROPDOWN.map(item => item.label),
+            ) === JSON.stringify(parameters.map(item => item.name)),
+        [parameters],
+    );
+
     return (
         <ConfirmCancelModal
             allowConfirm={confirm}
@@ -252,7 +307,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
                                         )
                                     }
                                     label={MESSAGES.parameters}
-                                    options={LEVENSHTEIN_PARAMETERS_DROPDOWN}
+                                    options={getFilteredOptions(index)}
                                 />
                             </Grid>
                             <Grid item xs={5} md={4} alignItems="center">
@@ -268,6 +323,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
                                         )
                                     }
                                     label={MESSAGES.parameterValue}
+                                    disabled={paramDisabled[index]}
                                 />
                             </Grid>
                             <Grid
@@ -295,7 +351,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
                     justifyContent="flex-start"
                     marginTop={2}
                 />
-                {parameterComponents.length > 0 && (
+                {parameterComponents.length > 0 && !areOptionsAvailable && (
                     <Grid
                         item
                         xs={6}

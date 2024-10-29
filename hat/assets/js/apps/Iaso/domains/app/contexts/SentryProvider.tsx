@@ -88,7 +88,7 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
         if (currentUser) {
             Sentry.setUser({
                 id: currentUser.id,
-                username: currentUser.username,
+                username: currentUser.user_name,
                 email: currentUser.email,
             });
         }

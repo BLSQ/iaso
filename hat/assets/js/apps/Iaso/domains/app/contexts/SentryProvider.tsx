@@ -4,6 +4,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import * as Sentry from '@sentry/browser';
+import { browserTracingIntegration } from '@sentry/browser';
 import React, {
     createContext,
     FunctionComponent,
@@ -13,7 +14,6 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useCurrentUser } from '../../../utils/usersUtils';
 
 type SentryContextType = {
     hasConsent: boolean;
@@ -39,21 +39,19 @@ export const useSentry = () => {
     return context;
 };
 const initSentry = (consent: boolean) => {
-    // Return early if no consent or no DSN
     if (!consent || !window.SENTRY_CONFIG?.SENTRY_URL) return;
     Sentry.init({
         dsn: window.SENTRY_CONFIG.SENTRY_URL,
         environment: window.SENTRY_CONFIG.SENTRY_ENVIRONMENT || 'development',
         replaysSessionSampleRate: 0.1,
         replaysOnErrorSampleRate: 1.0,
-        // Adjust deduplication settings
         sampleRate: 1.0,
         tracesSampleRate: 1.0,
         attachStacktrace: true,
         normalizeDepth: 10,
-        // Optional: Disable deduplication
-        ignoreErrors: [], // Empty array to capture all errors
+        ignoreErrors: [],
         integrations: [
+            browserTracingIntegration(),
             Sentry.replayIntegration({
                 maskAllText: false,
                 blockAllMedia: false,
@@ -69,7 +67,6 @@ const initSentry = (consent: boolean) => {
 
 export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
     const [showDialog, setShowDialog] = useState(false);
-    const currentUser = useCurrentUser();
     const [hasConsent, setHasConsent] = useState(
         () => localStorage.getItem('sentry-consent') === 'true',
     );
@@ -83,16 +80,6 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
             initSentry(hasStoredConsent === 'true');
         }
     }, []);
-
-    useEffect(() => {
-        if (currentUser) {
-            Sentry.setUser({
-                id: currentUser.id,
-                username: currentUser.user_name,
-                email: currentUser.email,
-            });
-        }
-    }, [currentUser]);
 
     const handleConsent = useCallback((consent: boolean) => {
         localStorage.setItem('sentry-consent', consent.toString());

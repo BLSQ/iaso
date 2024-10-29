@@ -11,10 +11,7 @@ import { GlobalStyles } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import LocalizedAppComponent from './domains/app/components/LocalizedAppComponent';
 import { LocaleProvider } from './domains/app/contexts/LocaleContext';
-import {
-    SentryConfig,
-    SentryProvider,
-} from './domains/app/contexts/SentryProvider';
+import { SentryConfig } from './domains/app/contexts/SentryProvider';
 import { SidebarProvider } from './domains/app/contexts/SideBarContext';
 import {
     ThemeConfig,
@@ -51,39 +48,36 @@ const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
     const pluginHomePage = plugins.map(plugin => plugin.homeUrl)[0];
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
-            <SentryProvider>
-                <PluginsContext.Provider value={{ plugins }}>
-                    <ThemeConfigContext.Provider value={themeConfig}>
-                        <ThemeProvider
-                            theme={getOverriddenTheme(theme, themeConfig)}
-                        >
-                            <CssBaseline />
-                            <GlobalStyles styles={getGlobalOverrides(theme)} />
-                            <SidebarProvider>
-                                <LocaleProvider>
-                                    <LocalizedAppComponent>
-                                        <SnackbarProvider
-                                            maxSnack={3}
-                                            autoHideDuration={4000}
-                                            anchorOrigin={{
-                                                vertical: 'bottom',
-                                                horizontal: 'center',
-                                            }}
-                                        >
-                                            <App
-                                                userHomePage={
-                                                    pluginHomePage ||
-                                                    userHomePage
-                                                }
-                                            />
-                                        </SnackbarProvider>
-                                    </LocalizedAppComponent>
-                                </LocaleProvider>
-                            </SidebarProvider>
-                        </ThemeProvider>
-                    </ThemeConfigContext.Provider>
-                </PluginsContext.Provider>
-            </SentryProvider>
+            <PluginsContext.Provider value={{ plugins }}>
+                <ThemeConfigContext.Provider value={themeConfig}>
+                    <ThemeProvider
+                        theme={getOverriddenTheme(theme, themeConfig)}
+                    >
+                        <CssBaseline />
+                        <GlobalStyles styles={getGlobalOverrides(theme)} />
+                        <SidebarProvider>
+                            <LocaleProvider>
+                                <LocalizedAppComponent>
+                                    <SnackbarProvider
+                                        maxSnack={3}
+                                        autoHideDuration={4000}
+                                        anchorOrigin={{
+                                            vertical: 'bottom',
+                                            horizontal: 'center',
+                                        }}
+                                    >
+                                        <App
+                                            userHomePage={
+                                                pluginHomePage || userHomePage
+                                            }
+                                        />
+                                    </SnackbarProvider>
+                                </LocalizedAppComponent>
+                            </LocaleProvider>
+                        </SidebarProvider>
+                    </ThemeProvider>
+                </ThemeConfigContext.Provider>
+            </PluginsContext.Provider>
         </QueryClientProvider>,
         element,
     );

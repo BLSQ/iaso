@@ -9,11 +9,17 @@ from django_ltree.fields import PathField  # type: ignore
 from iaso.models import Project, Form, OrgUnit
 from iaso.utils.expressions import ArraySubquery
 from iaso.utils.models.soft_deletable import SoftDeletableModel
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class TeamQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
-        return self.filter(project__account=user.iaso_profile.account)
+        try:
+            return self.filter(project__account=user.iaso_profile.account)
+        except AttributeError:
+            return self.none()
 
     def hierarchy(self, teams: typing.Union[typing.List["Team"], "models.QuerySet[Team]", "Team"]) -> "TeamQuerySet":
         """The Team and all their descendants"""
@@ -120,7 +126,11 @@ class Team(SoftDeletableModel):
 
 class PlanningQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
-        return self.filter(project__account=user.iaso_profile.account)
+        try:
+            return self.filter(project__account=user.iaso_profile.account)
+        except AttributeError:
+            logger.error(f"No project found for user {user.username}. Returning empty Planning queryset")
+            return Planning.objects.none()
 
 
 class Planning(SoftDeletableModel):

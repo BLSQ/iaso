@@ -259,8 +259,11 @@ class PlanningSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         user = self.context["request"].user
-        account = user.iaso_profile.account
-        self.fields["project"].queryset = account.project_set.all()
+        try:
+            account = user.iaso_profile.account
+            self.fields["project"].queryset = account.project_set.all()
+        except AttributeError:
+            self.fields["project"].queryset = Project.objects.none()
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
@@ -374,7 +377,10 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return self.queryset.filter_for_user(user)
+        try:
+            return self.queryset.filter_for_user(user)
+        except AttributeError:
+            return Planning.objects.none()
 
 
 class AssignmentSerializer(serializers.ModelSerializer):

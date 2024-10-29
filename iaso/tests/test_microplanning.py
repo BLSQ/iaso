@@ -593,6 +593,11 @@ class PlanningTestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
 
+    def test_anonymous_user(self):
+        response = self.client.get("/api/microplanning/plannings/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 0)
+
     def test_query_id(self):
         self.client.force_authenticate(self.user)
         id = self.planning.id

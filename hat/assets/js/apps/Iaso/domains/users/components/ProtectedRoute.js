@@ -66,7 +66,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     }, [currentUser.account, baseUrl, navigate, paramsString, location.state]);
 
     useEffect(() => {
-        if (currentUser) {
+        if (currentUser && Sentry?.setUser) {
             Sentry.setUser({
                 id: currentUser.id,
                 username: currentUser.user_name,

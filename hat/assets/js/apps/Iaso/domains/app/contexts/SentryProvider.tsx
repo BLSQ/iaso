@@ -71,7 +71,8 @@ const initSentry = (consent: boolean) => {
 
 const styles: SxStyles = {
     paper: { p: 2, maxWidth: 900, width: '100%' },
-    title: { p: 0 },
+    title: { p: 0, mb: 1 },
+    content: { px: 0, py: 1 },
     buttons: {
         display: 'flex',
         justifyContent: 'flex-end',
@@ -135,7 +136,7 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
                 sx={{ maxWidth: '100%' }}
             >
                 <Paper sx={styles.paper}>
-                    <Box mb={2}>
+                    <Box mb={1}>
                         <DialogTitle sx={styles.title}>
                             {formatMessage(MESSAGES.analyticsConsent)}
                         </DialogTitle>

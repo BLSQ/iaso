@@ -13,7 +13,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useCurrentUser, User } from '../../../utils/usersUtils';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 type SentryContextType = {
     hasConsent: boolean;
@@ -38,7 +38,7 @@ export const useSentry = () => {
     }
     return context;
 };
-const initSentry = (consent: boolean, currentUser: User) => {
+const initSentry = (consent: boolean) => {
     // Return early if no consent or no DSN
     if (!consent || !window.SENTRY_CONFIG?.SENTRY_URL) return;
 
@@ -59,12 +59,6 @@ const initSentry = (consent: boolean, currentUser: User) => {
             }),
         ],
     });
-
-    Sentry.setUser({
-        id: currentUser.id,
-        username: currentUser.username,
-        email: currentUser.email,
-    });
 };
 
 export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
@@ -76,20 +70,28 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
 
     useEffect(() => {
         const hasStoredConsent = localStorage.getItem('sentry-consent');
-        if (!hasStoredConsent && Boolean(window.SENTRY_CONFIG?.SENTRY_URL)) {
+        // if (!hasStoredConsent && Boolean(window.SENTRY_CONFIG?.SENTRY_URL)) {
+        if (!hasStoredConsent) {
             setShowDialog(true);
         }
     }, []);
 
-    const handleConsent = useCallback(
-        (consent: boolean) => {
-            localStorage.setItem('sentry-consent', consent.toString());
-            setHasConsent(consent);
-            initSentry(consent, currentUser);
-            setShowDialog(false);
-        },
-        [currentUser],
-    );
+    useEffect(() => {
+        if (currentUser) {
+            Sentry.setUser({
+                id: currentUser.id,
+                username: currentUser.username,
+                email: currentUser.email,
+            });
+        }
+    }, [currentUser]);
+
+    const handleConsent = useCallback((consent: boolean) => {
+        setShowDialog(false);
+        localStorage.setItem('sentry-consent', consent.toString());
+        setHasConsent(consent);
+        initSentry(consent);
+    }, []);
 
     const contextValue = useMemo(
         () => ({ hasConsent, setConsent: handleConsent }),

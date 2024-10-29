@@ -13,7 +13,6 @@
     window.STATIC_URL = "{{ STATIC_URL }}";
     window.IASO_VERSION = "{{ VERSION }}";
     window.SENTRY_CONFIG = {{ sentry_config | safe }};
-    console.log(window.SENTRY_CONFIG);
 
     const PLUGINS_ENABLED = {{ PLUGINS_ENABLED| safe }};
     const USER_HOME_PAGE = "{{ USER_HOME_PAGE |default:"" }}";

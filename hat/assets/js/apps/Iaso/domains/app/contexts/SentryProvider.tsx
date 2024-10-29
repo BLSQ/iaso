@@ -41,12 +41,18 @@ export const useSentry = () => {
 const initSentry = (consent: boolean) => {
     // Return early if no consent or no DSN
     if (!consent || !window.SENTRY_CONFIG?.SENTRY_URL) return;
-    console.log('initSentry', Sentry);
     Sentry.init({
         dsn: window.SENTRY_CONFIG.SENTRY_URL,
         environment: window.SENTRY_CONFIG.SENTRY_ENVIRONMENT || 'development',
         replaysSessionSampleRate: 0.1,
         replaysOnErrorSampleRate: 1.0,
+        // Adjust deduplication settings
+        sampleRate: 1.0,
+        tracesSampleRate: 1.0,
+        attachStacktrace: true,
+        normalizeDepth: 10,
+        // Optional: Disable deduplication
+        ignoreErrors: [], // Empty array to capture all errors
         integrations: [
             Sentry.replayIntegration({
                 maskAllText: false,
@@ -59,15 +65,6 @@ const initSentry = (consent: boolean) => {
             }),
         ],
     });
-    console.log('initSentry DONE');
-    // Check if Sentry is initialized
-    console.log(Sentry.getCurrentHub().getClient());
-
-    // Test error reporting
-    Sentry.captureMessage('Test message');
-
-    // Check current user
-    console.log(Sentry.getCurrentHub().getScope().getUser());
 };
 
 export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
@@ -89,11 +86,11 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
 
     useEffect(() => {
         if (currentUser) {
-            // Sentry.setUser({
-            //     id: currentUser.id,
-            //     username: currentUser.username,
-            //     email: currentUser.email,
-            // });
+            Sentry.setUser({
+                id: currentUser.id,
+                username: currentUser.username,
+                email: currentUser.email,
+            });
         }
     }, [currentUser]);
 

@@ -1,9 +1,4 @@
-import {
-    ConfirmCancelModal,
-    IconButton,
-    makeFullModal,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
@@ -11,9 +6,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Grid, Typography } from '@mui/material';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import { Grid } from '@mui/material';
 import MESSAGES from '../messages';
 import { AnalysisModalButton } from './AnalysisModalButton';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -25,6 +18,7 @@ import {
 } from '../../constants';
 import { formatLabel } from '../../../instances/utils';
 import { useGetFormForEntityType } from '../../entityTypes/hooks/requests/forms';
+import AnalysisModalParameters from './AnalysisModalParameters';
 
 type Props = {
     isOpen: boolean;
@@ -44,7 +38,6 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
         { name: string; value: string | number }[]
     >([]);
     const [paramDisabled, setParamDisabled] = useState<boolean[]>([]);
-    const { formatMessage } = useSafeIntl();
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
         useGetBeneficiaryTypesDropdown();
 
@@ -253,122 +246,16 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
                         }))}
                     />
                 </Grid>
-                <Grid
-                    item
-                    xs={6}
-                    md={8}
-                    display="flex"
-                    justifyContent="flex-start"
-                    marginTop={2}
-                >
-                    <Typography>
-                        {formatMessage(MESSAGES.parameters)}:
-                    </Typography>
-                </Grid>
-                {parameterComponents.length === 0 && (
-                    <Grid
-                        item
-                        xs={6}
-                        md={4}
-                        display="flex"
-                        justifyContent="flex-end"
-                        marginTop={1}
-                    >
-                        <IconButton
-                            overrideIcon={AddCircleIcon}
-                            onClick={onChangeParameters}
-                            tooltipMessage={MESSAGES.addParameters}
-                            iconSize="large"
-                            color="primary"
-                        />
-                    </Grid>
-                )}
-
-                {parameterComponents.map((parameter, index) => {
-                    const param = parameters[index] || {};
-                    return (
-                        <Grid
-                            container
-                            item
-                            spacing={3}
-                            style={{ marginTop: '-24px' }}
-                            key={parameter}
-                        >
-                            <Grid item xs={5} md={7} alignItems="center">
-                                <InputComponent
-                                    type="select"
-                                    keyValue="parameters"
-                                    value={param.name}
-                                    onChange={(key, value) =>
-                                        handleParametersChange(
-                                            key,
-                                            value,
-                                            index,
-                                        )
-                                    }
-                                    label={MESSAGES.parameters}
-                                    options={getFilteredOptions(index)}
-                                />
-                            </Grid>
-                            <Grid item xs={5} md={4} alignItems="center">
-                                <InputComponent
-                                    type="text"
-                                    keyValue="parameter_value"
-                                    value={param.value}
-                                    onChange={(key, value) =>
-                                        handleParametersChange(
-                                            key,
-                                            value,
-                                            index,
-                                        )
-                                    }
-                                    label={MESSAGES.parameterValue}
-                                    disabled={paramDisabled[index]}
-                                />
-                            </Grid>
-                            <Grid
-                                item
-                                xs={2}
-                                md={1}
-                                display="flex"
-                                justifyContent="center"
-                                alignItems="center"
-                            >
-                                <IconButton
-                                    overrideIcon={RemoveCircleIcon}
-                                    onClick={() => removeParameter(index)}
-                                    tooltipMessage={MESSAGES.removeParameter}
-                                />
-                            </Grid>
-                        </Grid>
-                    );
-                })}
-                <Grid
-                    item
-                    xs={6}
-                    md={8}
-                    display="flex"
-                    justifyContent="flex-start"
-                    marginTop={2}
+                <AnalysisModalParameters
+                    parameterComponents={parameterComponents}
+                    parameters={parameters}
+                    onChangeParameters={onChangeParameters}
+                    handleParametersChange={handleParametersChange}
+                    getFilteredOptions={getFilteredOptions}
+                    paramDisabled={paramDisabled}
+                    removeParameter={removeParameter}
+                    areOptionsAvailable={areOptionsAvailable}
                 />
-                {parameterComponents.length > 0 && !areOptionsAvailable && (
-                    <Grid
-                        item
-                        xs={6}
-                        md={4}
-                        display="flex"
-                        justifyContent="flex-end"
-                        marginTop={1}
-                    >
-                        <IconButton
-                            overrideIcon={AddCircleIcon}
-                            onClick={onChangeParameters}
-                            tooltipMessage={MESSAGES.addParameters}
-                            iconSize="large"
-                            color="primary"
-                        />
-                    </Grid>
-                )}
             </Grid>
         </ConfirmCancelModal>
     );

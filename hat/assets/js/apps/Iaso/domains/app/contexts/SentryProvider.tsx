@@ -39,11 +39,11 @@ export const useSentry = () => {
 };
 const initSentry = (consent: boolean) => {
     // Return early if no consent or no DSN
-    if (!consent || !window.sentry_config?.SENTRY_DSN) return;
+    if (!consent || !window.SENTRY_CONFIG?.SENTRY_DSN) return;
 
     Sentry.init({
-        dsn: window.sentry_config.SENTRY_DSN,
-        environment: window.sentry_config.SENTRY_ENVIRONMENT || 'development',
+        dsn: window.SENTRY_CONFIG.SENTRY_DSN,
+        environment: window.SENTRY_CONFIG.SENTRY_ENVIRONMENT || 'development',
         replaysSessionSampleRate: 0.1,
         replaysOnErrorSampleRate: 1.0,
         integrations: [
@@ -67,7 +67,11 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
 
     useEffect(() => {
         const hasStoredConsent = localStorage.getItem('sentry-consent');
-        if (hasStoredConsent === null && window.sentry_config?.SENTRY_DSN) {
+        console.log('hasStoredConsent', hasStoredConsent);
+        if (
+            hasStoredConsent === null &&
+            Boolean(window.SENTRY_CONFIG?.SENTRY_DSN)
+        ) {
             setShowDialog(true);
         }
     }, []);

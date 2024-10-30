@@ -90,6 +90,7 @@ extra_css:
 extra_javascript:
   - ./extrajs/html2pdf.bundle.min.js
   - ./extrajs/pdfDownload.js
+  - https://plausible.io/js/script.js
 use_directory_urls: false # IMPORTANT: without this the paths to pictures will break on build
 nav: # nav configures the side bar menu
   - Home: index.md

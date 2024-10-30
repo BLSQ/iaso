@@ -15,6 +15,7 @@ import { ALGORITHM_DROPDOWN } from '../../constants';
 import { formatLabel } from '../../../instances/utils';
 import { useGetFormForEntityType } from '../../entityTypes/hooks/requests/forms';
 import AnalysisModalParameters from './AnalysisModalParameters';
+import { Parameters } from '../types';
 
 type Props = {
     isOpen: boolean;
@@ -28,9 +29,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     const [referenceForm, setReferenceForm] = useState(undefined);
     const [confirm, setConfirm] = useState(false);
 
-    const [parameters, setParameters] = useState<
-        { name: string; value: string | number }[]
-    >([]);
+    const [parameters, setParameters] = useState<Parameters>([]);
 
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
         useGetBeneficiaryTypesDropdown();

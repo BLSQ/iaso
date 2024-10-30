@@ -13,8 +13,8 @@ import InputComponent, {
 } from '../../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 import { LEVENSHTEIN_PARAMETERS_DROPDOWN } from '../../constants';
+import { Parameters } from '../types';
 
-type Parameters = { name: string; value: string | number }[];
 type Props = {
     parameters: Parameters;
     setParameters: (parameters: any) => void;

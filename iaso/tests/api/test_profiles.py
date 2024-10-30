@@ -3,7 +3,7 @@ import typing
 import jsonschema
 import numpy as np
 import pandas as pd
-from django.conf import settings
+
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
 from django.test import override_settings
@@ -517,7 +517,7 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 403)
 
-    def test_create_user_with_user_roles(self):
+    def test_create_user_with_user_roles_and_permissions(self):
         self.client.force_authenticate(self.jim)
         data = {
             "user_name": "unittest_user_name",
@@ -536,6 +536,77 @@ class ProfileAPITestCase(APITestCase):
         self.assertValidProfileData(response_data)
         self.assertEqual(user_user_role.id, self.user_role.id)
         self.assertEqual(user_user_role.group.name, self.group.name)
+
+        user = m.User.objects.get(username="unittest_user_name")
+        self.assertEqual(user.user_permissions.count(), 1)
+        self.assertEqual(user.user_permissions.first().codename, "iaso_forms")
+
+    def test_create_user_should_fail_with_restricted_editable_org_unit_types_for_field_orgunits(self):
+        """
+        The user is restricted to one org unit type.
+        Creating a user with unauthorized values in `org_units` should fail.
+        """
+        user = self.jam
+
+        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
+        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+        self.assertEqual(self.jedi_squad_1.org_unit_type_id, self.jedi_squad.id)
+
+        user.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type is now writable.
+            [self.jedi_squad]
+        )
+
+        self.client.force_authenticate(user)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "email": "unittest_last_name",
+            "user_permissions": ["iaso_forms"],
+            "user_roles": [self.user_role.id],
+            "org_units": [{"id": self.jedi_council_corruscant.id}],
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
+        )
+
+    def test_create_user_should_fail_with_restricted_editable_org_unit_types_for_field_editableorgunittypeids(self):
+        """
+        The user is restricted to one org unit type.
+        Creating a user with unauthorized values in `editable_org_unit_type_ids` should fail.
+        """
+        user = self.jam
+
+        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
+        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+
+        user.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type is now writable.
+            [self.jedi_squad]
+        )
+
+        self.client.force_authenticate(user)
+
+        data = {
+            "user_name": "user_name",
+            "password": "password",
+            "first_name": "first_name",
+            "last_name": "last_name",
+            "email": "test@test.com",
+            "org_units": [{"id": self.jedi_council_corruscant.id}],
+            "editable_org_unit_type_ids": [self.jedi_council.id],
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
+        )
 
     def test_create_user_with_not_allowed_user_roles(self):
         self.client.force_authenticate(self.jim)
@@ -624,6 +695,7 @@ class ProfileAPITestCase(APITestCase):
             "email": "unittest_last_name",
             "org_units": [{"id": self.jedi_council_corruscant.id}],
             "user_permissions": ["iaso_forms"],
+            "editable_org_unit_type_ids": [self.jedi_squad.id],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
@@ -634,6 +706,9 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response_data["is_superuser"], False)
 
         profile = m.Profile.objects.get(pk=response_data["id"])
+        self.assertEqual(profile.editable_org_unit_types.count(), 1)
+        self.assertEqual(profile.editable_org_unit_types.first(), self.jedi_squad)
+
         user = profile.user
         self.assertEqual(user.username, data["user_name"])
         self.assertEqual(user.first_name, data["first_name"])
@@ -862,7 +937,6 @@ class ProfileAPITestCase(APITestCase):
             f"/api/profiles/?location={self.jedi_council_corruscant_child.pk}&ouParent=true&ouChildren=false&limit=100"
         )
         self.assertEqual(response.status_code, 200)
-        print(response.json())
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(len(response.json()["profiles"]), 2)
 
@@ -1003,6 +1077,41 @@ class ProfileAPITestCase(APITestCase):
         jum = Profile.objects.get(user=self.jum)
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
+
+    def test_update_user_should_fail_with_restricted_editable_org_unit_types_for_field_editableorgunittypeids(self):
+        """
+        The user is restricted to one org unit type.
+        Updating a user with unauthorized values in `editable_org_unit_type_ids` should fail.
+        """
+        user = self.jam
+
+        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
+        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+
+        user.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type is now writable.
+            [self.jedi_squad]
+        )
+
+        self.client.force_authenticate(user)
+        jum = Profile.objects.get(user=self.jum)
+
+        data = {
+            "user_name": "new_user_name",
+            "editable_org_unit_type_ids": [self.jedi_squad.id],
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        data = {
+            "user_name": "new_user_name",
+            "editable_org_unit_type_ids": [self.jedi_council.id],
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
+        )
 
     def test_user_with_managed_permission_cannot_create_users(self):
         self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])

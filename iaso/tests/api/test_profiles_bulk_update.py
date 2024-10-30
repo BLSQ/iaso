@@ -17,7 +17,7 @@ def saveUserProfile(user):
     user.iaso_profile.save()
 
 
-class OrgUnitsBulkUpdateAPITestCase(APITestCase):
+class ProfileBulkUpdateAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
@@ -47,7 +47,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
         sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        # sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=2)
         star_wars.default_version = sw_version_1
         star_wars.save()
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
@@ -311,6 +310,51 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertNotIn(
             self.user_role_3,
             self.chewie.iaso_profile.user_roles.all(),
+        )
+
+    @tag("iaso_only")
+    def test_profile_bulkupdate_should_fail_with_restricted_editable_org_unit_types(self):
+        user = self.obi_wan
+        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
+        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+
+        user.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type is now writable.
+            [self.jedi_council]
+        )
+
+        other_org_unit_type = m.OrgUnitType.objects.create(name="Country")
+        self.jedi_council_endor.name = "The Gambia"
+        self.jedi_council_endor.org_unit_type = other_org_unit_type
+        self.jedi_council_endor.save()
+
+        self.client.force_authenticate(user)
+
+        payload = {
+            "select_all": False,
+            "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
+            "language": "fr",
+            "location_ids_added": [self.jedi_council_endor.pk],
+            "location_ids_removed": None,
+            "projects_ids_added": None,
+            "projects_ids_removed": None,
+            "roles_id_added": None,
+            "roles_id_removed": None,
+            "organization": "Bluesquare",
+        }
+        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=payload, format="json")
+
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
+        self.assertEqual(task.launcher, user)
+
+        task = self.runAndValidateTask(task, "ERRORED")
+        self.assertEqual(
+            task.result["message"],
+            (
+                f"User with permission {permission.USERS_MANAGED} cannot change the org unit The Gambia "
+                f"because he does not have rights on the following org unit type: Country"
+            ),
         )
 
     @tag("iaso_only")

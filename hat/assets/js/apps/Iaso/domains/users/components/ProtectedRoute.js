@@ -71,6 +71,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
                 id: currentUser.id,
                 username: currentUser.user_name,
                 email: currentUser.email,
+                account: currentUser.account.name,
             });
         }
     }, [currentUser]);

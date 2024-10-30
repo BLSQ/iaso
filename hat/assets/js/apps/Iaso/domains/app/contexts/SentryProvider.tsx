@@ -47,7 +47,7 @@ const initSentry = (consent: boolean) => {
     Sentry.init({
         dsn: window.SENTRY_CONFIG.SENTRY_URL,
         environment: window.SENTRY_CONFIG.SENTRY_ENVIRONMENT || 'development',
-        replaysSessionSampleRate: 0.1,
+        replaysSessionSampleRate: 0.01,
         replaysOnErrorSampleRate: 1.0,
         sampleRate: 1.0,
         tracesSampleRate: 1.0,
@@ -64,6 +64,8 @@ const initSentry = (consent: boolean) => {
                     window.location.origin,
                     `${window.location.origin}/api`,
                 ],
+                maxReplayDuration: 600000,
+                useCompression: true,
             }),
         ],
     });
@@ -162,6 +164,8 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
         </SentryContext.Provider>
     );
 };
+
+// EXAMPLE OF HOW TO USE THE CONTEXT
 
 // const YourSettingsComponent = () => {
 //     const { hasConsent, setConsent } = useSentry();

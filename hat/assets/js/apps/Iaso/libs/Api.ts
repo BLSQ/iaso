@@ -64,12 +64,14 @@ export const iasoFetch = async (
         // ignoring errors from cancelled fetch
         if (error.name !== 'AbortError') {
             const apiError = new ApiError(error.message);
-            Sentry.withScope(scope => {
-                scope.setTag('type', 'api_error');
-                scope.setExtra('url', url);
-                scope.setExtra('method', method);
-                Sentry.captureException(apiError);
-            });
+            if (Sentry?.withScope) {
+                Sentry.withScope(scope => {
+                    scope.setTag('type', 'api_error');
+                    scope.setExtra('url', url);
+                    scope.setExtra('method', method);
+                    Sentry.captureException(apiError);
+                });
+            }
             throw apiError;
         }
         // Don't error on cancel fetch
@@ -95,14 +97,16 @@ export const iasoFetch = async (
             response,
             json,
         );
-        Sentry.withScope(scope => {
-            scope.setTag('type', 'api_error');
-            scope.setExtra('url', url);
-            scope.setExtra('method', method);
-            scope.setExtra('status', response.status);
-            scope.setExtra('response', json);
-            Sentry.captureException(apiError);
-        });
+        if (Sentry?.withScope) {
+            Sentry.withScope(scope => {
+                scope.setTag('type', 'api_error');
+                scope.setExtra('url', url);
+                scope.setExtra('method', method);
+                scope.setExtra('status', response.status);
+                scope.setExtra('response', json);
+                Sentry.captureException(apiError);
+            });
+        }
         throw apiError;
     }
     return response;

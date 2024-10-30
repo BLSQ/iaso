@@ -270,6 +270,8 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         change_request.refresh_from_db()
         self.assertEqual(change_request.status, change_request.Statuses.REJECTED)
+        self.org_unit.refresh_from_db()
+        self.assertEqual(self.org_unit.validation_status, m.OrgUnit.VALIDATION_REJECTED)
 
     @time_machine.travel(DT, tick=False)
     def test_partial_update_approve(self):
@@ -295,6 +297,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.org_unit.refresh_from_db()
         self.assertEqual(self.org_unit.name, "Foo")
         self.assertIsNone(self.org_unit.closed_date)
+        self.assertEqual(self.org_unit.validation_status, m.OrgUnit.VALIDATION_VALID)
 
     def test_partial_update_approve_fail_wrong_status(self):
         self.client.force_authenticate(self.user_with_review_perm)

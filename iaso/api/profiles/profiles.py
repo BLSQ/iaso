@@ -695,21 +695,17 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def validate_projects(self, request, profile):
         result = []
-        request_user = request.user
-        projects = request.data.get("projects", None)
-        if projects is not None:
-            if not request_user.has_perm(permission.USERS_ADMIN):
+        projects = request.data.get("projects")
+        if projects:
+            if not request.user.has_perm(permission.USERS_ADMIN):
                 raise PermissionDenied(
                     f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
                 )
-        # This is bit ugly, but it's to maintain the fetaure's behaviour after adding the check in the permission
-        if projects is None:
-            projects = []
-        for project in projects:
-            item = get_object_or_404(Project, pk=project)
-            if profile.account_id != item.account_id:
-                raise BadRequest
-            result.append(item)
+            for project in projects:
+                item = get_object_or_404(Project, pk=project)
+                if profile.account_id != item.account_id:
+                    raise BadRequest
+                result.append(item)
         return result
 
     def validate_editable_org_unit_types(self, request) -> QuerySet[OrgUnitType]:

@@ -482,9 +482,11 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def validate_projects(self, request, profile):
         result = []
-        projects = request.data.get("projects")
+        projects = request.data.get("projects", [])
+        profile_project_ids = set(profile.projects.values_list("id", flat=True))
+        project_ids_from_request = set(map(int, projects))
         if projects:
-            if not request.user.has_perm(permission.USERS_ADMIN):
+            if not request.user.has_perm(permission.USERS_ADMIN) and profile_project_ids != project_ids_from_request:
                 raise PermissionDenied(
                     f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
                 )

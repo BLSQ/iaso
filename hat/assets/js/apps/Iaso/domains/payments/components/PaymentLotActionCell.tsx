@@ -25,9 +25,7 @@ export const PaymentLotActionCell = ({
             mark_payments_as_sent: true,
         });
     }, [paymentLot.id, markAsSent]);
-    const disableButtons =
-        paymentLot.task?.status === 'QUEUED' ||
-        paymentLot.task?.status === 'RUNNING';
+    const disableButtons = !paymentLot.task;
     const userIds = [
         ...new Set(paymentLot.payments.map(payment => payment.user.id)),
     ].join(',');
@@ -41,6 +39,7 @@ export const PaymentLotActionCell = ({
                 url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${userIds}/paymentIds/${paymentIds}`}
                 // TODO add correct message
                 tooltipMessage={MESSAGES.viewChangeRequestforLot}
+                disabled={disableButtons}
             />
 
             {paymentLot.status === 'new' && (
@@ -56,11 +55,13 @@ export const PaymentLotActionCell = ({
                 iconProps={{ disabled: disableButtons }}
                 paymentLot={paymentLot}
             />
-            <ExternalLinkIconButton
-                tooltipMessage={MESSAGES.download_payments}
-                overrideIcon={FileDownloadIcon}
-                url={`/api/payments/lots/${paymentLot.id}/?xlsx=true`}
-            />
+            {!disableButtons && (
+                <ExternalLinkIconButton
+                    tooltipMessage={MESSAGES.download_payments}
+                    overrideIcon={FileDownloadIcon}
+                    url={`/api/payments/lots/${paymentLot.id}/?xlsx=true`}
+                />
+            )}
         </>
     );
 };

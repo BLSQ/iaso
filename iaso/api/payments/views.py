@@ -99,7 +99,7 @@ class PaymentLotsViewSet(ModelViewSet):
 
     def get_queryset(self):
         # Filter out PaymentLot with task because they're still being created by the worker
-        queryset = PaymentLot.objects.filter(task__isnull=True)
+        # queryset = PaymentLot.objects.filter(task__isnull=True)
 
         change_requests_prefetch = Prefetch(
             "payments__change_requests",

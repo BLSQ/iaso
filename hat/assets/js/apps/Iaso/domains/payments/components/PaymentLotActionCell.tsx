@@ -25,7 +25,7 @@ export const PaymentLotActionCell = ({
             mark_payments_as_sent: true,
         });
     }, [paymentLot.id, markAsSent]);
-    const disableButtons = !paymentLot.task;
+    const disableButtons = Boolean(paymentLot.task);
     const userIds = [
         ...new Set(paymentLot.payments.map(payment => payment.user.id)),
     ].join(',');

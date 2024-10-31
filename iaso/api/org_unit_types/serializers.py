@@ -243,3 +243,13 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
                 raise serializers.ValidationError({"project_ids": "Invalid project ids"})
         validate_reference_forms(data)
         return data
+
+class OrgUnitTypesDropdownSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnitType
+        fields = [
+            "id",
+            "name",
+            "depth"
+        ]
+        read_only_fields = ["id", "name","depth"]

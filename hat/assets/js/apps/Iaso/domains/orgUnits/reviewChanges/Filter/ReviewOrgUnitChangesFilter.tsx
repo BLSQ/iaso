@@ -8,8 +8,8 @@ import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../components/TreeView/requests';
-import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+// import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
+import { useApiV3GetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { DropdownOptions } from '../../../../types/utils';
 import DatesRange from '../../../../components/filters/DatesRange';
 import { useGetForms } from '../../../workflows/hooks/requests/useGetForms';
@@ -31,10 +31,15 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
-    const { data: groupOptions, isLoading: isLoadingGroups } =
-        useGetGroupDropdown({});
+    // IA-3628_IA-3629_HOTFIX_org_unit_types_and_groups_timeout_bug
+    // Disable groups for playground
+    // const { data: groupOptions, isLoading: isLoadingGroups } =
+    //     useGetGroupDropdown({});
+    const groupOptions = [];
+    const isLoadingGroups = false;
+    // IA-3628_IA-3629_HOTFIX_org_unit_types_and_groups_timeout_bug ---- END
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
-        useGetOrgUnitTypesDropdownOptions();
+        useApiV3GetOrgUnitTypesDropdownOptions();
     const { data: forms, isFetching: isLoadingForms } = useGetForms();
     const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
     const { data: userRoles, isFetching: isFetchingUserRoles } =
@@ -112,6 +117,8 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     options={groupOptions}
                     loading={isLoadingGroups}
                     labelString={formatMessage(MESSAGES.group)}
+                    disabled
+                    helperText={formatMessage(MESSAGES.featureDisabled)}
                 />
             </Grid>
             <Grid item xs={12} md={4} lg={3}>

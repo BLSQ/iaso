@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, Set
 
 from django.conf import settings
 from django.contrib.auth import models, update_session_auth_hash

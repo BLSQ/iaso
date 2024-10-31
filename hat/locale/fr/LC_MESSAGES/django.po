@@ -87,7 +87,7 @@ msgid ""
 "you registered with, and check your spam folder."
 msgstr ""
 "Si vous ne recevez pas de courriel, vérifiez que vous avez bien entré votre "
-"addresse d'enregistrement et vérifiez votre dossier spam."
+"adresse d'enregistrement et vérifiez votre dossier spam."
 
 #: hat/templates/iaso/login.html:22
 msgid ""

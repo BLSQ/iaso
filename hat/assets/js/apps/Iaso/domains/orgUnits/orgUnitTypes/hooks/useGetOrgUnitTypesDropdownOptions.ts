@@ -5,7 +5,7 @@ import { useSnackQuery } from '../../../../libs/apiHooks';
 
 import { DropdownOptions } from '../../../../types/utils';
 import { useCheckUserHasWriteTypePermission } from '../../../../utils/usersUtils';
-import { OrgunitTypesApi } from '../../types/orgunitTypes';
+import { OrgunitTypes, OrgunitTypesApi } from '../../types/orgunitTypes';
 
 const getOrgunitTypes = (projectId?: number): Promise<OrgunitTypesApi> => {
     return getRequest(
@@ -58,7 +58,7 @@ export const useGetOrgUnitTypesDropdownOptions = (
 
 // IA-3628_IA-3629_HOTFIX_org_unit_types_and_groups_timeout_bug
 
-const getOrgunitTypesV3 = (projectId?: number): Promise<OrgunitTypesApi> => {
+const getOrgunitTypesV3 = (projectId?: number): Promise<OrgunitTypes> => {
     return getRequest(
         projectId
             ? `/api/v2/orgunittypes/dropdown/?project=${projectId}`
@@ -82,7 +82,7 @@ export const useApiV3GetOrgUnitTypesDropdownOptions = (
             cacheTime: 1000 * 60 * 5,
             select: data => {
                 if (!data) return [];
-                let { orgUnitTypes } = data;
+                let orgUnitTypes = [...data];
                 if (onlyWriteAccess) {
                     orgUnitTypes = orgUnitTypes.filter(orgunitType =>
                         checkUserHasWriteTypePermission(orgunitType.id),

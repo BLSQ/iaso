@@ -978,7 +978,20 @@ submission</p>
 <span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
-<span class="normal">248</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An entity represents a physical object or person with a known Entity Type</span>
 
 <span class="sd">    Contrary to forms, they are not linked to a specific OrgUnit.</span>
@@ -1009,6 +1022,14 @@ submission</p>
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
 
+    <span class="k">def</span> <span class="nf">get_nfc_cards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">iaso.models.storage</span> <span class="kn">import</span> <span class="n">StorageDevice</span><span class="p">,</span> <span class="n">StorageLogEntry</span>
+
+        <span class="n">nfc_devices</span> <span class="o">=</span> <span class="n">StorageDevice</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">entity</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">StorageDevice</span><span class="o">.</span><span class="n">NFC</span><span class="p">)</span>
+        <span class="n">nfc_log_entries_count</span> <span class="o">=</span> <span class="n">StorageLogEntry</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">device__in</span><span class="o">=</span><span class="n">nfc_devices</span><span class="p">,</span> <span class="n">instances</span><span class="o">=</span><span class="n">instance</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">nfc_log_entries_count</span>
+
     <span class="k">def</span> <span class="nf">as_small_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
@@ -1020,6 +1041,11 @@ submission</p>
             <span class="s2">&quot;entity_type_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_type</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">entity_type</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="o">.</span><span class="n">as_dict</span><span class="p">(),</span>
         <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">as_small_dict_with_nfc_cards</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="n">entity_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_small_dict</span><span class="p">()</span>
+        <span class="n">entity_dict</span><span class="p">[</span><span class="s2">&quot;nfc_cards&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nfc_cards</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">entity_dict</span>
 
     <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">instances</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -1096,20 +1122,7 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
-<span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">240</span>
 <span class="normal">241</span>
 <span class="normal">242</span>
 <span class="normal">243</span>
@@ -1117,7 +1130,20 @@ submission</p>
 <span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
-<span class="normal">248</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">soft_delete_with_instances_and_pending_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audit_source</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">soft_delete_with_instances_and_pending_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audit_source</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This method does a proper soft-deletion of the entity:</span>
 <span class="sd">    - soft delete the entity</span>

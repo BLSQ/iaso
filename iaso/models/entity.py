@@ -193,6 +193,14 @@ class Entity(SoftDeletableModel):
     def __str__(self):
         return f"{self.name}"
 
+    def get_nfc_cards(self, instance):
+        from iaso.models.storage import StorageDevice, StorageLogEntry
+
+        nfc_devices = StorageDevice.objects.filter(entity=self, type=StorageDevice.NFC)
+        nfc_log_entries_count = StorageLogEntry.objects.filter(device__in=nfc_devices, instances=instance).count()
+
+        return nfc_log_entries_count
+
     def as_small_dict(self):
         return {
             "id": self.pk,
@@ -204,6 +212,11 @@ class Entity(SoftDeletableModel):
             "entity_type_name": self.entity_type and self.entity_type.name,
             "attributes": self.attributes and self.attributes.as_dict(),
         }
+
+    def as_small_dict_with_nfc_cards(self, instance):
+        entity_dict = self.as_small_dict()
+        entity_dict["nfc_cards"] = self.get_nfc_cards(instance)
+        return entity_dict
 
     def as_dict(self):
         instances = dict()

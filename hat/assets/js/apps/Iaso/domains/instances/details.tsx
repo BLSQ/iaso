@@ -86,6 +86,7 @@ const InstanceDetails: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const classes: ClassNames = useStyles();
     const goBack = useGoBack(baseUrls.instances);
+
     const params = useParamsObject(
         baseUrls.instanceDetail,
     ) as ParamsWithAccountId & {

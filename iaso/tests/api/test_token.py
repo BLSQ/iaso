@@ -90,7 +90,7 @@ class TokenAPITestCase(APITestCase):
 
         access_token = response_data.get("access")
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
-        self.assertEquals(payload["user_id"], self.yoda.id)
+        self.assertEqual(payload["user_id"], self.yoda.id)
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
         return response_data
@@ -112,7 +112,7 @@ class TokenAPITestCase(APITestCase):
     def test_incorrect_username_or_password(self):
         response = self.client.post(f"/api/token/", data={"username": "yoda", "password": "incorrect"}, format="json")
         self.assertJSONResponse(response, 401)
-        self.assertEquals(
+        self.assertEqual(
             response.json()["detail"],
             "No active account found with the given credentials",
         )
@@ -312,7 +312,7 @@ class TokenAPITestCase(APITestCase):
         access_token = response.json().get("access")
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
         # returns token for account_user_a
-        self.assertEquals(payload["user_id"], account_user_a.id)
+        self.assertEqual(payload["user_id"], account_user_a.id)
 
         # Login with main user and app_id for Account B
         response = self.client.post(f"/api/token/?app_id=account.b", data=login, format="json")
@@ -320,7 +320,7 @@ class TokenAPITestCase(APITestCase):
         access_token = response.json().get("access")
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
         # returns token for account_user_a
-        self.assertEquals(payload["user_id"], account_user_b.id)
+        self.assertEqual(payload["user_id"], account_user_b.id)
 
     def test_multi_account_user_incorrect_app_id(self):
         main_user = User.objects.create(username="main_user")
@@ -343,7 +343,7 @@ class TokenAPITestCase(APITestCase):
         # Login with main user and app_id for Account B
         response = self.client.post(f"/api/token/?app_id=account.b", data=login, format="json")
         self.assertJSONResponse(response, 401)
-        self.assertEquals(
+        self.assertEqual(
             response.json()["detail"],
             "No active account found with the given credentials",
         )
@@ -351,7 +351,7 @@ class TokenAPITestCase(APITestCase):
         # Login with main user and non-existent app_id
         response = self.client.post(f"/api/token/?app_id=account.c", data=login, format="json")
         self.assertJSONResponse(response, 401)
-        self.assertEquals(
+        self.assertEqual(
             response.json()["detail"],
             "No active account found with the given credentials",
         )

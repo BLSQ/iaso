@@ -670,17 +670,17 @@ class BulkCreateCsvTestCase(APITestCase):
             self.fail(msg=str(ex))
 
         past_value = log["past_value"]
-        self.assertEquals(past_value, [])
+        self.assertEqual(past_value, [])
 
         new_value = log["new_value"][0]["fields"]
         self.assertTrue(new_value["password_updated"])
         self.assertNotIn("password", new_value.keys())
-        self.assertEquals(len(new_value["user_permissions"]), 1)
+        self.assertEqual(len(new_value["user_permissions"]), 1)
         self.assertIn("iaso_forms", new_value["user_permissions"])
-        self.assertEquals(len(new_value["user_roles"]), 1)
-        self.assertEquals(len(new_value["projects"]), 1)
-        self.assertEquals(new_value["language"], "fr")
-        self.assertEquals(new_value["dhis2_id"], "dhis2_id_3")
-        self.assertEquals(len(new_value["org_units"]), 2)
+        self.assertEqual(len(new_value["user_roles"]), 1)
+        self.assertEqual(len(new_value["projects"]), 1)
+        self.assertEqual(new_value["language"], "fr")
+        self.assertEqual(new_value["dhis2_id"], "dhis2_id_3")
+        self.assertEqual(len(new_value["org_units"]), 2)
         self.assertIn(self.org_unit3.id, new_value["org_units"])
         self.assertIn(self.org_unit2.id, new_value["org_units"])

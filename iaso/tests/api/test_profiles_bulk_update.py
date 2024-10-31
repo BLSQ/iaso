@@ -830,45 +830,45 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             self.fail(msg=str(ex))
         # past value
         past_value = log["past_value"][0]["fields"]
-        self.assertEquals(past_value["user"], self.luke.id)
-        self.assertEquals(past_value["username"], self.luke.username)
-        self.assertEquals(past_value["first_name"], self.luke.first_name)
-        self.assertEquals(past_value["last_name"], self.luke.last_name)
-        self.assertEquals(past_value["email"], self.luke.email)
-        self.assertEquals(len(past_value["user_permissions"]), 1)
+        self.assertEqual(past_value["user"], self.luke.id)
+        self.assertEqual(past_value["username"], self.luke.username)
+        self.assertEqual(past_value["first_name"], self.luke.first_name)
+        self.assertEqual(past_value["last_name"], self.luke.last_name)
+        self.assertEqual(past_value["email"], self.luke.email)
+        self.assertEqual(len(past_value["user_permissions"]), 1)
 
-        self.assertEquals(past_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
-        self.assertEquals(past_value["language"], "en")
-        self.assertEquals(past_value["home_page"], self.luke.iaso_profile.home_page)
-        self.assertEquals(
+        self.assertEqual(past_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
+        self.assertEqual(past_value["language"], "en")
+        self.assertEqual(past_value["home_page"], self.luke.iaso_profile.home_page)
+        self.assertEqual(
             past_value["phone_number"], self.luke.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
-        self.assertEquals(len(past_value["org_units"]), 1)
+        self.assertEqual(len(past_value["org_units"]), 1)
         self.assertIn(self.jedi_council_endor.id, past_value["org_units"])
-        self.assertEquals(len(past_value["user_roles"]), 1)
+        self.assertEqual(len(past_value["user_roles"]), 1)
         self.assertIn(self.user_role_2.id, past_value["user_roles"])
-        self.assertEquals(len(past_value["projects"]), 1)
+        self.assertEqual(len(past_value["projects"]), 1)
         self.assertIn(self.project_2.id, past_value["projects"])
         # New value
         new_value = log["new_value"][0]["fields"]
-        self.assertEquals(new_value["user"], self.luke.id)
-        self.assertEquals(new_value["username"], self.luke.username)
-        self.assertEquals(new_value["first_name"], self.luke.first_name)
-        self.assertEquals(new_value["last_name"], self.luke.last_name)
-        self.assertEquals(new_value["email"], self.luke.email)
-        self.assertEquals(len(new_value["user_permissions"]), 1)
+        self.assertEqual(new_value["user"], self.luke.id)
+        self.assertEqual(new_value["username"], self.luke.username)
+        self.assertEqual(new_value["first_name"], self.luke.first_name)
+        self.assertEqual(new_value["last_name"], self.luke.last_name)
+        self.assertEqual(new_value["email"], self.luke.email)
+        self.assertEqual(len(new_value["user_permissions"]), 1)
 
-        self.assertEquals(new_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
-        self.assertEquals(new_value["language"], "fr")
-        self.assertEquals(new_value["home_page"], self.luke.iaso_profile.home_page)
-        self.assertEquals(
+        self.assertEqual(new_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
+        self.assertEqual(new_value["language"], "fr")
+        self.assertEqual(new_value["home_page"], self.luke.iaso_profile.home_page)
+        self.assertEqual(
             past_value["phone_number"], self.luke.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
-        self.assertEquals(len(new_value["org_units"]), 1)
+        self.assertEqual(len(new_value["org_units"]), 1)
         self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
-        self.assertEquals(len(new_value["user_roles"]), 1)
+        self.assertEqual(len(new_value["user_roles"]), 1)
         self.assertIn(self.user_role.id, new_value["user_roles"])
-        self.assertEquals(len(new_value["projects"]), 1)
+        self.assertEqual(len(new_value["projects"]), 1)
         self.assertIn(self.project.id, new_value["projects"])
 
         # Check that chewie profile is updated
@@ -885,46 +885,46 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             self.fail(msg=str(ex))
         # past value
         past_value = log["past_value"][0]["fields"]
-        self.assertEquals(past_value["user"], self.chewie.id)
-        self.assertEquals(past_value["username"], self.chewie.username)
-        self.assertEquals(past_value["first_name"], self.chewie.first_name)
-        self.assertEquals(past_value["last_name"], self.chewie.last_name)
-        self.assertEquals(past_value["email"], self.chewie.email)
-        self.assertEquals(len(past_value["user_permissions"]), 1)
+        self.assertEqual(past_value["user"], self.chewie.id)
+        self.assertEqual(past_value["username"], self.chewie.username)
+        self.assertEqual(past_value["first_name"], self.chewie.first_name)
+        self.assertEqual(past_value["last_name"], self.chewie.last_name)
+        self.assertEqual(past_value["email"], self.chewie.email)
+        self.assertEqual(len(past_value["user_permissions"]), 1)
         self.assertNotIn("password", past_value.keys())
 
-        self.assertEquals(past_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
-        self.assertEquals(past_value["language"], "en")
-        self.assertEquals(past_value["home_page"], self.chewie.iaso_profile.home_page)
-        self.assertEquals(
+        self.assertEqual(past_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
+        self.assertEqual(past_value["language"], "en")
+        self.assertEqual(past_value["home_page"], self.chewie.iaso_profile.home_page)
+        self.assertEqual(
             past_value["phone_number"], self.chewie.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
-        self.assertEquals(len(past_value["org_units"]), 1)
+        self.assertEqual(len(past_value["org_units"]), 1)
         self.assertIn(self.jedi_council_endor.id, past_value["org_units"])
-        self.assertEquals(len(past_value["user_roles"]), 1)
+        self.assertEqual(len(past_value["user_roles"]), 1)
         self.assertIn(self.user_role_2.id, past_value["user_roles"])
-        self.assertEquals(len(past_value["projects"]), 1)
+        self.assertEqual(len(past_value["projects"]), 1)
         self.assertIn(self.project_2.id, past_value["projects"])
         # New value
         new_value = log["new_value"][0]["fields"]
-        self.assertEquals(new_value["user"], self.chewie.id)
-        self.assertEquals(new_value["username"], self.chewie.username)
-        self.assertEquals(new_value["first_name"], self.chewie.first_name)
-        self.assertEquals(new_value["last_name"], self.chewie.last_name)
-        self.assertEquals(new_value["email"], self.chewie.email)
-        self.assertEquals(len(new_value["user_permissions"]), 1)
+        self.assertEqual(new_value["user"], self.chewie.id)
+        self.assertEqual(new_value["username"], self.chewie.username)
+        self.assertEqual(new_value["first_name"], self.chewie.first_name)
+        self.assertEqual(new_value["last_name"], self.chewie.last_name)
+        self.assertEqual(new_value["email"], self.chewie.email)
+        self.assertEqual(len(new_value["user_permissions"]), 1)
         self.assertNotIn("password", new_value.keys())
 
-        self.assertEquals(new_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
-        self.assertEquals(new_value["language"], "fr")
-        self.assertEquals(new_value["home_page"], self.chewie.iaso_profile.home_page)
+        self.assertEqual(new_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
+        self.assertEqual(new_value["language"], "fr")
+        self.assertEqual(new_value["home_page"], self.chewie.iaso_profile.home_page)
         # expected to be null/empty. If there was a value we should add a plus for the value logged
-        self.assertEquals(past_value["phone_number"], self.chewie.iaso_profile.phone_number)
-        self.assertEquals(len(new_value["org_units"]), 1)
+        self.assertEqual(past_value["phone_number"], self.chewie.iaso_profile.phone_number)
+        self.assertEqual(len(new_value["org_units"]), 1)
         self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
-        self.assertEquals(len(new_value["user_roles"]), 1)
+        self.assertEqual(len(new_value["user_roles"]), 1)
         self.assertIn(self.user_role.id, new_value["user_roles"])
-        self.assertEquals(len(new_value["projects"]), 1)
+        self.assertEqual(len(new_value["projects"]), 1)
         self.assertIn(self.project.id, new_value["projects"])
         # Check that team 1 is updated
         response = self.client.get(
@@ -932,7 +932,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         )
         response_data = self.assertJSONResponse(response, 200)
         logs = response_data["list"]
-        self.assertEquals(len(logs), 2)
+        self.assertEqual(len(logs), 2)
         # Last log should contain both luke and chewie id
         log = logs[0]
         self.assertIn(self.chewie.pk, log["new_value"][0]["users"])

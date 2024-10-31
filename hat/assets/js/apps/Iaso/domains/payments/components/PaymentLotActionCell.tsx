@@ -37,7 +37,6 @@ export const PaymentLotActionCell = ({
             <IconButton
                 icon="remove-red-eye"
                 url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${userIds}/paymentIds/${paymentIds}`}
-                // TODO add correct message
                 tooltipMessage={MESSAGES.viewChangeRequestforLot}
                 disabled={disableButtons}
             />

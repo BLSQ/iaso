@@ -2,9 +2,9 @@ from django.db.models import Q
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
-
+from rest_framework.decorators import action
 from iaso.models import OrgUnitType
-from .serializers import OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2
+from .serializers import OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2, OrgUnitTypesDropdownSerializer
 from ..common import ModelViewSet
 
 DEFAULT_ORDER = "name"
@@ -85,3 +85,19 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         orders = self.request.query_params.get(ORDER, DEFAULT_ORDER).split(",")
 
         return queryset.order_by("depth").distinct().order_by(*orders)
+
+    @action(
+        permission_classes=[permissions.IsAuthenticatedOrReadOnly],
+        detail=False,
+        methods=["GET"],
+        serializer_class=OrgUnitTypesDropdownSerializer,
+    )
+    def dropdown(self, request, *args):
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

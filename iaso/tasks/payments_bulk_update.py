@@ -62,6 +62,7 @@ def payments_bulk_update(
             the_task.ended_at = timezone.now()
             the_task.result = {"result": ERRORED, "message": "Payment Lot not found"}
             the_task.save()
+            return
 
         # audit stuff
         payment_log_audit = PaymentLotAuditLogger()

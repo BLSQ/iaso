@@ -152,7 +152,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         self.assertEqual(PaymentStatuses.PENDING, modification_payment.past_value[0]["fields"]["status"])
         self.assertEqual(PaymentStatuses.PAID, modification_payment.new_value[0]["fields"]["status"])
 
-        # TODO assert PaymentLot Status
+    # TODO assert PaymentLot Status
 
     def test_payment_bulkupdate_select_all(self):
         """POST /api/tasks/create/paymentsbulkupdate/ happy path (select all)"""

@@ -78,10 +78,11 @@ def payments_bulk_update(
         else:
             queryset = queryset.exclude(pk__in=unselected_ids)
 
-        if not queryset:
-            end_task_and_update_payment_lot(payment_lot=payment_lot, task=the_task, message="No matching payment found")
-
         total = queryset.count()
+
+        if not total:
+            end_task_and_update_payment_lot(payment_lot=payment_lot, task=the_task, message="No matching payment found")
+            return
 
         # FIXME Task don't handle rollback properly if task is killed by user or other error
         with transaction.atomic():

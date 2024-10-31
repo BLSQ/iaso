@@ -1012,6 +1012,7 @@
     "iaso.permissions.polio_vaccine_authorizations_admin": "Validation d'authorisation de vaccins polio: Admin",
     "iaso.permissions.polio_vaccine_authorizations_read_only": "Validation d'authorisation de vaccins polio: Lecture seule",
     "iaso.permissions.projects": "Projets",
+    "iaso.permissions.readEdit.admin": "Admin",
     "iaso.permissions.readEdit.all": "Toutes",
     "iaso.permissions.readEdit.entity_duplicate_permissions": "Doublons d’entités",
     "iaso.permissions.readEdit.geo_limited": "Géo-limité",

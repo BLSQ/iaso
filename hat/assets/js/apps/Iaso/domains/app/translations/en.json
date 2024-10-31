@@ -1012,6 +1012,7 @@
     "iaso.permissions.polio_vaccine_authorizations_admin": "Polio Vaccine Authorizations: Admin",
     "iaso.permissions.polio_vaccine_authorizations_read_only": "Polio Vaccine Authorizations: Read Only",
     "iaso.permissions.projects": "Projects",
+    "iaso.permissions.readEdit.admin": "Admin",
     "iaso.permissions.readEdit.all": "All",
     "iaso.permissions.readEdit.entity_duplicate_permissions": "Entity duplicates",
     "iaso.permissions.readEdit.geo_limited": "Geo-limited",

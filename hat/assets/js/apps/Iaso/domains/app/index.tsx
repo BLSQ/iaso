@@ -2,6 +2,7 @@ import { LoadingSpinner } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
+import { SentryProvider } from './contexts/SentryProvider';
 import { useRoutes } from './hooks/useRoutes';
 
 type Props = {
@@ -21,10 +22,14 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
     if (isLoadingRoutes) {
         return <LoadingSpinner />;
     }
-    return isDashboardPath ? (
-        <BrowserRouter basename={dashboardBasename}>{routes}</BrowserRouter>
-    ) : (
-        <BrowserRouter>{nonDashboardRoutes}</BrowserRouter>
+    return (
+        <SentryProvider>
+            <BrowserRouter
+                basename={isDashboardPath ? dashboardBasename : undefined}
+            >
+                {isDashboardPath ? routes : nonDashboardRoutes}
+            </BrowserRouter>
+        </SentryProvider>
     );
 };
 

@@ -1,5 +1,6 @@
 import moment from 'moment';
 
+import * as Sentry from '@sentry/browser';
 import { PostArg } from '../types/general';
 import { Nullable, Optional } from '../types/utils';
 import { FETCHING_ABORTED } from './constants';
@@ -16,12 +17,14 @@ export class ApiError extends Error {
     ) {
         super(message);
 
+        Error.apply(this, [message]);
+        this.name = 'ApiError';
+
         // Maintains proper stack trace for where our error was thrown (only available on V8)
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, ApiError);
         }
 
-        this.name = 'ApiError';
         // Custom debugging information
         if (response) {
             this.status = response.status;
@@ -60,7 +63,16 @@ export const iasoFetch = async (
     } catch (error) {
         // ignoring errors from cancelled fetch
         if (error.name !== 'AbortError') {
-            throw new ApiError(error.message);
+            const apiError = new ApiError(error.message);
+            if (Sentry?.withScope) {
+                Sentry.withScope(scope => {
+                    scope.setTag('type', 'api_error');
+                    scope.setExtra('url', url);
+                    scope.setExtra('method', method);
+                    Sentry.captureException(apiError);
+                });
+            }
+            throw apiError;
         }
         // Don't error on cancel fetch
         const emptyRes = new Response(
@@ -80,7 +92,22 @@ export const iasoFetch = async (
             );
         }
         const json = await tryJson(response);
-        throw new ApiError(`Error on ${method} ${url} `, response, json);
+        const apiError = new ApiError(
+            `Error on ${method} ${url}`,
+            response,
+            json,
+        );
+        if (Sentry?.withScope) {
+            Sentry.withScope(scope => {
+                scope.setTag('type', 'api_error');
+                scope.setExtra('url', url);
+                scope.setExtra('method', method);
+                scope.setExtra('status', response.status);
+                scope.setExtra('response', json);
+                Sentry.captureException(apiError);
+            });
+        }
+        throw apiError;
     }
     return response;
 };

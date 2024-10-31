@@ -86,7 +86,9 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         orders = self.request.query_params.get(ORDER, DEFAULT_ORDER).split(",")
 
         return queryset.order_by("depth").distinct().order_by(*orders)
-
+    
+    # IA-3628_IA-3629_HOTFIX_org_unit_types_and_groups_timeout_bug
+    # used in v1.246c to prevent page crash
     @action(
         permission_classes=[permissions.IsAuthenticatedOrReadOnly],
         detail=False,

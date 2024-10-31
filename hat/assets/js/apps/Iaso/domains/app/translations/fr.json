@@ -25,7 +25,7 @@
     "iaso.analytics.consent": "Consentement à l'analyse",
     "iaso.analytics.consent.accept": "Accepter",
     "iaso.analytics.consent.decline": "Refuser",
-    "iaso.analytics.consent.description": "Nous utilisons Sentry pour collecter des données de rejoue de session afin d'améliorer la qualité de nos services et de débugger les problèmes. Cela inclut la capture de vos interactions avec notre application.",
+    "iaso.analytics.consent.description": "Nous utilisons Sentry pour collecter des données de rejeu de session afin d'améliorer la qualité de nos services et de débugger les problèmes. Cela inclut la capture de vos interactions avec notre application.",
     "iaso.archived.title": "Archives",
     "iaso.area": "Aire de santé",
     "iaso.assignment.alreadyAssigned": "Déjà assigné",

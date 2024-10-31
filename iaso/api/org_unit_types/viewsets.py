@@ -87,7 +87,12 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
         return queryset.order_by("depth").distinct().order_by(*orders)
 
-    @action(permission_classes=[permissions.IsAuthenticatedOrReadOnly], detail=False, methods=["GET"], serializer_class=OrgUnitTypesDropdownSerializer)
+    @action(
+        permission_classes=[permissions.IsAuthenticatedOrReadOnly],
+        detail=False,
+        methods=["GET"],
+        serializer_class=OrgUnitTypesDropdownSerializer,
+    )
     def dropdown(self, request, *args):
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)

@@ -8,7 +8,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { useStartAnalyse } from '../hooks/api/analyzes';
 import { AnalysisTooltipTitle } from './AnalysisTooltipTitle';
 import MESSAGES from '../messages';
-import { Analysis } from '../types';
+import { Analysis, Parameters } from '../types';
 import { AnalysisModal } from './AnalysisModal';
 
 type Props = {
@@ -31,7 +31,9 @@ export const AnalyseAction: FunctionComponent<Props> = ({
             algorithm: latestAnalysis?.algorithm,
             entity_type_id: latestAnalysis?.metadata.entity_type_id,
             fields: latestAnalysis?.metadata.fields,
-            parameters: latestAnalysis?.metadata.parameters,
+            parameters: Object.entries(
+                latestAnalysis?.metadata.parameters as unknown as Parameters,
+            ).map(([name, value]) => ({ name, value })),
         });
     }, [latestAnalysis, startAnalyse]);
     return (

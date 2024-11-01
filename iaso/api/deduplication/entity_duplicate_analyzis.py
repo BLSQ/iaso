@@ -28,7 +28,7 @@ class AnalyzePostBodySerializer(serializers.Serializer):
     algorithm = serializers.ChoiceField(choices=POSSIBLE_ALGORITHMS)
     entity_type_id = serializers.CharField()
     fields = serializers.ListField(child=serializers.CharField())  # type: ignore
-    parameters = serializers.DictField()
+    parameters = serializers.ListField(child=serializers.DictField())
 
     def validate(self, data):
         data = super().validate(data)
@@ -263,12 +263,12 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
         data = serializer.validated_data
 
         algo_name = data["algorithm"]
+
         algo_params = {
             "entity_type_id": data["entity_type_id"],
             "fields": data["fields"],
-            "parameters": data["parameters"],
+            "parameters": {param["name"]: param["value"] for param in data["parameters"]},
         }
-
         the_task = run_deduplication_algo(algo_name=algo_name, algo_params=algo_params, user=request.user)
 
         # Create an EntityDuplicateAnalyzis object

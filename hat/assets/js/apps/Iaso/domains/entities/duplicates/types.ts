@@ -78,3 +78,5 @@ export type Analysis = {
     };
     task: number;
 };
+
+export type Parameters = { name: string; value: string | number }[];

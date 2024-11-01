@@ -132,19 +132,65 @@ class StorageAPITestCase(APITestCase):
 
         self.assertEqual(StorageLogEntry.objects.count(), num_log_storage_before + 2)
 
+    def assertBaseNewStorageDeviceCreated(self, storage, expected_id, expected_type="NFC"):
+        self.assertEqual(storage.customer_chosen_id, "NEW_STORAGE")
+        self.assertEqual(storage.account, self.yoda.iaso_profile.account)
+        self.assertEqual(storage.type, expected_type)
+        self.assertEqual(storage.status, "OK")
+        self.assertEqual(storage.org_unit, self.org_unit)
+        self.assertEqual(storage.entity, self.entity)
+
+    def assertBaseNewLogEntryCreated(self, log_entry, expected_id, expected_operation, expected_instances):
+        self.assertEqual(str(log_entry.id), expected_id)
+        self.assertEqual(log_entry.operation_type, expected_operation)
+        self.assertEqual(str(log_entry.performed_at), "2022-10-17 10:32:19+00:00")
+        self.assertEqual(log_entry.performed_by, self.yoda)
+        self.assertQuerySetEqual(log_entry.instances.all(), expected_instances, ordered=False)
+        self.assertEqual(log_entry.org_unit, self.org_unit)
+        self.assertEqual(log_entry.entity, self.entity)
+
     def test_post_log_base_new_storage(self):
-        """
-        Test the base of the POST /api/mobile/storages/log/ endpoint, in the case where the storage device is new.
-
-        - Status is 201 CREATED
-        - Correct values added to the database
-        """
-
+        """Test POST /api/mobile/storages/log/ endpoint with a new storage device."""
         self.client.force_authenticate(self.yoda)
 
         num_devices_before = StorageDevice.objects.count()
 
-        post_body = [
+        post_body = self._create_post_body_new_storage("entity_id")
+        response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(StorageDevice.objects.count(), num_devices_before + 1)
+
+        the_storage = StorageDevice.objects.latest("id")
+        self.assertBaseNewStorageDeviceCreated(the_storage, "123e4567-e89b-12d3-a456-426614174000")
+
+        the_log_entry = the_storage.log_entries.first()
+        self.assertBaseNewLogEntryCreated(
+            the_log_entry, "123e4567-e89b-12d3-a456-426614174000", "WRITE_PROFILE", [self.instance1, self.instance2]
+        )
+
+    def test_post_log_new_storage_entity_uuid(self):
+        """Test POST /api/mobile/storages/log/ with a new storage device using entity UUID."""
+        self.client.force_authenticate(self.yoda)
+
+        num_devices_before = StorageDevice.objects.count()
+
+        post_body = self._create_post_body_new_storage("entity_uuid")
+        response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(StorageDevice.objects.count(), num_devices_before + 1)
+
+        the_storage = StorageDevice.objects.latest("id")
+        self.assertBaseNewStorageDeviceCreated(the_storage, "123e4567-e89b-12d3-a456-426614174000")
+
+        the_log_entry = the_storage.log_entries.first()
+        self.assertBaseNewLogEntryCreated(
+            the_log_entry, "123e4567-e89b-12d3-a456-426614174000", "WRITE_PROFILE", [self.instance1, self.instance2]
+        )
+
+    def _create_post_body_new_storage(self, entity_key):
+        return [
             {
                 "id": "123e4567-e89b-12d3-a456-426614174000",
                 "storage_id": "NEW_STORAGE",
@@ -152,36 +198,10 @@ class StorageAPITestCase(APITestCase):
                 "operation_type": "WRITE_PROFILE",
                 "instances": [self.instance1.uuid, self.instance2.uuid],
                 "org_unit_id": self.org_unit.id,
-                "entity_id": self.entity.uuid,
+                entity_key: self.entity.uuid,
                 "performed_at": 1666002739.171,  # In seconds
             }
         ]
-        response = self.client.post("/api/mobile/storages/logs/", post_body, format="json")
-
-        self.assertEqual(response.status_code, 201)
-
-        # Ensure the storage device was created was decent values
-        self.assertEqual(StorageDevice.objects.count(), num_devices_before + 1)
-        the_storage = StorageDevice.objects.latest("id")
-        self.assertEqual(the_storage.customer_chosen_id, "NEW_STORAGE")
-        self.assertEqual(the_storage.account, self.yoda.iaso_profile.account)
-        self.assertEqual(the_storage.type, "NFC")
-        self.assertEqual(the_storage.status, "OK")
-
-        # Ensure the log entry was created with decent values
-        self.assertEqual(the_storage.log_entries.count(), 1)
-        the_log_entry = the_storage.log_entries.first()
-        self.assertEqual(str(the_log_entry.id), "123e4567-e89b-12d3-a456-426614174000")
-        self.assertEqual(the_log_entry.operation_type, "WRITE_PROFILE")
-        self.assertEqual(str(the_log_entry.performed_at), "2022-10-17 10:32:19+00:00")
-        self.assertEqual(the_log_entry.performed_by, self.yoda)
-        self.assertQuerySetEqual(the_log_entry.instances.all(), [self.instance1, self.instance2], ordered=False)
-        self.assertEqual(the_log_entry.org_unit, self.org_unit)
-        self.assertEqual(the_log_entry.entity, self.entity)
-
-        # The "orgunit" and "entity" fields should also have been set on the storage device itself
-        self.assertEqual(the_storage.org_unit, self.org_unit)
-        self.assertEqual(the_storage.entity, self.entity)
 
     def test_post_log_base_existing_storage(self):
         """Similar to test_post_storage_base_new_storage, but the storage device already exists."""

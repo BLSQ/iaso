@@ -261,6 +261,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.instances_count',
         defaultMessage: 'Number of submissions',
     },
+    instances: {
+        id: 'iaso.instance.title',
+        defaultMessage: 'Submissions',
+    },
+    orgUnitInstances: {
+        id: 'iaso.forms.records',
+        defaultMessage: 'Submission(s)',
+    },
     parent: {
         id: 'iaso.label.parent',
         defaultMessage: 'Parent',

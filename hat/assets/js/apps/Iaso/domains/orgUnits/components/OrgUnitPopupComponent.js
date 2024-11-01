@@ -8,12 +8,12 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    LinkButton,
     LoadingSpinner,
     commonStyles,
     mapPopupStyles,
     textPlaceholder,
     useSafeIntl,
+    LinkWithLocation,
 } from 'bluesquare-components';
 import classNames from 'classnames';
 import moment from 'moment';
@@ -22,10 +22,11 @@ import React, { createRef } from 'react';
 import { Popup } from 'react-leaflet';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
-import { baseUrls } from '../../../constants/urls.ts';
 import { usePopupState } from '../../../utils/map/usePopupState';
 import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
 import MESSAGES from '../messages.ts';
+import { LinkToOrgUnit } from './LinkToOrgUnit';
+import { baseUrls } from '../../../constants/urls.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -56,6 +57,11 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         '&:hover': { textDecoration: 'none' },
     },
+    image: {
+        width: 'auto',
+        objectFit: 'contain',
+        maxWidth: '100%',
+    },
 }));
 
 const OrgUnitPopupComponent = ({
@@ -71,13 +77,11 @@ const OrgUnitPopupComponent = ({
     const { data: currentOrgUnit } = useGetOrgUnitDetail(
         isOpen ? orgUnitId : undefined,
     );
+
     const confirmDialog = () => {
         replaceLocation(currentOrgUnit);
     };
-    let groups = null;
-    if (currentOrgUnit && currentOrgUnit.groups.length > 0) {
-        groups = currentOrgUnit.groups.map(g => g.name).join(', ');
-    }
+
     return (
         <Popup className={classes.popup} ref={popup} pane="popupPane">
             {!currentOrgUnit && <LoadingSpinner />}
@@ -100,47 +104,55 @@ const OrgUnitPopupComponent = ({
                                 <Divider />
                             </Box>
                         )}
+                        {currentOrgUnit.default_image && (
+                            <img
+                                className={classes.image}
+                                alt=""
+                                src={currentOrgUnit.default_image.file}
+                            />
+                        )}
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.name)}
-                            value={currentOrgUnit.name}
+                            value={<LinkToOrgUnit orgUnit={currentOrgUnit} />}
                         />
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.type)}
                             value={currentOrgUnit.org_unit_type_name}
                         />
                         <PopupItemComponent
-                            label={formatMessage(MESSAGES.groups)}
-                            value={groups}
-                        />
-                        <PopupItemComponent
-                            label={formatMessage(MESSAGES.source)}
-                            value={currentOrgUnit.source}
-                        />
-                        <PopupItemComponent
                             label={formatMessage(MESSAGES.parent)}
                             value={
-                                currentOrgUnit.parent
-                                    ? currentOrgUnit.parent.name
-                                    : textPlaceholder
+                                currentOrgUnit.parent ? (
+                                    <LinkToOrgUnit
+                                        orgUnit={currentOrgUnit.parent}
+                                    />
+                                ) : (
+                                    textPlaceholder
+                                )
                             }
                         />
-                        {!currentOrgUnit.has_geo_json && (
-                            <>
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.latitude)}
-                                    value={currentOrgUnit.latitude}
-                                />
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.longitude)}
-                                    value={currentOrgUnit.longitude}
-                                />
-                            </>
-                        )}
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.created_at)}
                             value={moment
                                 .unix(currentOrgUnit.created_at)
                                 .format('LTS')}
+                        />
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.instances)}
+                            value={
+                                <LinkWithLocation
+                                    className={classes.link}
+                                    to={`/${baseUrls.instances}/levels/${currentOrgUnit.id}`}
+                                >
+                                    {`${
+                                        currentOrgUnit.instances_count
+                                    } ${formatMessage(MESSAGES.orgUnitInstances)}`}
+                                </LinkWithLocation>
+                            }
+                        />
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.source)}
+                            value={currentOrgUnit.source}
                         />
                         <Box className={classes.actionBox}>
                             <Grid
@@ -166,17 +178,6 @@ const OrgUnitPopupComponent = ({
                                         confirm={() => confirmDialog()}
                                     />
                                 )}
-                                <LinkButton
-                                    target="_blank"
-                                    to={`/${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}/tab/infos`}
-                                    className={classes.linkButton}
-                                    buttonClassName={classes.marginLeft}
-                                    variant="outlined"
-                                    color="primary"
-                                    size="small"
-                                >
-                                    {formatMessage(MESSAGES.see)}
-                                </LinkButton>
                             </Grid>
                         </Box>
                     </CardContent>

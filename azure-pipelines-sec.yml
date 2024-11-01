@@ -21,7 +21,7 @@ steps:
 
 - task: MicrosoftSecurityDevOps@1
   inputs:
-    tools: 'Trivy,Bandit'
+    tools: 'Trivy,Bandit,eslint'
     workingDirectory: $(Build.SourcesDirectory)
     failOnSev: 'high'
     logLevel: 'info'

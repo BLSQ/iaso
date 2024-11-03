@@ -5,6 +5,7 @@ import {
     Divider,
     Grid,
     Typography,
+    CardMedia,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -57,11 +58,6 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         '&:hover': { textDecoration: 'none' },
     },
-    image: {
-        width: 'auto',
-        objectFit: 'contain',
-        maxWidth: '100%',
-    },
 }));
 
 const OrgUnitPopupComponent = ({
@@ -87,6 +83,14 @@ const OrgUnitPopupComponent = ({
             {!currentOrgUnit && <LoadingSpinner />}
             {currentOrgUnit && (
                 <Card className={classes.popupCard}>
+                    {currentOrgUnit.default_image && (
+                        <CardMedia
+                            href={currentOrgUnit.default_image.file}
+                            className={classes.popupCardMedia}
+                            image={currentOrgUnit.default_image.file}
+                            component="div"
+                        />
+                    )}
                     <CardContent
                         className={classNames(
                             classes.popupCardContent,
@@ -104,13 +108,7 @@ const OrgUnitPopupComponent = ({
                                 <Divider />
                             </Box>
                         )}
-                        {currentOrgUnit.default_image && (
-                            <img
-                                className={classes.image}
-                                alt=""
-                                src={currentOrgUnit.default_image.file}
-                            />
-                        )}
+
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.name)}
                             value={<LinkToOrgUnit orgUnit={currentOrgUnit} />}

@@ -12,6 +12,15 @@ from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 
 
+def end_task_and_update_payment_lot(payment_lot, task, message):
+    task.status = ERRORED
+    task.ended_at = timezone.now()
+    task.result = {"result": ERRORED, "message": message}
+    task.save()
+    payment_lot.task = None
+    payment_lot.save()
+
+
 def update_payment_from_bulk(user, payment, *, status, api):
     """Used within the context of a bulk operation"""
 
@@ -69,10 +78,11 @@ def payments_bulk_update(
         else:
             queryset = queryset.exclude(pk__in=unselected_ids)
 
-        if not queryset:
-            raise Exception("No matching payment found")
-
         total = queryset.count()
+
+        if not total:
+            end_task_and_update_payment_lot(payment_lot=payment_lot, task=the_task, message="No matching payment found")
+            return
 
         # FIXME Task don't handle rollback properly if task is killed by user or other error
         with transaction.atomic():
@@ -88,6 +98,7 @@ def payments_bulk_update(
             new_payment_lot_status = payment_lot.compute_status()
             if old_payment_lot_status != new_payment_lot_status:
                 payment_lot.status = new_payment_lot_status
+                payment_lot.task = None
                 payment_lot.save()
                 payment_log_audit.log_modification(
                     old_data_dump=old_payment_lot,
@@ -95,6 +106,9 @@ def payments_bulk_update(
                     request_user=user,
                     source=audit_models.PAYMENT_API_BULK,
                 )
+            else:
+                payment_lot.task = None
+                payment_lot.save()
             the_task.report_success(message="%d modified" % total)
 
 

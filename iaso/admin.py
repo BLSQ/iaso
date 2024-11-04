@@ -904,7 +904,7 @@ class ConfigAdmin(admin.ModelAdmin):
 @admin.register(PotentialPayment)
 class PotentialPaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
-    list_display = ("id", "change_request_ids")
+    list_display = ("id", "change_request_ids", "user")
 
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()

@@ -25,6 +25,9 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         cls.payment_beneficiary = cls.create_user_with_profile(
             username="payment_beneficiary", first_name="John", last_name="Doe", account=account
         )
+        cls.payment_beneficiary2 = cls.create_user_with_profile(
+            username="payment_beneficiary2", first_name="Jim", last_name="Doe", account=account
+        )
         org_unit_type = m.OrgUnitType.objects.create(name="Stable", short_name="Cnc")
         cls.org_unit = m.OrgUnit.objects.create(
             name="Woodland",
@@ -60,7 +63,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         cls.potential_payment = m.PotentialPayment.objects.create(user=cls.payment_beneficiary)
         running_task = m.Task.objects.create(launcher=cls.user, account=cls.user.iaso_profile.account, status="SUCCESS")
         cls.potential_payment_with_task = m.PotentialPayment.objects.create(
-            user=cls.payment_beneficiary, task=running_task
+            user=cls.payment_beneficiary2, task=running_task
         )
 
         cls.third_change_request = m.OrgUnitChangeRequest.objects.create(

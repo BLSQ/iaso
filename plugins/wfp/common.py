@@ -16,6 +16,11 @@ class ETL:
         print("EXISTING VISITS DELETED", beneficiary[1]["wfp.Visit"])
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
+    def account_related_to_entity_type(self):
+        entity_type = EntityType.objects.get(code=self.type)
+        account = Account.objects.get(id=entity_type.account_id)
+        return account
+
     def retrieve_entities(self):
         steps_id = ETL().steps_to_exclude()
         updated_at = date(2023, 7, 10)
@@ -536,3 +541,19 @@ class ETL:
             elif age_entry == "months":
                 calculated_date = registered_at - relativedelta(months=beneficiary_age)
         return calculated_date
+
+    def entity_journey_mapper(self, visits, anthropometric_visit_forms, admission_form, current_journey):
+        journey = []
+        for index, visit in enumerate(visits):
+            if visit:
+                current_journey["weight_gain"] = visit.get("weight_gain", None)
+                current_journey["weight_loss"] = visit.get("weight_loss", None)
+                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
+                    current_journey["duration"] = visit.get("duration")
+
+                current_journey = ETL().journey_Formatter(
+                    visit, admission_form, anthropometric_visit_forms, current_journey, visits, index
+                )
+            current_journey["steps"].append(visit)
+        journey.append(current_journey)
+        return journey

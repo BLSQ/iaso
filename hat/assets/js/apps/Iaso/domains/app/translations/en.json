@@ -386,6 +386,7 @@
     "iaso.instance.missingGeolocation": "Cannot find an instance with geolocation",
     "iaso.instance.NoLocksHistory": "There's no history",
     "iaso.instance.org_unit": "Org unit",
+    "iaso.instance.org_unit_type_name": "Org unit type",
     "iaso.instance.patchInstanceError": "An error occurred while saving submission",
     "iaso.instance.patchInstanceSuccesfull": "Submission saved successfully",
     "iaso.instance.period": "Period",

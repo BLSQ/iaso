@@ -39,6 +39,7 @@ import {
 } from './hooks/useReassignInstance';
 import MESSAGES from './messages';
 import { getInstancesFilesList } from './utils';
+import { INSTANCE_METAS_FIELDS } from './constants';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -162,6 +163,9 @@ const InstanceDetails: FunctionComponent = () => {
                                 id="infos"
                             >
                                 <InstanceDetailsInfos
+                                    instance_metas_fields={
+                                        INSTANCE_METAS_FIELDS
+                                    }
                                     currentInstance={currentInstance}
                                 />
 

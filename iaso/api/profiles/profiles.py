@@ -693,19 +693,19 @@ class ProfilesViewSet(viewsets.ViewSet):
             result["user_roles"].append(user_role_item)
         return result
 
-    def validate_projects(self, request, profile):
+    def validate_projects(self, request, profile) -> QuerySet[Project]:
         result = []
-        projects = request.data.get("projects")
-        if projects:
-            if not request.user.has_perm(permission.USERS_ADMIN):
+        project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
+        if project_ids:
+            profile_project_ids = set(profile.projects.values_list("id", flat=True))
+            if not request.user.has_perm(permission.USERS_ADMIN) and profile_project_ids != project_ids:
                 raise PermissionDenied(
                     f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
                 )
-            for project in projects:
-                item = get_object_or_404(Project, pk=project)
-                if profile.account_id != item.account_id:
+            for project in Project.objects.filter(id__in=project_ids):
+                if profile.account_id != project.account_id:
                     raise BadRequest
-                result.append(item)
+                result.append(project)
         return result
 
     def validate_editable_org_unit_types(self, request) -> QuerySet[OrgUnitType]:

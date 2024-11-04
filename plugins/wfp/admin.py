@@ -10,8 +10,8 @@ from .models import (
 
 @admin.register(Beneficiary)
 class BeneficiaryAdmin(admin.ModelAdmin):
-    list_filter = ("birth_date", "gender")
-    list_display = ("id", "birth_date", "gender")
+    list_filter = ("birth_date", "gender", "account")
+    list_display = ("id", "birth_date", "gender", "account")
 
 
 @admin.register(Journey)

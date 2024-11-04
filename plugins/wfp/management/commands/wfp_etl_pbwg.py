@@ -10,7 +10,9 @@ logger = logging.getLogger(__name__)
 
 class PBWG:
     def run(self):
-        beneficiaries = ETL("pbwg_1").retrieve_entities()
+        entity_type = ETL("pbwg_1")
+        account = entity_type.account_related_to_entity_type()
+        beneficiaries = entity_type.retrieve_entities()
         logger.info(f"Instances linked to PBWG program: {beneficiaries.count()}")
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()
@@ -25,6 +27,7 @@ class PBWG:
             if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
                 beneficiary.gender = ""
                 beneficiary.entity_id = instance["entity_id"]
+                beneficiary.account = account
                 if instance.get("birth_date") is not None:
                     beneficiary.birth_date = instance["birth_date"]
                     beneficiary.save()
@@ -72,26 +75,16 @@ class PBWG:
         return journey
 
     def journeyMapper(self, visits):
-        journey = []
         current_journey = {"visits": [], "steps": []}
         anthropometric_visit_forms = [
             "wfp_coda_pbwg_luctating_followup_anthro",
             "wfp_coda_pbwg_followup_anthro",
         ]
-
-        for index, visit in enumerate(visits):
-            if visit:
-                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
-                    current_journey["duration"] = visit.get("duration")
-
-                if visit["form_id"] == "wfp_coda_pbwg_registration":
-                    current_journey["nutrition_programme"] = visit.get("physiology_status", None)
-
-                current_journey = ETL().journey_Formatter(
-                    visit, "wfp_coda_pbwg_anthropometric", anthropometric_visit_forms, current_journey, visits, index
-                )
-                current_journey["steps"].append(visit)
-        journey.append(current_journey)
+        admission_form = "wfp_coda_pbwg_anthropometric"
+        visit_nutrition_program = [visit for visit in visits if visit["form_id"] == "wfp_coda_pbwg_registration"][0]
+        if len(visit_nutrition_program) > 0:
+            current_journey["nutrition_programme"] = visit_nutrition_program.get("physiology_status", None)
+        journey = ETL().entity_journey_mapper(visits, anthropometric_visit_forms, admission_form, current_journey)
         return journey
 
     def group_visit_by_entity(self, entities):

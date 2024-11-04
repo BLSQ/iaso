@@ -135,27 +135,16 @@ class Under5:
         )
 
     def journeyMapper(self, visits):
-        journey = []
         current_journey = {"visits": [], "steps": []}
         anthropometric_visit_forms = [
             "child_antropometric_followUp_tsfp",
             "child_antropometric_followUp_otp",
         ]
-        for index, visit in enumerate(visits):
-            if visit:
-                current_journey["weight_gain"] = visit.get("weight_gain", None)
-                current_journey["weight_loss"] = visit.get("weight_loss", None)
-                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
-                    current_journey["duration"] = visit.get("duration")
-
-                if visit["form_id"] == "Anthropometric visit child":
-                    current_journey["nutrition_programme"] = ETL().program_mapper(visit)
-
-                current_journey = ETL().journey_Formatter(
-                    visit, "Anthropometric visit child", anthropometric_visit_forms, current_journey, visits, index
-                )
-            current_journey["steps"].append(visit)
-        journey.append(current_journey)
+        admission_form = "Anthropometric visit child"
+        visit_nutrition_program = [visit for visit in visits if visit["form_id"] == admission_form]
+        if len(visit_nutrition_program) > 0:
+            current_journey["nutrition_programme"] = ETL().program_mapper(visit_nutrition_program[0])
+        journey = ETL().entity_journey_mapper(visits, anthropometric_visit_forms, admission_form, current_journey)
         return journey
 
     def save_journey(self, beneficiary, record):
@@ -185,7 +174,9 @@ class Under5:
         return journey
 
     def run(self):
-        beneficiaries = ETL("child_under_5_1").retrieve_entities()
+        entity_type = ETL("child_under_5_1")
+        account = entity_type.account_related_to_entity_type()
+        beneficiaries = entity_type.retrieve_entities()
         logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()}")
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()
@@ -201,6 +192,7 @@ class Under5:
                 beneficiary.gender = instance["gender"]
                 beneficiary.birth_date = instance["birth_date"]
                 beneficiary.entity_id = instance["entity_id"]
+                beneficiary.account = account
                 beneficiary.save()
                 logger.info(f"Created new beneficiary")
             else:

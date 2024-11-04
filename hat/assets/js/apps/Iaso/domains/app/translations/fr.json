@@ -511,6 +511,7 @@
     "iaso.label.export": "Export",
     "iaso.label.exportRequests": "Demandes d'export",
     "iaso.label.exportSelection": "Exporter {count} soumissions",
+    "iaso.label.featureDisabled": "Fonctionnalité temporairement désactivée",
     "iaso.label.featureFlags": "Options",
     "iaso.label.field": "Champ",
     "iaso.label.fields": "Champs",

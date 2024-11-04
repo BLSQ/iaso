@@ -392,6 +392,7 @@
     "iaso.instance.queryBuilder": "Rechercher dans les champs soumis",
     "iaso.instance.removeLockAction": "Déverrouiller la soumission",
     "iaso.instance.selectedOrgUnit": "Unité d'org. sélectionnée",
+    "iaso.instance.selectVersionToCompare": "Veuillez sélectionner la version à comparer",
     "iaso.instance.source_created_at": "Création sur appareil",
     "iaso.instance.table.label.instanceHeaderTooltip": "Label: {label} - Nom: {key}",
     "iaso.instance.title": "Soumissions",

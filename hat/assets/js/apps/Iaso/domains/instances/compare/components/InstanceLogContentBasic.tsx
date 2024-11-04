@@ -24,7 +24,8 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: 'transparent',
         borderTop: 'none !important',
         borderLeft: 'none !important',
-        borderRight: 'none !important',
+        // @ts-ignore
+        borderRight: `1px solid ${theme.palette.ligthGray.border}  !important`,
         // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
@@ -42,7 +43,11 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
         <Table>
             <TableHead>
                 <TableRow>
-                    <TableCell align="left" className={classes.tableCellHead}>
+                    <TableCell
+                        width="25.3%"
+                        align="left"
+                        className={classes.tableCellHead}
+                    >
                         {formatMessage(MESSAGES.label)}
                     </TableCell>
                     <TableCell align="left" className={classes.tableCellHead}>

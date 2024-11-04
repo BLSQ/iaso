@@ -114,7 +114,10 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
             setShowDialog(true);
         }
         if (hasStoredConsent) {
-            initSentry(hasStoredConsent === 'true');
+            if (!window.SENTRY_INITIALIZED) {
+                initSentry(hasStoredConsent === 'true');
+                window.SENTRY_INITIALIZED = true;
+            }
         }
     }, []);
 

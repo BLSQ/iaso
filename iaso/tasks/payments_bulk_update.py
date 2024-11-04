@@ -6,7 +6,7 @@ from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from iaso.api.payments.serializers import PaymentLotAuditLogger
 from iaso.models import Task
-from iaso.models.base import ERRORED
+from iaso.models.base import ERRORED, KILLED, KilledException
 from iaso.models.payments import Payment, PaymentLot, PaymentStatuses
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
@@ -19,6 +19,19 @@ def end_task_and_update_payment_lot(payment_lot, task, message):
     task.save()
     payment_lot.task = None
     payment_lot.save()
+
+
+def report_progress_and_stop_if_killed_and_update_payment_lot(
+    payment_lot, task, progress_message, progress_value=None, end_value=None
+):
+    try:
+        task.report_progress_and_stop_if_killed(
+            progress_message=progress_message, progress_value=progress_value, end_value=end_value
+        )
+    except KilledException:
+        payment_lot.task = None
+        payment_lot.save()
+        raise KilledException("Killed by user")
 
 
 def update_payment_from_bulk(user, payment, *, status, api):
@@ -48,7 +61,6 @@ def payments_bulk_update(
     """
     start = time()
     the_task = task
-    the_task.report_progress_and_stop_if_killed(progress_message="Searching for Payments to modify")
     if not payment_lot_id:
         the_task.status = ERRORED
         the_task.ended_at = timezone.now()
@@ -62,7 +74,10 @@ def payments_bulk_update(
             the_task.ended_at = timezone.now()
             the_task.result = {"result": ERRORED, "message": "Payment Lot not found"}
             the_task.save()
-
+        # Handle killing task after retrieving payment lot, so payment lot's task field can be updated
+        report_progress_and_stop_if_killed_and_update_payment_lot(
+            payment_lot=payment_lot, task=the_task, progress_message="Searching for Payments to modify"
+        )
         # audit stuff
         payment_log_audit = PaymentLotAuditLogger()
         old_payment_lot = payment_log_audit.serialize_instance(payment_lot)
@@ -88,8 +103,12 @@ def payments_bulk_update(
         with transaction.atomic():
             for index, payment in enumerate(queryset.iterator()):
                 res_string = "%.2f sec, processed %i payments" % (time() - start, index)
-                the_task.report_progress_and_stop_if_killed(
-                    progress_message=res_string, end_value=total, progress_value=index
+                report_progress_and_stop_if_killed_and_update_payment_lot(
+                    payment_lot=payment_lot,
+                    task=the_task,
+                    progress_message=res_string,
+                    end_value=total,
+                    progress_value=index,
                 )
                 update_payment_from_bulk(user, payment, status=status, api=api)
             # Update PaymentLot status if needed. Since the bulk update doesn't necessarily include
@@ -124,7 +143,7 @@ def mark_payments_as_read(
     """
     start = time()
     the_task = task
-    the_task.report_progress_and_stop_if_killed(progress_message="Searching for Payments to modify")
+
     try:
         payment_lot = PaymentLot.objects.get(id=payment_lot_id)
     except ObjectDoesNotExist:
@@ -132,6 +151,11 @@ def mark_payments_as_read(
         the_task.ended_at = timezone.now()
         the_task.result = {"result": ERRORED, "message": "Payment Lot not found"}
         the_task.save()
+    # Handling task being killed after we get the payment_lot, so we can set it's task field back to None if the task is killed
+    report_progress_and_stop_if_killed_and_update_payment_lot(
+        payment_lot=payment_lot, task=the_task, progress_message="Searching for Payments to modify"
+    )
+
     payments = Payment.objects.filter(payment_lot=payment_lot)
     total = payments.count()
 
@@ -144,8 +168,12 @@ def mark_payments_as_read(
     with transaction.atomic():
         for index, payment in enumerate(payments.iterator()):
             res_string = "%.2f sec, processed %i payments" % (time() - start, index)
-            the_task.report_progress_and_stop_if_killed(
-                progress_message=res_string, end_value=total, progress_value=index
+            report_progress_and_stop_if_killed_and_update_payment_lot(
+                payment_lot=payment_lot,
+                task=the_task,
+                progress_message=res_string,
+                end_value=total,
+                progress_value=index,
             )
             update_payment_from_bulk(user, payment, status=PaymentStatuses.SENT, api=api)
 

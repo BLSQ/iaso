@@ -76,7 +76,7 @@ class ExportMobileAppSetupForUserTest(TestCase):
 
         # check Task status and result
         self.task.refresh_from_db()
-        self.assertEquals(self.task.status, SUCCESS)
+        self.assertEqual(self.task.status, SUCCESS)
         self.assertIn("file:export-files/mobile-app-export-", self.task.result["data"])
 
         # check zip file contents

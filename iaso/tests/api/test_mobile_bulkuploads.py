@@ -29,7 +29,7 @@ class MobileBulkUploadsAPITestCase(APITestCase):
         mock_s3_client.return_value = s3_client_mock
         s3_client_mock.upload_file.return_value = None
 
-        self.assertEquals(APIImport.objects.count(), 0)
+        self.assertEqual(APIImport.objects.count(), 0)
 
         response = self.client.post(
             f"{BASE_URL}?app_id={APP_ID}",
@@ -39,9 +39,9 @@ class MobileBulkUploadsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 204)
 
         s3_client_mock.upload_file.assert_called_once()
-        self.assertEquals(APIImport.objects.count(), 1)
+        self.assertEqual(APIImport.objects.count(), 1)
         api_import = APIImport.objects.first()
-        self.assertEquals(api_import.import_type, "bulk")
+        self.assertEqual(api_import.import_type, "bulk")
         self.assertFalse(api_import.has_problem)
 
     def test_fail_unauthenticated(self):
@@ -53,7 +53,7 @@ class MobileBulkUploadsAPITestCase(APITestCase):
 
         response = self.client.post(f"{BASE_URL}?app_id={APP_ID}")
         self.assertJSONResponse(response, 400)
-        self.assertEquals(response.json(), {"zip_file": ["No file was submitted."]})
+        self.assertEqual(response.json(), {"zip_file": ["No file was submitted."]})
 
     @mock.patch("boto3.client")
     def test_fail_s3_upload(self, mock_s3_client):
@@ -63,7 +63,7 @@ class MobileBulkUploadsAPITestCase(APITestCase):
         mock_s3_client.return_value = s3_client_mock
         s3_client_mock.upload_file.side_effect = Exception("An error occurred")
 
-        self.assertEquals(APIImport.objects.count(), 0)
+        self.assertEqual(APIImport.objects.count(), 0)
 
         response = self.client.post(
             f"{BASE_URL}?app_id={APP_ID}",
@@ -73,8 +73,8 @@ class MobileBulkUploadsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 500)
 
         s3_client_mock.upload_file.assert_called_once()
-        self.assertEquals(APIImport.objects.count(), 1)
+        self.assertEqual(APIImport.objects.count(), 1)
         api_import = APIImport.objects.first()
-        self.assertEquals(api_import.import_type, "bulk")
+        self.assertEqual(api_import.import_type, "bulk")
         self.assertTrue(api_import.has_problem)
         self.assertIsNotNone(api_import.exception)

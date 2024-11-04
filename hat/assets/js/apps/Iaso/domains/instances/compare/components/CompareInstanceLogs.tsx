@@ -94,15 +94,17 @@ export const CompareInstanceLogs: FunctionComponent = () => {
             const newParams: Params = {
                 ...params,
             };
-            if (!params.logA && instanceLogsDropdown[0]?.value) {
-                newParams.logA = instanceLogsDropdown[0]?.value.toString();
+            const logADropDownValue = instanceLogsDropdown?.slice(-1)[0]?.value;
+            const loagBDropDownValue = instanceLogsDropdown[0]?.value;
+            if (!params.logA && logADropDownValue) {
+                newParams.logA = logADropDownValue.toString();
             }
-            if (!params.logB && instanceLogsDropdown[1]?.value) {
-                newParams.logB = instanceLogsDropdown[1]?.value.toString();
+            if (!params.logB && loagBDropDownValue) {
+                newParams.logB = loagBDropDownValue.toString();
             }
             if (
-                (!params.logA && instanceLogsDropdown[0]?.value) ||
-                (!params.logB && instanceLogsDropdown[1]?.value)
+                (!params.logA && logADropDownValue) ||
+                (!params.logB && loagBDropDownValue)
             ) {
                 redirectToReplace(baseUrls.compareInstanceLogs, newParams);
             }
@@ -111,10 +113,10 @@ export const CompareInstanceLogs: FunctionComponent = () => {
     }, [instanceLogsDropdown, params]);
     useEffect(() => {
         setLogAInitialValue(
-            instanceLogsDropdown && instanceLogsDropdown[0]?.value,
+            instanceLogsDropdown && instanceLogsDropdown?.slice(-1)[0]?.value,
         );
         setLogBInitialValue(
-            instanceLogsDropdown && instanceLogsDropdown[1]?.value,
+            instanceLogsDropdown && instanceLogsDropdown[0]?.value,
         );
     }, [instanceLogsDropdown, isFetchingInstanceLogs]);
 

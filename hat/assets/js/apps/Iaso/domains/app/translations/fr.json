@@ -386,7 +386,7 @@
     "iaso.instance.missingGeolocation": "Aucune soumission trouvée avec une localisation",
     "iaso.instance.NoLocksHistory": "Il n'y a pas d'historique",
     "iaso.instance.org_unit": "Unités d'organisation",
-    "iaso.instance.org_unit_type_name": "Type d'unités d'org.",
+    "iaso.instance.org_unit_type_name": "Type d'unité d'org.",
     "iaso.instance.patchInstanceError": "Une erreur est survenue lors de la sauvegarde de la soumission",
     "iaso.instance.patchInstanceSuccesfull": "Soumission sauvée avec succès",
     "iaso.instance.period": "Période",

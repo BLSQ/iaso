@@ -44,13 +44,17 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
             <TableHead>
                 <TableRow>
                     <TableCell
-                        width="25.3%"
+                        width="25.35%"
                         align="left"
                         className={classes.tableCellHead}
                     >
                         {formatMessage(MESSAGES.label)}
                     </TableCell>
-                    <TableCell align="left" className={classes.tableCellHead}>
+                    <TableCell
+                        width="37.35%"
+                        align="left"
+                        className={classes.tableCellHead}
+                    >
                         <Typography
                             color={
                                 fileContent?.logA?.deleted ? 'error' : 'inherit'
@@ -59,7 +63,11 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                             {formatMessage(MESSAGES.instanceLogsVersionA)}
                         </Typography>
                     </TableCell>
-                    <TableCell align="left" className={classes.tableCellHead}>
+                    <TableCell
+                        width="37.35%"
+                        align="left"
+                        className={classes.tableCellHead}
+                    >
                         <Typography
                             color={
                                 fileContent?.logB?.deleted ? 'error' : undefined

@@ -206,6 +206,8 @@ class PaymentLotsViewSet(ModelViewSet):
             # the mark_as_sent query_param is used to only update related_payments' statuses, so we don't perform any other update when it's true
             if mark_as_sent:
                 task = mark_payments_as_read(payment_lot_id=instance.pk, api=PAYMENT_LOT_API, user=request.user)
+                instance.task = task
+                instance.save()
                 return Response(
                     {"task": TaskSerializer(instance=task).data},
                     status=status.HTTP_201_CREATED,

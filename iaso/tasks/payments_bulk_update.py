@@ -125,14 +125,14 @@ def mark_payments_as_read(
     start = time()
     the_task = task
     the_task.report_progress_and_stop_if_killed(progress_message="Searching for Payments to modify")
-    payment_lot = PaymentLot.objects.get(id=payment_lot_id)
     try:
-        payments = Payment.objects.filter(payment_lot=payment_lot)
+        payment_lot = PaymentLot.objects.get(id=payment_lot_id)
     except ObjectDoesNotExist:
         the_task.status = ERRORED
         the_task.ended_at = timezone.now()
         the_task.result = {"result": ERRORED, "message": "Payment Lot not found"}
         the_task.save()
+    payments = Payment.objects.filter(payment_lot=payment_lot)
     total = payments.count()
 
     # audit stuff
@@ -151,6 +151,7 @@ def mark_payments_as_read(
 
         # All Payments have been updated so we always need to update the PaymentLot status
         payment_lot.status = payment_lot.compute_status()
+        payment_lot.task = None
         payment_lot.save()
         audit_logger.log_modification(old_data_dump=old_payment_lot, instance=payment_lot, request_user=user)
 

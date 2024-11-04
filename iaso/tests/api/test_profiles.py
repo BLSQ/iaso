@@ -8,7 +8,6 @@ from django.contrib.auth.models import Group, Permission
 from django.core import mail
 from django.test import override_settings
 from django.utils.translation import gettext as _
-from numpy.array_api import permute_dims
 
 from hat.menupermissions import models as permission
 from hat.menupermissions.constants import MODULES

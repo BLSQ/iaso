@@ -17,17 +17,17 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
 
     def create(self, request):
         select_all = request.data.get("select_all", False)
-        selected_ids = request.data.get("selected_ids", [])
-        unselected_ids = request.data.get("unselected_ids", [])
-        projects_ids_added = request.data.get("projects_ids_added", [])
-        projects_ids_removed = request.data.get("projects_ids_removed", [])
-        roles_id_added = request.data.get("roles_id_added", [])
-        roles_id_removed = request.data.get("roles_id_removed", [])
-        location_ids_added = request.data.get("location_ids_added", [])
-        location_ids_removed = request.data.get("location_ids_removed", [])
+        selected_ids = request.data.get("selected_ids") or []
+        unselected_ids = request.data.get("unselected_ids") or []
+        projects_ids_added = request.data.get("projects_ids_added") or []
+        projects_ids_removed = request.data.get("projects_ids_removed") or []
+        roles_id_added = request.data.get("roles_id_added") or []
+        roles_id_removed = request.data.get("roles_id_removed") or []
+        location_ids_added = request.data.get("location_ids_added") or []
+        location_ids_removed = request.data.get("location_ids_removed") or []
         language = request.data.get("language", None)
-        teams_id_added = request.data.get("teams_id_added", [])
-        teams_id_removed = request.data.get("teams_id_removed", [])
+        teams_id_added = request.data.get("teams_id_added") or []
+        teams_id_removed = request.data.get("teams_id_removed") or []
         organization = request.data.get("organization", None)
 
         search = request.data.get("search", None)

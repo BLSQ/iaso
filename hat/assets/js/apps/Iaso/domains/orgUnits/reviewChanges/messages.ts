@@ -217,6 +217,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.accuracy',
         defaultMessage: 'Accuracy',
     },
+    featureDisabled: {
+        id: 'iaso.label.featureDisabled',
+        defaultMessage: 'Feature temporarily disabled',
+    },
 });
 
 export default MESSAGES;

@@ -513,6 +513,7 @@
     "iaso.label.export": "Export",
     "iaso.label.exportRequests": "Export requests",
     "iaso.label.exportSelection": "Export {count} submissions",
+    "iaso.label.featureDisabled": "Feature temporarily disabled",
     "iaso.label.featureFlags": "Feature flags",
     "iaso.label.field": "Field",
     "iaso.label.fields": "Fields",

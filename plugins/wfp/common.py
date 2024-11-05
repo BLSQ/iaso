@@ -97,6 +97,8 @@ class ETL:
                         program = visit.get("program")
                     else:
                         program = ""
+                else:
+                    program = visit.get("program")
             elif visit.get("program_two") is not None and visit.get("program_two") != "NONE":
                 program = visit.get("program_two", None)
             elif visit.get("discharge_program") is not None and visit.get("discharge_program") != "NONE":

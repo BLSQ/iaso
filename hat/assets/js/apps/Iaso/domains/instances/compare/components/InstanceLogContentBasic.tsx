@@ -9,6 +9,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 
+import classNames from 'classnames';
 import { FileContent } from '../../types/instance';
 import MESSAGES from '../messages';
 import InstanceLogContentBodyTable from './InstanceLogContentBodyTable';
@@ -29,6 +30,16 @@ const useStyles = makeStyles(theme => ({
         // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
+    labelTableCellFixWith: {
+        width: '25.35%',
+        maxWidth: '25.35%',
+        minWidth: '25.35%',
+    },
+    versionValueTableCellFix: {
+        width: '37.35%',
+        maxWidth: '37.35%',
+        minWidth: '37.35%',
+    },
 }));
 
 export const InstanceLogContentBasic: FunctionComponent<Props> = ({
@@ -44,16 +55,20 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
             <TableHead>
                 <TableRow>
                     <TableCell
-                        width="25.35%"
                         align="left"
-                        className={classes.tableCellHead}
+                        className={classNames(
+                            classes.tableCellHead,
+                            classes.labelTableCellFixWith,
+                        )}
                     >
                         {formatMessage(MESSAGES.label)}
                     </TableCell>
                     <TableCell
-                        width="37.35%"
                         align="left"
-                        className={classes.tableCellHead}
+                        className={classNames(
+                            classes.tableCellHead,
+                            classes.versionValueTableCellFix,
+                        )}
                     >
                         <Typography
                             color={
@@ -64,9 +79,11 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                         </Typography>
                     </TableCell>
                     <TableCell
-                        width="37.35%"
                         align="left"
-                        className={classes.tableCellHead}
+                        className={classNames(
+                            classes.tableCellHead,
+                            classes.versionValueTableCellFix,
+                        )}
                     >
                         <Typography
                             color={

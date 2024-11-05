@@ -1455,6 +1455,7 @@
     "iaso.users.selectAllHelperText": "Leave empty to select all",
     "iaso.users.selectedOrgUnits": "Org units selected",
     "iaso.users.update": "Update user",
+    "iaso.users.userAdminOnly": "Can only be edited by user admin",
     "iaso.users.userPermissions": "User permissions",
     "iaso.users.usersHistory": "Users history",
     "iaso.users.warningModalMessage": "You are about to save a user with no permissions. This user will have access to the mobile application but not to the features of the web interface.",

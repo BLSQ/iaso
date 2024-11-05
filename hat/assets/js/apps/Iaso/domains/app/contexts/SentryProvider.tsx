@@ -43,6 +43,7 @@ export const useSentry = () => {
     return context;
 };
 const initSentry = (consent: boolean) => {
+    window.SENTRY_INITIALIZED = true;
     if (!consent || !window.SENTRY_CONFIG?.SENTRY_URL) return;
     Sentry.init({
         dsn: window.SENTRY_CONFIG.SENTRY_URL,
@@ -116,7 +117,6 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
         if (hasStoredConsent) {
             if (!window.SENTRY_INITIALIZED) {
                 initSentry(hasStoredConsent === 'true');
-                window.SENTRY_INITIALIZED = true;
             }
         }
     }, []);

@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useCallback, useState } from 'react';
@@ -18,6 +18,12 @@ import {
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    warningMessage: {
+        paddingLeft: '15px',
+        paddingTop: '20px',
+        marginRight: '100px',
+        color: theme.palette.warning.main,
+    },
 }));
 
 export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
@@ -50,21 +56,41 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <OrgUnitChangeRequestConfigsFilter params={params} />
-                <Box mb={2} display="flex" justifyContent="flex-end">
-                    <OrgUnitChangeRequestConfigDialogCreateFirstStep
-                        iconProps={{}}
-                        openCreationSecondStepDialog={handleSecondStep}
-                    />
-                    {isCreationSecondStepDialogOpen && config && (
-                        <OrgUnitChangeRequestConfigDialogCreateSecondStep
-                            isOpen
-                            closeDialog={() => {
-                                setIsCreationSecondStepDialogOpen(false);
-                            }}
-                            config={config}
+                <Grid
+                    container
+                    alignItems="flex-start"
+                    justifyContent="space-between"
+                    spacing={2}
+                >
+                    <Grid item xs={12} sm="auto" md={8}>
+                        <Typography className={classes.warningMessage}>
+                            {formatMessage(
+                                MESSAGES.warningMessageOrgUnitChangeConfig,
+                            )}
+                        </Typography>
+                    </Grid>
+                    <Grid
+                        item
+                        xs={12}
+                        sm="auto"
+                        container
+                        justifyContent="flex-end"
+                    >
+                        <OrgUnitChangeRequestConfigDialogCreateFirstStep
+                            iconProps={{}}
+                            openCreationSecondStepDialog={handleSecondStep}
                         />
-                    )}
-                </Box>
+                        {isCreationSecondStepDialogOpen && config && (
+                            <OrgUnitChangeRequestConfigDialogCreateSecondStep
+                                isOpen
+                                closeDialog={() => {
+                                    setIsCreationSecondStepDialogOpen(false);
+                                }}
+                                config={config}
+                            />
+                        )}
+                    </Grid>
+                </Grid>
 
                 <OrgUnitChangeRequestConfigsTable
                     data={data}

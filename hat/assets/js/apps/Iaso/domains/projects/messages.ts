@@ -300,6 +300,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Project feature flags',
         id: 'iaso.label.project.featureFlags',
     },
+    qrCodeError: {
+      defaultMessage: "Can't load project QR code",
+      id: 'iaso.label.project.qrCodeError',
+    },
 });
 
 export default MESSAGES;

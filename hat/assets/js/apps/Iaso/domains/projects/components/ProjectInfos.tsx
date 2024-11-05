@@ -3,9 +3,11 @@ import React, { FunctionComponent } from 'react';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import MESSAGES from '../messages';
+import { useGetProjectQRCode } from '../hooks/requests/useGetProjectQRCode';
+import { LoadingSpinner } from 'bluesquare-components';
 
 type Form = {
-    value: string | null;
+    value: string | undefined;
     errors: Array<string>;
 };
 
@@ -23,37 +25,43 @@ type Props = {
 const ProjectInfos: FunctionComponent<Props> = ({
     setFieldValue,
     currentProject,
-}) => (
-    <>
-        <InputComponent
-            keyValue="name"
-            onChange={(key, value) => setFieldValue(key, value)}
-            value={currentProject.name.value}
-            errors={currentProject.name.errors}
-            type="text"
-            label={MESSAGES.projectName}
-            required
-        />
-        <InputComponent
-            keyValue="app_id"
-            onChange={(key, value) => setFieldValue(key, value)}
-            value={currentProject.app_id.value}
-            errors={currentProject.app_id.errors}
-            type="text"
-            label={MESSAGES.appId}
-            required
-        />
-        {currentProject.id?.value && (
-            <div style={{ textAlign: 'center' }}>
-                <img
-                    width={200}
-                    height={200}
-                    alt="QRCode"
-                    src={`/api/projects/${currentProject.id?.value}/qr_code/`}
-                />
-            </div>
-        )}
-    </>
-);
+}) => {
+    const { data: qrCode, isFetching: fetchingProjectQRCode } =
+        useGetProjectQRCode(currentProject?.id.value);
+
+    return (
+        <>
+            <InputComponent
+                keyValue="name"
+                onChange={(key, value) => setFieldValue(key, value)}
+                value={currentProject.name.value}
+                errors={currentProject.name.errors}
+                type="text"
+                label={MESSAGES.projectName}
+                required
+            />
+            <InputComponent
+                keyValue="app_id"
+                onChange={(key, value) => setFieldValue(key, value)}
+                value={currentProject.app_id.value}
+                errors={currentProject.app_id.errors}
+                type="text"
+                label={MESSAGES.appId}
+                required
+            />
+            {fetchingProjectQRCode && <LoadingSpinner />}
+            {!fetchingProjectQRCode &&
+                <div style={{ textAlign: 'center' }}>
+                    <img
+                        width={200}
+                        height={200}
+                        alt="QRCode"
+                        src={qrCode}
+                    />
+                </div>
+            }
+        </>
+    );
+}
 
 export { ProjectInfos };

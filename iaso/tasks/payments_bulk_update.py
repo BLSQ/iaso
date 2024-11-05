@@ -151,7 +151,7 @@ def mark_payments_as_read(
         the_task.ended_at = timezone.now()
         the_task.result = {"result": ERRORED, "message": "Payment Lot not found"}
         the_task.save()
-    # Handling task being killed after we get the payment_lot, so we can set it's task field back to None if the task is killed
+    # Handling task being killed after we get the payment_lot, so we can set its task field back to None if the task is killed
     report_progress_and_stop_if_killed_and_update_payment_lot(
         payment_lot=payment_lot, task=the_task, progress_message="Searching for Payments to modify"
     )

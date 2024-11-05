@@ -4,10 +4,10 @@ from datetime import timedelta
 import random
 from celery import shared_task
 import datetime
-from .management.commands.wfp_etl_Under5 import Under5
-from .management.commands.wfp_etl_pbwg import PBWG
+from .south_sudan.management.commands.etl_Under5 import Under5
+from .south_sudan.management.commands.etl_pbwg import PBWG
+from .nigeria.management.commands.Under5 import NG_Under5
 import logging
-from .common import ETL
 
 logger = logging.getLogger(__name__)
 
@@ -85,3 +85,4 @@ def etl():
     # Before copying beneficiary data, clean all wfp table and reimport data!
     Under5().run()
     PBWG().run()
+    NG_Under5().run()

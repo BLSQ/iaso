@@ -1,8 +1,8 @@
-from ...models import *
+from ....models import *
 from django.core.management.base import BaseCommand
 from itertools import groupby
 from operator import itemgetter
-from ...common import ETL
+from ....common import ETL
 import logging
 
 logger = logging.getLogger(__name__)
@@ -134,13 +134,13 @@ class Under5:
             )
         )
 
-    def journeyMapper(self, visits):
+    def journeyMapper(self, visits, admission_form):
         current_journey = {"visits": [], "steps": []}
         anthropometric_visit_forms = [
             "child_antropometric_followUp_tsfp",
             "child_antropometric_followUp_otp",
         ]
-        admission_form = "Anthropometric visit child"
+        # admission_form = "Anthropometric visit child"
         visit_nutrition_program = [visit for visit in visits if visit["form_id"] == admission_form]
         if len(visit_nutrition_program) > 0:
             current_journey["nutrition_programme"] = ETL().program_mapper(visit_nutrition_program[0])
@@ -186,7 +186,7 @@ class Under5:
             logger.info(
                 f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
             )
-            instance["journey"] = self.journeyMapper(instance["visits"])
+            instance["journey"] = self.journeyMapper(instance["visits"], "Anthropometric visit child")
             beneficiary = Beneficiary()
             if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
                 beneficiary.gender = instance["gender"]

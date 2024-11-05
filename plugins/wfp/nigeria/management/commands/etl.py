@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from ...tasks import etl
+from ....tasks import etl
 
 
 class Command(BaseCommand):

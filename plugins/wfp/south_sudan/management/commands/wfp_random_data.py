@@ -1,7 +1,7 @@
-from ...models import *  # type: ignore
+from ....models import *  # type: ignore
 from django.core.management.base import BaseCommand
 
-from ...tasks import generate_random_data
+from ....tasks import generate_random_data
 
 
 class Command(BaseCommand):

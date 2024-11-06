@@ -49,13 +49,9 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_superuser:
-            queryset = OrgUnitChangeRequestConfiguration.objects.all()
-        else:
-            queryset = OrgUnitChangeRequestConfiguration.objects.filter_for_user(user)
-
-        queryset = (
-            queryset.select_related("project", "org_unit_type", "created_by", "updated_by")
+        return (
+            OrgUnitChangeRequestConfiguration.objects.filter_for_user(user)
+            .select_related("project", "org_unit_type", "created_by", "updated_by")
             .prefetch_related(
                 "possible_types",
                 "possible_parent_types",
@@ -65,7 +61,6 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
             )
             .order_by("id")
         )
-        return queryset
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:

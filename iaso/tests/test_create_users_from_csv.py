@@ -1,16 +1,21 @@
-import io
 import csv
+import io
 
-from django.contrib.auth.models import User, Permission, Group
-from django.core.files.uploadedfile import SimpleUploadedFile
 import jsonschema
+
 from rest_framework import serializers
+
+from django.contrib.auth.models import User, Permission
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+from hat.menupermissions import models as permission
+from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
-from iaso.models import Profile, BulkCreateUserCsvFile, UserRole
+from iaso.models import Profile, BulkCreateUserCsvFile
 from iaso.test import APITestCase
-from hat.menupermissions.constants import MODULES
 from iaso.tests.api.test_profiles import PROFILE_LOG_SCHEMA
+
 
 BASE_URL = "/api/bulkcreateuser/"
 
@@ -548,6 +553,61 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user.iaso_profile.org_units.first(), org_unit_a)
         self.assertEqual(org_unit_a.version_id, self.account1.default_version_id)
 
+    def test_should_create_user_with_the_correct_org_unit(self):
+        self.source.projects.set([self.project])
+        org_unit = self.org_unit_child
+        user = self.yoda
+
+        org_unit_type_region = m.OrgUnitType.objects.create(name="Region")
+        org_unit_type_country = m.OrgUnitType.objects.create(name="Country")
+
+        org_unit.org_unit_type = org_unit_type_country
+        org_unit.save()
+
+        user.iaso_profile.org_units.add(org_unit)
+        user.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type is now writable.
+            [org_unit_type_region]
+        )
+
+        user.user_permissions.add(Permission.objects.get(codename=permission._USERS_MANAGED))
+        user.user_permissions.remove(Permission.objects.get(codename=permission._USERS_ADMIN))
+        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
+        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+
+        self.client.force_authenticate(user)
+
+        csv_str = io.StringIO()
+        writer = csv.DictWriter(csv_str, fieldnames=self.CSV_HEADER)
+        writer.writeheader()
+        writer.writerow(
+            {
+                "username": "john",
+                "password": "yodnj!30dln",
+                "email": "john@foo.com",
+                "first_name": "John",
+                "last_name": "Doe",
+                "orgunit": f"{org_unit.id}",
+                "orgunit__source_ref": "",
+                "profile_language": "fr",
+                "dhis2_id": "",
+                "permissions": "",
+                "user_roles": "",
+                "projects": "",
+                "phone_number": "",
+                "organization": "",
+            }
+        )
+        csv_bytes = csv_str.getvalue().encode()
+        csv_file = SimpleUploadedFile("users.csv", csv_bytes)
+
+        response = self.client.post(f"{BASE_URL}", {"file": csv_file})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data,
+            {"error": "Operation aborted. You don't have rights on the following org unit types: Country"},
+        )
+
     def test_valid_phone_number(self):
         phone_number = "+12345678912"
         expected_output = "+12345678912"
@@ -610,17 +670,17 @@ class BulkCreateCsvTestCase(APITestCase):
             self.fail(msg=str(ex))
 
         past_value = log["past_value"]
-        self.assertEquals(past_value, [])
+        self.assertEqual(past_value, [])
 
         new_value = log["new_value"][0]["fields"]
         self.assertTrue(new_value["password_updated"])
         self.assertNotIn("password", new_value.keys())
-        self.assertEquals(len(new_value["user_permissions"]), 1)
+        self.assertEqual(len(new_value["user_permissions"]), 1)
         self.assertIn("iaso_forms", new_value["user_permissions"])
-        self.assertEquals(len(new_value["user_roles"]), 1)
-        self.assertEquals(len(new_value["projects"]), 1)
-        self.assertEquals(new_value["language"], "fr")
-        self.assertEquals(new_value["dhis2_id"], "dhis2_id_3")
-        self.assertEquals(len(new_value["org_units"]), 2)
+        self.assertEqual(len(new_value["user_roles"]), 1)
+        self.assertEqual(len(new_value["projects"]), 1)
+        self.assertEqual(new_value["language"], "fr")
+        self.assertEqual(new_value["dhis2_id"], "dhis2_id_3")
+        self.assertEqual(len(new_value["org_units"]), 2)
         self.assertIn(self.org_unit3.id, new_value["org_units"])
         self.assertIn(self.org_unit2.id, new_value["org_units"])

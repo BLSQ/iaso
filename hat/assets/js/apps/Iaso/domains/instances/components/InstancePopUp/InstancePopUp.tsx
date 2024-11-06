@@ -1,11 +1,6 @@
 import { Theme } from '@mui/material/styles';
 import L from 'leaflet';
-import React, {
-    createRef,
-    FunctionComponent,
-    useCallback,
-    useMemo,
-} from 'react';
+import React, { createRef, FunctionComponent, useCallback } from 'react';
 import { Popup, useMap } from 'react-leaflet';
 
 import { Box, Card, CardContent, CardMedia, Grid } from '@mui/material';
@@ -19,15 +14,14 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import ConfirmDialog from '../../../../components/dialogs/ConfirmDialogComponent';
-import InstanceDetailsField from '../InstanceDetailsField';
 import InstanceDetailsInfos from '../InstanceDetailsInfos';
 
 import { baseUrls } from '../../../../constants/urls';
 import { usePopupState } from '../../../../utils/map/usePopupState';
-import { getOrgUnitsTree } from '../../../orgUnits/utils';
 import { useGetInstance } from '../../../registry/hooks/useGetInstances';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
+import { INSTANCE_MAP_METAS_FIELDS } from '../../constants';
 
 const useStyles = makeStyles((theme: Theme) => ({
     ...(commonStyles(theme) as Record<string, any>),
@@ -71,13 +65,6 @@ export const InstancePopup: FunctionComponent<Props> = ({
 
     const hasHero = (currentInstance?.files?.length ?? 0) > 0;
 
-    const orgUnitTree: any[] = useMemo(() => {
-        if (currentInstance?.org_unit) {
-            return getOrgUnitsTree(currentInstance.org_unit).reverse();
-        }
-        return [];
-    }, [currentInstance?.org_unit]);
-
     return (
         <Popup className={classes.popup} ref={popup} pane="popupPane">
             {isLoading && <LoadingSpinner />}
@@ -87,37 +74,19 @@ export const InstancePopup: FunctionComponent<Props> = ({
                         <CardMedia
                             // TS doesn't recognize the href prop, but MUI passes it down to the native (root) element
                             // @ts-ignore
-                            href={currentInstance.files[0]}
+                            href={currentInstance?.files.slice(-1)[0]}
                             className={classes.popupCardMedia}
-                            image={currentInstance.files[0]}
+                            image={currentInstance?.files.slice(-1)[0]}
                             component="div"
                         />
                     )}
                     <CardContent className={classes.popupCardContent}>
                         <InstanceDetailsInfos
+                            instance_metas_fields={INSTANCE_MAP_METAS_FIELDS}
                             currentInstance={currentInstance}
                             fieldsToHide={['device_id']}
                         />
-                        {currentInstance.org_unit && (
-                            <InstanceDetailsField
-                                label={formatMessage(MESSAGES.groups)}
-                                value={
-                                    currentInstance.org_unit.groups &&
-                                    currentInstance.org_unit.groups.length > 0
-                                        ? currentInstance.org_unit.groups
-                                              .map(g => g.name)
-                                              .join(', ')
-                                        : null
-                                }
-                            />
-                        )}
-                        {orgUnitTree.map(o => (
-                            <InstanceDetailsField
-                                key={o.id}
-                                label={o.org_unit_type_name}
-                                value={o ? o.name : null}
-                            />
-                        ))}
+
                         <Box className={classes.actionBox}>
                             <Grid
                                 container

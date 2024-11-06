@@ -603,6 +603,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.readEdit.write',
         defaultMessage: 'Write',
     },
+    admin: {
+        id: 'iaso.permissions.readEdit.admin',
+        defaultMessage: 'Admin',
+    },
     no_admin: {
         id: 'iaso.permissions.readEdit.no_admin',
         defaultMessage: 'No-admin',

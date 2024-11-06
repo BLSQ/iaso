@@ -13,11 +13,11 @@ import MESSAGES from '../messages.ts';
 import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
-import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes.ts';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles.ts';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams.ts';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -51,7 +51,7 @@ const Filters = ({ baseUrl, params }) => {
         useGetUserRolesDropDown({});
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
-        useGetOrgUnitTypes();
+        useGetOrgUnitTypesDropdownOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
     const { data: teamsDropdown, isFetching: isFetchingTeams } =

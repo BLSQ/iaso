@@ -4,12 +4,16 @@ import get from 'lodash/get';
 
 import { useSafeIntl } from 'bluesquare-components';
 import InstanceDetailsField from './InstanceDetailsField';
-import { INSTANCE_METAS_FIELDS } from '../constants';
+
 import MESSAGES from '../messages';
 
-const InstanceDetailsInfos = ({ currentInstance, fieldsToHide }) => {
+const InstanceDetailsInfos = ({
+    currentInstance,
+    fieldsToHide,
+    instance_metas_fields,
+}) => {
     const { formatMessage } = useSafeIntl();
-    const fields = INSTANCE_METAS_FIELDS.filter(
+    const fields = instance_metas_fields.filter(
         f =>
             f.type === 'info' &&
             !fieldsToHide.includes(f.translationKey ?? f.key),
@@ -52,5 +56,6 @@ InstanceDetailsInfos.defaultProps = {
 InstanceDetailsInfos.propTypes = {
     currentInstance: PropTypes.object.isRequired,
     fieldsToHide: PropTypes.array,
+    instance_metas_fields: PropTypes.array.isRequired,
 };
 export default InstanceDetailsInfos;

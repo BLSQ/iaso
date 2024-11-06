@@ -17,7 +17,7 @@ def saveUserProfile(user):
     user.iaso_profile.save()
 
 
-class OrgUnitsBulkUpdateAPITestCase(APITestCase):
+class ProfileBulkUpdateAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
@@ -47,7 +47,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
         sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        # sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=2)
         star_wars.default_version = sw_version_1
         star_wars.save()
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
@@ -311,6 +310,51 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertNotIn(
             self.user_role_3,
             self.chewie.iaso_profile.user_roles.all(),
+        )
+
+    @tag("iaso_only")
+    def test_profile_bulkupdate_should_fail_with_restricted_editable_org_unit_types(self):
+        user = self.obi_wan
+        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
+        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+
+        user.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type is now writable.
+            [self.jedi_council]
+        )
+
+        other_org_unit_type = m.OrgUnitType.objects.create(name="Country")
+        self.jedi_council_endor.name = "The Gambia"
+        self.jedi_council_endor.org_unit_type = other_org_unit_type
+        self.jedi_council_endor.save()
+
+        self.client.force_authenticate(user)
+
+        payload = {
+            "select_all": False,
+            "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
+            "language": "fr",
+            "location_ids_added": [self.jedi_council_endor.pk],
+            "location_ids_removed": None,
+            "projects_ids_added": None,
+            "projects_ids_removed": None,
+            "roles_id_added": None,
+            "roles_id_removed": None,
+            "organization": "Bluesquare",
+        }
+        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=payload, format="json")
+
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
+        self.assertEqual(task.launcher, user)
+
+        task = self.runAndValidateTask(task, "ERRORED")
+        self.assertEqual(
+            task.result["message"],
+            (
+                f"User with permission {permission.USERS_MANAGED} cannot change the org unit The Gambia "
+                f"because he does not have rights on the following org unit type: Country"
+            ),
         )
 
     @tag("iaso_only")
@@ -786,45 +830,45 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             self.fail(msg=str(ex))
         # past value
         past_value = log["past_value"][0]["fields"]
-        self.assertEquals(past_value["user"], self.luke.id)
-        self.assertEquals(past_value["username"], self.luke.username)
-        self.assertEquals(past_value["first_name"], self.luke.first_name)
-        self.assertEquals(past_value["last_name"], self.luke.last_name)
-        self.assertEquals(past_value["email"], self.luke.email)
-        self.assertEquals(len(past_value["user_permissions"]), 1)
+        self.assertEqual(past_value["user"], self.luke.id)
+        self.assertEqual(past_value["username"], self.luke.username)
+        self.assertEqual(past_value["first_name"], self.luke.first_name)
+        self.assertEqual(past_value["last_name"], self.luke.last_name)
+        self.assertEqual(past_value["email"], self.luke.email)
+        self.assertEqual(len(past_value["user_permissions"]), 1)
 
-        self.assertEquals(past_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
-        self.assertEquals(past_value["language"], "en")
-        self.assertEquals(past_value["home_page"], self.luke.iaso_profile.home_page)
-        self.assertEquals(
+        self.assertEqual(past_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
+        self.assertEqual(past_value["language"], "en")
+        self.assertEqual(past_value["home_page"], self.luke.iaso_profile.home_page)
+        self.assertEqual(
             past_value["phone_number"], self.luke.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
-        self.assertEquals(len(past_value["org_units"]), 1)
+        self.assertEqual(len(past_value["org_units"]), 1)
         self.assertIn(self.jedi_council_endor.id, past_value["org_units"])
-        self.assertEquals(len(past_value["user_roles"]), 1)
+        self.assertEqual(len(past_value["user_roles"]), 1)
         self.assertIn(self.user_role_2.id, past_value["user_roles"])
-        self.assertEquals(len(past_value["projects"]), 1)
+        self.assertEqual(len(past_value["projects"]), 1)
         self.assertIn(self.project_2.id, past_value["projects"])
         # New value
         new_value = log["new_value"][0]["fields"]
-        self.assertEquals(new_value["user"], self.luke.id)
-        self.assertEquals(new_value["username"], self.luke.username)
-        self.assertEquals(new_value["first_name"], self.luke.first_name)
-        self.assertEquals(new_value["last_name"], self.luke.last_name)
-        self.assertEquals(new_value["email"], self.luke.email)
-        self.assertEquals(len(new_value["user_permissions"]), 1)
+        self.assertEqual(new_value["user"], self.luke.id)
+        self.assertEqual(new_value["username"], self.luke.username)
+        self.assertEqual(new_value["first_name"], self.luke.first_name)
+        self.assertEqual(new_value["last_name"], self.luke.last_name)
+        self.assertEqual(new_value["email"], self.luke.email)
+        self.assertEqual(len(new_value["user_permissions"]), 1)
 
-        self.assertEquals(new_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
-        self.assertEquals(new_value["language"], "fr")
-        self.assertEquals(new_value["home_page"], self.luke.iaso_profile.home_page)
-        self.assertEquals(
+        self.assertEqual(new_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
+        self.assertEqual(new_value["language"], "fr")
+        self.assertEqual(new_value["home_page"], self.luke.iaso_profile.home_page)
+        self.assertEqual(
             past_value["phone_number"], self.luke.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
-        self.assertEquals(len(new_value["org_units"]), 1)
+        self.assertEqual(len(new_value["org_units"]), 1)
         self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
-        self.assertEquals(len(new_value["user_roles"]), 1)
+        self.assertEqual(len(new_value["user_roles"]), 1)
         self.assertIn(self.user_role.id, new_value["user_roles"])
-        self.assertEquals(len(new_value["projects"]), 1)
+        self.assertEqual(len(new_value["projects"]), 1)
         self.assertIn(self.project.id, new_value["projects"])
 
         # Check that chewie profile is updated
@@ -841,46 +885,46 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             self.fail(msg=str(ex))
         # past value
         past_value = log["past_value"][0]["fields"]
-        self.assertEquals(past_value["user"], self.chewie.id)
-        self.assertEquals(past_value["username"], self.chewie.username)
-        self.assertEquals(past_value["first_name"], self.chewie.first_name)
-        self.assertEquals(past_value["last_name"], self.chewie.last_name)
-        self.assertEquals(past_value["email"], self.chewie.email)
-        self.assertEquals(len(past_value["user_permissions"]), 1)
+        self.assertEqual(past_value["user"], self.chewie.id)
+        self.assertEqual(past_value["username"], self.chewie.username)
+        self.assertEqual(past_value["first_name"], self.chewie.first_name)
+        self.assertEqual(past_value["last_name"], self.chewie.last_name)
+        self.assertEqual(past_value["email"], self.chewie.email)
+        self.assertEqual(len(past_value["user_permissions"]), 1)
         self.assertNotIn("password", past_value.keys())
 
-        self.assertEquals(past_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
-        self.assertEquals(past_value["language"], "en")
-        self.assertEquals(past_value["home_page"], self.chewie.iaso_profile.home_page)
-        self.assertEquals(
+        self.assertEqual(past_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
+        self.assertEqual(past_value["language"], "en")
+        self.assertEqual(past_value["home_page"], self.chewie.iaso_profile.home_page)
+        self.assertEqual(
             past_value["phone_number"], self.chewie.iaso_profile.phone_number
         )  # expected to be null/empty. If there was a value we should add a plus for the value logged
-        self.assertEquals(len(past_value["org_units"]), 1)
+        self.assertEqual(len(past_value["org_units"]), 1)
         self.assertIn(self.jedi_council_endor.id, past_value["org_units"])
-        self.assertEquals(len(past_value["user_roles"]), 1)
+        self.assertEqual(len(past_value["user_roles"]), 1)
         self.assertIn(self.user_role_2.id, past_value["user_roles"])
-        self.assertEquals(len(past_value["projects"]), 1)
+        self.assertEqual(len(past_value["projects"]), 1)
         self.assertIn(self.project_2.id, past_value["projects"])
         # New value
         new_value = log["new_value"][0]["fields"]
-        self.assertEquals(new_value["user"], self.chewie.id)
-        self.assertEquals(new_value["username"], self.chewie.username)
-        self.assertEquals(new_value["first_name"], self.chewie.first_name)
-        self.assertEquals(new_value["last_name"], self.chewie.last_name)
-        self.assertEquals(new_value["email"], self.chewie.email)
-        self.assertEquals(len(new_value["user_permissions"]), 1)
+        self.assertEqual(new_value["user"], self.chewie.id)
+        self.assertEqual(new_value["username"], self.chewie.username)
+        self.assertEqual(new_value["first_name"], self.chewie.first_name)
+        self.assertEqual(new_value["last_name"], self.chewie.last_name)
+        self.assertEqual(new_value["email"], self.chewie.email)
+        self.assertEqual(len(new_value["user_permissions"]), 1)
         self.assertNotIn("password", new_value.keys())
 
-        self.assertEquals(new_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
-        self.assertEquals(new_value["language"], "fr")
-        self.assertEquals(new_value["home_page"], self.chewie.iaso_profile.home_page)
+        self.assertEqual(new_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
+        self.assertEqual(new_value["language"], "fr")
+        self.assertEqual(new_value["home_page"], self.chewie.iaso_profile.home_page)
         # expected to be null/empty. If there was a value we should add a plus for the value logged
-        self.assertEquals(past_value["phone_number"], self.chewie.iaso_profile.phone_number)
-        self.assertEquals(len(new_value["org_units"]), 1)
+        self.assertEqual(past_value["phone_number"], self.chewie.iaso_profile.phone_number)
+        self.assertEqual(len(new_value["org_units"]), 1)
         self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
-        self.assertEquals(len(new_value["user_roles"]), 1)
+        self.assertEqual(len(new_value["user_roles"]), 1)
         self.assertIn(self.user_role.id, new_value["user_roles"])
-        self.assertEquals(len(new_value["projects"]), 1)
+        self.assertEqual(len(new_value["projects"]), 1)
         self.assertIn(self.project.id, new_value["projects"])
         # Check that team 1 is updated
         response = self.client.get(
@@ -888,7 +932,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
         response_data = self.assertJSONResponse(response, 200)
         logs = response_data["list"]
-        self.assertEquals(len(logs), 2)
+        self.assertEqual(len(logs), 2)
         # Last log should contain both luke and chewie id
         log = logs[0]
         self.assertIn(self.chewie.pk, log["new_value"][0]["users"])

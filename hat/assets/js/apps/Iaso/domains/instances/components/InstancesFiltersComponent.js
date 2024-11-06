@@ -38,12 +38,12 @@ import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
 import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction.tsx';
 import { LocationLimit } from '../../../utils/map/LocationLimit';
-import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
 import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
 import { ColumnSelect } from './ColumnSelect.tsx';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -119,7 +119,7 @@ const InstancesFiltersComponent = ({
         setInitialOrgUnitId(params?.levels);
     }, [defaultFilters]);
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
-        useGetOrgUnitTypes();
+        useGetOrgUnitTypesDropdownOptions();
     const { data, isFetching: fetchingForms } = useGetForms();
     const formsList = useMemo(() => data?.forms ?? [], [data]);
     const formId =

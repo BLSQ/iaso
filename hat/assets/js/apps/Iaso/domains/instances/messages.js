@@ -623,6 +623,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.project',
         defaultMessage: 'Project',
     },
+    org_unit_type_name: {
+        id: 'iaso.instance.org_unit_type_name',
+        defaultMessage: 'Org unit type',
+    },
+    org_unit_name: {
+        id: 'iaso.instance.org_unit',
+        defaultMessage: 'Org unit',
+    },
+    parent: {
+        id: 'iaso.label.parent',
+        defaultMessage: 'Parent',
+    },
 });
 
 export default MESSAGES;

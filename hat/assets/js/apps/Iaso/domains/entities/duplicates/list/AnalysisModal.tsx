@@ -5,6 +5,7 @@ import React, {
     useEffect,
     useState,
 } from 'react';
+import { Grid } from '@mui/material';
 import MESSAGES from '../messages';
 import { AnalysisModalButton } from './AnalysisModalButton';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -13,6 +14,8 @@ import { useStartAnalyse } from '../hooks/api/analyzes';
 import { ALGORITHM_DROPDOWN } from '../../constants';
 import { formatLabel } from '../../../instances/utils';
 import { useGetFormForEntityType } from '../../entityTypes/hooks/requests/forms';
+import AnalysisModalParameters from './AnalysisModalParameters';
+import { Parameters } from '../types';
 
 type Props = {
     isOpen: boolean;
@@ -26,6 +29,8 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     const [referenceForm, setReferenceForm] = useState(undefined);
     const [confirm, setConfirm] = useState(false);
 
+    const [parameters, setParameters] = useState<Parameters>([]);
+
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
         useGetBeneficiaryTypesDropdown();
 
@@ -35,9 +40,9 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             algorithm,
             entity_type_id: entityType,
             fields: entityTypeFields,
-            parameters: {},
+            parameters,
         });
-    }, [startAnalyse, algorithm, entityType, entityTypeFields]);
+    }, [startAnalyse, algorithm, entityType, entityTypeFields, parameters]);
 
     const handleChangeEntityType = value => {
         const filteredEntityType = entityTypesDropdown?.find(
@@ -69,16 +74,24 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     };
 
     useEffect(() => {
-        if (algorithm && entityType && entityTypeFields.length > 0) {
+        const allParamsFilled = parameters.every(param => param.value !== '');
+        if (
+            allParamsFilled &&
+            algorithm &&
+            entityType &&
+            entityTypeFields.length > 0
+        ) {
             setConfirm(true);
         } else {
             setConfirm(false);
         }
-    }, [algorithm, entityType, entityTypeFields]);
+    }, [algorithm, entityType, entityTypeFields, parameters]);
     const { possibleFields, isFetchingForm } = useGetFormForEntityType({
         formId: referenceForm,
         enabled: isOpen,
     });
+
+    const isConfirm = algorithm && entityType && entityTypeFields.length > 0;
     return (
         <ConfirmCancelModal
             allowConfirm={confirm}
@@ -87,7 +100,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             onCancel={() => {
                 closeDialog();
             }}
-            maxWidth="xs"
+            maxWidth="sm"
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.confirm}
             open={isOpen}
@@ -96,39 +109,53 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             onClose={() => null}
             dataTestId=""
         >
-            <InputComponent
-                type="select"
-                keyValue="entity_type"
-                value={entityType}
-                onChange={handleChange}
-                label={MESSAGES.entityTypes}
-                options={entityTypesDropdown}
-                loading={isFetchingEntityTypes}
-            />
-            <InputComponent
-                type="select"
-                keyValue="algorithm"
-                value={algorithm}
-                onChange={handleChange}
-                label={MESSAGES.algorithm}
-                options={ALGORITHM_DROPDOWN}
-            />
-            <InputComponent
-                type="select"
-                multi
-                required
-                disabled={isFetchingForm || !referenceForm}
-                keyValue="entity_type_fields"
-                onChange={(key, value) =>
-                    handleChange(key, value ? value.split(',') : null)
-                }
-                value={entityTypeFields}
-                label={MESSAGES.fields}
-                options={possibleFields.map(field => ({
-                    value: field.name,
-                    label: formatLabel(field),
-                }))}
-            />
+            <Grid container>
+                <Grid item xs={12} md={12}>
+                    <InputComponent
+                        type="select"
+                        keyValue="entity_type"
+                        value={entityType}
+                        onChange={handleChange}
+                        label={MESSAGES.entityTypes}
+                        options={entityTypesDropdown}
+                        loading={isFetchingEntityTypes}
+                    />
+                </Grid>
+                <Grid item xs={12} md={12}>
+                    <InputComponent
+                        type="select"
+                        keyValue="algorithm"
+                        value={algorithm}
+                        onChange={handleChange}
+                        label={MESSAGES.algorithm}
+                        options={ALGORITHM_DROPDOWN}
+                    />
+                </Grid>
+                <Grid item xs={12} md={12}>
+                    <InputComponent
+                        type="select"
+                        multi
+                        required
+                        disabled={isFetchingForm || !referenceForm}
+                        keyValue="entity_type_fields"
+                        onChange={(key, value) =>
+                            handleChange(key, value ? value.split(',') : null)
+                        }
+                        value={entityTypeFields}
+                        label={MESSAGES.fields}
+                        options={possibleFields.map(field => ({
+                            value: field.name,
+                            label: formatLabel(field),
+                        }))}
+                    />
+                </Grid>
+                <AnalysisModalParameters
+                    parameters={parameters}
+                    setParameters={setParameters}
+                    setConfirm={setConfirm}
+                    isConfirm={isConfirm}
+                />
+            </Grid>
         </ConfirmCancelModal>
     );
 };

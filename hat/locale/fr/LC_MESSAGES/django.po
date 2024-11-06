@@ -97,39 +97,42 @@ msgstr "lien."
 
 #: hat/templates/iaso/reset_password_email.html:3
 msgid "Hello,"
-msgstr ""
+msgstr "Bonjour"
 
 #: hat/templates/iaso/reset_password_email.html:5
 #, python-format
 msgid ""
 "A password reset has been request for your account \"%(username)s\" on "
 "%(site_name)s,"
-msgstr ""
+msgstr "Une demande de réinitialisation de mot de passe a été effectuée pour votre "
+"compte \"%(username)s\" sur %(site_name)s,"
 
 #: hat/templates/iaso/reset_password_email.html:6
 msgid "to proceed please click the link below:"
-msgstr ""
+msgstr "pour continuer, veuillez cliquer sur le lien suivant :"
 
 #: hat/templates/iaso/reset_password_email.html:10
 msgid ""
 "If clicking the link above doesn't work, please copy and paste the URL in a "
 "new browser window instead."
-msgstr ""
+msgstr "Si cliquer sur le lien ne fonctionne pas, veuillez copier coller l'url dans une fenêtre de votre navigateur à la place"
 
 #: hat/templates/iaso/reset_password_email.html:12
 msgid ""
 "If you did not request a password reset, you can ignore this e-mail - no "
 "passwords will be changed."
 msgstr ""
+"Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer ce "
+"courriel, aucun mot de passe ne sera modifié"
 
 #: hat/templates/iaso/reset_password_email.html:14
 msgid "Sincerely,"
-msgstr ""
+msgstr "Sincèrement,"
 
 #: hat/templates/iaso/reset_password_email.html:15
 #, python-format
 msgid "The %(site_name)s Team."
-msgstr ""
+msgstr "L'équipe %(site_name)s"
 
 #: hat/templates/iaso/reset_password_subject.txt:2
 #, python-format

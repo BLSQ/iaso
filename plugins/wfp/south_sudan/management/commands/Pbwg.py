@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class PBWG:
     def run(self):
-        entity_type = ETL("pbwg_1")
+        entity_type = ETL(["pbwg_1"])
         account = entity_type.account_related_to_entity_type()
         beneficiaries = entity_type.retrieve_entities()
         logger.info(f"Instances linked to PBWG program: {beneficiaries.count()}")
@@ -22,7 +22,7 @@ class PBWG:
             logger.info(
                 f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
             )
-            instance["journey"] = self.journeyMapper(instance["visits"], "wfp_coda_pbwg_anthropometric")
+            instance["journey"] = self.journeyMapper(instance["visits"], ["wfp_coda_pbwg_anthropometric"])
             beneficiary = Beneficiary()
             if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
                 beneficiary.gender = ""

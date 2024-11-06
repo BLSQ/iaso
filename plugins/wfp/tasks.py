@@ -4,8 +4,8 @@ from datetime import timedelta
 import random
 from celery import shared_task
 import datetime
-from .south_sudan.management.commands.etl_Under5 import Under5
-from .south_sudan.management.commands.etl_pbwg import PBWG
+from .south_sudan.management.commands.Under5 import Under5
+from .south_sudan.management.commands.Pbwg import PBWG
 from .nigeria.management.commands.Under5 import NG_Under5
 import logging
 
@@ -79,10 +79,14 @@ def generate_random_data():
 
 
 @shared_task()
-def etl():
+def etl_ng():
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
-    logger.info("Starting ETL")
-    # Before copying beneficiary data, clean all wfp table and reimport data!
+    logger.info("Starting ETL for Nigeria")
+    NG_Under5().run()
+
+
+@shared_task()
+def etl_ssd():
+    logger.info("Starting ETL for South Sudan")
     Under5().run()
     PBWG().run()
-    NG_Under5().run()

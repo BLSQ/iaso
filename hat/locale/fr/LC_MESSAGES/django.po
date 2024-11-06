@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-30 11:54+0000\n"
+"POT-Creation-Date: 2024-11-06 11:08+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,140 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: hat/templates/iaso/forgot_password.html:13
+#: hat/templates/iaso/reset_password_confirmation.html:15
+msgid "Submit"
+msgstr "Envoyer"
+
+#: hat/templates/iaso/forgot_password.html:14
+#: hat/templates/iaso/forgot_password_confirmation.html:13
+msgid "Go back to login"
+msgstr "Retour à la connexion"
+
+#: hat/templates/iaso/forgot_password_confirmation.html:11
+msgid ""
+"We've emailed you instructions for setting your password, if an account "
+"exists with the email you entered. You should receive them shortly."
+msgstr ""
+"Un courriel avec les instructions pour enregistrer un nouveau mot de passe "
+"vous a été envoyé. Vous devriez le recevoir sous peu."
+
+#: hat/templates/iaso/forgot_password_confirmation.html:12
+msgid ""
+"If you don't receive an email, please make sure you've entered the address "
+"you registered with, and check your spam folder."
+msgstr ""
+"Si vous ne recevez pas de courriel, vérifiez que vous avez bien entré votre "
+"adresse d'enregistrement et vérifiez votre dossier spam."
+
+#: hat/templates/iaso/login.html:22
+msgid ""
+"Your account doesn't have access to this page. To proceed, please login with "
+"an account that has access.\n"
+"          "
+msgstr ""
+"Votre utilisateur n'a pas accès à cette page, pour continuer connectez-vous "
+"avec un autre utilisateur.\n"
+"          "
+
+#: hat/templates/iaso/login.html:27
+msgid "Please login to see this page."
+msgstr "Veuillez vous connecter pour voir cette page"
+
+#: hat/templates/iaso/login.html:33
+msgid "Your username and password didn't match. Please try again."
+msgstr "Nom d'utilisateur ou mot de passe incorrect."
+
+#: hat/templates/iaso/login.html:39
+msgid "Login"
+msgstr "Connexion"
+
+#: hat/templates/iaso/login.html:44
+msgid "Forgot password"
+msgstr "Oublié votre mot de passe?"
+
+#: hat/templates/iaso/reset_password_complete.html:13
+#, python-format
+msgid ""
+"\n"
+"        Your password has been set. You may go ahead and <a "
+"href=\"%(login_url)s\">sign in</a> now.\n"
+"        "
+msgstr ""
+"\n"
+"        Votre mot de passe à été sauvé. Vous pouvez maintenant vous <a "
+"href=\"%(login_url)s\">connecter</a>.\n"
+"        "
+
+#: hat/templates/iaso/reset_password_confirmation.html:21
+msgid ""
+"The password reset link is invalid, possibly because it has already been "
+"used or expired. Please request a new password reset by clicking on this "
+msgstr ""
+"Le lien de réinitialisation du mot de passe n'est pas valide, peut-être "
+"parce qu'il a déjà été utilisé ou a expiré. Veuillez demander une nouvelle "
+"réinitialisation de mot de passe en cliquant sur ce "
+
+#: hat/templates/iaso/reset_password_confirmation.html:21
+msgid "link."
+msgstr "lien."
+
+#: hat/templates/iaso/reset_password_email.html:3
+msgid "Hello,"
+msgstr ""
+
+#: hat/templates/iaso/reset_password_email.html:5
+#, python-format
+msgid ""
+"A password reset has been request for your account \"%(username)s\" on "
+"%(site_name)s,"
+msgstr ""
+
+#: hat/templates/iaso/reset_password_email.html:6
+msgid "to proceed please click the link below:"
+msgstr ""
+
+#: hat/templates/iaso/reset_password_email.html:10
+msgid ""
+"If clicking the link above doesn't work, please copy and paste the URL in a "
+"new browser window instead."
+msgstr ""
+
+#: hat/templates/iaso/reset_password_email.html:12
+msgid ""
+"If you did not request a password reset, you can ignore this e-mail - no "
+"passwords will be changed."
+msgstr ""
+
+#: hat/templates/iaso/reset_password_email.html:14
+msgid "Sincerely,"
+msgstr ""
+
+#: hat/templates/iaso/reset_password_email.html:15
+#, python-format
+msgid "The %(site_name)s Team."
+msgstr ""
+
+#: hat/templates/iaso/reset_password_subject.txt:2
+#, python-format
+msgid "Password reset on %(site_name)s"
+msgstr "Réinitialisation du mot de passe sur %(site_name)s"
+
+#~ msgid "Iaso password reset"
+#~ msgstr "Réinitialisation du mot de passe Iaso"
+
+#~ msgid "Iaso Dashboard"
+#~ msgstr "Dashboard Iaso"
+
+#~ msgid "Welcome to the IASO Dashboard"
+#~ msgstr "Bienvenue dans Iaso"
+
+#~ msgid ""
+#~ "An offspring of the <a href=\"https://www.trypelim.org\">Trypelim</a> "
+#~ "project"
+#~ msgstr "Né du projet <a href=\"https://www.trypelim.org\">Trypelim</a>."
+
 
 #: plugins/wfp_auth/templates/wfp_auth/login_subtemplate.html:3
 msgid "Login via WFP CIAM"
@@ -56,132 +190,3 @@ msgstr ""
 #, python-format
 msgid "New User Account %(username)s Awaiting Access Permissions"
 msgstr ""
-
-#: hat/templates/iaso/forgot_password.html:9
-#: hat/templates/iaso/reset_password_confirmation.html:10
-msgid "Submit"
-msgstr "Envoyer"
-
-#: hat/templates/iaso/reset_password_confirmation.html:16
-msgid "The password reset link is invalid, possibly because it has already been used or expired. Please request a new password reset by clicking on this "
-msgstr "Le lien de réinitialisation du mot de passe n'est pas valide, peut-être parce qu'il a déjà été utilisé ou a expiré. Veuillez demander une nouvelle réinitialisation de mot de passe en cliquant sur ce "
-msgid "link."
-msgstr "lien."
-
-#: hat/templates/iaso/forgot_password.html:10
-#: hat/templates/iaso/forgot_password_confirmation.html:10
-msgid "Go back to login"
-msgstr "Retour à la connexion"
-
-#: hat/templates/iaso/forgot_password_confirmation.html:8
-msgid ""
-"We've emailed you instructions for setting your password, if an account "
-"exists with the email you entered. You should receive them shortly."
-msgstr ""
-"Un courriel avec les instructions pour enregistrer un nouveau mot de passe "
-"vous a été envoyé. Vous devriez le recevoir sous peu."
-
-#: hat/templates/iaso/forgot_password_confirmation.html:9
-msgid ""
-"If you don't receive an email, please make sure you've entered the address "
-"you registered with, and check your spam folder."
-msgstr ""
-"Si vous ne recevez pas de courriel, vérifiez que vous avez bien entré votre "
-"adresse d'enregistrement et vérifiez votre dossier spam."
-
-#: hat/templates/iaso/login.html:22
-msgid ""
-"Your account doesn't have access to this page. To proceed, please login with "
-"an account that has access.\n"
-"          "
-msgstr ""
-"Votre utilisateur n'a pas accès à cette page, pour continuer connectez-vous "
-"avec un autre utilisateur.\n"
-"          "
-
-#: hat/templates/iaso/login.html:27
-msgid "Please login to see this page."
-msgstr "Veuillez vous connecter pour voir cette page"
-
-#: hat/templates/iaso/login.html:33
-msgid "Your username and password didn't match. Please try again."
-msgstr "Nom d'utilisateur ou mot de passe incorrect."
-
-#: hat/templates/iaso/login.html:39
-msgid "Login"
-msgstr "Connexion"
-
-#: hat/templates/iaso/login.html:44
-msgid "Forgot password"
-msgstr "Oublié votre mot de passe?"
-
-#: hat/templates/iaso/reset_password_complete.html:9
-#, python-format
-msgid ""
-"\n"
-"        Your password has been set. You may go ahead and <a href="
-"\"%(login_url)s\">sign in</a> now.\n"
-"        "
-msgstr ""
-"\n"
-"        Votre mot de passe à été sauvé. Vous pouvez maintenant vous <a href="
-"\"%(login_url)s\">connecter</a>.\n"
-"        "
-
-#: hat/templates/iaso/reset_password_email.html:2
-#, python-format
-msgid ""
-"\n"
-"Hello,\n"
-"\n"
-"A password reset has been requested for your account \"%(username)s\" on "
-"%(site_name)s,\n"
-"to proceed please click the link below:\n"
-"\n"
-"%(protocol)s://%(domain)s%(reset_url)s\n"
-"\n"
-"If clicking the link above doesn't work, please copy and paste the URL in a "
-"new browser\n"
-"window instead.\n"
-"\n"
-"If you did not request a password reset, you can ignore this email - no "
-"passwords will be changed.\n"
-"\n"
-"Sincerely,\n"
-"The %(site_name)s Team.\n"
-msgstr ""
-"\n"
-"Bonjour,\n"
-"\n"
-"Une demande de réinitialisation de mot de passe a été effectuée pour votre "
-"compte \"%(username)s\" sur %(site_name)s,\n"
-"pour continuer, veuillez cliquer sur le lien suivant :\n"
-"\n"
-"%(protocol)s://%(domain)s%(reset_url)s\n"
-"\n"
-"Si cliquer sur le lien ne fonctionne pas, veuillez copier coller l'url dans "
-"une fenêtre de votre navigateur à la place.\n"
-"\n"
-"Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer ce "
-"courriel, aucun mot de passe ne sera modifié\n"
-"Sincèrement,\n"
-"L'équipe %(site_name)s.\n"
-
-#: hat/templates/iaso/reset_password_subject.txt:2
-#, python-format
-msgid "Password reset on %(site_name)s"
-msgstr "Réinitialisation du mot de passe sur %(site_name)s"
-
-#~ msgid "Iaso password reset"
-#~ msgstr "Réinitialisation du mot de passe Iaso"
-
-#~ msgid "Iaso Dashboard"
-#~ msgstr "Dashboard Iaso"
-
-#~ msgid "Welcome to the IASO Dashboard"
-#~ msgstr "Bienvenue dans Iaso"
-
-#~ msgid ""
-#~ "An offspring of the <a href=\"https://www.trypelim.org\">Trypelim</a> "
-#~ "project"
-#~ msgstr "Né du projet <a href=\"https://www.trypelim.org\">Trypelim</a>."

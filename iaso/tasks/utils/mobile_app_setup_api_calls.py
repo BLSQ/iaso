@@ -8,6 +8,10 @@ API_CALLS = [
         "filename": "groups",
     },
     {
+        "path": "/api/mobile/group_sets/",
+        "filename": "groupsets",
+    },
+    {
         "path": "/api/mobile/forms/",
         "filename": "forms",
         "query_params": {
@@ -56,6 +60,12 @@ API_CALLS = [
         "path": "/api/mobile/entities/",
         "required_feature_flag": "ENTITY",
         "filename": "entities",
+        "paginated": True,
+    },
+    {
+        "path": "/api/mobile/entities/deleted/",
+        "required_feature_flag": "ENTITY",
+        "filename": "deletedentities",
         "paginated": True,
     },
     {

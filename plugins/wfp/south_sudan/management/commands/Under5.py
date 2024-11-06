@@ -114,7 +114,7 @@ class Under5:
             "child_antropometric_followUp_tsfp",
             "child_antropometric_followUp_otp",
         ]
-        # admission_form = "Anthropometric visit child"
+
         visit_nutrition_program = [visit for visit in visits if visit["form_id"] in admission_form]
         if len(visit_nutrition_program) > 0:
             current_journey["nutrition_programme"] = ETL().program_mapper(visit_nutrition_program[0])
@@ -123,17 +123,7 @@ class Under5:
 
     def save_journey(self, beneficiary, record):
         journey = Journey()
-        journey.beneficiary = beneficiary
-        journey.programme_type = "U5"
-        journey.admission_criteria = record["admission_criteria"]
-        journey.admission_type = record.get("admission_type", None)
-        journey.nutrition_programme = record["nutrition_programme"]
-        journey.exit_type = record.get("exit_type", None)
-        journey.instance_id = record.get("instance_id", None)
         journey.initial_weight = record.get("initial_weight", None)
-        journey.start_date = record.get("start_date", None)
-        journey.duration = record.get("duration", None)
-        journey.end_date = record.get("end_date", None)
 
         # Calculate the weight gain only for cured and Transfer from OTP to TSFP cases!
         if (
@@ -144,8 +134,8 @@ class Under5:
             journey.discharge_weight = record.get("discharge_weight", None)
             journey.weight_gain = record.get("weight_gain", 0)
             journey.weight_loss = record.get("weight_loss", 0)
-        journey.save()
-        return journey
+
+        return ETL().save_entity_journey(journey, beneficiary, record, "U5")
 
     def run(self):
         entity_type = ETL(["child_under_5_1"])

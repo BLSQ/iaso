@@ -619,3 +619,19 @@ class ETL:
             "weight_gain": weight_gain,
             "weight_loss": weight_loss / 1000,
         }
+
+    def save_entity_journey(self, journey, beneficiary, record, entity_type):
+        journey.beneficiary = beneficiary
+        journey.programme_type = entity_type
+        journey.admission_criteria = record["admission_criteria"]
+        journey.admission_type = record.get("admission_type", None)
+        journey.nutrition_programme = record["nutrition_programme"]
+        journey.exit_type = record.get("exit_type", None)
+        journey.instance_id = record.get("instance_id", None)
+        journey.start_date = record.get("start_date", None)
+        journey.end_date = record.get("end_date", None)
+        journey.duration = record.get("duration", None)
+
+        journey.save()
+
+        return journey

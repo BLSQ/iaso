@@ -180,22 +180,11 @@ class NG_Under5:
 
     def save_journey(self, beneficiary, record):
         journey = Journey()
-        journey.beneficiary = beneficiary
-        journey.programme_type = "U5"
-        journey.admission_criteria = record["admission_criteria"]
-        journey.admission_type = record.get("admission_type", None)
-        journey.nutrition_programme = record["nutrition_programme"]
-        journey.exit_type = record.get("exit_type", None)
-        journey.instance_id = record.get("instance_id", None)
         journey.initial_weight = record.get("initial_weight", None)
-        journey.start_date = record.get("start_date", None)
-        journey.duration = record.get("duration", None)
-        journey.end_date = record.get("end_date", None)
 
         # Calculate the weight gain only for exited cases!
         if record.get("exit_type", None) is not None and record.get("exit_type", None) != "":
             journey.discharge_weight = record.get("discharge_weight", None)
             journey.weight_gain = record.get("weight_gain", 0)
             journey.weight_loss = record.get("weight_loss", 0)
-        journey.save()
-        return journey
+        return ETL().save_entity_journey(journey, beneficiary, record, "U5")

@@ -57,22 +57,12 @@ class PBWG:
 
     def save_journey(self, beneficiary, record):
         journey = Journey()
-        journey.beneficiary = beneficiary
-        journey.programme_type = "PLW"
-        journey.admission_criteria = record.get("admission_criteria", None)
-        journey.admission_type = record.get("admission_type", None)
-        journey.nutrition_programme = record.get("nutrition_programme", None)
-        journey.exit_type = record.get("exit_type", None)
-        journey.instance_id = record.get("instance_id", None)
-        journey.start_date = record.get("start_date", None)
-        journey.end_date = record.get("end_date", None)
 
         if record.get("exit_type", None) is not None and record.get("exit_type", None) != "":
             journey.duration = record.get("duration", None)
             journey.end_date = record.get("end_date", None)
-        journey.save()
 
-        return journey
+        return ETL().save_entity_journey(journey, beneficiary, record, "PLW")
 
     def journeyMapper(self, visits, admission_form):
         current_journey = {"visits": [], "steps": []}
@@ -80,7 +70,7 @@ class PBWG:
             "wfp_coda_pbwg_luctating_followup_anthro",
             "wfp_coda_pbwg_followup_anthro",
         ]
-        # admission_form = "wfp_coda_pbwg_anthropometric"
+
         visit_nutrition_program = [visit for visit in visits if visit["form_id"] == "wfp_coda_pbwg_registration"][0]
         if len(visit_nutrition_program) > 0:
             current_journey["nutrition_programme"] = visit_nutrition_program.get("physiology_status", None)

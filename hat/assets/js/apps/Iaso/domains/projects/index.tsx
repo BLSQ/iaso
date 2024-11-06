@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const Projects: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.projects) as UrlParams;
+    const params = useParamsObject(baseUrls.projects) as unknown as UrlParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();

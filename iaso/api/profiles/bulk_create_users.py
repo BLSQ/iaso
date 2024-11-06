@@ -2,9 +2,14 @@ import csv
 import io
 
 import pandas as pd
-from hat.audit.models import PROFILE_API_BULK
-from iaso.api.profiles.audit import ProfileAuditLogger
 import phonenumbers
+
+from drf_yasg.utils import swagger_auto_schema, no_body
+from rest_framework import serializers, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
 from django.contrib.auth.models import User, Permission, Group
 from django.contrib.auth.password_validation import validate_password
 from django.core import validators
@@ -13,15 +18,12 @@ from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.http import FileResponse
-from drf_yasg.utils import swagger_auto_schema, no_body
-from iaso.utils.module_permissions import account_module_permissions
-from rest_framework import serializers, permissions
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
 
+from hat.audit.models import PROFILE_API_BULK
 from hat.menupermissions import models as permission
-from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Project
+from iaso.api.profiles.audit import ProfileAuditLogger
+from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, OrgUnitType, UserRole, Project
+from iaso.utils.module_permissions import account_module_permissions
 
 BULK_CREATE_USER_COLUMNS_LIST = [
     "username",
@@ -111,7 +113,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         return queryset
 
     @staticmethod
-    def has_user_managed_permission(request):
+    def has_only_user_managed_permission(request):
         if not request.user.has_perm(permission.USERS_ADMIN) and request.user.has_perm(permission.USERS_MANAGED):
             return True
         return False
@@ -119,7 +121,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         user_created_count = 0
-        has_geo_limit = self.has_user_managed_permission(request)
+
+        has_geo_limit = False
+        user_editable_org_unit_type_ids = set()
+        if self.has_only_user_managed_permission(request):
+            user_editable_org_unit_type_ids = request.user.iaso_profile.get_editable_org_unit_type_ids()
+            has_geo_limit = True
+
         if request.FILES:
             # Retrieve and check the validity and format of the CSV File
             try:
@@ -221,7 +229,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         ou = ou.strip()
                         if ou.isdigit():
                             try:
-                                ou = OrgUnit.objects.get(id=int(ou))
+                                ou = OrgUnit.objects.select_related("org_unit_type").get(id=int(ou))
                                 if has_geo_limit and ou not in importer_access_ou:
                                     raise serializers.ValidationError(
                                         {
@@ -250,11 +258,15 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             # The same `OrgUnit` can appear more than once with the same `name` and `source_ref`
                             # due to multiple sequential imports from DHIS2 (this happens a lot). So we must
                             # select the one that matches the "default source version" of the account.
-                            org_unit = OrgUnit.objects.filter(
-                                Q(pk__in=importer_access_ou),
-                                Q(version_id=importer_account.default_version_id),
-                                Q(name=ou) | Q(source_ref=ou),
-                            ).order_by("-version_id")
+                            org_unit = (
+                                OrgUnit.objects.select_related("org_unit_type")
+                                .filter(
+                                    Q(pk__in=importer_access_ou),
+                                    Q(version_id=importer_account.default_version_id),
+                                    Q(name=ou) | Q(source_ref=ou),
+                                )
+                                .order_by("-version_id")
+                            )
                             if org_unit.count() > 1:
                                 raise serializers.ValidationError(
                                     {
@@ -281,6 +293,29 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             org_units_list.add(org_unit[0])
 
                     profile = Profile.objects.create(account=importer_account, user=user)
+
+                    if org_units_list and user_editable_org_unit_type_ids:
+                        invalid_ids = [
+                            org_unit.org_unit_type_id
+                            for org_unit in org_units_list
+                            if org_unit.org_unit_type_id
+                            and not profile.has_org_unit_write_permission(
+                                org_unit.org_unit_type_id, user_editable_org_unit_type_ids
+                            )
+                        ]
+                        if invalid_ids:
+                            invalid_names = ", ".join(
+                                name
+                                for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list(
+                                    "name", flat=True
+                                )
+                            )
+                            raise serializers.ValidationError(
+                                {
+                                    "error": f"Operation aborted. You don't have rights on the following org unit types: {invalid_names}"
+                                }
+                            )
+
                     # Using try except for dhis2_id in case users are being created with an older version of the template
                     try:
                         dhis2_id = row[csv_indexes.index("dhis2_id")]

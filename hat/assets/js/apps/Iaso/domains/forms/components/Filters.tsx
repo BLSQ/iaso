@@ -13,7 +13,7 @@ import MESSAGES from '../messages';
 import { baseUrl } from '../config';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -53,7 +53,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     );
     const { data: planningsDropdownOptions } = useGetPlanningsOptions();
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
-        useGetOrgUnitTypes();
+        useGetOrgUnitTypesDropdownOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
 

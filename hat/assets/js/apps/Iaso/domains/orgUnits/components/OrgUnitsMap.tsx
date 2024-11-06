@@ -36,9 +36,9 @@ import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomCont
 import { MapToggleCluster } from '../../../components/maps/tools/MapToggleCluster';
 import { InnerDrawer } from '../../../components/nav/InnerDrawer/Index';
 import tiles from '../../../constants/mapTiles';
-import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 import MESSAGES from '../messages';
 import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
+import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 type OrgUnitWithSearchIndex = Omit<OrgUnit, 'search_index'> & {
     search_index: number;
@@ -94,7 +94,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
     orgUnits,
 }) => {
     const classes = useStyles();
-    const { data: orgUnitTypes } = useGetOrgUnitTypes();
+    const { data: orgUnitTypes } = useGetOrgUnitTypesDropdownOptions();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const [isClusterActive, setIsClusterActive] = useState<boolean>(true);
 
@@ -106,7 +106,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
 
     const bounds: Bounds | undefined = getOrgUnitsBounds(orgUnits);
     const orgUnitsTotal = getFullOrgUnits(orgUnits.locations);
-
+    console.log('OUTYPES', orgUnitTypes);
     const locations = useMemo(() => {
         if (isClusterActive) {
             return orgUnits.locations.map((orgUnitsBySearch, searchIndex) => {

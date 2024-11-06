@@ -8,7 +8,8 @@ import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../components/TreeView/requests';
-import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
+// IA-3641 uncomment when UI has been refactored to limlit size of API call
+// import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { DropdownOptions } from '../../../../types/utils';
 import DatesRange from '../../../../components/filters/DatesRange';
@@ -31,8 +32,12 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
-    const { data: groupOptions, isLoading: isLoadingGroups } =
-        useGetGroupDropdown({});
+    // IA-3641 hard coding values fro groups dropdown until refactor
+    // const { data: groupOptions, isLoading: isLoadingGroups } =
+    //     useGetGroupDropdown({});
+    const groupOptions = [];
+    const isLoadingGroups = false;
+    // IA-3641 -----END
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: forms, isFetching: isLoadingForms } = useGetForms();
@@ -112,6 +117,8 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     options={groupOptions}
                     loading={isLoadingGroups}
                     labelString={formatMessage(MESSAGES.group)}
+                    disabled
+                    helperText={formatMessage(MESSAGES.featureDisabled)}
                 />
             </Grid>
             <Grid item xs={12} md={4} lg={3}>

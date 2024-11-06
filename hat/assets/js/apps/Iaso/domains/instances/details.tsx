@@ -39,6 +39,7 @@ import {
 } from './hooks/useReassignInstance';
 import MESSAGES from './messages';
 import { getInstancesFilesList } from './utils';
+import { INSTANCE_METAS_FIELDS } from './constants';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -86,6 +87,7 @@ const InstanceDetails: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const classes: ClassNames = useStyles();
     const goBack = useGoBack(baseUrls.instances);
+
     const params = useParamsObject(
         baseUrls.instanceDetail,
     ) as ParamsWithAccountId & {
@@ -161,6 +163,9 @@ const InstanceDetails: FunctionComponent = () => {
                                 id="infos"
                             >
                                 <InstanceDetailsInfos
+                                    instance_metas_fields={
+                                        INSTANCE_METAS_FIELDS
+                                    }
                                     currentInstance={currentInstance}
                                 />
 

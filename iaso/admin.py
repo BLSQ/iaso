@@ -358,6 +358,13 @@ class InstanceAdmin(admin.GeoModelAdmin):
         )
         return queryset
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "entity":
+            kwargs[
+                "queryset"
+            ] = Entity.objects_include_deleted.all()  # use the manager that includes soft-deleted objects
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 @admin.register(InstanceFile)
 @admin_attr_decorator
@@ -904,7 +911,7 @@ class ConfigAdmin(admin.ModelAdmin):
 @admin.register(PotentialPayment)
 class PotentialPaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
-    list_display = ("id", "change_request_ids")
+    list_display = ("id", "change_request_ids", "user")
 
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()

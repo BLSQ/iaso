@@ -32,12 +32,12 @@ import { useGetOrgUnit } from './TreeView/requests';
 import { InputWithInfos } from '../../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../../types/utils';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
-import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 import { useGetVersionLabel } from '../hooks/useGetVersionLabel';
 import { useInstancesOptions } from '../hooks/utils/useInstancesOptions';
 import MESSAGES from '../messages';
 import { DataSource } from '../types/dataSources';
 import { Search } from '../types/search';
+import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 type Props = {
     searches: [Search];
@@ -119,7 +119,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         sourceVersionId,
     });
     const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
-        useGetOrgUnitTypes(projectId);
+        useGetOrgUnitTypesDropdownOptions(projectId);
 
     const instancesOptions = useInstancesOptions();
 

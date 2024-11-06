@@ -75,6 +75,7 @@ else:
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
+SENTRY_FRONT_ENABLED = os.environ.get("SENTRY_FRONT_ENABLED", "false").lower() == "true"
 
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
@@ -258,6 +259,7 @@ TEMPLATES = [
                 "hat.common.context_processors.favicon_path",
                 "hat.common.context_processors.logo_path",
                 "hat.common.context_processors.theme",
+                "hat.common.context_processors.sentry_config",
             ]
         },
     }

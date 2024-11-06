@@ -1,4 +1,5 @@
-from typing import Dict, Any
+import json
+from typing import Any, Dict
 
 from django.conf import settings
 from django.http.request import HttpRequest
@@ -18,6 +19,17 @@ def favicon_path(request: HttpRequest) -> Dict[str, str]:
 
 def logo_path(request: HttpRequest) -> Dict[str, str]:
     return {"logo_path": settings.LOGO_PATH}
+
+
+def sentry_config(request: HttpRequest) -> Dict[str, Any]:
+    config = {
+        "sentry_config": {
+            "SENTRY_URL": settings.SENTRY_URL or None,
+            "SENTRY_ENVIRONMENT": settings.ENVIRONMENT or None,
+            "SENTRY_FRONT_ENABLED": settings.SENTRY_FRONT_ENABLED or None,
+        }
+    }
+    return {"sentry_config": json.dumps(config["sentry_config"])}
 
 
 def theme(request: HttpRequest) -> Dict[str, Any]:

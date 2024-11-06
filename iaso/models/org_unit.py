@@ -754,6 +754,10 @@ class OrgUnitChangeRequest(models.Model):
         self.updated_by = user
         self.status = self.Statuses.REJECTED
         self.rejection_comment = rejection_comment
+        if self.kind == OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION:
+            rejected_org_unit = self.org_unit
+            rejected_org_unit.validation_status = OrgUnit.VALIDATION_REJECTED
+            rejected_org_unit.save()
         self.save()
 
     def approve(self, user: User, approved_fields: typing.List[str], rejection_comment: str = "") -> None:
@@ -762,6 +766,10 @@ class OrgUnitChangeRequest(models.Model):
         self.status = self.Statuses.APPROVED
         self.rejection_comment = rejection_comment
         self.approved_fields = approved_fields
+        if self.kind == OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION:
+            approved_org_unit = self.org_unit
+            approved_org_unit.validation_status = OrgUnit.VALIDATION_VALID
+            approved_org_unit.save()
         self.save()
 
     def __apply_changes(self, user: User, approved_fields: typing.List[str]) -> None:
@@ -785,9 +793,6 @@ class OrgUnitChangeRequest(models.Model):
                 new_value = getattr(self, field_name)
                 org_unit_field_name = field_name.replace("new_", "")
                 setattr(self.org_unit, org_unit_field_name, new_value)
-
-        if self.org_unit.validation_status == self.org_unit.VALIDATION_NEW:
-            self.org_unit.validation_status = self.org_unit.VALIDATION_VALID
 
         self.org_unit.save()
 

@@ -762,7 +762,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
-        org_unit: OrgUnit = get_object_or_404(self.get_queryset().prefetch_related("reference_instances"), pk=pk)
+        org_unit: OrgUnit = get_object_or_404(
+            self.get_queryset().prefetch_related("reference_instances").annotate(instances_count=Count("instance")),
+            pk=pk,
+        )
         self.check_object_permissions(request, org_unit)
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None

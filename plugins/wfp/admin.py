@@ -54,5 +54,5 @@ class VisitAdmin(admin.ModelAdmin):
 
 @admin.register(Step)
 class StepAdmin(admin.ModelAdmin):
-    list_display = ("id", "assistance_type", "visit")
-    list_filter = ("assistance_type", "visit__journey__programme_type")
+    list_display = ("id", "assistance_type", "quantity_given", "visit")
+    list_filter = ("assistance_type", "visit__journey__programme_type", "visit__journey__beneficiary__account")

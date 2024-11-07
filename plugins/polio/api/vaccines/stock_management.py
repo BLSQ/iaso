@@ -22,6 +22,7 @@ from plugins.polio.models import (
     VaccineRequestForm,
     VaccineStock,
 )
+from plugins.polio.models.base import Round
 
 vaccine_stock_id_param = openapi.Parameter(
     name="vaccine_stock",
@@ -452,6 +453,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "missing_vials",
             "document",
             "comment",
+            "round",
         ]
 
     def extract_campaign_data(self, validated_data):
@@ -464,16 +466,34 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             return campaign
         return None
 
+    def extract_round_data(self, validated_data):
+        round_data = validated_data.pop("round", None)
+        campaign_data = validated_data.pop("campaign", None)
+        if round_data and campaign_data:
+            round = Round.objects.get(
+                number=round_data.get("number"),
+                campaign__obr_name=campaign_data.get("obr_name"),
+                account=self.context["request"].user.iaso_profile.account,
+            )
+            return round
+        return None
+
     def create(self, validated_data):
         campaign = self.extract_campaign_data(validated_data)
+        round = self.extract_round_data(validated_data)
         if campaign:
             validated_data["campaign"] = campaign
+        if round:
+            validated_data["round"] = round
         return OutgoingStockMovement.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         campaign = self.extract_campaign_data(validated_data)
+        round = self.extract_round_data(validated_data)
         if campaign:
             instance.campaign = campaign
+        if round:
+            instance.round = round
         return super().update(instance, validated_data)
 
 

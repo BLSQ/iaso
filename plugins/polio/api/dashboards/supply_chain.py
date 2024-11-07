@@ -61,12 +61,12 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
         return self.context["stock_in_hand_cache"][cache_key]
 
     def get_form_a_reception_date(self, obj, vaccine_stock):
-        query_filters = {"vaccine_stock": vaccine_stock, "campaign": obj.campaign}
-        if obj.rounds.exists():
-            query_filters["round"] = obj.rounds.first()
-
+        # TODO: Remove this once the dashboard is updated to use the new form A model
+        # It will get this info by joining on the FormA.round id
         latest_outgoing_stock_movement = (
-            OutgoingStockMovement.objects.filter(**query_filters).order_by("-form_a_reception_date").first()
+            OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock, campaign=obj.campaign)
+            .order_by("-form_a_reception_date")
+            .first()
         )
         return latest_outgoing_stock_movement.form_a_reception_date if latest_outgoing_stock_movement else None
 
@@ -148,7 +148,7 @@ class VaccineRequestFormDashboardViewSet(ModelViewSet):
     model = VaccineRequestForm
     serializer_class = VaccineRequestFormDashboardSerializer
 
-    # @method_decorator(cache_page(60 * 60))  # Cache for 1 hour
+    @method_decorator(cache_page(60 * 60))  # Cache for 1 hour
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 

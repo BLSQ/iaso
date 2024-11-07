@@ -1,4 +1,4 @@
-import { UrlParams } from 'bluesquare-components';
+import { UrlParams, useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import {
@@ -9,6 +9,7 @@ import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/ho
 import {
     deleteRequest,
     getRequest,
+    postRequest,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import {
     useSnackMutation,
@@ -27,6 +28,7 @@ import {
     useGetCampaigns,
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
 import { patchRequest2, postRequest2 } from '../../SupplyChain/hooks/api/vrf';
+import MESSAGES from '../messages';
 
 const defaults = {
     order: 'country',
@@ -251,47 +253,77 @@ export const useGetIncidentList = (
 };
 
 type UseCampaignOptionsResult = {
-    data: DropdownOptions<string>[];
+    roundOptions: DropdownOptions<string>[];
+    campaignOptions: DropdownOptions<string>[];
     isFetching: boolean;
 };
-// TODO get list of campaigns filtered by active vacccine
+// TODO get list of campaigns filtered by active vaccine
 export const useCampaignOptions = (
     countryName: string,
     campaignName?: string,
 ): UseCampaignOptionsResult => {
+    const { formatMessage } = useSafeIntl();
     const queryOptions = {
         select: data => {
             if (!data) return [];
-            return data
-                .filter(c => c.top_level_org_unit_name === countryName)
-                .map(c => {
-                    return {
-                        label: c.obr_name,
-                        value: c.obr_name,
-                    };
-                });
+            return data.filter(c => c.top_level_org_unit_name === countryName);
         },
+        // select: data => {
+        //     if (!data) return [];
+        //     return data
+        //         .filter(c => c.top_level_org_unit_name === countryName)
+        //         .map(c => {
+        //             return {
+        //                 label: c.obr_name,
+        //                 value: c.obr_name,
+        //             };
+        //         });
+        // },
         keepPreviousData: true,
         staleTime: 1000 * 60 * 15, // in MS
         cacheTime: 1000 * 60 * 5,
     };
-    const { data: campaignsList, isFetching } = useGetCampaigns(
+    const { data, isFetching } = useGetCampaigns(
         {},
         CAMPAIGNS_ENDPOINT,
         undefined,
         queryOptions,
     );
-    const defaultList = useMemo(
-        () => [{ label: campaignName, value: campaignName }],
-        [campaignName],
-    );
-    if ((campaignsList ?? []).length > 0) {
-        return { data: campaignsList, isFetching };
-    }
-    if ((campaignsList ?? []).length === 0 && campaignName) {
-        return { data: defaultList as DropdownOptions<string>[], isFetching };
-    }
-    return { data: [], isFetching };
+
+    const roundOptions = useMemo(() => {
+        const selectedCampaign = (data ?? []).find(
+            campaign => campaign.obr_name === campaignName,
+        );
+        return selectedCampaign
+            ? selectedCampaign.rounds.map(round => {
+                  return {
+                      label: `${formatMessage(MESSAGES.round)} ${round.number}`,
+                      value: round.id,
+                  };
+              })
+            : [];
+    }, [campaignName, data, formatMessage]);
+
+    const campaignOptions = useMemo(() => {
+        const campaignsList = (data ?? []).map(c => {
+            return {
+                label: c.obr_name,
+                value: c.obr_name,
+            };
+        });
+        const defaultList = [{ label: campaignName, value: campaignName }];
+        if ((campaignsList ?? []).length > 0) {
+            return campaignsList;
+        }
+        if ((campaignsList ?? []).length === 0 && campaignName) {
+            return defaultList;
+        }
+        return [];
+    }, [campaignName, data]);
+
+    return useMemo(() => {
+        return { isFetching, campaignOptions, roundOptions };
+    }, [campaignOptions, isFetching, roundOptions]);
 };
 
 const createEditFormA = async (body: any) => {
@@ -304,12 +336,14 @@ const createEditFormA = async (body: any) => {
 
     const filteredParams = copy
         ? Object.fromEntries(
-            Object.entries(copy).filter(
-                ([key, value]) => value !== undefined && value !== null && key !== 'document',
-            ),
-        )
+              Object.entries(copy).filter(
+                  ([key, value]) =>
+                      value !== undefined &&
+                      value !== null &&
+                      key !== 'document',
+              ),
+          )
         : {};
-
 
     const requestBody: any = {
         url: `${modalUrl}outgoing_stock_movement/`,
@@ -322,14 +356,11 @@ const createEditFormA = async (body: any) => {
         const fileData = { files: copy.document };
         requestBody.data = data;
         requestBody.fileData = fileData;
-    } 
+    }
 
-    
     if (body.id) {
-        requestBody['url'] = `${modalUrl}outgoing_stock_movement/${body.id}/`
-        return patchRequest2(
-            requestBody
-        );
+        requestBody.url = `${modalUrl}outgoing_stock_movement/${body.id}/`;
+        return patchRequest2(requestBody);
     }
     return postRequest2(requestBody);
 };
@@ -343,7 +374,7 @@ export const useSaveFormA = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document'
+            'document',
         ],
     });
 };
@@ -357,12 +388,14 @@ const createEditDestruction = async (body: any) => {
 
     const filteredParams = copy
         ? Object.fromEntries(
-            Object.entries(copy).filter(
-                ([key, value]) => value !== undefined && value !== null && key !== 'document',
-            ),
-        )
+              Object.entries(copy).filter(
+                  ([key, value]) =>
+                      value !== undefined &&
+                      value !== null &&
+                      key !== 'document',
+              ),
+          )
         : {};
-
 
     const requestBody: any = {
         url: `${modalUrl}destruction_report/`,
@@ -375,14 +408,11 @@ const createEditDestruction = async (body: any) => {
         const fileData = { files: copy.document };
         requestBody.data = data;
         requestBody.fileData = fileData;
-    } 
+    }
 
-    
     if (body.id) {
-        requestBody['url'] = `${modalUrl}destruction_report/${body.id}/`
-        return patchRequest2(
-            requestBody
-        );
+        requestBody.url = `${modalUrl}destruction_report/${body.id}/`;
+        return patchRequest2(requestBody);
     }
     return postRequest2(requestBody);
 };
@@ -396,7 +426,7 @@ export const useSaveDestruction = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document'
+            'document',
         ],
     });
 };
@@ -410,12 +440,14 @@ const createEditIncident = async (body: any) => {
 
     const filteredParams = copy
         ? Object.fromEntries(
-            Object.entries(copy).filter(
-                ([key, value]) => value !== undefined && value !== null && key !== 'document',
-            ),
-        )
+              Object.entries(copy).filter(
+                  ([key, value]) =>
+                      value !== undefined &&
+                      value !== null &&
+                      key !== 'document',
+              ),
+          )
         : {};
-
 
     const requestBody: any = {
         url: `${modalUrl}incident_report/`,
@@ -428,14 +460,11 @@ const createEditIncident = async (body: any) => {
         const fileData = { files: copy.document };
         requestBody.data = data;
         requestBody.fileData = fileData;
-    } 
+    }
 
-    
     if (body.id) {
-        requestBody['url'] = `${modalUrl}incident_report/${body.id}/`
-        return patchRequest2(
-            requestBody
-        );
+        requestBody.url = `${modalUrl}incident_report/${body.id}/`;
+        return patchRequest2(requestBody);
     }
     return postRequest2(requestBody);
 };
@@ -449,7 +478,7 @@ export const useSaveIncident = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document'
+            'document',
         ],
     });
 };

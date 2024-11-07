@@ -20,7 +20,11 @@ import {
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { useFormAValidation } from './validation';
-import { acceptPDF, processErrorDocsBase } from '../../../SupplyChain/Details/utils';
+import {
+    acceptPDF,
+    processErrorDocsBase,
+} from '../../../SupplyChain/Details/utils';
+import { useSkipEffectUntilValue } from '../../../SupplyChain/hooks/utils';
 
 type Props = {
     formA?: any;
@@ -47,6 +51,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         initialValues: {
             id: formA?.id,
             campaign: formA?.campaign,
+            round: formA?.rounds,
             // lot_numbers: formA?.lot_numbers ?? '',
             report_date: formA?.report_date,
             form_a_reception_date: formA?.form_a_reception_date,
@@ -54,21 +59,32 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             // unusable_vials: formA?.unusable_vials,
             missing_vials: formA?.missing_vials,
             vaccine_stock: vaccineStockId,
-            document:formA?.document,
+            document: formA?.document,
             comment: formA?.comment ?? null,
         },
         onSubmit: values => save(values),
         validationSchema,
     });
-    const processDocumentErrors = useCallback(processErrorDocsBase, [formik.errors]);
+    const { setFieldValue } = formik;
+    const processDocumentErrors = useCallback(processErrorDocsBase, [
+        formik.errors,
+    ]);
 
-    const { data: campaignOptions, isFetching: isFetchingCampaigns } =
-        useCampaignOptions(countryName, formik.values.campaign);
+    const { campaignOptions, isFetching, roundOptions } = useCampaignOptions(
+        countryName,
+        formik.values.campaign,
+    );
     const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
     )} ${formatMessage(MESSAGES.formA)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
+
+    const resetOnCampaignChange = useCallback(() => {
+        setFieldValue('round', undefined);
+    }, [setFieldValue]);
+
+    useSkipEffectUntilValue(formik.values.campaign, resetOnCampaignChange);
 
     return (
         <FormikProvider value={formik}>
@@ -95,8 +111,20 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         required
                         options={campaignOptions}
                         withMarginTop
-                        isLoading={isFetchingCampaigns}
+                        isLoading={isFetching}
                         disabled={!countryName}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.round)}
+                        name="round"
+                        component={SingleSelect}
+                        required
+                        options={roundOptions}
+                        withMarginTop
+                        isLoading={isFetching}
+                        disabled={!formik.values.campaign}
                     />
                 </Box>
                 <Field
@@ -139,7 +167,11 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                 <Box mb={2}>
                     <FilesUpload
                         accept={acceptPDF}
-                        files={formik.values.document ? [formik.values.document] : []}
+                        files={
+                            formik.values.document
+                                ? [formik.values.document]
+                                : []
+                        }
                         onFilesSelect={files => {
                             if (files.length) {
                                 formik.setFieldTouched(`document`, true);
@@ -148,10 +180,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         }}
                         multi={false}
                         errors={processDocumentErrors(formik.errors.document)}
-
-                        placeholder={formatMessage(
-                            MESSAGES.document,
-                        )}
+                        placeholder={formatMessage(MESSAGES.document)}
                     />
                 </Box>
             </ConfirmCancelModal>

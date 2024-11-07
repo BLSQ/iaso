@@ -763,9 +763,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         org_unit: OrgUnit = get_object_or_404(
-            self.get_queryset().prefetch_related("reference_instances").annotate(instances_count=Count("instance")),
+            self.get_queryset().prefetch_related("reference_instances"),
             pk=pk,
         )
+
+        if request.query_params.get("instances_count"):
+            instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
+            org_unit.instances_count = instances_count
+
         self.check_object_permissions(request, org_unit)
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None

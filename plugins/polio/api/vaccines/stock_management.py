@@ -22,7 +22,6 @@ from plugins.polio.models import (
     VaccineRequestForm,
     VaccineStock,
 )
-from plugins.polio.models.base import Round
 
 vaccine_stock_id_param = openapi.Parameter(
     name="vaccine_stock",

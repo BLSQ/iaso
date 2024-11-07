@@ -109,8 +109,7 @@ class EntityTypeViewSet(ModelViewSet):
         if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        obj = get_object_or_404(pk=pk)
-
+        obj = get_object_or_404(EntityType, pk=pk)
         obj.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)

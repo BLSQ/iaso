@@ -421,6 +421,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             projects = self.validate_projects(request, profile)
             editable_org_unit_types = self.validate_editable_org_unit_types(request)
         except ProfileError as error:
+            # Delete profile if error since we're creating a new user
+            profile.delete()
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -657,7 +659,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             )
 
         for org_unit in org_units:
-            org_unit_id = org_unit.get("id")
+            org_unit_id = int(org_unit.get("id"))
             if (
                 managed_org_units
                 and org_unit_id not in managed_org_units

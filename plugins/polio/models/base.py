@@ -1247,15 +1247,15 @@ class VaccineStock(models.Model):
 class VaccineStockHistory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="history")
-    round = models.OneToOneField(Round, on_delete=models.CASCADE, related_name="stock_on_closing")
-    unused_vials_in = models.PositiveIntegerField(null=True)
-    unused_vials_out = models.PositiveIntegerField(null=True)
-    unused_doses_in = models.PositiveIntegerField(null=True)
-    unused_doses_out = models.PositiveIntegerField(null=True)
-    used_vials_in = models.PositiveIntegerField(null=True)
-    used_vials_out = models.PositiveIntegerField(null=True)
-    used_doses_in = models.PositiveIntegerField(null=True)
-    used_doses_out = models.PositiveIntegerField(null=True)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name="stock_on_closing")
+    unusable_vials_in = models.PositiveIntegerField(null=True)
+    unusable_vials_out = models.PositiveIntegerField(null=True)
+    unusable_doses_in = models.PositiveIntegerField(null=True)
+    unusable_doses_out = models.PositiveIntegerField(null=True)
+    usable_vials_in = models.PositiveIntegerField(null=True)
+    usable_vials_out = models.PositiveIntegerField(null=True)
+    usable_doses_in = models.PositiveIntegerField(null=True)
+    usable_doses_out = models.PositiveIntegerField(null=True)
 
 
 # Form A

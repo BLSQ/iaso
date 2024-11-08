@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from ....tasks import etl_ng
+from plugins.wfp.tasks import etl_ng
 
 
 class Command(BaseCommand):

@@ -22,8 +22,8 @@ Both have default value of `redis://localhost:6379`
 6. You now have two celery task that can be triggered:
 
 ```
-  plugins.wfp.tasks.etl
-  plugins.wfp.tasks.generate_random_data
+  plugins.wfp.tasks.etl_ssd
+  plugins.wfp.tasks.etl_ng
 ```
 
 7. Run python test `docker compose run iaso manage test -k ETL`

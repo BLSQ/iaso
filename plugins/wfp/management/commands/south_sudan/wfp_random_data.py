@@ -1,7 +1,7 @@
-from ...models import *  # type: ignore
 from django.core.management.base import BaseCommand
 
-from ...tasks import generate_random_data
+from plugins.wfp.models import *  # type: ignore
+from plugins.wfp.tasks import generate_random_data
 
 
 class Command(BaseCommand):

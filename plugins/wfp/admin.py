@@ -10,8 +10,8 @@ from .models import (
 
 @admin.register(Beneficiary)
 class BeneficiaryAdmin(admin.ModelAdmin):
-    list_filter = ("birth_date", "gender")
-    list_display = ("id", "birth_date", "gender")
+    list_filter = ("birth_date", "gender", "account")
+    list_display = ("id", "birth_date", "gender", "account")
 
 
 @admin.register(Journey)
@@ -31,6 +31,7 @@ class JourneyAdmin(admin.ModelAdmin):
         "weight_loss",
         "exit_type",
         "instance_id",
+        "beneficiary",
     )
     list_filter = (
         "admission_criteria",
@@ -40,6 +41,7 @@ class JourneyAdmin(admin.ModelAdmin):
         "start_date",
         "end_date",
         "exit_type",
+        "beneficiary__account",
     )
 
 
@@ -47,10 +49,10 @@ class JourneyAdmin(admin.ModelAdmin):
 class VisitAdmin(admin.ModelAdmin):
     list_display = ("id", "date", "number", "org_unit", "journey")
     raw_id_fields = ("org_unit", "journey")
-    list_filter = ("date", "number", "journey__programme_type")
+    list_filter = ("date", "number", "journey__programme_type", "journey__beneficiary__account")
 
 
 @admin.register(Step)
 class StepAdmin(admin.ModelAdmin):
-    list_display = ("id", "assistance_type", "visit")
-    list_filter = ("assistance_type", "visit__journey__programme_type")
+    list_display = ("id", "assistance_type", "quantity_given", "visit")
+    list_filter = ("assistance_type", "visit__journey__programme_type", "visit__journey__beneficiary__account")

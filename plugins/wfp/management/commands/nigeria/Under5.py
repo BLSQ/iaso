@@ -1,9 +1,9 @@
-from ....models import *
+from plugins.wfp.models import *
 from iaso.models import *
 from django.core.management.base import BaseCommand
 from itertools import groupby
 from operator import itemgetter
-from ....common import ETL
+from plugins.wfp.common import ETL
 import logging
 
 logger = logging.getLogger(__name__)

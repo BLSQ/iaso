@@ -1,40 +1,15 @@
-from ...models import *
+from plugins.wfp.models import *
+from iaso.models import *
 from django.core.management.base import BaseCommand
 from itertools import groupby
 from operator import itemgetter
-from ...common import ETL
+from plugins.wfp.common import ETL
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class Under5:
-    def compute_gained_weight(self, initial_weight, current_weight, duration):
-        weight_gain = 0
-        weight_loss = 0
-
-        weight_difference = 0
-        if initial_weight is not None and current_weight is not None and current_weight != "":
-            initial_weight = float(initial_weight)
-            current_weight = float(current_weight)
-            weight_difference = round(((current_weight * 1000) - (initial_weight * 1000)), 4)
-            if weight_difference >= 0:
-                if duration == 0:
-                    weight_gain = 0
-                elif duration > 0 and current_weight > 0 and initial_weight > 0:
-                    weight_gain = round((weight_difference / (initial_weight * float(duration))), 4)
-            elif weight_difference < 0:
-                weight_loss = abs(weight_difference)
-        return {
-            "initial_weight": float(initial_weight) if initial_weight is not None else initial_weight,
-            "discharge_weight": (
-                float(current_weight) if current_weight is not None and current_weight != "" else current_weight
-            ),
-            "weight_difference": weight_difference,
-            "weight_gain": weight_gain,
-            "weight_loss": weight_loss / 1000,
-        }
-
+class NG_Under5:
     def group_visit_by_entity(self, entities):
         instances = []
         i = 0
@@ -89,7 +64,7 @@ class Under5:
                         ),
                     )
 
-                    if form_id == "Anthropometric visit child":
+                    if form_id in ["Anthropometric visit child", "anthropometric_admission_otp"]:
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
                         visit_date = visit.get(
@@ -101,7 +76,7 @@ class Under5:
                         duration = (current_date - initial_date).days
                         current_record["start_date"] = initial_date.strftime("%Y-%m-%d")
 
-                    weight = self.compute_gained_weight(initial_weight, current_weight, duration)
+                    weight = ETL().compute_gained_weight(initial_weight, current_weight, duration)
                     current_record["end_date"] = current_date.strftime("%Y-%m-%d")
                     current_record["weight_gain"] = weight["weight_gain"]
                     current_record["weight_loss"] = weight["weight_loss"]
@@ -134,59 +109,14 @@ class Under5:
             )
         )
 
-    def journeyMapper(self, visits):
-        journey = []
-        current_journey = {"visits": [], "steps": []}
-        anthropometric_visit_forms = [
-            "child_antropometric_followUp_tsfp",
-            "child_antropometric_followUp_otp",
-        ]
-        for index, visit in enumerate(visits):
-            if visit:
-                current_journey["weight_gain"] = visit.get("weight_gain", None)
-                current_journey["weight_loss"] = visit.get("weight_loss", None)
-                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
-                    current_journey["duration"] = visit.get("duration")
-
-                if visit["form_id"] == "Anthropometric visit child":
-                    current_journey["nutrition_programme"] = ETL().program_mapper(visit)
-
-                current_journey = ETL().journey_Formatter(
-                    visit, "Anthropometric visit child", anthropometric_visit_forms, current_journey, visits, index
-                )
-            current_journey["steps"].append(visit)
-        journey.append(current_journey)
-        return journey
-
-    def save_journey(self, beneficiary, record):
-        journey = Journey()
-        journey.beneficiary = beneficiary
-        journey.programme_type = "U5"
-        journey.admission_criteria = record["admission_criteria"]
-        journey.admission_type = record.get("admission_type", None)
-        journey.nutrition_programme = record["nutrition_programme"]
-        journey.exit_type = record.get("exit_type", None)
-        journey.instance_id = record.get("instance_id", None)
-        journey.initial_weight = record.get("initial_weight", None)
-        journey.start_date = record.get("start_date", None)
-        journey.duration = record.get("duration", None)
-        journey.end_date = record.get("end_date", None)
-
-        # Calculate the weight gain only for cured and Transfer from OTP to TSFP cases!
-        if (
-            record.get("exit_type", None) is not None
-            and record.get("exit_type", None) != ""
-            and record.get("exit_type", None) in ["cured", "transfer_to_tsfp"]
-        ):
-            journey.discharge_weight = record.get("discharge_weight", None)
-            journey.weight_gain = record.get("weight_gain", 0)
-            journey.weight_loss = record.get("weight_loss", 0)
-        journey.save()
-        return journey
-
     def run(self):
-        beneficiaries = ETL("child_under_5_1").retrieve_entities()
-        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()}")
+        children_type = ["ng_-_tsfp_child_3", "ng_-_otp_child_3"]
+        entity_type = ETL(children_type)
+        type = EntityType.objects.get(code="ng_-_tsfp_child_3")
+        account = entity_type.account_related_to_entity_type()
+        beneficiaries = entity_type.retrieve_entities()
+
+        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()} for {type.name} on {account}")
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()
         instances = self.group_visit_by_entity(entities)
@@ -195,12 +125,15 @@ class Under5:
             logger.info(
                 f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
             )
-            instance["journey"] = self.journeyMapper(instance["visits"])
+            instance["journey"] = self.journeyMapper(
+                instance["visits"], ["Anthropometric visit child", "anthropometric_admission_otp"]
+            )
             beneficiary = Beneficiary()
             if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
                 beneficiary.gender = instance["gender"]
                 beneficiary.birth_date = instance["birth_date"]
                 beneficiary.entity_id = instance["entity_id"]
+                beneficiary.account = account
                 beneficiary.save()
                 logger.info(f"Created new beneficiary")
             else:
@@ -225,3 +158,33 @@ class Under5:
             logger.info(
                 f"---------------------------------------------------------------------------------------------\n\n"
             )
+
+    def journeyMapper(self, visits, admission_form):
+        current_journey = {"visits": [], "steps": []}
+        anthropometric_visit_forms = [
+            "anthropometric_second_visit_tsfp",
+            "anthropometric_second_visit_otp",
+        ]
+        visit_nutrition_program = [visit for visit in visits if visit["form_id"] in admission_form]
+
+        if len(visit_nutrition_program) > 0:
+            nutrition_programme = ETL().program_mapper(visit_nutrition_program[0])
+            if nutrition_programme == "TSFP-MAM":
+                current_journey["nutrition_programme"] = "TSFP"
+            elif nutrition_programme == "OTP-SAM":
+                current_journey["nutrition_programme"] = "OTP"
+            else:
+                current_journey["nutrition_programme"] = nutrition_programme
+        journey = ETL().entity_journey_mapper(visits, anthropometric_visit_forms, admission_form, current_journey)
+        return journey
+
+    def save_journey(self, beneficiary, record):
+        journey = Journey()
+        journey.initial_weight = record.get("initial_weight", None)
+
+        # Calculate the weight gain only for exited cases!
+        if record.get("exit_type", None) is not None and record.get("exit_type", None) != "":
+            journey.discharge_weight = record.get("discharge_weight", None)
+            journey.weight_gain = record.get("weight_gain", 0)
+            journey.weight_loss = record.get("weight_loss", 0)
+        return ETL().save_entity_journey(journey, beneficiary, record, "U5")

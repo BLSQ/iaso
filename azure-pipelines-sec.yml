@@ -1,0 +1,33 @@
+name: Iaso-backend-sec
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- script: docker build -t coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
+  env:
+    VERSION_NAME: test
+  displayName: 'Build docker image'
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/develop')
+
+- script: docker build -t coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
+  displayName: 'Build docker image'
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+
+- task: MicrosoftSecurityDevOps@1
+  inputs:
+    tools: 'Trivy,Bandit,eslint'
+    workingDirectory: $(Build.SourcesDirectory)
+    failOnSev: 'high'
+    logLevel: 'info'
+    trivyImageScan: 'true'
+    trivyFailSeverity: 'HIGH,CRITICAL'
+    trivyImageName: 'coda2'
+    banditFailSeverity: 'HIGH,MEDIUM'
+    publish: true
+  displayName: 'Security Scan'

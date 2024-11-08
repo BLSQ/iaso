@@ -66,4 +66,4 @@ class Migration(migrations.Migration):
         ("polio", "0201_outgoingstockmovement_round"),
     ]
 
-    operations = [migrations.RunPython(populate_forma_round, reverse_populate_forma_round)]
+    operations = [migrations.RunPython(populate_forma_round, reverse_populate_forma_round, elidable=True)]

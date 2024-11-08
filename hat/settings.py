@@ -176,8 +176,6 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "storages",
-    "plugins.wfp.south_sudan",
-    "plugins.wfp.nigeria",
 ]
 if ENABLE_CORS:
     INSTALLED_APPS += [

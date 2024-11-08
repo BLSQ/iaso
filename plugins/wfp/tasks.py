@@ -4,9 +4,9 @@ from datetime import timedelta
 import random
 from celery import shared_task
 import datetime
-from .south_sudan.management.commands.Under5 import Under5
-from .south_sudan.management.commands.Pbwg import PBWG
-from .nigeria.management.commands.Under5 import NG_Under5
+from .management.commands.south_sudan.Under5 import Under5
+from .management.commands.south_sudan.Pbwg import PBWG
+from .management.commands.nigeria.Under5 import NG_Under5
 import logging
 
 logger = logging.getLogger(__name__)

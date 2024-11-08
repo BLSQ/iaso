@@ -21,6 +21,7 @@ import { Vaccine } from '../../../../../constants/types';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useFormAValidation } from './validation';
+import { useSkipEffectUntilValue } from '../../../SupplyChain/hooks/utils';
 
 type Props = {
     formA?: any;
@@ -47,6 +48,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         initialValues: {
             id: formA?.id,
             campaign: formA?.campaign,
+            round: formA?.round,
             // lot_numbers: formA?.lot_numbers ?? '',
             report_date: formA?.report_date,
             form_a_reception_date: formA?.form_a_reception_date,
@@ -60,9 +62,12 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         onSubmit: values => save(values),
         validationSchema,
     });
+    const { setFieldValue } = formik;
 
-    const { data: campaignOptions, isFetching: isFetchingCampaigns } =
-        useCampaignOptions(countryName, formik.values.campaign);
+    const { campaignOptions, isFetching, roundOptions } = useCampaignOptions(
+        countryName,
+        formik.values.campaign,
+    );
     const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
@@ -71,6 +76,12 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     const documentErrors = useMemo(() => {
         return processErrorDocsBase(formik.errors.document);
     }, [formik.errors.document]);
+
+    const resetOnCampaignChange = useCallback(() => {
+        setFieldValue('round', undefined);
+    }, [setFieldValue]);
+
+    useSkipEffectUntilValue(formik.values.campaign, resetOnCampaignChange);
 
     return (
         <FormikProvider value={formik}>
@@ -97,8 +108,20 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         required
                         options={campaignOptions}
                         withMarginTop
-                        isLoading={isFetchingCampaigns}
+                        isLoading={isFetching}
                         disabled={!countryName}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.round)}
+                        name="round"
+                        component={SingleSelect}
+                        required
+                        options={roundOptions}
+                        withMarginTop
+                        isLoading={isFetching}
+                        disabled={!formik.values.campaign}
                     />
                 </Box>
                 <Field

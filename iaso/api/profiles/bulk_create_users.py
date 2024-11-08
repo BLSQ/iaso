@@ -40,6 +40,7 @@ BULK_CREATE_USER_COLUMNS_LIST = [
     "user_roles",
     "projects",
     "phone_number",
+    "editable_org_unit_types",
 ]
 
 
@@ -52,10 +53,9 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
 
 class HasUserPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if not (request.user.has_perm(permission.USERS_ADMIN) or request.user.has_perm(permission.USERS_MANAGED)):
-            return False
-
-        return True
+        if request.user.has_perm(permission.USERS_ADMIN) or request.user.has_perm(permission.USERS_MANAGED):
+            return True
+        return False
 
 
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
@@ -134,14 +134,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 user_csv = request.FILES["file"]
                 user_csv_decoded = user_csv.read().decode("utf-8")
                 csv_str = io.StringIO(user_csv_decoded)
-
-                try:
-                    delimiter = csv.Sniffer().sniff(user_csv_decoded).delimiter
-                except csv.Error:
-                    try:
-                        delimiter = ";" if ";" in user_csv.decoded else ","
-                    except Exception:
-                        raise serializers.ValidationError({"error": "Error : CSV File incorrectly formatted."})
+                delimiter = ";" if ";" in user_csv_decoded else ","
                 reader = csv.reader(csv_str, delimiter=delimiter)
                 """In case the delimiter is " ; " we must ensure that the multiple value can be read so we replace it
                     with a " * " instead of " , " """
@@ -421,6 +414,41 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     if row[csv_indexes.index("phone_number")]:
                         phone_number = row[csv_indexes.index("phone_number")]
                         profile.phone_number = self.validate_phone_number(phone_number)
+
+                    try:
+                        editable_org_unit_types_ids = row[csv_indexes.index("editable_org_unit_types")]
+                        editable_org_unit_types_ids = (
+                            editable_org_unit_types_ids.split(",") if editable_org_unit_types_ids else None
+                        )
+                    except (IndexError, ValueError):
+                        editable_org_unit_types_ids = None
+
+                    if editable_org_unit_types_ids:
+                        new_editable_org_unit_types = OrgUnitType.objects.filter(
+                            projects__account=importer_account, id__in=editable_org_unit_types_ids
+                        )
+                        if new_editable_org_unit_types:
+                            if user_editable_org_unit_type_ids:
+                                invalid_ids = [
+                                    out.pk
+                                    for out in new_editable_org_unit_types
+                                    if not profile.has_org_unit_write_permission(
+                                        out.pk, user_editable_org_unit_type_ids
+                                    )
+                                ]
+                                if invalid_ids:
+                                    invalid_names = ", ".join(
+                                        name
+                                        for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list(
+                                            "name", flat=True
+                                        )
+                                    )
+                                    raise serializers.ValidationError(
+                                        {
+                                            "error": f"Operation aborted. You don't have rights on the following org unit types: {invalid_names}"
+                                        }
+                                    )
+                            profile.editable_org_unit_types.set(new_editable_org_unit_types)
 
                     profile.org_units.set(org_units_list)
                     # link the auth user to the user role corresponding auth group

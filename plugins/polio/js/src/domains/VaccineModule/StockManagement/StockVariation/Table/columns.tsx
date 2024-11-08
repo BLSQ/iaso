@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
+import { PdfPreview } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/PdfPreview';
 import { userHasPermission } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { STOCK_MANAGEMENT_WRITE } from '../../../../../constants/permissions';
@@ -269,6 +270,9 @@ export const useIncidentTableColumns = (
                 Cell: settings => {
                     return (
                         <>
+                            <PdfPreview
+                                pdfUrl={settings.row.original.document}
+                            />
                             <EditIncident
                                 id={settings.row.original.id}
                                 incident={settings.row.original}

@@ -264,6 +264,11 @@ module.exports = {
                     filename: 'videos/[name].[hash][ext]',
                 },
             },
+            {
+                test: /\.mjs$/,
+                type: 'javascript/auto',
+                use: 'babel-loader', // or any other loader you are using
+            },
         ],
         noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },
@@ -271,6 +276,7 @@ module.exports = {
 
     resolve: {
         alias: {
+            'react/jsx-runtime': 'react/jsx-runtime.js',
             // see LIVE_COMPONENTS feature in doc
             ...(process.env.LIVE_COMPONENTS === 'true' && {
                 'bluesquare-components': path.resolve(
@@ -292,7 +298,7 @@ module.exports = {
                 : /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
                   ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
 
-        extensions: ['.js', '.tsx', '.ts'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
     stats: {
         errorDetails: true,

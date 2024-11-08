@@ -149,16 +149,30 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                             <Box>
                                 <FilesUpload
                                     accept={acceptPDF}
-                                    files={values?.pre_alerts?.[index]?.document ? [values.pre_alerts[index]?.document] : []}
+                                    files={
+                                        values?.pre_alerts?.[index]?.document
+                                            ? [
+                                                  values.pre_alerts[index]
+                                                      ?.document,
+                                              ]
+                                            : []
+                                    }
                                     onFilesSelect={files => {
                                         if (files.length) {
-                                            setFieldTouched(`pre_alerts[${index}].document`, true);
-                                            setFieldValue(`pre_alerts[${index}].document`, files);
+                                            setFieldTouched(
+                                                `pre_alerts[${index}].document`,
+                                                true,
+                                            );
+                                            setFieldValue(
+                                                `pre_alerts[${index}].document`,
+                                                files,
+                                            );
                                         }
                                     }}
                                     multi={false}
-                                    errors={processDocumentErrors(errors[index]?.document)}
-
+                                    errors={processDocumentErrors(
+                                        errors[index]?.document,
+                                    )}
                                     placeholder={formatMessage(
                                         MESSAGES.document,
                                     )}

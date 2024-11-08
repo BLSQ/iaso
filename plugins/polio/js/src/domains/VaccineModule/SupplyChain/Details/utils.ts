@@ -1,4 +1,5 @@
 import { FormikErrors, FormikProps, FormikTouched } from 'formik';
+import { Accept } from 'react-dropzone';
 import { baseUrls } from '../../../../constants/urls';
 import { VRF } from '../constants';
 import {
@@ -8,7 +9,6 @@ import {
     UseHandleSubmitArgs,
     VAR,
 } from '../types';
-import { Accept } from 'react-dropzone';
 
 type SaveAllArgs = {
     changedTabs: TabValue[];
@@ -201,13 +201,12 @@ export const makeHandleSubmit =
         );
     };
 
-
 export const acceptPDF: Accept = {
     'application/pdf': ['.pdf'],
 };
 
-export const processErrorDocsBase = (err_docs) => {
+export const processErrorDocsBase = err_docs => {
     if (!err_docs) return [];
-    if (!Array.isArray(err_docs)) return [err_docs]; 
-    else return err_docs;
+    if (!Array.isArray(err_docs)) return [err_docs];
+    return err_docs;
 };

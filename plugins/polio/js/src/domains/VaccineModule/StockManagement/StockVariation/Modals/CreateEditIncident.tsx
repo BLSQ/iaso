@@ -2,6 +2,7 @@ import {
     Box,
     FormControl,
     FormControlLabel,
+    Grid,
     Radio,
     RadioGroup,
     Typography,
@@ -17,6 +18,7 @@ import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import { PdfPreview } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/PdfPreview';
 import {
     DateInput,
     NumberInput,
@@ -24,12 +26,15 @@ import {
 } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
+import {
+    acceptPDF,
+    processErrorDocsBase,
+} from '../../../SupplyChain/Details/utils';
 import { useSaveIncident } from '../../hooks/api';
 import { useGetMovementDescription } from '../../hooks/useGetMovementDescription';
 import MESSAGES from '../../messages';
 import { useIncidentOptions } from './useIncidentOptions';
 import { useIncidentValidation } from './validation';
-import { acceptPDF, processErrorDocsBase } from '../../../SupplyChain/Details/utils';
 
 type Props = {
     incident?: any;
@@ -222,13 +227,15 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             unusable_vials: incident?.unusable_vials || 0,
             movement: getInitialMovement(incident),
             vaccine_stock: vaccineStockId,
-            document: incident?.document
+            document: incident?.document,
         },
         onSubmit: handleSubmit,
         validationSchema,
     });
 
-    const processDocumentErrors = useCallback(processErrorDocsBase, [formik.errors]);
+    const processDocumentErrors = useCallback(processErrorDocsBase, [
+        formik.errors,
+    ]);
     const incidentTypeOptions = useIncidentOptions();
     const titleMessage = incident?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
@@ -398,22 +405,37 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                     />
                 </Box>
                 <Box mb={2}>
-                    <FilesUpload
-                        accept={acceptPDF}
-                        files={formik.values.document ? [formik.values.document] : []}
-                        onFilesSelect={files => {
-                            if (files.length) {
-                                formik.setFieldTouched(`document`, true);
-                                formik.setFieldValue(`document`, files);
-                            }
-                        }}
-                        multi={false}
-                        errors={processDocumentErrors(formik.errors.document)}
-
-                        placeholder={formatMessage(
-                            MESSAGES.document,
+                    <Grid container spacing={2} alignItems="center">
+                        <Grid item xs={incident.document ? 11 : 12}>
+                            <FilesUpload
+                                accept={acceptPDF}
+                                files={
+                                    formik.values.document
+                                        ? [formik.values.document]
+                                        : []
+                                }
+                                onFilesSelect={files => {
+                                    if (files.length) {
+                                        formik.setFieldTouched(
+                                            `document`,
+                                            true,
+                                        );
+                                        formik.setFieldValue(`document`, files);
+                                    }
+                                }}
+                                multi={false}
+                                errors={processDocumentErrors(
+                                    formik.errors.document,
+                                )}
+                                placeholder={formatMessage(MESSAGES.document)}
+                            />
+                        </Grid>
+                        {incident.document && (
+                            <Grid item xs={1} sx={{ textAlign: 'right' }}>
+                                <PdfPreview pdfUrl={incident.document} />
+                            </Grid>
                         )}
-                    />
+                    </Grid>
                 </Box>
             </ConfirmCancelModal>
         </FormikProvider>

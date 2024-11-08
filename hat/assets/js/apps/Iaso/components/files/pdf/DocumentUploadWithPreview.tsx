@@ -36,7 +36,7 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
             <Grid item xs={document ? 10 : 12}>
                 <FilesUpload
                     accept={acceptPDF}
-                    files={Array.isArray(document) ? document : []}
+                    files={document ? [document as unknown as File] : []}
                     onFilesSelect={onFilesSelect}
                     multi={false}
                     errors={errors}

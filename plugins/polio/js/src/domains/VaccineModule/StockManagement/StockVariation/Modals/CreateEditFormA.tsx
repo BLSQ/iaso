@@ -7,7 +7,7 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
@@ -18,10 +18,10 @@ import {
 } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
+import { useSkipEffectUntilValue } from '../../../SupplyChain/hooks/utils';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useFormAValidation } from './validation';
-import { useSkipEffectUntilValue } from '../../../SupplyChain/hooks/utils';
 
 type Props = {
     formA?: any;

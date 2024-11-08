@@ -4,12 +4,14 @@ API_CALLS = [
         "filename": "orgunittypes",
     },
     {
-        "path": "/api/mobile/groups/?showDeleted=true",
+        "path": "/api/mobile/groups/",
         "filename": "groups",
+        "query_params": {"showDeleted": "true"},
     },
     {
-        "path": "/api/mobile/group_sets/?showDeleted=true",
+        "path": "/api/mobile/group_sets/",
         "filename": "groupsets",
+        "query_params": {"showDeleted": "true"},
     },
     {
         "path": "/api/mobile/forms/",

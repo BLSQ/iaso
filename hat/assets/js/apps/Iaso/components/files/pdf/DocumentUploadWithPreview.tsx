@@ -28,7 +28,7 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
     ) {
         pdfUrl = URL.createObjectURL(document[0]);
     } else if (document instanceof File) {
-        pdfUrl = URL.createObjectURL(document[0]);
+        pdfUrl = URL.createObjectURL(document);
     }
 
     return (

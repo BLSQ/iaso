@@ -1,7 +1,7 @@
 // test/setup.js or in your test file
 const mock = require('mock-require');
 
-   // Mock pdfjs-dist
+// Mock pdfjs-dist
 mock('pdfjs-dist', {
     GlobalWorkerOptions: {
         workerSrc: '',

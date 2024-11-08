@@ -6,10 +6,10 @@ import {
     IconButton,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { useCallback, useState } from 'react';
-import { defineMessages } from 'react-intl';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import PdfSvgComponent from '../../svg/PdfSvgComponent';
+import MESSAGES from './messages';
 
 // Set the workerSrc for pdfjs to enable the use of Web Workers.
 // Web Workers allow the PDF.js library to process PDF files in a separate thread,
@@ -24,18 +24,7 @@ type PdfPreviewProps = {
     pdfUrl?: string;
 };
 
-export const MESSAGES = defineMessages({
-    close: {
-        defaultMessage: 'Close',
-        id: 'blsq.buttons.label.close',
-    },
-    download: {
-        defaultMessage: 'Download',
-        id: 'blsq.buttons.label.download',
-    },
-});
-
-export const PdfPreview: React.FC<PdfPreviewProps> = ({ pdfUrl }) => {
+export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({ pdfUrl }) => {
     const [open, setOpen] = useState(false); // State to manage dialog open/close
 
     const { formatMessage } = useSafeIntl();

@@ -19,8 +19,6 @@ import { acceptPDF, processErrorDocsBase } from '../utils';
 
 type Props = { className?: string; vrfData: any };
 
-
-
 export const VaccineRequestForm: FunctionComponent<Props> = ({
     className,
     vrfData,
@@ -40,7 +38,8 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         },
     ];
 
-    const { values, setFieldTouched, setFieldValue, errors } = useFormikContext<any>();
+    const { values, setFieldTouched, setFieldValue, errors } =
+        useFormikContext<any>();
     const {
         campaigns,
         vaccines,
@@ -72,8 +71,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         [setFieldTouched, setFieldValue, values?.vrf?.comment, vrfDataComment],
     );
 
-    
-    
     const resetOnCountryChange = useCallback(() => {
         setFieldValue('vrf.campaign', undefined);
         setFieldValue('vrf.vaccine_type', undefined);
@@ -93,9 +90,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
 
     const isNormalType = values?.vrf?.vrf_type === 'Normal';
 
-
     const processDocumentErrors = useCallback(processErrorDocsBase, [errors]);
-
 
     return (
         <Box className={className} mb={3}>
@@ -314,21 +309,30 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     />
                                 </Grid>
                                 <Grid item xs={6} md={3}>
-                                <Box>
+                                    <Box>
                                         <FilesUpload
                                             accept={acceptPDF}
-                                            files={values?.vrf?.document? [values?.vrf?.document]: []}
+                                            files={
+                                                values?.vrf?.document
+                                                    ? [values?.vrf?.document]
+                                                    : []
+                                            }
                                             onFilesSelect={files => {
                                                 if (files.length) {
-                                                    setFieldTouched('vrf.document', true);
-                                                    setFieldValue('vrf.document', files);
+                                                    setFieldTouched(
+                                                        'vrf.document',
+                                                        true,
+                                                    );
+                                                    setFieldValue(
+                                                        'vrf.document',
+                                                        files,
+                                                    );
                                                 }
-                                                console.log("File selected :" + files.length)
-                                                console.dir(files)
                                             }}
                                             multi={false}
-                                            errors={processDocumentErrors(errors.document)}
-
+                                            errors={processDocumentErrors(
+                                                errors.document,
+                                            )}
                                             placeholder={formatMessage(
                                                 MESSAGES.document,
                                             )}
@@ -336,12 +340,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     </Box>
                                 </Grid>
                             </Grid>
-                            <Grid
-                                container
-                                item
-                                xs={12}
-                                spacing={2}
-                            >
+                            <Grid container item xs={12} spacing={2}>
                                 <Grid item xs={12} lg={6}>
                                     {/* With MUI 5, the spacing isn't taken into account if there's only one <Grid> item
                                       so the <Box> is used to compensate and align the TextArea with the other fields
@@ -357,7 +356,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                             debounceTime={0}
                                         />
                                     </Box>
-                                    
                                 </Grid>
 
                                 {/* <Grid item xs={12} lg={6}>

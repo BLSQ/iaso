@@ -5,7 +5,6 @@ from dateutil.relativedelta import *
 
 
 class ETL:
-
     def __init__(self, types=None):
         self.types = types
 

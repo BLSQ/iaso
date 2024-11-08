@@ -267,7 +267,7 @@ module.exports = {
             {
                 test: /\.mjs$/,
                 type: 'javascript/auto',
-                use: 'babel-loader', // or any other loader you are using
+                use: 'babel-loader',
             },
         ],
         noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436

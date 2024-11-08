@@ -397,35 +397,35 @@ class ETL:
             assistance = {"type": step.get("medicine_given"), "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("medication", None) is not None and step.get("medication", None) != "":
+        if step.get("medication") is not None and step.get("medication") != "":
             given_medication = self.split_given_medication(step.get("medication"), quantity)
             given_assistance = given_assistance + given_medication
 
-        if step.get("medicine_given_2") is not None:
+        if step.get("medicine_given_2") is not None and step.get("medicine_given_2") != "":
             assistance = {"type": step.get("medicine_given_2"), "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("medication_2", None) is not None and step.get("medication_2", None) != "":
+        if step.get("medication_2") is not None and step.get("medication_2") != "":
             given_medication = self.split_given_medication(step.get("medication_2"), quantity)
             given_assistance = given_assistance + given_medication
 
-        if step.get("vitamins_given", None) is not None and step.get("vitamins_given", None) == "1":
+        if step.get("vitamins_given") == "1":
             assistance = {"type": "Vitamin", "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("ab_given", None) is not None and step.get("ab_given", None) == "1":
+        if step.get("ab_given") == "1":
             assistance = {"type": "albendazole", "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("measles_vacc", None) is not None and step.get("measles_vacc", None) == "1":
+        if step.get("measles_vacc") == "1":
             assistance = {"type": "Measles vaccination", "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("art_given", None) is not None and step.get("art_given", None) == "1":
+        if step.get("art_given") == "1":
             assistance = {"type": "ART", "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("anti_helminth_given", None) is not None and step.get("anti_helminth_given", None) != "":
+        if step.get("anti_helminth_given") is not None and step.get("anti_helminth_given") != "":
             assistance = {"type": step.get("anti_helminth_given"), "quantity": quantity}
             given_assistance.append(assistance)
 

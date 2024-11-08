@@ -557,6 +557,8 @@ class Campaign(SoftDeletableModel):
     verification_score = models.IntegerField(null=True, blank=True)
     # END OF Risk assessment field
 
+    # Unusable vials leftover 14 days after the last round ends
+
     # ----------------------------------------------------------------------------------------
     # START fields moved to the `Budget` model. **********************************************
     budget_status = models.CharField(max_length=100, null=True, blank=True)
@@ -1240,6 +1242,20 @@ class VaccineStock(models.Model):
 
     def __str__(self):
         return f"{self.country} - {self.vaccine}"
+
+
+class VaccineStockHistory(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="history")
+    round = models.OneToOneField(Round, on_delete=models.CASCADE, related_name="stock_on_closing")
+    unused_vials_in = models.PositiveIntegerField(null=True)
+    unused_vials_out = models.PositiveIntegerField(null=True)
+    unused_doses_in = models.PositiveIntegerField(null=True)
+    unused_doses_out = models.PositiveIntegerField(null=True)
+    used_vials_in = models.PositiveIntegerField(null=True)
+    used_vials_out = models.PositiveIntegerField(null=True)
+    used_doses_in = models.PositiveIntegerField(null=True)
+    used_doses_out = models.PositiveIntegerField(null=True)
 
 
 # Form A

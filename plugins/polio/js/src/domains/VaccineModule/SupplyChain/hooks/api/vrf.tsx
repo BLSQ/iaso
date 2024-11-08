@@ -3,6 +3,8 @@ import {
     renderTagsWithTooltip,
     textPlaceholder,
 } from 'bluesquare-components';
+import { PostArg } from 'hat/assets/js/apps/Iaso/types/general';
+import moment from 'moment';
 import { useMemo } from 'react';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
@@ -19,8 +21,6 @@ import {
     deleteRequest,
     getRequest,
     iasoFetch,
-    patchRequest,
-    postRequest,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import {
     useSnackMutation,
@@ -47,8 +47,6 @@ import {
     VRF,
     VRFFormData,
 } from '../../types';
-import moment from 'moment';
-import { PostArg } from 'hat/assets/js/apps/Iaso/types/general';
 
 const defaults = {
     order: '-start_date',
@@ -185,17 +183,9 @@ export const useGetVrfDetails = (id?: string): UseQueryResult => {
     });
 };
 
-const getRoundsForApi = (
-    rounds: number[] | string | undefined,
-): { number: number }[] | undefined => {
-    if (!rounds) return undefined;
-    if (Array.isArray(rounds)) return rounds.map(r => ({ number: r }));
-    return rounds.split(',').map(r => ({ number: parseInt(r, 10) }));
-};
-
 const createFormDataRequest = (
     method: 'PATCH' | 'POST',
-    arg1: PostArg
+    arg1: PostArg,
 ): Promise<any> => {
     const { url, data = {}, fileData = {}, signal = null } = arg1;
 
@@ -208,7 +198,7 @@ const createFormDataRequest = (
         formData.append(key, converted_value);
     });
 
-    let init: Record<string, unknown> = {
+    const init: Record<string, unknown> = {
         method,
         body: formData,
         signal,
@@ -229,7 +219,7 @@ const createFormDataRequest = (
                 formData.append(key, value);
             }
         });
-    } 
+    }
 
     return iasoFetch(url, init).then(response => response.json());
 };
@@ -247,18 +237,21 @@ export const saveVrf = (
 ): Promise<any>[] => {
     const filteredParams = vrf
         ? Object.fromEntries(
-            Object.entries(vrf).filter(
-                ([key, value]) => value !== undefined && value !== null && key !== 'document',
-            ),
-        )
+              Object.entries(vrf).filter(
+                  ([key, value]) =>
+                      value !== undefined &&
+                      value !== null &&
+                      key !== 'document',
+              ),
+          )
         : {};
 
-    const {rounds} = filteredParams;
-    if(Array.isArray(rounds)){
-        if(rounds.length >0){
-            filteredParams.rounds = rounds.join(',')
-        }else{
-            filteredParams.rounds=""
+    const { rounds } = filteredParams;
+    if (Array.isArray(rounds)) {
+        if (rounds.length > 0) {
+            filteredParams.rounds = rounds.join(',');
+        } else {
+            filteredParams.rounds = '';
         }
     }
     const requestBody: any = {

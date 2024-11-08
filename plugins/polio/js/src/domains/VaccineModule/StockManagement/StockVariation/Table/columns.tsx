@@ -4,8 +4,7 @@ import React, { useMemo } from 'react';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import { userHasPermission } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { PdfPreview } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/PdfPreview';
 import { STOCK_MANAGEMENT_WRITE } from '../../../../../constants/permissions';
 import { Vaccine } from '../../../../../constants/types';
 import MESSAGES from '../../messages';
@@ -14,6 +13,7 @@ import { EditFormA } from '../Modals/CreateEditFormA';
 import { EditIncident } from '../Modals/CreateEditIncident';
 
 import { BreakWordCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/BreakWordCell';
+import { DisplayIfUserHasPerm } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import {
     useDeleteDestruction,
     useDeleteFormA,
@@ -25,7 +25,6 @@ export const useFormATableColumns = (
     vaccine: Vaccine,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     const { mutateAsync: deleteFormA } = useDeleteFormA();
 
     return useMemo(() => {
@@ -86,9 +85,7 @@ export const useFormATableColumns = (
                     return textPlaceholder;
                 },
             },
-        ];
-        if (userHasPermission(STOCK_MANAGEMENT_WRITE, currentUser)) {
-            columns.push({
+            {
                 Header: formatMessage(MESSAGES.actions),
                 id: 'account',
                 accessor: 'account',
@@ -96,37 +93,47 @@ export const useFormATableColumns = (
                 Cell: settings => {
                     return (
                         <>
-                            <EditFormA
-                                id={settings.row.original.id}
-                                formA={settings.row.original}
-                                iconProps={{ overrideIcon: EditIcon }}
-                                countryName={countryName}
-                                vaccine={vaccine}
-                                vaccineStockId={
-                                    settings.row.original.vaccine_stock
-                                }
+                            <PdfPreview
+                                pdfUrl={settings.row.original.document}
                             />
-                            <DeleteDialog
-                                titleMessage={MESSAGES.deleteFormA}
-                                message={MESSAGES.deleteFormAWarning}
-                                onConfirm={() =>
-                                    deleteFormA(settings.row.original.id)
-                                }
-                            />
+                            <DisplayIfUserHasPerm
+                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                            >
+                                <>
+                                    <EditFormA
+                                        id={settings.row.original.id}
+                                        formA={settings.row.original}
+                                        iconProps={{ overrideIcon: EditIcon }}
+                                        countryName={countryName}
+                                        vaccine={vaccine}
+                                        vaccineStockId={
+                                            settings.row.original.vaccine_stock
+                                        }
+                                    />
+                                    <DeleteDialog
+                                        titleMessage={MESSAGES.deleteFormA}
+                                        message={MESSAGES.deleteFormAWarning}
+                                        onConfirm={() =>
+                                            deleteFormA(
+                                                settings.row.original.id,
+                                            )
+                                        }
+                                    />
+                                </>
+                            </DisplayIfUserHasPerm>
                         </>
                     );
                 },
-            });
-        }
+            },
+        ];
         return columns;
-    }, [formatMessage, currentUser, countryName, vaccine, deleteFormA]);
+    }, [formatMessage, countryName, vaccine, deleteFormA]);
 };
 export const useDestructionTableColumns = (
     countryName: string,
     vaccine: Vaccine,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     const { mutateAsync: deleteDestruction } = useDeleteDestruction();
 
     return useMemo(() => {
@@ -164,9 +171,7 @@ export const useDestructionTableColumns = (
                     />
                 ),
             },
-        ];
-        if (userHasPermission(STOCK_MANAGEMENT_WRITE, currentUser)) {
-            columns.push({
+            {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
                 id: 'account',
@@ -174,37 +179,51 @@ export const useDestructionTableColumns = (
                 Cell: settings => {
                     return (
                         <>
-                            <EditDestruction
-                                id={settings.row.original.id}
-                                destruction={settings.row.original}
-                                iconProps={{ overrideIcon: EditIcon }}
-                                countryName={countryName}
-                                vaccine={vaccine}
-                                vaccineStockId={
-                                    settings.row.original.vaccine_stock
-                                }
+                            <PdfPreview
+                                pdfUrl={settings.row.original.document}
                             />
-                            <DeleteDialog
-                                titleMessage={MESSAGES.deleteDestruction}
-                                message={MESSAGES.deleteDestructionWarning}
-                                onConfirm={() =>
-                                    deleteDestruction(settings.row.original.id)
-                                }
-                            />
+                            <DisplayIfUserHasPerm
+                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                            >
+                                <>
+                                    <EditDestruction
+                                        id={settings.row.original.id}
+                                        destruction={settings.row.original}
+                                        iconProps={{ overrideIcon: EditIcon }}
+                                        countryName={countryName}
+                                        vaccine={vaccine}
+                                        vaccineStockId={
+                                            settings.row.original.vaccine_stock
+                                        }
+                                    />
+                                    <DeleteDialog
+                                        titleMessage={
+                                            MESSAGES.deleteDestruction
+                                        }
+                                        message={
+                                            MESSAGES.deleteDestructionWarning
+                                        }
+                                        onConfirm={() =>
+                                            deleteDestruction(
+                                                settings.row.original.id,
+                                            )
+                                        }
+                                    />
+                                </>
+                            </DisplayIfUserHasPerm>
                         </>
                     );
                 },
-            });
-        }
+            },
+        ];
         return columns;
-    }, [countryName, formatMessage, vaccine, currentUser, deleteDestruction]);
+    }, [countryName, formatMessage, vaccine, deleteDestruction]);
 };
 export const useIncidentTableColumns = (
     countryName: string,
     vaccine: Vaccine,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     const { mutateAsync: deleteIncident } = useDeleteIncident();
     return useMemo(() => {
         const columns = [
@@ -259,9 +278,7 @@ export const useIncidentTableColumns = (
                     <NumberCell value={settings.row.original.unusable_vials} />
                 ),
             },
-        ];
-        if (userHasPermission(STOCK_MANAGEMENT_WRITE, currentUser)) {
-            columns.push({
+            {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
                 id: 'account',
@@ -269,28 +286,40 @@ export const useIncidentTableColumns = (
                 Cell: settings => {
                     return (
                         <>
-                            <EditIncident
-                                id={settings.row.original.id}
-                                incident={settings.row.original}
-                                iconProps={{ overrideIcon: EditIcon }}
-                                countryName={countryName}
-                                vaccine={vaccine}
-                                vaccineStockId={
-                                    settings.row.original.vaccine_stock
-                                }
+                            <PdfPreview
+                                pdfUrl={settings.row.original.document}
                             />
-                            <DeleteDialog
-                                titleMessage={MESSAGES.deleteIncident}
-                                message={MESSAGES.deleteIncidentWarning}
-                                onConfirm={() =>
-                                    deleteIncident(settings.row.original.id)
-                                }
-                            />
+
+                            <DisplayIfUserHasPerm
+                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                            >
+                                <>
+                                    <EditIncident
+                                        id={settings.row.original.id}
+                                        incident={settings.row.original}
+                                        iconProps={{ overrideIcon: EditIcon }}
+                                        countryName={countryName}
+                                        vaccine={vaccine}
+                                        vaccineStockId={
+                                            settings.row.original.vaccine_stock
+                                        }
+                                    />
+                                    <DeleteDialog
+                                        titleMessage={MESSAGES.deleteIncident}
+                                        message={MESSAGES.deleteIncidentWarning}
+                                        onConfirm={() =>
+                                            deleteIncident(
+                                                settings.row.original.id,
+                                            )
+                                        }
+                                    />
+                                </>
+                            </DisplayIfUserHasPerm>
                         </>
                     );
                 },
-            });
-        }
+            },
+        ];
         return columns;
-    }, [countryName, formatMessage, vaccine, currentUser, deleteIncident]);
+    }, [countryName, formatMessage, vaccine, deleteIncident]);
 };

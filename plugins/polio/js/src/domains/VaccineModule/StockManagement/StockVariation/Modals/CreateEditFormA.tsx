@@ -1,30 +1,27 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import { Box } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
-    FilesUpload,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { Box } from '@mui/material';
-import { Vaccine } from '../../../../../constants/types';
-import MESSAGES from '../../messages';
-import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
+import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import {
     DateInput,
     NumberInput,
     TextInput,
 } from '../../../../../components/Inputs';
-import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
-import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
-import { useFormAValidation } from './validation';
-import {
-    acceptPDF,
-    processErrorDocsBase,
-} from '../../../SupplyChain/Details/utils';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
+import { Vaccine } from '../../../../../constants/types';
 import { useSkipEffectUntilValue } from '../../../SupplyChain/hooks/utils';
+import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
+import MESSAGES from '../../messages';
+import { useFormAValidation } from './validation';
 
 type Props = {
     formA?: any;
@@ -66,9 +63,6 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         validationSchema,
     });
     const { setFieldValue } = formik;
-    const processDocumentErrors = useCallback(processErrorDocsBase, [
-        formik.errors,
-    ]);
 
     const { campaignOptions, isFetching, roundOptions } = useCampaignOptions(
         countryName,
@@ -79,6 +73,9 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         titleMessage,
     )} ${formatMessage(MESSAGES.formA)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
+    const documentErrors = useMemo(() => {
+        return processErrorDocsBase(formik.errors.document);
+    }, [formik.errors.document]);
 
     const resetOnCampaignChange = useCallback(() => {
         setFieldValue('round', undefined);
@@ -165,22 +162,15 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                     />
                 </Box>
                 <Box mb={2}>
-                    <FilesUpload
-                        accept={acceptPDF}
-                        files={
-                            formik.values.document
-                                ? [formik.values.document]
-                                : []
-                        }
+                    <DocumentUploadWithPreview
+                        errors={documentErrors}
                         onFilesSelect={files => {
                             if (files.length) {
-                                formik.setFieldTouched(`document`, true);
-                                formik.setFieldValue(`document`, files);
+                                formik.setFieldTouched('document', true);
+                                formik.setFieldValue('document', files);
                             }
                         }}
-                        multi={false}
-                        errors={processDocumentErrors(formik.errors.document)}
-                        placeholder={formatMessage(MESSAGES.document)}
+                        document={formik.values.document}
                     />
                 </Box>
             </ConfirmCancelModal>

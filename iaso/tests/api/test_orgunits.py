@@ -551,13 +551,13 @@ class OrgUnitAPITestCase(APITestCase):
             json={"name": "b", "age": 19, "gender": "F"},
         )
         # Test the descendant instances count
-        response_descendant = self.client.get(f"/api/orgunits/{descendant_org_unit.id}/?instances_count=true/")
+        response_descendant = self.client.get(f"/api/orgunits/{descendant_org_unit.id}/")
         self.assertJSONResponse(response_descendant, 200)
         descendant_instances_count = response_descendant.json()["instances_count"]
         self.assertEquals(descendant_instances_count, 1)
 
         # Test the parent instances count
-        response_parent = self.client.get(f"/api/orgunits/{parent_org_unit.id}/?instances_count=true/")
+        response_parent = self.client.get(f"/api/orgunits/{parent_org_unit.id}/")
         self.assertJSONResponse(response_parent, 200)
         parent_instances_count = response_parent.json()["instances_count"]
         self.assertEquals(parent_instances_count, 2)

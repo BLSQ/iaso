@@ -6,20 +6,13 @@ import { useSnackQuery } from '../../../../libs/apiHooks';
 import { OrgUnit } from '../../types/orgUnit';
 
 import MESSAGES from '../../messages';
-import { makeUrlWithParams } from '../../../../libs/utils';
 
 export const useGetOrgUnitDetail = (
     id?: number,
 ): UseQueryResult<OrgUnit, Error> => {
-    const params: Record<string, any> = {
-        instances_count: true,
-    };
-
-    const url = makeUrlWithParams(`/api/orgunits/${id}/`, params);
-
     return useSnackQuery({
         queryKey: ['orgunitdetail', id],
-        queryFn: () => getRequest(url),
+        queryFn: () => getRequest(`/api/orgunits/${id}/`),
         snackErrorMsg: MESSAGES.fetchOrgUnitError,
         options: {
             enabled: Boolean(id),

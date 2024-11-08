@@ -73,8 +73,11 @@ def export_mobile_app_setup_for_user(
     the_task.report_progress_and_stop_if_killed(progress_value=2)
 
     for call in API_CALLS:
+        the_task.report_progress_and_stop_if_killed(
+            progress_value=the_task.progress_value + 1,
+            progress_message=f"Fetching {call['filename']}",
+        )
         _get_resource(iaso_client, call, tmp_dir, project.app_id, feature_flags)
-        the_task.report_progress_and_stop_if_killed(progress_value=the_task.progress_value + 1)
 
     s3_object_name = _compress_and_upload_to_s3(tmp_dir, export_name, password)
 

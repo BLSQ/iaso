@@ -1,4 +1,3 @@
-
 from beanstalk_worker.services import TestTaskService
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 import datetime
@@ -66,7 +65,7 @@ class TestVAccineSTockArchive(TaskAPITestCase):
 
         cls.org_unit_type_country.projects.set([cls.project, cls.project_2])
         cls.org_unit_type_country.save()
-        
+
         # campaign RDC 1
         cls.org_unit_DRC = m.OrgUnit.objects.create(
             org_unit_type=cls.org_unit_type_country,
@@ -157,7 +156,7 @@ class TestVAccineSTockArchive(TaskAPITestCase):
             missing_vials=2,
             comment="Hello world",
         )
-        
+
         cls.incident_report_rdc_nopv_1 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_rdc_nopv,
             stock_correction=pm.IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
@@ -183,8 +182,7 @@ class TestVAccineSTockArchive(TaskAPITestCase):
             usable_vials=16,
         )
         # END campaign RDC 1
-        
-        
+
         cls.vaccine_request_form_rdc_2 = pm.VaccineRequestForm.objects.create(
             campaign=cls.campaign_rdc_1,
             vaccine_type=pm.VACCINES[0][0],
@@ -235,8 +233,7 @@ class TestVAccineSTockArchive(TaskAPITestCase):
                 cls.campaign_chad_1_round_3,
             ]
         )
-        
-        
+
         # Other account
         cls.campaign_be_1 = pm.Campaign.objects.create(
             obr_name="BE_CAMPAIGN_1",
@@ -265,10 +262,9 @@ class TestVAccineSTockArchive(TaskAPITestCase):
             date_dg_approval=cls.now,
             quantities_ordered_in_doses=1000000,
         )
-        
+
     def test_task_archives_stock_for_round_ended_for_14_days(self):
-        self.client.force_authenticate(user=self.user_ro_perm
-                                       )
+        self.client.force_authenticate(user=self.user_ro_perm)
         response = self.client.post(
             "/api/tasks/create/archivevaccinestock/",
             {

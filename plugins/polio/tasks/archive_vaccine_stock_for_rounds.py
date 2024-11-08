@@ -18,7 +18,7 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
     if date:
         reference_date = date
 
-    rounds_qs = Round.objects.filter(ended_at__lte=reference_date,campaign__account=account)
+    rounds_qs = Round.objects.filter(ended_at__lte=reference_date, campaign__account=account)
 
     if country:
         rounds_qs = rounds_qs.filter(campaign__country__id=country)
@@ -36,7 +36,7 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
             (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vax))
             | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vax))
         )
-        
+
         rounds_qs = rounds_qs.exclude(stock_on_closing___vaccine_stock__vaccine=vax)
         vaccine_stock = VaccineStock.objects.filter(country__id=country, vaccine=vax)
         if vaccine_stock.exists():

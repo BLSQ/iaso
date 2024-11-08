@@ -1,11 +1,13 @@
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { Box, Grid, Paper, Typography } from '@mui/material';
-import { FilesUpload, IconButton, useSafeIntl } from 'bluesquare-components';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
+import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
+import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
@@ -13,7 +15,6 @@ import { dosesPerVial } from '../../hooks/utils';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { grayText, usePaperStyles } from '../shared';
-import { acceptPDF, processErrorDocsBase } from '../utils';
 
 type Props = {
     index: number;
@@ -38,8 +39,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
           )
         : 0;
 
-    const processDocumentErrors = useCallback(processErrorDocsBase, [errors]);
-
+    const documentErrors = useMemo(() => {
+        return processErrorDocsBase(errors[index]?.document);
+    }, [errors, index]);
     const onDelete = useCallback(() => {
         if (values?.pre_alerts?.[index].id) {
             setFieldValue(`pre_alerts[${index}].to_delete`, true);
@@ -147,16 +149,8 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
 
                         <Grid item xs={12} md={4}>
                             <Box>
-                                <FilesUpload
-                                    accept={acceptPDF}
-                                    files={
-                                        values?.pre_alerts?.[index]?.document
-                                            ? [
-                                                  values.pre_alerts[index]
-                                                      ?.document,
-                                              ]
-                                            : []
-                                    }
+                                <DocumentUploadWithPreview
+                                    errors={documentErrors}
                                     onFilesSelect={files => {
                                         if (files.length) {
                                             setFieldTouched(
@@ -169,13 +163,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                             );
                                         }
                                     }}
-                                    multi={false}
-                                    errors={processDocumentErrors(
-                                        errors[index]?.document,
-                                    )}
-                                    placeholder={formatMessage(
-                                        MESSAGES.document,
-                                    )}
+                                    document={
+                                        values?.pre_alerts?.[index]?.document
+                                    }
                                 />
                             </Box>
                         </Grid>

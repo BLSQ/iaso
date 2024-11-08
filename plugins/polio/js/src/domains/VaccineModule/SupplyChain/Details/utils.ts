@@ -1,5 +1,4 @@
 import { FormikErrors, FormikProps, FormikTouched } from 'formik';
-import { Accept } from 'react-dropzone';
 import { baseUrls } from '../../../../constants/urls';
 import { VRF } from '../constants';
 import {
@@ -191,6 +190,7 @@ export const makeHandleSubmit =
                         setInitialValues(newInitialValues);
                         formik.setErrors(newErrors);
                         formik.setTouched(newTouched);
+                        console.log('newValues', newValues);
                         formik.setValues(newValues);
                     }
                 },
@@ -200,13 +200,3 @@ export const makeHandleSubmit =
             },
         );
     };
-
-export const acceptPDF: Accept = {
-    'application/pdf': ['.pdf'],
-};
-
-export const processErrorDocsBase = err_docs => {
-    if (!err_docs) return [];
-    if (!Array.isArray(err_docs)) return [err_docs];
-    return err_docs;
-};

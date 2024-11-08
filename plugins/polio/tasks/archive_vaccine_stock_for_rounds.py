@@ -13,11 +13,12 @@ logger = logging.getLogger(__name__)
 @task_decorator(task_name="archive_vaccine_stock")
 def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vaccine=None, task=None):
     task_start = datetime.now()
+    account = task.launcher.iaso_profile.account
     reference_date = task_start - timedelta(days=14)
     if date:
         reference_date = date
 
-    rounds_qs = Round.objects.filter(ended_at__lte=reference_date)
+    rounds_qs = Round.objects.filter(ended_at__lte=reference_date,campaign__account=account)
 
     if country:
         rounds_qs = rounds_qs.filter(campaign__country__id=country)
@@ -32,9 +33,10 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
 
     for vax in vaccines:
         rounds_qs = rounds_qs.filter(
-            (Q(campaign__separate_scopes_per_sound=False) & Q(campaign__scopes__vaccine=vax))
-            | (Q(campaign__separate_scopes_per_sound=True) & Q(scopes__vaccine=vax))
+            (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vax))
+            | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vax))
         )
+        
         rounds_qs = rounds_qs.exclude(stock_on_closing___vaccine_stock__vaccine=vax)
         vaccine_stock = VaccineStock.objects.filter(country__id=country, vaccine=vax)
         if vaccine_stock.exists():

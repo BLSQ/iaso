@@ -137,10 +137,10 @@ class VaccineStockCalculator:
                 Round.objects.filter(campaign=OuterRef("campaign"))
                 .filter(
                     (
-                        Q(campaign__separate_scopes_per_sound=False)
+                        Q(campaign__separate_scopes_per_round=False)
                         & Q(campaign__scopes__vaccine=self.vaccine_stock.vaccine)
                     )
-                    | (Q(campaign__separate_scopes_per_sound=True) & Q(scopes__vaccine=self.vaccine_stock.vaccine))
+                    | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=self.vaccine_stock.vaccine))
                 )
                 .order_by("ended_at")
                 .values("ended_at")[:1]

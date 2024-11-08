@@ -46,6 +46,7 @@ from plugins.polio.api.vaccines.stock_management import (
     IncidentReportViewSet,
 )
 
+from plugins.polio.tasks.api.launch_vaccine_stock_archive import ArchiveVaccineStockViewSet
 from plugins.polio.tasks.api.refresh_im_data import (
     RefreshIMAllDataViewset,
     RefreshIMHouseholdDataViewset,
@@ -100,6 +101,7 @@ router.register(r"polio/vaccine/stock/incident_report", IncidentReportViewSet, b
 router.register(r"polio/notifications", NotificationViewSet, basename="notifications")
 
 router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
+router.register(r"tasks/create/archivevaccinestock", ArchiveVaccineStockViewSet, basename="archive_vaccine_stock")
 router.register(
     r"polio/dashboards/vaccine_request_forms",
     VaccineRequestFormDashboardViewSet,

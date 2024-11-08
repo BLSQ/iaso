@@ -5,8 +5,9 @@ from dateutil.relativedelta import *
 
 
 class ETL:
-    def __init__(self, type=None):
-        self.type = type
+
+    def __init__(self, types=None):
+        self.types = types
 
     def delete_beneficiaries(self):
         beneficiary = Beneficiary.objects.all().delete()
@@ -17,7 +18,7 @@ class ETL:
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
     def account_related_to_entity_type(self):
-        entity_type = EntityType.objects.filter(code__in=self.type)
+        entity_type = EntityType.objects.filter(code__in=self.types)
         account = Account.objects.get(id=entity_type[0].account_id)
         return account
 
@@ -25,7 +26,7 @@ class ETL:
         steps_id = ETL().steps_to_exclude()
         updated_at = date(2023, 7, 10)
         beneficiaries = (
-            Instance.objects.filter(entity__entity_type__code__in=self.type)
+            Instance.objects.filter(entity__entity_type__code__in=self.types)
             # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226, 254,315, 424, 430, 431, 408, 19, 230, 359])
             # .filter(entity__id__in=[230, 359, 254])
             .filter(json__isnull=False)

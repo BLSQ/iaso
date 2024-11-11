@@ -44,7 +44,8 @@ def setup_instances(account_name, iaso_client):
     # fetch orgunit ids belong to the org unit type
 
     for org_unit_type_id in org_unit_type_ids:
-        limit = 10
+        org_unit_type = iaso_client.get(f"/api/v2/orgunittypes/{org_unit_type_id}")
+        limit = org_unit_type["units_count"]
         orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": org_unit_type_id})[
             "orgunits"
         ]

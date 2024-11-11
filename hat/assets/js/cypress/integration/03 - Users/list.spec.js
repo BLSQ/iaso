@@ -40,8 +40,8 @@ const goToPage = (
     cy.intercept('GET', '/api/permissions/grouped_permissions', {
         fixture: 'permissions/grouped.json',
     });
-    cy.intercept('GET', '/api/v2/orgunittypes/**', {
-        fixture: 'orgunittypes/list.json',
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', {
+        fixture: 'orgunittypes/dropdown-list.json',
     });
     cy.intercept('GET', '/api/microplanning/teams/*', {
         fixture: 'teams/list.json',

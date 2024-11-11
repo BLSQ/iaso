@@ -1,16 +1,18 @@
-from ...models import *
-from django.core.management.base import BaseCommand
+import logging
 from itertools import groupby
 from operator import itemgetter
-from ...common import ETL
-import logging
+
+from plugins.wfp.common import ETL
+from plugins.wfp.models import *
 
 logger = logging.getLogger(__name__)
 
 
 class PBWG:
     def run(self):
-        beneficiaries = ETL("pbwg_1").retrieve_entities()
+        entity_type = ETL(["pbwg_1"])
+        account = entity_type.account_related_to_entity_type()
+        beneficiaries = entity_type.retrieve_entities()
         logger.info(f"Instances linked to PBWG program: {beneficiaries.count()}")
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()
@@ -20,11 +22,12 @@ class PBWG:
             logger.info(
                 f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
             )
-            instance["journey"] = self.journeyMapper(instance["visits"])
+            instance["journey"] = self.journeyMapper(instance["visits"], ["wfp_coda_pbwg_anthropometric"])
             beneficiary = Beneficiary()
             if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
                 beneficiary.gender = ""
                 beneficiary.entity_id = instance["entity_id"]
+                beneficiary.account = account
                 if instance.get("birth_date") is not None:
                     beneficiary.birth_date = instance["birth_date"]
                     beneficiary.save()
@@ -54,44 +57,24 @@ class PBWG:
 
     def save_journey(self, beneficiary, record):
         journey = Journey()
-        journey.beneficiary = beneficiary
-        journey.programme_type = "PLW"
-        journey.admission_criteria = record.get("admission_criteria", None)
-        journey.admission_type = record.get("admission_type", None)
-        journey.nutrition_programme = record.get("nutrition_programme", None)
-        journey.exit_type = record.get("exit_type", None)
-        journey.instance_id = record.get("instance_id", None)
-        journey.start_date = record.get("start_date", None)
-        journey.end_date = record.get("end_date", None)
 
         if record.get("exit_type", None) is not None and record.get("exit_type", None) != "":
             journey.duration = record.get("duration", None)
             journey.end_date = record.get("end_date", None)
-        journey.save()
 
-        return journey
+        return ETL().save_entity_journey(journey, beneficiary, record, "PLW")
 
-    def journeyMapper(self, visits):
-        journey = []
+    def journeyMapper(self, visits, admission_form):
         current_journey = {"visits": [], "steps": []}
         anthropometric_visit_forms = [
             "wfp_coda_pbwg_luctating_followup_anthro",
             "wfp_coda_pbwg_followup_anthro",
         ]
 
-        for index, visit in enumerate(visits):
-            if visit:
-                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
-                    current_journey["duration"] = visit.get("duration")
-
-                if visit["form_id"] == "wfp_coda_pbwg_registration":
-                    current_journey["nutrition_programme"] = visit.get("physiology_status", None)
-
-                current_journey = ETL().journey_Formatter(
-                    visit, "wfp_coda_pbwg_anthropometric", anthropometric_visit_forms, current_journey, visits, index
-                )
-                current_journey["steps"].append(visit)
-        journey.append(current_journey)
+        visit_nutrition_program = [visit for visit in visits if visit["form_id"] == "wfp_coda_pbwg_registration"][0]
+        if len(visit_nutrition_program) > 0:
+            current_journey["nutrition_programme"] = visit_nutrition_program.get("physiology_status", None)
+        journey = ETL().entity_journey_mapper(visits, anthropometric_visit_forms, admission_form, current_journey)
         return journey
 
     def group_visit_by_entity(self, entities):

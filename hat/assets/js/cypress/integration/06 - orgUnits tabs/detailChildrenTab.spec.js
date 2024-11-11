@@ -109,7 +109,8 @@ const testRowContent = (
     cy.get('@row')
         .find('td')
         .eq(5)
-        .should('contain', orgunitDetailChildrenValidationStatus);
+        .should('be.visible')
+        .and('contain', orgunitDetailChildrenValidationStatus);
     cy.get('@row')
         .find('td')
         .eq(6)

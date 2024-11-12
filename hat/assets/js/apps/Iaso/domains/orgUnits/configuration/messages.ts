@@ -153,7 +153,7 @@ const MESSAGES = defineMessages({
     warningMessageOrgUnitChangeConfig: {
         id: 'iaso.orgUnitChangeRequestConfigs.warningMessageOrgUnitChangeConfig',
         defaultMessage:
-            'Warning: Org Unit Types which do not have a configuration can be edited by the users without restriction.',
+            'Org Unit Types which do not have a configuration can be edited by the users without restriction.',
     },
 });
 

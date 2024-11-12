@@ -1,7 +1,8 @@
-import { Box, Grid, Typography } from '@mui/material';
+import { Box, Grid, Stack, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useCallback, useState } from 'react';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
@@ -63,11 +64,19 @@ export const OrgUnitChangeRequestConfigs: FunctionComponent = () => {
                     spacing={2}
                 >
                     <Grid item xs={12} sm="auto" md={8}>
-                        <Typography className={classes.warningMessage}>
-                            {formatMessage(
-                                MESSAGES.warningMessageOrgUnitChangeConfig,
-                            )}
-                        </Typography>
+                        <Stack
+                            direction="row"
+                            spacing={1}
+                            alignItems="center"
+                            className={classes.warningMessage}
+                        >
+                            <WarningAmberIcon />
+                            <Typography>
+                                {formatMessage(
+                                    MESSAGES.warningMessageOrgUnitChangeConfig,
+                                )}
+                            </Typography>
+                        </Stack>
                     </Grid>
                     <Grid
                         item

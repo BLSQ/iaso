@@ -1,25 +1,29 @@
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
-import { FilesUpload, useSafeIntl } from 'bluesquare-components';
-import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
-import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
-import { DateInput } from '../../../../../components/Inputs/DateInput';
-import { NumberInput } from '../../../../../components/Inputs';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+} from 'react';
+import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
+import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import { TextArea } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
-import MESSAGES from '../../messages';
+import { NumberInput } from '../../../../../components/Inputs';
+import { DateInput } from '../../../../../components/Inputs/DateInput';
+import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import {
     renderRoundTag,
     useCampaignDropDowns,
     useGetCountriesOptions,
 } from '../../hooks/api/vrf';
-import { useSharedStyles } from '../shared';
 import { useSkipEffectUntilValue } from '../../hooks/utils';
-import { acceptPDF, processErrorDocsBase } from '../utils';
+import MESSAGES from '../../messages';
+import { useSharedStyles } from '../shared';
 
 type Props = { className?: string; vrfData: any };
-
-
 
 export const VaccineRequestForm: FunctionComponent<Props> = ({
     className,
@@ -40,7 +44,8 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         },
     ];
 
-    const { values, setFieldTouched, setFieldValue, errors } = useFormikContext<any>();
+    const { values, setFieldTouched, setFieldValue, errors } =
+        useFormikContext<any>();
     const {
         campaigns,
         vaccines,
@@ -72,8 +77,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         [setFieldTouched, setFieldValue, values?.vrf?.comment, vrfDataComment],
     );
 
-    
-    
     const resetOnCountryChange = useCallback(() => {
         setFieldValue('vrf.campaign', undefined);
         setFieldValue('vrf.vaccine_type', undefined);
@@ -93,10 +96,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
 
     const isNormalType = values?.vrf?.vrf_type === 'Normal';
 
-
-    const processDocumentErrors = useCallback(processErrorDocsBase, [errors]);
-
-
+    const documentErrors = useMemo(() => {
+        return processErrorDocsBase(errors.document);
+    }, [errors.document]);
     return (
         <Box className={className} mb={3}>
             <Box mb={2}>
@@ -314,34 +316,27 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     />
                                 </Grid>
                                 <Grid item xs={6} md={3}>
-                                <Box>
-                                        <FilesUpload
-                                            accept={acceptPDF}
-                                            files={values?.vrf?.document? [values?.vrf?.document]: []}
+                                    <Box>
+                                        <DocumentUploadWithPreview
+                                            errors={documentErrors}
                                             onFilesSelect={files => {
                                                 if (files.length) {
-                                                    setFieldTouched('vrf.document', true);
-                                                    setFieldValue('vrf.document', files);
+                                                    setFieldTouched(
+                                                        'vrf.document',
+                                                        true,
+                                                    );
+                                                    setFieldValue(
+                                                        'vrf.document',
+                                                        files,
+                                                    );
                                                 }
-                                                console.log("File selected :" + files.length)
-                                                console.dir(files)
                                             }}
-                                            multi={false}
-                                            errors={processDocumentErrors(errors.document)}
-
-                                            placeholder={formatMessage(
-                                                MESSAGES.document,
-                                            )}
+                                            document={values?.vrf?.document}
                                         />
                                     </Box>
                                 </Grid>
                             </Grid>
-                            <Grid
-                                container
-                                item
-                                xs={12}
-                                spacing={2}
-                            >
+                            <Grid container item xs={12} spacing={2}>
                                 <Grid item xs={12} lg={6}>
                                     {/* With MUI 5, the spacing isn't taken into account if there's only one <Grid> item
                                       so the <Box> is used to compensate and align the TextArea with the other fields
@@ -357,7 +352,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                             debounceTime={0}
                                         />
                                     </Box>
-                                    
                                 </Grid>
 
                                 {/* <Grid item xs={12} lg={6}>

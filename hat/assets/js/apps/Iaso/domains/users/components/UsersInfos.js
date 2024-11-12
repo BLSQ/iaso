@@ -12,6 +12,8 @@ import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts'
 import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import MESSAGES from '../messages.ts';
+import { userHasPermission } from '../utils.js';
+import { USERS_ADMIN } from '../../../utils/permissions';
 
 const UsersInfos = ({
     setFieldValue,
@@ -20,6 +22,7 @@ const UsersInfos = ({
     allowSendEmailInvitation,
 }) => {
     const loggedUser = useCurrentUser();
+    const isLoggedUserAdmin = userHasPermission(USERS_ADMIN, loggedUser);
     const { formatMessage } = useSafeIntl();
     const isEmailAdressExist = isEmpty(currentUser.email.value);
     const sendUserEmailInvitation = !!isEmailAdressExist;
@@ -170,6 +173,12 @@ const UsersInfos = ({
                         label={MESSAGES.projects}
                         options={availableProjects}
                         loading={isFetchingProjects}
+                        disabled={!isLoggedUserAdmin}
+                        helperText={
+                            !isLoggedUserAdmin
+                                ? formatMessage(MESSAGES.userAdminOnly)
+                                : undefined
+                        }
                     />
                     <InputComponent
                         keyValue="language"

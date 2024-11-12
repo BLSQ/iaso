@@ -215,6 +215,11 @@ module.exports = {
                     filename: 'videos/[name].[hash][ext]',
                 },
             },
+            {
+                test: /\.mjs$/,
+                type: 'javascript/auto',
+                use: 'babel-loader',
+            },
         ],
         noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },
@@ -224,11 +229,14 @@ module.exports = {
     externals: [{ './cptable': 'var cptable' }],
 
     resolve: {
+        alias: {
+            'react/jsx-runtime': 'react/jsx-runtime.js',
+        },
         fallback: {
             fs: false,
         },
         /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
         modules: ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
-        extensions: ['.js', '.tsx', '.ts'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
 };

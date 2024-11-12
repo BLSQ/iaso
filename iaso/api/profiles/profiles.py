@@ -421,6 +421,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             projects = self.validate_projects(request, profile)
             editable_org_unit_types = self.validate_editable_org_unit_types(request)
         except ProfileError as error:
+            # Delete profile if error since we're creating a new user
+            profile.delete()
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -583,7 +585,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         columns = [{"title": column} for column in BULK_CREATE_USER_COLUMNS_LIST]
 
         def get_row(profile: Profile, **_) -> List[Any]:
-            org_units = profile.org_units.all().order_by("id")
+            org_units = profile.org_units.order_by("id").only("id", "source_ref")
+            editable_org_unit_types_pks = profile.editable_org_unit_types.order_by("id").values_list("id", flat=True)
 
             return [
                 profile.user.username,
@@ -603,6 +606,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 ),
                 ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
                 (f"'{profile.phone_number}'" if profile.phone_number else None),
+                ",".join(str(pk) for pk in editable_org_unit_types_pks),
             ]
 
         filename = "users"
@@ -657,7 +661,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             )
 
         for org_unit in org_units:
-            org_unit_id = org_unit.get("id")
+            org_unit_id = int(org_unit.get("id"))
             if (
                 managed_org_units
                 and org_unit_id not in managed_org_units

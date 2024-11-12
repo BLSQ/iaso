@@ -33,6 +33,7 @@ const queryClient = new QueryClient({
 declare global {
     interface Window {
         SENTRY_CONFIG?: SentryConfig;
+        SENTRY_INITIALIZED?: boolean;
         iasoApp: (
             element: HTMLElement,
             enabledPluginsName: string[],

@@ -123,6 +123,17 @@ export const getRequest = async (
         return response.json();
     });
 };
+export const getRequestImage = async (
+    url: string,
+    signal?: Nullable<AbortSignal>,
+): Promise<Blob> => {
+    return iasoFetch(url, {
+        headers: { 'Accept-Language': moment.locale() },
+        signal,
+    }).then(response => {
+        return response.blob();
+    });
+};
 
 export const basePostRequest = (
     url: string,

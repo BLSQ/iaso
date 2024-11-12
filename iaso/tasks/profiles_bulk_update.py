@@ -28,14 +28,14 @@ def update_single_profile_from_bulk(
     managed_org_units: Optional[List[int]],
     profile: Profile,
     *,
-    projects_ids_added: Optional[List[int]],
-    projects_ids_removed: Optional[List[int]],
-    roles_id_added: Optional[List[int]],
-    roles_id_removed: Optional[List[int]],
-    teams_id_added: Optional[List[int]],
-    teams_id_removed: Optional[List[int]],
-    location_ids_added: Optional[List[int]],
-    location_ids_removed: Optional[List[int]],
+    projects_ids_added: List[int],
+    projects_ids_removed: List[int],
+    roles_id_added: List[int],
+    roles_id_removed: List[int],
+    teams_id_added: List[int],
+    teams_id_removed: List[int],
+    location_ids_added: List[int],
+    location_ids_removed: List[int],
     language: Optional[str],
     organization: Optional[str],
 ):
@@ -55,14 +55,13 @@ def update_single_profile_from_bulk(
         user.iaso_profile.get_editable_org_unit_type_ids() if not has_perm_users_admin else set()
     )
 
-    # Raise if necessary and prepare values to be updated
-    if teams_id_added is not None:
-        if not user.has_perm(permission.TEAMS):
-            raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot add users to team")
-    if teams_id_removed is not None:
-        if not user.has_perm(permission.TEAMS):
-            raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot remove users to team")
-    if roles_id_added is not None:
+    if teams_id_added and not user.has_perm(permission.TEAMS):
+        raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot add users to team")
+
+    if teams_id_removed and not user.has_perm(permission.TEAMS):
+        raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot remove users to team")
+
+    if roles_id_added:
         for role_id in roles_id_added:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
             if role.account.id == account_id:
@@ -70,7 +69,8 @@ def update_single_profile_from_bulk(
                     for p in role.group.permissions.all():
                         CustomPermissionSupport.assert_right_to_assign(user, p.codename)
                 roles_to_be_added.append(role)
-    if roles_id_removed is not None:
+
+    if roles_id_removed:
         for role_id in roles_id_removed:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
             if role.account.id == account_id:
@@ -79,7 +79,7 @@ def update_single_profile_from_bulk(
                         CustomPermissionSupport.assert_right_to_assign(user, p.codename)
                 roles_to_be_removed.append(role)
 
-    if projects_ids_added is not None:
+    if projects_ids_added:
         if not has_perm_users_admin:
             raise PermissionDenied(
                 f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
@@ -88,7 +88,8 @@ def update_single_profile_from_bulk(
             project = Project.objects.get(pk=project_id)
             if project.account and project.account.id == account_id:
                 projects_to_be_added.append(project)
-    if projects_ids_removed is not None:
+
+    if projects_ids_removed:
         if not has_perm_users_admin:
             raise PermissionDenied(
                 f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
@@ -119,6 +120,7 @@ def update_single_profile_from_bulk(
                     f"because he does not have rights on the following org unit type: {org_unit.org_unit_type.name}"
                 )
             org_units_to_be_added.append(org_unit)
+
     if location_ids_removed:
         for location_id in location_ids_removed:
             if managed_org_units and (not has_perm_users_admin) and (location_id not in managed_org_units):
@@ -140,8 +142,9 @@ def update_single_profile_from_bulk(
                     f"because he does not have rights on the following org unit type: {org_unit.org_unit_type.name}"
                 )
             org_units_to_be_removed.append(org_unit)
+
     # Update
-    if teams_id_added is not None:
+    if teams_id_added:
         team_audit_logger = TeamAuditLogger()
         for team_id in teams_id_added:
             team = Team.objects.get(pk=team_id)
@@ -153,7 +156,8 @@ def update_single_profile_from_bulk(
             ):
                 team.users.add(profile.user)
                 team_audit_logger.log_modification(instance=team, old_data_dump=old_team, request_user=user)
-    if teams_id_removed is not None:
+
+    if teams_id_removed:
         team_audit_logger = TeamAuditLogger()
         for team_id in teams_id_removed:
             team = Team.objects.get(pk=team_id)
@@ -165,9 +169,11 @@ def update_single_profile_from_bulk(
             ):
                 team.users.remove(profile.user)
                 team_audit_logger.log_modification(instance=team, old_data_dump=old_team, request_user=user)
-    if language is not None:
+
+    if language:
         profile.language = language
-    if organization is not None:
+
+    if organization:
         profile.organization = organization
 
     if len(roles_to_be_added) > 0:
@@ -195,14 +201,14 @@ def profiles_bulk_update(
     select_all: bool,
     selected_ids: List[int],
     unselected_ids: List[int],
-    projects_ids_added: Optional[List[int]],
-    projects_ids_removed: Optional[List[int]],
-    roles_id_added: Optional[List[int]],
-    roles_id_removed: Optional[List[int]],
-    teams_id_added: Optional[List[int]],
-    teams_id_removed: Optional[List[int]],
-    location_ids_added: Optional[List[int]],
-    location_ids_removed: Optional[List[int]],
+    projects_ids_added: List[int],
+    projects_ids_removed: List[int],
+    roles_id_added: List[int],
+    roles_id_removed: List[int],
+    teams_id_added: List[int],
+    teams_id_removed: List[int],
+    location_ids_added: List[int],
+    location_ids_removed: List[int],
     language: Optional[str],
     organization: Optional[str],
     search: Optional[str],

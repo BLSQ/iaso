@@ -27,6 +27,7 @@ type SentryContextType = {
 export type SentryConfig = {
     SENTRY_URL?: string;
     SENTRY_ENVIRONMENT?: string;
+    SENTRY_FRONT_ENABLED?: boolean;
 };
 
 type Props = {
@@ -43,6 +44,7 @@ export const useSentry = () => {
     return context;
 };
 const initSentry = (consent: boolean) => {
+    window.SENTRY_INITIALIZED = true;
     if (!consent || !window.SENTRY_CONFIG?.SENTRY_URL) return;
     Sentry.init({
         dsn: window.SENTRY_CONFIG.SENTRY_URL,
@@ -109,12 +111,19 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
     const { formatMessage } = useSafeIntl();
 
     useEffect(() => {
-        const hasStoredConsent = localStorage.getItem('sentry-consent');
-        if (!hasStoredConsent && Boolean(window.SENTRY_CONFIG?.SENTRY_URL)) {
-            setShowDialog(true);
-        }
-        if (hasStoredConsent) {
-            initSentry(hasStoredConsent === 'true');
+        if (window.SENTRY_CONFIG?.SENTRY_FRONT_ENABLED) {
+            const hasStoredConsent = localStorage.getItem('sentry-consent');
+            if (
+                !hasStoredConsent &&
+                Boolean(window.SENTRY_CONFIG?.SENTRY_URL)
+            ) {
+                setShowDialog(true);
+            }
+            if (hasStoredConsent) {
+                if (!window.SENTRY_INITIALIZED) {
+                    initSentry(hasStoredConsent === 'true');
+                }
+            }
         }
     }, []);
 

@@ -9,7 +9,6 @@ import {
 import {
     AddButton,
     ConfirmCancelModal,
-    FilesUpload,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -17,6 +16,8 @@ import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
+import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import {
     DateInput,
     NumberInput,
@@ -29,7 +30,6 @@ import { useGetMovementDescription } from '../../hooks/useGetMovementDescription
 import MESSAGES from '../../messages';
 import { useIncidentOptions } from './useIncidentOptions';
 import { useIncidentValidation } from './validation';
-import { acceptPDF, processErrorDocsBase } from '../../../SupplyChain/Details/utils';
 
 type Props = {
     incident?: any;
@@ -222,13 +222,16 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             unusable_vials: incident?.unusable_vials || 0,
             movement: getInitialMovement(incident),
             vaccine_stock: vaccineStockId,
-            document: incident?.document
+            document: incident?.document,
         },
         onSubmit: handleSubmit,
         validationSchema,
     });
 
-    const processDocumentErrors = useCallback(processErrorDocsBase, [formik.errors]);
+    const documentErrors = useMemo(() => {
+        return processErrorDocsBase(formik.errors.document);
+    }, [formik.errors.document]);
+
     const incidentTypeOptions = useIncidentOptions();
     const titleMessage = incident?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
@@ -398,21 +401,15 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                     />
                 </Box>
                 <Box mb={2}>
-                    <FilesUpload
-                        accept={acceptPDF}
-                        files={formik.values.document ? [formik.values.document] : []}
+                    <DocumentUploadWithPreview
+                        errors={documentErrors}
                         onFilesSelect={files => {
                             if (files.length) {
-                                formik.setFieldTouched(`document`, true);
-                                formik.setFieldValue(`document`, files);
+                                formik.setFieldTouched('document', true);
+                                formik.setFieldValue('document', files);
                             }
                         }}
-                        multi={false}
-                        errors={processDocumentErrors(formik.errors.document)}
-
-                        placeholder={formatMessage(
-                            MESSAGES.document,
-                        )}
+                        document={formik.values.document}
                     />
                 </Box>
             </ConfirmCancelModal>

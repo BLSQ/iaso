@@ -152,6 +152,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         self.assertEqual(PaymentStatuses.PENDING, modification_payment.past_value[0]["fields"]["status"])
         self.assertEqual(PaymentStatuses.PAID, modification_payment.new_value[0]["fields"]["status"])
 
+        self.assertIsNone(self.payment_lot.task)
         # TODO assert PaymentLot Status
 
     def test_payment_bulkupdate_select_all(self):
@@ -178,6 +179,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         self.assertEqual(self.second_payment.status, PaymentStatuses.PAID)
 
         self.assertEqual(3, am.Modification.objects.count())
+        self.assertIsNone(self.payment_lot.task)
 
     def test_payment_bulkupdate_task_select_all_but_some(self):
         """POST /orgunits/bulkupdate/ happy path (select all except some)"""
@@ -207,10 +209,11 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         self.assertEqual(self.second_payment.status, PaymentStatuses.PENDING)
 
         self.assertEqual(2, am.Modification.objects.count())
+        self.assertIsNone(self.payment_lot.task)
 
     def test_payment_update_task_kill(self):
         """Launch the task and then kill it
-        Note this actually doesn't work if it's killwed while in the transaction part.
+        Note this actually doesn't work if it's killed while in the transaction part.
         """
         self.client.force_authenticate(self.user)
         response = self.client.post(
@@ -231,5 +234,5 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         task = Task.objects.get(id=data["task"]["id"])
         task.should_be_killed = True
         task.save()
-
+        self.assertIsNone(self.payment_lot.task)
         self.runAndValidateTask(task, "KILLED")

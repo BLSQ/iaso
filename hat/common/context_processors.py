@@ -26,6 +26,7 @@ def sentry_config(request: HttpRequest) -> Dict[str, Any]:
         "sentry_config": {
             "SENTRY_URL": settings.SENTRY_URL or None,
             "SENTRY_ENVIRONMENT": settings.ENVIRONMENT or None,
+            "SENTRY_FRONT_ENABLED": settings.SENTRY_FRONT_ENABLED or None,
         }
     }
     return {"sentry_config": json.dumps(config["sentry_config"])}

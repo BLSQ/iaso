@@ -37,7 +37,11 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
             | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vax))
         )
 
-        rounds_qs = rounds_qs.exclude(stock_on_closing___vaccine_stock__vaccine=vax)
+        # Exclude rounds that already have a history entry for this vaccine
+        rounds_qs = rounds_qs.exclude(
+            id__in=VaccineStockHistory.objects.filter(vaccine_stock__vaccine=vax).values("round_id")
+        )
+
         vaccine_stock = VaccineStock.objects.filter(country__id=country, vaccine=vax)
         if vaccine_stock.exists():
             vaccine_stock = vaccine_stock.first()

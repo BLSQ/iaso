@@ -1,6 +1,6 @@
 import datetime
 import enum
-from django.db.models import OuterRef, Subquery
+from django.db.models import OuterRef, Subquery, Exists, Q
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, serializers, status
@@ -10,7 +10,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.utils.dateparse import parse_date
-from django.db.models import Q
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
@@ -92,7 +91,6 @@ class VaccineStockCalculator:
                 total_vials_in -= result["vials_out"]
             if result["doses_out"]:
                 total_doses_in -= result["doses_out"]
-
         return total_vials_in, total_doses_in
 
     def get_vials_received(self, end_date=None):
@@ -133,7 +131,7 @@ class VaccineStockCalculator:
             campaign__country=self.vaccine_stock.country, vaccine_type=self.vaccine_stock.vaccine
         )
         if end_date:
-            last_round_end_date = (
+            eligible_rounds = (
                 Round.objects.filter(campaign=OuterRef("campaign"))
                 .filter(
                     (
@@ -142,17 +140,18 @@ class VaccineStockCalculator:
                     )
                     | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=self.vaccine_stock.vaccine))
                 )
-                .order_by("ended_at")
-                .values("ended_at")[:1]
+                .filter(ended_at__lte=end_date)
+                .filter(id__in=OuterRef("rounds"))
             )
-            vrfs = vrfs.annotate(last_round_end_date=Subquery(last_round_end_date)).filter(
-                last_round_end_date__lte=end_date
-            )
+            vrfs = vrfs.filter(Exists(Subquery(eligible_rounds)))
+
         if not vrfs.exists():
             arrival_reports = []
         else:
             # Then find the corresponding VaccineArrivalReports
             arrival_reports = VaccineArrivalReport.objects.filter(request_form__in=vrfs)
+            if end_date:
+                arrival_reports = arrival_reports.filter(arrival_report_date__lte=end_date)
             if not arrival_reports.exists():
                 arrival_reports = []
         results = []

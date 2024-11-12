@@ -32,28 +32,34 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
         vaccines = [vaccine]
 
     for vax in vaccines:
-        rounds_qs = rounds_qs.filter(
+        vax_rounds_qs = rounds_qs.filter(
             (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vax))
             | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vax))
         )
 
         # Exclude rounds that already have a history entry for this vaccine
-        rounds_qs = rounds_qs.exclude(
+        vax_rounds_qs = vax_rounds_qs.exclude(
             id__in=VaccineStockHistory.objects.filter(vaccine_stock__vaccine=vax).values("round_id")
         )
+        vaccine_stock = VaccineStock.objects.filter(vaccine=vax)
+        if country:
+            vaccine_stock = VaccineStock.objects.filter(country__id=country)
 
-        vaccine_stock = VaccineStock.objects.filter(country__id=country, vaccine=vax)
-        if vaccine_stock.exists():
-            vaccine_stock = vaccine_stock.first()
-            for r in rounds_qs:
-                calculator = VaccineStockCalculator(vaccine_stock)
+        for r in vax_rounds_qs:
+            vaccine_stock_for_vaccine = vaccine_stock.filter(vaccine=vax)
+            if not country:
+                vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.filter(country=r.campaign.country.id)
+
+            if vaccine_stock_for_vaccine.exists():
+                vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.first()
+                calculator = VaccineStockCalculator(vaccine_stock_for_vaccine)
                 total_usable_vials_in, total_usable_doses_in = calculator.get_total_of_usable_vials(reference_date)
                 total_unusable_vials_in, total_unusable_doses_in = calculator.get_total_of_unusable_vials(
                     reference_date
                 )
 
                 VaccineStockHistory.objects.create(
-                    vaccine_stock=vaccine_stock,
+                    vaccine_stock=vaccine_stock_for_vaccine,
                     round=r,
                     usable_vials_in=total_usable_vials_in,
                     usable_doses_in=total_usable_doses_in,

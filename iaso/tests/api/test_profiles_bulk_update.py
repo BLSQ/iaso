@@ -228,9 +228,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         operation_payload = {
             "select_all": False,
             "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
-            "language": "fr",
-            "location_ids_added": [self.jedi_council_corruscant.pk],
-            "location_ids_removed": [self.jedi_council_endor.pk],
+            "unselected_ids": None,
             "projects_ids_added": [
                 self.project.pk,
                 self.project_3.pk,
@@ -238,7 +236,20 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "projects_ids_removed": [self.project_2.pk],
             "roles_id_added": [self.user_role.pk],
             "roles_id_removed": [self.user_role_2.pk],
+            "location_ids_added": [self.jedi_council_corruscant.pk],
+            "location_ids_removed": [self.jedi_council_endor.pk],
+            "language": "fr",
+            "teams_id_added": None,
+            "teams_id_removed": None,
             "organization": "Bluesquare",
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -333,14 +344,25 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         payload = {
             "select_all": False,
             "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
-            "language": "fr",
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [],
+            "roles_id_removed": [self.user_role_2.pk],
             "location_ids_added": [self.jedi_council_endor.pk],
-            "location_ids_removed": None,
-            "projects_ids_added": None,
-            "projects_ids_removed": None,
-            "roles_id_added": None,
-            "roles_id_removed": None,
+            "location_ids_removed": [],
+            "language": "fr",
+            "teams_id_added": [],
+            "location_ids_removed": [],
             "organization": "Bluesquare",
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=payload, format="json")
 
@@ -405,9 +427,26 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.obi_wan)
         operation_payload = {
             "select_all": True,
-            "roles_id_added": [
-                self.user_role.pk,
-            ],
+            "selected_ids": [],
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [self.user_role.pk],
+            "roles_id_removed": [],
+            "location_ids_added": [],
+            "location_ids_removed": [],
+            "language": None,
+            "teams_id_added": [],
+            "teams_id_removed": [],
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -435,9 +474,26 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.obi_wan)
         operation_payload = {
             "select_all": True,
-            "roles_id_added": [
-                self.user_role_admin.pk,
-            ],
+            "selected_ids": [],
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [self.user_role_admin.pk],
+            "roles_id_removed": [],
+            "location_ids_added": [],
+            "location_ids_removed": [],
+            "language": None,
+            "teams_id_added": [],
+            "teams_id_removed": [],
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -465,9 +521,26 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.obi_wan)
         operation_payload = {
             "select_all": True,
-            "roles_id_removed": [
-                self.user_role_2.pk,
-            ],
+            "selected_ids": [],
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [],
+            "roles_id_removed": [self.user_role_2.pk],
+            "location_ids_added": [],
+            "location_ids_removed": [],
+            "language": None,
+            "teams_id_added": [],
+            "teams_id_removed": [],
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -497,10 +570,25 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         operation_payload = {
             "select_all": False,
             "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [self.user_role_different_account.pk],
+            "roles_id_removed": [],
+            "location_ids_added": [],
+            "location_ids_removed": [],
             "language": "fr",
-            "roles_id_added": [
-                self.user_role_different_account.pk,
-            ],
+            "teams_id_added": [],
+            "teams_id_removed": [],
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -524,10 +612,27 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         operation_payload = {
             "select_all": False,
             "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
-            "language": "fr",
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [],
             "roles_id_removed": [
                 self.user_role_different_account.pk,
             ],
+            "location_ids_added": [],
+            "location_ids_removed": [],
+            "language": "fr",
+            "teams_id_added": [],
+            "teams_id_removed": [],
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -550,7 +655,29 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/tasks/create/profilesbulkupdate/",
-            data={"select_all": True, "language": "fr"},
+            data={
+                "select_all": True,
+                "selected_ids": None,
+                "unselected_ids": None,
+                "projects_ids_added": None,
+                "projects_ids_removed": None,
+                "roles_id_added": None,
+                "roles_id_removed": None,
+                "location_ids_added": None,
+                "location_ids_removed": None,
+                "language": "fr",
+                "teams_id_added": None,
+                "teams_id_removed": None,
+                "organization": None,
+                "search": None,
+                "perms": None,
+                "location": None,
+                "org_unit_type": None,
+                "parent_ou": None,
+                "children_ou": None,
+                "projects": None,
+                "user_roles": None,
+            },
             format="json",
         )
 
@@ -661,7 +788,11 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
     @tag("iaso_only")
     def test_profile_bulkupdate_user_without_iaso_team_permission(self):
         """POST /api/tasks/create/profilesbulkupdate/ a user without permission menupermissions.iaso_teams cannot add users to team"""
-        self.client.force_authenticate(self.obi_wan)
+        user = self.obi_wan
+        self.assertFalse(user.has_perm(permission.TEAMS))
+
+        self.client.force_authenticate(user)
+
         operation_payload = {
             "select_all": True,
             "teams_id_added": [
@@ -673,7 +804,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertJSONResponse(response, 201)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
-        self.assertEqual(task.launcher, self.obi_wan)
+        self.assertEqual(task.launcher, user)
 
         # Run the task
         self.runAndValidateTask(task, "ERRORED")

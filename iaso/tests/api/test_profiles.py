@@ -134,9 +134,6 @@ class ProfileAPITestCase(APITestCase):
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         cls.jedi_council.sub_unit_types.add(cls.jedi_squad)
 
-        # cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
-        # cls.mock_point = Point(x=4, y=50, z=100)
-
         cls.mock_multipolygon = None
         cls.mock_point = None
 
@@ -317,6 +314,8 @@ class ProfileAPITestCase(APITestCase):
 
     def test_profile_list_export_as_csv(self):
         self.john.iaso_profile.org_units.set([self.jedi_squad_1, self.jedi_council_corruscant])
+        self.jum.iaso_profile.editable_org_unit_types.set([self.jedi_squad])
+
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?csv=true")
         self.assertEqual(response.status_code, 200)
@@ -338,21 +337,23 @@ class ProfileAPITestCase(APITestCase):
             "permissions,"
             "user_roles,"
             "projects,"
-            "phone_number\r\n"
+            "phone_number,"
+            "editable_org_unit_types\r\n"
         )
 
-        expected_csv += "janedoe,,,,,,,,,,iaso_forms,,,\r\n"
-        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,,,\r\n'
-        expected_csv += 'jim,,,,,,,,,,"iaso_forms,iaso_users",,,\r\n'
-        expected_csv += "jam,,,,,,,en,,,iaso_users_managed,,,\r\n"
-        expected_csv += "jom,,,,,,,fr,,,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,,,{self.project.name},\r\n"
-        expected_csv += f'managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,,iaso_users_managed,"{self.user_role_name},{self.user_role_another_account_name}",,\r\n'
+        expected_csv += "janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
+        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,,,,\r\n'
+        expected_csv += 'jim,,,,,,,,,,"iaso_forms,iaso_users",,,,\r\n'
+        expected_csv += "jam,,,,,,,en,,,iaso_users_managed,,,,\r\n"
+        expected_csv += "jom,,,,,,,fr,,,,,,,\r\n"
+        expected_csv += f"jum,,,,,,,,,,,,{self.project.name},,{self.jedi_squad.pk}\r\n"
+        expected_csv += f'managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,,iaso_users_managed,"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
     def test_profile_list_export_as_xlsx(self):
         self.john.iaso_profile.org_units.set([self.jedi_squad_1, self.jedi_council_corruscant])
+        self.jum.iaso_profile.editable_org_unit_types.set([self.jedi_squad])
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?xlsx=true")
@@ -379,6 +380,7 @@ class ProfileAPITestCase(APITestCase):
                 "user_roles",
                 "projects",
                 "phone_number",
+                "editable_org_unit_types",
             ],
         )
 
@@ -433,6 +435,15 @@ class ProfileAPITestCase(APITestCase):
                 },
                 "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.name, 6: None},
                 "phone_number": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
+                "editable_org_unit_types": {
+                    0: None,
+                    1: None,
+                    2: None,
+                    3: None,
+                    4: None,
+                    5: self.jedi_squad.pk,
+                    6: None,
+                },
             },
         )
 

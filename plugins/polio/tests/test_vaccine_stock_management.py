@@ -579,6 +579,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "usable_vials_used",
             "lot_numbers",
             "missing_vials",
+            "round",
         }
         self.assertTrue(expected_keys.issubset(first_result.keys()))
 

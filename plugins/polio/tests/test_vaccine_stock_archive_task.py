@@ -682,3 +682,47 @@ class TestVaccineStockArchive(TaskAPITestCase):
         self.assertEqual(archived_chad_round_2.unusable_doses_in, 0)
         self.assertEqual(archived_chad_round_2.usable_vials_in, 10)
         self.assertEqual(archived_chad_round_2.unusable_vials_in, 0)
+    
+    def test_archive_round_only_if_14_days_over(self):
+        self.client.force_authenticate(user=self.user)
+        #Less than 14 days after round 1 ended: no archive
+        response = self.client.post(
+            "/api/tasks/create/archivevaccinestock/",
+            {
+                "campaign": self.campaign_rdc_1.obr_name,
+                "vaccine": pm.VACCINES[0][0],  # mopv2, variables ato be renamed
+                "date": "2021-01-12",  # with this date, round 1 should be archived
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 200)
+        task = self.assertValidTaskAndInDB(response.json()["task"], status="QUEUED", name="archive_vaccine_stock")
+        self.assertEqual(task.launcher, self.user)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
+        archived_round = pm.VaccineStockHistory.objects.filter(
+            round_id=self.campaign_rdc_1_round_1, vaccine_stock__vaccine=pm.VACCINES[0][0]
+        ).first()
+        self.assertIsNone(archived_round)
+        
+        # More than 14 days --> archive
+        response = self.client.post(
+            "/api/tasks/create/archivevaccinestock/",
+            {
+                "campaign": self.campaign_rdc_1.obr_name,
+                "vaccine": pm.VACCINES[0][0],  # mopv2, variables ato be renamed
+                "date": "2021-01-26",  # with this date, round 1 should be archived
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 200)
+        task = self.assertValidTaskAndInDB(response.json()["task"], status="QUEUED", name="archive_vaccine_stock")
+        self.assertEqual(task.launcher, self.user)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
+        archived_round = pm.VaccineStockHistory.objects.filter(
+            round_id=self.campaign_rdc_1_round_1, vaccine_stock__vaccine=pm.VACCINES[0][0]
+        ).first()
+        self.assertIsNotNone(archived_round)

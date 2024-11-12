@@ -14,11 +14,10 @@ logger = logging.getLogger(__name__)
 def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vaccine=None, task=None):
     task_start = datetime.now()
     account = task.launcher.iaso_profile.account
-    reference_date = task_start - timedelta(days=14)
-    if date:
-        reference_date = date
+    reference_date = datetime.strptime(date,"%Y-%m-%d") if date else task_start
+    round_end_date = reference_date - timedelta(days=14)
 
-    rounds_qs = Round.objects.filter(ended_at__lte=reference_date, campaign__account=account)
+    rounds_qs = Round.objects.filter(ended_at__lte=round_end_date, campaign__account=account)
 
     if country:
         rounds_qs = rounds_qs.filter(campaign__country__id=country)

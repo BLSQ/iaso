@@ -20,6 +20,9 @@ import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRou
 import Input from '@mui/icons-material/Input';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
+import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
+import RuleIcon from '@mui/icons-material/Rule';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
@@ -54,7 +57,7 @@ import { DropdownOptions } from '../types/utils';
 import { PluginsContext } from '../utils';
 import { useCurrentUser } from '../utils/usersUtils';
 import MESSAGES from './messages';
-import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG, CONFIGURATION } from './urls';
+import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG } from './urls';
 
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
@@ -106,22 +109,30 @@ const menuItems = (
                     icon: props => <AssessmentIcon {...props} />,
                 },
                 {
+                    label: formatMessage(MESSAGES.stats),
+                    key: 'stats',
+                    icon: props => <QueryStatsIcon {...props} />,
+                    subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.completeness),
+                            permissions: paths.completenessPath.permissions,
+                            key: 'completeness',
+                            icon: props => <DoneAll {...props} />,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.completenessStats),
+                            permissions:
+                                paths.completenessStatsPath.permissions,
+                            key: 'completenessStats',
+                            icon: props => <DoneAll {...props} />,
+                        },
+                    ],
+                },
+                {
                     label: formatMessage(MESSAGES.dhis2Mappings),
                     permissions: paths.mappingsPath.permissions,
                     key: 'mappings',
                     icon: props => <DHIS2Svg {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.completeness),
-                    permissions: paths.completenessPath.permissions,
-                    key: 'completeness',
-                    icon: props => <DoneAll {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.completenessStats),
-                    permissions: paths.completenessStatsPath.permissions,
-                    key: 'completenessStats',
-                    icon: props => <DoneAll {...props} />,
                 },
             ],
         },
@@ -138,35 +149,95 @@ const menuItems = (
                     icon: props => <FormatListBulleted {...props} />,
                 },
                 {
-                    label: formatMessage(MESSAGES.reviewChangeProposals),
-                    permissions: paths.orgUnitChangeRequestPath.permissions,
-                    key: CHANGE_REQUEST,
-                    icon: props => <CategoryIcon {...props} />,
-                },
-                {
                     label: formatMessage(MESSAGES.registry),
                     permissions: paths.registryPath.permissions,
                     key: 'registry',
                     icon: props => <MenuBookIcon {...props} />,
                 },
                 {
-                    label: formatMessage(MESSAGES.groups),
-                    permissions: paths.groupsPath.permissions,
-                    key: 'groups',
-                    icon: props => <GroupIcon {...props} />,
+                    label: formatMessage(MESSAGES.configuration),
+                    key: 'configuration',
+                    icon: props => <SettingsSuggestIcon {...props} />,
+                    subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.orgUnitType),
+                            permissions: paths.orgUnitTypesPath.permissions,
+                            key: 'types',
+                            icon: props => <CategoryIcon {...props} />,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.groups),
+                            permissions: paths.groupsPath.permissions,
+                            key: 'groups',
+                            icon: props => <GroupIcon {...props} />,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.groupSets),
+                            permissions: paths.groupSetsPath.permissions,
+                            key: 'groupSets',
+                            icon: props => <GroupWork {...props} />,
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            label: formatMessage(MESSAGES.payments),
+            key: 'payments',
+            icon: props => <PaymentsIcon {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.potentialPayments),
+                    permissions: paths.potentialPaymentsPath.permissions,
+                    key: 'potential',
+                    icon: props => <PriceCheckIcon {...props} />,
                 },
                 {
-                    label: formatMessage(MESSAGES.groupSets),
-                    permissions: paths.groupSetsPath.permissions,
-                    key: 'groupSets',
-                    icon: props => <GroupWork {...props} />,
+                    label: formatMessage(MESSAGES.lots),
+                    permissions: paths.potentialPaymentsPath.permissions,
+                    key: 'lots',
+                    icon: props => <AccountBalanceIcon {...props} />,
                 },
+            ],
+        },
+        {
+            label: formatMessage(MESSAGES.validation),
+            icon: props => <RuleIcon {...props} />,
+            key: 'validation',
+            subMenu: [
                 {
-                    label: formatMessage(MESSAGES.orgUnitType),
-                    permissions: paths.orgUnitTypesPath.permissions,
-                    key: 'types',
+                    label: formatMessage(MESSAGES.reviewChangeProposals),
+                    permissions: paths.orgUnitChangeRequestPath.permissions,
+                    key: CHANGE_REQUEST,
                     icon: props => <CategoryIcon {...props} />,
                 },
+                {
+                    label: formatMessage(MESSAGES.changeRequestConfig),
+                    permissions:
+                        paths.orgUnitsChangeRequestConfiguration.permissions,
+                    key: `${CHANGE_REQUEST_CONFIG}`,
+                    icon: props => <CategoryIcon {...props} />,
+                },
+            ],
+        },
+        {
+            label: formatMessage(MESSAGES.planning),
+            key: 'planning',
+            icon: props => <AssignmentIcon {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.planningList),
+                    permissions: paths.planningPath.permissions,
+                    key: 'list',
+                    icon: props => <FormatListBulleted {...props} />,
+                },
+            ],
+        },
+        {
+            label: formatMessage(MESSAGES.config),
+            key: 'settings',
+            icon: props => <Settings {...props} />,
+            subMenu: [
                 {
                     label: formatMessage(MESSAGES.dataSources),
                     key: 'sources',
@@ -204,96 +275,10 @@ const menuItems = (
                     ],
                 },
                 {
-                    label: formatMessage(MESSAGES.configuration),
-                    key: CHANGE_REQUEST_CONFIG,
-                    icon: props => <Settings {...props} />,
-                    subMenu: [
-                        {
-                            label: formatMessage(MESSAGES.changeRequestConfig),
-                            permissions:
-                                paths.orgUnitsChangeRequestConfiguration
-                                    .permissions,
-                            key: CONFIGURATION,
-                            icon: props => <CategoryIcon {...props} />,
-                        },
-                    ],
-                },
-            ],
-        },
-        {
-            label: formatMessage(MESSAGES.beneficiaries),
-            key: 'entities',
-            icon: props => <BeneficiarySvg {...props} />,
-            subMenu: [
-                {
-                    label: formatMessage(MESSAGES.entityTypesTitle),
-                    permissions: paths.entityTypesPath.permissions,
-                    key: 'types',
-                    icon: props => <CategoryIcon {...props} />,
-                },
-                { ...beneficiariesListEntry },
-                {
-                    label: formatMessage(MESSAGES.entityDuplicatesTitle),
-                    permissions: paths.entityDuplicatesPath.permissions,
-                    key: 'duplicates',
-                    icon: props => <FileCopyIcon {...props} />,
-                },
-            ],
-        },
-        {
-            label: formatMessage(MESSAGES.storages),
-            key: 'storages',
-            permissions: paths.storagesPath.permissions,
-            icon: props => <StorageIcon {...props} />,
-        },
-        {
-            label: formatMessage(MESSAGES.payments),
-            key: 'payments',
-            icon: props => <PaymentsIcon {...props} />,
-            subMenu: [
-                {
-                    label: formatMessage(MESSAGES.potentialPayments),
-                    permissions: paths.potentialPaymentsPath.permissions,
-                    key: 'potential',
-                    icon: props => <PriceCheckIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.lots),
-                    permissions: paths.potentialPaymentsPath.permissions,
-                    key: 'lots',
-                    icon: props => <AccountBalanceIcon {...props} />,
-                },
-            ],
-        },
-        {
-            label: formatMessage(MESSAGES.planning),
-            key: 'planning',
-            icon: props => <AssignmentIcon {...props} />,
-            subMenu: [
-                {
-                    label: formatMessage(MESSAGES.planningList),
-                    permissions: paths.planningPath.permissions,
-                    key: 'list',
-                    icon: props => <FormatListBulleted {...props} />,
-                },
-            ],
-        },
-        {
-            label: formatMessage(MESSAGES.config),
-            key: 'settings',
-            icon: props => <Settings {...props} />,
-            subMenu: [
-                {
                     label: formatMessage(MESSAGES.tasks),
                     key: 'tasks',
                     permissions: paths.tasksPath.permissions,
                     icon: props => <AssignmentRoundedIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.monitoring),
-                    key: 'devices',
-                    permissions: paths.devicesPath.permissions,
-                    icon: props => <ImportantDevicesRoundedIcon {...props} />,
                 },
                 {
                     label: formatMessage(MESSAGES.projects),
@@ -325,21 +310,53 @@ const menuItems = (
                             permissions: paths.usersHistoryPath.permissions,
                             icon: props => <HistoryIcon {...props} />,
                         },
+                        {
+                            label: formatMessage(MESSAGES.userRoles),
+                            key: 'userRoles',
+                            permissions: paths.userRolesPath.permissions,
+                            icon: props => <GroupsIcon {...props} />,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.teams),
+                            permissions: paths.teamsPath.permissions,
+                            key: 'teams',
+                            icon: props => <Diversity3Icon {...props} />,
+                        },
                     ],
                 },
                 {
-                    label: formatMessage(MESSAGES.userRoles),
-                    key: 'userRoles',
-                    permissions: paths.userRolesPath.permissions,
-                    icon: props => <GroupsIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.teams),
-                    permissions: paths.teamsPath.permissions,
-                    key: 'teams',
-                    icon: props => <Diversity3Icon {...props} />,
+                    label: formatMessage(MESSAGES.monitoring),
+                    key: 'devices',
+                    permissions: paths.devicesPath.permissions,
+                    icon: props => <ImportantDevicesRoundedIcon {...props} />,
                 },
             ],
+        },
+        {
+            label: formatMessage(MESSAGES.beneficiaries),
+            key: 'entities',
+            icon: props => <BeneficiarySvg {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.entityTypesTitle),
+                    permissions: paths.entityTypesPath.permissions,
+                    key: 'types',
+                    icon: props => <CategoryIcon {...props} />,
+                },
+                { ...beneficiariesListEntry },
+                {
+                    label: formatMessage(MESSAGES.entityDuplicatesTitle),
+                    permissions: paths.entityDuplicatesPath.permissions,
+                    key: 'duplicates',
+                    icon: props => <FileCopyIcon {...props} />,
+                },
+            ],
+        },
+        {
+            label: formatMessage(MESSAGES.storages),
+            key: 'storages',
+            permissions: paths.storagesPath.permissions,
+            icon: props => <StorageIcon {...props} />,
         },
     ];
 };

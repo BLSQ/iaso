@@ -217,6 +217,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Change Request',
         id: 'iaso.label.changeRequestConfig',
     },
+    stats: {
+        defaultMessage: 'Stats',
+        id: 'iaso.label.stats',
+    },
+    validation: {
+        defaultMessage: 'Validation',
+        id: 'iaso.label.validation',
+    },
 });
 
 export default MESSAGES;

@@ -393,6 +393,7 @@
     "iaso.instance.queryBuilder": "Search in submitted fields",
     "iaso.instance.removeLockAction": "Unlock the submission",
     "iaso.instance.selectedOrgUnit": "Selected Org unit",
+    "iaso.instance.selectVersionToCompare": "Please select the version to compare",
     "iaso.instance.source_created_at": "Created on device",
     "iaso.instance.table.label.instanceHeaderTooltip": "Label: {label} - Name: {key}",
     "iaso.instance.title": "Submissions",

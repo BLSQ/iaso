@@ -303,7 +303,7 @@ class ETL:
             missed_followup_visit = self.missed_followup_visit(
                 visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
             )
-        if missed_followup_visit > 0 and next_visit_date != "" and nextSecondVisitDate != "":
+        if missed_followup_visit > 1 and next_visit_date != "" and nextSecondVisitDate != "":
             exit = {"exit_type": "defaulter", "end_date": nextSecondVisitDate}
         return exit
 

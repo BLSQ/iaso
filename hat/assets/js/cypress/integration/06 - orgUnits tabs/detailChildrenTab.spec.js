@@ -229,7 +229,7 @@ describe('children tab', () => {
         });
 
         it('should render correct row infos', () => {
-            cy.wait('@getOuDetail').then(() => {
+            cy.wait('@getChildrenPage1').then(() => {
                 testRowContent(0);
             });
         });

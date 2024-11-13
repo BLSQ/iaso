@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Download',
         id: 'iaso.label.download',
     },
+    pageInfo: {
+        defaultMessage: 'Page {current} of {total}',
+        id: 'iaso.label.pageInfo',
+    },
 });
 
 export default MESSAGES;

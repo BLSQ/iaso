@@ -1,4 +1,4 @@
-What problem is this PR resolving? Explain here in one sentence.
+What problem is this PR solving? Explain here in one sentence.
 
 Related JIRA tickets : IA-XXX, WC2-XXX, POLIO-XXX
 

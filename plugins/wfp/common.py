@@ -298,7 +298,7 @@ class ETL:
 
             if next_visit_date is not None and next_visit_date != "":
                 nextSecondVisitDate = datetime.strptime(next_visit_date[:10], "%Y-%m-%d").date() + timedelta(
-                    days=int(next_visit_days) + 1
+                    days=int(next_visit_days)
                 )
             missed_followup_visit = self.missed_followup_visit(
                 visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days

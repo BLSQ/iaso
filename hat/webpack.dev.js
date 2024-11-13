@@ -297,10 +297,6 @@ module.exports = {
             react: path.resolve(__dirname, '../node_modules/react'),
             'react-dom': path.resolve(__dirname, '../node_modules/react-dom'),
             'react-intl': path.resolve(__dirname, '../node_modules/react-intl'),
-            'react-redux': path.resolve(
-                __dirname,
-                '../node_modules/react-redux',
-            ),
             '@mui': path.resolve(__dirname, '../node_modules/@mui'),
             'bluesquare-components': path.resolve(
                 __dirname,

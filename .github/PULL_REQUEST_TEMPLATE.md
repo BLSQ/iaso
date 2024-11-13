@@ -45,3 +45,22 @@ Things that the reviewers should know:
 - does the PR depends on a PR in [bluesquare-components](https://github.com/BLSQ/bluesquare-components)?
 - should the PR be merged into another PR?
 
+## Follow the Conventional Commits specification
+
+The **merge message** of a pull request must follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
+
+This convention helps to automatically generate release notes.
+
+Use lowercase for consistency.
+
+[Example](https://github.com/BLSQ/iaso/commit/8b8d7d3064138c1e57878f17b4eb922516ab0112):
+
+```
+fix: empty instance pop up
+
+Refs: IA-3665
+```
+
+Note that the Jira reference is preceded by a _line break_.
+
+Both the line break and the Jira reference are entered in the _Add an optional extended description…_ field.

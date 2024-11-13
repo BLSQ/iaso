@@ -94,22 +94,22 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                 ...params,
             };
             const logADropDownValue = instanceLogsDropdown?.slice(-1)[0]?.value;
-            const loagBDropDownValue = instanceLogsDropdown[0]?.value;
+            const logBDropDownValue = instanceLogsDropdown[0]?.value;
             if (!params.logA && logADropDownValue) {
                 newParams.logA = logADropDownValue.toString();
             }
-            if (!params.logB && loagBDropDownValue) {
-                newParams.logB = loagBDropDownValue.toString();
+            if (!params.logB && logBDropDownValue) {
+                newParams.logB = logBDropDownValue.toString();
             }
             if (
                 (!params.logA && logADropDownValue) ||
-                (!params.logB && loagBDropDownValue)
+                (!params.logB && logBDropDownValue)
             ) {
                 redirectToReplace(baseUrls.compareInstanceLogs, newParams);
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [instanceLogsDropdown, params]);
+    }, [instanceLogsDropdown, params, redirectToReplace]);
+
     useEffect(() => {
         setLogAInitialValue(
             instanceLogsDropdown && instanceLogsDropdown?.slice(-1)[0]?.value,

@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import {
     useSafeIntl,
     LoadingSpinner,
@@ -49,53 +49,76 @@ export const InstanceLogInfos: FunctionComponent<Props> = ({
         useSafeIntl();
 
     const { data: currentOrgUnit } = useGetOrgUnitDetail(infos?.org_unit);
-    const firstLogInfos = [
-        // Modified by
-        {
-            label: formatMessage(MESSAGES.last_modified_by),
-            value: user ? getDisplayName(user) : textPlaceholder,
-            index: 1,
-        },
-        // Updated at
-        {
-            label: formatMessage(MESSAGES.updated),
-            value: moment(infos?.updated_at).format('LTS'),
-            index: 2,
-        },
-        // OrgUnit hyperlink
-        {
-            label: formatMessage(MESSAGES.org_unit),
-            value: <LinkToOrgUnit orgUnit={currentOrgUnit} />,
-            index: 3,
-        },
-        // Form hyperlink
-        {
-            label: formatMessage(MESSAGES.form),
-            value: <LinkToForm formId={infos?.form} formName={infos?.name} />,
-            index: 4,
-        },
-    ];
-    const secondLogInfos = [
-        // Form version
-        {
-            label: formatMessage(MESSAGES.form_version),
-            value: infos?.json._version,
-            index: 5,
-        },
-        // Period
-        {
-            label: formatMessage(MESSAGES.period),
-            value: formatPeriod(infos?.period),
-            index: 6,
-        },
-        // Deleted
-        {
-            label: formatMessage(MESSAGES.deleted),
-            value: formatMessage(infos?.deleted ? MESSAGES.yes : MESSAGES.no),
-            valueColor: infos?.deleted ? 'error' : 'inherit',
-            index: 7,
-        },
-    ];
+    const firstLogInfos = useMemo(
+        () => [
+            // Modified by
+            {
+                label: formatMessage(MESSAGES.last_modified_by),
+                value: user ? getDisplayName(user) : textPlaceholder,
+                index: 1,
+            },
+            // Updated at
+            {
+                label: formatMessage(MESSAGES.updated),
+                value: moment(infos?.updated_at).format('LTS'),
+                index: 2,
+            },
+            // OrgUnit hyperlink
+            {
+                label: formatMessage(MESSAGES.org_unit),
+                value: <LinkToOrgUnit orgUnit={currentOrgUnit} />,
+                index: 3,
+            },
+            // Form hyperlink
+            {
+                label: formatMessage(MESSAGES.form),
+                value: (
+                    <LinkToForm formId={infos?.form} formName={infos?.name} />
+                ),
+                index: 4,
+            },
+        ],
+        [
+            currentOrgUnit,
+            formatMessage,
+            infos?.form,
+            infos?.name,
+            infos?.updated_at,
+            user,
+        ],
+    );
+    const secondLogInfos = useMemo(
+        () => [
+            // Form version
+            {
+                label: formatMessage(MESSAGES.form_version),
+                value: infos?.json._version,
+                index: 5,
+            },
+            // Period
+            {
+                label: formatMessage(MESSAGES.period),
+                value: formatPeriod(infos?.period),
+                index: 6,
+            },
+            // Deleted
+            {
+                label: formatMessage(MESSAGES.deleted),
+                value: formatMessage(
+                    infos?.deleted ? MESSAGES.yes : MESSAGES.no,
+                ),
+                valueColor: infos?.deleted ? 'error' : 'inherit',
+                index: 7,
+            },
+        ],
+        [
+            formatMessage,
+            formatPeriod,
+            infos?.deleted,
+            infos?.json._version,
+            infos?.period,
+        ],
+    );
     return (
         <Box mt={2}>
             <Card>

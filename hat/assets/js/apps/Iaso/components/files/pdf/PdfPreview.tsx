@@ -25,6 +25,10 @@ if (!pdfjs.GlobalWorkerOptions.workerSrc) {
 
 type PdfPreviewProps = {
     pdfUrl?: string;
+    OpenButtonComponent?: React.ComponentType<{
+        onClick: () => void;
+        disabled: boolean;
+    }>;
 };
 
 const styles: SxStyles = {
@@ -62,7 +66,23 @@ const styles: SxStyles = {
     },
 };
 
-export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({ pdfUrl }) => {
+const DefaultOpenButton: FunctionComponent<{
+    onClick: () => void;
+    disabled: boolean;
+}> = ({ onClick, disabled }) => (
+    <IconButton
+        onClick={onClick}
+        aria-label="preview document"
+        disabled={disabled}
+    >
+        <PdfSvgComponent />
+    </IconButton>
+);
+
+export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
+    pdfUrl,
+    OpenButtonComponent,
+}) => {
     const [open, setOpen] = useState(false);
     const [numPages, setNumPages] = useState<number | null>(null);
     const [pageNumber, setPageNumber] = useState(1);
@@ -103,15 +123,11 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({ pdfUrl }) => {
         });
     };
 
+    const OpenButton = OpenButtonComponent || DefaultOpenButton;
+
     return (
         <>
-            <IconButton
-                onClick={handleOpen}
-                aria-label="preview document"
-                disabled={!pdfUrl}
-            >
-                <PdfSvgComponent />
-            </IconButton>
+            <OpenButton onClick={handleOpen} disabled={!pdfUrl} />
             {open && (
                 <Dialog
                     fullWidth

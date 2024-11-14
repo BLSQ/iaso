@@ -1,23 +1,25 @@
+from datetime import datetime
+
 from django.db.models import Q
-from rest_framework import serializers
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import permissions, serializers
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+
 from iaso.api.common import Paginator
 from plugins.polio.models import (
     Campaign,
-    VaccineRequestForm,
-    OutgoingStockMovement,
-    IncidentReport,
     DestructionReport,
+    IncidentReport,
+    OutgoingStockMovement,
     Round,
     VaccinePreAlert,
+    VaccineRequestForm,
 )
-from datetime import datetime
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 
 
 class VaccineReportingSerializer(serializers.Serializer):
@@ -84,6 +86,7 @@ class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
     filter_backends = [OrderingFilter, SearchFilter]
     ordering_fields = ["country_name", "campaign_obr_name", "start_date"]
     search_fields = ["country__name", "obr_name"]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     file_type_param = openapi.Parameter(
         "file_type",
@@ -99,7 +102,7 @@ class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
         type=openapi.TYPE_STRING,
     )
 
-    @method_decorator(cache_page(60 * 5))  # Cache for 5 minutes
+    # @method_decorator(cache_page(60 * 5))  # Cache for 5 minutes
     @swagger_auto_schema(manual_parameters=[file_type_param, campaign_status_param])
     def list(self, request, *args, **kwargs):
         if request.query_params.get("limit", None) is None:
@@ -108,9 +111,7 @@ class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
         return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = Campaign.objects.filter(
-            vaccinerequestform__isnull=False, account=self.request.user.iaso_profile.account
-        ).distinct("obr_name")
+        queryset = Campaign.objects.filter(vaccinerequestform__isnull=False).distinct("obr_name")
 
         # Filter by campaign status
         campaign_status = self.request.query_params.get("campaign_status", None)

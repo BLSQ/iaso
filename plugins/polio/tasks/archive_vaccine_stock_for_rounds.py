@@ -12,8 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 def archive_stock_for_round(round, vaccine_stock, reference_date, country=None):
+    vaccine_stock_for_vaccine = vaccine_stock
     if not country:
-        vaccine_stock_for_vaccine = vaccine_stock.filter(country=round.campaign.country.id)
+        vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.filter(country=round.campaign.country.id)
 
     if vaccine_stock_for_vaccine.exists():
         vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.first()
@@ -74,6 +75,7 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
         if country:
             vaccine_stock = VaccineStock.objects.filter(country__id=country)
         for r in vax_rounds_qs:
+            print("ROUND", r.number)
             archive_stock_for_round(
-                round=r, reference_date=reference_date, vaccine_stock=vaccine_stock, vaccine=vax, country=country
+                round=r, reference_date=reference_date, vaccine_stock=vaccine_stock, country=country
             )

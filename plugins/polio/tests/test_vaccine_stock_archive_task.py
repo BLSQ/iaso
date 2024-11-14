@@ -205,7 +205,6 @@ class TestVaccineStockArchive(TaskAPITestCase):
             obr_name="CHAD_CAMPAIGN_1",
             country=cls.org_unit_CHAD,
             account=cls.account,
-            # vacine=pm.VACCINES[1][0],
             separate_scopes_per_round=True,
         )
 
@@ -258,11 +257,27 @@ class TestVaccineStockArchive(TaskAPITestCase):
             date_dg_approval=cls.now - datetime.timedelta(days=10),
             quantities_ordered_in_doses=500,
         )
+        cls.vaccine_request_form_chad_2 = pm.VaccineRequestForm.objects.create(
+            campaign=cls.campaign_chad_1,
+            vaccine_type=pm.VACCINES[0][0],
+            date_vrf_reception=cls.now - datetime.timedelta(days=30),
+            date_vrf_signature=cls.now - datetime.timedelta(days=20),
+            date_dg_approval=cls.now - datetime.timedelta(days=10),
+            quantities_ordered_in_doses=500,
+        )
+
         cls.vaccine_request_form_chad_1.rounds.set(
             [
                 cls.campaign_chad_1_round_1,
+                # cls.campaign_chad_1_round_2,
+                # cls.campaign_chad_1_round_3,
+            ]
+        )
+        cls.vaccine_request_form_chad_2.rounds.set(
+            [
+                # cls.campaign_chad_1_round_1,
                 cls.campaign_chad_1_round_2,
-                cls.campaign_chad_1_round_3,
+                # cls.campaign_chad_1_round_3,
             ]
         )
         cls.vaccine_arrival_report_chad_1 = pm.VaccineArrivalReport.objects.create(
@@ -331,13 +346,13 @@ class TestVaccineStockArchive(TaskAPITestCase):
             unusable_vials=0,
             usable_vials=10,  # 500 doses
         )
-        cls.incident_report_rdc_chad_nopv_5 = pm.IncidentReport.objects.create(
+        cls.incident_report_rdc_chad_mopv = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_chad_mopv,
             stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
             date_of_incident_report=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
-            usable_vials=10,  # 000 doses
+            usable_vials=10,  # 100 doses
         )
 
         # Other account

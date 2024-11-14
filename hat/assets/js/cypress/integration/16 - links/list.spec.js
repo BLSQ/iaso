@@ -3,7 +3,7 @@
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import { testPermission } from '../../support/testPermission';
 import { testTopBar } from '../../support/testTopBar';
-import orgUnitTypes from '../../fixtures/orgunittypes/list.json';
+import orgUnitTypes from '../../fixtures/orgunittypes/dropdown-list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -15,7 +15,7 @@ describe('Links', () => {
         cy.intercept('GET', '/api/algorithms/', []).as('algorithms');
         cy.intercept('GET', '/api/algorithmsruns/', []).as('runs');
         cy.intercept('GET', '/api/datasources/', []).as('dataSources');
-        cy.intercept('GET', '/api/v2/orgunittypes/', orgUnitTypes).as(
+        cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', orgUnitTypes).as(
             'orgUnitTypes',
         );
         cy.intercept('GET', '/api/profiles/me/**', superUser);

@@ -27,8 +27,8 @@ const goToPage = (
         fixture,
     }).as('getForms');
 
-    cy.intercept('GET', '/api/v2/orgunittypes/**', {
-        fixture: 'orgunittypes/list.json',
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/**', {
+        fixture: 'orgunittypes/dropdown-list.json',
     }).as('getTypes');
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',

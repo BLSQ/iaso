@@ -9,6 +9,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 
+import classNames from 'classnames';
 import { FileContent } from '../../types/instance';
 import MESSAGES from '../messages';
 import InstanceLogContentBodyTable from './InstanceLogContentBodyTable';
@@ -24,9 +25,20 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: 'transparent',
         borderTop: 'none !important',
         borderLeft: 'none !important',
-        borderRight: 'none !important',
+        // @ts-ignore
+        borderRight: `1px solid ${theme.palette.ligthGray.border}  !important`,
         // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+    },
+    labelTableCellFixWith: {
+        width: '25.35%',
+        maxWidth: '25.35%',
+        minWidth: '25.35%',
+    },
+    versionValueTableCellFix: {
+        width: '37.35%',
+        maxWidth: '37.35%',
+        minWidth: '37.35%',
     },
 }));
 
@@ -42,10 +54,22 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
         <Table>
             <TableHead>
                 <TableRow>
-                    <TableCell align="left" className={classes.tableCellHead}>
+                    <TableCell
+                        align="left"
+                        className={classNames(
+                            classes.tableCellHead,
+                            classes.labelTableCellFixWith,
+                        )}
+                    >
                         {formatMessage(MESSAGES.label)}
                     </TableCell>
-                    <TableCell align="left" className={classes.tableCellHead}>
+                    <TableCell
+                        align="left"
+                        className={classNames(
+                            classes.tableCellHead,
+                            classes.versionValueTableCellFix,
+                        )}
+                    >
                         <Typography
                             color={
                                 fileContent?.logA?.deleted ? 'error' : 'inherit'
@@ -54,7 +78,13 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                             {formatMessage(MESSAGES.instanceLogsVersionA)}
                         </Typography>
                     </TableCell>
-                    <TableCell align="left" className={classes.tableCellHead}>
+                    <TableCell
+                        align="left"
+                        className={classNames(
+                            classes.tableCellHead,
+                            classes.versionValueTableCellFix,
+                        )}
+                    >
                         <Typography
                             color={
                                 fileContent?.logB?.deleted ? 'error' : undefined

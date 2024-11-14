@@ -29,6 +29,7 @@ def archive_stock_for_round(round, vaccine_stock, reference_date, country=None):
                 unusable_vials_in=total_unusable_vials_in,
                 unusable_doses_in=total_unusable_doses_in,
             )
+        # TODO: rmeove dupliacte rounds, improve error handling
         except IntegrityError:
             print("--------------------------------------------")
             print(f"Error with {round.campaign.obr_name}, round {round.number}")

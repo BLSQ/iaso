@@ -1278,6 +1278,7 @@ class VaccineStockHistory(models.Model):
 # Form A
 class OutgoingStockMovement(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
     vaccine_stock = models.ForeignKey(
         VaccineStock, on_delete=models.CASCADE
     )  # Country can be deduced from the campaign

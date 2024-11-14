@@ -5,8 +5,8 @@ from dateutil.relativedelta import *
 
 
 class ETL:
-    def __init__(self, type=None):
-        self.type = type
+    def __init__(self, types=None):
+        self.types = types
 
     def delete_beneficiaries(self):
         beneficiary = Beneficiary.objects.all().delete()
@@ -16,13 +16,16 @@ class ETL:
         print("EXISTING VISITS DELETED", beneficiary[1]["wfp.Visit"])
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
+    def account_related_to_entity_type(self):
+        entity_type = EntityType.objects.filter(code__in=self.types)
+        account = Account.objects.get(id=entity_type[0].account_id)
+        return account
+
     def retrieve_entities(self):
         steps_id = ETL().steps_to_exclude()
         updated_at = date(2023, 7, 10)
         beneficiaries = (
-            Instance.objects.filter(entity__entity_type__code=self.type)
-            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226, 254,315, 424, 430, 431, 408, 19, 230, 359])
-            # .filter(entity__id__in=[230, 359, 254])
+            Instance.objects.filter(entity__entity_type__code__in=self.types)
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)
@@ -92,6 +95,8 @@ class ETL:
                         program = visit.get("program")
                     else:
                         program = ""
+                else:
+                    program = visit.get("program")
             elif visit.get("program_two") is not None and visit.get("program_two") != "NONE":
                 program = visit.get("program_two", None)
             elif visit.get("discharge_program") is not None and visit.get("discharge_program") != "NONE":
@@ -302,7 +307,9 @@ class ETL:
 
     def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey, visits, index):
         default_anthropometric_followup_forms = followup_forms
-        if visit["form_id"] == anthropometric_visit_form:
+        default_admission_form = None
+        if visit["form_id"] in anthropometric_visit_form:
+            default_admission_form = visit["form_id"]
             current_journey["instance_id"] = visit.get("instance_id", None)
             current_journey["start_date"] = visit.get("start_date", None)
             current_journey["initial_weight"] = visit.get("initial_weight", None)
@@ -316,7 +323,7 @@ class ETL:
             current_journey["programme_type"] = self.program_mapper(visit)
             current_journey["org_unit_id"] = visit.get("org_unit_id")
             current_journey["visits"].append(visit)
-        followup_forms.append(anthropometric_visit_form)
+        followup_forms.append(default_admission_form)
         exit = None
 
         if visit["form_id"] in followup_forms:
@@ -369,7 +376,6 @@ class ETL:
 
     def map_assistance_step(self, step, given_assistance):
         quantity = 1
-
         if (step.get("net_given") is not None and step.get("net_given") == "yes") or (
             step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1"
         ):
@@ -390,17 +396,37 @@ class ETL:
             assistance = {"type": step.get("medicine_given"), "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("medication", None) is not None and step.get("medication", None) != "":
+        if step.get("medication") is not None and step.get("medication") != "":
             given_medication = self.split_given_medication(step.get("medication"), quantity)
             given_assistance = given_assistance + given_medication
 
-        if step.get("medicine_given_2") is not None:
+        if step.get("medicine_given_2") is not None and step.get("medicine_given_2") != "":
             assistance = {"type": step.get("medicine_given_2"), "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("medication_2", None) is not None and step.get("medication_2", None) != "":
+        if step.get("medication_2") is not None and step.get("medication_2") != "":
             given_medication = self.split_given_medication(step.get("medication_2"), quantity)
             given_assistance = given_assistance + given_medication
+
+        if step.get("vitamins_given") == "1":
+            assistance = {"type": "Vitamin", "quantity": quantity}
+            given_assistance.append(assistance)
+
+        if step.get("ab_given") == "1":
+            assistance = {"type": "albendazole", "quantity": quantity}
+            given_assistance.append(assistance)
+
+        if step.get("measles_vacc") == "1":
+            assistance = {"type": "Measles vaccination", "quantity": quantity}
+            given_assistance.append(assistance)
+
+        if step.get("art_given") == "1":
+            assistance = {"type": "ART", "quantity": quantity}
+            given_assistance.append(assistance)
+
+        if step.get("anti_helminth_given") is not None and step.get("anti_helminth_given") != "":
+            assistance = {"type": step.get("anti_helminth_given"), "quantity": quantity}
+            given_assistance.append(assistance)
 
         if step.get("ration_to_distribute") is not None or step.get("ration") is not None:
             quantity = 0
@@ -435,6 +461,19 @@ class ETL:
                 "quantity": quantity,
             }
             given_assistance.append(assistance)
+        elif step.get("ration_type"):
+            if step.get("ration_type") in ["csb", "csb1", "csb2"]:
+                quantity = step.get("_csb_packets")
+            elif step.get("ration_type") == "lndf":
+                quantity = step.get("_lndf_kgs")
+            else:
+                quantity = step.get("_total_number_of_sachets", None)
+            assistance = {
+                "type": step.get("ration_type"),
+                "quantity": quantity,
+            }
+            given_assistance.append(assistance)
+
         return list(
             filter(
                 lambda assistance: (assistance.get("type") and assistance.get("type") != ""),
@@ -536,3 +575,61 @@ class ETL:
             elif age_entry == "months":
                 calculated_date = registered_at - relativedelta(months=beneficiary_age)
         return calculated_date
+
+    def entity_journey_mapper(self, visits, anthropometric_visit_forms, admission_form, current_journey):
+        journey = []
+        for index, visit in enumerate(visits):
+            if visit:
+                current_journey["weight_gain"] = visit.get("weight_gain", None)
+                current_journey["weight_loss"] = visit.get("weight_loss", None)
+                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
+                    current_journey["duration"] = visit.get("duration")
+
+                current_journey = ETL().journey_Formatter(
+                    visit, admission_form, anthropometric_visit_forms, current_journey, visits, index
+                )
+            current_journey["steps"].append(visit)
+        journey.append(current_journey)
+        return journey
+
+    def compute_gained_weight(self, initial_weight, current_weight, duration):
+        weight_gain = 0
+        weight_loss = 0
+
+        weight_difference = 0
+        if initial_weight is not None and current_weight is not None and current_weight != "":
+            initial_weight = float(initial_weight)
+            current_weight = float(current_weight)
+            weight_difference = round(((current_weight * 1000) - (initial_weight * 1000)), 4)
+            if weight_difference >= 0:
+                if duration == 0:
+                    weight_gain = 0
+                elif duration > 0 and current_weight > 0 and initial_weight > 0:
+                    weight_gain = round((weight_difference / (initial_weight * float(duration))), 4)
+            elif weight_difference < 0:
+                weight_loss = abs(weight_difference)
+        return {
+            "initial_weight": float(initial_weight) if initial_weight is not None else initial_weight,
+            "discharge_weight": (
+                float(current_weight) if current_weight is not None and current_weight != "" else current_weight
+            ),
+            "weight_difference": weight_difference,
+            "weight_gain": weight_gain,
+            "weight_loss": weight_loss / 1000,
+        }
+
+    def save_entity_journey(self, journey, beneficiary, record, entity_type):
+        journey.beneficiary = beneficiary
+        journey.programme_type = entity_type
+        journey.admission_criteria = record["admission_criteria"]
+        journey.admission_type = record.get("admission_type", None)
+        journey.nutrition_programme = record["nutrition_programme"]
+        journey.exit_type = record.get("exit_type", None)
+        journey.instance_id = record.get("instance_id", None)
+        journey.start_date = record.get("start_date", None)
+        journey.end_date = record.get("end_date", None)
+        journey.duration = record.get("duration", None)
+
+        journey.save()
+
+        return journey

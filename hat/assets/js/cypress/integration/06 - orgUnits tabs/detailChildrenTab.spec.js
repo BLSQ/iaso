@@ -109,7 +109,8 @@ const testRowContent = (
     cy.get('@row')
         .find('td')
         .eq(5)
-        .should('contain', orgunitDetailChildrenValidationStatus);
+        .should('be.visible')
+        .and('contain', orgunitDetailChildrenValidationStatus);
     cy.get('@row')
         .find('td')
         .eq(6)
@@ -154,8 +155,8 @@ const goToPage = () => {
         });
     });
 
-    cy.intercept('GET', '/api/v2/orgunittypes/', {
-        fixture: `orgunittypes/list.json`,
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', {
+        fixture: `orgunittypes/dropdown-list.json`,
     });
     cy.intercept('GET', '/api/groups/**', {
         fixture: `groups/list.json`,
@@ -182,6 +183,9 @@ const goToPage = () => {
     });
     cy.intercept('GET', '/sockjs-node/**');
 
+    cy.intercept('GET', '/api/validationstatus/', {
+        fixture: `misc/validationStatuses.json`,
+    }).as('statuses');
     cy.visit(baseUrl);
 };
 describe('children tab', () => {
@@ -228,9 +232,11 @@ describe('children tab', () => {
         });
 
         it('should render correct row infos', () => {
-            cy.wait('@getOuDetail').then(() => {
-                testRowContent(0);
-            });
+            cy.wait(['@getChildrenPage1', '@getOuDetail', '@statuses']).then(
+                () => {
+                    testRowContent(0);
+                },
+            );
         });
 
         testPagination({

@@ -585,7 +585,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         columns = [{"title": column} for column in BULK_CREATE_USER_COLUMNS_LIST]
 
         def get_row(profile: Profile, **_) -> List[Any]:
-            org_units = profile.org_units.all().order_by("id")
+            org_units = profile.org_units.order_by("id").only("id", "source_ref")
+            editable_org_unit_types_pks = profile.editable_org_unit_types.order_by("id").values_list("id", flat=True)
 
             return [
                 profile.user.username,
@@ -605,6 +606,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 ),
                 ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
                 (f"'{profile.phone_number}'" if profile.phone_number else None),
+                ",".join(str(pk) for pk in editable_org_unit_types_pks),
             ]
 
         filename = "users"

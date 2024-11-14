@@ -183,6 +183,9 @@ const goToPage = () => {
     });
     cy.intercept('GET', '/sockjs-node/**');
 
+    cy.intercept('GET', '/api/validationstatus/', {
+        fixture: `misc/validationStatuses.json`,
+    }).as('statuses');
     cy.visit(baseUrl);
 };
 describe('children tab', () => {
@@ -229,9 +232,11 @@ describe('children tab', () => {
         });
 
         it('should render correct row infos', () => {
-            cy.wait(['@getChildrenPage1', '@getOuDetail']).then(() => {
-                testRowContent(0);
-            });
+            cy.wait(['@getChildrenPage1', '@getOuDetail', '@statuses']).then(
+                () => {
+                    testRowContent(0);
+                },
+            );
         });
 
         testPagination({

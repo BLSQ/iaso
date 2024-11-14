@@ -5,9 +5,7 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from hat.menupermissions import models as permission
-from rest_framework import permissions
-from iaso.api.common import ModelViewSet, Paginator
+from iaso.api.common import Paginator
 from plugins.polio.models import (
     Campaign,
     VaccineRequestForm,
@@ -80,25 +78,7 @@ class VaccineReportingSerializer(serializers.Serializer):
         return []
 
 
-class VaccineReportingPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            can_get = (
-                request.user
-                and request.user.is_authenticated
-                and (
-                    request.user.has_perm(permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ)
-                    or request.user.has_perm(permission.POLIO_VACCINE_SUPPLY_CHAIN_READ)
-                )
-                or request.user.is_superuser
-            )
-            return can_get
-        else:
-            return False
-
-
 class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
-    permission_classes = [VaccineReportingPermission]
     serializer_class = VaccineReportingSerializer
     pagination_class = Paginator
     filter_backends = [OrderingFilter, SearchFilter]

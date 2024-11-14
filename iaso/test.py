@@ -3,6 +3,7 @@ import typing
 from unittest import mock
 
 from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
+from django.contrib.auth.models import AnonymousUser
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
@@ -106,6 +107,36 @@ class IasoTestCaseMixin:
         for urlconf in urlconfs:
             importlib.reload(importlib.import_module(urlconf))
         clear_url_caches()
+
+    @staticmethod
+    def create_base_users(account, permissions):
+        # anonymous user and user without needed permissions
+        anon = AnonymousUser()
+        user_no_perms = IasoTestCaseMixin.create_user_with_profile(
+            username="user_no_perm", account=account, permissions=[]
+        )
+
+        user = IasoTestCaseMixin.create_user_with_profile(username="user", account=account, permissions=permissions)
+        return [user, anon, user_no_perms]
+
+    @staticmethod
+    def create_account_datasource_version_project(source_name, account_name, project_name):
+        """Create a project and all related data: account, data source, source version"""
+        data_source = m.DataSource.objects.create(name=source_name)
+        source_version = m.SourceVersion.objects.create(data_source=data_source, number=1)
+        account = m.Account.objects.create(name=account_name, default_version=source_version)
+        project = m.Project.objects.create(name=project_name, app_id=f"{project_name}.app", account=account)
+        data_source.projects.set([project])
+
+        return [account, data_source, source_version, project]
+
+    @staticmethod
+    def create_org_unit_type(name, projects, category=None):
+        type_category = category if category else name
+        org_unit_type = m.OrgUnitType.objects.create(name=name, category=type_category)
+        org_unit_type.projects.set(projects)
+        org_unit_type.save()
+        return org_unit_type
 
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):

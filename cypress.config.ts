@@ -18,8 +18,8 @@ export default defineConfig({
             );
         },
         specPattern: [
-            './/hat/assets/js/cypress/integration/06 - orgUnits tabs/detailChildrenTab.spec.js',
-            // './/plugins/**/cypress/integration/**/*.js',
+            './/hat/assets/js/cypress/integration/**/*.js',
+            './/plugins/**/cypress/integration/**/*.js',
         ],
         supportFile: 'hat/assets/js/cypress/support/index.js',
         experimentalRunAllSpecs: true,

@@ -184,7 +184,16 @@ class MobileEntityViewSet(ModelViewSet):
         user = self.request.user
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
 
-        if user.id in [386, 394]:  # TEMP: Activate entity download for Bram
+        if user.username in [
+            "bjans",
+            "bram",
+            "bramregularuser",
+            "bramsuper",
+            "cseghers",
+            "cse_test",
+            "cse_vc",
+            "cse_cq",
+        ]:  # TEMP: Activate entity download for Bram
             queryset = filter_on_user_and_app_id(Entity.objects, user, app_id)
 
             queryset = filter_for_mobile_entity(queryset, self.request)

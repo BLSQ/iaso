@@ -71,9 +71,11 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
         vax_rounds_qs = vax_rounds_qs.exclude(
             id__in=VaccineStockHistory.objects.filter(vaccine_stock__vaccine=vax).values("round_id")
         )
+
         vaccine_stock = VaccineStock.objects.filter(vaccine=vax)
         if country:
-            vaccine_stock = VaccineStock.objects.filter(country__id=country)
+            vaccine_stock = vaccine_stock.filter(country__id=country)
+
         for r in vax_rounds_qs:
             archive_stock_for_round(
                 round=r, reference_date=reference_date, vaccine_stock=vaccine_stock, country=country

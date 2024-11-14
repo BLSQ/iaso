@@ -78,14 +78,6 @@ class TestVaccineStockArchive(TaskAPITestCase):
             source_ref="PvtAI4RUMkr",
         )
 
-        cls.org_unit_BE = m.OrgUnit.objects.create(
-            org_unit_type=cls.org_unit_type_country,
-            version=cls.source_version_1,
-            name="Belgium",
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
-        )
-
         cls.campaign_rdc_1 = pm.Campaign.objects.create(
             obr_name="RDC_CAMPAIGN_1",
             country=cls.org_unit_DRC,
@@ -353,35 +345,6 @@ class TestVaccineStockArchive(TaskAPITestCase):
             incident_report_received_by_rrt=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
             usable_vials=10,  # 100 doses
-        )
-
-        # Other account
-        cls.campaign_be_1 = pm.Campaign.objects.create(
-            obr_name="BE_CAMPAIGN_1",
-            country=cls.org_unit_BE,
-            account=cls.another_account,  # different account
-            vacine=pm.VACCINES[0][0],
-        )
-
-        cls.campaign_be_1_round_1 = pm.Round.objects.create(
-            campaign=cls.campaign_be_1,
-            started_at=datetime.datetime(2021, 1, 1),
-            ended_at=datetime.datetime(2021, 1, 10),
-        )
-
-        cls.campaign_be_1_round_2 = pm.Round.objects.create(
-            campaign=cls.campaign_be_1,
-            started_at=datetime.datetime(2021, 2, 1),
-            ended_at=datetime.datetime(2021, 2, 10),
-        )
-
-        cls.vaccine_request_form_be_1 = pm.VaccineRequestForm.objects.create(
-            campaign=cls.campaign_be_1,
-            vaccine_type=pm.VACCINES[0][0],
-            date_vrf_reception=cls.now - datetime.timedelta(days=1),
-            date_vrf_signature=cls.now,
-            date_dg_approval=cls.now,
-            quantities_ordered_in_doses=1000000,
         )
 
     def test_anonymous_user_cannot_launch_task(self):

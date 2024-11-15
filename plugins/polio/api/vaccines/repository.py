@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Q
+from django.db.models import Q, Min
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from drf_yasg import openapi
@@ -21,6 +21,9 @@ from plugins.polio.models import (
     VaccineRequestForm,
 )
 
+# "Not required" to be implemented if type is not required
+# Wait for return concerning which date to display
+
 
 class VaccineReportingSerializer(serializers.Serializer):
     country_name = serializers.CharField(source="country.name")
@@ -35,8 +38,7 @@ class VaccineReportingSerializer(serializers.Serializer):
     destruction_reports = serializers.SerializerMethodField()
 
     def get_start_date(self, obj):
-        first_round = Round.objects.filter(campaign=obj).order_by("started_at").first()
-        return first_round.started_at if first_round else None
+        return obj.started_at
 
     def get_rounds_count(self, obj):
         return Round.objects.filter(campaign=obj).count()
@@ -84,7 +86,7 @@ class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
     serializer_class = VaccineReportingSerializer
     pagination_class = Paginator
     filter_backends = [OrderingFilter, SearchFilter]
-    ordering_fields = ["country_name", "campaign_obr_name", "start_date"]
+    ordering_fields = ["country__name", "obr_name", "started_at"]
     search_fields = ["country__name", "obr_name"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
@@ -111,7 +113,9 @@ class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
         return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
-        queryset = Campaign.objects.filter(vaccinerequestform__isnull=False).distinct("obr_name")
+        queryset = Campaign.objects.filter(vaccinerequestform__isnull=False).annotate(
+            started_at=Min("rounds__started_at")
+        )
 
         # Filter by campaign status
         campaign_status = self.request.query_params.get("campaign_status", None)

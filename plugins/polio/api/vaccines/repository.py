@@ -83,6 +83,37 @@ class VaccineReportingSerializer(serializers.Serializer):
 
 
 class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
+    """
+    ViewSet for retrieving vaccine reporting data.
+
+    This ViewSet provides actions to retrieve reporting information for vaccine campaigns,
+    including VRFs, pre-alerts, Form As, incident reports and destruction reports.
+
+    Available endpoints:
+
+    GET /api/polio/vaccine/reporting/
+    Return a paginated list of campaigns with their associated reporting documents.
+    The list can be filtered by:
+    - File type (VRF, PRE_ALERT, FORM_A, INCIDENT, DESTRUCTION)
+    - Campaign status (ONGOING, PAST, PREPARING)
+    - Country block
+    - Country
+    - Campaign ID
+
+    The results can be ordered by:
+    - Country name ("country__name")
+    - OBR name ("obr_name")
+    - Start date ("started_at")
+
+    The response includes for each campaign:
+    - Basic campaign info (country, OBR name, dates)
+    - VRF data
+    - Pre-alert data
+    - Form A data
+    - Incident reports
+    - Destruction reports
+    """
+
     serializer_class = VaccineReportingSerializer
     pagination_class = Paginator
     filter_backends = [OrderingFilter, SearchFilter]
@@ -107,12 +138,31 @@ class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
     # @method_decorator(cache_page(60 * 5))  # Cache for 5 minutes
     @swagger_auto_schema(manual_parameters=[file_type_param, campaign_status_param])
     def list(self, request, *args, **kwargs):
+        """
+        Return a paginated list of campaigns with their reporting documents.
+
+        The list can be filtered by file type, campaign status, country block,
+        country and campaign ID. Results are paginated with a default page size of 10.
+        """
         if request.query_params.get("limit", None) is None:
             self.pagination_class.page_size = 10
 
         return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
+        """
+        Get the queryset for Campaign objects.
+
+        The queryset:
+        - Includes only campaigns that have VRFs
+        - Can be filtered by campaign status (ONGOING, PAST, PREPARING)
+        - Can be filtered by country block (give ids of org unit groups)
+        - Can be filtered by country (give country id)
+        - Can be filtered by campaign ID (give campaign OBR name)
+        - Can be filtered by document type (VRF, PRE_ALERT, FORM_A, INCIDENT, DESTRUCTION)
+
+        Returns annotated queryset with campaign start dates.
+        """
         queryset = Campaign.objects.filter(vaccinerequestform__isnull=False).annotate(
             started_at=Min("rounds__started_at")
         )
@@ -125,11 +175,13 @@ class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
                 queryset = queryset.filter(end_date__gte=today)
             elif campaign_status.upper() == "PAST":
                 queryset = queryset.filter(end_date__lt=today)
+            elif campaign_status.upper() == "PREPARING":
+                queryset = queryset.filter(start_date__gte=today)
 
         # Filter by country block
         country_block = self.request.query_params.get("country_block", None)
         if country_block:
-            queryset = queryset.filter(country__country_block=country_block)
+            queryset = queryset.filter(country__groups__in=country_block.split(","))
 
         # Filter by country
         country = self.request.query_params.get("country", None)
@@ -139,21 +191,21 @@ class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
         # Filter by campaign
         campaign = self.request.query_params.get("campaign", None)
         if campaign:
-            queryset = queryset.filter(id=campaign)
+            queryset = queryset.filter(obr_name=campaign)
 
         # Filter by file type
         file_type = self.request.query_params.get("file_type", None)
         if file_type:
             file_type = file_type.upper()
             if file_type == "VRF":
-                queryset = queryset.filter(vaccine_request_forms__isnull=False).distinct("id")
+                queryset = queryset.filter(vaccine_request_forms__isnull=False)
             elif file_type == "PRE_ALERT":
-                queryset = queryset.filter(vaccine_request_forms__is_pre_alert=True).distinct("id")
+                queryset = queryset.filter(vaccine_pre_alerts__isnull=False)
             elif file_type == "FORM_A":
-                queryset = queryset.filter(outgoing_stock_movements__isnull=False).distinct("id")
+                queryset = queryset.filter(outgoing_stock_movements__isnull=False)
             elif file_type == "INCIDENT":
-                queryset = queryset.filter(country__vaccine_stocks__incident_reports__isnull=False).distinct("id")
+                queryset = queryset.filter(country__vaccine_stocks__incident_reports__isnull=False)
             elif file_type == "DESTRUCTION":
-                queryset = queryset.filter(country__vaccine_stocks__destruction_reports__isnull=False).distinct("id")
+                queryset = queryset.filter(country__vaccine_stocks__destruction_reports__isnull=False)
 
         return queryset

@@ -7,7 +7,7 @@ import pytz
 from time import gmtime, strftime
 from typing import Any, List, Union
 
-from iaso.models.storage import StorageDevice, StorageLogEntry
+from iaso.models.storage import StorageDevice
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
 from django.db.models import Exists, Max, OuterRef, Q, Count
@@ -84,11 +84,8 @@ class EntitySerializer(serializers.ModelSerializer):
         return _get_duplicates(entity)
 
     def get_nfc_cards(self, entity: Entity):
-        nfc_log_entries_count = StorageDevice.objects.filter(entity=entity, type=StorageDevice.NFC).aggregate(
-            total_logs=Count("log_entries")
-        )["total_logs"]
-
-        return nfc_log_entries_count or 0
+        nfc_count = StorageDevice.objects.filter(entity=entity, type=StorageDevice.NFC).count()
+        return nfc_count
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

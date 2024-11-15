@@ -61,6 +61,8 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
         return self.context["stock_in_hand_cache"][cache_key]
 
     def get_form_a_reception_date(self, obj, vaccine_stock):
+        # TODO: Remove this once the dashboard is updated to use the new form A model
+        # It will get this info by joining on the FormA.round id
         latest_outgoing_stock_movement = (
             OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock, campaign=obj.campaign)
             .order_by("-form_a_reception_date")

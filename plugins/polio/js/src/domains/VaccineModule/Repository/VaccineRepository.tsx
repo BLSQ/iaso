@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -13,6 +13,8 @@ import {
     useGetVaccineReporting,
 } from './hooks/useGetVaccineReporting';
 import MESSAGES from './messages';
+import { VaccineRepositoryParams } from './types';
+import { VaccineRepositoryFilters } from './VaccineRepositoryFilters';
 
 const baseUrl = baseUrls.vaccineRepository;
 const embeddedVaccineRepositoryUrl = baseUrls.embeddedVaccineRepository;
@@ -39,10 +41,12 @@ const styles: SxStyles = {
 export const VaccineRepository: FunctionComponent = () => {
     const location = useLocation();
     const isEmbedded = location.pathname.includes(embeddedVaccineRepositoryUrl);
-    const currentBaseUrl = isEmbedded ? embeddedVaccineRepositoryUrl : baseUrl;
-    const params = useParamsObject(currentBaseUrl);
+    const redirectUrl = isEmbedded ? embeddedVaccineRepositoryUrl : baseUrl;
+    const params = useParamsObject(
+        redirectUrl,
+    ) as unknown as VaccineRepositoryParams;
     const { formatMessage } = useSafeIntl();
-    const { data, isFetching } = useGetVaccineReporting();
+    const { data, isFetching } = useGetVaccineReporting(params);
     const columns = useColumns();
 
     return (
@@ -61,6 +65,16 @@ export const VaccineRepository: FunctionComponent = () => {
                         : `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`
                 }
             >
+                {isEmbedded && (
+                    <Typography variant="h4" color="primary" sx={{ mb: 2 }}>
+                        {formatMessage(MESSAGES.title)}
+                    </Typography>
+                )}
+                <VaccineRepositoryFilters
+                    params={params}
+                    isEmbedded={isEmbedded}
+                    redirectUrl={redirectUrl}
+                />
                 <TableWithDeepLink
                     marginTop={false}
                     data={data?.results ?? []}
@@ -68,7 +82,7 @@ export const VaccineRepository: FunctionComponent = () => {
                     defaultSorted={[{ id: tableDefaults.order, desc: true }]}
                     columns={columns}
                     count={data?.count ?? 0}
-                    baseUrl={currentBaseUrl}
+                    baseUrl={redirectUrl}
                     countOnTop
                     params={params}
                     extraProps={{

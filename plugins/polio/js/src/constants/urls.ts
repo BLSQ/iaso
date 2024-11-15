@@ -89,7 +89,14 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     },
     vaccineRepository: {
         url: VACCINE_REPOSITORY_BASE_URL,
-        params: [...paginationPathParams],
+        params: [
+            ...paginationPathParams,
+            'countries',
+            'campaignType',
+            'campaignCategory',
+            'fileType',
+            'orgUnitGroups',
+        ],
     },
     embeddedCalendar: {
         url: EMBEDDED_CALENDAR_URL,
@@ -103,7 +110,14 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     },
     embeddedVaccineRepository: {
         url: EMBEDDED_VACCINE_REPOSITORY_URL,
-        params: [...paginationPathParams],
+        params: [
+            ...paginationPathParams,
+            'countries',
+            'campaignType',
+            'campaignCategory',
+            'fileType',
+            'orgUnitGroups',
+        ],
     },
     lqasCountry: {
         url: LQAS_BASE_URL,

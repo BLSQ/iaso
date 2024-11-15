@@ -2486,6 +2486,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.notShowTestCampaigns',
         defaultMessage: 'Do not show test campaigns',
     },
+    fileType: {
+        id: 'iaso.polio.label.fileType',
+        defaultMessage: 'File type',
+    },
 });
 
 export default MESSAGES;

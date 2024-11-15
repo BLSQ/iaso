@@ -8,7 +8,12 @@ import {
     IconButton,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    ComponentType,
+    FunctionComponent,
+    useCallback,
+    useState,
+} from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { SxStyles } from '../../../types/general';
 import PdfSvgComponent from '../../svg/PdfSvgComponent';
@@ -25,10 +30,11 @@ if (!pdfjs.GlobalWorkerOptions.workerSrc) {
 
 type PdfPreviewProps = {
     pdfUrl?: string;
-    OpenButtonComponent?: React.ComponentType<{
+    OpenButtonComponent?: ComponentType<{
         onClick: () => void;
         disabled: boolean;
     }>;
+    buttonProps?: Record<string, unknown>;
 };
 
 const styles: SxStyles = {
@@ -82,6 +88,7 @@ const DefaultOpenButton: FunctionComponent<{
 export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
     pdfUrl,
     OpenButtonComponent,
+    buttonProps,
 }) => {
     const [open, setOpen] = useState(false);
     const [numPages, setNumPages] = useState<number | null>(null);
@@ -127,7 +134,11 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
 
     return (
         <>
-            <OpenButton onClick={handleOpen} disabled={!pdfUrl} />
+            <OpenButton
+                onClick={handleOpen}
+                disabled={!pdfUrl}
+                {...buttonProps}
+            />
             {open && (
                 <Dialog
                     fullWidth

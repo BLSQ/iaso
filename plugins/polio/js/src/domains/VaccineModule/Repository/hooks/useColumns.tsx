@@ -1,3 +1,4 @@
+import { Button } from '@mui/material';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import React, { ReactElement, useMemo } from 'react';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
@@ -5,16 +6,30 @@ import { PdfPreview } from '../../../../../../../../hat/assets/js/apps/Iaso/comp
 import MESSAGES from '../messages';
 import { DocumentData } from './useGetVaccineReporting';
 
+const OpenButtonComponent = ({ onClick, disabled, date }) => (
+    <Button onClick={onClick} disabled={disabled} color="primary" size="small">
+        {date}
+    </Button>
+);
 export const DocumentsCell = (cellInfo: {
     value?: DocumentData[];
 }): ReactElement => {
     const value = cellInfo?.value ?? [];
-    console.log(value);
     return (
         <>
             {value.map(
                 ({ date, file }) =>
-                    date && file && <PdfPreview key={file} pdfUrl={file} />,
+                    date &&
+                    file && (
+                        <PdfPreview
+                            key={file}
+                            pdfUrl={file}
+                            OpenButtonComponent={OpenButtonComponent}
+                            buttonProps={{
+                                date,
+                            }}
+                        />
+                    ),
             )}
         </>
     );
@@ -56,7 +71,7 @@ export const useColumns = (): Column[] => {
                 Cell: DocumentsCell,
             },
             {
-                Header: 'VRF',
+                Header: 'Form A',
                 accessor: 'form_a_data',
                 Cell: DocumentsCell,
             },

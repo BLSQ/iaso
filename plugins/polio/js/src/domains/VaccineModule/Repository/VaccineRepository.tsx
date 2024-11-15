@@ -29,6 +29,13 @@ const styles: SxStyles = {
         backgroundColor: 'white',
     },
 };
+
+// Campaigns status filter should be on another ticket with better specs
+// What about the colors, what does green says ?
+// Which dates should we take (start date, end date, creation date, upload date)
+// What about the rounds (count type or count number)
+// Which campaigns are displayed ? All ? Or only the ones with a VRF ?
+
 export const VaccineRepository: FunctionComponent = () => {
     const location = useLocation();
     const isEmbedded = location.pathname.includes(embeddedVaccineRepositoryUrl);

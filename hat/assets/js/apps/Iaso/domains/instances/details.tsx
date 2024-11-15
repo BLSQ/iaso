@@ -223,7 +223,7 @@ const InstanceDetails: FunctionComponent = () => {
                                     currentInstance={currentInstance}
                                 />
                             </WidgetPaper>
-                            {currentInstance.change_requests && (
+                            {currentInstance.change_requests.length > 0 && (
                                 <WidgetPaper
                                     title={formatMessage(
                                         MESSAGES.changeRequests,

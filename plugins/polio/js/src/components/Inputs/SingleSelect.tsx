@@ -13,6 +13,7 @@ type Props = {
     required?: boolean;
     disabled?: boolean;
     onChange?: (_keyValue: string, value: any) => void;
+    isLoading?: boolean;
 };
 
 export const SingleSelect: FunctionComponent<Props> = ({
@@ -25,6 +26,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
     clearable = true,
     withMarginTop = false,
     required = false,
+    isLoading = false,
 }) => {
     const hasError =
         form.errors &&
@@ -35,7 +37,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
             keyValue={field.name}
             type="select"
             withMarginTop={withMarginTop}
-            value={field.value}
+            value={!isLoading ? field.value : undefined}
             options={options}
             disabled={disabled}
             clearable={clearable}
@@ -50,6 +52,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
                 }
             }}
             errors={hasError ? [get(form.errors, field.name)] : []}
+            loading={isLoading}
         />
     );
 };

@@ -1323,10 +1323,20 @@ class Instance(models.Model):
             ),
         }
 
+        result["change_requests"] = self.get_instance_change_requests_data()
+
         if with_entity and self.entity_id:
             result["entity"] = self.entity.as_small_dict_with_nfc_cards(self)
 
         return result
+
+    def get_instance_change_requests_data(self):
+        from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestListSerializer
+
+        org_unit_change_requests = self.orgunitchangerequest_set.all()
+        serializer = OrgUnitChangeRequestListSerializer(org_unit_change_requests, many=True)
+
+        return serializer.data
 
     def as_small_dict(self):
         return {

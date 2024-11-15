@@ -1,6 +1,11 @@
 import uuid
 from datetime import datetime, timedelta
-from submissions import submission2xml, org_unit_gps_point, picture_by_org_unit_type_name
+from submissions import (
+    submission2xml,
+    org_unit_gps_point,
+    picture_by_org_unit_type_name,
+    create_default_reference_submission,
+)
 import random
 
 
@@ -41,10 +46,18 @@ def setup_instances(account_name, iaso_client):
     ######## creating submissions/instances
     print("-- Downloading org units")
 
-    # fetch orgunit ids belong to the org unit type
-
     for org_unit_type_id in org_unit_type_ids:
-        limit = 10
+        org_unit_type = iaso_client.get(f"/api/v2/orgunittypes/{org_unit_type_id}")
+        org_unit_type["reference_forms_ids"] = [form_id]
+        org_unit_type["project_ids"] = [project["id"] for project in org_unit_type["projects"]]
+        org_unit_type["sub_unit_type_ids"] = [sub_unit["id"] for sub_unit in org_unit_type["sub_unit_types"]]
+        org_unit_type["allow_creating_sub_unit_type_ids"] = [
+            sub_unit_type["id"] for sub_unit_type in org_unit_type["allow_creating_sub_unit_types"]
+        ]
+        # Update the org unit type with reference form
+        iaso_client.put(f"/api/v2/orgunittypes/{org_unit_type_id}/", json=org_unit_type)
+
+        limit = org_unit_type["units_count"]
         orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": org_unit_type_id})[
             "orgunits"
         ]
@@ -179,5 +192,8 @@ def setup_instances(account_name, iaso_client):
             # https://github.com/BLSQ/iaso-mobile-app/blob/0c6d821056e41d5beb6f745ea807451b07eb35f2/collect_app/src/main/java/com/bluesquare/iaso/usecase/SyncInstances.kt
             if count % 5 == 0:
                 print("\t%d submissions done" % count)
+
+            # Creating default reference submission for the org unit
+            create_default_reference_submission(account_name, iaso_client, orgunit["id"], form_id, the_uuid)
 
     print(iaso_client.get("/api/instances", params={"limit": 1})["count"], "instances created")

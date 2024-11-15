@@ -1,13 +1,16 @@
+import { NavigateBefore, NavigateNext } from '@mui/icons-material';
 import {
+    Box,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     IconButton,
 } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
+import { SxStyles } from '../../../types/general';
 import PdfSvgComponent from '../../svg/PdfSvgComponent';
 import MESSAGES from './messages';
 
@@ -24,8 +27,45 @@ type PdfPreviewProps = {
     pdfUrl?: string;
 };
 
+const styles: SxStyles = {
+    dialogContent: {
+        px: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 2,
+        height: '80vh',
+        overflow: 'auto',
+    },
+    documentContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        width: '100%',
+        position: 'relative',
+    },
+    dialogActions: {
+        flexDirection: 'column',
+        paddingBottom: 2,
+    },
+    pageControls: {
+        display: 'flex',
+        gap: '1rem',
+        alignItems: 'center',
+        width: '100%',
+        justifyContent: 'center',
+    },
+    dialogActionsButtons: {
+        display: 'flex',
+        gap: '1rem',
+        justifyContent: 'flex-end',
+        width: '100%',
+    },
+};
+
 export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({ pdfUrl }) => {
-    const [open, setOpen] = useState(false); // State to manage dialog open/close
+    const [open, setOpen] = useState(false);
+    const [numPages, setNumPages] = useState<number | null>(null);
+    const [pageNumber, setPageNumber] = useState(1);
 
     const { formatMessage } = useSafeIntl();
     const handleOpen = () => {
@@ -46,6 +86,23 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({ pdfUrl }) => {
             link.click();
         }
     }, [pdfUrl]);
+
+    const onDocumentLoadSuccess = ({
+        numPages: nextNumPages,
+    }: {
+        numPages: number;
+    }) => {
+        setNumPages(nextNumPages);
+        setPageNumber(1);
+    };
+
+    const changePage = (offset: number) => {
+        setPageNumber(prevPageNumber => {
+            const newPageNumber = prevPageNumber + offset;
+            return Math.min(Math.max(1, newPageNumber), numPages || 1);
+        });
+    };
+
     return (
         <>
             <IconButton
@@ -62,29 +119,53 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({ pdfUrl }) => {
                     open={open}
                     onClose={handleClose}
                 >
-                    <DialogContent
-                        sx={{
-                            px: 0,
-                            display: 'flex',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Document file={pdfUrl}>
-                            <Page
-                                pageNumber={1}
-                                width={880}
-                                renderTextLayer={false}
-                                renderAnnotationLayer={false}
-                            />
-                        </Document>
+                    <DialogContent sx={styles.dialogContent}>
+                        <Box sx={styles.documentContainer}>
+                            <Document
+                                file={pdfUrl}
+                                onLoadSuccess={onDocumentLoadSuccess}
+                                loading={<LoadingSpinner fixed={false} />}
+                            >
+                                <Page
+                                    pageNumber={pageNumber}
+                                    width={880}
+                                    renderTextLayer={false}
+                                    renderAnnotationLayer={false}
+                                />
+                            </Document>
+                        </Box>
                     </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleDownload} color="primary">
-                            {formatMessage(MESSAGES.download)}
-                        </Button>
-                        <Button onClick={handleClose} color="primary">
-                            {formatMessage(MESSAGES.close)}
-                        </Button>
+                    <DialogActions sx={styles.dialogActions}>
+                        <Box sx={styles.pageControls}>
+                            <IconButton
+                                onClick={() => changePage(-1)}
+                                disabled={pageNumber <= 1}
+                                size="small"
+                            >
+                                <NavigateBefore />
+                            </IconButton>
+                            <Box>
+                                {formatMessage(MESSAGES.pageInfo, {
+                                    current: pageNumber,
+                                    total: numPages || 0,
+                                })}
+                            </Box>
+                            <IconButton
+                                onClick={() => changePage(1)}
+                                disabled={pageNumber >= (numPages || 1)}
+                                size="small"
+                            >
+                                <NavigateNext />
+                            </IconButton>
+                        </Box>
+                        <Box sx={styles.dialogActionsButtons}>
+                            <Button onClick={handleDownload} color="primary">
+                                {formatMessage(MESSAGES.download)}
+                            </Button>
+                            <Button onClick={handleClose} color="primary">
+                                {formatMessage(MESSAGES.close)}
+                            </Button>
+                        </Box>
                     </DialogActions>
                 </Dialog>
             )}

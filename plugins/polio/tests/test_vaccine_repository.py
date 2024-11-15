@@ -35,7 +35,6 @@ class VaccineRepositoryAPITestCase(APITestCase):
             country=cls.country,
             account=cls.account,
             vacine=pm.VACCINES[0][0],
-            onset_at=cls.now - datetime.timedelta(days=10),
         )
 
         cls.campaign_round_1 = pm.Round.objects.create(
@@ -172,3 +171,81 @@ class VaccineRepositoryAPITestCase(APITestCase):
         data = response.json()
         self.assertEqual(data["results"][0]["start_date"], campaign2_round.started_at.strftime("%Y-%m-%d"))
         self.assertEqual(data["results"][1]["start_date"], self.campaign_round_1.started_at.strftime("%Y-%m-%d"))
+
+    def test_filtering(self):
+        """Test filtering functionality of VaccineReportingViewSet"""
+        # Create test data
+        campaign2 = pm.Campaign.objects.create(
+            obr_name="Another Campaign",
+            country=self.zambia,
+        )
+
+        preparing_campaign = pm.Campaign.objects.create(
+            obr_name="Preparing Campaign",
+            country=self.zambia,
+        )
+
+        vrf2 = pm.VaccineRequestForm.objects.create(
+            campaign=campaign2,
+            date_vrf_signature=self.now,
+            date_dg_approval=self.now,
+            quantities_ordered_in_doses=500,
+        )
+
+        campaign2_round = pm.Round.objects.create(
+            campaign=campaign2,
+            started_at=datetime.datetime(2021, 2, 1),
+            ended_at=datetime.datetime(2021, 2, 28),
+            number=1,
+        )
+
+        preparing_campaign_round = pm.Round.objects.create(
+            campaign=preparing_campaign,
+            started_at=datetime.datetime(2025, 2, 1),
+            ended_at=datetime.datetime(2025, 2, 28),
+            number=1,
+        )
+
+        self.client.force_authenticate(user=self.user)
+
+        # Test filtering by campaign status - ONGOING
+        response = self.client.get(f"{BASE_URL}?campaign_status=ONGOING")
+        data = response.json()
+        self.assertEqual(len(data["results"]), 1)
+        self.assertEqual(data["results"][0]["campaign_obr_name"], "Another Campaign")
+
+        # Test filtering by campaign status - PAST
+        response = self.client.get(f"{BASE_URL}?campaign_status=PAST")
+        data = response.json()
+        self.assertEqual(len(data["results"]), 1)
+        self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
+
+        # Test filtering by campaign status - PREPARING
+        response = self.client.get(f"{BASE_URL}?campaign_status=PREPARING")
+        data = response.json()
+        self.assertEqual(len(data["results"]), 1)
+        self.assertEqual(data["results"][0]["campaign_obr_name"], "Preparing Campaign")
+
+        # Test filtering by country
+        response = self.client.get(f"{BASE_URL}?country={self.zambia.id}")
+        data = response.json()
+        self.assertEqual(len(data["results"]), 1)
+        self.assertEqual(data["results"][0]["country_name"], "Zambia")
+
+        # Test filtering by campaign name
+        response = self.client.get(f"{BASE_URL}?campaign=Test Campaign")
+        data = response.json()
+        self.assertEqual(len(data["results"]), 1)
+        self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
+
+        # Test filtering by file type - VRF
+        response = self.client.get(f"{BASE_URL}?file_type=VRF")
+        data = response.json()
+        self.assertEqual(len(data["results"]), 2)  # Both campaigns have VRFs
+
+        # Test filtering by country block
+        country_group = self.zambia.groups.first()
+        response = self.client.get(f"{BASE_URL}?country_block={country_group.id}")
+        data = response.json()
+        self.assertEqual(len(data["results"]), 1)
+        self.assertEqual(data["results"][0]["country_name"], "Zambia")

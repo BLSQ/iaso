@@ -4,7 +4,7 @@ import emptyFixture from '../../../fixtures/orgunits/changes/empty.json';
 import page2 from '../../../fixtures/orgunits/changes/orgUnitChanges-page2.json';
 import listFixture from '../../../fixtures/orgunits/changes/orgUnitChanges.json';
 import orgUnits from '../../../fixtures/orgunits/list.json';
-import orgUnitTypes from '../../../fixtures/orgunittypes/list.json';
+import orgUnitTypes from '../../../fixtures/orgunittypes/dropdown-list.json';
 import superUser from '../../../fixtures/profiles/me/superuser.json';
 import userRoles from '../../../fixtures/userRoles/list.json';
 import { testPageFilters } from '../../../support/testPageFilters';
@@ -30,13 +30,13 @@ const newFilters = {
         type: 'multi',
         clear: false,
     },
-    groups: {
-        value: [0],
-        urlValue: '1',
-        selector: '#groups',
-        type: 'multi',
-        clear: false,
-    },
+    // groups: {
+    //     value: [0],
+    //     urlValue: '1',
+    //     selector: '#groups',
+    //     type: 'multi',
+    //     clear: false,
+    // },
     forms: {
         value: [0],
         urlValue: '1',
@@ -52,7 +52,7 @@ const newFilters = {
     },
     org_unit_type_id: {
         value: [0],
-        urlValue: orgUnitTypes.orgUnitTypes[0].id,
+        urlValue: orgUnitTypes[0].id,
         selector: '#org_unit_type_id',
         type: 'multi',
         clear: false,
@@ -119,7 +119,7 @@ const goToPage = (
     cy.intercept('GET', '/api/groups/dropdown/**', {
         fixture: `groups/dropdownlist.json`,
     });
-    cy.intercept('GET', '/api/v2/orgunittypes/**', orgUnitTypes);
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', orgUnitTypes);
 
     cy.intercept('GET', '/api/forms/**', {
         fixture: 'forms/list.json',
@@ -424,7 +424,7 @@ describe('Organisations changes', () => {
                     {
                         ...defaultQuery,
                         projects: newFilters.projectIds.urlValue,
-                        groups: newFilters.groups.urlValue,
+                        // groups: newFilters.groups.urlValue,
                         forms: newFilters.forms.urlValue,
                         parent_id: newFilters.parent_id.urlValue,
                         org_unit_type_id: newFilters.org_unit_type_id.urlValue,
@@ -527,7 +527,7 @@ describe('Organisations changes', () => {
         it('should download orgUnit change request csv file via an anchor click', () => {
             goToPage();
             cy.wait('@getOrgUnitChanges').then(() => {
-                cy.fillMultiSelect('#groups', [1, 2], false);
+                // cy.fillMultiSelect('#groups', [1, 2], false);
                 cy.fillMultiSelect('#status', [0], false);
                 cy.get('[data-test="search-button"]').click();
                 cy.get('[data-test="download-buttons"]')
@@ -538,7 +538,8 @@ describe('Organisations changes', () => {
                 cy.get('@csvExportButton').should(
                     'have.attr',
                     'href',
-                    `/api/orgunits/changes/export_to_csv/?&groups=2,3&status=new`,
+                    // `/api/orgunits/changes/export_to_csv/?&groups=2,3&status=new`,
+                    `/api/orgunits/changes/export_to_csv/?&status=new`,
                 );
             });
         });

@@ -103,8 +103,8 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/v2/orgunittypes/', {
-        fixture: 'orgunittypes/list.json',
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', {
+        fixture: 'orgunittypes/dropdown-list.json',
     }).as('getOrgunittypes');
     cy.intercept(
         'GET',

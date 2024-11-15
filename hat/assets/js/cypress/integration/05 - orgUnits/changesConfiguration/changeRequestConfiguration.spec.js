@@ -3,7 +3,7 @@ import moment from 'moment';
 import emptyFixture from '../../../fixtures/orgunits/changes/configuration/empty.json';
 import page2 from '../../../fixtures/orgunits/changes/configuration/orgUnitChangeConfigurations-page2.json';
 import listFixture from '../../../fixtures/orgunits/changes/configuration/orgUnitChangeConfigurations.json';
-import orgUnitTypesFixture from '../../../fixtures/orgunittypes/list.json';
+import orgUnitTypesFixture from '../../../fixtures/orgunittypes/dropdown-list.json';
 import superUser from '../../../fixtures/profiles/me/superuser.json';
 import projectsFixture from '../../../fixtures/projects/list.json';
 import { testPageFilters } from '../../../support/testPageFilters';
@@ -48,7 +48,7 @@ const goToPage = (
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
     cy.intercept('GET', '/api/projects/**', projectsFixture);
-    cy.intercept('GET', '/api/v2/orgunittypes/**', orgUnitTypesFixture);
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', orgUnitTypesFixture);
 
     const options = {
         method: 'GET',

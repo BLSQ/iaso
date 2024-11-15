@@ -61,6 +61,8 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
     if vaccine:
         vaccines = [vaccine]
 
+    # We need to do each vaccine in succession because a round can have several vaccines, 
+    # so we can't really merge the 3 querysets as it will remove duplicates
     for vax in vaccines:
         vax_rounds_qs = rounds_qs.filter(
             (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vax))

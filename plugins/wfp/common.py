@@ -254,6 +254,8 @@ class ETL:
             "child_assistance_admission",
             "wfp_coda_pbwg_assistance",
             "wfp_coda_pbwg_assistance_followup",
+            "assistance_admission_otp",
+            "assistance_admission_2nd_visit_otp",
         ]:
             if visit.get("next_visit__date__", None) is not None and visit.get("next_visit__date__", None) != "":
                 next_visit_date = visit.get("next_visit__date__", None)
@@ -296,12 +298,12 @@ class ETL:
 
             if next_visit_date is not None and next_visit_date != "":
                 nextSecondVisitDate = datetime.strptime(next_visit_date[:10], "%Y-%m-%d").date() + timedelta(
-                    days=int(next_visit_days) + 1
+                    days=int(next_visit_days)
                 )
             missed_followup_visit = self.missed_followup_visit(
                 visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
             )
-        if missed_followup_visit > 0 and next_visit_date != "" and nextSecondVisitDate != "":
+        if missed_followup_visit > 1 and next_visit_date != "" and nextSecondVisitDate != "":
             exit = {"exit_type": "defaulter", "end_date": nextSecondVisitDate}
         return exit
 
@@ -327,6 +329,8 @@ class ETL:
         exit = None
 
         if visit["form_id"] in followup_forms:
+            if visit["form_id"] != default_admission_form:
+                current_journey["visits"].append(visit)
             end_date = visit.get("end_date", visit.get("source_created_at", ""))
             current_journey["end_date"] = (
                 end_date if end_date is not None else visit.get("source_created_at", None).strftime("%Y-%m-%d")
@@ -621,9 +625,9 @@ class ETL:
     def save_entity_journey(self, journey, beneficiary, record, entity_type):
         journey.beneficiary = beneficiary
         journey.programme_type = entity_type
-        journey.admission_criteria = record["admission_criteria"]
+        journey.admission_criteria = record.get("admission_criteria")
         journey.admission_type = record.get("admission_type", None)
-        journey.nutrition_programme = record["nutrition_programme"]
+        journey.nutrition_programme = record.get("nutrition_programme")
         journey.exit_type = record.get("exit_type", None)
         journey.instance_id = record.get("instance_id", None)
         journey.start_date = record.get("start_date", None)

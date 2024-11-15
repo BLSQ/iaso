@@ -635,6 +635,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.parent',
         defaultMessage: 'Parent',
     },
+    changeRequests: {
+        defaultMessage: 'Change requests',
+        id: 'iaso.label.changeRequests',
+    },
+    new: {
+        defaultMessage: 'New',
+        id: 'iaso.forms.newCap',
+    },
+    rejected: {
+        defaultMessage: 'Rejected',
+        id: 'iaso.forms.rejectedCap',
+    },
+    approved: {
+        defaultMessage: 'Approved',
+        id: 'iaso.label.approved',
+    },
 });
 
 export default MESSAGES;

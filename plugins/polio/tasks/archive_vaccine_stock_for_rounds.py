@@ -21,24 +21,14 @@ def archive_stock_for_round(round, vaccine_stock, reference_date, country=None):
         calculator = VaccineStockCalculator(vaccine_stock_for_vaccine)
         total_usable_vials_in, total_usable_doses_in = calculator.get_total_of_usable_vials(reference_date)
         total_unusable_vials_in, total_unusable_doses_in = calculator.get_total_of_unusable_vials(reference_date)
-        try:
-            VaccineStockHistory.objects.create(
-                vaccine_stock=vaccine_stock_for_vaccine,
-                round=round,
-                usable_vials_in=total_usable_vials_in,
-                usable_doses_in=total_usable_doses_in,
-                unusable_vials_in=total_unusable_vials_in,
-                unusable_doses_in=total_unusable_doses_in,
-            )
-        # TODO: rmeove dupliacte rounds, improve error handling
-        except IntegrityError:
-            print("--------------------------------------------")
-            print(f"Error with {round.campaign.obr_name}, round {round.number}")
-            print(f"usable_vials_in={total_usable_vials_in}")
-            print(f"usable_doses_in={total_usable_doses_in}")
-            print(f"unusable_vials_in={total_unusable_vials_in}")
-            print(f"unusable_doses_in={total_unusable_doses_in}")
-            print("--------------------------------------------")
+        VaccineStockHistory.objects.create(
+            vaccine_stock=vaccine_stock_for_vaccine,
+            round=round,
+            usable_vials_in=total_usable_vials_in,
+            usable_doses_in=total_usable_doses_in,
+            unusable_vials_in=total_unusable_vials_in,
+            unusable_doses_in=total_unusable_doses_in,
+        )
 
 
 @task_decorator(task_name="archive_vaccine_stock")
@@ -60,9 +50,11 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
 
     if vaccine:
         vaccines = [vaccine]
+    vax_dict = {}
 
-    # We need to do each vaccine in succession because a round can have several vaccines, 
-    # so we can't really merge the 3 querysets as it will remove duplicates
+    # Save the queryset for each vaccine in a queryset, so we can compute the total of stock histories created
+    # Merging the querysets wouldn't work as it would remove duplicate rounds and some rounds need to be updatred for
+    # multiple vaccines
     for vax in vaccines:
         vax_rounds_qs = rounds_qs.filter(
             (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vax))
@@ -70,15 +62,27 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
         )
 
         # Exclude rounds that already have a history entry for this vaccine
-        vax_rounds_qs = vax_rounds_qs.exclude(
+        vax_dict[vax] = vax_rounds_qs.exclude(
             id__in=VaccineStockHistory.objects.filter(vaccine_stock__vaccine=vax).values("round_id")
         )
-
+    count = sum(qs.count() for qs in vax_dict.values())
+    i = 0
+    for vax in vaccines:
+        qs = vax_dict[vax]
         vaccine_stock = VaccineStock.objects.filter(vaccine=vax)
-        if country:
-            vaccine_stock = vaccine_stock.filter(country__id=country)
 
-        for r in vax_rounds_qs:
-            archive_stock_for_round(
-                round=r, reference_date=reference_date, vaccine_stock=vaccine_stock, country=country
-            )
+        for r in qs:
+            i += 1
+            try:
+                archive_stock_for_round(round=r, reference_date=reference_date, vaccine_stock=vaccine_stock)
+                task.report_progress_and_stop_if_killed(
+                    progress_value=i,
+                    end_value=count,
+                    progress_message=f"Stock history added for {r.pk} and vaccine {vax}",
+                )
+            except IntegrityError:
+                task.report_progress_and_stop_if_killed(
+                    progress_value=i,
+                    end_value=count,
+                    progress_message=f"Could not add stock history for round {r.pk} vaccine {vax}. History already exists",
+                )

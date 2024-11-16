@@ -102,17 +102,18 @@ const menuItems = (
                     key: 'submissions',
                     icon: props => <Input {...props} />,
                 },
-                {
-                    label: formatMessage(MESSAGES.formsStats),
-                    permissions: paths.formsStatsPath.permissions,
-                    key: 'stats',
-                    icon: props => <AssessmentIcon {...props} />,
-                },
+
                 {
                     label: formatMessage(MESSAGES.stats),
                     key: 'stats',
                     icon: props => <QueryStatsIcon {...props} />,
                     subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.formsStats),
+                            permissions: paths.formsStatsPath.permissions,
+                            key: 'formStats',
+                            icon: props => <AssessmentIcon {...props} />,
+                        },
                         {
                             label: formatMessage(MESSAGES.completeness),
                             permissions: paths.completenessPath.permissions,

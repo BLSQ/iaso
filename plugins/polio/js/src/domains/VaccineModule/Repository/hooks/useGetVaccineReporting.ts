@@ -4,7 +4,11 @@ import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
 const getVaccineReporting = params => {
-    const queryString = new URLSearchParams(params).toString();
+    const apiParams = {
+        ...params,
+        campaign_status: params.campaignStatus,
+    };
+    const queryString = new URLSearchParams(apiParams).toString();
     return getRequest(`/api/polio/vaccine/repository/?${queryString}`);
 };
 export const tableDefaults = {

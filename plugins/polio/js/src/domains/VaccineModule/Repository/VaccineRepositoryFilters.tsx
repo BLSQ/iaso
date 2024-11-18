@@ -15,6 +15,7 @@ import { useGetCountries } from '../../../hooks/useGetCountries';
 
 import { appId } from '../../../constants/app';
 import { useCampaignCategoryOptions } from '../../Campaigns/hooks/useCampaignCategoryOptions';
+import { useGetCampaignStatus } from './hooks/useGetCampaignStatus';
 import { useGetFileTypes } from './hooks/useGetFileTypes';
 import { VaccineRepositoryParams } from './types';
 
@@ -37,6 +38,7 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
     const [fileType, setFileType] = useState(
         params.fileType || 'VRF,PRE_ALERT,FORM_A,INCIDENT,DESTRUCTION',
     );
+    const [campaignStatus, setCampaignStatus] = useState(params.campaignStatus);
     const [orgUnitGroups, setOrgUnitGroups] = useState(params.orgUnitGroups);
     const [campaignCategory, setCampaignCategory] = useState(
         isEmbedded
@@ -54,6 +56,7 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
                 campaignCategory,
                 orgUnitGroups,
                 fileType,
+                campaignStatus,
             };
             redirectToReplace(redirectUrl, urlParams);
         }
@@ -66,6 +69,7 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
         redirectToReplace,
         redirectUrl,
         fileType,
+        campaignStatus,
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     // Pass the appId to have it works in the embedded vaccine stock where the user is not connected
@@ -77,10 +81,10 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
     const campaignCategoryOptions = useCampaignCategoryOptions();
 
     const fileTypes = useGetFileTypes();
-
+    const campaignStatusOptions = useGetCampaignStatus();
     useEffect(() => {
         setFiltersUpdated(true);
-    }, [countries, campaignCategory, orgUnitGroups, fileType]);
+    }, [countries, campaignCategory, orgUnitGroups, fileType, campaignStatus]);
 
     useEffect(() => {
         setFiltersUpdated(false);
@@ -90,6 +94,17 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
         <>
             <Grid container spacing={2}>
                 <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="campaignStatus"
+                        clearable
+                        onChange={(key, value) => {
+                            setCampaignStatus(value);
+                        }}
+                        value={campaignStatus}
+                        type="select"
+                        options={campaignStatusOptions}
+                        label={MESSAGES.campaignStatus}
+                    />
                     <InputComponent
                         loading={isFetchingGroupedOrgUnits}
                         keyValue="orgUnitGroups"

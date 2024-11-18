@@ -2490,6 +2490,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.fileType',
         defaultMessage: 'File type',
     },
+    campaignStatus: {
+        id: 'iaso.polio.label.campaignStatus',
+        defaultMessage: 'Campaign status',
+    },
 });
 
 export default MESSAGES;

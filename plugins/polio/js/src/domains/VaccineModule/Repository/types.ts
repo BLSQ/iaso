@@ -8,4 +8,5 @@ export type VaccineRepositoryParams = PaginationParams & {
     orgUnitGroups?: string;
     campaignGroups?: string;
     fileType?: string;
+    campaignStatus?: string;
 };

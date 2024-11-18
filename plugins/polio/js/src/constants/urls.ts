@@ -96,6 +96,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'campaignCategory',
             'fileType',
             'orgUnitGroups',
+            'campaignStatus',
         ],
     },
     embeddedCalendar: {
@@ -117,6 +118,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'campaignCategory',
             'fileType',
             'orgUnitGroups',
+            'campaignStatus',
         ],
     },
     lqasCountry: {

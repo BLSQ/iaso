@@ -8,6 +8,7 @@ from unittest import mock
 
 import pytz
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
@@ -111,7 +112,7 @@ def create_entity_with_registration(
 
 
 class ProcessMobileBulkUploadTest(TestCase):
-    fixtures = ["user.yaml", "orgunit.yaml"]
+    fixtures = ["user.yaml", "orgunit.yaml", "forms"]
 
     def setUp(self):
         self.user = User.objects.first()
@@ -129,8 +130,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         )
 
         # Create 2 forms: Registration + CATT
-        self.form_registration = m.Form.objects.create(id=1, name="Enregistrement", single_per_period=False)
-        self.form_catt = m.Form.objects.create(id=2, name="CATT", single_per_period=False)
+        self.form_registration = m.Form.objects.get(form_id="trypelim_registration")
+        self.form_catt = m.Form.objects.get(form_id="trypelim_CATT")
 
         self.default_entity_type = m.EntityType.objects.create(
             id=1, name="Participant", reference_form=self.form_registration
@@ -173,7 +174,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Org unit was created
         ou = m.OrgUnit.objects.get(name="New Org Unit")
         self.assertIsNotNone(ou)
-        self.assertEqual(ou.validation_status, m.OrgUnit.VALIDATION_NEW)
+        if "trypelim" in settings.PLUGINS:
+            self.assertEqual(ou.validation_status, m.OrgUnit.VALIDATION_VALID)
+        else:
+            self.assertEqual(ou.validation_status, m.OrgUnit.VALIDATION_NEW)
 
         # Instances (Submissions) + Entity were created
         self.assertEqual(m.Entity.objects.count(), 2)
@@ -314,8 +318,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Org unit doesn't exist. The job will fail, then verify that
         # nothing was created.
         INCORRECT_FILES_FOR_ZIP = ["instances.json"]
-        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+        with zipfile.ZipFile(f"/tmp/{CATT_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(
                 zipf,
                 zip_fixture_dir(CATT_TABLET_DIR),
@@ -423,8 +426,14 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(len(modifications), 1)
         modif = modifications[0]
         self.assertEqual(modif.source, BULK_UPLOAD)
-        self.assertEqual(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
-        self.assertEqual(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-17")
+        self.assertEqual(
+            modif.past_value[0]["fields"]["source_updated_at"].split("T")[0],
+            "2024-04-05",
+        )
+        self.assertEqual(
+            modif.new_value[0]["fields"]["source_updated_at"].split("T")[0],
+            "2024-04-17",
+        )
 
     def test_soft_deleted_entity(self):
         # Create soft-deleted entity Disasi with only registration form
@@ -497,7 +506,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         save_file_to_api_import(self.api_import, zip_path)
 
         for ent in [ent_disasi_A, ent_disasi_B, ent_disasi_C]:
-            self.assertEqual(ent.attributes.source_updated_at.date().isoformat(), DEFAULT_CREATED_AT_STR)
+            self.assertEqual(
+                ent.attributes.source_updated_at.date().isoformat(),
+                DEFAULT_CREATED_AT_STR,
+            )
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,
@@ -524,7 +536,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(ent_disasi_A.attributes.source_updated_at.date().isoformat(), "2024-04-05")
 
         self.assertEqual(ent_disasi_B.instances.count(), 1)
-        self.assertEqual(ent_disasi_B.attributes.source_updated_at.date().isoformat(), DEFAULT_CREATED_AT_STR)
+        self.assertEqual(
+            ent_disasi_B.attributes.source_updated_at.date().isoformat(),
+            DEFAULT_CREATED_AT_STR,
+        )
 
         self.assertEqual(ent_disasi_C.instances.count(), 2)
         reg_disasi_C = ent_disasi_C.attributes
@@ -542,8 +557,14 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(len(modifications), 1)
         modif = modifications[0]
         self.assertEqual(modif.source, BULK_UPLOAD_MERGED_ENTITY)
-        self.assertEqual(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], DEFAULT_CREATED_AT_STR)
-        self.assertEqual(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
+        self.assertEqual(
+            modif.past_value[0]["fields"]["source_updated_at"].split("T")[0],
+            DEFAULT_CREATED_AT_STR,
+        )
+        self.assertEqual(
+            modif.new_value[0]["fields"]["source_updated_at"].split("T")[0],
+            "2024-04-05",
+        )
 
     def test_double_merged_entity(self):
         """
@@ -584,9 +605,18 @@ class ProcessMobileBulkUploadTest(TestCase):
             add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
         save_file_to_api_import(self.api_import, zip_path)
 
-        all_entities = [ent_disasi_A, ent_disasi_B, ent_disasi_C, ent_disasi_merged_1, ent_disasi_merged_2]
+        all_entities = [
+            ent_disasi_A,
+            ent_disasi_B,
+            ent_disasi_C,
+            ent_disasi_merged_1,
+            ent_disasi_merged_2,
+        ]
         for ent in all_entities:
-            self.assertEqual(ent.attributes.source_updated_at.date().isoformat(), DEFAULT_CREATED_AT_STR)
+            self.assertEqual(
+                ent.attributes.source_updated_at.date().isoformat(),
+                DEFAULT_CREATED_AT_STR,
+            )
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,
@@ -614,7 +644,10 @@ class ProcessMobileBulkUploadTest(TestCase):
 
         for ent in [ent_disasi_B, ent_disasi_C, ent_disasi_merged_1]:
             self.assertEqual(ent.instances.count(), 1)
-            self.assertEqual(ent.attributes.source_updated_at.date().isoformat(), DEFAULT_CREATED_AT_STR)
+            self.assertEqual(
+                ent.attributes.source_updated_at.date().isoformat(),
+                DEFAULT_CREATED_AT_STR,
+            )
 
         self.assertEqual(ent_disasi_merged_2.instances.count(), 2)
         reg_disasi_merged_2 = ent_disasi_merged_2.attributes
@@ -632,8 +665,14 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(len(modifications), 1)
         modif = modifications[0]
         self.assertEqual(modif.source, BULK_UPLOAD_MERGED_ENTITY)
-        self.assertEqual(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], DEFAULT_CREATED_AT_STR)
-        self.assertEqual(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
+        self.assertEqual(
+            modif.past_value[0]["fields"]["source_updated_at"].split("T")[0],
+            DEFAULT_CREATED_AT_STR,
+        )
+        self.assertEqual(
+            modif.new_value[0]["fields"]["source_updated_at"].split("T")[0],
+            "2024-04-05",
+        )
 
     # WC2-580: Don't break on duplicate uuid if they're soft deleted
     # Scenarios:
@@ -657,7 +696,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         save_file_to_api_import(self.api_import, zip_path)
 
         process_mobile_bulk_upload(
-            api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
         )
 
         # check Task status and result
@@ -688,7 +730,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         save_file_to_api_import(self.api_import, zip_path)
 
         process_mobile_bulk_upload(
-            api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
         )
 
         # check Task status and result
@@ -716,7 +761,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         save_file_to_api_import(self.api_import, zip_path)
 
         process_mobile_bulk_upload(
-            api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
         )
 
         # The job passes without error

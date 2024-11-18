@@ -1447,6 +1447,7 @@
     "iaso.users.multiSelectionAction": "Edit selected users",
     "iaso.users.newPassword": "New password",
     "iaso.users.organization": "Organization",
+    "iaso.users.orgUnitTypeWriteDisableTooltip": "Enable the permission “Org Units management - Write” in order to be able to detail the Org Unit Write Type(s) for this user",
     "iaso.users.orgUnitWriteTypes": "Org unit write types",
     "iaso.users.orgUnitWriteTypesInfos": "Select the org unit types the user can edit",
     "iaso.users.ouChildrenCheckbox": "Users with access to children org unit",

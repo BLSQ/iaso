@@ -514,6 +514,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.userAdminOnly',
         defaultMessage: 'Can only be edited by user admin',
     },
+    OrgUnitTypeWriteDisableTooltip: {
+        id: 'iaso.users.orgUnitTypeWriteDisableTooltip',
+        defaultMessage:
+            'Enable the permission “Org Units management - Write” in order to be able to detail the Org Unit Write Type(s) for this user',
+    },
 });
 
 export default MESSAGES;

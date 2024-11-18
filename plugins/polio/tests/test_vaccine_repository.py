@@ -29,6 +29,14 @@ class VaccineRepositoryAPITestCase(APITestCase):
             source_ref="TestlandRef",
         )
 
+        cls.zambia = m.OrgUnit.objects.create(
+            org_unit_type=cls.org_unit_type_country,
+            version=cls.source_version_1,
+            name="Zambia",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="ZambiaRef",
+        )
+
         # Create a campaign with rounds
         cls.campaign = pm.Campaign.objects.create(
             obr_name="Test Campaign",
@@ -89,8 +97,6 @@ class VaccineRepositoryAPITestCase(APITestCase):
         self.assertIn("vrf_data", result)
         self.assertIn("pre_alert_data", result)
         self.assertIn("form_a_data", result)
-        self.assertIn("incident_reports", result)
-        self.assertIn("destruction_reports", result)
 
     def test_search_filter(self):
         """Test search functionality"""
@@ -103,17 +109,10 @@ class VaccineRepositoryAPITestCase(APITestCase):
     def test_ordering(self):
         """Test ordering functionality"""
         # Create another country and campaign for ordering test
-        country2 = m.OrgUnit.objects.create(
-            org_unit_type=self.org_unit_type_country,
-            version=self.source_version_1,
-            name="Zambia",
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="ZambiaRef",
-        )
 
         campaign2 = pm.Campaign.objects.create(
             obr_name="Another Campaign",
-            country=country2,
+            country=self.zambia,
             account=self.account,
             vacine=pm.VACCINES[0][0],
             onset_at=self.now - datetime.timedelta(days=5),
@@ -178,11 +177,13 @@ class VaccineRepositoryAPITestCase(APITestCase):
         campaign2 = pm.Campaign.objects.create(
             obr_name="Another Campaign",
             country=self.zambia,
+            account=self.account,
         )
 
         preparing_campaign = pm.Campaign.objects.create(
             obr_name="Preparing Campaign",
             country=self.zambia,
+            account=self.account,
         )
 
         vrf2 = pm.VaccineRequestForm.objects.create(
@@ -195,7 +196,7 @@ class VaccineRepositoryAPITestCase(APITestCase):
         campaign2_round = pm.Round.objects.create(
             campaign=campaign2,
             started_at=datetime.datetime(2021, 2, 1),
-            ended_at=datetime.datetime(2021, 2, 28),
+            ended_at=datetime.datetime(2025, 1, 1),
             number=1,
         )
 

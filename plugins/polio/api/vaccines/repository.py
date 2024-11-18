@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Q, Min, Max
+from django.db.models import Q, Min, Max, OuterRef, Subquery
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from drf_yasg import openapi
@@ -21,15 +21,6 @@ from plugins.polio.models import (
     VaccineRequestForm,
     VaccineRequestFormType,
 )
-
-
-# 1 round par ligne
-# on vire destruction et incident
-# Toutes les campagnes (Order by start date descending limit 10)
-# Filtres doivent fonctionner
-# Sort 4 premieres colonnes
-# "Not required" to be implemented if type is not required, "Missing"
-# Filtre by type of VRF (Missing, Not Required, Normal)
 
 
 class VaccineRepositorySerializer(serializers.Serializer):
@@ -70,14 +61,28 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         # Filter by campaign status
         campaign_status = request.query_params.get("campaign_status", None)
+
+        # Get campaign dates subquery
+        campaign_dates = (
+            Round.objects.filter(campaign=OuterRef("campaign"))
+            .values("campaign")
+            .annotate(campaign_started_at=Min("started_at"), campaign_ended_at=Max("ended_at"))
+        )
+
+        # Add campaign dates to main queryset
+        queryset = queryset.annotate(
+            campaign_started_at=Subquery(campaign_dates.values("campaign_started_at")),
+            campaign_ended_at=Subquery(campaign_dates.values("campaign_ended_at")),
+        )
+
         if campaign_status:
             today = datetime.now().date()
             if campaign_status.upper() == "ONGOING":
-                queryset = queryset.filter(started_at__lte=today, ended_at__gte=today)
+                queryset = queryset.filter(campaign_started_at__lte=today, campaign_ended_at__gte=today)
             elif campaign_status.upper() == "PAST":
-                queryset = queryset.filter(started_at__lt=today, ended_at__lt=today)
+                queryset = queryset.filter(campaign_started_at__lt=today, campaign_ended_at__lt=today)
             elif campaign_status.upper() == "PREPARING":
-                queryset = queryset.filter(started_at__gte=today)
+                queryset = queryset.filter(campaign_started_at__gte=today)
 
         # Filter by country block
         country_block = request.query_params.get("country_block", None)

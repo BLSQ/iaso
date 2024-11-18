@@ -46,7 +46,12 @@ export const FormADocumentCell: FunctionComponent<Props> = ({
     isLate,
 }) => {
     if (!date) return <Box sx={styles.noPdf}>{textPlaceholder}</Box>;
-    if (!file) return <Box sx={styles.noPdf}>{DateCell({ value: date })}</Box>;
+    if (!file)
+        return (
+            <Box sx={isLate ? styles.isLateNoFile : styles.noPdf}>
+                {DateCell({ value: date })}
+            </Box>
+        );
 
     return (
         <Box sx={isLate ? styles.isLateWithPdf : styles.withPdf}>

@@ -13,6 +13,7 @@ from rest_framework.viewsets import GenericViewSet
 from iaso.api.common import Paginator
 from plugins.polio.models import (
     Campaign,
+    CampaignType,
     DestructionReport,
     IncidentReport,
     OutgoingStockMovement,
@@ -226,9 +227,13 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
         """
         Get the queryset for Round objects with their campaigns.
         """
-        # Create a queryset that includes one entry per round
+
         rounds_queryset = (
-            Round.objects.filter(campaign__isnull=False)
+            Round.objects.filter(
+                campaign__isnull=False,
+                campaign__deleted_at__isnull=True,
+                campaign__campaign_types__name=CampaignType.POLIO,
+            )
             .select_related(
                 "campaign",
                 "campaign__country",

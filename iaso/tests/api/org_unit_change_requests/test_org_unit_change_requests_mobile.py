@@ -17,6 +17,13 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
         org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type, version=version)
 
+        form_1 = m.Form.objects.create(name="Form 1")
+        form_2 = m.Form.objects.create(name="Form 2")
+        instance_1 = m.Instance.objects.create(form=form_1, org_unit=org_unit)
+        instance_2 = m.Instance.objects.create(form=form_2, org_unit=org_unit)
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_1, instance=instance_1)
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_2, instance=instance_2)
+
         user = cls.create_user_with_profile(
             username="user", account=account, permissions=["iaso_org_unit_change_request"]
         )
@@ -28,6 +35,8 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         org_unit_type.projects.set([project])
         user.iaso_profile.org_units.set([org_unit])
 
+        cls.instance_1 = instance_1
+        cls.instance_2 = instance_2
         cls.org_unit = org_unit
         cls.project = project
         cls.user = user
@@ -54,6 +63,31 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
             response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data["results"]))
+
+    def test_list_should_not_include_soft_deleted_intances(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="Foo", created_by=self.user
+        )
+        change_request.new_reference_instances.set([self.instance_1.pk])
+
+        self.client.force_authenticate(self.user)
+
+        with self.assertNumQueries(8):
+            response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(1, len(response.data["results"]))
+            self.assertEqual(len(response.data["results"][0]["new_reference_instances"]), 1)
+            self.assertEqual(response.data["results"][0]["new_reference_instances"][0]["id"], self.instance_1.pk)
+
+        # Soft delete instance.
+        self.instance_1.deleted = True
+        self.instance_1.save()
+
+        with self.assertNumQueries(8):
+            response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(1, len(response.data["results"]))
+            self.assertEqual(len(response.data["results"][0]["new_reference_instances"]), 0)
 
     def test_list_without_auth(self):
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")

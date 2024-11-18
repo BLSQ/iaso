@@ -19,6 +19,7 @@ from plugins.polio.models import (
     Round,
     VaccinePreAlert,
     VaccineRequestForm,
+    VaccineRequestFormType,
 )
 
 
@@ -47,7 +48,15 @@ class VaccineRepositorySerializer(serializers.Serializer):
 
     def get_vrf_data(self, obj):
         vrfs = VaccineRequestForm.objects.filter(campaign=obj)
-        return [{"date": vrf.date_vrf_reception, "file": vrf.document.url if vrf.document else None} for vrf in vrfs]
+        return [
+            {
+                "date": vrf.date_vrf_reception,
+                "file": vrf.document.url if vrf.document else None,
+                "is_missing": vrf.vrf_type == VaccineRequestFormType.MISSING,
+                "is_not_required": vrf.vrf_type == VaccineRequestFormType.NOT_REQUIRED,
+            }
+            for vrf in vrfs
+        ]
 
     def get_pre_alert_data(self, obj):
         pre_alerts = VaccinePreAlert.objects.filter(request_form__campaign=obj)
@@ -93,19 +102,13 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         if file_type:
             file_type = file_type.upper()
             if file_type == "VRF":
-                queryset = queryset.filter(
-                    vaccinerequestform__isnull=False, vaccinerequestform__document__isnull=False
-                ).exclude(vaccinerequestform__document="")
+                queryset = queryset.filter(vaccinerequestform__isnull=False)
             elif file_type == "PRE_ALERT":
                 queryset = queryset.filter(
-                    vaccinerequestform__isnull=False,
-                    vaccinerequestform__vaccineprealert__isnull=False,
-                    vaccinerequestform__vaccineprealert__document__isnull=False,
-                ).exclude(vaccinerequestform__vaccineprealert__document="")
+                    vaccinerequestform__isnull=False, vaccinerequestform__vaccineprealert__isnull=False
+                )
             elif file_type == "FORM_A":
-                queryset = queryset.filter(
-                    outgoingstockmovement__isnull=False, outgoingstockmovement__document__isnull=False
-                ).exclude(outgoingstockmovement__document="")
+                queryset = queryset.filter(outgoingstockmovement__isnull=False)
 
         # Filter by VRF type
         vrf_type = request.query_params.get("vrf_type", None)
@@ -205,11 +208,9 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
 
         The response includes for each campaign:
         - Basic campaign info (country, OBR name, dates)
-        - VRF data
-        - Pre-alert data
-        - Form A data
-        - Incident reports
-        - Destruction reports
+        - VRF data (date, file, is_missing, is_not_required)
+        - Pre-alert data (date, file)
+        - Form A data (date, file)
         """
         if request.query_params.get("limit", None) is None:
             self.pagination_class.page_size = self.default_page_size

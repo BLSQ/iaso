@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.repository.roundCount',
         defaultMessage: 'Rounds count',
     },
+    roundNumbers: {
+        id: 'iaso.polio.form.label.roundNumbers',
+        defaultMessage: 'Round number(s)',
+    },
     country: {
         id: 'iaso.polio.table.label.country',
         defaultMessage: 'Country',
@@ -24,6 +28,10 @@ const MESSAGES = defineMessages({
     startDate: {
         id: 'iaso.label.dateFrom',
         defaultMessage: 'Start date',
+    },
+    notRequired: {
+        id: 'iaso.polio.label.notRequired',
+        defaultMessage: 'Not required',
     },
 });
 

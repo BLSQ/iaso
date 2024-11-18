@@ -10,3 +10,20 @@ export type VaccineRepositoryParams = PaginationParams & {
     fileType?: string;
     campaignStatus?: string;
 };
+
+export type DocumentData = {
+    date?: string;
+    file?: string;
+};
+
+export type VaccineReporting = {
+    country_name: string;
+    campaign_obr_name: string;
+    rounds_count: string;
+    start_date: string;
+    vrf_data: DocumentData[];
+    pre_alert_data: DocumentData[];
+    form_a_data: DocumentData[];
+    incident_reports: DocumentData[];
+    destruction_reports: DocumentData[];
+};

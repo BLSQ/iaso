@@ -7,7 +7,7 @@ import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { SxStyles } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { baseUrls } from '../../../constants/urls';
-import { useColumns } from './hooks/useColumns';
+import { useVaccineRepositoryColumns } from './hooks/useVaccineRepositoryColumns';
 import {
     tableDefaults,
     useGetVaccineReporting,
@@ -29,7 +29,18 @@ const styles: SxStyles = {
         margin: 0,
         overflow: 'auto',
         backgroundColor: 'white',
+        // '& td': { padding: 0 },
     },
+};
+
+const getCellProps = () => {
+    return {
+        style: {
+            '& td': {
+                padding: 0,
+            },
+        },
+    };
 };
 
 // Campaigns status filter should be on another ticket with better specs
@@ -47,7 +58,7 @@ export const VaccineRepository: FunctionComponent = () => {
     ) as unknown as VaccineRepositoryParams;
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetVaccineReporting(params);
-    const columns = useColumns();
+    const columns = useVaccineRepositoryColumns();
 
     return (
         <>
@@ -85,6 +96,7 @@ export const VaccineRepository: FunctionComponent = () => {
                     baseUrl={redirectUrl}
                     countOnTop
                     params={params}
+                    cellProps={getCellProps}
                     extraProps={{
                         loading: isFetching,
                         defaultPageSize: tableDefaults.limit,

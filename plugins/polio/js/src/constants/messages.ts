@@ -2494,6 +2494,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.campaignStatus',
         defaultMessage: 'Campaign status',
     },
+    vaccineRepository: {
+        id: 'iaso.polio.repository.title',
+        defaultMessage: 'Vaccine Management Repository',
+    },
 });
 
 export default MESSAGES;

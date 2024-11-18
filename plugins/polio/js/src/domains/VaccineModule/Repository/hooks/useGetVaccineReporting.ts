@@ -2,12 +2,15 @@ import { UseQueryResult } from 'react-query';
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { VaccineReporting } from '../types';
 
 const getVaccineReporting = params => {
-    const apiParams = {
-        ...params,
-        campaign_status: params.campaignStatus,
-    };
+    const apiParams = params.campaignStatus
+        ? {
+              ...params,
+              campaign_status: params.campaignStatus,
+          }
+        : params;
     const queryString = new URLSearchParams(apiParams).toString();
     return getRequest(`/api/polio/vaccine/repository/?${queryString}`);
 };
@@ -15,23 +18,6 @@ export const tableDefaults = {
     order: 'updated_at',
     limit: 10,
     page: 1,
-};
-
-export type DocumentData = {
-    date?: string;
-    file?: string;
-};
-
-type VaccineReporting = {
-    country_name: string;
-    campaign_obr_name: string;
-    rounds_count: string;
-    start_date: string;
-    vrf_data: DocumentData[];
-    pre_alert_data: DocumentData[];
-    form_a_data: DocumentData[];
-    incident_reports: DocumentData[];
-    destruction_reports: DocumentData[];
 };
 
 type Response = {

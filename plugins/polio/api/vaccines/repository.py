@@ -33,9 +33,9 @@ from plugins.polio.models import (
 
 
 class VaccineRepositorySerializer(serializers.Serializer):
-    country_name = serializers.CharField(source="country.name")
-    campaign_obr_name = serializers.CharField(source="obr_name")
-    rounds_count = serializers.SerializerMethodField()
+    country_name = serializers.CharField(source="campaign.country.name")
+    campaign_obr_name = serializers.CharField(source="campaign.obr_name")
+    round_id = serializers.IntegerField(source="id")
     start_date = serializers.DateField(source="started_at")
     end_date = serializers.DateField(source="ended_at")
 
@@ -43,11 +43,8 @@ class VaccineRepositorySerializer(serializers.Serializer):
     pre_alert_data = serializers.SerializerMethodField()
     form_a_data = serializers.SerializerMethodField()
 
-    def get_rounds_count(self, obj):
-        return Round.objects.filter(campaign=obj).count()
-
     def get_vrf_data(self, obj):
-        vrfs = VaccineRequestForm.objects.filter(campaign=obj)
+        vrfs = VaccineRequestForm.objects.filter(campaign=obj.campaign)
         return [
             {
                 "date": vrf.date_vrf_reception,
@@ -59,13 +56,13 @@ class VaccineRepositorySerializer(serializers.Serializer):
         ]
 
     def get_pre_alert_data(self, obj):
-        pre_alerts = VaccinePreAlert.objects.filter(request_form__campaign=obj)
+        pre_alerts = VaccinePreAlert.objects.filter(request_form__campaign=obj.campaign)
         return [
             {"date": pa.date_pre_alert_reception, "file": pa.document.url if pa.document else None} for pa in pre_alerts
         ]
 
     def get_form_a_data(self, obj):
-        form_as = OutgoingStockMovement.objects.filter(campaign=obj)
+        form_as = OutgoingStockMovement.objects.filter(campaign=obj.campaign)
         return [{"date": fa.report_date, "file": fa.document.url if fa.document else None} for fa in form_as]
 
 
@@ -85,35 +82,38 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         # Filter by country block
         country_block = request.query_params.get("country_block", None)
         if country_block:
-            queryset = queryset.filter(country__groups__in=country_block.split(","))
+            queryset = queryset.filter(campaign__country__groups__in=country_block.split(","))
 
         # Filter by country
         country = request.query_params.get("country", None)
         if country:
-            queryset = queryset.filter(country__id=country)
+            queryset = queryset.filter(campaign__country__id=country)
 
         # Filter by campaign
         campaign = request.query_params.get("campaign", None)
         if campaign:
-            queryset = queryset.filter(obr_name=campaign)
+            queryset = queryset.filter(campaign__obr_name=campaign)
 
         # Filter by file type
         file_type = request.query_params.get("file_type", None)
         if file_type:
             file_type = file_type.upper()
             if file_type == "VRF":
-                queryset = queryset.filter(vaccinerequestform__isnull=False)
+                queryset = queryset.filter(campaign__vaccinerequestform__isnull=False)
             elif file_type == "PRE_ALERT":
                 queryset = queryset.filter(
-                    vaccinerequestform__isnull=False, vaccinerequestform__vaccineprealert__isnull=False
+                    campaign__vaccinerequestform__isnull=False,
+                    campaign__vaccinerequestform__vaccineprealert__isnull=False,
                 )
             elif file_type == "FORM_A":
-                queryset = queryset.filter(outgoingstockmovement__isnull=False)
+                queryset = queryset.filter(campaign__outgoingstockmovement__isnull=False)
 
         # Filter by VRF type
         vrf_type = request.query_params.get("vrf_type", None)
         if vrf_type:
-            queryset = queryset.filter(vaccinerequestform__isnull=False, vaccinerequestform__vrf_type=vrf_type)
+            queryset = queryset.filter(
+                campaign__vaccinerequestform__isnull=False, campaign__vaccinerequestform__vrf_type=vrf_type
+            )
 
         return queryset
 
@@ -126,9 +126,9 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
     serializer_class = VaccineRepositorySerializer
     pagination_class = Paginator
     filter_backends = [OrderingFilter, SearchFilter, VaccineReportingFilterBackend]
-    ordering_fields = ["country__name", "obr_name", "started_at"]
+    ordering_fields = ["campaign__country__name", "campaign__obr_name", "started_at"]
     ordering = ["-started_at"]
-    search_fields = ["country__name", "obr_name"]
+    search_fields = ["campaign__country__name", "campaign__obr_name"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     default_page_size = 20
 
@@ -202,8 +202,8 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
         - VRF type (vrf_type) (possible values : Normal, Missing, Not Required)
 
         The results can be ordered by:
-        - Country name ("country__name")
-        - OBR name ("obr_name")
+        - Country name ("campaign__country__name")
+        - OBR name ("campaign__obr_name")
         - Start date ("started_at")
 
         The response includes for each campaign:
@@ -219,15 +219,17 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
 
     def get_queryset(self):
         """
-        Get the queryset for Campaign objects.
-
-        Returns annotated queryset with campaign start dates.
+        Get the queryset for Round objects with their campaigns.
         """
-        return (
-            Campaign.objects.filter(rounds__isnull=False)
-            .annotate(
-                started_at=Min("rounds__started_at"),
-                ended_at=Max("rounds__ended_at"),
+        # Create a queryset that includes one entry per round
+        rounds_queryset = (
+            Round.objects.filter(campaign__isnull=False)
+            .select_related(
+                "campaign",
+                "campaign__country",
             )
-            .exclude(Q(started_at__isnull=True) | Q(ended_at__isnull=True))
+            .order_by("-started_at", "id")
+            .distinct("started_at", "id")
         )
+
+        return rounds_queryset

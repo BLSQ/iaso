@@ -9,6 +9,7 @@ from rest_framework import permissions, serializers, filters
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
+from datetime import timedelta
 
 from iaso.api.common import Paginator
 from plugins.polio.models import (
@@ -54,8 +55,17 @@ class VaccineRepositorySerializer(serializers.Serializer):
         ]
 
     def get_form_a_data(self, obj):
-        form_as = OutgoingStockMovement.objects.filter(campaign=obj.campaign)
-        return [{"date": fa.report_date, "file": fa.document.url if fa.document else None} for fa in form_as]
+        form_as = OutgoingStockMovement.objects.filter(campaign=obj.campaign, round=obj)
+        return [
+            {
+                "date": fa.form_a_reception_date,
+                "file": fa.document.url if fa.document else None,
+                "is_late": fa.form_a_reception_date > (obj.ended_at + timedelta(days=14))
+                if fa.form_a_reception_date and obj.ended_at
+                else None,
+            }
+            for fa in form_as
+        ]
 
 
 class VaccineReportingFilterBackend(filters.BaseFilterBackend):
@@ -112,7 +122,7 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
                     campaign__vaccinerequestform__vaccineprealert__isnull=False,
                 )
             elif file_type == "FORM_A":
-                queryset = queryset.filter(campaign__outgoingstockmovement__isnull=False)
+                queryset = queryset.filter(outgoingstockmovement__isnull=False)
 
         # Filter by VRF type
         vrf_type = request.query_params.get("vrf_type", None)

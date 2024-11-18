@@ -196,7 +196,7 @@ class VaccineRepositoryAPITestCase(APITestCase):
         campaign2_round = pm.Round.objects.create(
             campaign=campaign2,
             started_at=datetime.datetime(2021, 2, 1),
-            ended_at=datetime.datetime(2021, 2, 28),
+            ended_at=datetime.datetime(2025, 1, 1),
             number=1,
         )
 

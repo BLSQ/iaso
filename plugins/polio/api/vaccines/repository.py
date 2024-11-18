@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from django.db.models import Q, Min
+from django.db.models import Q, Min, Max
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from drf_yasg import openapi
@@ -21,8 +21,14 @@ from plugins.polio.models import (
     VaccineRequestForm,
 )
 
-# "Not required" to be implemented if type is not required
-# Wait for return concerning which date to display
+
+# 1 round par ligne
+# on vire destruction et incident
+# Toutes les campagnes (Order by start date descending limit 10)
+# Filtres doivent fonctionner
+# Sort 4 premieres colonnes
+# "Not required" to be implemented if type is not required, "Missing"
+# Filtre by type of VRF (Missing, Not Required, Normal)
 
 
 class VaccineReportingSerializer(serializers.Serializer):
@@ -34,8 +40,6 @@ class VaccineReportingSerializer(serializers.Serializer):
     vrf_data = serializers.SerializerMethodField()
     pre_alert_data = serializers.SerializerMethodField()
     form_a_data = serializers.SerializerMethodField()
-    incident_reports = serializers.SerializerMethodField()
-    destruction_reports = serializers.SerializerMethodField()
 
     def get_start_date(self, obj):
         return obj.started_at
@@ -56,30 +60,6 @@ class VaccineReportingSerializer(serializers.Serializer):
     def get_form_a_data(self, obj):
         form_as = OutgoingStockMovement.objects.filter(campaign=obj)
         return [{"date": fa.report_date, "file": fa.document.url if fa.document else None} for fa in form_as]
-
-    def get_incident_reports(self, obj):
-        last_round = Round.objects.filter(campaign=obj).order_by("-ended_at").first()
-        if last_round and last_round.ended_at:
-            incidents = IncidentReport.objects.filter(
-                vaccine_stock__country=obj.country, date_of_incident_report__gte=last_round.ended_at
-            )
-            return [
-                {"date": ir.date_of_incident_report, "file": ir.document.url if ir.document else None}
-                for ir in incidents
-            ]
-        return []
-
-    def get_destruction_reports(self, obj):
-        last_round = Round.objects.filter(campaign=obj).order_by("-ended_at").first()
-        if last_round and last_round.ended_at:
-            destructions = DestructionReport.objects.filter(
-                vaccine_stock__country=obj.country, destruction_report_date__gte=last_round.ended_at
-            )
-            return [
-                {"date": dr.destruction_report_date, "file": dr.document.url if dr.document else None}
-                for dr in destructions
-            ]
-        return []
 
 
 class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
@@ -164,7 +144,8 @@ class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
         Returns annotated queryset with campaign start dates.
         """
         queryset = Campaign.objects.filter(vaccinerequestform__isnull=False).annotate(
-            started_at=Min("rounds__started_at")
+            started_at=Min("rounds__started_at"),
+            ended_at=Max("rounds__ended_at"),
         )
 
         # Filter by campaign status
@@ -172,11 +153,11 @@ class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
         if campaign_status:
             today = datetime.now().date()
             if campaign_status.upper() == "ONGOING":
-                queryset = queryset.filter(end_date__gte=today)
+                queryset = queryset.filter(ended_at__gte=today)
             elif campaign_status.upper() == "PAST":
-                queryset = queryset.filter(end_date__lt=today)
+                queryset = queryset.filter(ended_at__lt=today)
             elif campaign_status.upper() == "PREPARING":
-                queryset = queryset.filter(start_date__gte=today)
+                queryset = queryset.filter(started_at__gte=today)
 
         # Filter by country block
         country_block = self.request.query_params.get("country_block", None)
@@ -203,9 +184,5 @@ class VaccineReportingViewSet(GenericViewSet, ListModelMixin):
                 queryset = queryset.filter(vaccine_pre_alerts__isnull=False)
             elif file_type == "FORM_A":
                 queryset = queryset.filter(outgoing_stock_movements__isnull=False)
-            elif file_type == "INCIDENT":
-                queryset = queryset.filter(country__vaccine_stocks__incident_reports__isnull=False)
-            elif file_type == "DESTRUCTION":
-                queryset = queryset.filter(country__vaccine_stocks__destruction_reports__isnull=False)
 
         return queryset

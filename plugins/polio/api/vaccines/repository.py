@@ -238,18 +238,13 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
         Get the queryset for Round objects with their campaigns.
         """
 
-        rounds_queryset = (
-            Round.objects.filter(
-                campaign__isnull=False,
-                campaign__deleted_at__isnull=True,
-                campaign__campaign_types__name=CampaignType.POLIO,
-            )
-            .select_related(
-                "campaign",
-                "campaign__country",
-            )
-            .order_by("-started_at", "id")
-            .distinct("started_at", "id")
+        rounds_queryset = Round.objects.filter(
+            campaign__isnull=False,
+            campaign__deleted_at__isnull=True,
+            campaign__campaign_types__name=CampaignType.POLIO,
+        ).select_related(
+            "campaign",
+            "campaign__country",
         )
 
         return rounds_queryset

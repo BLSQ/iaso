@@ -33,6 +33,34 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.notRequired',
         defaultMessage: 'Not required',
     },
+    all: {
+        id: 'iaso.forms.all',
+        defaultMessage: 'All',
+    },
+    preAlerts: {
+        id: 'iaso.polio.label.PREALERT',
+        defaultMessage: 'Pre-alerts',
+    },
+    vrf: {
+        id: 'iaso.polio.label.vrfTitle',
+        defaultMessage: 'Vaccine request form',
+    },
+    formA: {
+        id: 'iaso.polio.label.formA',
+        defaultMessage: 'Form A',
+    },
+    ongoingCampaigns: {
+        id: 'iaso.polio.label.ongoingCampaigns',
+        defaultMessage: 'Ongoing campaigns',
+    },
+    pastCampaigns: {
+        id: 'iaso.polio.label.pastCampaigns',
+        defaultMessage: 'Past campaigns',
+    },
+    preparing: {
+        id: 'iaso.polio.label.preparing',
+        defaultMessage: 'Preparing',
+    },
 });
 
 export default MESSAGES;

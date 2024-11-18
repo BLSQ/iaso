@@ -12,23 +12,24 @@ export const useVaccineRepositoryColumns = (): Column[] => {
         () => [
             {
                 Header: formatMessage(MESSAGES.country),
-                id: 'country_name',
+                id: 'campaign__country__name',
                 accessor: 'country_name',
                 align: 'left',
             },
             {
                 Header: formatMessage(MESSAGES.obr_name),
-                id: 'campaign_obr_name',
+                id: 'campaign__obr_name',
                 accessor: 'campaign_obr_name',
                 align: 'left',
             },
             {
                 Header: formatMessage(MESSAGES.roundNumbers),
-                id: 'rounds_count',
-                accessor: 'rounds_count',
+                id: 'round_number',
+                accessor: 'round_number',
             },
             {
                 Header: formatMessage(MESSAGES.startDate),
+                id: 'started_at',
                 accessor: 'start_date',
                 Cell: DateCell,
             },

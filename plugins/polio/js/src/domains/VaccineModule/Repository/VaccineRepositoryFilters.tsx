@@ -36,16 +36,15 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [fileType, setFileType] = useState(
-        params.fileType || 'VRF,PRE_ALERT,FORM_A,INCIDENT,DESTRUCTION',
+        params.file_type || 'VRF,PRE_ALERT,FORM_A,INCIDENT,DESTRUCTION',
     );
     const [campaignStatus, setCampaignStatus] = useState(params.campaignStatus);
-    const [orgUnitGroups, setOrgUnitGroups] = useState(params.orgUnitGroups);
+    const [countryBlocks, setCountryBlocks] = useState(params.country_block);
     const [campaignCategory, setCampaignCategory] = useState(
         isEmbedded
             ? (params.campaignCategory ?? 'all')
             : params.campaignCategory,
     );
-
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
@@ -54,8 +53,8 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
                 countries,
                 page: undefined,
                 campaignCategory,
-                orgUnitGroups,
-                fileType,
+                country_block: countryBlocks,
+                file_type: fileType,
                 campaignStatus,
             };
             redirectToReplace(redirectUrl, urlParams);
@@ -65,11 +64,11 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
         params,
         countries,
         campaignCategory,
-        orgUnitGroups,
-        redirectToReplace,
-        redirectUrl,
+        countryBlocks,
         fileType,
         campaignStatus,
+        redirectToReplace,
+        redirectUrl,
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     // Pass the appId to have it works in the embedded vaccine stock where the user is not connected
@@ -84,7 +83,7 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
     const campaignStatusOptions = useGetCampaignStatus();
     useEffect(() => {
         setFiltersUpdated(true);
-    }, [countries, campaignCategory, orgUnitGroups, fileType, campaignStatus]);
+    }, [countries, campaignCategory, countryBlocks, fileType, campaignStatus]);
 
     useEffect(() => {
         setFiltersUpdated(false);
@@ -107,13 +106,13 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
                     />
                     <InputComponent
                         loading={isFetchingGroupedOrgUnits}
-                        keyValue="orgUnitGroups"
+                        keyValue="country_block"
                         multi
                         clearable
                         onChange={(key, value) => {
-                            setOrgUnitGroups(value);
+                            setCountryBlocks(value);
                         }}
-                        value={orgUnitGroups}
+                        value={countryBlocks}
                         type="select"
                         options={groupedOrgUnits}
                         label={MESSAGES.countryBlock}
@@ -152,7 +151,7 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
-                        keyValue="fileType"
+                        keyValue="file_type"
                         clearable
                         onChange={(_key, value) => {
                             setFileType(value);

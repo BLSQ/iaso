@@ -1,25 +1,26 @@
 // import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
-// import MESSAGES from '../messages';
+import { useSafeIntl } from 'bluesquare-components';
+import MESSAGES from '../messages';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 export const useGetCampaignStatus = (): DropdownOptions<string>[] => {
-    // const { formatMessage } = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
     return useMemo(
         () => [
             {
                 value: 'PREPARING',
-                label: 'Preparing',
+                label: formatMessage(MESSAGES.preparing),
             },
             {
                 value: 'PAST',
-                label: 'Past Campaigns',
+                label: formatMessage(MESSAGES.pastCampaigns),
             },
             {
                 value: 'ONGOING',
-                label: 'Ongoing Campaigns',
+                label: formatMessage(MESSAGES.ongoingCampaigns),
             },
         ],
-        [],
+        [formatMessage],
     );
 };

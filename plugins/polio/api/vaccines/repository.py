@@ -29,6 +29,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
     country_name = serializers.CharField(source="campaign.country.name")
     campaign_obr_name = serializers.CharField(source="campaign.obr_name")
     round_id = serializers.IntegerField(source="id")
+    round_number = serializers.IntegerField(source="number")
     start_date = serializers.DateField(source="started_at")
     end_date = serializers.DateField(source="ended_at")
 
@@ -238,18 +239,13 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
         Get the queryset for Round objects with their campaigns.
         """
 
-        rounds_queryset = (
-            Round.objects.filter(
-                campaign__isnull=False,
-                campaign__deleted_at__isnull=True,
-                campaign__campaign_types__name=CampaignType.POLIO,
-            )
-            .select_related(
-                "campaign",
-                "campaign__country",
-            )
-            .order_by("-started_at", "id")
-            .distinct("started_at", "id")
+        rounds_queryset = Round.objects.filter(
+            campaign__isnull=False,
+            campaign__deleted_at__isnull=True,
+            campaign__campaign_types__name=CampaignType.POLIO,
+        ).select_related(
+            "campaign",
+            "campaign__country",
         )
 
         return rounds_queryset

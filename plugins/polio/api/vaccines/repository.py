@@ -29,6 +29,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
     country_name = serializers.CharField(source="campaign.country.name")
     campaign_obr_name = serializers.CharField(source="campaign.obr_name")
     round_id = serializers.IntegerField(source="id")
+    round_number = serializers.IntegerField(source="number")
     start_date = serializers.DateField(source="started_at")
     end_date = serializers.DateField(source="ended_at")
 

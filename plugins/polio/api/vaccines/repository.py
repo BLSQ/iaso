@@ -101,10 +101,19 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         if country_block:
             queryset = queryset.filter(campaign__country__groups__in=country_block.split(","))
 
-        # Filter by country
-        country = request.query_params.get("country", None)
-        if country:
-            queryset = queryset.filter(campaign__country__id=country)
+        # Filter by country (multi)
+        countries = request.query_params.get("countries", None)
+        if countries:
+            queryset = queryset.filter(campaign__country__id__in=countries.split(","))
+
+        # Filter by campaign category
+        campaign_category = request.query_params.get("campaignCategory", None)
+        if campaign_category == "test":
+            queryset = queryset.filter(campaign__is_test=True)
+        if campaign_category == "preventive":
+            queryset = queryset.filter(campaign__is_preventive=True)
+        if campaign_category == "regular":
+            queryset = queryset.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
 
         # Filter by campaign
         campaign = request.query_params.get("campaign", None)
@@ -121,7 +130,7 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
                 queryset = queryset.filter(
                     campaign__vaccinerequestform__isnull=False,
                     campaign__vaccinerequestform__vaccineprealert__isnull=False,
-                )
+                ).distinct("id")
             elif file_type == "FORM_A":
                 queryset = queryset.filter(outgoingstockmovement__isnull=False)
 
@@ -132,7 +141,7 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
                 campaign__vaccinerequestform__isnull=False, campaign__vaccinerequestform__vrf_type=vrf_type
             )
 
-        return queryset
+        return queryset.distinct()
 
 
 class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
@@ -214,7 +223,7 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
         - File type (file_type) (possible values : VRF, PRE_ALERT, FORM_A)
         - Campaign status (campaign_status) (possible values : ONGOING, PAST, PREPARING)
         - Country block (country_block) comma separated list of org unit group ids
-        - Country (country) id of country
+        - Country (countries) comma-separated list of country IDs
         - Campaign ID (campaign) OBR name of campaign
         - VRF type (vrf_type) (possible values : Normal, Missing, Not Required)
 

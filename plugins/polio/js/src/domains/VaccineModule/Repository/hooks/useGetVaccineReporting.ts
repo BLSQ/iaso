@@ -15,7 +15,7 @@ const getVaccineReporting = params => {
     return getRequest(`/api/polio/vaccine/repository/?${queryString}`);
 };
 export const tableDefaults = {
-    order: 'start_date',
+    order: 'started_at',
     limit: 10,
     page: 1,
 };

@@ -42,7 +42,6 @@ export const FormADocumentCell: FunctionComponent<Props> = ({
         );
 
     const boxStyle = isLate ? styles.isLatewithPdf : styles.withPdf;
-    console.log(boxStyle);
     return (
         <Box sx={boxStyle}>
             <PdfPreview

@@ -17,6 +17,7 @@ const commonStyles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
 };
 
 export const defaultStyles: SxStyles = {

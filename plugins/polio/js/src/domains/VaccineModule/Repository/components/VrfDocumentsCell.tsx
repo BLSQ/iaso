@@ -12,12 +12,13 @@ export const VrfDocumentsCells = (cellInfo: {
     }
     return (
         <>
-            {value.map(({ date, file, is_not_required }, index) => (
+            {value.map(({ date, file, is_not_required, is_missing }, index) => (
                 <VrfDocumentCell
                     key={`${file}${index}`}
                     date={date}
                     file={file}
                     isRequired={!is_not_required}
+                    isMissing={is_missing}
                 />
             ))}
         </>

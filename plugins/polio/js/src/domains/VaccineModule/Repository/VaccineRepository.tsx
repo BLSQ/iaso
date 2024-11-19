@@ -43,6 +43,7 @@ const getCellProps = cell => {
     return {
         style: {
             padding: NOPADDING_CELLS_IDS.includes(id as string) ? 0 : undefined,
+            verticalAlign: 'top',
         },
     };
 };

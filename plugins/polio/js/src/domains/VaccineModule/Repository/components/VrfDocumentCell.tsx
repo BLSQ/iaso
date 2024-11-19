@@ -12,6 +12,7 @@ import { OpenButtonComponent } from './OpenButton';
 
 type Props = DocumentData & {
     isRequired: boolean;
+    isMissing: boolean;
 };
 
 const styles: SxStyles = {
@@ -26,6 +27,7 @@ export const VrfDocumentCell: FunctionComponent<Props> = ({
     date,
     file,
     isRequired,
+    isMissing,
 }) => {
     const { formatMessage } = useSafeIntl();
     if (!date && !isRequired)
@@ -33,6 +35,10 @@ export const VrfDocumentCell: FunctionComponent<Props> = ({
             <Box sx={styles.notRequired}>
                 {formatMessage(MESSAGES.notRequired)}
             </Box>
+        );
+    if (!date && isMissing)
+        return (
+            <Box sx={styles.notRequired}>{formatMessage(MESSAGES.missing)}</Box>
         );
     if (!date) return <Box sx={styles.noPdf}>{textPlaceholder}</Box>;
     if (!file) return <Box sx={styles.noPdf}>{DateCell({ value: date })}</Box>;

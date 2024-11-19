@@ -107,7 +107,9 @@ class GroupsViewSet(ModelViewSet):
             return Group.objects.none()
 
         profile = self.request.user.iaso_profile
-        queryset = Group.objects.filter(source_version__data_source__projects__in=profile.account.project_set.all())
+        queryset = Group.objects.filter(
+            source_version__data_source__projects__in=profile.account.project_set.all()
+        ).prefetch_related("group_sets")
         return queryset
 
     def filter_queryset(self, queryset):

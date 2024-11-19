@@ -1153,10 +1153,10 @@ class VaccineRequestForm(SoftDeletableModel):
         return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 
 
-class VaccinePreAlert(SoftDeletableModel):
+class VaccinePreAlert(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     date_pre_alert_reception = models.DateField()
-    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)  # , unique=True)
     estimated_arrival_time = models.DateField(blank=True, null=True, default=None)
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
@@ -1169,8 +1169,6 @@ class VaccinePreAlert(SoftDeletableModel):
     document = models.FileField(
         storage=CustomPublicStorage(), upload_to="public_documents/prealert/", null=True, blank=True
     )
-
-    objects = DefaultSoftDeletableManager()
 
     def save(self, *args, **kwargs):
         self.doses_per_vial = self.get_doses_per_vial()
@@ -1186,11 +1184,11 @@ class VaccinePreAlert(SoftDeletableModel):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
 
-class VaccineArrivalReport(SoftDeletableModel):
+class VaccineArrivalReport(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     arrival_report_date = models.DateField()
     doses_received = models.PositiveIntegerField()
-    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)  # , unique=True)
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
@@ -1200,8 +1198,6 @@ class VaccineArrivalReport(SoftDeletableModel):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    objects = DefaultSoftDeletableManager()
 
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]

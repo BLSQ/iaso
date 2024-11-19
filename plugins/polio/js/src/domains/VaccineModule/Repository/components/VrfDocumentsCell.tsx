@@ -1,15 +1,14 @@
 import React, { ReactElement } from 'react';
 import { DocumentData } from '../types';
-import { DocumentCell } from './DocumentCell';
 import { VrfDocumentCell } from './VrfDocumentCell';
 
 export const VrfDocumentsCells = (cellInfo: {
-    value?: (DocumentData & { is_not_required: boolean })[];
+    value?: (DocumentData & {
+        is_not_required: boolean;
+        is_missing: boolean;
+    })[];
 }): ReactElement => {
     const value = cellInfo?.value ?? [];
-    if (value.length === 0) {
-        return <DocumentCell />;
-    }
     return (
         <>
             {value.map(({ date, file, is_not_required, is_missing }, index) => (

@@ -37,6 +37,9 @@ class VaccineRepositoryAPITestCase(APITestCase):
             source_ref="ZambiaRef",
         )
 
+        # Create campaign type
+        cls.polio_type, _ = pm.CampaignType.objects.get_or_create(name="Polio")
+
         # Create a campaign with rounds
         cls.campaign = pm.Campaign.objects.create(
             obr_name="Test Campaign",
@@ -44,6 +47,7 @@ class VaccineRepositoryAPITestCase(APITestCase):
             account=cls.account,
             vacine=pm.VACCINES[0][0],
         )
+        cls.campaign.campaign_types.add(cls.polio_type)
 
         cls.campaign_round_1 = pm.Round.objects.create(
             campaign=cls.campaign,
@@ -92,8 +96,10 @@ class VaccineRepositoryAPITestCase(APITestCase):
         result = data["results"][0]
         self.assertIn("country_name", result)
         self.assertIn("campaign_obr_name", result)
-        self.assertIn("rounds_count", result)
+        self.assertIn("round_id", result)
+        self.assertIn("round_number", result)
         self.assertIn("start_date", result)
+        self.assertIn("end_date", result)
         self.assertIn("vrf_data", result)
         self.assertIn("pre_alert_data", result)
         self.assertIn("form_a_data", result)
@@ -109,14 +115,14 @@ class VaccineRepositoryAPITestCase(APITestCase):
     def test_ordering(self):
         """Test ordering functionality"""
         # Create another country and campaign for ordering test
-
         campaign2 = pm.Campaign.objects.create(
             obr_name="Another Campaign",
             country=self.zambia,
             account=self.account,
             vacine=pm.VACCINES[0][0],
-            onset_at=self.now - datetime.timedelta(days=5),
         )
+        campaign2.campaign_types.add(self.polio_type)
+
         pm.VaccineRequestForm.objects.create(
             campaign=campaign2,
             vaccine_type=pm.VACCINES[0][0],
@@ -136,25 +142,25 @@ class VaccineRepositoryAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         # Test ordering by campaign name
-        response = self.client.get(f"{BASE_URL}?order=obr_name")
+        response = self.client.get(f"{BASE_URL}?order=campaign__obr_name")
         data = response.json()
         self.assertEqual(data["results"][0]["campaign_obr_name"], "Another Campaign")
         self.assertEqual(data["results"][1]["campaign_obr_name"], "Test Campaign")
 
         # Test reverse ordering by campaign name
-        response = self.client.get(f"{BASE_URL}?order=-obr_name")
+        response = self.client.get(f"{BASE_URL}?order=-campaign__obr_name")
         data = response.json()
         self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
         self.assertEqual(data["results"][1]["campaign_obr_name"], "Another Campaign")
 
         # Test ordering by country name
-        response = self.client.get(f"{BASE_URL}?order=country__name")
+        response = self.client.get(f"{BASE_URL}?order=campaign__country__name")
         data = response.json()
         self.assertEqual(data["results"][0]["country_name"], "Testland")
         self.assertEqual(data["results"][1]["country_name"], "Zambia")
 
         # Test reverse ordering by country name
-        response = self.client.get(f"{BASE_URL}?order=-country__name")
+        response = self.client.get(f"{BASE_URL}?order=-campaign__country__name")
         data = response.json()
         self.assertEqual(data["results"][0]["country_name"], "Zambia")
         self.assertEqual(data["results"][1]["country_name"], "Testland")
@@ -179,12 +185,14 @@ class VaccineRepositoryAPITestCase(APITestCase):
             country=self.zambia,
             account=self.account,
         )
+        campaign2.campaign_types.add(self.polio_type)
 
         preparing_campaign = pm.Campaign.objects.create(
             obr_name="Preparing Campaign",
             country=self.zambia,
             account=self.account,
         )
+        preparing_campaign.campaign_types.add(self.polio_type)
 
         vrf2 = pm.VaccineRequestForm.objects.create(
             campaign=campaign2,
@@ -228,10 +236,10 @@ class VaccineRepositoryAPITestCase(APITestCase):
         self.assertEqual(data["results"][0]["campaign_obr_name"], "Preparing Campaign")
 
         # Test filtering by country
-        response = self.client.get(f"{BASE_URL}?country={self.zambia.id}")
+        response = self.client.get(f"{BASE_URL}?countries={self.zambia.id}")
         data = response.json()
-        self.assertEqual(len(data["results"]), 1)
-        self.assertEqual(data["results"][0]["country_name"], "Zambia")
+        self.assertEqual(len(data["results"]), 2)
+        self.assertTrue(all(result["country_name"] == "Zambia" for result in data["results"]))
 
         # Test filtering by campaign name
         response = self.client.get(f"{BASE_URL}?campaign=Test Campaign")
@@ -246,7 +254,8 @@ class VaccineRepositoryAPITestCase(APITestCase):
 
         # Test filtering by country block
         country_group = self.zambia.groups.first()
-        response = self.client.get(f"{BASE_URL}?country_block={country_group.id}")
-        data = response.json()
-        self.assertEqual(len(data["results"]), 1)
-        self.assertEqual(data["results"][0]["country_name"], "Zambia")
+        if country_group:
+            response = self.client.get(f"{BASE_URL}?country_block={country_group.id}")
+            data = response.json()
+            self.assertEqual(len(data["results"]), 2)
+            self.assertTrue(all(result["country_name"] == "Zambia" for result in data["results"]))

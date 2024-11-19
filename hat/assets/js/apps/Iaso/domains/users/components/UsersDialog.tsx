@@ -154,6 +154,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         }
         return '';
     }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
+
     const currentUser = useCurrentUser();
     const hasDevFeatures = hasFeatureFlag(currentUser, SHOW_DEV_FEATURES);
     const hasNoOrgUnitManagementWrite = !userHasPermission(
@@ -230,6 +231,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                                 disabled
                                 tooltipMessage={formatMessage(
                                     MESSAGES.OrgUnitTypeWriteDisableTooltip,
+                                    { type: formatMessage(MESSAGES.user) },
                                 )}
                             />
                         ) : (

@@ -7,6 +7,9 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { SaveUserRoleQuery } from '../hooks/requests/useSaveUserRole';
 import MESSAGES from '../messages';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import * as Permissions from '../../../utils/permissions';
+import { userHasPermission } from '../../users/utils';
 
 type Props = {
     userRole: Partial<SaveUserRoleQuery>;
@@ -20,10 +23,23 @@ export const OrgUnitWriteTypes: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { data: orgUnitTypes, isLoading: isLoadingOrgUitTypes } =
         useGetOrgUnitTypesDropdownOptions(undefined, true);
+
+    const currentUser = useCurrentUser();
+    const hasNoOrgUnitManagementWrite = !userHasPermission(
+        Permissions.ORG_UNITS,
+        currentUser,
+    );
     return (
         <Box>
             <InputWithInfos
-                infos={formatMessage(MESSAGES.orgUnitWriteTypesInfos)}
+                infos={
+                    hasNoOrgUnitManagementWrite
+                        ? formatMessage(
+                              MESSAGES.OrgUnitTypeWriteDisableTooltip,
+                              { type: formatMessage(MESSAGES.userRole) },
+                          )
+                        : formatMessage(MESSAGES.orgUnitWriteTypesInfos)
+                }
             >
                 <InputComponent
                     multi
@@ -37,7 +53,12 @@ export const OrgUnitWriteTypes: FunctionComponent<Props> = ({
                     type="select"
                     options={orgUnitTypes}
                     label={MESSAGES.orgUnitWriteTypes}
-                    helperText={formatMessage(MESSAGES.selectAllHelperText)}
+                    helperText={
+                        hasNoOrgUnitManagementWrite
+                            ? ''
+                            : formatMessage(MESSAGES.selectAllHelperText)
+                    }
+                    disabled={hasNoOrgUnitManagementWrite}
                 />
             </InputWithInfos>
         </Box>

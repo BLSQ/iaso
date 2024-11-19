@@ -1,34 +1,44 @@
 import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import InputComponent from '../../../components/forms/InputComponent';
 import { InputWithInfos } from '../../../components/InputWithInfos';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { SaveUserRoleQuery } from '../hooks/requests/useSaveUserRole';
 import MESSAGES from '../messages';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import * as Permissions from '../../../utils/permissions';
-import { userHasPermission } from '../../users/utils';
+import { Permission } from '../types/userRoles';
 
 type Props = {
     userRole: Partial<SaveUserRoleQuery>;
     handleChange: (ouTypesIds: number[]) => void;
+    userRolePermissions: Permission[];
 };
 
 export const OrgUnitWriteTypes: FunctionComponent<Props> = ({
     userRole,
     handleChange,
+    userRolePermissions,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const [hasNoOrgUnitManagementWrite, setHasNoOrgUnitManagementWrite] =
+        useState<boolean>(
+            !userRolePermissions.includes(
+                Permissions.ORG_UNITS as unknown as Permission,
+            ),
+        );
     const { data: orgUnitTypes, isLoading: isLoadingOrgUitTypes } =
         useGetOrgUnitTypesDropdownOptions(undefined, true);
 
-    const currentUser = useCurrentUser();
-    const hasNoOrgUnitManagementWrite = !userHasPermission(
-        Permissions.ORG_UNITS,
-        currentUser,
-    );
+    useEffect(() => {
+        setHasNoOrgUnitManagementWrite(
+            !userRolePermissions.includes(
+                Permissions.ORG_UNITS as unknown as Permission,
+            ),
+        );
+    }, [userRolePermissions]);
+
     return (
         <Box>
             <InputWithInfos

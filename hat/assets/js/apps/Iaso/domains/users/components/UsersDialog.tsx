@@ -27,7 +27,6 @@ import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
 import UsersInfos from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
-import { userHasPermission } from '../utils';
 import * as Permissions from '../../../utils/permissions';
 import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 
@@ -75,6 +74,10 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const { user, setFieldValue, setFieldErrors } = useInitialUser(initialData);
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
+    const [hasNoOrgUnitManagementWrite, setHasNoOrgUnitManagementWrite] =
+        useState<boolean>(
+            !user.permissions.value.includes(Permissions.ORG_UNITS),
+        );
     const saveUser = useCallback(() => {
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
@@ -157,10 +160,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
 
     const currentUser = useCurrentUser();
     const hasDevFeatures = hasFeatureFlag(currentUser, SHOW_DEV_FEATURES);
-    const hasNoOrgUnitManagementWrite = !userHasPermission(
-        Permissions.ORG_UNITS,
-        currentUser,
-    );
 
     return (
         <>
@@ -263,9 +262,14 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         <PermissionsAttribution
                             isSuperUser={initialData?.is_superuser}
                             currentUser={user}
-                            handleChange={permissions =>
-                                setFieldValue('user_permissions', permissions)
-                            }
+                            handleChange={permissions => {
+                                setFieldValue('user_permissions', permissions);
+                                setHasNoOrgUnitManagementWrite(
+                                    !permissions.includes(
+                                        Permissions.ORG_UNITS,
+                                    ),
+                                );
+                            }}
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)
                             }

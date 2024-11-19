@@ -5,10 +5,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.repository.title',
         defaultMessage: 'Vaccine Management Repository',
     },
-    roundCount: {
-        id: 'iaso.polio.repository.roundCount',
-        defaultMessage: 'Rounds count',
-    },
     roundNumbers: {
         id: 'iaso.polio.form.label.roundNumbers',
         defaultMessage: 'Round number(s)',

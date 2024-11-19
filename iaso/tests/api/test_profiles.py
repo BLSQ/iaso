@@ -563,6 +563,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertFalse(user.has_perm(permission.USERS_ADMIN))
         self.assertEqual(self.jedi_squad_1.org_unit_type_id, self.jedi_squad.id)
 
+        user.iaso_profile.org_units.set([self.jedi_council_corruscant])
         user.iaso_profile.editable_org_unit_types.set(
             # Only org units of this type is now writable.
             [self.jedi_squad]
@@ -596,6 +597,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertTrue(user.has_perm(permission.USERS_MANAGED))
         self.assertFalse(user.has_perm(permission.USERS_ADMIN))
 
+        user.iaso_profile.org_units.set([self.jedi_council_corruscant])
         user.iaso_profile.editable_org_unit_types.set(
             # Only org units of this type is now writable.
             [self.jedi_squad]
@@ -1123,6 +1125,41 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(
             response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
         )
+
+    def test_update_user_should_succeed_with_restricted_editable_org_unit_types_when_modifying_another_field(self):
+        """
+        A user restricted to a given OrgUnitType should be able to edit another user as long as
+        he's not modifying the `org_units` or `editable_org_unit_type_ids` fields.
+        """
+        user = self.jam
+
+        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
+        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+
+        user.iaso_profile.org_units.set([self.jedi_council_corruscant])
+        user.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type is now writable.
+            [self.jedi_squad]
+        )
+
+        jum_profile = Profile.objects.get(user=self.jum)
+        jum_profile.org_units.set([self.jedi_council_corruscant])
+        jum_profile.editable_org_unit_types.set(
+            # Only org units of this type is now writable.
+            [self.jedi_council]
+        )
+
+        self.client.force_authenticate(user)
+
+        data = {
+            "user_name": "new_user_name",
+            "org_units": [{"id": self.jedi_council_corruscant.id}],
+            "editable_org_unit_type_ids": [self.jedi_council.id],
+        }
+        response = self.client.patch(f"/api/profiles/{jum_profile.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.jum.refresh_from_db()
+        self.assertEqual(self.jum.username, "new_user_name")
 
     def test_user_with_managed_permission_cannot_create_users(self):
         self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])

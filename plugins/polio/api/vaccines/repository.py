@@ -42,6 +42,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
                 "file": vrf.document.url if vrf.document else None,
                 "is_missing": vrf.vrf_type == VaccineRequestFormType.MISSING,
                 "is_not_required": vrf.vrf_type == VaccineRequestFormType.NOT_REQUIRED,
+                "id": vrf.id,
             }
             for vrf in vrfs
         ]
@@ -49,7 +50,12 @@ class VaccineRepositorySerializer(serializers.Serializer):
     def get_pre_alert_data(self, obj):
         pre_alerts = VaccinePreAlert.objects.filter(request_form__campaign=obj.campaign, request_form__rounds=obj)
         return [
-            {"date": pa.date_pre_alert_reception, "file": pa.document.url if pa.document else None} for pa in pre_alerts
+            {
+                "date": pa.date_pre_alert_reception,
+                "file": pa.document.url if pa.document else None,
+                "vrf_id": pa.request_form.id,
+            }
+            for pa in pre_alerts
         ]
 
     def get_form_a_data(self, obj):

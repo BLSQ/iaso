@@ -136,9 +136,7 @@ class PaymentLotsViewSet(ModelViewSet):
             payments_count=Coalesce(Subquery(payments_count, output_field=models.IntegerField()), 0),
         )
         queryset = queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account).distinct()
-        if localisation:
-            authorized_org_units = OrgUnit.objects.filter_for_user(user)
-            queryset = queryset.filter(payments__change_requests__org_unit__in=authorized_org_units)
+
         return queryset
 
     @swagger_auto_schema(

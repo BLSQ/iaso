@@ -5,11 +5,9 @@ import time_machine
 
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 
 from hat.audit.models import Modification
 from iaso import models as m
-from iaso.models.deduplication import ValidationStatus
 from iaso.test import TestCase
 
 

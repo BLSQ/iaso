@@ -8,7 +8,7 @@ def remove_softdeleted_prealerts(apps, schema_editor):
     the_items = VaccinePreAlert.objects.filter(deleted_at__isnull=False)
 
     print(f"Removing {the_items.count()} softdeleted prealerts")
-    # the_items.delete()
+    the_items.delete()
 
 
 def remove_softdeleted_arrival_reports(apps, schema_editor):
@@ -16,7 +16,7 @@ def remove_softdeleted_arrival_reports(apps, schema_editor):
     the_items = VaccineArrivalReport.objects.filter(deleted_at__isnull=False)
 
     print(f"Removing {the_items.count()} softdeleted arrival reports")
-    # the_items.delete()
+    the_items.delete()
 
 
 def rename_po_number_if_not_unique(apps, schema_editor):

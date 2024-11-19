@@ -1,22 +1,19 @@
-from datetime import datetime
+"""API endpoints and serializers for vaccine repository management."""
 
-from django.db.models import Q, Min, Max, OuterRef, Subquery
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
+from datetime import datetime, timedelta
+
+from django.db.models import Max, Min, OuterRef, Subquery
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, serializers, filters
+from rest_framework import filters, permissions, serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from datetime import timedelta
 
 from iaso.api.common import Paginator
 from plugins.polio.models import (
-    Campaign,
     CampaignType,
-    DestructionReport,
-    IncidentReport,
     OutgoingStockMovement,
     Round,
     VaccinePreAlert,
@@ -70,6 +67,8 @@ class VaccineRepositorySerializer(serializers.Serializer):
 
 
 class VaccineReportingFilterBackend(filters.BaseFilterBackend):
+    """Filter backend for vaccine reporting that handles campaign status, country, and file type filtering."""
+
     def filter_queryset(self, request, queryset, view):
         # Filter by campaign status
         campaign_status = request.query_params.get("campaign_status", None)
@@ -99,12 +98,20 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         # Filter by country block
         country_block = request.query_params.get("country_block", None)
         if country_block:
-            queryset = queryset.filter(campaign__country__groups__in=country_block.split(","))
+            try:
+                country_block_ids = [int(id) for id in country_block.split(",")]
+                queryset = queryset.filter(campaign__country__groups__in=country_block_ids)
+            except ValueError:
+                raise ValidationError("country_block must be a comma-separated list of integers")
 
         # Filter by country (multi)
         countries = request.query_params.get("countries", None)
         if countries:
-            queryset = queryset.filter(campaign__country__id__in=countries.split(","))
+            try:
+                country_ids = [int(id) for id in countries.split(",")]
+                queryset = queryset.filter(campaign__country__id__in=country_ids)
+            except ValueError:
+                raise ValidationError("countries must be a comma-separated list of integers")
 
         # Filter by campaign category
         campaign_category = request.query_params.get("campaignCategory", None)

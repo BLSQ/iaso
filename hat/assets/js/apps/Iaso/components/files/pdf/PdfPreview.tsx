@@ -96,6 +96,7 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
 
     const { formatMessage } = useSafeIntl();
     const handleOpen = () => {
+        console.log('handleOpen');
         setOpen(true);
     };
 

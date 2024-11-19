@@ -1,38 +1,26 @@
-import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { textPlaceholder } from 'bluesquare-components';
-import { DocumentData } from '../types';
-import { PdfPreview } from '../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/PdfPreview';
+import React, { FunctionComponent } from 'react';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { PdfPreview } from '../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/PdfPreview';
 import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { DocumentData } from '../types';
+import { defaultStyles } from './DocumentCell';
 import { OpenButtonComponent } from './OpenButton';
 
+const LateStyle = {
+    backgroundColor: 'rgba(255,216,53,0.8)',
+    color: 'inherit',
+};
 const styles: SxStyles = {
-    noPdf: {
-        backgroundColor: 'rgba(215, 25, 28, 0.8)',
-        cursor: 'default',
-        border: '1px solid white',
-        color: 'black',
-    },
-    withPdf: {
-        backgroundColor: 'rgba(76, 175, 80,0.8)',
-        cursor: 'pointer',
-        border: '1px solid white',
-        textDecorationLine: 'underline',
-        color: 'blue',
-    },
+    ...defaultStyles,
     isLatewithPdf: {
-        backgroundColor: 'rgba(255,216,53,0.8)',
-        cursor: 'pointer',
-        border: '1px solid white',
-        textDecorationLine: 'underline',
-        color: 'blue',
+        ...defaultStyles.withPdf,
+        ...LateStyle,
     },
     isLateNoFile: {
-        backgroundColor: 'rgba(255,216,53,0.8)',
-        cursor: 'default',
-        border: '1px solid white',
-        color: 'black',
+        ...defaultStyles.noPdf,
+        ...LateStyle,
     },
 };
 
@@ -53,8 +41,10 @@ export const FormADocumentCell: FunctionComponent<Props> = ({
             </Box>
         );
 
+    const boxStyle = isLate ? styles.isLatewithPdf : styles.withPdf;
+    console.log(boxStyle);
     return (
-        <Box sx={isLate ? styles.isLateWithPdf : styles.withPdf}>
+        <Box sx={boxStyle}>
             <PdfPreview
                 pdfUrl={file}
                 OpenButtonComponent={OpenButtonComponent}

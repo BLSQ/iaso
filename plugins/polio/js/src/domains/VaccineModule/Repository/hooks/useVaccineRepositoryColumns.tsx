@@ -1,10 +1,10 @@
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import MESSAGES from '../messages';
 import { DocumentsCells } from '../components/DocumentsCell';
-import { VrfDocumentsCells } from '../components/VrfDocumentsCell';
 import { FormADocumentsCells } from '../components/FormADocumentCells';
+import { VrfDocumentsCells } from '../components/VrfDocumentsCell';
+import MESSAGES from '../messages';
 
 export const useVaccineRepositoryColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -26,27 +26,32 @@ export const useVaccineRepositoryColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.roundNumbers),
                 id: 'round_number',
                 accessor: 'round_number',
+                width: 40,
             },
             {
                 Header: formatMessage(MESSAGES.startDate),
                 id: 'started_at',
                 accessor: 'start_date',
                 Cell: DateCell,
+                width: 40,
             },
             {
                 Header: 'VRF',
                 accessor: 'vrf_data',
                 Cell: VrfDocumentsCells,
+                width: 40,
             },
             {
                 Header: 'Pre Alert',
                 accessor: 'pre_alert_data',
                 Cell: DocumentsCells,
+                width: 40,
             },
             {
                 Header: 'Form A',
                 accessor: 'form_a_data',
                 Cell: FormADocumentsCells,
+                width: 40,
             },
         ],
         [formatMessage],

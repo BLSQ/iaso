@@ -36,7 +36,7 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [fileType, setFileType] = useState(
-        params.file_type || 'VRF,PRE_ALERT,FORM_A,INCIDENT,DESTRUCTION',
+        params.file_type || 'VRF,PRE_ALERT,FORM_A',
     );
     const [campaignStatus, setCampaignStatus] = useState(params.campaignStatus);
     const [countryBlocks, setCountryBlocks] = useState(params.country_block);

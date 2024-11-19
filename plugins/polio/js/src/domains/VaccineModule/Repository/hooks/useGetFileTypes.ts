@@ -1,15 +1,15 @@
 // import { useSafeIntl } from 'bluesquare-components';
-import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
+import { useMemo } from 'react';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import MESSAGES from '../messages';
 
 export const useGetFileTypes = (): DropdownOptions<string>[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
         () => [
             {
-                value: 'VRF,PRE_ALERT,FORM_A,INCIDENT,DESTRUCTION',
+                value: 'VRF,PRE_ALERT,FORM_A',
                 label: formatMessage(MESSAGES.all),
             },
             {

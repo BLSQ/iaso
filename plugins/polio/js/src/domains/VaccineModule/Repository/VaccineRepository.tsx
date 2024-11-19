@@ -1,5 +1,9 @@
 import { Box, Typography } from '@mui/material';
-import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
+import {
+    Column,
+    MENU_HEIGHT_WITHOUT_TABS,
+    useSafeIntl,
+} from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { useLocation } from 'react-router-dom';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
@@ -7,11 +11,11 @@ import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { SxStyles } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { baseUrls } from '../../../constants/urls';
-import { useVaccineRepositoryColumns } from './hooks/useVaccineRepositoryColumns';
 import {
     tableDefaults,
     useGetVaccineReporting,
 } from './hooks/useGetVaccineReporting';
+import { useVaccineRepositoryColumns } from './hooks/useVaccineRepositoryColumns';
 import MESSAGES from './messages';
 import { VaccineRepositoryParams } from './types';
 import { VaccineRepositoryFilters } from './VaccineRepositoryFilters';
@@ -32,13 +36,13 @@ const styles: SxStyles = {
         // '& td': { padding: 0 },
     },
 };
+const NOPADDING_CELLS_IDS = ['vrf_data', 'pre_alert_data', 'form_a_data'];
 
-const getCellProps = () => {
+const getCellProps = cell => {
+    const { id } = cell.column as Column;
     return {
         style: {
-            '& td': {
-                padding: 0,
-            },
+            padding: NOPADDING_CELLS_IDS.includes(id as string) ? 0 : undefined,
         },
     };
 };

@@ -38,7 +38,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
     form_a_data = serializers.SerializerMethodField()
 
     def get_vrf_data(self, obj):
-        vrfs = VaccineRequestForm.objects.filter(campaign=obj.campaign, round=obj)
+        vrfs = VaccineRequestForm.objects.filter(campaign=obj.campaign, rounds=obj)
         return [
             {
                 "date": vrf.date_vrf_reception,

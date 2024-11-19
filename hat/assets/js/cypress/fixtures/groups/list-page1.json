@@ -2,89 +2,165 @@
     "count": 25,
     "groups": [
         {
+            "created_at": 1647942511.612114,
+            "group_sets": [
+                {
+                    "created_at": 1729080257.147603,
+                    "group_belonging": "SINGLE",
+                    "group_ids": [
+                        610
+                    ],
+                    "groups": [
+                        {
+                            "created_at": 1689681765.793674,
+                            "id": 1,
+                            "name": "Ryu",
+                            "source_version": {
+                                "data_source": {
+                                    "id": 2,
+                                    "name": "AFRO"
+                                },
+                                "id": 3,
+                                "number": 2
+                            },
+                            "updated_at": 1689681765.793699
+                        }
+                    ],
+                    "id": 25,
+                    "name": "test",
+                    "source_ref": null,
+                    "source_version": {
+                        "data_source": {
+                            "id": 2,
+                            "name": "AFRO"
+                        },
+                        "id": 3,
+                        "number": 2
+                    },
+                    "updated_at": 1729080257.154239
+                },
+                {
+                    "created_at": 1729080408.49362,
+                    "group_belonging": "SINGLE",
+                    "group_ids": [
+                        610
+                    ],
+                    "groups": [
+                        {
+                            "created_at": 1689681765.793674,
+                            "id": 1,
+                            "name": "Ryu",
+                            "source_version": {
+                                "data_source": {
+                                    "id": 2,
+                                    "name": "AFRO"
+                                },
+                                "id": 3,
+                                "number": 2
+                            },
+                            "updated_at": 1689681765.793699
+                        }
+                    ],
+                    "id": 35,
+                    "name": "test 2",
+                    "source_ref": null,
+                    "source_version": {
+                        "data_source": {
+                            "id": 2,
+                            "name": "AFRO"
+                        },
+                        "id": 3,
+                        "number": 2
+                    },
+                    "updated_at": 1729080408.495788
+                }
+            ],
             "id": 1,
             "name": "Ryu",
+            "org_unit_count": 0,
             "source_ref": "yu12",
             "source_version": {
-                "id": 5,
-                "number": 1,
                 "data_source": {
                     "id": 1,
                     "name": "wb_schools_2019"
-                }
+                },
+                "id": 5,
+                "number": 1
             },
-            "org_unit_count": 0,
-            "created_at": 1647942511.612114,
             "updated_at": 1647942511.612146
         },
         {
+            "created_at": 1647942511.612114,
+            "group_sets": [],
             "id": 2,
             "name": "Ken",
+            "org_unit_count": 0,
             "source_ref": null,
             "source_version": {
-                "id": 5,
-                "number": 1,
                 "data_source": {
                     "id": 1,
                     "name": "wb_schools_2019"
-                }
+                },
+                "id": 5,
+                "number": 1
             },
-            "org_unit_count": 0,
-            "created_at": 1647942511.612114,
             "updated_at": 1647942511.612146
         },
         {
+            "created_at": 1647942511.612114,
+            "group_sets": [],
             "id": 3,
             "name": "Sagat",
+            "org_unit_count": 0,
             "source_ref": null,
             "source_version": {
-                "id": 5,
-                "number": 1,
                 "data_source": {
                     "id": 1,
                     "name": "wb_schools_2019"
-                }
+                },
+                "id": 5,
+                "number": 1
             },
-            "org_unit_count": 0,
-            "created_at": 1647942511.612114,
             "updated_at": 1647942511.612146
         },
         {
+            "created_at": 1647942511.612114,
+            "group_sets": [],
             "id": 4,
             "name": "Bison",
+            "org_unit_count": 0,
             "source_ref": null,
             "source_version": {
-                "id": 5,
-                "number": 1,
                 "data_source": {
                     "id": 1,
                     "name": "wb_schools_2019"
-                }
+                },
+                "id": 5,
+                "number": 1
             },
-            "org_unit_count": 0,
-            "created_at": 1647942511.612114,
             "updated_at": 1647942511.612146
         },
         {
+            "created_at": 1647942511.612114,
+            "group_sets": [],
             "id": 5,
             "name": "JoJo",
+            "org_unit_count": 0,
             "source_ref": null,
             "source_version": {
-                "id": 5,
-                "number": 1,
                 "data_source": {
                     "id": 1,
                     "name": "wb_schools_2019"
-                }
+                },
+                "id": 5,
+                "number": 1
             },
-            "org_unit_count": 0,
-            "created_at": 1647942511.612114,
             "updated_at": 1647942511.612146
         }
     ],
     "has_next": true,
     "has_previous": false,
+    "limit": 20,
     "page": 1,
-    "pages": 2,
-    "limit": 20
+    "pages": 2
 }

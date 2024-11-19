@@ -114,7 +114,6 @@ class Under5:
             "child_antropometric_followUp_tsfp",
             "child_antropometric_followUp_otp",
         ]
-
         visit_nutrition_program = [visit for visit in visits if visit["form_id"] in admission_form]
         if len(visit_nutrition_program) > 0:
             current_journey["nutrition_programme"] = ETL().program_mapper(visit_nutrition_program[0])
@@ -152,7 +151,11 @@ class Under5:
             )
             instance["journey"] = self.journeyMapper(instance["visits"], ["Anthropometric visit child"])
             beneficiary = Beneficiary()
-            if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
+            if (
+                instance["entity_id"] not in existing_beneficiaries
+                and len(instance["journey"][0]["visits"]) > 0
+                and instance["journey"][0].get("nutrition_programme") is not None
+            ):
                 beneficiary.gender = instance["gender"]
                 beneficiary.birth_date = instance["birth_date"]
                 beneficiary.entity_id = instance["entity_id"]
@@ -163,20 +166,20 @@ class Under5:
                 beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
 
             logger.info("Retrieving journey linked to beneficiary")
+            if beneficiary is not None:
+                for journey_instance in instance["journey"]:
+                    if len(journey_instance["visits"]) > 0:
+                        journey = self.save_journey(beneficiary, journey_instance)
+                        visits = ETL().save_visit(journey_instance["visits"], journey)
+                        logger.info(f"Inserted {len(visits)} Visits")
+                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
+                        admission_step = grouped_steps[0]
 
-            for journey_instance in instance["journey"]:
-                if len(journey_instance["visits"]) > 0:
-                    journey = self.save_journey(beneficiary, journey_instance)
-                    visits = ETL().save_visit(journey_instance["visits"], journey)
-                    logger.info(f"Inserted {len(visits)} Visits")
-                    grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
-                    admission_step = grouped_steps[0]
-
-                    followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
-                    steps = ETL().save_steps(visits, followUpVisits)
-                    logger.info(f"Inserted {len(steps)} Steps")
-                else:
-                    logger.info("No new journey")
-            logger.info(
-                f"---------------------------------------------------------------------------------------------\n\n"
-            )
+                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
+                        steps = ETL().save_steps(visits, followUpVisits)
+                        logger.info(f"Inserted {len(steps)} Steps")
+                    else:
+                        logger.info("No new journey")
+                logger.info(
+                    f"---------------------------------------------------------------------------------------------\n\n"
+                )

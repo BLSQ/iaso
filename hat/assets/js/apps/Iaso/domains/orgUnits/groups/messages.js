@@ -73,6 +73,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.delete_successful',
         defaultMessage: 'Deleted successfully',
     },
+    groupSet: {
+        id: 'iaso.label.groupSet',
+        defaultMessage: 'Group Set',
+    },
 });
 
 export default MESSAGES;

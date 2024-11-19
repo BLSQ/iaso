@@ -142,7 +142,7 @@ class NG_Under5:
             logger.info("Retrieving journey linked to beneficiary")
 
             for journey_instance in instance["journey"]:
-                if len(journey_instance["visits"]) > 0:
+                if journey_instance.get("nutrition_programme") is not None and len(journey_instance["visits"]) > 0:
                     journey = self.save_journey(beneficiary, journey_instance)
                     visits = ETL().save_visit(journey_instance["visits"], journey)
                     logger.info(f"Inserted {len(visits)} Visits")

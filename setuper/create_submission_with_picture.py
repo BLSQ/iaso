@@ -1,7 +1,11 @@
 import uuid
 from datetime import datetime
-from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point
-from org_unit_pictures import associate_favorite_picture
+from submissions import (
+    submission2xml,
+    org_unit_gps_point,
+    submission_org_unit_gps_point,
+    create_default_reference_submission,
+)
 import random
 
 
@@ -116,19 +120,5 @@ def create_submission_with_picture(account_name, iaso_client):
                         "photo_fosa": fp_image,
                     },
                 )
-                # Adding default reference to the org unit
-                submission_linked_to_org_units = iaso_client.get(
-                    f"/api/instances/?app_id={account_name}",
-                    params={"orgUnitId": org_unit_id, "form_ids": form_id},
-                )["instances"]
-                reference_submission = [
-                    submission["id"] for submission in submission_linked_to_org_units if submission["uuid"] == the_uuid
-                ]
-                org_unit_reference_submission = {
-                    "id": org_unit_id,
-                    "reference_instance_id": reference_submission[0],
-                    "reference_instance_action": "flag",
-                }
-                iaso_client.patch(f"/api/orgunits/{org_unit_id}/", json=org_unit_reference_submission)
-
-    associate_favorite_picture(iaso_client)
+                # Creating default reference submission for the org unit
+                create_default_reference_submission(account_name, iaso_client, org_unit_id, form_id, the_uuid)

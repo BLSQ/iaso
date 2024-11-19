@@ -10,11 +10,10 @@ import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
  *  5. After submission Enketo/Backend redirect to the submission detail page
  *  See enketo/README.md for full details.
  */
-export const createInstance = (currentForm, payload) => {
-    // if (!payload.period) delete payload.period;
+export const createInstance = payload => {
     return postRequest('/api/enketo/create/', {
         org_unit_id: payload.org_unit,
-        form_id: currentForm.id,
+        form_id: payload.currentInstance.id,
         period: payload.period,
     }).then(
         // Redirect the browser to Enketo

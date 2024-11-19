@@ -54,25 +54,34 @@ export const saveTab = (
         const formData = new FormData();
 
         data.forEach((item: any, index: number) => {
-            Object.keys(item).forEach(key => {
-                if (key === 'document' && item[key]) {
-                    if (Array.isArray(item[key])) {
-                        formData.append(`pre_alerts[${index}].${key}`, item[key][0]);
-                    } else if (typeof item[key] === 'string') {
-                        const filePath = item[key];
+            Object.keys(item).forEach(keyy => {
+                if (keyy === 'document' && item[keyy]) {
+                    if (Array.isArray(item[keyy])) {
+                        formData.append(
+                            `${key}[${index}].${keyy}`,
+                            item[keyy][0],
+                        );
+                    } else if (typeof item[keyy] === 'string') {
+                        const filePath = item[keyy];
                         const fileName = filePath.split('/').pop();
-                        const file = new File([filePath], fileName || 'document');
-                        formData.append(`pre_alerts[${index}].${key}`, file);
+                        const file = new File(
+                            [filePath],
+                            fileName || 'document',
+                        );
+                        formData.append(`${key}[${index}].${keyy}`, file);
                     }
-                    
-                } else if (item[key] !== null && item[key] !== undefined) {
-                    formData.append(`pre_alerts[${index}].${key}`, item[key]);
+                } else if (item[keyy] !== null && item[keyy] !== undefined) {
+                    formData.append(`${key}[${index}].${keyy}`, item[keyy]);
                 }
             });
         });
 
-        
-        const method = url.includes('update') ? 'PATCH' : url.includes('add') ? 'POST' : 'GET';
+        // eslint-disable-next-line no-nested-ternary
+        const method = url.includes('update')
+            ? 'PATCH'
+            : url.includes('add')
+              ? 'POST'
+              : 'GET';
         return fetch(url, {
             method,
             body: formData,

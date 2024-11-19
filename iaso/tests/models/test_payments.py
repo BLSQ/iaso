@@ -3,7 +3,6 @@ from django.test import TestCase
 from iaso import models as m
 from django.contrib.auth.models import User
 from datetime import datetime
-from psycopg2.errors import UniqueViolation
 
 from iaso.models.payments import PaymentStatuses
 

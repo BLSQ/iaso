@@ -348,6 +348,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.document',
         defaultMessage: 'Document',
     },
+    round: {
+        id: 'iaso.polio.label.round',
+        defaultMessage: 'Round',
+    },
 });
 
 export default MESSAGES;

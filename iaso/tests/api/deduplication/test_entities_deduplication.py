@@ -186,7 +186,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["name", "last_name"],
                 "algorithm": "inverse",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -202,7 +202,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["name", "last_name"],
                 "algorithm": "wrong",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -218,7 +218,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["name", "wrong"],
                 "algorithm": "inverse",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -232,7 +232,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["name", "last_name"],
                 "algorithm": "inverse",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -248,7 +248,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["name", "last_name"],
                 "algorithm": "inverse",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -264,7 +264,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom", "Age"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -320,7 +320,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom", "Age"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -387,7 +387,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -436,7 +436,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -503,7 +503,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -558,7 +558,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -582,7 +582,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom", "Age"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -621,7 +621,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom", "Age"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -667,7 +667,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )

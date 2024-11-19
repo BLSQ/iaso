@@ -150,6 +150,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.label.update',
         defaultMessage: 'Update',
     },
+    warningMessageOrgUnitChangeConfig: {
+        id: 'iaso.orgUnitChangeRequestConfigs.warningMessageOrgUnitChangeConfig',
+        defaultMessage:
+            'Org Unit Types which do not have a configuration can be edited by the users without restriction.',
+    },
 });
 
 export default MESSAGES;

@@ -1909,3 +1909,32 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(len(data["results"]), 30)
         self.assertFalse(data["has_next"])
         self.assertFalse(data["has_previous"])
+
+    def test_instance_retrieve_with_related_change_requests(self):
+        self.client.force_authenticate(self.yoda)
+
+        reference_form = m.Form.objects.create(name="Reference form", period_type=m.MONTH, single_per_period=True)
+        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type with reference form", short_name="Orf")
+        org_unit_type.reference_forms.add(reference_form)
+        org_unit = m.OrgUnit.objects.create(
+            name="Org unit", version=self.sw_version, validation_status="VALID", org_unit_type=org_unit_type
+        )
+        instance_reference = self.create_form_instance(
+            form=reference_form, period="202001", org_unit=org_unit, project=self.project
+        )
+        # Test instance with no change request
+        response = self.client.get(f"/api/instances/{instance_reference.id}/")
+        self.assertEqual(response.status_code, 200)
+        respons_json = response.json()
+        self.assertListEqual(respons_json["change_requests"], [])
+
+        m.OrgUnitChangeRequest.objects.create(org_unit=org_unit, new_name="Modified org unit")
+        response = self.client.get(f"/api/instances/{instance_reference.id}/")
+        respons_json = response.json()
+        self.assertListEqual(respons_json["change_requests"], [])
+        # Test instance with change request linked to it
+        change_request_instance_reference = m.OrgUnitChangeRequest.objects.create(org_unit=org_unit)
+        change_request_instance_reference.new_reference_instances.add(instance_reference)
+        response = self.client.get(f"/api/instances/{instance_reference.id}/")
+        respons_json = response.json()
+        self.assertEqual(respons_json["change_requests"][0]["id"], change_request_instance_reference.id)

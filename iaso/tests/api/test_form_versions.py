@@ -72,7 +72,7 @@ class FormsVersionAPITestCase(APITestCase):
 
         questions_by_path = self.form_1.form_versions.first().questions_by_path()
         questions_by_name = self.form_1.form_versions.first().questions_by_name()
-        self.assertEquals(
+        self.assertEqual(
             [x for x in questions_by_name.keys()],
             [
                 "demo_integer",
@@ -86,7 +86,7 @@ class FormsVersionAPITestCase(APITestCase):
             ],
         )
 
-        self.assertEquals(
+        self.assertEqual(
             [x for x in questions_by_path.keys()],
             [
                 "signalitic/demo_integer",
@@ -134,7 +134,7 @@ class FormsVersionAPITestCase(APITestCase):
         )
 
         json_instance = instance.get_and_save_json_of_xml()
-        self.assertEquals(
+        self.assertEqual(
             {
                 "_version": version_id,
                 "instanceID": "uuid:3c185364-e5dc-4912-98b2-e9aeb23049f5",

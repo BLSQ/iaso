@@ -97,6 +97,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.label.formVersion',
         defaultMessage: 'Form version',
     },
+    selectVersionToCompare: {
+        id: 'iaso.instance.selectVersionToCompare',
+        defaultMessage: 'Please select the version to compare',
+    },
 });
 
 export default MESSAGES;

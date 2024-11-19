@@ -1,11 +1,11 @@
 import copy
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, Set
 
 from django.conf import settings
 from django.contrib.auth import login, models, update_session_auth_hash
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.exceptions import BadRequest, ObjectDoesNotExist
+from django.core.exceptions import BadRequest
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q, QuerySet
@@ -223,6 +223,38 @@ class ProfilesViewSet(viewsets.ViewSet):
         account = self.request.user.iaso_profile.account
         return Profile.objects.filter(account=account).with_editable_org_unit_types()
 
+    def retrieve(self, request, *args, **kwargs):
+        pk = kwargs.get("pk")
+        if pk == PK_ME:
+            # if the user is a main_user, login as an account user
+            # TODO: This is not a clean side-effect and should be improved.
+            if request.user.tenant_users.exists():
+                account_user = request.user.tenant_users.first().account_user
+                account_user.backend = "django.contrib.auth.backends.ModelBackend"
+                login(request, account_user)
+
+            try:
+                profile = request.user.iaso_profile
+                profile_dict = profile.as_dict()
+                return Response(profile_dict)
+            except Profile.DoesNotExist:
+                return Response(
+                    {
+                        "first_name": request.user.first_name,
+                        "user_name": request.user.username,
+                        "last_name": request.user.last_name,
+                        "email": request.user.email,
+                        "user_id": request.user.id,
+                        "projects": [],
+                        "is_staff": request.user.is_staff,
+                        "is_superuser": request.user.is_superuser,
+                        "account": None,
+                    }
+                )
+        else:
+            profile = get_object_or_404(self.get_queryset(), pk=pk)
+            return Response(profile.as_dict())
+
     def list(self, request):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -304,87 +336,134 @@ class ProfilesViewSet(viewsets.ViewSet):
         else:
             return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
 
-    @staticmethod
-    def list_export(
-        queryset: "QuerySet[Profile]", file_format: FileFormatEnum
-    ) -> Union[HttpResponse, StreamingHttpResponse]:
-        columns = [{"title": column} for column in BULK_CREATE_USER_COLUMNS_LIST]
+    def create(self, request):
+        current_profile = request.user.iaso_profile
+        current_account = current_profile.account
 
-        def get_row(profile: Profile, **_) -> List[Any]:
-            org_units = profile.org_units.all().order_by("id")
+        username = request.data.get("user_name")
+        password = request.data.get("password", "")
+        send_email_invitation = request.data.get("send_email_invitation")
 
-            return [
-                profile.user.username,
-                "",  # Password is left empty on purpose.
-                profile.user.email,
-                profile.user.first_name,
-                profile.user.last_name,
-                ",".join(str(item.pk) for item in org_units),
-                ",".join(item.source_ref for item in org_units if item.source_ref),
-                profile.language,
-                profile.dhis2_id,
-                profile.organization,
-                ",".join(item.codename for item in profile.user.user_permissions.all()),
-                ",".join(
-                    item.group.name.removeprefix(f"{profile.account.pk}_")
-                    for item in profile.user_roles.all().order_by("id")
-                ),
-                ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
-                (f"'{profile.phone_number}'" if profile.phone_number else None),
-            ]
-
-        filename = "users"
-        response: Union[HttpResponse, StreamingHttpResponse]
-        queryset = queryset.order_by("id")
-
-        if file_format == FileFormatEnum.XLSX:
-            filename = filename + ".xlsx"
-            response = HttpResponse(
-                generate_xlsx("Users", columns, queryset, get_row),
-                content_type=CONTENT_TYPE_XLSX,
-            )
-        elif file_format == FileFormatEnum.CSV:
-            filename = f"{filename}.csv"
-            response = StreamingHttpResponse(
-                streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
-            )
+        if not username:
+            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
         else:
-            raise ValueError(f"Unknown file format requested: {file_format}")
-
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
-        return response
-
-    def retrieve(self, request, *args, **kwargs):
-        pk = kwargs.get("pk")
-        if pk == PK_ME:
-            # if the user is a main_user, login as an account user
-            # TODO: This is not a clean side-effect and should be improved.
-            if request.user.tenant_users.exists():
-                account_user = request.user.tenant_users.first().account_user
-                account_user.backend = "django.contrib.auth.backends.ModelBackend"
-                login(request, account_user)
-
-            try:
-                profile = request.user.iaso_profile
-                profile_dict = profile.as_dict()
-                return Response(profile_dict)
-            except Profile.DoesNotExist:
-                return Response(
-                    {
-                        "first_name": request.user.first_name,
-                        "user_name": request.user.username,
-                        "last_name": request.user.last_name,
-                        "email": request.user.email,
-                        "user_id": request.user.id,
-                        "projects": [],
-                        "is_staff": request.user.is_staff,
-                        "is_superuser": request.user.is_superuser,
-                        "account": None,
-                    }
+            existing_user = User.objects.filter(username__iexact=username)
+            if existing_user:
+                return JsonResponse(
+                    {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
                 )
-        else:
-            profile = get_object_or_404(self.get_queryset(), pk=pk)
-            return Response(profile.as_dict())
+        if not password and not send_email_invitation:
+            return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
+        main_user = None
+        try:
+            existing_user = User.objects.get(username__iexact=username)
+            user_in_same_account = False
+            try:
+                if existing_user.iaso_profile and existing_user.iaso_profile.account == current_account:
+                    user_in_same_account = True
+            except User.iaso_profile.RelatedObjectDoesNotExist:
+                # User doesn't have an iaso_profile, so they're not in the same account
+                pass
+
+            if user_in_same_account:
+                return JsonResponse(
+                    {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
+                )
+            else:
+                # TODO: invitation
+                # TODO what if already main user?
+                old_username = username
+                username = f"{username}_{current_account.name.lower().replace(' ', '_')}"
+
+                # duplicate existing_user into main user and account user
+                main_user = copy.copy(existing_user)
+
+                existing_user.username = f"{old_username}_{'unknown' if not hasattr(existing_user, 'iaso_profile') else existing_user.iaso_profile.account.name.lower().replace(' ', '_')}"
+                existing_user.set_unusable_password()
+                existing_user.save()
+
+                main_user.pk = None
+                main_user.save()
+
+                TenantUser.objects.create(main_user=main_user, account_user=existing_user)
+        except User.DoesNotExist:
+            pass  # no existing user, simply create a new user
+
+        user = User()
+        user.first_name = request.data.get("first_name", "")
+        user.last_name = request.data.get("last_name", "")
+        user.username = username
+        user.email = request.data.get("email", "")
+
+        if password != "":
+            user.set_password(password)
+        user.save()
+
+        if main_user:
+            TenantUser.objects.create(main_user=main_user, account_user=user)
+
+        # Create an Iaso profile for the new user and attach it to the same account
+        # as the currently authenticated user
+        user.profile = Profile.objects.create(
+            user=user,
+            account=current_account,
+            language=request.data.get("language", ""),
+            home_page=request.data.get("home_page", ""),
+            organization=request.data.get("organization", None),
+        )
+
+        profile = get_object_or_404(Profile, id=user.profile.pk)
+
+        try:
+            user_permissions = self.validate_user_permissions(request, current_account)
+            org_units = self.validate_org_units(request, profile)
+            user_roles_data = self.validate_user_roles(request)
+            projects = self.validate_projects(request, profile)
+            editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
+        except ProfileError as error:
+            # Delete profile if error since we're creating a new user
+            profile.delete()
+            return JsonResponse(
+                {"errorKey": error.field, "errorMessage": error.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        profile = self.update_user_profile(
+            request=request,
+            profile=profile,
+            user=user,
+            user_permissions=user_permissions,
+            org_units=org_units,
+            user_roles=user_roles_data["user_roles"],
+            user_roles_groups=user_roles_data["groups"],
+            projects=projects,
+            editable_org_unit_types=editable_org_unit_types,
+        )
+
+        dhis2_id = request.data.get("dhis2_id", None)
+        if dhis2_id == "":
+            dhis2_id = None
+        profile.dhis2_id = dhis2_id
+
+        phone_number = self.extract_phone_number(request)
+        if phone_number is not None:
+            profile.phone_number = phone_number
+
+        profile.save()
+
+        audit_logger = ProfileAuditLogger()
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
+        audit_logger.log_modification(instance=profile, old_data_dump=None, request_user=request.user, source=source)
+
+        # send an email invitation to new user when the send_email_invitation checkbox has been checked
+        # and the email adresse has been given
+        if send_email_invitation and profile.user.email:
+            email_subject = self.get_subject_by_language(self, request.data.get("language"))
+            email_message = self.get_message_by_language(self, request.data.get("language"))
+            email_html_message = self.get_html_message_by_language(self, request.data.get("language"))
+            self.send_email_invitation(profile, email_subject, email_message, email_html_message)
+
+        return Response(user.profile.as_dict())
 
     def partial_update(self, request, pk=None):
         if pk == PK_ME:
@@ -404,7 +483,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             org_units = self.validate_org_units(request, profile)
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, profile)
-            editable_org_unit_types = self.validate_editable_org_unit_types(request)
+            editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
@@ -429,92 +508,16 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         return Response(profile.as_dict())
 
-    def validate_user(self, request, user):
-        username = request.data.get("user_name")
-        if not username:
-            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
-
-        existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
-        if existing_user:
-            # Prevent from username change with existing username
-            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur existant"))
-
-    def validate_user_permissions(self, request, current_account):
-        user_permissions = []
-        module_permissions = self.module_permissions(current_account)
-        for permission_codename in request.data.get("user_permissions", []):
-            if permission_codename in module_permissions:
-                CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
-                user_permissions.append(get_object_or_404(Permission, codename=permission_codename))
-        return user_permissions
-
-    def validate_org_units(self, request, profile):
-        result = []
-        org_units = request.data.get("org_units", [])
-        # Using list to get the value before we clear the list right after
-        existing_org_units = list(profile.org_units.values_list("id", flat=True))
-        managed_org_units = None
-        if request.user.has_perm(permission.USERS_MANAGED):
-            managed_org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list(
-                "id", flat=True
-            )
-        for org_unit in org_units:
-            org_unit_id = org_unit.get("id")
-            if (
-                managed_org_units
-                and len(managed_org_units) > 0
-                and org_unit_id not in managed_org_units
-                and org_unit_id not in existing_org_units
-                and not request.user.is_superuser
-            ):
-                raise PermissionDenied(
-                    f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
-                    f"pyramid. Trying to assign {org_unit_id}."
-                )
-            org_unit_item = get_object_or_404(OrgUnit, pk=org_unit_id)
-            result.append(org_unit_item)
-        return result
-
-    def validate_user_roles(self, request):
-        result = {"groups": [], "user_roles": []}
-        user_roles = request.data.get("user_roles", [])
-        # Get the current connected user
-        current_profile = request.user.iaso_profile
-        for user_role_id in user_roles:
-            # Get only a user role linked to the account's user
-            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
-            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
-            for p in user_group_item.permissions.all():
-                CustomPermissionSupport.assert_right_to_assign(request.user, p.codename)
-            result["groups"].append(user_group_item)
-            result["user_roles"].append(user_role_item)
-        return result
-
-    def validate_projects(self, request, profile):
-        result = []
-        request_user = request.user
-        projects = request.data.get("projects", None)
-        if projects is not None:
-            if not request_user.has_perm(permission.USERS_ADMIN):
-                raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
-                )
-        # This is bit ugly, but it's to maintain the fetaure's behaviour after adding the check in the permission
-        if projects is None:
-            projects = []
-        for project in projects:
-            item = get_object_or_404(Project, pk=project)
-            if profile.account_id != item.account_id:
-                raise BadRequest
-            result.append(item)
-        return result
-
-    def validate_editable_org_unit_types(self, request):
-        editable_org_unit_type_ids = request.data.get("editable_org_unit_type_ids", [])
-        editable_org_unit_types = OrgUnitType.objects.filter(pk__in=editable_org_unit_type_ids)
-        if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
-            raise ValidationError("Invalid editable org unit type submitted.")
-        return editable_org_unit_types
+    def delete(self, request, pk=None):
+        profile = get_object_or_404(self.get_queryset(), id=pk)
+        user = profile.user
+        # TODO log after actual deletion
+        audit_logger = ProfileAuditLogger()
+        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
+        audit_logger.log_hard_deletion(instance=profile, request_user=request.user, source=source)
+        user.delete()
+        profile.delete()
+        return Response(True)
 
     @staticmethod
     def update_user_own_profile(request):
@@ -574,6 +577,176 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.editable_org_unit_types.set(editable_org_unit_types)
         profile.save()
         return profile
+
+    @staticmethod
+    def list_export(
+        queryset: "QuerySet[Profile]", file_format: FileFormatEnum
+    ) -> Union[HttpResponse, StreamingHttpResponse]:
+        columns = [{"title": column} for column in BULK_CREATE_USER_COLUMNS_LIST]
+
+        def get_row(profile: Profile, **_) -> List[Any]:
+            org_units = profile.org_units.order_by("id").only("id", "source_ref")
+            editable_org_unit_types_pks = profile.editable_org_unit_types.order_by("id").values_list("id", flat=True)
+
+            return [
+                profile.user.username,
+                "",  # Password is left empty on purpose.
+                profile.user.email,
+                profile.user.first_name,
+                profile.user.last_name,
+                ",".join(str(item.pk) for item in org_units),
+                ",".join(item.source_ref for item in org_units if item.source_ref),
+                profile.language,
+                profile.dhis2_id,
+                profile.organization,
+                ",".join(item.codename for item in profile.user.user_permissions.all()),
+                ",".join(
+                    item.group.name.removeprefix(f"{profile.account.pk}_")
+                    for item in profile.user_roles.all().order_by("id")
+                ),
+                ",".join(str(item.name) for item in profile.projects.all().order_by("id")),
+                (f"'{profile.phone_number}'" if profile.phone_number else None),
+                ",".join(str(pk) for pk in editable_org_unit_types_pks),
+            ]
+
+        filename = "users"
+        response: Union[HttpResponse, StreamingHttpResponse]
+        queryset = queryset.order_by("id")
+
+        if file_format == FileFormatEnum.XLSX:
+            filename = filename + ".xlsx"
+            response = HttpResponse(
+                generate_xlsx("Users", columns, queryset, get_row),
+                content_type=CONTENT_TYPE_XLSX,
+            )
+        elif file_format == FileFormatEnum.CSV:
+            filename = f"{filename}.csv"
+            response = StreamingHttpResponse(
+                streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+            )
+        else:
+            raise ValueError(f"Unknown file format requested: {file_format}")
+
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response
+
+    def validate_user(self, request, user):
+        username = request.data.get("user_name")
+        if not username:
+            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
+
+        existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
+        if existing_user:
+            # Prevent from username change with existing username
+            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur existant"))
+
+    def validate_user_permissions(self, request, current_account):
+        user_permissions = []
+        module_permissions = self.module_permissions(current_account)
+        for permission_codename in request.data.get("user_permissions", []):
+            if permission_codename in module_permissions:
+                CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
+                user_permissions.append(get_object_or_404(Permission, codename=permission_codename))
+        return user_permissions
+
+    def validate_org_units(self, request, profile) -> QuerySet[OrgUnit]:
+        org_unit = request.data.get("org_units", [])
+        if not org_unit:
+            return OrgUnit.objects.none()
+
+        org_unit_ids = set([ou["id"] for ou in org_unit if ou.get("id")])
+        existing_org_unit_ids = set(profile.org_units.values_list("id", flat=True))
+
+        if org_unit_ids == existing_org_unit_ids:
+            # No change detected, the user must be trying to change another field.
+            return OrgUnit.objects.filter(id__in=org_unit_ids)
+
+        filtered_org_unit_ids = []
+        if request.user.has_perm(permission.USERS_MANAGED):
+            profile_org_units = request.user.iaso_profile.org_units.all()
+            managed_org_units = OrgUnit.objects.hierarchy(profile_org_units).values_list("id", flat=True)
+            for org_unit_id in org_unit_ids:
+                if (
+                    org_unit_id not in managed_org_units
+                    and org_unit_id not in existing_org_unit_ids
+                    and not request.user.is_superuser
+                ):
+                    raise PermissionDenied(
+                        f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
+                        f"pyramid. Trying to assign {org_unit_id}."
+                    )
+                filtered_org_unit_ids.append(org_unit_id)
+
+        valid_ids = filtered_org_unit_ids or org_unit_ids
+        org_units = OrgUnit.objects.filter(id__in=valid_ids)
+
+        if request.user.has_perm(permission.USERS_MANAGED):
+            org_unit_type_ids_to_check = set(org_units.values_list("org_unit_type_id", flat=True))
+            self._validate_profile_editable_org_unit_types(request.user.iaso_profile, org_unit_type_ids_to_check)
+
+        return org_units
+
+    def validate_user_roles(self, request):
+        result = {"groups": [], "user_roles": []}
+        user_roles = request.data.get("user_roles", [])
+        # Get the current connected user
+        current_profile = request.user.iaso_profile
+        for user_role_id in user_roles:
+            # Get only a user role linked to the account's user
+            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
+            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
+            for p in user_group_item.permissions.all():
+                CustomPermissionSupport.assert_right_to_assign(request.user, p.codename)
+            result["groups"].append(user_group_item)
+            result["user_roles"].append(user_role_item)
+        return result
+
+    def validate_projects(self, request, profile) -> QuerySet[Project]:
+        result = []
+        project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
+        if project_ids:
+            profile_project_ids = set(profile.projects.values_list("id", flat=True))
+            if not request.user.has_perm(permission.USERS_ADMIN) and profile_project_ids != project_ids:
+                raise PermissionDenied(
+                    f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
+                )
+            for project in Project.objects.filter(id__in=project_ids):
+                if profile.account_id != project.account_id:
+                    raise BadRequest
+                result.append(project)
+        return result
+
+    def validate_editable_org_unit_types(self, request, profile: Profile) -> QuerySet[OrgUnitType]:
+        editable_org_unit_type_ids = set(request.data.get("editable_org_unit_type_ids", []))
+        editable_org_unit_types = OrgUnitType.objects.filter(pk__in=editable_org_unit_type_ids)
+        existing_editable_org_unit_type_ids = set(profile.editable_org_unit_types.values_list("id", flat=True))
+
+        if editable_org_unit_type_ids == existing_editable_org_unit_type_ids:
+            # No change detected, the user must be trying to change another field.
+            return editable_org_unit_types
+
+        if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
+            raise ValidationError("Invalid editable org unit type submitted.")
+
+        if not request.user.has_perm(permission.USERS_ADMIN):
+            self._validate_profile_editable_org_unit_types(request.user.iaso_profile, editable_org_unit_type_ids)
+
+        return editable_org_unit_types
+
+    def _validate_profile_editable_org_unit_types(self, iaso_profile: Profile, org_unit_type_ids_to_check: Set[int]):
+        user_editable_org_unit_type_ids = iaso_profile.get_editable_org_unit_type_ids()
+        invalid_ids = [
+            org_unit_type_id
+            for org_unit_type_id in org_unit_type_ids_to_check
+            if org_unit_type_id
+            and not iaso_profile.has_org_unit_write_permission(org_unit_type_id, user_editable_org_unit_type_ids)
+        ]
+
+        if invalid_ids:
+            invalid_names = ", ".join(
+                name for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list("name", flat=True)
+            )
+            raise PermissionDenied(f"The user does not have rights on the following org unit types: {invalid_names}")
 
     @staticmethod
     def module_permissions(current_account):
@@ -665,150 +838,6 @@ class ProfilesViewSet(viewsets.ViewSet):
     @staticmethod
     def get_subject_by_language(self, language="en"):
         return self.EMAIL_SUBJECT_FR if language == "fr" else self.EMAIL_SUBJECT_EN
-
-    def create(self, request):
-        current_profile = request.user.iaso_profile
-        current_account = current_profile.account
-
-        username = request.data.get("user_name")
-        password = request.data.get("password", "")
-        send_email_invitation = request.data.get("send_email_invitation")
-
-        if not username:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
-        else:
-            existing_user = User.objects.filter(username__iexact=username)
-            if existing_user:
-                return JsonResponse(
-                    {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
-                )
-        if not password and not send_email_invitation:
-            return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
-        main_user = None
-        try:
-            existing_user = User.objects.get(username__iexact=username)
-            user_in_same_account = False
-            try:
-                if existing_user.iaso_profile and existing_user.iaso_profile.account == current_account:
-                    user_in_same_account = True
-            except User.iaso_profile.RelatedObjectDoesNotExist:
-                # User doesn't have an iaso_profile, so they're not in the same account
-                pass
-
-            if user_in_same_account:
-                return JsonResponse(
-                    {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
-                )
-            else:
-                # TODO: invitation
-                # TODO what if already main user?
-                old_username = username
-                username = f"{username}_{current_account.name.lower().replace(' ', '_')}"
-
-                # duplicate existing_user into main user and account user
-                main_user = copy.copy(existing_user)
-
-                existing_user.username = f"{old_username}_{'unknown' if not hasattr(existing_user, 'iaso_profile') else existing_user.iaso_profile.account.name.lower().replace(' ', '_')}"
-                existing_user.set_unusable_password()
-                existing_user.save()
-
-                main_user.pk = None
-                main_user.save()
-
-                TenantUser.objects.create(main_user=main_user, account_user=existing_user)
-        except User.DoesNotExist:
-            pass  # no existing user, simply create a new user
-
-        user = User()
-        user.first_name = request.data.get("first_name", "")
-        user.last_name = request.data.get("last_name", "")
-        user.username = username
-        user.email = request.data.get("email", "")
-        permissions = request.data.get("user_permissions", [])
-
-        modules_permissions = self.module_permissions(current_account)
-
-        if password != "":
-            user.set_password(password)
-        user.save()
-
-        if main_user:
-            TenantUser.objects.create(main_user=main_user, account_user=user)
-
-        for permission_codename in permissions:
-            if permission_codename in modules_permissions:
-                permission = get_object_or_404(Permission, codename=permission_codename)
-                user.user_permissions.add(permission)
-        if permissions != []:
-            user.save()
-
-        # Create an Iaso profile for the new user and attach it to the same account
-        # as the currently authenticated user
-        user.profile = Profile.objects.create(
-            user=user,
-            account=current_account,
-            language=request.data.get("language", ""),
-            home_page=request.data.get("home_page", ""),
-            organization=request.data.get("organization", None),
-        )
-
-        org_units = request.data.get("org_units", [])
-        profile = get_object_or_404(Profile, id=user.profile.pk)
-        profile.org_units.clear()
-        for org_unit in org_units:
-            org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
-            profile.org_units.add(org_unit_item)
-
-        # link the profile to user roles
-        user_roles = request.data.get("user_roles", [])
-        for user_role_id in user_roles:
-            # Get only a user role linked to the account's user
-            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_account)
-            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group.id)
-            profile.user.groups.add(user_group_item)
-            profile.user_roles.add(user_role_item)
-
-        projects = request.data.get("projects", [])
-        profile.projects.clear()
-        for project in projects:
-            item = get_object_or_404(Project, pk=project)
-            if profile.account_id != item.account_id:
-                return JsonResponse({"errorKey": "projects", "errorMessage": _("Unauthorized")}, status=400)
-            profile.projects.add(item)
-        dhis2_id = request.data.get("dhis2_id", None)
-        if dhis2_id == "":
-            dhis2_id = None
-        profile.dhis2_id = dhis2_id
-
-        phone_number = self.extract_phone_number(request)
-        if phone_number is not None:
-            profile.phone_number = phone_number
-
-        profile.save()
-        audit_logger = ProfileAuditLogger()
-        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
-        audit_logger.log_modification(instance=profile, old_data_dump=None, request_user=request.user, source=source)
-
-        # send an email invitation to new user when the send_email_invitation checkbox has been checked
-        # and the email adresse has been given
-        if send_email_invitation and profile.user.email:
-            email_subject = self.get_subject_by_language(self, request.data.get("language"))
-            email_message = self.get_message_by_language(self, request.data.get("language"))
-            email_html_message = self.get_html_message_by_language(self, request.data.get("language"))
-            self.send_email_invitation(profile, email_subject, email_message, email_html_message)
-
-        return Response(user.profile.as_dict())
-
-    def delete(self, request, pk=None):
-        profile = get_object_or_404(self.get_queryset(), id=pk)
-        user = profile.user
-        # TODO log after actual deletion
-        audit_logger = ProfileAuditLogger()
-        source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
-        audit_logger.log_hard_deletion(instance=profile, request_user=request.user, source=source)
-        user.delete()
-        profile.delete()
-        return Response(True)
 
     CREATE_PASSWORD_MESSAGE_EN = """Hello,
 

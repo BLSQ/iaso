@@ -39,6 +39,8 @@ import {
 } from './hooks/useReassignInstance';
 import MESSAGES from './messages';
 import { getInstancesFilesList } from './utils';
+import { INSTANCE_METAS_FIELDS } from './constants';
+import InstanceDetailsChangeRequests from './components/InstanceDetailsChangeRequests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -86,6 +88,7 @@ const InstanceDetails: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const classes: ClassNames = useStyles();
     const goBack = useGoBack(baseUrls.instances);
+
     const params = useParamsObject(
         baseUrls.instanceDetail,
     ) as ParamsWithAccountId & {
@@ -106,6 +109,7 @@ const InstanceDetails: FunctionComponent = () => {
     // in the future. add this info directly in the instance api to not make another call;
     const { data: instanceLogsDetails } = useGetInstanceLogs(instanceId);
     const showHistoryLink = (instanceLogsDetails?.list?.length || 0) > 1;
+
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -161,6 +165,9 @@ const InstanceDetails: FunctionComponent = () => {
                                 id="infos"
                             >
                                 <InstanceDetailsInfos
+                                    instance_metas_fields={
+                                        INSTANCE_METAS_FIELDS
+                                    }
                                     currentInstance={currentInstance}
                                 />
 
@@ -216,6 +223,18 @@ const InstanceDetails: FunctionComponent = () => {
                                     currentInstance={currentInstance}
                                 />
                             </WidgetPaper>
+                            {currentInstance.change_requests.length > 0 && (
+                                <WidgetPaper
+                                    title={formatMessage(
+                                        MESSAGES.changeRequests,
+                                    )}
+                                    id="change-request"
+                                >
+                                    <InstanceDetailsChangeRequests
+                                        currentInstance={currentInstance}
+                                    />
+                                </WidgetPaper>
+                            )}
                             <InstanceDetailsExportRequests
                                 currentInstance={currentInstance}
                                 classes={classes}

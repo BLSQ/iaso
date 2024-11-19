@@ -11,7 +11,6 @@ import {
     AssignmentsResult,
     useGetAssignments,
 } from './requests/useGetAssignments';
-import { useGetOrgUnitTypes } from './requests/useGetOrgUnitTypes';
 import { useGetOrgUnits, useGetOrgUnitsList } from './requests/useGetOrgUnits';
 import { useGetOrgUnitsByParent } from './requests/useGetOrgUnitsByParent';
 import { useGetPlanning } from './requests/useGetPlanning';
@@ -25,6 +24,7 @@ import { useGetOrgUnitParentIds } from './useGetOrgUnitParentIds';
 
 import { useBoundState } from '../../../hooks/useBoundState';
 import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 type Props = {
     planningId: string;
@@ -101,7 +101,7 @@ export const useGetAssignmentData = ({
         [data],
     );
     const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypes();
+        useGetOrgUnitTypesDropdownOptions();
     const { data: childrenOrgunits, isFetching: isFetchingChildrenOrgunits } =
         useGetOrgUnitsByParent({
             orgUnitParentId: parentSelected?.id,

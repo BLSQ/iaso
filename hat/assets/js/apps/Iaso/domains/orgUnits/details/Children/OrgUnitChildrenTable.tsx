@@ -31,6 +31,7 @@ export const OrgUnitChildrenTable: FunctionComponent<Props> = ({
             extraProps={{
                 defaultPageSize: data?.limit ?? tableDefaults.limit,
                 loading,
+                columns,
             }}
         />
     );

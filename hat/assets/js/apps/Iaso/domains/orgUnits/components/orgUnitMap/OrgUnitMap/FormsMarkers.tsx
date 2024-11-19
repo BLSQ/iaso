@@ -36,7 +36,7 @@ export const FormsMarkers: FunctionComponent<Props> = ({
                             keyId={f.id}
                             PopupComponent={InstancePopup}
                             popupProps={o => ({
-                                orgUnitId: o.id,
+                                instanceId: o.id,
                             })}
                             updateOrgUnitLocation={updateOrgUnitLocation}
                         />

@@ -8,7 +8,6 @@ import {
     UseHandleSubmitArgs,
     VAR,
 } from '../types';
-import { Accept } from 'react-dropzone';
 
 type SaveAllArgs = {
     changedTabs: TabValue[];
@@ -191,6 +190,7 @@ export const makeHandleSubmit =
                         setInitialValues(newInitialValues);
                         formik.setErrors(newErrors);
                         formik.setTouched(newTouched);
+                        console.log('newValues', newValues);
                         formik.setValues(newValues);
                     }
                 },
@@ -200,14 +200,3 @@ export const makeHandleSubmit =
             },
         );
     };
-
-
-export const acceptPDF: Accept = {
-    'application/pdf': ['.pdf'],
-};
-
-export const processErrorDocsBase = (err_docs) => {
-    if (!err_docs) return [];
-    if (!Array.isArray(err_docs)) return [err_docs]; 
-    else return err_docs;
-};

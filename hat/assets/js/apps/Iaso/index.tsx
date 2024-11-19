@@ -11,6 +11,7 @@ import { GlobalStyles } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import LocalizedAppComponent from './domains/app/components/LocalizedAppComponent';
 import { LocaleProvider } from './domains/app/contexts/LocaleContext';
+import { SentryConfig } from './domains/app/contexts/SentryProvider';
 import { SidebarProvider } from './domains/app/contexts/SideBarContext';
 import {
     ThemeConfig,
@@ -31,6 +32,8 @@ const queryClient = new QueryClient({
 
 declare global {
     interface Window {
+        SENTRY_CONFIG?: SentryConfig;
+        SENTRY_INITIALIZED?: boolean;
         iasoApp: (
             element: HTMLElement,
             enabledPluginsName: string[],

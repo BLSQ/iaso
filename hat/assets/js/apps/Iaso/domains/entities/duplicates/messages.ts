@@ -173,6 +173,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.parameters',
         defaultMessage: 'Parameters',
     },
+    addParameters: {
+        id: 'iaso.label.addParameters',
+        defaultMessage: 'Add parameters',
+    },
+    removeParameter: {
+        id: 'iaso.label.removeParameter',
+        defaultMessage: 'Remove parameter',
+    },
+    parameterValue: {
+        id: 'iaso.label.parameterValue',
+        defaultMessage: 'Parameter Value',
+    },
     entityType: {
         id: 'iaso.entityTypes.label',
         defaultMessage: 'Beneficiary type',

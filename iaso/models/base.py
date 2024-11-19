@@ -1105,7 +1105,7 @@ class Instance(models.Model):
     def convert_correlation(self):
         if not self.correlation_id:
             identifier = str(self.id)
-            if self.form.correlation_field is not None and self.json:
+            if self.form.correlation_field and self.json:
                 identifier += self.json.get(self.form.correlation_field, None)
                 identifier = identifier.zfill(3)
             random_number = random.choice("1234567890")
@@ -1323,10 +1323,20 @@ class Instance(models.Model):
             ),
         }
 
+        result["change_requests"] = self.get_instance_change_requests_data()
+
         if with_entity and self.entity_id:
-            result["entity"] = self.entity.as_small_dict()
+            result["entity"] = self.entity.as_small_dict_with_nfc_cards(self)
 
         return result
+
+    def get_instance_change_requests_data(self):
+        from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestListSerializer
+
+        org_unit_change_requests = self.orgunitchangerequest_set.all()
+        serializer = OrgUnitChangeRequestListSerializer(org_unit_change_requests, many=True)
+
+        return serializer.data
 
     def as_small_dict(self):
         return {
@@ -1547,8 +1557,12 @@ class Profile(models.Model):
         return False
 
     def get_editable_org_unit_type_ids(self) -> set[int]:
-        ids_in_user_roles = set(self.user_roles.values_list("editable_org_unit_types", flat=True))
-        ids_in_user_profile = set(self.editable_org_unit_types.values_list("id", flat=True))
+        ids_in_user_roles = set(
+            self.user_roles.exclude(editable_org_unit_types__isnull=True).values_list(
+                "editable_org_unit_types", flat=True
+            )
+        )
+        ids_in_user_profile = set(self.editable_org_unit_types.exclude(id__isnull=True).values_list("id", flat=True))
         return ids_in_user_profile.union(ids_in_user_roles)
 
     def has_org_unit_write_permission(

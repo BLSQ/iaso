@@ -1,25 +1,25 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import { Box } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
-    FilesUpload,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { Box } from '@mui/material';
-import { Vaccine } from '../../../../../constants/types';
-import MESSAGES from '../../messages';
+import React, { FunctionComponent, useMemo } from 'react';
+import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
+import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import {
-    TextInput,
     DateInput,
     NumberInput,
+    TextInput,
 } from '../../../../../components/Inputs';
+import { Vaccine } from '../../../../../constants/types';
 import { useSaveDestruction } from '../../hooks/api';
-import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import MESSAGES from '../../messages';
 import { useDestructionValidation } from './validation';
-import { acceptPDF, processErrorDocsBase } from '../../../SupplyChain/Details/utils';
 
 type Props = {
     destruction?: any;
@@ -52,20 +52,21 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
             // lot_numbers: destruction?.lot_numbers,
             vaccine_stock: vaccineStockId,
-            document:destruction?.document,
-            comment:destruction?.comment ?? null
+            document: destruction?.document,
+            comment: destruction?.comment ?? null,
         },
         onSubmit: values => save(values),
         validationSchema,
     });
-
-    const processDocumentErrors = useCallback(processErrorDocsBase, [formik.errors]);
 
     const titleMessage = destruction?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
     )} ${formatMessage(MESSAGES.destructionReports)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
+    const documentErrors = useMemo(() => {
+        return processErrorDocsBase(formik.errors.document);
+    }, [formik.errors.document]);
 
     return (
         <FormikProvider value={formik}>
@@ -133,21 +134,15 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                     />
                 </Box> */}
                 <Box mb={2}>
-                    <FilesUpload
-                        accept={acceptPDF}
-                        files={formik.values.document ? [formik.values.document] : []}
+                    <DocumentUploadWithPreview
+                        errors={documentErrors}
                         onFilesSelect={files => {
                             if (files.length) {
-                                formik.setFieldTouched(`document`, true);
-                                formik.setFieldValue(`document`, files);
+                                formik.setFieldTouched('document', true);
+                                formik.setFieldValue('document', files);
                             }
                         }}
-                        multi={false}
-                        errors={processDocumentErrors(formik.errors.document)}
-
-                        placeholder={formatMessage(
-                            MESSAGES.document,
-                        )}
+                        document={formik.values.document}
                     />
                 </Box>
             </ConfirmCancelModal>

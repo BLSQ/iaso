@@ -517,6 +517,51 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidOrgUnitData(response.json())
         self.assertEqual(response.data["reference_instances"], [])
 
+    def test_org_unit_retrieve_with_instances_count(self):
+        self.client.force_authenticate(self.yoda)
+
+        parent_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            name="Parent",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        descendant_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            name="Descendant",
+            parent=parent_org_unit,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=descendant_org_unit,
+            project=self.project,
+            json={"name": "a", "age": 18, "gender": "M"},
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=parent_org_unit,
+            project=self.project,
+            json={"name": "b", "age": 19, "gender": "F"},
+        )
+        # Test the descendant instances count
+        response_descendant = self.client.get(f"/api/orgunits/{descendant_org_unit.id}/")
+        self.assertJSONResponse(response_descendant, 200)
+        descendant_instances_count = response_descendant.json()["instances_count"]
+        self.assertEquals(descendant_instances_count, 1)
+
+        # Test the parent instances count
+        response_parent = self.client.get(f"/api/orgunits/{parent_org_unit.id}/")
+        self.assertJSONResponse(response_parent, 200)
+        parent_instances_count = response_parent.json()["instances_count"]
+        self.assertEquals(parent_instances_count, 2)
+
     def test_can_retrieve_org_units_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
@@ -607,7 +652,7 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.set_up_org_unit_creation()
         self.assertJSONResponse(response, 403)
 
-    def test_create_org_unit_with_restricted_write_permission_for_user(self):
+    def test_create_org_unit_should_fail_with_restricted_editable_org_unit_types(self):
         """
         Check that we cannot create an org unit if writing rights are limited
         by a set of org unit types that we are allowed to modify.
@@ -1015,7 +1060,7 @@ class OrgUnitAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 403)
 
-    def test_edit_org_unit_with_restricted_write_permission_for_user(self):
+    def test_edit_org_unit_should_fail_with_restricted_editable_org_unit_types(self):
         """
         Check that we cannot edit an org unit if writing rights are limited
         by a set of org unit types that we are allowed to modify.

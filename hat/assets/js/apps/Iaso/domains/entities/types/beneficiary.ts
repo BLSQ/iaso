@@ -35,4 +35,5 @@ export type Beneficiary = {
     duplicates: number[];
     latitude?: number;
     longitude?: number;
+    nfc_cards?: number;
 };

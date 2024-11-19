@@ -50,7 +50,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
         ]
 
     def get_pre_alert_data(self, obj):
-        pre_alerts = VaccinePreAlert.objects.filter(request_form__campaign=obj.campaign, request_form__round=obj)
+        pre_alerts = VaccinePreAlert.objects.filter(request_form__campaign=obj.campaign, request_form__rounds=obj)
         return [
             {"date": pa.date_pre_alert_reception, "file": pa.document.url if pa.document else None} for pa in pre_alerts
         ]

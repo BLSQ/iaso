@@ -65,24 +65,28 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         org_units = OrgUnit.objects.filter_for_user(self.request.user)
-        org_units_change_requests = OrgUnitChangeRequest.objects.select_related(
-            "created_by",
-            "updated_by",
-            "org_unit__parent",
-            "org_unit__org_unit_type",
-            "new_parent",
-            "old_parent",
-            "new_org_unit_type",
-            "old_org_unit_type",
-        ).prefetch_related(
-            "org_unit__groups",
-            Prefetch("org_unit__reference_instances", queryset=Instance.non_deleted_objects.select_related("form")),
-            "org_unit__reference_instances__form",
-            "new_groups",
-            "old_groups",
-            Prefetch("new_reference_instances", queryset=Instance.non_deleted_objects.select_related("form")),
-            Prefetch("old_reference_instances", queryset=Instance.non_deleted_objects.select_related("form")),
-            "org_unit__org_unit_type__projects",
+        org_units_change_requests = (
+            OrgUnitChangeRequest.objects.select_related(
+                "created_by",
+                "updated_by",
+                "org_unit__parent",
+                "org_unit__org_unit_type",
+                "new_parent",
+                "old_parent",
+                "new_org_unit_type",
+                "old_org_unit_type",
+            )
+            .prefetch_related(
+                "org_unit__groups",
+                Prefetch("org_unit__reference_instances", queryset=Instance.non_deleted_objects.select_related("form")),
+                "org_unit__reference_instances__form",
+                "new_groups",
+                "old_groups",
+                Prefetch("new_reference_instances", queryset=Instance.non_deleted_objects.select_related("form")),
+                Prefetch("old_reference_instances", queryset=Instance.non_deleted_objects.select_related("form")),
+                "org_unit__org_unit_type__projects",
+            )
+            .exclude_soft_deleted_new_reference_instances()
         )
         return org_units_change_requests.filter(org_unit__in=org_units)
 

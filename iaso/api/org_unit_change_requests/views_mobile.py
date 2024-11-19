@@ -4,7 +4,7 @@ from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin
 
-from django.db.models import Prefetch
+from django.db.models import Count, Prefetch, Q
 
 from iaso.api.org_unit_change_requests.filters import MobileOrgUnitChangeRequestListFilter
 from iaso.api.org_unit_change_requests.pagination import OrgUnitChangeRequestPagination
@@ -34,4 +34,10 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
                 "new_groups",
                 Prefetch("new_reference_instances", queryset=Instance.non_deleted_objects.all()),
             )
+            .annotate(
+                annotated_new_reference_instances_count=Count(
+                    "new_reference_instances", filter=Q(new_reference_instances__deleted=False)
+                )
+            )
+            .exclude_soft_deleted_new_reference_instances()
         )

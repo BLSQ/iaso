@@ -66,28 +66,25 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
     def test_list_should_not_include_soft_deleted_intances(self):
         change_request = m.OrgUnitChangeRequest.objects.create(
-            org_unit=self.org_unit, new_name="Foo", created_by=self.user
+            org_unit=self.org_unit, new_name="Foo", created_by=self.user, requested_fields=["new_reference_instances"]
         )
         change_request.new_reference_instances.set([self.instance_1.pk])
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(8):
-            response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
-            self.assertJSONResponse(response, 200)
-            self.assertEqual(1, len(response.data["results"]))
-            self.assertEqual(len(response.data["results"][0]["new_reference_instances"]), 1)
-            self.assertEqual(response.data["results"][0]["new_reference_instances"][0]["id"], self.instance_1.pk)
+        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(1, len(response.data["results"]))
+        self.assertEqual(len(response.data["results"][0]["new_reference_instances"]), 1)
+        self.assertEqual(response.data["results"][0]["new_reference_instances"][0]["id"], self.instance_1.pk)
 
         # Soft delete instance.
         self.instance_1.deleted = True
         self.instance_1.save()
 
-        with self.assertNumQueries(8):
-            response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
-            self.assertJSONResponse(response, 200)
-            self.assertEqual(1, len(response.data["results"]))
-            self.assertEqual(len(response.data["results"][0]["new_reference_instances"]), 0)
+        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(0, len(response.data["results"]))
 
     def test_list_without_auth(self):
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")

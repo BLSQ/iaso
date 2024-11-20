@@ -81,10 +81,6 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-// type Props = {
-//     params: OrgUnitParams;
-// };
-
 const baseUrl = baseUrls.orgUnits;
 export const OrgUnits: FunctionComponent = () => {
     // HOOKS

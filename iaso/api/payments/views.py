@@ -449,8 +449,6 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     http_method_names = ["get", "head", "options", "trace"]
 
     def get_queryset(self):
-        user = self.request.user
-        localisation = user.iaso_profile.org_units
         queryset = (
             PotentialPayment.objects.prefetch_related("change_requests")
             .prefetch_related("change_requests__org_unit")
@@ -459,9 +457,6 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
             .filter(task__isnull=True)
             .distinct()
         )
-        if localisation:
-            authorized_org_units = OrgUnit.objects.filter_for_user(user)
-            queryset = queryset.filter(change_requests__org_unit__in=authorized_org_units)
 
         queryset = queryset.annotate(change_requests_count=Count("change_requests"))
 

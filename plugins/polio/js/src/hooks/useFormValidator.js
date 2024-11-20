@@ -434,7 +434,6 @@ export const useFormValidator = () => {
             .isValidOutbreakDeclaration(formatMessage),
 
         detection_first_draft_submitted_at: yup.date().nullable(),
-        detection_rrt_oprtt_approval_at: yup.date().nullable(),
 
         investigation_at: yup
             .date()

@@ -340,14 +340,6 @@ export const useGetConfig = (): Record<string, any> => {
         {
             key: 'no_regret_fund_amount',
         },
-        {
-            key: 'budget_submitted_at',
-            getLogValue: log => convertDate(log.budget_submitted_at),
-        },
-        {
-            key: 'budget_submitted_at', // deprecated
-            getLogValue: log => convertDate(log.budget_submitted_at),
-        },
         // Scopes
         {
             key: 'scopes',

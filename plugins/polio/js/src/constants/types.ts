@@ -368,7 +368,6 @@ export type Campaign = {
     payment_mode: Nullable<PaymentMode>;
     district_count: Nullable<number>;
     budget_rrt_oprrt_approval_at: Nullable<string>; // date
-    budget_submitted_at: Nullable<string>; // date
     is_preventive: boolean;
     enable_send_weekly_emails: boolean;
     initial_org_unit: Nullable<number>;
@@ -544,7 +543,6 @@ export type PolioCampaignValues = DefaultCampaignValues & {
     who_disbursed_to_moh_at?: string | null;
     who_disbursed_to_co_at?: string | null;
     spreadsheet_url?: string | null;
-    budget_submitted_at?: string | null;
     district_count?: number;
     no_regret_fund_amount?: number;
     verification_score?: number;

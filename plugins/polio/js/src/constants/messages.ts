@@ -409,10 +409,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.disbursedToMohUnicef',
         defaultMessage: 'Disbursed to MOH (Unicef)',
     },
-    budget_submitted_at: {
-        id: 'iaso.polio.form.label.budget_submitted_at',
-        defaultMessage: 'Budget Submitted At',
-    },
     roundOneStart: {
         id: 'iaso.polio.form.label.roundOneStart',
         defaultMessage: 'Round 1 Start',

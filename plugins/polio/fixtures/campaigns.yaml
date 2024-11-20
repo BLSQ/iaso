@@ -98,7 +98,6 @@
     created_at: 2022-09-13 14:30:52.327848+00:00
     updated_at: 2022-09-13 14:33:50.871497+00:00
     district_count: null
-    budget_submitted_at: null
     is_preventive: false
     enable_send_weekly_email: false
     account_id: 4

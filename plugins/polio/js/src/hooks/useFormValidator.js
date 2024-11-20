@@ -487,7 +487,6 @@ export const useFormValidator = () => {
         who_disbursed_to_co_at: yup.date().nullable(),
         spreadsheet_url: yup.string().url().nullable(),
 
-        budget_submitted_at: yup.date().nullable(),
         district_count: yup
             .number()
             .nullable()

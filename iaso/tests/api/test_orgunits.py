@@ -554,13 +554,13 @@ class OrgUnitAPITestCase(APITestCase):
         response_descendant = self.client.get(f"/api/orgunits/{descendant_org_unit.id}/")
         self.assertJSONResponse(response_descendant, 200)
         descendant_instances_count = response_descendant.json()["instances_count"]
-        self.assertEquals(descendant_instances_count, 1)
+        self.assertEqual(descendant_instances_count, 1)
 
         # Test the parent instances count
         response_parent = self.client.get(f"/api/orgunits/{parent_org_unit.id}/")
         self.assertJSONResponse(response_parent, 200)
         parent_instances_count = response_parent.json()["instances_count"]
-        self.assertEquals(parent_instances_count, 2)
+        self.assertEqual(parent_instances_count, 2)
 
     def test_can_retrieve_org_units_in_csv_format(self):
         self.client.force_authenticate(self.yoda)

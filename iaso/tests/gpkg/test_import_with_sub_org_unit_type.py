@@ -25,7 +25,9 @@ class OrgUnitImportFromGPKG(APITestCase):
         self.assertJSONResponse(response, 200)
         response_data = response.json()
 
-        updated_with_sub_types = update_org_unit_sub_type(self.client, self.project.id, response_data["orgUnitTypes"])
+        updated_with_sub_types = update_org_unit_sub_type(
+            self.client, self.project.id, response_data["orgUnitTypes"], False
+        )
 
         for org_unit_type_with in updated_with_sub_types:
             self.assertJSONResponse(org_unit_type_with, 200)

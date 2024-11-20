@@ -140,9 +140,6 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'outbreak_declaration_date',
             getLogValue: log => convertDate(log.outbreak_declaration_date),
         },
-        {
-            key: 'vacine', // deprecated
-        },
         // Detection
         {
             key: 'detection_status',

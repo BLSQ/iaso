@@ -76,7 +76,6 @@
     pv_notified_at: null
     pv2_notified_at: null
     virus: PV3
-    vacine: null
     detection_status: PENDING
     detection_responsible: null
     detection_first_draft_submitted_at: null

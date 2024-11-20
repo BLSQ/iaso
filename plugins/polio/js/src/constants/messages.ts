@@ -916,10 +916,6 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Vaccination ratio per region (based on districts found)',
     },
-    vacine: {
-        id: 'iaso.polio.vaccines',
-        defaultMessage: 'Vaccines',
-    },
     vaccinated: {
         id: 'iaso.polio.label.vaccinated',
         defaultMessage: 'Vaccinated',

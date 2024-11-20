@@ -344,7 +344,6 @@ export type Campaign = {
     pv_notified_at: Nullable<string>; // date
     pv2_notified_at: Nullable<string>; // date
     virus: Nullable<Virus>;
-    vacine: Nullable<Vaccine>;
     detection_status: DetectionStatus;
     detection_responsible: Nullable<DetectionResponsible>;
     detection_first_draft_submitted_at: Nullable<string>; // date

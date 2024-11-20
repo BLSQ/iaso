@@ -25,7 +25,6 @@ def mocked_iaso_client_get(*args, **kwargs):
     elif url.startswith("/api/formattachments/"):
         return {"results": []}
     else:
-        print(args)
         # for all other calls, return an empty array
         return []
 

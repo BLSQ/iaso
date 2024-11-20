@@ -377,7 +377,6 @@ export type Campaign = {
     initial_org_unit: Nullable<number>;
     country: Nullable<number>;
     group: Nullable<number>; // Doesn't appear nullbale in swagger but had anull value in payload
-    last_budget_event: Nullable<number>;
     campaign_types: CampaignType[];
 };
 

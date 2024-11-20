@@ -348,9 +348,6 @@ export const useGetConfig = (): Record<string, any> => {
             getLogValue: log => convertDate(log.budget_submitted_at),
         },
         {
-            key: 'last_budget_event', // deprecated
-        },
-        {
             key: 'budget_rrt_oprtt_approval_at', // deprecated
             getLogValue: log => convertDate(log.budget_rrt_oprtt_approval_at),
         },

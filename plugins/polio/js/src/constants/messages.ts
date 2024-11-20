@@ -1402,10 +1402,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Latest event',
         id: 'iaso.polio.label.latestEvent',
     },
-    last_budget_event: {
-        defaultMessage: 'Latest event',
-        id: 'iaso.polio.label.latestEvent',
-    },
     noBudgetSubmitted: {
         defaultMessage: 'No budget submitted',
         id: 'iaso.polio.label.noBudgetSubmitted',

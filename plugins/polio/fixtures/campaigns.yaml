@@ -89,7 +89,6 @@
     verification_score: null
     budget_status: null
     is_test: false
-    last_budget_event: null
     who_disbursed_to_co_at: null
     who_disbursed_to_moh_at: null
     unicef_disbursed_to_co_at: null

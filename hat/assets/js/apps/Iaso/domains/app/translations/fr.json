@@ -1463,6 +1463,7 @@
     "iaso.users.update": "Mettre l'utilisateur à jour",
     "iaso.users.userAdminOnly": "Edition pour les administrateurs uniquement",
     "iaso.users.userPermissions": "Permissions d'utilisateur",
+    "iaso.users.userRoleOrgUnitTypeRestrictionWarning": "Des restrictions d'écriture de rôle d’utilisateur s’appliquent à cet utilisateur. Consulter le rôle d’utilisateur en question pour plus de détails",
     "iaso.users.usersHistory": "Historique des utilisateurs",
     "iaso.users.warningModalMessage": "Vous êtes sur le point de sauvegarder un utilisateur sans permissions. Cet utilisateur aura accès à l'application mobile mais pas aux fonctionnalités de l'interface web.",
     "iaso.versionsDialog.label.createdAt": "Création",

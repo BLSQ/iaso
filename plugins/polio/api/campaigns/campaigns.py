@@ -427,7 +427,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         # fields = "__all__"
         exclude = ["geojson"]
 
-        read_only_fields = ["preperadness_sync_status", "creation_email_send_at", "group"]
+        read_only_fields = ["creation_email_send_at", "group"]
 
 
 class ListCampaignSerializer(CampaignSerializer):

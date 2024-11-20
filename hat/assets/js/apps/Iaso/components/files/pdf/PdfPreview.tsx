@@ -8,7 +8,12 @@ import {
     IconButton,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    ComponentType,
+    FunctionComponent,
+    useCallback,
+    useState,
+} from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { SxStyles } from '../../../types/general';
 import PdfSvgComponent from '../../svg/PdfSvgComponent';
@@ -25,6 +30,11 @@ if (!pdfjs.GlobalWorkerOptions.workerSrc) {
 
 type PdfPreviewProps = {
     pdfUrl?: string;
+    OpenButtonComponent?: ComponentType<{
+        onClick: () => void;
+        disabled: boolean;
+    }>;
+    buttonProps?: Record<string, unknown>;
 };
 
 const styles: SxStyles = {
@@ -62,13 +72,31 @@ const styles: SxStyles = {
     },
 };
 
-export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({ pdfUrl }) => {
+const DefaultOpenButton: FunctionComponent<{
+    onClick: () => void;
+    disabled: boolean;
+}> = ({ onClick, disabled }) => (
+    <IconButton
+        onClick={onClick}
+        aria-label="preview document"
+        disabled={disabled}
+    >
+        <PdfSvgComponent />
+    </IconButton>
+);
+
+export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
+    pdfUrl,
+    OpenButtonComponent,
+    buttonProps,
+}) => {
     const [open, setOpen] = useState(false);
     const [numPages, setNumPages] = useState<number | null>(null);
     const [pageNumber, setPageNumber] = useState(1);
 
     const { formatMessage } = useSafeIntl();
     const handleOpen = () => {
+        console.log('handleOpen');
         setOpen(true);
     };
 
@@ -103,15 +131,15 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({ pdfUrl }) => {
         });
     };
 
+    const OpenButton = OpenButtonComponent || DefaultOpenButton;
+
     return (
         <>
-            <IconButton
+            <OpenButton
                 onClick={handleOpen}
-                aria-label="preview document"
                 disabled={!pdfUrl}
-            >
-                <PdfSvgComponent />
-            </IconButton>
+                {...buttonProps}
+            />
             {open && (
                 <Dialog
                     fullWidth

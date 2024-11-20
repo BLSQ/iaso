@@ -8,6 +8,7 @@ import GroupWork from '@mui/icons-material/GroupWork';
 import HomeIcon from '@mui/icons-material/Home';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
@@ -38,6 +39,7 @@ import {
     reasonsForDelayConfigPath,
     stockManagementPath,
     supplychainPath,
+    vaccineRepositoryPath,
 } from './routes';
 
 export const menu: MenuItem[] = [
@@ -141,6 +143,12 @@ export const menu: MenuItem[] = [
                         key: 'stockmanagement',
                         permissions: stockManagementPath.permissions,
                         icon: props => <StorageIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.vaccineRepository,
+                        key: 'repository',
+                        permissions: vaccineRepositoryPath.permissions,
+                        icon: props => <InventoryIcon {...props} />,
                     },
                     {
                         label: MESSAGES.chronogram,

@@ -519,7 +519,6 @@ export type PolioCampaignValues = DefaultCampaignValues & {
     cvdpv2_notified_at?: string | null;
     outbreak_declaration_date?: string | null;
     detection_first_draft_submitted_at?: string | null;
-    detection_rrt_oprtt_approval_at?: string | null;
     investigation_at?: string | null;
     risk_assessment_first_draft_submitted_at?: string | null;
     risk_assessment_rrt_oprtt_approval_at?: string | null;

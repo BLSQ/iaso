@@ -151,11 +151,6 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'pv2_notified_at', // deprecated
             getLogValue: log => convertDate(log.pv2_notified_at),
         },
-        {
-            key: 'detection_rrt_oprtt_approval_at', // deprecated
-            getLogValue: log =>
-                convertDate(log.detection_rrt_oprtt_approval_at),
-        },
 
         // Risk assessment
         {
@@ -681,24 +676,5 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'creation_email_send_at',
             getLogValue: log => convertDate(log.creation_email_send_at),
         },
-        // DEPRECATED FIELDS ?
-        // {
-        //     key: 'last_budget_event',
-        // },
-        // {
-        //     key: 'pv2_notified_at',
-        //     getLogValue: log => convertDate(log.pv2_notified_at),
-        // },
-        // {
-        //     key: 'detection_rrt_oprtt_approval_at',
-
-        //     getLogValue: log =>
-        //         convertDate(log.detection_rrt_oprtt_approval_at_WFEDITABLE, 'L'),
-        // },
-        // {
-        //     key: 'detection_first_draft_submitted_at',
-        //     getLogValue: log =>
-        //         convertDate(log.detection_first_draft_submitted_at_WFEDITABLE, 'L'),
-        // },
     ];
 };

@@ -79,7 +79,6 @@
     detection_status: PENDING
     detection_responsible: null
     detection_first_draft_submitted_at: null
-    detection_rrt_oprtt_approval_at: null
     risk_assessment_status: SUBMITTED
     risk_assessment_responsible: null
     investigation_at: null

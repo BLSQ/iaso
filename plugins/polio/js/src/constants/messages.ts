@@ -1889,10 +1889,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.risk_assessment_responsible',
         defaultMessage: 'Risk assessment responsible',
     },
-    detection_rrt_oprtt_approval_at: {
-        id: 'iaso.polio.label.detection_rrt_oprtt_approval_at',
-        defaultMessage: 'Detection rrt oprtt oprtt',
-    },
     id: {
         id: 'iaso.polio.label.campaign.id',
         defaultMessage: 'Id',

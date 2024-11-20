@@ -356,7 +356,6 @@ export type Campaign = {
     ag_nopv_group_met_at: Nullable<string>; // date
     dg_authorized_at: Nullable<string>; // date
     verification_score: Nullable<number>;
-    doses_requested: Nullable<number>;
     preparedness_spreadsheet_url: Nullable<string>;
     preparedness_sync_status: PreparednessSyncStatus;
     budget_status: Nullable<BudgetStatusDeprecated>;

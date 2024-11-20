@@ -87,7 +87,6 @@
     ag_nopv_group_met_at: null
     dg_authorized_at: null
     verification_score: null
-    doses_requested: null
     preperadness_spreadsheet_url: null
     preperadness_sync_status: FINISHED
     budget_status: null

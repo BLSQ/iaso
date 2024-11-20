@@ -366,7 +366,6 @@ export type Campaign = {
     who_disbursed_to_moh_at: Nullable<string>; // date
     unicef_disbursed_to_co_at: Nullable<string>; // date
     unicef_disbursed_to_moh_at: Nullable<string>; // date
-    eomg: Nullable<string>; // date
     no_regret_fund_amount: Nullable<number>; // decimal
     payment_mode: Nullable<PaymentMode>;
     district_count: Nullable<number>;
@@ -547,7 +546,6 @@ export type PolioCampaignValues = DefaultCampaignValues & {
     who_disbursed_to_moh_at?: string | null;
     who_disbursed_to_co_at?: string | null;
     spreadsheet_url?: string | null;
-    eomg?: string | null;
     budget_submitted_at?: string | null;
     district_count?: number;
     no_regret_fund_amount?: number;

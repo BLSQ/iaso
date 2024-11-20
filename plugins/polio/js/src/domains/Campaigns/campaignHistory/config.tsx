@@ -86,9 +86,6 @@ export const useGetConfig = (): Record<string, any> => {
             ],
         },
         {
-            key: 'eomg',
-        },
-        {
             key: 'description',
         },
         {
@@ -350,9 +347,6 @@ export const useGetConfig = (): Record<string, any> => {
         {
             key: 'budget_rrt_oprtt_approval_at', // deprecated
             getLogValue: log => convertDate(log.budget_rrt_oprtt_approval_at),
-        },
-        {
-            key: 'eomg', // deprecated
         },
         {
             key: 'budget_submitted_at', // deprecated

@@ -549,10 +549,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.table.label.status',
         defaultMessage: 'Status',
     },
-    sync_status: {
-        id: 'iaso.polio.table.label.sync_status',
-        defaultMessage: 'Synchronisation',
-    },
     import: {
         id: 'iaso.polio.button.label.import',
         defaultMessage: 'Import',
@@ -629,10 +625,6 @@ const MESSAGES = defineMessages({
     payment_mode: {
         id: 'iaso.polio.label.paymentMode',
         defaultMessage: 'Payment Mode',
-    },
-    responsible: {
-        id: 'iaso.polio.label.responsible',
-        defaultMessage: 'Responsible',
     },
     pending: {
         id: 'iaso.polio.label.pending',
@@ -1385,14 +1377,6 @@ const MESSAGES = defineMessages({
     budgetFiles: {
         defaultMessage: '{type} sent by {author} to {recipients} on {date}',
         id: 'iaso.polio.label.budgetFiles',
-    },
-    latestEventDate: {
-        defaultMessage: 'Latest event date',
-        id: 'iaso.polio.label.latestEventDate',
-    },
-    latestEvent: {
-        defaultMessage: 'Latest event',
-        id: 'iaso.polio.label.latestEvent',
     },
     noBudgetSubmitted: {
         defaultMessage: 'No budget submitted',

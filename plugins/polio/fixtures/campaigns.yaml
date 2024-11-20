@@ -72,7 +72,6 @@
     creation_email_send_at: null
     group: null
     onset_at: null
-    cvdpv_notified_at: null
     cvdpv2_notified_at: null
     pv_notified_at: null
     pv2_notified_at: null

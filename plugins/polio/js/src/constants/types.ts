@@ -340,7 +340,6 @@ export type Campaign = {
     creation_email_sent_at: Nullable<string>; // date time
     onset_at: Nullable<string>; // date
     outbreak_declaration_date: Nullable<string>; // date
-    cvdpv_notified_at: Nullable<string>; // date
     cvdpv2_notified_at: Nullable<string>; // date
     pv_notified_at: Nullable<string>; // date
     pv2_notified_at: Nullable<string>; // date

@@ -1873,10 +1873,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.gpei_email',
         defaultMessage: 'Email GPEI',
     },
-    cvdpv_notified_at: {
-        id: 'iaso.polio.label.cvdpv_notified_at',
-        defaultMessage: 'CVDPV Notification date',
-    },
     pv_notified_at: {
         id: 'iaso.polio.label.pv_notified_at',
         defaultMessage: 'PV Notification',

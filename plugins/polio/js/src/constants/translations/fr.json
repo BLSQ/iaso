@@ -353,7 +353,6 @@
     "iaso.polio.label.csv": "CSV",
     "iaso.polio.label.currentAuthorisedQuantity": "Quantity authorisée courante",
     "iaso.polio.label.currentExpirationDate": "Date d'expiration en cours",
-    "iaso.polio.label.cvdpv_notified_at": "Date de notification CVDPV",
     "iaso.polio.label.date_dg_approval": "Date d'approbation par DG",
     "iaso.polio.label.date_of_incident_report": "Date du rapport d'incident",
     "iaso.polio.label.date_pre_alert_reception": "Réception de la pré-alerte",

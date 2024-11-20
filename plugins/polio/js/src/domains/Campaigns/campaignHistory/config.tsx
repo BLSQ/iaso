@@ -151,10 +151,6 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'detection_responsible',
         },
         {
-            key: 'cvdpv_notified_at', // deprecated
-            getLogValue: log => convertDate(log.cvdpv_notified_at),
-        },
-        {
             key: 'pv2_notified_at', // deprecated
             getLogValue: log => convertDate(log.pv2_notified_at),
         },

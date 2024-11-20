@@ -11,7 +11,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex, GistIndex
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import Q, QuerySet
+from django.db.models import Count, Q, QuerySet
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
@@ -619,6 +619,21 @@ class OrgUnitReferenceInstance(models.Model):
         unique_together = ("org_unit", "form")
 
 
+class OrgUnitChangeRequestQuerySet(models.QuerySet):
+    def exclude_soft_deleted_new_reference_instances(self):
+        """
+        Exclude change requests when `new_reference_instances` is the only
+        requested change but instances have all been soft-deleted.
+        """
+        return self.annotate(
+            annotated_non_deleted_new_reference_instances_count=Count(
+                "new_reference_instances", filter=Q(new_reference_instances__deleted=False)
+            )
+        ).exclude(
+            Q(requested_fields=["new_reference_instances"]) & Q(annotated_non_deleted_new_reference_instances_count=0)
+        )
+
+
 class OrgUnitChangeRequest(models.Model):
     """
     A request to change an OrgUnit.
@@ -703,6 +718,8 @@ class OrgUnitChangeRequest(models.Model):
     potential_payment = models.ForeignKey(
         "PotentialPayment", on_delete=models.SET_NULL, null=True, blank=True, related_name="change_requests"
     )
+
+    objects = models.Manager.from_queryset(OrgUnitChangeRequestQuerySet)()
 
     class Meta:
         verbose_name = _("Org unit change request")

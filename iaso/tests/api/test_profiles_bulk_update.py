@@ -1,5 +1,6 @@
 from django.test import tag
 from django.contrib import auth
+import jsonschema
 
 from beanstalk_worker.services import TestTaskService
 from hat.audit import models as am
@@ -8,6 +9,7 @@ from iaso.models import Task, QUEUED
 from iaso.models.microplanning import TeamType
 from iaso.test import APITestCase
 from hat.menupermissions import models as permission
+from iaso.tests.api.test_profiles import PROFILE_LOG_SCHEMA
 
 
 def saveUserProfile(user):
@@ -15,7 +17,7 @@ def saveUserProfile(user):
     user.iaso_profile.save()
 
 
-class OrgUnitsBulkUpdateAPITestCase(APITestCase):
+class ProfileBulkUpdateAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
@@ -45,7 +47,6 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
         sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        # sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=2)
         star_wars.default_version = sw_version_1
         star_wars.save()
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
@@ -62,7 +63,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             version=sw_version_1,
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
-
+        cls.jabba = cls.create_user_with_profile(username="jabba", account=star_wars, language="en", is_superuser=True)
         cls.yoda = cls.create_user_with_profile(
             username="yoda",
             account=star_wars,
@@ -87,8 +88,8 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             user_roles=[cls.user_role_2],
         )
         saveUserProfile(cls.luke)
-        cls.chewy = cls.create_user_with_profile(
-            username="chewy",
+        cls.chewie = cls.create_user_with_profile(
+            username="chewie",
             account=star_wars,
             permissions=[permission._USERS_ADMIN],
             projects=[cls.project_2],
@@ -96,7 +97,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             language="en",
             user_roles=[cls.user_role_2],
         )
-        saveUserProfile(cls.chewy)
+        saveUserProfile(cls.chewie)
         cls.raccoon = cls.create_user_with_profile(
             username="raccoon",
             account=marvel,
@@ -157,7 +158,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_with_no_users_permission)
         operation_payload = {
             "select_all": False,
-            "selected_ids": [self.luke.iaso_profile.pk, self.chewy.iaso_profile.pk],
+            "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
             "language": "fr",
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
@@ -226,10 +227,8 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         operation_payload = {
             "select_all": False,
-            "selected_ids": [self.luke.iaso_profile.pk, self.chewy.iaso_profile.pk],
-            "language": "fr",
-            "location_ids_added": [self.jedi_council_corruscant.pk],
-            "location_ids_removed": [self.jedi_council_endor.pk],
+            "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
+            "unselected_ids": None,
             "projects_ids_added": [
                 self.project.pk,
                 self.project_3.pk,
@@ -237,6 +236,20 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             "projects_ids_removed": [self.project_2.pk],
             "roles_id_added": [self.user_role.pk],
             "roles_id_removed": [self.user_role_2.pk],
+            "location_ids_added": [self.jedi_council_corruscant.pk],
+            "location_ids_removed": [self.jedi_council_endor.pk],
+            "language": "fr",
+            "teams_id_added": None,
+            "teams_id_removed": None,
+            "organization": "Bluesquare",
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -248,16 +261,18 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         # Run the task
         self.runAndValidateTask(task, "SUCCESS")
         self.luke.refresh_from_db()
-        self.chewy.refresh_from_db()
+        self.chewie.refresh_from_db()
         self.assertEqual(self.luke.iaso_profile.language, "fr")
-        self.assertEqual(self.chewy.iaso_profile.language, "fr")
+        self.assertEqual(self.chewie.iaso_profile.language, "fr")
+        self.assertEqual(self.luke.iaso_profile.organization, "Bluesquare")
+        self.assertEqual(self.chewie.iaso_profile.organization, "Bluesquare")
         self.assertIn(
             self.jedi_council_corruscant,
             self.luke.iaso_profile.org_units.all(),
         )
         self.assertIn(
             self.jedi_council_corruscant,
-            self.chewy.iaso_profile.org_units.all(),
+            self.chewie.iaso_profile.org_units.all(),
         )
         self.assertNotIn(
             self.jedi_council_endor,
@@ -265,7 +280,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
         self.assertNotIn(
             self.jedi_council_endor,
-            self.chewy.iaso_profile.org_units.all(),
+            self.chewie.iaso_profile.org_units.all(),
         )
         self.assertIn(
             self.project,
@@ -273,7 +288,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
         self.assertIn(
             self.project,
-            self.chewy.iaso_profile.projects.all(),
+            self.chewie.iaso_profile.projects.all(),
         )
         self.assertNotIn(
             self.project_3,
@@ -281,7 +296,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
         self.assertNotIn(
             self.project_3,
-            self.chewy.iaso_profile.projects.all(),
+            self.chewie.iaso_profile.projects.all(),
         )
         self.assertIn(
             self.user_role,
@@ -289,7 +304,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
         self.assertIn(
             self.user_role,
-            self.chewy.iaso_profile.user_roles.all(),
+            self.chewie.iaso_profile.user_roles.all(),
         )
         self.assertNotIn(
             self.user_role_2,
@@ -297,7 +312,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
         self.assertNotIn(
             self.user_role_2,
-            self.chewy.iaso_profile.user_roles.all(),
+            self.chewie.iaso_profile.user_roles.all(),
         )
         self.assertNotIn(
             self.user_role_3,
@@ -305,7 +320,63 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
         self.assertNotIn(
             self.user_role_3,
-            self.chewy.iaso_profile.user_roles.all(),
+            self.chewie.iaso_profile.user_roles.all(),
+        )
+
+    @tag("iaso_only")
+    def test_profile_bulkupdate_should_fail_with_restricted_editable_org_unit_types(self):
+        user = self.obi_wan
+        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
+        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+
+        user.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type is now writable.
+            [self.jedi_council]
+        )
+
+        other_org_unit_type = m.OrgUnitType.objects.create(name="Country")
+        self.jedi_council_endor.name = "The Gambia"
+        self.jedi_council_endor.org_unit_type = other_org_unit_type
+        self.jedi_council_endor.save()
+
+        self.client.force_authenticate(user)
+
+        payload = {
+            "select_all": False,
+            "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [],
+            "roles_id_removed": [self.user_role_2.pk],
+            "location_ids_added": [self.jedi_council_endor.pk],
+            "location_ids_removed": [],
+            "language": "fr",
+            "teams_id_added": [],
+            "location_ids_removed": [],
+            "organization": "Bluesquare",
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
+        }
+        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=payload, format="json")
+
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
+        self.assertEqual(task.launcher, user)
+
+        task = self.runAndValidateTask(task, "ERRORED")
+        self.assertEqual(
+            task.result["message"],
+            (
+                f"User with permission {permission.USERS_MANAGED} cannot change the org unit The Gambia "
+                f"because he does not have rights on the following org unit type: Country"
+            ),
         )
 
     @tag("iaso_only")
@@ -356,9 +427,26 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.obi_wan)
         operation_payload = {
             "select_all": True,
-            "roles_id_added": [
-                self.user_role.pk,
-            ],
+            "selected_ids": [],
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [self.user_role.pk],
+            "roles_id_removed": [],
+            "location_ids_added": [],
+            "location_ids_removed": [],
+            "language": None,
+            "teams_id_added": [],
+            "teams_id_removed": [],
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -370,14 +458,14 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         # Run the task
         self.runAndValidateTask(task, "SUCCESS")
         self.luke.refresh_from_db()
-        self.chewy.refresh_from_db()
+        self.chewie.refresh_from_db()
         self.assertIn(
             self.user_role,
             self.luke.iaso_profile.user_roles.all(),
         )
         self.assertIn(
             self.user_role,
-            self.chewy.iaso_profile.user_roles.all(),
+            self.chewie.iaso_profile.user_roles.all(),
         )
 
     @tag("iaso_only")
@@ -386,9 +474,26 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.obi_wan)
         operation_payload = {
             "select_all": True,
-            "roles_id_added": [
-                self.user_role_admin.pk,
-            ],
+            "selected_ids": [],
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [self.user_role_admin.pk],
+            "roles_id_removed": [],
+            "location_ids_added": [],
+            "location_ids_removed": [],
+            "language": None,
+            "teams_id_added": [],
+            "teams_id_removed": [],
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -400,14 +505,14 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         # Run the task
         self.runAndValidateTask(task, "ERRORED")
         self.luke.refresh_from_db()
-        self.chewy.refresh_from_db()
+        self.chewie.refresh_from_db()
         self.assertNotIn(
             self.user_role_admin,
             self.luke.iaso_profile.user_roles.all(),
         )
         self.assertNotIn(
             self.user_role_admin,
-            self.chewy.iaso_profile.user_roles.all(),
+            self.chewie.iaso_profile.user_roles.all(),
         )
 
     @tag("iaso_only")
@@ -416,9 +521,26 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.obi_wan)
         operation_payload = {
             "select_all": True,
-            "roles_id_removed": [
-                self.user_role_2.pk,
-            ],
+            "selected_ids": [],
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [],
+            "roles_id_removed": [self.user_role_2.pk],
+            "location_ids_added": [],
+            "location_ids_removed": [],
+            "language": None,
+            "teams_id_added": [],
+            "teams_id_removed": [],
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -430,14 +552,14 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         # Run the task
         self.runAndValidateTask(task, "SUCCESS")
         self.luke.refresh_from_db()
-        self.chewy.refresh_from_db()
+        self.chewie.refresh_from_db()
         self.assertNotIn(
             self.user_role_2,
             self.luke.iaso_profile.user_roles.all(),
         )
         self.assertNotIn(
             self.user_role_2,
-            self.chewy.iaso_profile.user_roles.all(),
+            self.chewie.iaso_profile.user_roles.all(),
         )
 
     @tag("iaso_only")
@@ -447,11 +569,26 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         operation_payload = {
             "select_all": False,
-            "selected_ids": [self.luke.iaso_profile.pk, self.chewy.iaso_profile.pk],
+            "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [self.user_role_different_account.pk],
+            "roles_id_removed": [],
+            "location_ids_added": [],
+            "location_ids_removed": [],
             "language": "fr",
-            "roles_id_added": [
-                self.user_role_different_account.pk,
-            ],
+            "teams_id_added": [],
+            "teams_id_removed": [],
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -463,9 +600,9 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         # Run the task
         self.runAndValidateTask(task, "ERRORED")
         self.luke.refresh_from_db()
-        self.chewy.refresh_from_db()
+        self.chewie.refresh_from_db()
         self.assertNotEqual(self.luke.iaso_profile.language, "fr")
-        self.assertNotEqual(self.chewy.iaso_profile.language, "fr")
+        self.assertNotEqual(self.chewie.iaso_profile.language, "fr")
 
     @tag("iaso_only")
     def test_profile_bulkupdate_remove_user_role_with_not_connected_account(self):
@@ -474,11 +611,28 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         operation_payload = {
             "select_all": False,
-            "selected_ids": [self.luke.iaso_profile.pk, self.chewy.iaso_profile.pk],
-            "language": "fr",
+            "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
+            "unselected_ids": [],
+            "projects_ids_added": [],
+            "projects_ids_removed": [],
+            "roles_id_added": [],
             "roles_id_removed": [
                 self.user_role_different_account.pk,
             ],
+            "location_ids_added": [],
+            "location_ids_removed": [],
+            "language": "fr",
+            "teams_id_added": [],
+            "teams_id_removed": [],
+            "organization": None,
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
         }
         response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
@@ -490,9 +644,9 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         # Run the task
         self.runAndValidateTask(task, "ERRORED")
         self.luke.refresh_from_db()
-        self.chewy.refresh_from_db()
+        self.chewie.refresh_from_db()
         self.assertNotEqual(self.luke.iaso_profile.language, "fr")
-        self.assertNotEqual(self.chewy.iaso_profile.language, "fr")
+        self.assertNotEqual(self.chewie.iaso_profile.language, "fr")
 
     @tag("iaso_only")
     def test_profile_bulkupdate_select_all(self):
@@ -501,7 +655,29 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/tasks/create/profilesbulkupdate/",
-            data={"select_all": True, "language": "fr"},
+            data={
+                "select_all": True,
+                "selected_ids": None,
+                "unselected_ids": None,
+                "projects_ids_added": None,
+                "projects_ids_removed": None,
+                "roles_id_added": None,
+                "roles_id_removed": None,
+                "location_ids_added": None,
+                "location_ids_removed": None,
+                "language": "fr",
+                "teams_id_added": None,
+                "teams_id_removed": None,
+                "organization": None,
+                "search": None,
+                "perms": None,
+                "location": None,
+                "org_unit_type": None,
+                "parent_ou": None,
+                "children_ou": None,
+                "projects": None,
+                "user_roles": None,
+            },
             format="json",
         )
 
@@ -518,16 +694,16 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(self.root.iaso_profile.language, "en")
         self.wolverine.refresh_from_db()
         self.assertEqual(self.wolverine.iaso_profile.language, "en")
-        self.chewy.refresh_from_db()
-        self.assertEqual(self.chewy.iaso_profile.language, "fr")
+        self.chewie.refresh_from_db()
+        self.assertEqual(self.chewie.iaso_profile.language, "fr")
         self.luke.refresh_from_db()
         self.assertEqual(self.luke.iaso_profile.language, "fr")
         self.yoda.refresh_from_db()
         self.assertEqual(self.yoda.iaso_profile.language, "fr")
-        self.assertEqual(6, am.Modification.objects.count())
+        self.assertEqual(7, am.Modification.objects.count())
         self.obi_wan.refresh_from_db()
         self.assertEqual(self.obi_wan.iaso_profile.language, "fr")
-        self.assertEqual(6, am.Modification.objects.count())
+        self.assertEqual(7, am.Modification.objects.count())
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_with_search(self):
@@ -557,14 +733,15 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(self.root.iaso_profile.language, "en")
         self.wolverine.refresh_from_db()
         self.assertEqual(self.wolverine.iaso_profile.language, "en")
-        self.chewy.refresh_from_db()
-        self.assertEqual(self.chewy.iaso_profile.language, "en")
+        self.chewie.refresh_from_db()
+        self.assertEqual(self.chewie.iaso_profile.language, "en")
         self.luke.refresh_from_db()
         self.assertEqual(self.luke.iaso_profile.language, "fr")
         self.yoda.refresh_from_db()
         self.assertEqual(self.yoda.iaso_profile.language, "en")
 
         self.assertEqual(1, am.Modification.objects.count())
+        # TODO assert log content
 
     @tag("iaso_only")
     def test_profile_bulkupdate_task_select_all_but_some(self):
@@ -580,7 +757,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
                 "language": "fr",
                 "unselected_ids": [
                     self.luke.iaso_profile.pk,
-                    self.chewy.iaso_profile.pk,
+                    self.chewie.iaso_profile.pk,
                     self.user_with_no_users_permission.iaso_profile.pk,
                 ],
             },
@@ -599,19 +776,23 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(self.root.iaso_profile.language, "en")
         self.wolverine.refresh_from_db()
         self.assertEqual(self.wolverine.iaso_profile.language, "en")
-        self.chewy.refresh_from_db()
-        self.assertEqual(self.chewy.iaso_profile.language, "en")
+        self.chewie.refresh_from_db()
+        self.assertEqual(self.chewie.iaso_profile.language, "en")
         self.luke.refresh_from_db()
         self.assertEqual(self.luke.iaso_profile.language, "en")
         self.yoda.refresh_from_db()
         self.assertEqual(self.yoda.iaso_profile.language, "fr")
 
-        self.assertEqual(3, am.Modification.objects.count())
+        self.assertEqual(4, am.Modification.objects.count())
 
     @tag("iaso_only")
     def test_profile_bulkupdate_user_without_iaso_team_permission(self):
         """POST /api/tasks/create/profilesbulkupdate/ a user without permission menupermissions.iaso_teams cannot add users to team"""
-        self.client.force_authenticate(self.obi_wan)
+        user = self.obi_wan
+        self.assertFalse(user.has_perm(permission.TEAMS))
+
+        self.client.force_authenticate(user)
+
         operation_payload = {
             "select_all": True,
             "teams_id_added": [
@@ -623,7 +804,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertJSONResponse(response, 201)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
-        self.assertEqual(task.launcher, self.obi_wan)
+        self.assertEqual(task.launcher, user)
 
         # Run the task
         self.runAndValidateTask(task, "ERRORED")
@@ -634,9 +815,10 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             self.team_1.users.all(),
         )
         self.assertNotIn(
-            self.chewy,
+            self.chewie,
             self.team_1.users.all(),
         )
+        # TODO assert no log for teams
 
     @tag("iaso_only")
     def test_profile_bulkupdate_add_users_to_team(self):
@@ -664,7 +846,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             self.team_1.users.all(),
         )
         self.assertIn(
-            self.chewy,
+            self.chewie,
             self.team_1.users.all(),
         )
         # check if users with different account as the launcher has been added
@@ -676,6 +858,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             self.wolverine,
             self.team_1.users.all(),
         )
+        # TODO assert team logs
 
     @tag("iaso_only")
     def test_profile_bulkupdate_add_users_to_no_team_of_users(self):
@@ -702,7 +885,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             self.team_2.users.all(),
         )
         self.assertNotIn(
-            self.chewy,
+            self.chewie,
             self.team_2.users.all(),
         )
 
@@ -730,6 +913,163 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         task.save()
 
         self.runAndValidateTask(task, "KILLED")
+
+    def test_audit_log_on_save(self):
+        """POST //api/tasks/create/profilesbulkupdate/ happy path (select all)
+        There should be an audit log for each user updated and a log for each user added or removed from a team (1 per operation)
+        """
+
+        self.client.force_authenticate(self.jabba)
+        response = self.client.post(
+            f"/api/tasks/create/profilesbulkupdate/",
+            data={
+                "select_all": False,
+                "selected_ids": [self.luke.iaso_profile.pk, self.chewie.iaso_profile.pk],
+                "language": "fr",
+                "location_ids_added": [self.jedi_council_corruscant.pk],
+                "location_ids_removed": [self.jedi_council_endor.pk],
+                "projects_ids_added": [
+                    self.project.pk,
+                ],
+                "teams_id_added": [self.team_1.pk],
+                "projects_ids_removed": [self.project_2.pk],
+                "roles_id_added": [self.user_role.pk],
+                "roles_id_removed": [self.user_role_2.pk],
+            },
+            format="json",
+        )
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
+        self.assertEqual(task.launcher, self.jabba)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
+        self.assertEqual(4, am.Modification.objects.count())  # 2 users and 2 times team 1
+        # Check that luke profile is updated
+        response = self.client.get(
+            f"/api/logs/?contentType=iaso.profile&fields=past_value,new_value&objectId={self.luke.iaso_profile.id}"
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        logs = response_data["list"]
+        log = logs[0]
+
+        try:
+            jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+        # past value
+        past_value = log["past_value"][0]["fields"]
+        self.assertEqual(past_value["user"], self.luke.id)
+        self.assertEqual(past_value["username"], self.luke.username)
+        self.assertEqual(past_value["first_name"], self.luke.first_name)
+        self.assertEqual(past_value["last_name"], self.luke.last_name)
+        self.assertEqual(past_value["email"], self.luke.email)
+        self.assertEqual(len(past_value["user_permissions"]), 1)
+
+        self.assertEqual(past_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
+        self.assertEqual(past_value["language"], "en")
+        self.assertEqual(past_value["home_page"], self.luke.iaso_profile.home_page)
+        self.assertEqual(
+            past_value["phone_number"], self.luke.iaso_profile.phone_number
+        )  # expected to be null/empty. If there was a value we should add a plus for the value logged
+        self.assertEqual(len(past_value["org_units"]), 1)
+        self.assertIn(self.jedi_council_endor.id, past_value["org_units"])
+        self.assertEqual(len(past_value["user_roles"]), 1)
+        self.assertIn(self.user_role_2.id, past_value["user_roles"])
+        self.assertEqual(len(past_value["projects"]), 1)
+        self.assertIn(self.project_2.id, past_value["projects"])
+        # New value
+        new_value = log["new_value"][0]["fields"]
+        self.assertEqual(new_value["user"], self.luke.id)
+        self.assertEqual(new_value["username"], self.luke.username)
+        self.assertEqual(new_value["first_name"], self.luke.first_name)
+        self.assertEqual(new_value["last_name"], self.luke.last_name)
+        self.assertEqual(new_value["email"], self.luke.email)
+        self.assertEqual(len(new_value["user_permissions"]), 1)
+
+        self.assertEqual(new_value["dhis2_id"], self.luke.iaso_profile.dhis2_id)
+        self.assertEqual(new_value["language"], "fr")
+        self.assertEqual(new_value["home_page"], self.luke.iaso_profile.home_page)
+        self.assertEqual(
+            past_value["phone_number"], self.luke.iaso_profile.phone_number
+        )  # expected to be null/empty. If there was a value we should add a plus for the value logged
+        self.assertEqual(len(new_value["org_units"]), 1)
+        self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
+        self.assertEqual(len(new_value["user_roles"]), 1)
+        self.assertIn(self.user_role.id, new_value["user_roles"])
+        self.assertEqual(len(new_value["projects"]), 1)
+        self.assertIn(self.project.id, new_value["projects"])
+
+        # Check that chewie profile is updated
+        response = self.client.get(
+            f"/api/logs/?contentType=iaso.profile&fields=past_value,new_value&objectId={self.chewie.iaso_profile.id}"
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        logs = response_data["list"]
+        log = logs[0]
+
+        try:
+            jsonschema.validate(instance=log, schema=PROFILE_LOG_SCHEMA)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+        # past value
+        past_value = log["past_value"][0]["fields"]
+        self.assertEqual(past_value["user"], self.chewie.id)
+        self.assertEqual(past_value["username"], self.chewie.username)
+        self.assertEqual(past_value["first_name"], self.chewie.first_name)
+        self.assertEqual(past_value["last_name"], self.chewie.last_name)
+        self.assertEqual(past_value["email"], self.chewie.email)
+        self.assertEqual(len(past_value["user_permissions"]), 1)
+        self.assertNotIn("password", past_value.keys())
+
+        self.assertEqual(past_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
+        self.assertEqual(past_value["language"], "en")
+        self.assertEqual(past_value["home_page"], self.chewie.iaso_profile.home_page)
+        self.assertEqual(
+            past_value["phone_number"], self.chewie.iaso_profile.phone_number
+        )  # expected to be null/empty. If there was a value we should add a plus for the value logged
+        self.assertEqual(len(past_value["org_units"]), 1)
+        self.assertIn(self.jedi_council_endor.id, past_value["org_units"])
+        self.assertEqual(len(past_value["user_roles"]), 1)
+        self.assertIn(self.user_role_2.id, past_value["user_roles"])
+        self.assertEqual(len(past_value["projects"]), 1)
+        self.assertIn(self.project_2.id, past_value["projects"])
+        # New value
+        new_value = log["new_value"][0]["fields"]
+        self.assertEqual(new_value["user"], self.chewie.id)
+        self.assertEqual(new_value["username"], self.chewie.username)
+        self.assertEqual(new_value["first_name"], self.chewie.first_name)
+        self.assertEqual(new_value["last_name"], self.chewie.last_name)
+        self.assertEqual(new_value["email"], self.chewie.email)
+        self.assertEqual(len(new_value["user_permissions"]), 1)
+        self.assertNotIn("password", new_value.keys())
+
+        self.assertEqual(new_value["dhis2_id"], self.chewie.iaso_profile.dhis2_id)
+        self.assertEqual(new_value["language"], "fr")
+        self.assertEqual(new_value["home_page"], self.chewie.iaso_profile.home_page)
+        # expected to be null/empty. If there was a value we should add a plus for the value logged
+        self.assertEqual(past_value["phone_number"], self.chewie.iaso_profile.phone_number)
+        self.assertEqual(len(new_value["org_units"]), 1)
+        self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
+        self.assertEqual(len(new_value["user_roles"]), 1)
+        self.assertIn(self.user_role.id, new_value["user_roles"])
+        self.assertEqual(len(new_value["projects"]), 1)
+        self.assertIn(self.project.id, new_value["projects"])
+        # Check that team 1 is updated
+        response = self.client.get(
+            f"/api/logs/?contentType=iaso.team&fields=past_value,new_value&objectId={self.team_1.pk}"
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        logs = response_data["list"]
+        self.assertEqual(len(logs), 2)
+        # Last log should contain both luke and chewie id
+        log = logs[0]
+        self.assertIn(self.chewie.pk, log["new_value"][0]["users"])
+        self.assertIn(self.luke.pk, log["new_value"][0]["users"])
+        # Penultimate log should have neither nor chewie in past_value
+        self.assertNotIn(logs[1]["past_value"][0]["users"], [self.luke.pk, self.chewie.pk])
 
     def runAndValidateTask(self, task, new_status):
         "Run all task in queue and validate that task is run"

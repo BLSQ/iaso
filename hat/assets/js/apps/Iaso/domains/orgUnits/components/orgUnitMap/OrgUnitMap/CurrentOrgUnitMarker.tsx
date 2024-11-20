@@ -1,14 +1,13 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Pane } from 'react-leaflet';
 
-import { orgunitsPane } from './constants';
 import MarkerComponent from '../../../../../components/maps/markers/MarkerComponent';
 import { OrgUnit } from '../../../types/orgUnit';
+import { orgunitsPane } from './constants';
 
 type Props = {
     isEdit: boolean;
     currentOrgUnit: OrgUnit;
-    // eslint-disable-next-line no-unused-vars
     onChangeLocation: (location) => void;
 };
 export const CurrentOrgUnitMarker: FunctionComponent<Props> = ({

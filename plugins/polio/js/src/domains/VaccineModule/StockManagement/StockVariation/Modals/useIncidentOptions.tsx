@@ -1,7 +1,7 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
-import MESSAGES from '../../messages';
 import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import MESSAGES from '../../messages';
 
 export const VM_REACHED_DISCARD_POINT = 'vvm_reached_discard_point';
 export const VACCINE_EXPIRED = 'vaccine_expired';
@@ -11,7 +11,6 @@ export const STEALING = 'stealing';
 export const PHYSICAL_INVENTORY = 'physical_inventory';
 export const BROKEN = 'broken';
 export const UNREADABLE_LABEL = 'unreadable_label';
-
 // from backend model.
 // class StockCorrectionChoices(models.TextChoices):
 // VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
@@ -29,7 +28,7 @@ type IncidentType =
     | 'physical_inventory'
     | 'broken'
     | 'unreadable_label'
-    | 'RETURN_TO_SUPPLIER';
+    | 'return';
 
 export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
     const { formatMessage } = useSafeIntl();
@@ -67,7 +66,6 @@ export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
                 label: formatMessage(MESSAGES[UNREADABLE_LABEL]),
                 value: UNREADABLE_LABEL,
             },
-
         ].sort(
             (
                 option1: DropdownOptions<IncidentType>,

@@ -1,18 +1,22 @@
+import json
 from logging import getLogger
 from typing import Any
 
 from django import forms
+from django.core.files.base import ContentFile
 from django.db.models import Max, Min, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from nested_multipart_parser.drf import DrfNestedParser
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
+from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import GenericReadWritePerm, ModelViewSet
+from iaso.api.common import GenericReadWritePerm, ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
@@ -100,6 +104,8 @@ class BasePostPatchSerializer(serializers.ModelSerializer):
 
 
 class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
+    document = serializers.FileField(required=False)
+
     class Meta:
         model = VaccinePreAlert
         fields = [
@@ -109,7 +115,14 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             "doses_shipped",
             "doses_per_vial",
             "vials_shipped",
+            "document",
         ]
+
+    def validate(self, attrs: Any) -> Any:
+        validated_data = super().validate(attrs)
+        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
+            raise serializers.ValidationError("PO number should not be prefixed")
+        return validated_data
 
 
 class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerForPost):
@@ -120,6 +133,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     doses_shipped = serializers.IntegerField(required=False)
     doses_per_vial = serializers.IntegerField(required=False, read_only=True)
     vials_shipped = serializers.IntegerField(required=False, read_only=True)
+    document = serializers.FileField(required=False)
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
         fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id"]
@@ -128,7 +142,6 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         # at least one of the other fields must be present
         if not any(key in attrs.keys() for key in NestedVaccinePreAlertSerializerForPost.Meta.fields):
             raise serializers.ValidationError("At least one of the fields must be present.")
-
         return super().validate(attrs)
 
 
@@ -144,6 +157,12 @@ class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
             "doses_shipped",
             "po_number",
         ]
+
+    def validate(self, attrs: Any) -> Any:
+        validated_data = super().validate(attrs)
+        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
+            raise serializers.ValidationError("PO number should not be prefixed")
+        return validated_data
 
 
 class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSerializerForPost):
@@ -164,7 +183,10 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         if not any(key in attrs.keys() for key in NestedVaccineArrivalReportSerializerForPost.Meta.fields):
             raise serializers.ValidationError("At least one of the fields must be present.")
 
-        return super().validate(attrs)
+        validated_data = super().validate(attrs)
+        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
+            raise serializers.ValidationError("PO number should not be prefixed")
+        return validated_data
 
 
 class PostPreAlertSerializer(serializers.Serializer):
@@ -266,6 +288,7 @@ class NestedCountrySerializer(serializers.ModelSerializer):
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
     rounds = NestedRoundPostSerializer(many=True)
     campaign = serializers.CharField()
+    document = serializers.FileField(required=False)
 
     class Meta:
         model = VaccineRequestForm
@@ -286,9 +309,25 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
             "quantities_approved_by_dg_in_doses",
             "comment",
             "target_population",
+            "vrf_type",
+            "document",
         ]
 
         read_only_fields = ["created_at", "updated_at"]
+
+    def to_internal_value(self, data):
+        # Manually invoke validate_rounds if 'rounds' is a string
+        if "rounds" in data and isinstance(data["rounds"], str):
+            try:
+                rounds = parse_comma_separated_numeric_values(data["rounds"], "rounds")
+                data["rounds"] = [{"number": num} for num in rounds]
+            except Exception as e:
+                raise serializers.ValidationError(f"Invalid rounds data: {e}")
+        return super().to_internal_value(data)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        print("VaccineRequestFormPostSerializer instance created with data: %s", self.initial_data)
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -339,6 +378,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
     country_id = serializers.IntegerField(source="campaign.country.id")
     obr_name = serializers.CharField(source="campaign.obr_name")
     rounds = NestedRoundSerializer(many=True)
+    document = serializers.FileField(required=False)
 
     class Meta:
         model = VaccineRequestForm
@@ -365,6 +405,8 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
             "country_id",
             "obr_name",
             "target_population",
+            "vrf_type",
+            "document",
         ]
 
 
@@ -376,6 +418,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     start_date = serializers.SerializerMethodField()
     end_date = serializers.SerializerMethodField()
     doses_shipped = serializers.SerializerMethodField()
+    doses_received = serializers.SerializerMethodField()
     eta = serializers.SerializerMethodField()
     var = serializers.SerializerMethodField()
 
@@ -388,21 +431,51 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "obr_name",
             "po_numbers",
             "rounds",
+            "quantities_ordered_in_doses",
             "start_date",
             "end_date",
             "doses_shipped",
+            "doses_received",
             "eta",
             "var",
             "created_at",
             "updated_at",
+            "vrf_type",
         ]
 
-    # comma separated list of all
+    def get_prefetched_data(self, obj):
+        # Prefetch vaccine pre_alert and vaccinearrival_report to reduce the number of queries in the DB
+        pre_alerts = obj.vaccineprealert_set.all().order_by("-estimated_arrival_time")
+        arrival_reports = obj.vaccinearrivalreport_set.all().order_by("-arrival_report_date")
+
+        # Get arrival reports matching by po_number
+        arrival_report_matching = {}
+        for report in arrival_reports:
+            if report.po_number not in arrival_report_matching:
+                arrival_report_matching[report.po_number] = []
+            arrival_report_matching[report.po_number].append(report)
+
+        return pre_alerts, arrival_report_matching, arrival_reports
+
+    # Comma separated list of all
     def get_po_numbers(self, obj):
-        pre_alerts = obj.vaccineprealert_set.all()
-        if not pre_alerts:
-            return ""
-        return ", ".join([pre_alert.po_number for pre_alert in pre_alerts])
+        pre_alerts, arrival_report_matching, arrival_reports = self.get_prefetched_data(obj)
+
+        po_numbers = []
+        for pre_alert in pre_alerts:
+            matching_reports = arrival_report_matching.get(pre_alert.po_number, [])
+            if matching_reports:
+                for _ in matching_reports:
+                    po_numbers.append(str(pre_alert.po_number))
+            else:
+                po_numbers.append(pre_alert.po_number)
+
+        # Add arrival reports that don't have a PO number matching an prealert
+
+        for arrival_report in arrival_reports:
+            if arrival_report.po_number not in po_numbers:
+                po_numbers.append(arrival_report.po_number)
+        return ",".join(po_numbers)
 
     def get_start_date(self, obj):
         rounds = obj.rounds.all()
@@ -419,19 +492,41 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     def get_doses_shipped(self, obj):
         return obj.total_doses_shipped()
 
+    def get_doses_received(self, obj):
+        return obj.total_doses_received()
+
     # Comma Separated List of all estimated arrival times
     def get_eta(self, obj):
-        pre_alerts = obj.vaccineprealert_set.all()
-        if not pre_alerts:
-            return ""
-        return ", ".join([str(pre_alert.estimated_arrival_time) for pre_alert in pre_alerts])
+        pre_alerts, arrival_report_matching, arrival_reports = self.get_prefetched_data(obj)
+
+        estimated_arrival_dates = []
+        for pre_alert in pre_alerts:
+            matching_reports = arrival_report_matching.get(pre_alert.po_number, [])
+            if matching_reports:
+                for _ in matching_reports:
+                    estimated_arrival_dates.append(str(pre_alert.estimated_arrival_time))
+            else:
+                estimated_arrival_dates.append(str(pre_alert.estimated_arrival_time))
+        return ",".join(estimated_arrival_dates)
 
     # Comma Separated List of all arrival report dates
     def get_var(self, obj):
-        arrival_reports = obj.vaccinearrivalreport_set.all()
-        if not arrival_reports:
-            return ""
-        return ", ".join([str(report.arrival_report_date) for report in arrival_reports])
+        pre_alerts, arrival_report_matching, arrival_reports = self.get_prefetched_data(obj)
+
+        arrival_report_dates = []
+        for pre_alert in pre_alerts:
+            matching_reports = arrival_report_matching.get(pre_alert.po_number, None)
+            if matching_reports:
+                for report in matching_reports:
+                    arrival_report_dates.append(str(report.arrival_report_date))
+            else:
+                arrival_report_dates.append("")
+        # Add arrival reports that don't have a PO number matching a prealert
+        for arrival_report in arrival_reports:
+            if str(arrival_report.arrival_report_date) not in arrival_report_dates:
+                arrival_report_dates.append(str(arrival_report.arrival_report_date))
+
+        return ",".join(arrival_report_dates)
 
 
 class VRFCustomOrderingFilter(filters.BaseFilterBackend):
@@ -446,6 +541,14 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.annotate(doses_shipped=Coalesce(Sum("vaccineprealert__doses_shipped"), 0)).order_by(
                 "-doses_shipped"
             )
+        elif current_order == "doses_received":
+            queryset = queryset.annotate(
+                doses_received=Coalesce(Sum("vaccinearrivalreport__doses_received"), 0)
+            ).order_by("doses_received")
+        elif current_order == "-doses_received":
+            queryset = queryset.annotate(
+                doses_received=Coalesce(Sum("vaccinearrivalreport__doses_received"), 0)
+            ).order_by("-doses_received")
         elif current_order == "obr_name":
             queryset = queryset.order_by("campaign__obr_name")
         elif current_order == "-obr_name":
@@ -458,6 +561,10 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.order_by("vaccine_type")
         elif current_order == "-vaccine_type":
             queryset = queryset.order_by("-vaccine_type")
+        elif current_order == "quantities_ordered_in_doses":
+            queryset = queryset.order_by("quantities_ordered_in_doses")
+        elif current_order == "-quantities_ordered_in_doses":
+            queryset = queryset.order_by("-quantities_ordered_in_doses")
 
         # handle the case where there are no rounds
         elif current_order == "start_date":
@@ -549,6 +656,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     permission_classes = [VaccineSupplyChainReadWritePerm]
     http_method_names = ["get", "post", "delete", "patch"]
+    parser_classes = (JSONParser, DrfNestedParser)
 
     filter_backends = [
         SearchFilter,

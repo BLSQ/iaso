@@ -73,6 +73,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
     },
+    groupSets: {
+        defaultMessage: 'Group Sets',
+        id: 'iaso.label.groupSets',
+    },
     orgUnitType: {
         id: 'iaso.orgUnits.orgUnitsTypes',
         defaultMessage: 'Organisation unit type',
@@ -196,6 +200,22 @@ const MESSAGES = defineMessages({
     lots: {
         defaultMessage: 'Payments lots',
         id: 'iaso.payments.lots',
+    },
+    history: {
+        defaultMessage: 'History',
+        id: 'iaso.label.history',
+    },
+    management: {
+        defaultMessage: 'Management',
+        id: 'iaso.label.management',
+    },
+    configuration: {
+        defaultMessage: 'Configuration',
+        id: 'iaso.label.configuration',
+    },
+    changeRequestConfig: {
+        defaultMessage: 'Change Request',
+        id: 'iaso.label.changeRequestConfig',
     },
 });
 

@@ -7,11 +7,13 @@ import {
     DateCell,
     DateTimeCellRfc,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 
 import MESSAGES from '../messages';
 import { ChronogramTaskMetaData } from '../../types';
 import { DeleteChronogramTask } from '../Modals/ChronogramTaskDeleteModal';
 import { EditChronogramTaskModal } from '../Modals/ChronogramTaskCreateEditModal';
+import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
 export const useChronogramDetailsTableColumn = (
     chronogramTaskMetaData: ChronogramTaskMetaData,
@@ -33,8 +35,9 @@ export const useChronogramDetailsTableColumn = (
             {
                 Header: formatMessage(MESSAGES.labelDescription),
                 id: 'description',
-                accessor: 'description',
+                accessor: row => row.description || row.description_en,
                 sortable: false,
+                width: 800,
             },
             {
                 Header: formatMessage(MESSAGES.labelStartOffsetInDays),
@@ -60,8 +63,7 @@ export const useChronogramDetailsTableColumn = (
             {
                 Header: formatMessage(MESSAGES.labelUserInCharge),
                 id: 'user_in_charge',
-                accessor: row =>
-                    row.user_in_charge.full_name || row.user_in_charge.username,
+                accessor: 'user_in_charge',
                 sortable: false,
             },
             {
@@ -87,14 +89,18 @@ export const useChronogramDetailsTableColumn = (
                                 chronogramTaskMetaData={chronogramTaskMetaData}
                                 chronogramTask={settings.row.original}
                             />
-                            {/* @ts-ignore */}
-                            <DeleteChronogramTask
-                                chronogramTask={settings.row.original}
-                            />
+                            <DisplayIfUserHasPerm
+                                permissions={[Permission.POLIO_CHRONOGRAM]}
+                            >
+                                {/* @ts-ignore */}
+                                <DeleteChronogramTask
+                                    chronogramTask={settings.row.original}
+                                />
+                            </DisplayIfUserHasPerm>
                         </Box>
                     );
                 },
             },
         ];
-    }, [formatMessage]);
+    }, [formatMessage, chronogramTaskMetaData]);
 };

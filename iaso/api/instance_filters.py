@@ -1,5 +1,6 @@
 import datetime
 import json
+import pytz
 from typing import Any, Dict, Optional
 
 from django.http import QueryDict
@@ -48,29 +49,43 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         "period_ids": periods,
         "periods_bound": periods_bound,
         "planning_ids": req.get(query.PLANNING_IDS, None),
+        "project_ids": req.get(query.PROJECT_IDS, None),
         "search": req.get(query.SEARCH, None),
         "status": req.get(query.STATUS, None),
-        "from_date": req.get(query.DATE_FROM, None),
-        "to_date": req.get(query.DATE_TO, None),
+        "created_from": get_beginning_of_day_from_request(req, query.DATE_FROM),
+        "created_to": get_end_of_day_from_request(req, query.DATE_TO),
         "show_deleted": show_deleted,
         "entity_id": req.get(query.ENTITY_ID, None),
         "user_ids": req.get(query.USER_IDS, None),
-        "modification_date_from": get_date_from_request(req, query.MODIFICATION_DATE_FROM),
-        "modification_date_to": get_date_from_request(req, query.MODIFICATION_DATE_TO),
-        "sent_date_from": get_date_from_request(req, query.SENT_DATE_FROM),
-        "sent_date_to": get_date_from_request(req, query.SENT_DATE_TO),
+        "modification_from": get_beginning_of_day_from_request(req, query.MODIFICATION_DATE_FROM),
+        "modification_to": get_end_of_day_from_request(req, query.MODIFICATION_DATE_TO),
+        "sent_from": get_beginning_of_day_from_request(req, query.SENT_DATE_FROM),
+        "sent_to": get_end_of_day_from_request(req, query.SENT_DATE_TO),
         "json_content": json_content,
     }
 
 
-def get_date_from_request(req: QueryDict, key: str):
-    date = req.get(key, None)
-    if date:
-        try:
-            return datetime.date.fromisoformat(date)
-        except ValueError:
-            raise ValidationError(f"Parameter '{key}' must be a valid ISO date (yyyy-MM-dd), received '{date}'")
+def get_beginning_of_day_from_request(req: QueryDict, key: str):
+    date_str = req.get(key, None)
+    if date_str:
+        date = _parse_date(date_str, key)
+        return datetime.datetime.combine(date, datetime.time.min).replace(tzinfo=pytz.UTC)
     return None
+
+
+def get_end_of_day_from_request(req: QueryDict, key: str):
+    date_str = req.get(key, None)
+    if date_str:
+        date = _parse_date(date_str, key)
+        return datetime.datetime.combine(date, datetime.time.max).replace(tzinfo=pytz.UTC)
+    return None
+
+
+def _parse_date(date: datetime.date, key: str):
+    try:
+        return datetime.date.fromisoformat(date)
+    except ValueError:
+        raise ValidationError(f"Parameter '{key}' must be a valid ISO date (yyyy-MM-dd), received '{date}'")
 
 
 # TODO: if we end up with multiple function that deal with instance filters, we should probably move this to a class

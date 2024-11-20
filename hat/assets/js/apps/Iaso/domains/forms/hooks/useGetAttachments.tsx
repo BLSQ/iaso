@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Pagination } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../libs/Api';

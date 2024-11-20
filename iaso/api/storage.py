@@ -23,6 +23,7 @@ from .common import (
     CONTENT_TYPE_XLSX,
     CONTENT_TYPE_CSV,
     EXPORTS_DATETIME_FORMAT,
+    safe_api_import,
 )
 from .instances import FileFormatEnum
 from hat.menupermissions import models as permission
@@ -347,7 +348,8 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
         permissions.IsAuthenticated,
     ]
 
-    def create(self, request):
+    @safe_api_import("storageLog", fallback_status=201)
+    def create(self, _, request):
         """
         POST /api/mobile/storage/logs [Deprecated] will be removed in the future
         POST /api/mobile/storages/logs
@@ -370,10 +372,10 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
                 operation_type = log_data["operation_type"]
 
                 if storage_type not in [c[1] for c in StorageDevice.STORAGE_TYPE_CHOICES]:
-                    return Response({"error": "Invalid storage type"}, status=400)
+                    raise ValueError(f"Invalid storage type: {storage_type}")
 
                 if operation_type not in [c[1] for c in StorageLogEntry.OPERATION_TYPE_CHOICES]:
-                    return Response({"error": "Invalid operation type"}, status=400)
+                    raise ValueError(f"Invalid operation type: {operation_type}")
 
                 performed_at = timestamp_to_utc_datetime(int(log_data["performed_at"]))
 
@@ -383,17 +385,12 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
                 concerned_orgunit = None
                 if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:
-                    try:
-                        concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
-                    except OrgUnit.DoesNotExist:
-                        return Response({"error": "Invalid org_unit_id"}, status=400)
+                    concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
 
                 concerned_entity = None
-                if "entity_id" in log_data and log_data["entity_id"] is not None:
-                    try:
-                        concerned_entity = Entity.objects.get(uuid=log_data["entity_id"])
-                    except Entity.DoesNotExist:
-                        return Response({"error": "Invalid entity_id"}, status=400)
+                entity_id = log_data.get("entity_id") or log_data.get("entity_uuid")
+                if entity_id:
+                    concerned_entity = Entity.objects.get(uuid=entity_id)
 
                 account = user.iaso_profile.account
 

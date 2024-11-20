@@ -1,26 +1,27 @@
-/* eslint-disable react/jsx-props-no-spreading */
-/* eslint-disable react/prop-types */
-import React from 'react';
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import LockIcon from '@mui/icons-material/Lock';
-import omit from 'lodash/omit';
 import { DialogContentText } from '@mui/material';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import omit from 'lodash/omit';
+import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import { useSaveOrgUnit } from '../../orgUnits/hooks';
-import { baseUrls } from '../../../constants/urls';
-import { userHasPermission } from '../../users/utils';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
-import MESSAGES from '../messages';
-import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
-import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import { baseUrls } from '../../../constants/urls.ts';
+import { useFormState } from '../../../hooks/form';
 import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
 } from '../../../utils/featureFlags';
 import * as Permission from '../../../utils/permissions.ts';
+import {
+    useCheckUserHasWritePermissionOnOrgunit,
+    useCurrentUser,
+} from '../../../utils/usersUtils.ts';
+import { useSaveOrgUnit } from '../../orgUnits/hooks';
+import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
+import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
+import MESSAGES from '../messages';
 // eslint-disable-next-line camelcase
 const initialFormState = (
     orgUnit,
@@ -67,8 +68,7 @@ const getUrlInstance = data => {
 
 const ActionTableColumnComponent = ({ settings }) => {
     const user = useCurrentUser();
-    // eslint-disable-next-line no-unused-vars
-    const [_formState, _setFieldValue, setFieldErrors] = useFormState(
+    const [, , setFieldErrors] = useFormState(
         initialFormState(
             settings.row.original.org_unit,
             settings.row.original.id,
@@ -106,11 +106,13 @@ const ActionTableColumnComponent = ({ settings }) => {
 
         saveOu(orgUnitPayload).catch(onError);
     };
-
+    const userHasWritePermission = useCheckUserHasWritePermissionOnOrgunit(
+        settings.row.original.org_unit.org_unit_type_id,
+    );
     const showLinkOrgUnitInstanceReferenceButton =
         settings.row.original.is_instance_of_reference_form &&
         hasFeatureFlag(user, SHOW_LINK_INSTANCE_REFERENCE) &&
-        userHasPermission(Permission.ORG_UNITS, user) &&
+        userHasWritePermission &&
         userHasPermission(Permission.SUBMISSIONS_UPDATE, user);
 
     const notLinked =
@@ -119,7 +121,10 @@ const ActionTableColumnComponent = ({ settings }) => {
 
     const showOrgUnitButton =
         settings.row.original.org_unit &&
-        userHasPermission('iaso_org_units', user) &&
+        userHasOneOfPermissions(
+            [Permission.ORG_UNITS, Permission.ORG_UNITS_READ],
+            user,
+        ) &&
         userHasPermission(Permission.SUBMISSIONS_UPDATE, user);
 
     const confirmCancelTitleMessage = isItLinked => {
@@ -189,25 +194,21 @@ const ActionTableColumnComponent = ({ settings }) => {
             )}
 
             {settings.row.original.is_locked &&
-                userHasPermission(Permission.SUBMISSIONS_UPDATE, user) && (
-                    <>
-                        {settings.row.original.can_user_modify ? (
-                            <IconButtonComponent
-                                url={getUrlInstance(settings)}
-                                overrideIcon={() => (
-                                    <LockIcon color="primary" />
-                                )}
-                                tooltipMessage={MESSAGES.lockedCanModify}
-                            />
-                        ) : (
-                            <IconButtonComponent
-                                url={getUrlInstance(settings)}
-                                overrideIcon={LockIcon}
-                                tooltipMessage={MESSAGES.lockedCannotModify}
-                            />
-                        )}
-                    </>
-                )}
+                userHasPermission(Permission.SUBMISSIONS_UPDATE, user) &&
+                (settings.row.original.can_user_modify ? (
+                    <IconButtonComponent
+                        url={getUrlInstance(settings)}
+                        // eslint-disable-next-line react/no-unstable-nested-components
+                        overrideIcon={() => <LockIcon color="primary" />}
+                        tooltipMessage={MESSAGES.lockedCanModify}
+                    />
+                ) : (
+                    <IconButtonComponent
+                        url={getUrlInstance(settings)}
+                        overrideIcon={LockIcon}
+                        tooltipMessage={MESSAGES.lockedCannotModify}
+                    />
+                ))}
         </section>
     );
 };

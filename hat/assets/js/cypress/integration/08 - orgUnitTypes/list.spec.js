@@ -6,6 +6,7 @@ import { testPermission } from '../../support/testPermission';
 import { testTablerender } from '../../support/testTableRender';
 import { testTopBar } from '../../support/testTopBar';
 import orgUnitTypes from '../../fixtures/orgunittypes/page1_limit20.json';
+import outypesDropDownList from '../../fixtures/orgunittypes/dropdown-dummy-sub-org-unit-type-list.json';
 import outypesList from '../../fixtures/orgunittypes/dummy-list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
@@ -19,7 +20,11 @@ describe('Org unit types', () => {
     beforeEach(() => {
         cy.login();
         cy.intercept('GET', '/sockjs-node/**');
-        cy.intercept('GET', '/api/v2/orgunittypes/', outypesList);
+        cy.intercept(
+            'GET',
+            '/api/v2/orgunittypes/dropdown/',
+            outypesDropDownList,
+        );
         interceptList.forEach(i => {
             cy.intercept('GET', `/api/${i}/**`, {
                 fixture: `${i}/list.json`,
@@ -114,7 +119,7 @@ describe('Org unit types', () => {
         it('displays tooltip when hovering over info icon', () => {
             cy.visit(baseUrl);
             cy.wait('@getOrgUnitTypes');
-            cy.findTableHead(4).find('svg').eq(0).as('icon');
+            cy.findTableHead(5).find('svg').eq(0).as('icon');
             cy.assertTooltipDiplay('icon');
         });
         describe('edit button', () => {
@@ -151,7 +156,7 @@ describe('Org unit types', () => {
                                 cy.testInputValue('#input-text-depth', '2');
                                 cy.testMultiSelect(
                                     '#sub_unit_type_ids',
-                                    outypesList.orgUnitTypes[0].sub_unit_types,
+                                    outypesDropDownList,
                                 );
                                 cy.testMultiSelect(
                                     '#project_ids',

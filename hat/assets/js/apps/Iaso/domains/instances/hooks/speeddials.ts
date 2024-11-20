@@ -1,15 +1,15 @@
+import { useRedirectTo } from 'bluesquare-components';
 import { useCallback } from 'react';
 import { UseQueryResult } from 'react-query';
-import { useRedirectTo } from 'bluesquare-components';
+import snackMessages from '../../../components/snackBars/messages';
 import { baseUrls } from '../../../constants/urls';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
+import { Nullable } from '../../../types/utils';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { Instance } from '../types/instance';
 import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
-import snackMessages from '../../../components/snackBars/messages';
-import { Nullable } from '../../../types/utils';
+import { Instance } from '../types/instance';
 
 type LinkToFormParams = {
     formId: number;
@@ -19,10 +19,7 @@ type LinkToFormParams = {
 export const useLinkOrgUnitToReferenceSubmission = ({
     formId,
     referenceFormId,
-}: LinkToFormParams): ((
-    // eslint-disable-next-line no-unused-vars
-    instance: Instance,
-) => any) => {
+}: LinkToFormParams): ((instance: Instance) => any) => {
     const { mutateAsync: saveOrgUnit } = useSaveOrgUnit(undefined, [
         'orgUnits',
     ]);

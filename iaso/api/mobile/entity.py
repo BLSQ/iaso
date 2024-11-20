@@ -8,7 +8,8 @@ from iaso.api.common import Paginator
 
 from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField, HasPermission
 from iaso.api.query_params import LIMIT, PAGE
-from iaso.models import Entity, FormVersion, Instance, OrgUnit
+from iaso.api.serializers import AppIdSerializer
+from iaso.models import Entity, FormVersion, Instance
 from iaso.models.entity import (
     InvalidJsonContentError,
     InvalidLimitDateError,
@@ -32,18 +33,18 @@ def filter_for_mobile_entity(queryset, request):
     return queryset
 
 
-def get_queryset_for_app_id(user, app_id):
+def filter_on_app_id(queryset, user, app_id):
     try:
-        return Entity.objects.filter_for_app_id(user, app_id)
+        return queryset.filter_for_app_id(user, app_id)
     except ProjectNotFoundError as e:
         raise NotFound(e.message)
     except UserNotAuthError as e:
         raise AuthenticationFailed(e.message)
 
 
-def get_queryset_for_user_and_app_id(user, app_id):
+def filter_on_user_and_app_id(queryset, user, app_id):
     try:
-        return Entity.objects.filter_for_user_and_app_id(user, app_id)
+        return queryset.filter_for_user_and_app_id(user, app_id)
     except ProjectNotFoundError as e:
         raise NotFound(e.message)
     except UserNotAuthError as e:
@@ -74,9 +75,8 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True, source="uuid")
     org_unit_id = serializers.CharField(read_only=True, source="org_unit.id")
     form_version_id = serializers.SerializerMethodField()
-
-    created_at = TimestampField()
-    updated_at = TimestampField()
+    created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
+    updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
 
     def get_form_version_id(self, obj):
         if obj.json is None:
@@ -182,12 +182,9 @@ class MobileEntityViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        app_id = self.request.query_params.get("app_id")
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
 
-        if not app_id:
-            raise ParseError("app_id is required")
-
-        queryset = get_queryset_for_user_and_app_id(user, app_id).filter(deleted_at__isnull=True)
+        queryset = filter_on_user_and_app_id(Entity.objects, user, app_id)
 
         queryset = filter_for_mobile_entity(queryset, self.request)
 
@@ -198,3 +195,59 @@ class MobileEntityViewSet(ModelViewSet):
             "attributes__form__form_versions",
         )
         return queryset.order_by("id")
+
+
+class DeletedMobileEntitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entity
+        fields = ["id", "uuid", "deleted_at", "merged_to_uuid", "entity_type_id"]
+
+    deleted_at = TimestampField()
+    merged_to_uuid = serializers.SerializerMethodField()
+
+    def get_merged_to_uuid(self, entity):
+        if entity.merged_to:
+            return entity.merged_to.uuid
+
+
+class MobileEntityDeletedViewSet(ModelViewSet):
+    f"""Entity API for mobile
+
+    list: /api/mobile/entities/deleted
+
+    Returns the full list of (soft-) deleted entities.
+    No pagination at the moment to keep thing simple.
+    """
+
+    results_key = "results"
+    remove_results_key_if_paginated = True
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(permission.ENTITIES),
+    ]  # type: ignore
+
+    def pagination_class(self):
+        return MobileEntitiesSetPagination(self.results_key)
+
+    def get_serializer_class(self):
+        return DeletedMobileEntitySerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
+
+        queryset = Entity.objects_only_deleted
+        queryset = filter_on_user_and_app_id(queryset, user, app_id)
+
+        return (
+            queryset.prefetch_related("merged_to")
+            .only(
+                "id",
+                "uuid",
+                "deleted_at",
+                "merged_to_id",
+                "entity_type_id",
+            )
+            .order_by("id")
+        )

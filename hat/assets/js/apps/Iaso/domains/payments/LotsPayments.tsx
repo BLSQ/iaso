@@ -14,10 +14,7 @@ import { RefreshButton } from '../../components/Buttons/RefreshButton';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const getRowProps = row => {
-    if (
-        row.original.task?.status === 'QUEUED' ||
-        row.original.task?.status === 'RUNNING'
-    ) {
+    if (row.original.task) {
         return {
             'data-test': 'paymentLotRow',
             sx: {
@@ -34,7 +31,9 @@ const getRowProps = row => {
 
 const baseUrl = baseUrls.lotsPayments;
 export const LotsPayments: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as PotentialPaymentParams;
+    const params = useParamsObject(
+        baseUrl,
+    ) as unknown as PotentialPaymentParams;
     const theme = useTheme();
     // Replaced isFetching with isLoading to avoid flicker effect when refreshing data, eg when PATCHing a payment
     const {

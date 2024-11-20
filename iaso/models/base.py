@@ -1,20 +1,19 @@
-import datetime
 import operator
 import random
 import re
+import time
 import typing
-from copy import copy
 from functools import reduce
 from io import StringIO
 from logging import getLogger
+from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import django_cte
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
 from django.contrib import auth
-from django.contrib.auth import models as authModels
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -24,23 +23,25 @@ from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import Count, Exists, FilteredRelation, OuterRef, Q
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers.phonenumberutil import region_code_for_number
 
-from hat.audit.models import INSTANCE_API, log_modification
 from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.utils import extract_form_version_id, flat_parse_xml_soup
+from iaso.utils.file_utils import get_file_type
 
 from .. import periods
+from ..utils.emoji import fix_emoji
 from ..utils.jsonlogic import jsonlogic_to_q
-from ..utils.models.common import get_creator_name
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
+from .project import Project
 
 logger = getLogger(__name__)
 
@@ -149,6 +150,18 @@ class Account(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "default_version": self.default_version.as_dict() if self.default_version else None,
+            "feature_flags": [flag.code for flag in self.feature_flags.all()],
+            "user_manual_path": self.user_manual_path,
+            "analytics_script": self.analytics_script,
+        }
+
+    def as_small_dict(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "default_version": self.default_version.as_small_dict() if self.default_version else None,
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
             "user_manual_path": self.user_manual_path,
             "analytics_script": self.analytics_script,
@@ -411,7 +424,13 @@ class DefaultGroupManager(models.Manager):
 
     def filter_for_user(self, user: User):
         profile = user.iaso_profile
-        queryset = self.filter(source_version__data_source__projects__in=profile.account.project_set.all())
+        queryset = self
+        version_ids = (
+            SourceVersion.objects.filter(data_source__projects__account=profile.account)
+            .values_list("id", flat=True)
+            .distinct()
+        )
+        queryset = queryset.filter(source_version_id__in=version_ids)
         return queryset
 
 
@@ -448,6 +467,12 @@ class Group(models.Model):
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)
 
+    def as_small_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+        }
+
     def as_dict(self, with_counts=True):
         res = {
             "id": self.id,
@@ -465,13 +490,66 @@ class Group(models.Model):
         return res
 
 
+class GroupSetQuerySet(models.QuerySet):
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
+    ):
+        queryset = self
+        if user and user.is_anonymous and app_id is None:
+            return self.none()
+
+        if user and user.is_authenticated:
+            # avoid creating duplicated record by joining projects's datasources
+            version_ids = (
+                SourceVersion.objects.filter(data_source__projects__account=user.iaso_profile.account)
+                .values_list("id", flat=True)
+                .distinct()
+            )
+            queryset = queryset.filter(source_version_id__in=version_ids)
+
+        if app_id is not None:
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+
+                queryset = queryset.filter(source_version__data_source__projects__in=[project])
+
+            except Project.DoesNotExist:
+                return self.none()
+
+        return queryset
+
+    def prefetch_source_version_details(self):
+        queryset = self
+        queryset = queryset.prefetch_related("source_version")
+        queryset = queryset.prefetch_related("source_version__data_source")
+        return queryset
+
+    def prefetch_groups_details(self):
+        queryset = self
+        queryset = queryset.prefetch_related("groups__source_version")
+        queryset = queryset.prefetch_related("groups__source_version__data_source")
+        return queryset
+
+
+GroupSetManager = models.Manager.from_queryset(GroupSetQuerySet)
+
+
 class GroupSet(models.Model):
+    class GroupBelonging(models.TextChoices):
+        SINGLE = _("SINGLE")
+        MULTIPLE = _("MULTIPLE")
+
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
     source_version = models.ForeignKey(SourceVersion, null=True, blank=True, on_delete=models.CASCADE)
     groups = models.ManyToManyField(Group, blank=True, related_name="group_sets")
+    group_belonging = models.TextField(
+        choices=GroupBelonging.choices, default=GroupBelonging.SINGLE, null=False, blank=False, max_length=10
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = GroupSetManager()
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)
@@ -710,25 +788,28 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         status=None,
         instance_id=None,
         search=None,
-        from_date=None,
-        to_date=None,
+        created_from=None,
+        created_to=None,
         show_deleted=None,
         entity_id=None,
         user_ids=None,
-        modification_date_from=None,
-        modification_date_to=None,
-        sent_date_from=None,
-        sent_date_to=None,
+        modification_from=None,
+        modification_to=None,
+        sent_from=None,
+        sent_to=None,
         json_content=None,
         planning_ids=None,
+        project_ids=None,
         only_reference=None,
     ):
         queryset = self
-        if from_date:
-            queryset = queryset.filter(created_at__gte=from_date)
 
-        if to_date:
-            queryset = queryset.filter(created_at__lte=to_date)
+        if created_from or created_to:
+            queryset = queryset.annotate(creation_timestamp=Coalesce("source_created_at", "created_at"))
+            if created_from:
+                queryset = queryset.filter(creation_timestamp__gte=created_from)
+            if created_to:
+                queryset = queryset.filter(creation_timestamp__lte=created_to)
 
         if period_ids:
             if isinstance(period_ids, str):
@@ -797,6 +878,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         if planning_ids:
             queryset = queryset.filter(planning_id__in=planning_ids.split(","))
 
+        if project_ids:
+            queryset = queryset.filter(project_id__in=project_ids.split(","))
+
         if search:
             if search.startswith("ids:"):
                 ids_str = search.replace("ids:", "")
@@ -820,27 +904,15 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         # add status annotation
         queryset = queryset.with_status()
 
-        def range_from(date: datetime.date):
-            return (
-                datetime.datetime.combine(date, datetime.time.min),
-                datetime.datetime.max,
-            )
+        if modification_from:
+            queryset = queryset.filter(updated_at__gte=modification_from)
+        if modification_to:
+            queryset = queryset.filter(updated_at__lte=modification_to)
 
-        def range_to(date: datetime.date):
-            return (
-                datetime.datetime.min,
-                datetime.datetime.combine(date, datetime.time.max),
-            )
-
-        if modification_date_from:
-            queryset = queryset.filter(updated_at__range=range_from(modification_date_from))
-        if modification_date_to:
-            queryset = queryset.filter(updated_at__range=range_to(modification_date_to))
-
-        if sent_date_from:
-            queryset = queryset.filter(created_at__range=range_from(sent_date_from))
-        if sent_date_to:
-            queryset = queryset.filter(created_at__range=range_to(sent_date_to))
+        if sent_from:
+            queryset = queryset.filter(created_at__gte=sent_from)
+        if sent_to:
+            queryset = queryset.filter(created_at__lte=sent_to)
 
         if status:
             statuses = status.split(",")
@@ -886,7 +958,12 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         return new_qs
 
 
-InstanceManager = models.Manager.from_queryset(InstanceQuerySet)
+class NonDeletedInstanceManager(models.Manager):
+    def get_queryset(self):
+        """
+        Exclude soft deleted instances from all results.
+        """
+        return super().get_queryset().filter(deleted=False)
 
 
 class Instance(models.Model):
@@ -947,7 +1024,8 @@ class Instance(models.Model):
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
-    objects = InstanceManager()
+    objects = models.Manager.from_queryset(InstanceQuerySet)()
+    non_deleted_objects = NonDeletedInstanceManager.from_queryset(InstanceQuerySet)()
 
     # Is instance SoftDeleted. It doesn't use the SoftDeleteModel deleted_at like the rest for historical reason.
     deleted = models.BooleanField(default=False)
@@ -963,7 +1041,7 @@ class Instance(models.Model):
         ]
 
     def __str__(self):
-        return "%s %s" % (self.form, self.name)
+        return "%s %s %s" % (self.id, self.form, self.name)
 
     @property
     def is_instance_of_reference_form(self) -> bool:
@@ -976,6 +1054,14 @@ class Instance(models.Model):
         if not self.org_unit:
             return False
         return self.org_unit.reference_instances.filter(orgunitreferenceinstance__instance=self).exists()
+
+    @property
+    def source_created_at_with_fallback(self):
+        return self.source_created_at if self.source_created_at else self.created_at
+
+    @property
+    def source_updated_at_with_fallback(self):
+        return self.source_updated_at if self.source_updated_at else self.updated_at
 
     def flag_reference_instance(self, org_unit: "OrgUnit") -> "OrgUnitReferenceInstance":
         if not self.form:
@@ -1025,7 +1111,7 @@ class Instance(models.Model):
     def convert_correlation(self):
         if not self.correlation_id:
             identifier = str(self.id)
-            if self.form.correlation_field is not None and self.json:
+            if self.form.correlation_field and self.json:
                 identifier += self.json.get(self.form.correlation_field, None)
                 identifier = identifier.zfill(3)
             random_number = random.choice("1234567890")
@@ -1035,8 +1121,10 @@ class Instance(models.Model):
             self.save()
 
     def xml_file_to_json(self, file: typing.IO) -> typing.Dict[str, typing.Any]:
-        copy_io_utf8 = StringIO(file.read().decode("utf-8"))
-        soup = Soup(copy_io_utf8, "xml", from_encoding="utf-8")
+        raw_content = file.read().decode("utf-8")
+        fixed_content = fix_emoji(raw_content).decode("utf-8")
+        copy_io_utf8 = StringIO(fixed_content)
+        soup = Soup(copy_io_utf8, "lxml-xml", from_encoding="utf-8")
 
         form_version_id = extract_form_version_id(soup)
         if form_version_id:
@@ -1062,10 +1150,13 @@ class Instance(models.Model):
         else:
             return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
-    def get_and_save_json_of_xml(self, force=False):
+    def get_and_save_json_of_xml(self, force=False, tries=3):
         """
         Convert the xml file to json and save it to the instance.
         If the instance already has a json, don't do anything unless `force=True`.
+
+        When downloading from S3, attempt `tries` times (3 by default) with
+        exponential backoff.
 
         :return: in all cases, return the JSON representation of the instance
         """
@@ -1075,7 +1166,16 @@ class Instance(models.Model):
         elif self.file:
             # not converted yet, but we have a file, so we can convert it
             if "amazonaws" in self.file.url:
-                file = urlopen(self.file.url)
+                for i in range(tries):
+                    try:
+                        file = urlopen(self.file.url)
+                        break
+                    except HTTPError as err:
+                        if err.code == 503:  # Slow Down
+                            time.sleep(2**i)
+                        else:
+                            raise err
+
             else:
                 file = self.file
 
@@ -1126,13 +1226,16 @@ class Instance(models.Model):
             "id": self.id,
             "form_id": self.form_id,
             "form_name": self.form.name if self.form else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
-            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
-            "org_unit": self.org_unit.as_dict(with_groups=False) if self.org_unit else None,
+            "created_at": self.created_at.timestamp(),
+            "updated_at": self.updated_at.timestamp(),
+            "source_created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "source_updated_at": self.source_updated_at.timestamp() if self.source_updated_at else None,
+            "org_unit": self.org_unit.as_dict() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
+            "project_name": self.project.name if self.project else None,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
             "created_by": (
@@ -1152,29 +1255,6 @@ class Instance(models.Model):
         form_version = self.get_form_version()
         dict["form_descriptor"] = form_version.get_or_save_form_descriptor() if form_version is not None else None
         return dict
-
-    def as_dict_with_parents(self):
-        file_content = self.get_and_save_json_of_xml()
-        return {
-            "uuid": self.uuid,
-            "export_id": self.export_id,
-            "file_name": self.file_name,
-            "file_content": file_content,
-            "file_url": self.file.url if self.file else None,
-            "id": self.id,
-            "form_id": self.form_id,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
-            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
-            "created_by": get_creator_name(self.created_by) if self.created_by else None,
-            "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
-            "latitude": self.location.y if self.location else None,
-            "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
-            "accuracy": self.accuracy,
-            "period": self.period,
-            "status": getattr(self, "status", None),
-            "correlation_id": self.correlation_id,
-        }
 
     def as_full_model(self, with_entity=False):
         file_content = self.get_and_save_json_of_xml()
@@ -1196,8 +1276,10 @@ class Instance(models.Model):
             "form_version_id": self.form_version.id if self.form_version else None,
             "form_name": self.form.name,
             "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
-            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
+            "created_at": self.created_at.timestamp(),
+            "updated_at": self.updated_at.timestamp(),
+            "source_created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "source_updated_at": self.source_updated_at.timestamp() if self.source_updated_at else None,
             "org_unit": self.org_unit.as_dict_with_parents(light=False, light_parents=False) if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -1247,17 +1329,27 @@ class Instance(models.Model):
             ),
         }
 
+        result["change_requests"] = self.get_instance_change_requests_data()
+
         if with_entity and self.entity_id:
-            result["entity"] = self.entity.as_small_dict()
+            result["entity"] = self.entity.as_small_dict_with_nfc_cards(self)
 
         return result
+
+    def get_instance_change_requests_data(self):
+        from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestListSerializer
+
+        org_unit_change_requests = self.orgunitchangerequest_set.all()
+        serializer = OrgUnitChangeRequestListSerializer(org_unit_change_requests, many=True)
+
+        return serializer.data
 
     def as_small_dict(self):
         return {
             "id": self.id,
             "file_url": self.file.url if self.file else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else self.created_at.timestamp(),
-            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else self.updated_at.timestamp(),
+            "created_at": self.source_created_at_with_fallback.timestamp(),
+            "updated_at": self.source_updated_at_with_fallback.timestamp(),
             "period": self.period,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -1268,17 +1360,13 @@ class Instance(models.Model):
             "correlation_id": self.correlation_id,
         }
 
-    def soft_delete(self, user: typing.Optional[User] = None):
-        original = copy(self)
+    def soft_delete(self):
         self.deleted = True
         self.save()
-        log_modification(original, self, INSTANCE_API, user=user)
 
-    def restore(self, user: typing.Optional[User] = None):
-        original = copy(self)
+    def restore(self):
         self.deleted = False
         self.save()
-        log_modification(original, self, INSTANCE_API, user=user)
 
     def can_user_modify(self, user):
         """Check only for lock, assume user have other perms"""
@@ -1323,11 +1411,36 @@ class InstanceFile(models.Model):
     def __str__(self):
         return "%s " % (self.name,)
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "instance_id": self.instance_id,
+            "file": self.file.url if self.file else None,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "file_type": get_file_type(self.file),
+        }
+
+
+class ProfileQuerySet(models.QuerySet):
+    def with_editable_org_unit_types(self):
+        qs = self
+        return qs.annotate(
+            annotated_editable_org_unit_types_ids=ArrayAgg(
+                "editable_org_unit_types__id", distinct=True, filter=Q(editable_org_unit_types__isnull=False)
+            ),
+            annotated_user_roles_editable_org_unit_type_ids=ArrayAgg(
+                "user_roles__editable_org_unit_types__id",
+                distinct=True,
+                filter=Q(user_roles__editable_org_unit_types__isnull=False),
+            ),
+        )
+
 
 class Profile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")
     external_user_id = models.CharField(max_length=512, null=True, blank=True)
+    organization = models.CharField(max_length=512, null=True, blank=True)
     # Each profile/user has access to multiple orgunits. Having access to OU also give access to all its children
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
     language = models.CharField(max_length=512, null=True, blank=True)
@@ -1336,6 +1449,13 @@ class Profile(models.Model):
     user_roles = models.ManyToManyField("UserRole", related_name="iaso_profile", blank=True)
     projects = models.ManyToManyField("Project", related_name="iaso_profile", blank=True)
     phone_number = PhoneNumberField(blank=True)
+    # Each user can have restricted write access to OrgUnits, based on their type.
+    # By default, empty `editable_org_unit_types` means access to everything.
+    editable_org_unit_types = models.ManyToManyField(
+        "OrgUnitType", related_name="editable_by_iaso_profile_set", blank=True
+    )
+
+    objects = models.Manager.from_queryset(ProfileQuerySet)()
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
@@ -1343,7 +1463,17 @@ class Profile(models.Model):
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
 
-    def as_dict(self):
+    def get_user_roles_editable_org_unit_type_ids(self):
+        try:
+            return self.annotated_user_roles_editable_org_unit_type_ids
+        except AttributeError:
+            return list(
+                self.user_roles.values_list("editable_org_unit_types__id", flat=True)
+                .distinct("id")
+                .exclude(editable_org_unit_types__id__isnull=True)
+            )
+
+    def as_dict(self, small=False):
         user_roles = self.user_roles.all()
         user_group_permissions = list(
             map(lambda permission: permission.split(".")[1], list(self.user.get_group_permissions()))
@@ -1353,39 +1483,77 @@ class Profile(models.Model):
         )
         all_permissions = user_group_permissions + user_permissions
         permissions = list(set(all_permissions))
-        return {
+        try:
+            editable_org_unit_type_ids = self.annotated_editable_org_unit_types_ids
+        except AttributeError:
+            editable_org_unit_type_ids = [out.pk for out in self.editable_org_unit_types.all()]
+
+        user_roles_editable_org_unit_type_ids = self.get_user_roles_editable_org_unit_type_ids()
+
+        other_accounts = []
+        user_infos = self.user
+        if hasattr(self.user, "tenant_user"):
+            other_accounts = self.user.tenant_user.get_other_accounts()
+            user_infos = self.user.tenant_user.main_user
+
+        result = {
             "id": self.id,
-            "first_name": self.user.first_name,
-            "user_name": self.user.username,
-            "last_name": self.user.last_name,
-            "email": self.user.email,
-            "account": self.account.as_dict(),
+            "first_name": user_infos.first_name,
+            "user_name": user_infos.username,
+            "last_name": user_infos.last_name,
+            "email": user_infos.email,
             "permissions": permissions,
             "user_permissions": user_permissions,
             "is_superuser": self.user.is_superuser,
-            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
             "user_roles": list(role.id for role in user_roles),
             "user_roles_permissions": list(role.as_dict() for role in user_roles),
             "language": self.language,
+            "organization": self.organization,
             "user_id": self.user.id,
             "dhis2_id": self.dhis2_id,
             "home_page": self.home_page,
             "phone_number": self.phone_number.as_e164 if self.phone_number else None,
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
             "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
+            "other_accounts": [account.as_dict() for account in other_accounts],
+            "editable_org_unit_type_ids": editable_org_unit_type_ids,
+            "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
         }
 
+        if small:
+            return result | {
+                "org_units": [o.as_very_small_dict() for o in self.org_units.all()],
+            }
+        else:
+            return result | {
+                "account": self.account.as_small_dict(),
+                "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
+            }
+
     def as_short_dict(self):
+        try:
+            editable_org_unit_type_ids = self.annotated_editable_org_unit_types_ids
+        except AttributeError:
+            editable_org_unit_type_ids = [out.pk for out in self.editable_org_unit_types.all()]
+
+        user_roles_editable_org_unit_type_ids = self.get_user_roles_editable_org_unit_type_ids()
+
+        user_infos = self.user
+        if hasattr(self.user, "tenant_user") and self.user.tenant_user:
+            user_infos = self.user.tenant_user.main_user
+
         return {
             "id": self.id,
-            "first_name": self.user.first_name,
-            "user_name": self.user.username,
-            "last_name": self.user.last_name,
-            "email": self.user.email,
+            "first_name": user_infos.first_name,
+            "user_name": user_infos.username,
+            "last_name": user_infos.last_name,
+            "email": user_infos.email,
             "language": self.language,
             "user_id": self.user.id,
             "phone_number": self.phone_number.as_e164 if self.phone_number else None,
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
+            "editable_org_unit_type_ids": editable_org_unit_type_ids,
+            "user_roles_editable_org_unit_type_ids": user_roles_editable_org_unit_type_ids,
         }
 
     def has_a_team(self):
@@ -1393,6 +1561,23 @@ class Profile(models.Model):
         if team:
             return True
         return False
+
+    def get_editable_org_unit_type_ids(self) -> set[int]:
+        ids_in_user_roles = set(
+            self.user_roles.exclude(editable_org_unit_types__isnull=True).values_list(
+                "editable_org_unit_types", flat=True
+            )
+        )
+        ids_in_user_profile = set(self.editable_org_unit_types.exclude(id__isnull=True).values_list("id", flat=True))
+        return ids_in_user_profile.union(ids_in_user_roles)
+
+    def has_org_unit_write_permission(
+        self, org_unit_type_id: int, prefetched_editable_org_unit_type_ids: set[int] = None
+    ) -> bool:
+        editable_org_unit_type_ids = prefetched_editable_org_unit_type_ids or self.get_editable_org_unit_type_ids()
+        if not editable_org_unit_type_ids:
+            return True
+        return org_unit_type_id in editable_org_unit_type_ids
 
 
 class ExportRequest(models.Model):
@@ -1550,6 +1735,11 @@ class UserRole(models.Model):
     group = models.OneToOneField(auth.models.Group, on_delete=models.CASCADE, related_name="iaso_user_role")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Each user can have restricted write access to OrgUnits, based on their type.
+    # By default, empty `editable_org_unit_types` means access to everything.
+    editable_org_unit_types = models.ManyToManyField(
+        "OrgUnitType", related_name="editable_by_user_role_set", blank=True
+    )
 
     def __str__(self) -> str:
         return self.group.name
@@ -1564,7 +1754,8 @@ class UserRole(models.Model):
         }
 
     # This method will remove a given prefix from a string
-    def remove_user_role_name_prefix(self, str):
+    @staticmethod
+    def remove_user_role_name_prefix(str):
         prefix = str.split("_")[0] + "_"
         if str.startswith(prefix):
             return str[len(prefix) :]

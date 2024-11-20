@@ -1,3 +1,8 @@
+import { Grid, useTheme } from '@mui/material';
+import { pink } from '@mui/material/colors';
+import { makeStyles } from '@mui/styles';
+import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import 'leaflet-draw';
 import React, {
     FunctionComponent,
     useCallback,
@@ -6,49 +11,44 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import { MapContainer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
-import 'leaflet-draw';
-import { pink } from '@mui/material/colors';
-import { Grid, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
+import { MapLegend } from '../../../../../components/maps/MapLegend';
+import setDrawMessages from '../../../../../utils/map/drawMapMessages';
 import {
-    mapOrgUnitByLocation,
     getleafletGeoJson,
-    orderOrgUnitTypeByDepth,
     isValidCoordinate,
+    mapOrgUnitByLocation,
+    orderOrgUnitTypeByDepth,
 } from '../../../../../utils/map/mapUtils';
-import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
-import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
 import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
 import OrgUnitTypeFilterComponent from '../../../../forms/components/OrgUnitTypeFilterComponent';
-import SourcesFilterComponent from '../../SourcesFilterComponent';
-import { MapLegend } from '../../../../../components/maps/MapLegend';
-import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
-import setDrawMessages from '../../../../../utils/map/drawMapMessages';
-import { OrgUnitsMapComments } from '../OrgUnitsMapComments';
 import MESSAGES from '../../../messages';
+import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
+import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
+import SourcesFilterComponent from '../../SourcesFilterComponent';
+import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
+import { OrgUnitsMapComments } from '../OrgUnitsMapComments';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
-import { useGetBounds } from './useGetBounds';
-import { useCurrentUser } from '../../../../../utils/usersUtils';
-import { useFormState } from '../../../../../hooks/form';
-import { getAncestorWithGeojson, initialState } from './utils';
-import { useRedux } from './useRedux';
-import { MappedOrgUnit } from './types';
-import { SourcesSelectedShapes } from './SourcesSelectedShapes';
-import { OrgUnitTypesSelectedShapes } from './OrgUnitTypesSelectedShapes';
-import { FormsMarkers } from './FormsMarkers';
-import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
-import { SelectedMarkers } from './SelectedMarkers';
-import { buttonsInitialState } from './constants';
-import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTileLayer';
-import { Tile } from '../../../../../components/maps/tools/TilesSwitchControl';
-import tiles from '../../../../../constants/mapTiles';
-import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
-import * as Permission from '../../../../../utils/permissions';
 import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
+import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
+import { Tile } from '../../../../../components/maps/tools/TilesSwitchControl';
 import { InnerDrawer } from '../../../../../components/nav/InnerDrawer/Index';
+import tiles from '../../../../../constants/mapTiles';
+import { useFormState } from '../../../../../hooks/form';
+import * as Permission from '../../../../../utils/permissions';
+import { useCurrentUser } from '../../../../../utils/usersUtils';
+import { userHasPermission } from '../../../../users/utils';
+import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
+import { FormsMarkers } from './FormsMarkers';
+import { OrgUnitTypesSelectedShapes } from './OrgUnitTypesSelectedShapes';
+import { SelectedMarkers } from './SelectedMarkers';
+import { SourcesSelectedShapes } from './SourcesSelectedShapes';
+import { buttonsInitialState } from './constants';
+import { MappedOrgUnit } from './types';
+import { useGetBounds } from './useGetBounds';
+import { getAncestorWithGeojson, initialState } from './utils';
 
 export const zoom = 5;
 export const padding = [75, 75];
@@ -69,11 +69,8 @@ type Props = {
     currentOrgUnit: any;
     saveOrgUnit: () => void;
     resetOrgUnit: () => void;
-    // eslint-disable-next-line no-unused-vars
     setOrgUnitLocationModified: (isModified: boolean) => void;
-    // eslint-disable-next-line no-unused-vars
     onChangeShape: (key, geoJson) => void;
-    // eslint-disable-next-line no-unused-vars
     onChangeLocation: (location) => void;
     sources: any[];
     orgUnitTypes: any[];
@@ -105,12 +102,9 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const didCatchmentInitialize = useRef(false);
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const [isCreatingMarker, setIsCreatingMarker] = useState<boolean>(false);
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-    const [state, setStateField, _, setState] = useFormState(
+    const [state, setStateField, , setState] = useFormState(
         initialState(currentUser),
     );
-    const { fetchInstanceDetail, fetchSubOrgUnitDetail } = useRedux();
-    // console.log('state', state);
     const setAncestor = useCallback(() => {
         const ancestor = getAncestorWithGeojson(currentOrgUnit);
         if (ancestor) {
@@ -382,6 +376,17 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         latitude: [],
         longitude: [],
     });
+
+    const hasEditPermission = userHasPermission(
+        Permission.ORG_UNITS,
+        currentUser,
+    );
+    const saveDisabled =
+        actionBusy ||
+        !orgUnitLocationModified ||
+        errorsCoordinates.latitude.length > 0 ||
+        errorsCoordinates.longitude.length > 0;
+
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -394,12 +399,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     <OrgunitOptionSaveComponent
                         orgUnit={currentOrgUnit}
                         resetOrgUnit={() => handleReset()}
-                        saveDisabled={
-                            actionBusy ||
-                            !orgUnitLocationModified ||
-                            errorsCoordinates.latitude.length > 0 ||
-                            errorsCoordinates.longitude.length > 0
-                        }
+                        saveDisabled={saveDisabled}
                         saveOrgUnit={saveOrgUnit}
                     />
                 }
@@ -437,32 +437,38 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     </>
                 }
                 editOptionComponent={
-                    <EditOrgUnitOptionComponent
-                        orgUnit={currentOrgUnit}
-                        canEditLocation={state.canEditLocation.value}
-                        canEditCatchment={state.canEditCatchment.value}
-                        locationState={state.location.value}
-                        catchmentState={state.catchment.value}
-                        toggleEditShape={keyValue => toggleEditShape(keyValue)}
-                        toggleDeleteShape={keyValue =>
-                            toggleDeleteShape(keyValue)
-                        }
-                        isCreatingMarker={isCreatingMarker}
-                        toggleAddShape={keyValue => toggleAddShape(keyValue)}
-                        toggleAddMarker={() => {
-                            setIsCreatingMarker(!isCreatingMarker);
-                            state.locationGroup.value.toggleDrawMarker(
-                                !isCreatingMarker,
-                            );
-                        }}
-                        addShape={shapeType => addShape(shapeType)}
-                        onChangeLocation={latLong => {
-                            setIsCreatingMarker(false);
-                            onChangeLocation(latLong);
-                        }}
-                        errorsCoordinates={errorsCoordinates}
-                        setErrorsCoordinates={setErrorsCoordinates}
-                    />
+                    hasEditPermission && (
+                        <EditOrgUnitOptionComponent
+                            orgUnit={currentOrgUnit}
+                            canEditLocation={state.canEditLocation.value}
+                            canEditCatchment={state.canEditCatchment.value}
+                            locationState={state.location.value}
+                            catchmentState={state.catchment.value}
+                            toggleEditShape={keyValue =>
+                                toggleEditShape(keyValue)
+                            }
+                            toggleDeleteShape={keyValue =>
+                                toggleDeleteShape(keyValue)
+                            }
+                            isCreatingMarker={isCreatingMarker}
+                            toggleAddShape={keyValue =>
+                                toggleAddShape(keyValue)
+                            }
+                            toggleAddMarker={() => {
+                                setIsCreatingMarker(!isCreatingMarker);
+                                state.locationGroup.value.toggleDrawMarker(
+                                    !isCreatingMarker,
+                                );
+                            }}
+                            addShape={shapeType => addShape(shapeType)}
+                            onChangeLocation={latLong => {
+                                setIsCreatingMarker(false);
+                                onChangeLocation(latLong);
+                            }}
+                            errorsCoordinates={errorsCoordinates}
+                            setErrorsCoordinates={setErrorsCoordinates}
+                        />
+                    )
                 }
                 commentsOptionComponent={
                     <OrgUnitsMapComments
@@ -532,8 +538,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                         titleMessage={formatMessage(
                                             MESSAGES.ouParent,
                                         )}
-                                        currentOrgUnit={
-                                            state.ancestorWithGeoJson.value
+                                        orgUnitId={
+                                            state.ancestorWithGeoJson.value.id
                                         }
                                     />
                                 </GeoJSON>
@@ -545,7 +551,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             <SourcesSelectedShapes
                                 mappedSourcesSelected={mappedSourcesSelected}
                                 updateOrgUnitLocation={updateOrgUnitLocation}
-                                fetchSubOrgUnitDetail={fetchSubOrgUnitDetail}
                             />
                             <OrgUnitTypesSelectedShapes
                                 orgUnitTypes={orgUnitTypes}
@@ -553,7 +558,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                     mappedOrgUnitTypesSelected
                                 }
                                 mappedSourcesSelected={mappedSourcesSelected}
-                                fetchSubOrgUnitDetail={fetchSubOrgUnitDetail}
                                 updateOrgUnitLocation={updateOrgUnitLocation}
                             />
                         </>
@@ -562,18 +566,15 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     <>
                         <SelectedMarkers
                             data={mappedOrgUnitTypesSelected}
-                            fetchSubOrgUnitDetail={fetchSubOrgUnitDetail}
                             updateOrgUnitLocation={updateOrgUnitLocation}
                         />
                         <SelectedMarkers
                             data={mappedSourcesSelected}
-                            fetchSubOrgUnitDetail={fetchSubOrgUnitDetail}
                             updateOrgUnitLocation={updateOrgUnitLocation}
                         />
 
                         <FormsMarkers
                             forms={state.formsSelected.value}
-                            fetchInstanceDetail={fetchInstanceDetail}
                             updateOrgUnitLocation={updateOrgUnitLocation}
                         />
                     </>

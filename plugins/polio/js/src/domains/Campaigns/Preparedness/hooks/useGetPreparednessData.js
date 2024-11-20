@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 // @ts-ignore
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 // @ts-ignore

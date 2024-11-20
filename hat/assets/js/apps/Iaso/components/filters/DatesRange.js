@@ -75,6 +75,7 @@ const DatesRange = ({
     marginTop,
     dateFromRequired = false,
     dateToRequired = false,
+    disabled = false,
 }) => {
     const classes = useStyles();
     const [from, setFrom] = useState(dateFrom);
@@ -146,6 +147,7 @@ const DatesRange = ({
                                 handleChange(keyDateFrom, date);
                             }}
                             error={errors[0].length > 0}
+                            disabled={disabled}
                         />
                         {dateFrom && (
                             <span className={classes.clearDateButton}>
@@ -201,6 +203,7 @@ const DatesRange = ({
                                 handleChange(keyDateTo, date);
                             }}
                             error={errors[1].length > 0}
+                            disabled={disabled}
                         />
                         {dateTo && (
                             <span className={classes.clearDateButton}>
@@ -239,6 +242,7 @@ DatesRange.defaultProps = {
     marginTop: 2,
     dateFromRequired: false,
     dateToRequired: false,
+    disabled: false,
 };
 
 DatesRange.propTypes = {
@@ -259,6 +263,7 @@ DatesRange.propTypes = {
     marginTop: PropTypes.number,
     dateFromRequired: PropTypes.bool,
     dateToRequired: PropTypes.bool,
+    disabled: PropTypes.bool,
 };
 
 const DatesRangeIntl = injectIntl(DatesRange);

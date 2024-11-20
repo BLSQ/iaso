@@ -7,7 +7,7 @@ import superUser from '../../fixtures/profiles/me/superuser.json';
 import { testSearchField } from '../../support/testSearchField';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/settings/users`;
+const baseUrl = `${siteBaseUrl}/dashboard/settings/users/management`;
 
 let interceptFlag = false;
 const orgUnitTreeIndexSearch = 2;
@@ -40,8 +40,8 @@ const goToPage = (
     cy.intercept('GET', '/api/permissions/grouped_permissions', {
         fixture: 'permissions/grouped.json',
     });
-    cy.intercept('GET', '/api/v2/orgunittypes/**', {
-        fixture: 'orgunittypes/list.json',
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', {
+        fixture: 'orgunittypes/dropdown-list.json',
     });
     cy.intercept('GET', '/api/microplanning/teams/*', {
         fixture: 'teams/list.json',
@@ -178,9 +178,10 @@ describe('Users', () => {
                     cy.testInputValue(`#input-text-${f}`, '');
                 });
                 cy.testInputValue(`#projects`, '');
-                cy.testInputValue(`#user_roles`, '');
                 cy.testInputValue('#language', '');
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
+
+                cy.testInputValue(`#user_roles`, '');
                 cy.get('[data-test="permission-checkbox"] input').each($el => {
                     expect($el).to.not.be.checked;
                 });
@@ -215,7 +216,9 @@ describe('Users', () => {
                 cy.get('.MuiDialogActions-root').find('button').first().click();
                 openDialogForUserIndex(2);
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
-                cy.get('#permission-checkbox-iaso_forms').should('be.checked');
+                cy.get('#check-box-permission-checkbox-iaso_forms').should(
+                    'be.checked',
+                );
                 cy.get('#user-dialog-tabs').find('button').eq(2).click();
 
                 cy.get('.MuiTreeView-root').should(

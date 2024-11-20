@@ -1,17 +1,30 @@
-from typing import Any
-from typing import Protocol
+from copy import copy
+from typing import Any, Protocol
 
 from django import forms as django_forms
+from django.contrib import admin
 from django.contrib.admin import widgets
+from django.contrib.admin.widgets import AutocompleteSelect
+from django.contrib.auth import get_user_model
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.utils.html import format_html_join, format_html
+from django.db.models import Count, Q
+from django.http import HttpResponseRedirect, JsonResponse
+from django.urls import path, reverse
+from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
 
+from hat.audit.models import DJANGO_ADMIN
 from iaso.models.json_config import Config  # type: ignore
+from iaso.utils.admin.custom_filters import (
+    DuplicateUUIDFilter,
+    EntityEmptyAttributesFilter,
+    has_relation_filter_factory,
+)
+
 from .models import (
     Account,
     AccountFeatureFlag,
@@ -45,8 +58,13 @@ from .models import (
     MatchingAlgorithm,
     OrgUnit,
     OrgUnitChangeRequest,
+    OrgUnitChangeRequestConfiguration,
+    OrgUnitReferenceInstance,
     OrgUnitType,
     Page,
+    Payment,
+    PaymentLot,
+    PotentialPayment,
     Profile,
     Project,
     Report,
@@ -56,18 +74,15 @@ from .models import (
     StorageLogEntry,
     StoragePassword,
     Task,
+    TenantUser,
     UserRole,
     Workflow,
     WorkflowChange,
     WorkflowFollowup,
     WorkflowVersion,
-    OrgUnitReferenceInstance,
-    PotentialPayment,
-    Payment,
-    PaymentLot,
 )
 from .models.data_store import JsonDataStore
-from .models.microplanning import Team, Planning, Assignment
+from .models.microplanning import Assignment, Planning, Team
 from .utils.gis import convert_2d_point_to_3d
 
 
@@ -145,13 +160,25 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 @admin.register(OrgUnit)
 @admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):
-    raw_id_fields = ("parent", "reference_instances")
+    raw_id_fields = ("parent", "reference_instances", "default_image")
     list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
     inlines = [
         OrgUnitReferenceInstanceInline,
     ]
+    list_display = (
+        "id",
+        "org_unit_type",
+        "name",
+        "uuid",
+        "parent",
+    )
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.prefetch_related("org_unit_type", "parent__org_unit_type")
+        return queryset
 
 
 @admin.register(OrgUnitType)
@@ -245,10 +272,32 @@ class InstanceFileAdminInline(admin.TabularInline):
 @admin.register(Instance)
 @admin_attr_decorator
 class InstanceAdmin(admin.GeoModelAdmin):
-    raw_id_fields = ("org_unit",)
+    raw_id_fields = (
+        "org_unit",
+        "entity",
+        "form_version",
+        "last_modified_by",
+        "created_by",
+    )
     search_fields = ("file_name", "uuid")
-    list_display = ("id", "project", "form", "org_unit", "period", "created_at", "deleted")
-    list_filter = ("project", "form", "deleted")
+    list_display = (
+        "id",
+        "uuid",
+        "project",
+        "form",
+        "org_unit",
+        "period",
+        "created_at",
+        "entity",
+        "deleted",
+    )
+    list_filter = (
+        "project",
+        "form",
+        "deleted",
+        DuplicateUUIDFilter,
+        has_relation_filter_factory("Entity ID", "entity_id"),
+    )
     fieldsets = (
         (
             None,
@@ -299,6 +348,23 @@ class InstanceAdmin(admin.GeoModelAdmin):
 
         super().save_model(request, obj, form, change)
 
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.prefetch_related(
+            "org_unit__org_unit_type",
+            "project",
+            "form",
+            "entity",
+        )
+        return queryset
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "entity":
+            kwargs[
+                "queryset"
+            ] = Entity.objects_include_deleted.all()  # use the manager that includes soft-deleted objects
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 @admin.register(InstanceFile)
 @admin_attr_decorator
@@ -311,6 +377,8 @@ class InstanceFileAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ("name", "app_id", "account", "needs_authentication", "feature_flags_list")
+    autocomplete_fields = ["account"]
+    search_fields = ["name"]
 
     @admin.display(description="Feature flags")
     @admin_attr_decorator
@@ -335,6 +403,7 @@ class LinkAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class MappingAdmin(admin.GeoModelAdmin):
     list_filter = ("form_id",)
+    autocomplete_fields = ["data_source"]
 
 
 @admin.register(MappingVersion)
@@ -359,7 +428,7 @@ class GroupAdmin(admin.ModelAdmin):
 class UserAdmin(admin.GeoModelAdmin):
     search_fields = ("username", "email", "first_name", "last_name", "iaso_profile__account__name")
     list_filter = ("iaso_profile__account", "is_staff", "is_superuser", "is_active")
-    list_display = ("username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
+    list_display = ("id", "username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
 
 
 @admin.register(Profile)
@@ -370,6 +439,7 @@ class ProfileAdmin(admin.GeoModelAdmin):
     list_select_related = ("user", "account")
     list_filter = ("account",)
     list_display = ("id", "user", "account", "language")
+    autocomplete_fields = ["account"]
 
 
 @admin.register(ExportRequest)
@@ -430,13 +500,19 @@ class TaskAdmin(admin.ModelAdmin):
         stack = task.result.get("stack_trace")
         return format_html("<p>{}</p><pre>{}</pre>", task.result.get("message", ""), stack)
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("launcher")
+
 
 @admin.register(SourceVersion)
 @admin_attr_decorator
 class SourceVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
-    list_display = ("id", "data_source", "number", "created_at")
-    list_filter = ("data_source",)
+    list_display = ["__str__", "data_source", "number", "created_at", "updated_at"]
+    list_filter = ["data_source", "created_at", "updated_at"]
+    search_fields = ["data_source__name", "number", "description"]
+    autocomplete_fields = ["data_source"]
+    date_hierarchy = "created_at"
 
 
 @admin.register(Entity)
@@ -462,15 +538,47 @@ class EntityAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
     list_display = (
         "id",
+        "uuid",
+        "entity_type",
         "name",
         "account",
-        "entity_type",
+        "deleted_at",
+        "merged_to",
     )
-    list_filter = ("entity_type", "deleted_at")
-    raw_id_fields = ("attributes",)
+    list_filter = (
+        "account",
+        "entity_type",
+        "deleted_at",
+        has_relation_filter_factory("Attributes ID", "attributes_id"),
+        EntityEmptyAttributesFilter,
+        DuplicateUUIDFilter,
+    )
+    raw_id_fields = ("attributes", "merged_to")
 
     def get_queryset(self, request):
         return Entity.objects_include_deleted.all()
+
+    # Don't allow delete multiple to avoid deletes without side-effects and audit log
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if "delete_selected" in actions:
+            del actions["delete_selected"]
+        return actions
+
+    # Override the Django admin delete action to do a proper soft-deletion
+    def delete_view(self, request, object_id, extra_context=None):
+        entity = Entity.objects_include_deleted.get(pk=object_id)
+
+        entity.soft_delete_with_instances_and_pending_duplicates(
+            audit_source=DJANGO_ADMIN,
+            user=request.user,
+        )
+
+        msg = f"Entity {entity.uuid} was soft deleted, along with its instances and pending duplicates"
+        self.message_user(request, msg)
+
+        # redirect to the list view
+        return HttpResponseRedirect(reverse("admin:iaso_entity_changelist"))
 
 
 @admin.register(JsonDataStore)
@@ -661,6 +769,7 @@ class AlgorithmRunAdmin(admin.ModelAdmin):
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ["account"]
 
 
 @admin.register(EntityDuplicate)
@@ -710,6 +819,7 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
         "old_reference_instances",
         "old_opening_date",
         "old_closed_date",
+        "potential_payment",
     )
     raw_id_fields = (
         "org_unit",
@@ -801,16 +911,55 @@ class ConfigAdmin(admin.ModelAdmin):
 @admin.register(PotentialPayment)
 class PotentialPaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    list_display = ("id", "change_request_ids", "user")
+
+    def change_request_ids(self, obj):
+        change_requests = obj.change_requests.all()
+        if change_requests:
+            return format_html(
+                ", ".join(
+                    f'<a href="/admin/iaso/orgunitchangerequest/{cr.id}/change/">{cr.id}</a>' for cr in change_requests
+                )
+            )
+        return "-"
+
+    change_request_ids.short_description = "Change Request IDs"
 
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    list_display = ("id", "status", "created_at", "updated_at", "change_request_ids")
+
+    def change_request_ids(self, obj):
+        change_requests = obj.change_requests.all()
+        if change_requests:
+            return format_html(
+                ", ".join(
+                    f'<a href="/admin/iaso/orgunitchangerequest/{cr.id}/change/">{cr.id}</a>' for cr in change_requests
+                )
+            )
+        return "-"
+
+    change_request_ids.short_description = "Change Request IDs"
 
 
 @admin.register(PaymentLot)
 class PaymentLotAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    list_display = ("id", "status", "created_at", "updated_at", "payment_ids")
+
+    def payment_ids(self, obj):
+        payments = obj.payments.all()
+        if payments:
+            return format_html(
+                ", ".join(
+                    f'<a href="/admin/iaso/payment/{payment.id}/change/">{payment.id}</a>' for payment in payments
+                )
+            )
+        return "-"
+
+    payment_ids.short_description = "Payment IDs"
 
 
 @admin.register(DataSource)
@@ -821,17 +970,99 @@ class DataSourceAdmin(admin.ModelAdmin):
             "widget": forms.CheckboxSelectMultiple,
         }
     }
+    list_display = ["name", "description", "created_at", "updated_at"]
+    list_filter = ["created_at", "updated_at", "public"]
+    search_fields = ["name", "description"]
+    date_hierarchy = "created_at"
 
 
-admin.site.register(Account)
+@admin.register(Account)
+class AccountAdmin(admin.ModelAdmin):
+    search_fields = ["name", "id"]
+    list_display = ["name", "created_at", "updated_at"]
+    autocomplete_fields = ["default_version"]
+
+
+@admin.register(UserRole)
+class UserRoleAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["account"]
+
+
+@admin.register(OrgUnitChangeRequestConfiguration)
+class OrgUnitChangeRequestConfigurationAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["project"]
+
+
+@admin.register(GroupSet)
+class GroupSetAdmin(admin.ModelAdmin):
+    autocomplete_fields = ["source_version"]
+
+
+@admin.register(TenantUser)
+class TenantUserAdmin(admin.ModelAdmin):
+    list_display = (
+        "main_user",
+        "account_user",
+        "account",
+        "created_at",
+        "updated_at",
+        "all_accounts_count",
+        "is_self_account",
+    )
+    list_filter = ("account_user__iaso_profile__account",)
+    search_fields = ("main_user__username", "account_user__username", "account_user__iaso_profile__account__name")
+    raw_id_fields = ("main_user", "account_user")
+    readonly_fields = ("created_at", "updated_at", "account", "all_account_users", "other_accounts")
+
+    def get_urls(self):
+        urls = super().get_urls()
+        return urls
+
+    def account(self, obj):
+        return obj.account
+
+    account.admin_order_field = "account_user__iaso_profile__account"
+    account.short_description = "Account"
+
+    def all_accounts_count(self, obj):
+        return obj.main_user.tenant_users.count()
+
+    all_accounts_count.short_description = "Total Accounts"
+
+    def is_self_account(self, obj):
+        return obj.main_user == obj.account_user
+
+    is_self_account.boolean = True
+    is_self_account.short_description = "Self Account"
+
+    def all_account_users(self, obj):
+        users = obj.get_all_account_users()
+        return format_html("<br>".join(user.username for user in users))
+
+    all_account_users.short_description = "All Account Users"
+
+    def other_accounts(self, obj):
+        accounts = obj.get_other_accounts()
+        return format_html("<br>".join(str(account) for account in accounts))
+
+    other_accounts.short_description = "Other Accounts"
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("main_user", "account_user__iaso_profile__account")
+
+    class Media:
+        js = ("admin/js/vendor/select2/select2.full.min.js", "admin/js/autocomplete.js")
+        css = {
+            "all": ("admin/css/vendor/select2/select2.min.css",),
+        }
+
+
 admin.site.register(AccountFeatureFlag)
 admin.site.register(Device)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(ExternalCredentials)
-admin.site.register(GroupSet)
 admin.site.register(DevicePosition)
 admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
-admin.site.register(UserRole)

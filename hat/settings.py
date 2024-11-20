@@ -75,6 +75,7 @@ else:
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
+SENTRY_FRONT_ENABLED = os.environ.get("SENTRY_FRONT_ENABLED", "false").lower() == "true"
 
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
@@ -258,6 +259,7 @@ TEMPLATES = [
                 "hat.common.context_processors.favicon_path",
                 "hat.common.context_processors.logo_path",
                 "hat.common.context_processors.theme",
+                "hat.common.context_processors.sentry_config",
             ]
         },
     }
@@ -355,7 +357,13 @@ LANGUAGES = (
     ("en", _("English")),
 )
 
-LOCALE_PATHS = ["/var/app/current/hat/locale/", "/opt/app/hat/locale/", "hat/locale/"]
+LOCALE_PATHS = [
+    "/var/app/current/hat/locale/",
+    "/opt/app/hat/locale/",
+    "hat/locale/",
+    "/opt/app/iaso/locale/",
+    "iaso/locale/",
+]
 
 TIME_ZONE = "UTC"
 
@@ -397,6 +405,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_METADATA_CLASS": "hat.api.metadata.IasoMetadata",
     "PAGE_SIZE": None,
     "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
@@ -407,7 +416,11 @@ REST_FRAMEWORK = {
     ),
 }
 
-SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=3650), "REFRESH_TOKEN_LIFETIME": timedelta(days=3651)}
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=3650),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=3651),
+    "TOKEN_OBTAIN_SERIALIZER": "iaso.serializers.CustomTokenObtainPairSerializer",
+}
 
 AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-central-1")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -638,6 +651,10 @@ CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379"
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXTENDED = True
+
+DRF_NESTED_MULTIPART_PARSER = {
+    "querydict": False,
+}
 
 # Plugin config
 print("Enabled plugins:", PLUGINS)

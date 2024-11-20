@@ -4,7 +4,6 @@ import { theme } from 'bluesquare-components';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { Provider } from 'react-redux';
 
 import './libs/polyfills';
 
@@ -12,6 +11,7 @@ import { GlobalStyles } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import LocalizedAppComponent from './domains/app/components/LocalizedAppComponent';
 import { LocaleProvider } from './domains/app/contexts/LocaleContext';
+import { SentryConfig } from './domains/app/contexts/SentryProvider';
 import { SidebarProvider } from './domains/app/contexts/SideBarContext';
 import {
     ThemeConfig,
@@ -19,7 +19,6 @@ import {
 } from './domains/app/contexts/ThemeConfigContext';
 import App from './domains/app/index';
 import { Plugin } from './domains/app/types';
-import { store } from './redux/store.js';
 import { getGlobalOverrides, getOverriddenTheme } from './styles';
 import { PluginsContext, getPlugins } from './utils';
 
@@ -33,14 +32,12 @@ const queryClient = new QueryClient({
 
 declare global {
     interface Window {
+        SENTRY_CONFIG?: SentryConfig;
+        SENTRY_INITIALIZED?: boolean;
         iasoApp: (
-            // eslint-disable-next-line no-unused-vars
             element: HTMLElement,
-            // eslint-disable-next-line no-unused-vars
             enabledPluginsName: string[],
-            // eslint-disable-next-line no-unused-vars
             themeConfig: ThemeConfig,
-            // eslint-disable-next-line no-unused-vars
             userHomePage: string,
         ) => void;
     }
@@ -60,27 +57,24 @@ const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
                         <CssBaseline />
                         <GlobalStyles styles={getGlobalOverrides(theme)} />
                         <SidebarProvider>
-                            <Provider store={store}>
-                                <LocaleProvider>
-                                    <LocalizedAppComponent>
-                                        <SnackbarProvider
-                                            maxSnack={3}
-                                            autoHideDuration={4000}
-                                            anchorOrigin={{
-                                                vertical: 'bottom',
-                                                horizontal: 'center',
-                                            }}
-                                        >
-                                            <App
-                                                userHomePage={
-                                                    pluginHomePage ||
-                                                    userHomePage
-                                                }
-                                            />
-                                        </SnackbarProvider>
-                                    </LocalizedAppComponent>
-                                </LocaleProvider>
-                            </Provider>
+                            <LocaleProvider>
+                                <LocalizedAppComponent>
+                                    <SnackbarProvider
+                                        maxSnack={3}
+                                        autoHideDuration={4000}
+                                        anchorOrigin={{
+                                            vertical: 'bottom',
+                                            horizontal: 'center',
+                                        }}
+                                    >
+                                        <App
+                                            userHomePage={
+                                                pluginHomePage || userHomePage
+                                            }
+                                        />
+                                    </SnackbarProvider>
+                                </LocalizedAppComponent>
+                            </LocaleProvider>
                         </SidebarProvider>
                     </ThemeProvider>
                 </ThemeConfigContext.Provider>

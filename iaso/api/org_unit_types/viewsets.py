@@ -1,10 +1,10 @@
 from django.db.models import Q
 from rest_framework import status, permissions
 from rest_framework.response import Response
-from iaso.api.query_params import APP_ID, ORDER, PROJECT, SEARCH
-
+from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
+from rest_framework.decorators import action
 from iaso.models import OrgUnitType
-from .serializers import OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2
+from .serializers import OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2, OrgUnitTypesDropdownSerializer
 from ..common import ModelViewSet
 
 DEFAULT_ORDER = "name"
@@ -37,7 +37,6 @@ class OrgUnitTypeViewSet(ModelViewSet):
         queryset = OrgUnitType.objects.filter_for_user_and_app_id(
             self.request.user, self.request.query_params.get(APP_ID)
         )
-
         search = self.request.query_params.get(SEARCH, None)
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(short_name__icontains=search))
@@ -75,6 +74,10 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         if project:
             queryset = queryset.filter(projects__id=project)
 
+        project_ids = self.request.query_params.get(PROJECT_IDS, None)
+        if project_ids:
+            queryset = queryset.filter(projects__id__in=project_ids.split(","))
+
         search = self.request.query_params.get(SEARCH, None)
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(short_name__icontains=search))
@@ -82,3 +85,19 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         orders = self.request.query_params.get(ORDER, DEFAULT_ORDER).split(",")
 
         return queryset.order_by("depth").distinct().order_by(*orders)
+
+    @action(
+        permission_classes=[permissions.IsAuthenticatedOrReadOnly],
+        detail=False,
+        methods=["GET"],
+        serializer_class=OrgUnitTypesDropdownSerializer,
+    )
+    def dropdown(self, request, *args):
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

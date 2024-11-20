@@ -8,6 +8,11 @@ from iaso.api.common import CONTENT_TYPE_XLSX
 from iaso.models import Form, OrgUnit, Instance
 from iaso.test import APITestCase
 
+from iaso.models import (
+    Mapping,
+    AGGREGATE,
+)
+
 
 class FormsAPITestCase(APITestCase):
     @classmethod
@@ -99,6 +104,23 @@ class FormsAPITestCase(APITestCase):
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
+
+    def find_forms_data_for(self, response, form):
+        return [f for f in response.json()["forms"] if f["name"] == form.name][0]
+
+    def test_forms_list_ok_has_mappings_true(self):
+        """GET /forms/ web app happy path: we expect two results one with has_mappings"""
+
+        mapping = Mapping(form=self.form_2, data_source=self.sw_source, mapping_type=AGGREGATE)
+        mapping.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+
+        self.assertTrue(self.find_forms_data_for(response, self.form_2)["has_mappings"])
+        self.assertFalse(self.find_forms_data_for(response, self.form_1)["has_mappings"])
 
     def test_forms_list_filtered_by_org_unit_type(self):
         self.client.force_authenticate(self.yoda)
@@ -281,6 +303,8 @@ class FormsAPITestCase(APITestCase):
             data={
                 "name": "test form 1",
                 "period_type": "MONTH",
+                "periods_before_allowed": 1,
+                "periods_after_allowed": 0,
                 "project_ids": [self.project_1.id],
                 "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
             },
@@ -293,6 +317,54 @@ class FormsAPITestCase(APITestCase):
         form = m.Form.objects.get(pk=response_data["id"])
         self.assertEqual(1, form.projects.count())
         self.assertEqual(2, form.org_unit_types.count())
+
+    def test_forms_create_ok_without_period_type(self):
+        """POST /forms/ happy path without period type"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/forms/",
+            data={
+                "name": "test form 1",
+                "period_type": None,
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+
+        response_data = response.json()
+        self.assertValidFormData(response_data)
+        form = m.Form.objects.get(pk=response_data["id"])
+        self.assertEqual(1, form.projects.count())
+        self.assertEqual(2, form.org_unit_types.count())
+
+    def test_forms_create_not_ok_with_period_type_and_wrong_period_before_and_after(self):
+        """POST /forms/ with wrong period before and after"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/forms/",
+            data={
+                "name": "test form 1",
+                "period_type": "MONTH",
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+
+        response_data = response.json()
+        self.assertEqual(
+            response_data["periods_allowed"][0],
+            "periods_before_allowed + periods_after_allowed should be greater than or equal to 1",
+        )
 
     def test_forms_create_ok_extended(self):
         """POST /forms/ happy path (more fields)"""
@@ -433,6 +505,8 @@ class FormsAPITestCase(APITestCase):
             data={
                 "name": "test form 1 (updated)",
                 "period_type": "QUARTER",
+                "pperiods_before_allowed": "0",
+                "periods_after_allowed": "1",
                 "single_per_period": True,
                 "device_field": "deviceid",
                 "location_field": "location",

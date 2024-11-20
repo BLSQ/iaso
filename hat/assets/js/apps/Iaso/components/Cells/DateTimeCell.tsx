@@ -9,8 +9,9 @@ import { apiDateFormats } from '../../utils/dates';
 /* DateTimeCell
    For use in Table's columns to display DateTime
  */
-export const DateTimeCell = (cellInfo: { value?: number | null }): string =>
-    cellInfo.value ? displayDateFromTimestamp(cellInfo.value) : textPlaceholder;
+export const DateTimeCell = (cellInfo: {
+    value?: number | null | undefined;
+}): string => displayDateFromTimestamp(cellInfo?.value);
 
 export const convertToDateTimeRfc = (
     value: string | null | undefined,

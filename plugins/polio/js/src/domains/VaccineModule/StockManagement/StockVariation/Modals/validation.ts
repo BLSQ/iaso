@@ -15,8 +15,8 @@ yup.addMethod(
                 const valuesArray = Array.isArray(value)
                     ? value
                     : value
-                        .split(',')
-                        .map((v: string | number) => `${v}`.trim());
+                          .split(',')
+                          .map((v: string | number) => `${v}`.trim());
                 const hasOtherChar = valuesArray.some(v => !regexp.test(v));
                 if (hasOtherChar) {
                     errorMessage = formatMessage(MESSAGES.lotNumberError);
@@ -79,6 +79,9 @@ export const useFormAValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };
 
@@ -112,6 +115,9 @@ export const useDestructionValidation = () => {
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };
 export const useIncidentValidation = () => {
@@ -131,6 +137,13 @@ export const useIncidentValidation = () => {
             .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
+        movement: yup
+            .number()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         usable_vials: yup
             .number()
             .required(formatMessage(MESSAGES.requiredField))
@@ -145,5 +158,8 @@ export const useIncidentValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        document: yup
+            .mixed()
+            .nullable()
     });
 };

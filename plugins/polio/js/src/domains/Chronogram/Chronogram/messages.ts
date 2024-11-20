@@ -53,6 +53,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.chronogram.label.campaign_obr_name',
         defaultMessage: 'Campaign',
     },
+    filterLabelCampaign: {
+        id: 'iaso.polio.chronogram.filter.label.campaign',
+        defaultMessage: 'Campaign',
+    },
     filterLabelCountry: {
         id: 'iaso.polio.chronogram.filter.label.country',
         defaultMessage: 'Country',
@@ -63,7 +67,7 @@ const MESSAGES = defineMessages({
     },
     labelNumTaskDelayed: {
         id: 'iaso.polio.chronogram.label.num_task_delayed',
-        defaultMessage: 'Task delayed',
+        defaultMessage: 'Number of task(s) delayed',
     },
     labelPercentageOfCompletion: {
         id: 'iaso.polio.chronogram.label.percentage_of_completion',

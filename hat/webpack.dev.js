@@ -8,7 +8,6 @@ const BundleTracker = require('webpack-bundle-tracker');
 // remember to switch in webpack.prod.js and
 // django settings as well
 const LOCALE = 'fr';
-
 // If you launch the dev server with `WEBPACK_HOST=192.168.1.XXX  npm run dev`
 // where 192.168.1.XXX is your local IP address, you can access the dev server
 // from another device on the same network, typically from a mobile device or tablet
@@ -153,7 +152,6 @@ module.exports = {
             'moment',
             'leaflet',
             'leaflet-draw',
-            'react-redux',
             'prop-types',
             'typescript',
             'video.js',
@@ -169,7 +167,7 @@ module.exports = {
         path: WEBPACK_PATH,
         filename: '[name].js',
         sourceMapFilename: '[name].[contenthash].js.map',
-        publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+        publicPath: ``, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
     },
     devtool: 'source-map',
@@ -266,6 +264,11 @@ module.exports = {
                     filename: 'videos/[name].[hash][ext]',
                 },
             },
+            {
+                test: /\.mjs$/,
+                type: 'javascript/auto',
+                use: 'babel-loader',
+            },
         ],
         noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },
@@ -273,6 +276,7 @@ module.exports = {
 
     resolve: {
         alias: {
+            'react/jsx-runtime': 'react/jsx-runtime.js',
             // see LIVE_COMPONENTS feature in doc
             ...(process.env.LIVE_COMPONENTS === 'true' && {
                 'bluesquare-components': path.resolve(
@@ -294,7 +298,7 @@ module.exports = {
                 : /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
                   ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
 
-        extensions: ['.js', '.tsx', '.ts'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
     stats: {
         errorDetails: true,

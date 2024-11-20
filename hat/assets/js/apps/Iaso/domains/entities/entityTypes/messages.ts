@@ -100,7 +100,7 @@ const MESSAGES = defineMessages({
     },
     fieldsDuplicateSearch: {
         id: 'iaso.entityTypes.fieldsDuplicateSearch',
-        defaultMessage: 'Duplicate search fields',
+        defaultMessage: 'Mobile: Entity search fields',
     },
     selectReferenceForm: {
         id: 'iaso.entityTypes.selectReferenceForm',

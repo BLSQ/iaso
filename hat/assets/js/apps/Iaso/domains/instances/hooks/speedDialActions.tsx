@@ -1,25 +1,24 @@
-/* eslint-disable camelcase */
-import React, { ReactElement, useCallback, useMemo } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditLocationIcon from '@mui/icons-material/EditLocation';
-import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import LockIcon from '@mui/icons-material/Lock';
-import { ExportButton, useSafeIntl } from 'bluesquare-components';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { DialogContentText } from '@mui/material';
-import { useDispatch } from 'react-redux';
+import { ExportButton, useSafeIntl } from 'bluesquare-components';
+import React, { ReactElement, useMemo } from 'react';
+import { UseMutateAsyncFunction } from 'react-query';
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import { Nullable } from '../../../types/utils';
+import { useSaveOrgUnit } from '../../orgUnits/hooks';
+import { ReAssignDialog } from '../components/CreateReAssignDialogComponent';
 import EnketoIcon from '../components/EnketoIcon';
 import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
+import { usePostLockInstance } from '../hooks';
 import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { useSaveOrgUnit } from '../../orgUnits/hooks';
-import { usePostLockInstance } from '../hooks';
 import { FormDef, useLinkOrgUnitToReferenceSubmission } from './speeddials';
-import { Nullable } from '../../../types/utils';
-import { reAssignInstance } from '../actions';
-import { ReAssignDialog } from '../components/CreateReAssignDialogComponent';
+import { ReassignInstancePayload } from './useReassignInstance';
 
 export type SpeedDialAction = {
     id: string;
@@ -29,15 +28,14 @@ export type SpeedDialAction = {
 
 export const useBaseActions = (
     currentInstance: Instance,
+    reassignInstance: UseMutateAsyncFunction<
+        unknown,
+        unknown,
+        ReassignInstancePayload,
+        unknown
+    >,
     formDef?: FormDef,
 ): SpeedDialAction[] => {
-    const dispatch = useDispatch();
-    const onReAssignInstance = useCallback(
-        (...props) => {
-            dispatch(reAssignInstance(...props));
-        },
-        [dispatch],
-    );
     return useMemo(() => {
         return [
             {
@@ -45,13 +43,9 @@ export const useBaseActions = (
                 icon: (
                     <ExportInstancesDialogComponent
                         // @ts-ignore
-                        renderTrigger={(
-                            openDialog,
-                            isInstancesFilterUpdated,
-                        ) => (
+                        renderTrigger={openDialog => (
                             <ExportButton
                                 onClick={openDialog}
-                                isDisabled={isInstancesFilterUpdated}
                                 batchExport={false}
                             />
                         )}
@@ -72,13 +66,13 @@ export const useBaseActions = (
                         currentInstance={currentInstance}
                         orgUnitTypes={formDef?.orgUnitTypeIds}
                         formType={formDef}
-                        onCreateOrReAssign={onReAssignInstance}
+                        onCreateOrReAssign={reassignInstance}
                     />
                 ),
                 disabled: currentInstance && currentInstance.deleted,
             },
         ];
-    }, [currentInstance, formDef, onReAssignInstance]);
+    }, [currentInstance, formDef, reassignInstance]);
 };
 
 export const useEditLocationWithGpsAction = (
@@ -99,11 +93,10 @@ export const useEditLocationWithGpsAction = (
             currentInstance.org_unit,
         ],
     );
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    const { mutateAsync: saveOrgUnit } = useSaveOrgUnit(() => {}, [
-        'orgUnits',
-        'instance',
-    ]);
+    const { mutateAsync: saveOrgUnit } = useSaveOrgUnit(
+        () => null,
+        ['orgUnits', 'instance'],
+    );
     return useMemo(
         () => ({
             id: 'editLocationWithInstanceGps',

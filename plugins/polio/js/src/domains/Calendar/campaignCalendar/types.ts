@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Moment } from 'moment';
 import { User } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { Campaign, MergedShape, Scope, Shape } from '../../../constants/types';
@@ -104,10 +103,6 @@ export type MonthHeader = {
 
 export type Users = {
     current: User;
-};
-
-export type ReduxState = {
-    users: Users;
 };
 
 export type PeriodType = 'quarter' | 'year' | 'semester';

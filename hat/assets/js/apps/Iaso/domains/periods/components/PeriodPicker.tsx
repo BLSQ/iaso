@@ -1,29 +1,31 @@
+import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useState,
 } from 'react';
-import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 
-import { commonStyles, DatePicker, useSafeIntl } from 'bluesquare-components';
 import Typography from '@mui/material/Typography';
+import { commonStyles, DatePicker, useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { getYears } from '../../../utils';
-import { getPeriodPickerString } from '../utils';
 import {
     hasFeatureFlag,
     HIDE_PERIOD_QUARTER_NAME,
 } from '../../../utils/featureFlags';
 import { Period, PeriodObject } from '../models';
+import { getPeriodPickerString } from '../utils';
 
+import { useCurrentUser } from '../../../utils/usersUtils';
 import {
     MONTHS,
+    NO_PERIOD,
     PERIOD_TYPE_DAY,
-    PERIOD_TYPE_PLACEHOLDER,
     PERIOD_TYPE_MONTH,
+    PERIOD_TYPE_PLACEHOLDER,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
@@ -33,7 +35,6 @@ import {
     SEMESTERS_RANGE,
 } from '../constants';
 import MESSAGES from '../messages';
-import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -68,7 +69,6 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     periodType: string | Record<string, string>;
     title: string;
-    // eslint-disable-next-line no-unused-vars
     onChange: (_) => any;
     activePeriodString?: string;
     hasError?: boolean;
@@ -179,7 +179,9 @@ const PeriodPicker: FunctionComponent<Props> = ({
                     </FormLabel>
 
                     <Grid container spacing={2}>
-                        {periodType !== PERIOD_TYPE_PLACEHOLDER && (
+                        {![PERIOD_TYPE_PLACEHOLDER, NO_PERIOD].includes(
+                            periodType as string,
+                        ) && (
                             <Grid
                                 item
                                 sm={periodType === PERIOD_TYPE_YEAR ? 12 : 6}
@@ -198,7 +200,9 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                 />
                             </Grid>
                         )}
-                        {periodType === PERIOD_TYPE_PLACEHOLDER && (
+                        {[PERIOD_TYPE_PLACEHOLDER, NO_PERIOD].includes(
+                            periodType as string,
+                        ) && (
                             <Grid item>
                                 <Typography className={classes.legend}>
                                     {message}

@@ -186,6 +186,27 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.phoneNumber',
         defaultMessage: 'Phone number',
     },
+    viewChangeRequestsForUser: {
+        id: 'iaso.label.viewChangeRequestsForUser',
+        defaultMessage: 'View change requests for user',
+    },
+    viewChangeRequestforLot: {
+        id: 'iaso.label.viewChangeRequestforLot',
+        defaultMessage: 'View change requests for this payment lot',
+    },
+    viewChangeRequestsForPotentialPayment: {
+        id: 'iaso.label.viewChangeRequestsForPotentialPayment',
+        defaultMessage: 'View change requests for this potential payment',
+    },
+    viewChangeRequestsForPayment: {
+        id: 'iaso.label.viewChangeRequestsForPayment',
+        defaultMessage: 'View change requests for this payment',
+    },
+    paymentLotTaskLaunched: {
+        id: 'iaso.snackBar.paymentLotTaskLaunched',
+        defaultMessage:
+            "The creation of the payment lot may take a few moments. Try refreshing the Payment Lots page if it doesn't appear",
+    },
 });
 
 export default MESSAGES;

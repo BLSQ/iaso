@@ -28,6 +28,7 @@ import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { isFieldValid, isFormValid } from '../../utils/forms';
 import { createForm, updateForm } from '../../utils/requests';
 import { NO_PERIOD } from '../periods/constants';
+import { FormAttachments } from './components/FormAttachments';
 import FormForm from './components/FormFormComponent';
 import FormVersions from './components/FormVersionsComponent';
 import { requiredFields } from './config/index';
@@ -301,6 +302,9 @@ const FormDetail: FunctionComponent = () => {
                                 formId={parseInt(params.formId, 10)}
                                 params={params}
                             />
+                        )}
+                        {tab === 'attachments' && (
+                            <FormAttachments params={params} />
                         )}
                     </>
                 )}

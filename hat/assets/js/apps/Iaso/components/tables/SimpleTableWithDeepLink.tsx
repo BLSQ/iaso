@@ -1,5 +1,5 @@
+import { Column, Setting, UrlParams } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
-import { Column, UrlParams, Setting } from 'bluesquare-components';
 import { TableWithDeepLink } from './TableWithDeepLink';
 
 type Props = {
@@ -17,9 +17,7 @@ type Props = {
     columnSelectorEnabled?: boolean;
     defaultSorted?: any;
     multiSelect?: boolean;
-    // eslint-disable-next-line no-unused-vars
     rowProps?: (row: Setting<any>['row']) => Record<string, unknown>;
-    // eslint-disable-next-line no-unused-vars
     cellProps?: (cell: any) => Record<string, unknown>;
 };
 

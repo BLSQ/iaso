@@ -3,6 +3,7 @@ from .base import Instance
 from .device import Device, DeviceOwnership, DevicePosition
 from .forms import Form, FormVersion, FormPredefinedFilter, FormAttachment
 from .org_unit import OrgUnit, OrgUnitType, OrgUnitChangeRequest
+from .org_unit_change_request_configuration import OrgUnitChangeRequestConfiguration
 from .project import Project
 from .pages import Page, RAW, TEXT, IFRAME, POWERBI
 from .comment import CommentIaso
@@ -14,3 +15,4 @@ from .reports import Report, ReportVersion
 from .deduplication import EntityDuplicateAnalyzis, EntityDuplicate
 from .microplanning import Planning, Team
 from .payments import Payment, PotentialPayment, PaymentLot
+from .tenant_users import TenantUser

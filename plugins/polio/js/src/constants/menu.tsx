@@ -1,5 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import CalendarToday from '@mui/icons-material/CalendarToday';
@@ -10,6 +8,7 @@ import GroupWork from '@mui/icons-material/GroupWork';
 import HomeIcon from '@mui/icons-material/Home';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
@@ -20,25 +19,27 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
-import MESSAGES from './messages';
+import React from 'react';
 import { MenuItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/types';
+import MESSAGES from './messages';
 import {
-    campaignsPath,
-    groupedCampaignsPath,
+    budgetPath,
     calendarPath,
-    lqasCountryPath,
-    lqasAfroPath,
+    campaignsPath,
+    chronogramPath,
+    countryConfigPath,
+    groupedCampaignsPath,
     imGlobalPath,
     imIhhPath,
     imOhhPath,
-    budgetPath,
+    lqasAfroPath,
+    lqasCountryPath,
     nopvAuthPath,
-    supplychainPath,
-    stockManagementPath,
     notificationPath,
-    countryConfigPath,
     reasonsForDelayConfigPath,
-    chronogramPath,
+    stockManagementPath,
+    supplychainPath,
+    vaccineRepositoryPath,
 } from './routes';
 
 export const menu: MenuItem[] = [
@@ -143,6 +144,18 @@ export const menu: MenuItem[] = [
                         permissions: stockManagementPath.permissions,
                         icon: props => <StorageIcon {...props} />,
                     },
+                    {
+                        label: MESSAGES.vaccineRepository,
+                        key: 'repository',
+                        permissions: vaccineRepositoryPath.permissions,
+                        icon: props => <InventoryIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.chronogram,
+                        key: 'chronogram',
+                        permissions: chronogramPath.permissions,
+                        icon: props => <PendingActionsIcon {...props} />,
+                    },
                 ],
             },
             {
@@ -150,12 +163,6 @@ export const menu: MenuItem[] = [
                 key: 'notifications',
                 permissions: notificationPath.permissions,
                 icon: props => <NotificationsActiveIcon {...props} />,
-            },
-            {
-                label: MESSAGES.chronogram,
-                key: 'chronogram',
-                permissions: chronogramPath.permissions,
-                icon: props => <PendingActionsIcon {...props} />,
             },
             {
                 label: MESSAGES.configuration,

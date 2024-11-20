@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import SendIcon from '@mui/icons-material/Send';
 import { ExternalLinkIconButton, IconButton } from 'bluesquare-components';
@@ -8,6 +7,7 @@ import { PaymentLot } from '../types';
 import { useMarkPaymentsAsSent } from '../hooks/requests/useSavePaymentLot';
 import MESSAGES from '../messages';
 import { EditPaymentLotDialog } from './EditPaymentLot/EditPaymentLotDialog';
+import { baseUrls } from '../../../constants/urls';
 
 interface ActionCellProps<T> {
     row: {
@@ -25,12 +25,22 @@ export const PaymentLotActionCell = ({
             mark_payments_as_sent: true,
         });
     }, [paymentLot.id, markAsSent]);
-    const disableButtons =
-        paymentLot.task?.status === 'QUEUED' ||
-        paymentLot.task?.status === 'RUNNING';
-
+    const disableButtons = Boolean(paymentLot.task);
+    const userIds = [
+        ...new Set(paymentLot.payments.map(payment => payment.user.id)),
+    ].join(',');
+    const paymentIds = [
+        ...new Set(paymentLot.payments.map(payment => payment.id)),
+    ].join(',');
     return (
         <>
+            <IconButton
+                icon="remove-red-eye"
+                url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${userIds}/paymentIds/${paymentIds}`}
+                tooltipMessage={MESSAGES.viewChangeRequestforLot}
+                disabled={disableButtons}
+            />
+
             {paymentLot.status === 'new' && (
                 <IconButton
                     tooltipMessage={MESSAGES.mark_as_sent}
@@ -44,11 +54,13 @@ export const PaymentLotActionCell = ({
                 iconProps={{ disabled: disableButtons }}
                 paymentLot={paymentLot}
             />
-            <ExternalLinkIconButton
-                tooltipMessage={MESSAGES.download_payments}
-                overrideIcon={FileDownloadIcon}
-                url={`/api/payments/lots/${paymentLot.id}/?xlsx=true`}
-            />
+            {!disableButtons && (
+                <ExternalLinkIconButton
+                    tooltipMessage={MESSAGES.download_payments}
+                    overrideIcon={FileDownloadIcon}
+                    url={`/api/payments/lots/${paymentLot.id}/?xlsx=true`}
+                />
+            )}
         </>
     );
 };

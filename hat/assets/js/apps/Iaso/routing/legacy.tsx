@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { useParamsObject } from './hooks/useParamsObject';
 import { baseUrls } from '../constants/urls';
+import { useParamsObject } from './hooks/useParamsObject';
 
 // Temporary fix to enable use of react-router 6 with DHIS2 Mapping component.
 /** @deprecated */

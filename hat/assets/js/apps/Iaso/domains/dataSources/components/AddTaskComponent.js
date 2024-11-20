@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
 import { Grid, Typography } from '@mui/material';
-import { FormattedMessage } from 'react-intl';
 import { LoadingSpinner, useRedirectTo } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import MESSAGES from '../messages';
+import React, { useState, useMemo, useCallback } from 'react';
+import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 import { Checkboxes } from '../../../components/forms/Checkboxes';
+import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 import { baseUrls } from '../../../constants/urls.ts';
-import { sendDhisOuImporterRequest } from '../requests';
 import { useFormState } from '../../../hooks/form';
 import { useSnackMutation } from '../../../libs/apiHooks.ts';
+import MESSAGES from '../messages';
+import { sendDhisOuImporterRequest } from '../requests';
 import { VersionDescription } from './VersionDescription.tsx';
+import { userHasPermission } from '../../users/utils';
+import * as Permission from '../../../utils/permissions.ts';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const initialFormState = sourceCredentials => {
     return {
@@ -30,8 +33,8 @@ const AddTask = ({
     sourceVersionNumber,
     sourceCredentials,
 }) => {
-    // eslint-disable-next-line no-unused-vars
-    const [form, setFormField, _, setFormState] = useFormState(
+    const currentUser = useCurrentUser();
+    const [form, setFormField, , setFormState] = useFormState(
         initialFormState(sourceCredentials),
     );
     const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(
@@ -45,43 +48,60 @@ const AddTask = ({
         MESSAGES.importFromDhis2Error,
     );
 
-    const reset = () => {
+    const reset = useCallback(() => {
         setFormState(initialFormState(sourceCredentials));
         setWithExistingDhis2Settings(true);
-    };
+    }, [setFormState, sourceCredentials]);
 
-    const submit = async (closeDialogCallBack, redirect = false) => {
-        const body = {
-            source_id: sourceId,
-            source_version_number: sourceVersionNumber,
-            force: false,
-            validate_status: form.validate_status.value,
-            continue_on_error: form.continue_on_error.value,
-            description: form.versionDescription.value || null,
-        };
-        if (!withExistingDhis2Settings) {
-            body.dhis2_password = form.dhis2_password.value;
-            body.dhis2_url = form.dhis2_url.value;
-            body.dhis2_login = form.dhis2_login.value;
-        }
+    const submit = useCallback(
+        async (closeDialogCallBack, redirect = false) => {
+            const body = {
+                source_id: sourceId,
+                source_version_number: sourceVersionNumber,
+                force: false,
+                validate_status: form.validate_status.value,
+                continue_on_error: form.continue_on_error.value,
+                description: form.versionDescription.value || null,
+            };
 
-        await mutation.mutateAsync(body);
-        closeDialogCallBack();
-        if (redirect) {
-            redirectTo(baseUrls.tasks, {
-                order: '-created_at',
-            });
-        }
-        reset();
-    };
+            if (!withExistingDhis2Settings) {
+                body.dhis2_password = form.dhis2_password.value;
+                body.dhis2_url = form.dhis2_url.value;
+                body.dhis2_login = form.dhis2_login.value;
+            }
+
+            await mutation.mutateAsync(body);
+            closeDialogCallBack();
+
+            if (redirect) {
+                redirectTo(baseUrls.tasks, {
+                    order: '-created_at',
+                });
+            }
+
+            reset();
+        },
+        [
+            sourceId,
+            sourceVersionNumber,
+            form,
+            withExistingDhis2Settings,
+            mutation,
+            redirectTo,
+            reset,
+        ],
+    );
 
     const onConfirm = async closeDialog => {
         await submit(closeDialog);
     };
 
-    const onRedirect = async closeDialog => {
-        await submit(closeDialog, true);
-    };
+    const onRedirect = useCallback(
+        async closeDialog => {
+            await submit(closeDialog, true);
+        },
+        [submit],
+    );
 
     const titleMessage = sourceVersionNumber ? (
         <FormattedMessage
@@ -177,6 +197,21 @@ const AddTask = ({
             ]}
         />
     );
+    const hasTaskPermission = userHasPermission(
+        Permission.DATA_TASKS,
+        currentUser,
+    );
+
+    const additionalButtonProps = useMemo(() => {
+        return hasTaskPermission
+            ? {
+                  additionalButton: true,
+                  additionalMessage: MESSAGES.goToCurrentTask,
+                  onAdditionalButtonClick: onRedirect,
+              }
+            : {};
+    }, [hasTaskPermission, onRedirect]);
+
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
@@ -187,9 +222,7 @@ const AddTask = ({
             cancelMessage={MESSAGES.cancel}
             maxWidth="sm"
             allowConfirm={allowConfirm}
-            additionalButton
-            additionalMessage={MESSAGES.goToCurrentTask}
-            onAdditionalButtonClick={onRedirect}
+            {...additionalButtonProps}
         >
             {mutation.isLoading && <LoadingSpinner />}
 

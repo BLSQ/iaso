@@ -2,7 +2,6 @@ import { Profile, User } from '../../utils/usersUtils';
 import { Project } from '../projects/types/project';
 import { UserRole } from '../userRoles/types/userRoles';
 
-/* eslint-disable camelcase */
 export type ValueAndErrors<T> = {
     value: T;
     errors: string[];
@@ -26,6 +25,7 @@ export type UserDialogData = {
     phone_number: ValueAndErrors<string | null>;
     country_code: ValueAndErrors<string | null>;
     projects: ValueAndErrors<Project[] | null>;
+    editable_org_unit_type_ids: ValueAndErrors<number[] | null>;
 };
 
 export type InitialUserData = Partial<Profile> & { is_superuser?: boolean };

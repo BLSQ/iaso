@@ -1,8 +1,9 @@
-/* eslint-disable camelcase */
 import { LangOptions } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';
 import { Project } from '../domains/projects/types/project';
+import { userHasPermission } from '../domains/users/utils';
+import * as Permissions from './permissions';
 
 export type Profile = {
     id: string;
@@ -51,6 +52,15 @@ export type SourceVersion = {
     version?: DataSource;
 };
 
+export type Account = {
+    name: string;
+    id: number;
+    created_at: number;
+    updated_at: number;
+    default_version?: DefaultVersion;
+    feature_flags: string[];
+};
+
 export type User = {
     id: number;
     first_name: string;
@@ -58,14 +68,8 @@ export type User = {
     username?: string;
     user_name?: string;
     email: string;
-    account: {
-        name: string;
-        id: number;
-        created_at: number;
-        updated_at: number;
-        default_version?: DefaultVersion;
-        feature_flags: string[];
-    };
+    account: Account;
+    other_accounts: Account[];
     permissions: string[];
     is_staff?: boolean;
     is_superuser: boolean;
@@ -77,6 +81,9 @@ export type User = {
     language?: LangOptions;
     user_id: number;
     dhis2_id?: string;
+    editable_org_unit_type_ids?: number[];
+    user_roles: number[];
+    user_roles_editable_org_unit_type_ids?: number[];
 };
 
 export const getDisplayName = (
@@ -108,4 +115,36 @@ export const useIsLoggedIn = (): boolean => {
 export const useHasNoAccount = (): boolean => {
     const currentUser = useCurrentUser();
     return Boolean(currentUser && !currentUser.account);
+};
+
+export const useCheckUserHasWriteTypePermission = (): ((
+    orgUnitTypeId?: number,
+) => boolean) => {
+    const currentUser = useCurrentUser();
+    return (orgUnitTypeId?: number) => {
+        if (!currentUser) return false;
+
+        const editableTypeIds = [
+            ...(currentUser.editable_org_unit_type_ids ?? []),
+            ...(currentUser.user_roles_editable_org_unit_type_ids ?? []),
+        ];
+
+        return (
+            editableTypeIds.length === 0 ||
+            (orgUnitTypeId !== undefined &&
+                editableTypeIds.includes(orgUnitTypeId))
+        );
+    };
+};
+
+export const useCheckUserHasWritePermissionOnOrgunit = (
+    orgUnitTypeId?: number,
+): boolean => {
+    const getHasWriteByTypePermission = useCheckUserHasWriteTypePermission();
+    const hasWriteByTypePermission = getHasWriteByTypePermission(orgUnitTypeId);
+    const currentUser = useCurrentUser();
+    return (
+        userHasPermission(Permissions.ORG_UNITS, currentUser) &&
+        hasWriteByTypePermission
+    );
 };

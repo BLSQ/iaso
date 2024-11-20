@@ -1,7 +1,6 @@
-/* eslint-disable camelcase */
 import { UseMutationResult } from 'react-query';
-import { useSnackMutation } from '../../../../../libs/apiHooks';
 import { postRequest } from '../../../../../libs/Api';
+import { useSnackMutation } from '../../../../../libs/apiHooks';
 
 type IgnoreDuplicateArgs = {
     entity1_id: number;
@@ -16,8 +15,7 @@ const ignoreDuplicate = (query: IgnoreDuplicateArgs) => {
 };
 
 export const useIgnoreDuplicate = (
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-    onSuccess: (data: any) => void = _data => {},
+    onSuccess: (data: any) => void = _data => null,
 ): UseMutationResult => {
     return useSnackMutation({
         mutationFn: args => ignoreDuplicate(args),

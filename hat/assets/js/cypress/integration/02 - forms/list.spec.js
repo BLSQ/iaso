@@ -15,6 +15,7 @@ const baseUrl = `${siteBaseUrl}/dashboard/forms/list`;
 let table;
 let row;
 const goToPage = (
+    // eslint-disable-next-line default-param-last
     fakeUser = superUser,
     urlParams,
     fixture = 'forms/list.json',
@@ -26,8 +27,8 @@ const goToPage = (
         fixture,
     }).as('getForms');
 
-    cy.intercept('GET', '/api/v2/orgunittypes/**', {
-        fixture: 'orgunittypes/list.json',
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/**', {
+        fixture: 'orgunittypes/dropdown-list.json',
     }).as('getTypes');
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',
@@ -66,7 +67,7 @@ describe('Forms', () => {
             testTablerender({
                 baseUrl,
                 rows: 11,
-                columns: 10,
+                columns: 8,
                 apiKey: 'forms',
             });
         });
@@ -137,43 +138,18 @@ describe('Forms', () => {
                 table.should('have.length', 1);
                 const rows = table.find('tbody').find('tr');
                 rows.should('have.length', listFixture.forms.length);
-                rows.eq(0).find('td').should('have.length', 10);
+                rows.eq(0).find('td').should('have.length', 8);
             });
-            describe('Latest version column', () => {
-                beforeEach(() => {
-                    goToPage();
-                });
-                it('should display a XML link, XLS link and a version number', () => {
-                    table = cy.get('table');
-                    row = table.find('tbody').find('tr').eq(0);
-                    const latestCol = row.find('td').eq(8);
-                    latestCol.should(
-                        'contain',
-                        listFixture.forms[0].latest_form_version.version_id,
-                    );
-                    latestCol.find('a').as('links').should('have.length', 2);
-                    // TODO Find a way to test file download
-                });
-                it('should be empty if no latest_form_version', () => {
-                    table = cy.get('table');
-                    row = table.find('tbody').find('tr').eq(1);
-                    const latestCol = row.find('td').eq(8);
-                    latestCol.should(
-                        'not.contain',
-                        listFixture.forms[0].latest_form_version.version_id,
-                    );
-                    latestCol.find('a').should('not.exist');
-                });
-            });
+
             describe('Action column', () => {
-                it('should display 4 buttons if user has all rights', () => {
+                it('should display 6 buttons if user has all rights', () => {
                     goToPage();
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
-                    actionCol.find('button').should('have.length', 5);
+                    actionCol.find('button').should('have.length', 6);
                 });
-                it('should display 3 buttons if user has iaso_forms permission', () => {
+                it('should display 4 buttons if user has iaso_forms permission', () => {
                     goToPage({
                         ...superUser,
                         permissions: [Permission.FORMS],
@@ -182,9 +158,9 @@ describe('Forms', () => {
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
-                    actionCol.find('button').should('have.length', 3);
+                    actionCol.find('button').should('have.length', 4);
                 });
-                it('should display 1 buttons if user has iaso_submissions permission', () => {
+                it('should display 2 buttons if user has iaso_submissions permission', () => {
                     goToPage({
                         ...superUser,
                         permissions: [Permission.SUBMISSIONS],
@@ -193,7 +169,49 @@ describe('Forms', () => {
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
-                    actionCol.find('button').should('have.length', 1);
+                    actionCol.find('button').should('have.length', 2);
+                });
+                describe('download xls and xml buttons', () => {
+                    beforeEach(() => {
+                        goToPage();
+                    });
+                    it('should display download button', () => {
+                        goToPage();
+                        table = cy.get('table');
+                        row = table.find('tbody').find('tr').eq(0);
+                        const actionCol = row.find('td').last();
+                        actionCol.find('button').eq(5).should('exist');
+                    });
+
+                    it('should not display download button if no latest_form_version', () => {
+                        table = cy.get('table');
+                        row = table.find('tbody').find('tr').eq(1);
+                        const latestCol = row.find('td').eq(7);
+                        latestCol.find('button').eq(5).should('not.exist');
+                    });
+
+                    it('should not display XLS and XML link if download button not clicked', () => {
+                        table = cy.get('table');
+                        row = table.find('tbody').find('tr').eq(0);
+                        const latestCol = row.find('td').eq(7);
+                        latestCol.find('button').eq(5);
+                        cy.get('a')
+                            .filter((index, element) => {
+                                return Cypress.$(element)
+                                    .text()
+                                    .includes(['XLS', 'XML']);
+                            })
+                            .should('not.exist');
+                    });
+
+                    it('should display XLS and XML link if download button clicked', () => {
+                        table = cy.get('table');
+                        row = table.find('tbody').find('tr').eq(0);
+                        const latestCol = row.find('td').eq(7);
+                        latestCol.find('button').eq(5).click();
+                        cy.get('ul').get('li').eq(0).should('have.text', 'XLS');
+                        cy.get('ul').get('li').eq(1).should('have.text', 'XML');
+                    });
                 });
             });
         });

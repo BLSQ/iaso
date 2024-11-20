@@ -32,12 +32,12 @@ import { useGetOrgUnit } from './TreeView/requests';
 import { InputWithInfos } from '../../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../../types/utils';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
-import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 import { useGetVersionLabel } from '../hooks/useGetVersionLabel';
 import { useInstancesOptions } from '../hooks/utils/useInstancesOptions';
 import MESSAGES from '../messages';
 import { DataSource } from '../types/dataSources';
 import { Search } from '../types/search';
+import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 type Props = {
     searches: [Search];
@@ -45,10 +45,8 @@ type Props = {
     setLocationLimit: Dispatch<React.SetStateAction<number>>;
     searchIndex: number;
     currentSearch: Search;
-    // eslint-disable-next-line no-unused-vars
     setTextSearchError: Dispatch<React.SetStateAction<boolean>>;
     onSearch: () => void;
-    // eslint-disable-next-line no-unused-vars
     onChangeColor: (color: string, index: number) => void;
     setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     currentTab: string;
@@ -121,7 +119,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         sourceVersionId,
     });
     const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
-        useGetOrgUnitTypes(projectId);
+        useGetOrgUnitTypesDropdownOptions(projectId);
 
     const instancesOptions = useInstancesOptions();
 
@@ -259,7 +257,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
-                <Box mt={4} mb={4}>
+                <Box mt={4} mb={2}>
                     <ColorPicker
                         currentColor={currentColor}
                         onChangeColor={color =>
@@ -281,16 +279,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 </InputWithInfos>
                 <InputComponent
                     type="select"
-                    disabled={isFetchingDataSources}
-                    keyValue="source"
-                    onChange={handleChange}
-                    value={!isFetchingDataSources && dataSourceId}
-                    label={MESSAGES.source}
-                    options={dataSources}
-                    loading={isFetchingDataSources}
-                />
-                <InputComponent
-                    type="select"
                     disabled={isFetchingProjects}
                     keyValue="project"
                     onChange={handleChange}
@@ -299,6 +287,17 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     options={projects}
                     loading={isFetchingProjects}
                 />
+                <InputComponent
+                    type="select"
+                    disabled={isFetchingDataSources}
+                    keyValue="source"
+                    onChange={handleChange}
+                    value={!isFetchingDataSources && dataSourceId}
+                    label={MESSAGES.source}
+                    options={dataSources}
+                    loading={isFetchingDataSources}
+                />
+
                 {!showAdvancedSettings && (
                     <Typography
                         className={classes.advancedSettings}

@@ -1,8 +1,12 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from plugins.polio.models import Chronogram, ChronogramTask, ChronogramTemplateTask, Round, Campaign
+from django.contrib.auth.models import User
+
+from hat.menupermissions import models as iaso_permission
+
 from iaso.api.common import DynamicFieldsModelSerializer
+
+from plugins.polio.models import Chronogram, ChronogramTask, ChronogramTemplateTask, Round, Campaign
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -14,6 +18,22 @@ class UserNestedSerializer(serializers.ModelSerializer):
 
 
 class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+    def get_fields(self, *args, **kwargs):
+        fields = super().get_fields(*args, **kwargs)
+        user = getattr(self.context.get("request", {}), "user", None)
+
+        if user and user.has_perm(iaso_permission.POLIO_CHRONOGRAM):
+            return fields
+
+        # Restrict writable fields for the `POLIO_CHRONOGRAM_RESTRICTED_WRITE` permission.
+        if user and user.has_perm(iaso_permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE):
+            allowed_fields = ["status", "user_in_charge", "comment"]
+            read_only_fields = [field for field in fields if field not in allowed_fields]
+            for field in read_only_fields:
+                fields[field].read_only = True
+
+        return fields
+
     created_by = UserNestedSerializer(read_only=True)
     updated_by = UserNestedSerializer(read_only=True)
     deadline_date = serializers.DateField(read_only=True, source="annotated_deadline_date")
@@ -26,7 +46,9 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "chronogram",
             "period",
             "get_period_display",
-            "description",
+            "description",  # This will be automatically translated depending on the active language.
+            "description_en",
+            "description_fr",
             "start_offset_in_days",
             "deadline_date",
             "status",
@@ -45,6 +67,8 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "period",
             "get_period_display",
             "description",
+            "description_en",
+            "description_fr",
             "start_offset_in_days",
             "deadline_date",
             "status",
@@ -55,17 +79,13 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
         ]
         extra_kwargs = {
             "id": {"read_only": True},
+            "description": {"read_only": True},
             "deadline_date": {"read_only": True},
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
             "get_period_display": {"read_only": True},
             "get_status_display": {"read_only": True},
         }
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation["user_in_charge"] = UserNestedSerializer(instance.user_in_charge, read_only=True).data
-        return representation
 
 
 class ChronogramSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
@@ -118,7 +138,9 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
             "account",
             "period",
             "get_period_display",
-            "description",
+            "description",  # This will be automatically translated depending on the active language.
+            "description_en",
+            "description_fr",
             "start_offset_in_days",
             "created_at",
             "created_by",
@@ -131,11 +153,14 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
             "period",
             "get_period_display",
             "description",
+            "description_en",
+            "description_fr",
             "start_offset_in_days",
         ]
         extra_kwargs = {
             "account": {"read_only": True},
             "created_at": {"read_only": True},
+            "description": {"read_only": True},
             "updated_at": {"read_only": True},
             "get_period_display": {"read_only": True},
         }

@@ -10,7 +10,7 @@ from rest_framework import serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
-
+from django.db.models import Count, BooleanField, Case, When
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import log_modification, FORM_API
 from hat.menupermissions import models as permission
@@ -76,6 +76,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "reference_form_of_org_unit_types",
             "legend_threshold",
             "change_request_mode",
+            "has_mappings",
         ]
         fields = [
             "id",
@@ -105,6 +106,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "reference_form_of_org_unit_types",
             "legend_threshold",
             "change_request_mode",
+            "has_mappings",
         ]
         read_only_fields = [
             "id",
@@ -119,6 +121,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "fields",
             "has_attachments",
             "reference_form_of_org_unit_types",
+            "has_mappings",
         ]
 
     org_unit_types = serializers.SerializerMethodField()
@@ -138,6 +141,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
     deleted_at = TimestampField(allow_null=True, required=False)
     has_attachments = serializers.SerializerMethodField()
     reference_form_of_org_unit_types = serializers.SerializerMethodField()
+    has_mappings = serializers.BooleanField(read_only=True)
 
     @staticmethod
     def get_latest_form_version(obj: Form):
@@ -168,15 +172,22 @@ class FormSerializer(DynamicFieldsModelSerializer):
                 raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
 
         # If the period type is None, some period-specific fields must have specific values
-        if "period_type" in data and data["period_type"] is None:
+        if "period_type" in data:
             tracker_errors = {}
-            if data["periods_before_allowed"] != 0:
-                tracker_errors["periods_before_allowed"] = "Should be 0"
-            if data["periods_after_allowed"] != 0:
-                tracker_errors["periods_after_allowed"] = "Should be 0"
+            if data["period_type"] is None:
+                if data["periods_before_allowed"] != 0:
+                    tracker_errors["periods_before_allowed"] = "Should be 0 when period type is not specified"
+                if data["periods_after_allowed"] != 0:
+                    tracker_errors["periods_after_allowed"] = "Should be 0 when period type is not specified"
+            else:
+                before = data.get("periods_before_allowed", 0)
+                after = data.get("periods_after_allowed", 0)
+                if before + after < 1:
+                    tracker_errors[
+                        "periods_allowed"
+                    ] = "periods_before_allowed + periods_after_allowed should be greater than or equal to 1"
             if tracker_errors:
                 raise serializers.ValidationError(tracker_errors)
-
         return data
 
     def update(self, form, validated_data):
@@ -245,6 +256,15 @@ class FormsViewSet(ModelViewSet):
         projects_ids = self.request.query_params.get("projectsIds")
         if projects_ids:
             queryset = queryset.filter(projects__id__in=projects_ids.split(","))
+
+        queryset = queryset.annotate(
+            mapping_count=Count("mapping"),
+            has_mappings=Case(
+                When(mapping_count__gt=0, then=True),
+                default=False,
+                output_field=BooleanField(),
+            ),
+        )
 
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
 

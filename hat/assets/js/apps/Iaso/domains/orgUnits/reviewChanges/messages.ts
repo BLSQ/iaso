@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Review change proposals',
         id: 'iaso.label.reviewChangeProposals',
     },
+    reviewChangeProposal: {
+        defaultMessage: 'Change proposals for {name}',
+        id: 'iaso.label.reviewChangeProposal',
+    },
     orgUnitType: {
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',
@@ -20,6 +24,10 @@ const MESSAGES = defineMessages({
     group: {
         defaultMessage: 'Group',
         id: 'iaso.label.group',
+    },
+    projects: {
+        defaultMessage: 'Projects',
+        id: 'iaso.label.projects',
     },
     confirm: {
         id: 'iaso.label.confirm',
@@ -141,9 +149,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.changeRequest.seeApprovedChanges',
         defaultMessage: 'See approved change(s)',
     },
-    addComment: {
-        id: 'iaso.changeRequest.addComment',
+    addRejectionComment: {
+        id: 'iaso.changeRequest.addRejectionComment',
         defaultMessage: 'Add comment for rejection',
+    },
+    addPartiallyApprovedComment: {
+        id: 'iaso.changeRequest.addPartiallyApprovedComment',
+        defaultMessage: 'Add comment for the partial approval',
     },
     comment: {
         id: 'iaso.changeRequest.comment',
@@ -194,10 +206,21 @@ const MESSAGES = defineMessages({
         defaultMessage: 'This field is required',
     },
     viewDetails: {
-         id: 'iaso.label.viewDetails',
+        id: 'iaso.label.viewDetails',
         defaultMessage: 'View details',
-    }
-
+    },
+    paymentStatus: {
+        id: 'iaso.label.paymentStatus',
+        defaultMessage: 'Payment status',
+    },
+    accuracy: {
+        id: 'iaso.label.accuracy',
+        defaultMessage: 'Accuracy',
+    },
+    featureDisabled: {
+        id: 'iaso.label.featureDisabled',
+        defaultMessage: 'Feature temporarily disabled',
+    },
 });
 
 export default MESSAGES;

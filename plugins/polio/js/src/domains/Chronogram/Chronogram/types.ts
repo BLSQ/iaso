@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import { User, DropdownOptions } from '../types';
 
 export type ChronogramParams = {
@@ -9,6 +7,7 @@ export type ChronogramParams = {
     limit?: string; // API name for "number of results per page".
     pageSize?: string; // TableWithDeepLink name for "number of results per page".
     // Search params.
+    campaign?: string;
     country?: string;
     on_time?: string;
     search?: string;
@@ -21,11 +20,13 @@ export type ChronogramTask = {
     period: string;
     get_period_display: string;
     description: string;
+    description_en: string;
+    description_fr: string;
     start_offset_in_days: number;
     deadline_date: string; // Date
     status: string;
     get_status_display: string;
-    user_in_charge: User;
+    user_in_charge: string;
     delay_in_days: number;
     comment: string;
     // Optional fields.

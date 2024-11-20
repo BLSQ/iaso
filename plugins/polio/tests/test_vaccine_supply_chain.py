@@ -1,13 +1,13 @@
 import datetime
+
+from django.contrib.auth.models import AnonymousUser
 from django.utils.timezone import now
 
 import hat.menupermissions.models as permissions
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio import models as pm
-from django.contrib.auth.models import AnonymousUser
-from plugins.polio.api.vaccines.supply_chain import PA_SET, AR_SET
-
+from plugins.polio.api.vaccines.supply_chain import AR_SET, PA_SET
 
 BASE_URL = "/api/polio/vaccine/request_forms/"
 
@@ -390,7 +390,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
                         "date_pre_alert_reception": "2021-01-01",
                         "estimated_arrival_time": "2021-01-02",
                         "doses_shipped": 500000,
-                        "po_number": "PO-1234",
+                        "po_number": "1234",
                         "lot_numbers": ["LOT-1234", "LOT-5678"],
                     }
                 ],
@@ -403,7 +403,31 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         self.assertEqual(len(res["pre_alerts"]), 1)
         self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 500000)
-        self.assertEqual(res["pre_alerts"][0]["po_number"], "PO-1234")
+        self.assertEqual(res["pre_alerts"][0]["po_number"], "1234")
+
+    def test_bad_po_number_raises_error(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form and its pre-alerts
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        response = self.client.post(
+            BASE_URL + f"{request_form.id}/add_pre_alerts/",
+            data={
+                "pre_alerts": [
+                    {
+                        "date_pre_alert_reception": "2021-01-01",
+                        "estimated_arrival_time": "2021-01-02",
+                        "doses_shipped": 500000,
+                        "po_number": "PO-1234",
+                        "lot_numbers": ["LOT-1234", "LOT-5678"],
+                    }
+                ],
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
 
     def test_can_add_request_form_vaccine_arrival_reports(self):
         self.client.force_authenticate(user=self.user_rw_perm)
@@ -655,3 +679,40 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         # Retrieve the updated VaccineRequestForm and verify the target_population field
         request_form.refresh_from_db()
         self.assertEqual(request_form.target_population, updated_population)
+
+    def test_var_field_ordered_reversely(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Create a VaccineRequestForm instance
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        # Create multiple VaccineArrivalReport instances with different dates
+        po_numbers = ["777777-1", "777777-2", "777777-3"]
+
+        dates = ["2024-04-20", "2024-04-19", "2024-04-18"]
+        for i, date in enumerate(dates):
+            pm.VaccineArrivalReport.objects.create(
+                request_form=request_form,
+                po_number=po_numbers[i],
+                arrival_report_date=datetime.datetime.strptime(date, "%Y-%m-%d").date(),
+                doses_received=1000,
+            )
+            pm.VaccinePreAlert.objects.create(
+                date_pre_alert_reception=datetime.datetime.strptime(date, "%Y-%m-%d").date(),
+                request_form=request_form,
+                po_number=po_numbers[i],
+                estimated_arrival_time=datetime.datetime.strptime(date, "%Y-%m-%d").date(),
+                doses_shipped=100,
+            )
+
+        # Make a GET request to the list endpoint with ordering by start_date
+        response = self.client.get(
+            BASE_URL + "?order=-start_date&page=1&limit=20",
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # Verify that the "var" field is a comma-separated list of dates in reverse order
+        expected_var = ",".join(dates)
+        self.assertEqual(response.data["results"][1]["var"], expected_var)

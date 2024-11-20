@@ -34,12 +34,13 @@ import { Search } from '../types/search';
 
 import { decodeSearch } from '../utils';
 
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
+import { ORG_UNITS } from '../../../utils/permissions';
 import MESSAGES from '../messages';
 
 type Props = {
     params: OrgUnitParams;
     paramsSearches: [Search];
-    // eslint-disable-next-line no-unused-vars
     onSearch: (searches: any) => void;
     currentTab: string;
     counts: Count[];
@@ -210,21 +211,23 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                     </Box>
                 ))}
                 <Box mt={2} justifyContent="flex-end" display="flex">
-                    <Box display="inline-block" mr={2}>
-                        <Button
-                            variant="contained"
-                            className={classnames(classes.button)}
-                            color="primary"
-                            onClick={() =>
-                                redirectTo(baseUrls.orgUnitDetails, {
-                                    orgUnitId: '0',
-                                })
-                            }
-                        >
-                            <Add className={classes.buttonIcon} />
-                            {formatMessage(MESSAGES.create)}
-                        </Button>
-                    </Box>
+                    <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
+                        <Box display="inline-block" mr={2}>
+                            <Button
+                                variant="contained"
+                                className={classnames(classes.button)}
+                                color="primary"
+                                onClick={() =>
+                                    redirectTo(baseUrls.orgUnitDetails, {
+                                        orgUnitId: '0',
+                                    })
+                                }
+                            >
+                                <Add className={classes.buttonIcon} />
+                                {formatMessage(MESSAGES.create)}
+                            </Button>
+                        </Box>
+                    </DisplayIfUserHasPerm>
                     <SearchButton
                         disabled={textSearchError || hasLocationLimitError}
                         onSearch={handleSearch}

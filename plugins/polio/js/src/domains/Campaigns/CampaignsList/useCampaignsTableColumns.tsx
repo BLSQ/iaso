@@ -10,9 +10,7 @@ import { EditCampaignModal } from '../MainDialog/EditCampaignModal';
 
 type Args = {
     showOnlyDeleted: boolean;
-    // eslint-disable-next-line no-unused-vars
     handleClickRestoreRow: (value: number) => void;
-    // eslint-disable-next-line no-unused-vars
     handleClickDeleteRow: (value: number) => void;
     params: any;
 };

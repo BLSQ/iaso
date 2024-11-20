@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     deleteRequest,
@@ -50,21 +49,59 @@ export const saveTab = (
             toCreate.push(dataToPass);
         }
     });
+
+    const createOrUpdateRequest = (url: string, data: any) => {
+        const formData = new FormData();
+
+        data.forEach((item: any, index: number) => {
+            Object.keys(item).forEach(keyy => {
+                if (keyy === 'document' && item[keyy]) {
+                    if (Array.isArray(item[keyy])) {
+                        formData.append(
+                            `${key}[${index}].${keyy}`,
+                            item[keyy][0],
+                        );
+                    } else if (typeof item[keyy] === 'string') {
+                        const filePath = item[keyy];
+                        const fileName = filePath.split('/').pop();
+                        const file = new File(
+                            [filePath],
+                            fileName || 'document',
+                        );
+                        formData.append(`${key}[${index}].${keyy}`, file);
+                    }
+                } else if (item[keyy] !== null && item[keyy] !== undefined) {
+                    formData.append(`${key}[${index}].${keyy}`, item[keyy]);
+                }
+            });
+        });
+
+        // eslint-disable-next-line no-nested-ternary
+        const method = url.includes('update')
+            ? 'PATCH'
+            : url.includes('add')
+              ? 'POST'
+              : 'GET';
+        return fetch(url, {
+            method,
+            body: formData,
+        });
+    };
+
     if (toUpdate.length > 0) {
         promises.push(
-            patchRequest(
+            createOrUpdateRequest(
                 `${apiUrl}${supplyChainData?.vrf?.id}/update_${key}/`,
-                {
-                    [key]: toUpdate,
-                },
+                toUpdate,
             ),
         );
     }
     if (toCreate.length > 0) {
         promises.push(
-            postRequest(`${apiUrl}${supplyChainData?.vrf?.id}/add_${key}/`, {
-                [key]: toCreate,
-            }),
+            createOrUpdateRequest(
+                `${apiUrl}${supplyChainData?.vrf?.id}/add_${key}/`,
+                toCreate,
+            ),
         );
     }
     if (toDelete.length > 0) {

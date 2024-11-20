@@ -3,25 +3,27 @@ import {
     formatThousand,
     IconButton,
     textPlaceholder,
-    LinkWithLocation
+    LinkWithLocation,
 } from 'bluesquare-components';
+import { Chip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { useNavigate } from 'react-router-dom';
 import GroupsDialog from './components/GroupsDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls';
-import { getChipColors } from '../../../constants/chipColors';
+import { filterOrgUnitsByGroupUrl } from '../utils';
+
+const useStyles = makeStyles(() => ({
+    groupSetChip: {
+        margin: '2px !important',
+    },
+}));
 
 export const baseUrl = baseUrls.groups;
+const groupSetUrl = baseUrls.groupSetDetail;
 
-const getUrl = groupId => {
-    const defaultChipColor = getChipColors(0).replace('#', '');
-    return (
-        `/${baseUrls.orgUnits}/locationLimit/3000/order/id` +
-        `/pageSize/50/page/1/searchTabIndex/0/searchActive/true` +
-        `/searches/[{"validation_status":"all", "color":"${defaultChipColor}", "group":"${groupId}", "source": null}]`
-    );
-};
 const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
     {
         Header: 'Id',
@@ -50,10 +52,35 @@ const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
         accessor: 'source_ref',
     },
     {
+        Header: formatMessage(MESSAGES.groupSet),
+        accessor: 'group_sets',
+        Cell: settings => {
+            const classes = useStyles();
+            const navigate = useNavigate();
+            return (
+                <span>
+                    {settings.row.original.group_sets.map(g => (
+                        <Chip
+                            className={classes.groupSetChip}
+                            label={g.name}
+                            color="primary"
+                            key={g.id}
+                            onClick={() => {
+                                navigate(`/${groupSetUrl}/groupSetId/${g.id}`);
+                            }}
+                        />
+                    ))}
+                </span>
+            );
+        },
+    },
+    {
         Header: formatMessage(MESSAGES.orgUnit),
         accessor: 'org_unit_count',
         Cell: settings => (
-            <LinkWithLocation to={getUrl(settings.row.original.id)}>
+            <LinkWithLocation
+                to={filterOrgUnitsByGroupUrl(settings.row.original.id)}
+            >
                 {formatThousand(settings.value)}
             </LinkWithLocation>
         ),

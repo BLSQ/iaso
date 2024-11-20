@@ -1,30 +1,30 @@
 import { useMemo } from 'react';
 
-import { Planning } from '../types/planning';
-import { SubTeam, User, Team, DropdownTeamsOptions } from '../types/team';
-import { Locations } from '../types/locations';
 import { DropdownOptions } from '../../../types/utils';
-import { ChildrenOrgUnits } from '../types/orgUnit';
 import { AssignmentApi, SaveAssignmentQuery } from '../types/assigment';
+import { Locations } from '../types/locations';
+import { ChildrenOrgUnits } from '../types/orgUnit';
+import { Planning } from '../types/planning';
+import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
-import { useGetTeams } from './requests/useGetTeams';
-import { useGetProfiles, ProfileWithColor } from './requests/useGetProfiles';
 import {
-    useSaveAssignment,
-    useBulkSaveAssignments,
-} from './requests/useSaveAssignment';
-import { useGetOrgUnitTypes } from './requests/useGetOrgUnitTypes';
-import { useGetOrgUnitsByParent } from './requests/useGetOrgUnitsByParent';
-import { useGetOrgUnits, useGetOrgUnitsList } from './requests/useGetOrgUnits';
-import { useGetOrgUnitParentIds } from './useGetOrgUnitParentIds';
-import { useGetPlanning } from './requests/useGetPlanning';
-import {
-    useGetAssignments,
     AssignmentsResult,
+    useGetAssignments,
 } from './requests/useGetAssignments';
+import { useGetOrgUnits, useGetOrgUnitsList } from './requests/useGetOrgUnits';
+import { useGetOrgUnitsByParent } from './requests/useGetOrgUnitsByParent';
+import { useGetPlanning } from './requests/useGetPlanning';
+import { ProfileWithColor, useGetProfiles } from './requests/useGetProfiles';
+import { useGetTeams } from './requests/useGetTeams';
+import {
+    useBulkSaveAssignments,
+    useSaveAssignment,
+} from './requests/useSaveAssignment';
+import { useGetOrgUnitParentIds } from './useGetOrgUnitParentIds';
 
 import { useBoundState } from '../../../hooks/useBoundState';
 import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 type Props = {
     planningId: string;
@@ -40,9 +40,7 @@ type Result = {
     planning: Planning | undefined;
     assignments: AssignmentApi[];
     allAssignments: AssignmentApi[];
-    // eslint-disable-next-line no-unused-vars
     saveAssignment: (params: SaveAssignmentQuery) => void;
-    // eslint-disable-next-line no-unused-vars
     saveMultiAssignments: (params: SaveAssignmentQuery) => void;
     teams: DropdownTeamsOptions[] | undefined;
     profiles: ProfileWithColor[];
@@ -59,7 +57,6 @@ type Result = {
     isFetchingChildrenOrgunits: boolean;
     isLoadingAssignments: boolean;
     isTeamsFetched: boolean;
-    // eslint-disable-next-line no-unused-vars
     setItemColor: (color: string, itemId: number) => void;
 };
 
@@ -104,7 +101,7 @@ export const useGetAssignmentData = ({
         [data],
     );
     const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypes();
+        useGetOrgUnitTypesDropdownOptions();
     const { data: childrenOrgunits, isFetching: isFetchingChildrenOrgunits } =
         useGetOrgUnitsByParent({
             orgUnitParentId: parentSelected?.id,

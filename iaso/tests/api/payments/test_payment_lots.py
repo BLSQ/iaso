@@ -3,6 +3,7 @@ import pandas as pd
 
 from hat.audit import models as am
 from iaso import models as m
+from iaso.models.payments import PaymentStatuses
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -24,6 +25,9 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         cls.payment_beneficiary = cls.create_user_with_profile(
             username="payment_beneficiary", first_name="John", last_name="Doe", account=account
         )
+        cls.payment_beneficiary2 = cls.create_user_with_profile(
+            username="payment_beneficiary2", first_name="Jim", last_name="Doe", account=account
+        )
         org_unit_type = m.OrgUnitType.objects.create(name="Stable", short_name="Cnc")
         cls.org_unit = m.OrgUnit.objects.create(
             name="Woodland",
@@ -35,13 +39,13 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         cls.payment = m.Payment.objects.create(
             user=cls.payment_beneficiary,
             payment_lot=cls.payment_lot,
-            status=m.Payment.Statuses.PENDING,
+            status=PaymentStatuses.PENDING,
             created_by=cls.user,
         )
         cls.second_payment = m.Payment.objects.create(
             created_by=cls.user,
             payment_lot=cls.payment_lot,
-            status=m.Payment.Statuses.PENDING,
+            status=PaymentStatuses.PENDING,
             user=cls.payment_beneficiary,
         )
         cls.change_request = m.OrgUnitChangeRequest.objects.create(
@@ -57,6 +61,11 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             payment=cls.second_payment,
         )
         cls.potential_payment = m.PotentialPayment.objects.create(user=cls.payment_beneficiary)
+        running_task = m.Task.objects.create(launcher=cls.user, account=cls.user.iaso_profile.account, status="SUCCESS")
+        cls.potential_payment_with_task = m.PotentialPayment.objects.create(
+            user=cls.payment_beneficiary2, task=running_task
+        )
+
         cls.third_change_request = m.OrgUnitChangeRequest.objects.create(
             org_unit=cls.org_unit,
             new_name="Wetlands",
@@ -82,7 +91,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
         self.assertJSONResponse(response, 201)
         data = response.json()
-        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payments_from_payment_lot")
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
         self.assertEqual(task.launcher, self.user)
 
         # Run the task
@@ -102,15 +111,15 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
         # New Payment has been assigned to new Payment lot and has status PENDING
         self.assertEqual(new_payment.payment_lot, new_lot)
-        self.assertEqual(new_payment.status, m.Payment.Statuses.PENDING)
+        self.assertEqual(new_payment.status, PaymentStatuses.PENDING)
 
         # Change request has been updated: potential payment has been deleted and replaced with new payment
         self.assertEqual(self.third_change_request.payment, new_payment)
         self.assertIsNone(self.third_change_request.potential_payment)
         self.assertFalse(m.PotentialPayment.objects.filter(id=self.potential_payment.pk).exists())
 
-        # Changes have been logged: 1 for Payment lot at creation, 1 for payment, 1 for change request, 1 for Payment lot after all payments have been created
-        self.assertEqual(4, am.Modification.objects.count())
+        # Changes have been logged: 1 for payment, 1 for change request, 1 for Payment lot after all payments have been created
+        self.assertEqual(3, am.Modification.objects.count())
 
     def test_update_payment_lot_mark_payments_as_sent(self):
         self.client.force_authenticate(self.user)
@@ -125,8 +134,8 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         self.payment_lot.refresh_from_db()
         self.payment.refresh_from_db()
         self.second_payment.refresh_from_db()
-        self.assertEqual(self.payment.status, m.Payment.Statuses.SENT)
-        self.assertEqual(self.second_payment.status, m.Payment.Statuses.SENT)
+        self.assertEqual(self.payment.status, PaymentStatuses.SENT)
+        self.assertEqual(self.second_payment.status, PaymentStatuses.SENT)
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.SENT)
 
         self.assertEqual(3, am.Modification.objects.count())
@@ -253,3 +262,43 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
                 },
             },
         )
+
+    def test_payment_lot_not_created_if_potential_payment_has_task(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            "/api/payments/lots/",
+            {
+                "name": "New Payment Lot",
+                "potential_payments": [self.potential_payment.pk, self.potential_payment_with_task.pk],
+            },
+        )
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
+        self.assertEqual(task.launcher, self.user)
+
+        # Run the task
+        self.runAndValidateTask(task, "ERRORED")
+        # No new payment lot created, we find only the one from setup
+        self.assertEqual(m.PaymentLot.objects.count(), 1)
+
+    def test_payment_lot_not_created_if_potential_payment_not_found(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            "/api/payments/lots/",
+            {
+                "name": "New Payment Lot",
+                "potential_payments": [self.potential_payment.pk, self.potential_payment_with_task.pk + 100],
+            },
+        )
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
+        self.assertEqual(task.launcher, self.user)
+
+        # Run the task
+        self.runAndValidateTask(task, "ERRORED")
+        # No new payment lot created, we find only the one from setup
+        self.assertEqual(m.PaymentLot.objects.count(), 1)

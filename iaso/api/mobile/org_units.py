@@ -43,8 +43,8 @@ class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
 
 
 class ReferenceInstancesSerializer(serializers.ModelSerializer):
-    created_at = TimestampField()
-    updated_at = TimestampField()
+    created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
+    updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
 
     class Meta:
         model = Instance
@@ -129,6 +129,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
             and (
                 request.user.has_perm(permission.FORMS)
                 or request.user.has_perm(permission.ORG_UNITS)
+                or request.user.has_perm(permission.ORG_UNITS_READ)
                 or request.user.has_perm(permission.SUBMISSIONS)
             )
         ):
@@ -310,7 +311,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         except ValueError:
             org_unit = get_object_or_404(authorized_org_units, uuid=pk)
 
-        reference_instances = org_unit.reference_instances.all()
+        reference_instances = org_unit.reference_instances(manager="non_deleted_objects").all().order_by("id")
 
         filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
 

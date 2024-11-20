@@ -26,7 +26,6 @@ const normalizedMessage = CompOrMessage => {
         return '';
     }
     if (CompOrMessage.id) {
-        // eslint-disable-next-line react/jsx-props-no-spreading
         return <FormattedMessage {...CompOrMessage} />;
     }
     return CompOrMessage;

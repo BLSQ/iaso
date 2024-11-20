@@ -4,6 +4,8 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
 
+export const baseUrl = baseUrls.mappings;
+
 const safePercent = (a, b) => {
     if (b === 0) {
         return '-';
@@ -11,24 +13,7 @@ const safePercent = (a, b) => {
     return (100 * (a / b)).toFixed(2);
 };
 
-const mappingsTableColumns = formatMessage => [
-    {
-        Header: formatMessage(MESSAGES.actions),
-        accessor: 'actions',
-        resizable: false,
-        sortable: false,
-        width: 150,
-        Cell: settings => (
-            <section>
-                <IconButtonComponent
-                    url={`/${baseUrls.mappingDetail}/mappingVersionId/${settings.row.original.id}`}
-                    icon="remove-red-eye"
-                    tooltipMessage={MESSAGES.view}
-                    location={`/${baseUrls.mappings}`}
-                />
-            </section>
-        ),
-    },
+export const mappingsTableColumns = formatMessage => [
     {
         Header: formatMessage(MESSAGES.name),
         id: 'form_version__form__name',
@@ -72,5 +57,21 @@ const mappingsTableColumns = formatMessage => [
         accessor: 'updated_at',
         Cell: DateTimeCell,
     },
+    {
+        Header: formatMessage(MESSAGES.actions),
+        accessor: 'actions',
+        resizable: false,
+        sortable: false,
+        width: 150,
+        Cell: settings => (
+            <section>
+                <IconButtonComponent
+                    url={`/${baseUrls.mappingDetail}/mappingVersionId/${settings.row.original.id}`}
+                    icon="remove-red-eye"
+                    tooltipMessage={MESSAGES.view}
+                    location={`/${baseUrls.mappings}`}
+                />
+            </section>
+        ),
+    },
 ];
-export default mappingsTableColumns;

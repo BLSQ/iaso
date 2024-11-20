@@ -54,6 +54,8 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     external_token = models.UUIDField(default=uuid4, null=True)
     min_version = models.IntegerField(null=True, blank=False)
+    redirection_url = models.URLField(null=True, blank=True)
+
     objects = ProjectManager()
 
     def __str__(self):

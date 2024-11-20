@@ -1,6 +1,11 @@
 import uuid
 from datetime import datetime
-from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point
+from submissions import (
+    submission2xml,
+    org_unit_gps_point,
+    submission_org_unit_gps_point,
+    create_default_reference_submission,
+)
 import random
 
 
@@ -25,7 +30,12 @@ def define_health_facility_reference_form(iaso_client):
         f"/api/v2/orgunittypes/{health_facility_type['id']}/", json=health_facility_type
     )
     form_ids = [form["id"] for form in update_reference_forms.get("reference_forms")]
-    org_unit_type_reference_forms = {"org_unit_type_id": health_facility_type["id"], "form_ids": form_ids}
+    org_unit_type_reference_forms = {
+        "org_unit_type_id": health_facility_type["id"],
+        "form_ids": form_ids,
+        "number_of_org_units": health_facility_type["units_count"],
+    }
+
     return org_unit_type_reference_forms
 
 
@@ -33,7 +43,7 @@ def create_submission_with_picture(account_name, iaso_client):
     print("-- Creating submissions with picture")
     form = define_health_facility_reference_form(iaso_client=iaso_client)
     # fetch orgunit ids
-    limit = 10
+    limit = form["number_of_org_units"]
     orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": form["org_unit_type_id"]})[
         "orgunits"
     ]
@@ -110,17 +120,5 @@ def create_submission_with_picture(account_name, iaso_client):
                         "photo_fosa": fp_image,
                     },
                 )
-                # Adding default reference to the org unit
-                submission_linked_to_org_units = iaso_client.get(
-                    f"/api/instances/?app_id={account_name}",
-                    params={"orgUnitId": org_unit_id, "form_ids": form_id},
-                )["instances"]
-                reference_submission = [
-                    submission["id"] for submission in submission_linked_to_org_units if submission["uuid"] == the_uuid
-                ]
-                org_unit_reference_submission = {
-                    "id": org_unit_id,
-                    "reference_instance_id": reference_submission[0],
-                    "reference_instance_action": "flag",
-                }
-                iaso_client.patch(f"/api/orgunits/{org_unit_id}/", json=org_unit_reference_submission)
+                # Creating default reference submission for the org unit
+                create_default_reference_submission(account_name, iaso_client, org_unit_id, form_id, the_uuid)

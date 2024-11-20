@@ -1,17 +1,17 @@
-import React, {
-    FunctionComponent,
-    useMemo,
-    useState,
-    useCallback,
-} from 'react';
-import { Box } from '@mui/material';
 import EditIcon from '@mui/icons-material/Settings';
+import { Box } from '@mui/material';
 import {
-    useSafeIntl,
     selectionInitialState,
     setTableSelection,
+    useSafeIntl,
     useSkipEffectOnMount,
 } from 'bluesquare-components';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 
 // COMPONENTS
 import { UseMutateAsyncFunction } from 'react-query';
@@ -20,10 +20,10 @@ import { OrgUnitsMultiActionsDialog } from './OrgUnitsMultiActionsDialog';
 // COMPONENTS
 
 // TYPES
+import { Result as OrgUnitResult } from '../hooks/requests/useGetOrgUnits';
 import { OrgUnit, OrgUnitParams } from '../types/orgUnit';
 import { Search } from '../types/search';
 import { Selection } from '../types/selection';
-import { Result as OrgUnitResult } from '../hooks/requests/useGetOrgUnits';
 // TYPES
 
 // UTILS
@@ -36,6 +36,12 @@ import MESSAGES from '../messages';
 // CONSTANTS
 
 // HOOKS
+import { ORG_UNITS } from '../../../utils/permissions';
+import {
+    useCheckUserHasWriteTypePermission,
+    useCurrentUser,
+} from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
 import { useGetOrgUnitsTableColumns } from '../hooks/useGetOrgUnitsTableColumns';
 // HOOKS
 
@@ -54,7 +60,7 @@ export const TableList: FunctionComponent<Props> = ({
     saveMulti,
 }) => {
     const { formatMessage } = useSafeIntl();
-
+    const currentUser = useCurrentUser();
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
     const [selection, setSelection] = useState<Selection<OrgUnit>>(
@@ -69,7 +75,8 @@ export const TableList: FunctionComponent<Props> = ({
     const columns = useGetOrgUnitsTableColumns(searches);
 
     const multiEditDisabled =
-        !selection.selectAll && selection.selectedItems.length === 0;
+        !userHasPermission(ORG_UNITS, currentUser) ||
+        (!selection.selectAll && selection.selectedItems.length === 0);
 
     const handleTableSelection = useCallback(
         (selectionType, items = [], totalCount = 0) => {
@@ -94,10 +101,18 @@ export const TableList: FunctionComponent<Props> = ({
         ],
         [formatMessage, multiEditDisabled, setMultiActionPopupOpen],
     );
+    const checkUserHasWriteTypePermission =
+        useCheckUserHasWriteTypePermission();
+
+    const getIsSelectionDisabled = useCallback(
+        (ou: OrgUnit) => !checkUserHasWriteTypePermission(ou.org_unit_type_id),
+        [checkUserHasWriteTypePermission],
+    );
 
     useSkipEffectOnMount(() => {
         handleTableSelection('reset');
     }, [resetPageToOne]);
+
     return (
         <>
             <OrgUnitsMultiActionsDialog
@@ -126,6 +141,7 @@ export const TableList: FunctionComponent<Props> = ({
                     setTableSelection={(selectionType, items, totalCount) =>
                         handleTableSelection(selectionType, items, totalCount)
                     }
+                    getIsSelectionDisabled={getIsSelectionDisabled}
                 />
             </Box>
         </>

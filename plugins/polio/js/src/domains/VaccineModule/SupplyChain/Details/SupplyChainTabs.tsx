@@ -1,16 +1,16 @@
-import React, { FunctionComponent } from 'react';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import { TabWithInfoIcon } from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TabWithInfoIcon';
-import MESSAGES from '../messages';
 import { PREALERT, VAR, VRF } from '../constants';
+import MESSAGES from '../messages';
 import { TabValue } from '../types';
 
 type Props = {
     tab: TabValue;
-    disabled: boolean;
-    // eslint-disable-next-line no-unused-vars
+    isNew: boolean;
+    isNormal: boolean;
     onChangeTab: (_event: any, newTab: TabValue) => void;
 };
 
@@ -23,9 +23,22 @@ const useStyles = makeStyles(theme => {
 export const SupplyChainTabs: FunctionComponent<Props> = ({
     tab,
     onChangeTab,
-    disabled,
+    isNew,
+    isNormal,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const disabled = isNew || !isNormal;
+
+    const tooltipText = (() => {
+        if (isNew) {
+            return formatMessage(MESSAGES.pleaseCreateVrf);
+        }
+        if (!isNormal) {
+            return formatMessage(MESSAGES.notAvailableNotNormal);
+        }
+        return '';
+    })();
+
     const classes: Record<string, string> = useStyles();
     return (
         <Tabs
@@ -47,7 +60,7 @@ export const SupplyChainTabs: FunctionComponent<Props> = ({
                 hasTabError={false}
                 handleChange={onChangeTab}
                 showIcon={disabled}
-                tooltipMessage={formatMessage(MESSAGES.pleaseCreateVrf)}
+                tooltipMessage={tooltipText}
             />
             <TabWithInfoIcon
                 key={VAR}
@@ -58,7 +71,7 @@ export const SupplyChainTabs: FunctionComponent<Props> = ({
                 hasTabError={false}
                 handleChange={onChangeTab}
                 showIcon={disabled}
-                tooltipMessage={formatMessage(MESSAGES.pleaseCreateVrf)}
+                tooltipMessage={tooltipText}
             />
         </Tabs>
     );

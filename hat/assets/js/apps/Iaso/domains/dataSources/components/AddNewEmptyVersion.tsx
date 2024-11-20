@@ -1,13 +1,12 @@
-import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import MESSAGES from '../messages';
 import { useCreateSourceVersion } from '../requests';
 import { VersionDescription } from './VersionDescription';
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: { openDialog: any }) => ReactNode;
     sourceId: number;
 };
@@ -16,7 +15,6 @@ export const AddNewEmptyVersion: FunctionComponent<Props> = ({
     renderTrigger,
     sourceId,
 }) => {
-    // eslint-disable-next-line no-unused-vars
     const [description, setDescription] = useState<string>('');
     const { mutateAsync: createSourceVersion } = useCreateSourceVersion();
     const { formatMessage } = useSafeIntl();

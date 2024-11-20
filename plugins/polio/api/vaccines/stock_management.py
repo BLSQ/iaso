@@ -1,17 +1,19 @@
+import datetime
 import enum
-from typing import Union
+
 from drf_yasg import openapi
-from django.db.models import QuerySet
-from drf_yasg.utils import swagger_auto_schema, no_body
-from rest_framework import filters, serializers, status, viewsets
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
 from plugins.polio.models import (
+    DOSES_PER_VIAL,
     Campaign,
     DestructionReport,
     IncidentReport,
@@ -19,7 +21,6 @@ from plugins.polio.models import (
     VaccineArrivalReport,
     VaccineRequestForm,
     VaccineStock,
-    DOSES_PER_VIAL,
 )
 
 vaccine_stock_id_param = openapi.Parameter(
@@ -59,10 +60,12 @@ class VaccineStockCalculator:
         return DOSES_PER_VIAL[self.vaccine_stock.vaccine]
 
     def get_vials_used(self):
-        received = self.get_vials_received()
-        stock = self.get_total_of_usable_vials()[0]
+        results = self.get_list_of_used_vials()
+        total = 0
+        for result in results:
+            total += result["vials_in"]
 
-        return received - stock
+        return total
 
     def get_vials_destroyed(self):
         if not self.destruction_reports.exists():
@@ -71,7 +74,6 @@ class VaccineStockCalculator:
 
     def get_total_of_usable_vials(self):
         results = self.get_list_of_usable_vials()
-
         total_vials_in = 0
         total_doses_in = 0
 
@@ -88,7 +90,7 @@ class VaccineStockCalculator:
         return total_vials_in, total_doses_in
 
     def get_vials_received(self):
-        results = self.get_list_of_usable_vials()
+        results = self.get_list_of_vaccines_received()
 
         total_vials_in = 0
 
@@ -116,7 +118,10 @@ class VaccineStockCalculator:
 
         return total_vials_in, total_doses_in
 
-    def get_list_of_usable_vials(self):
+    def get_list_of_vaccines_received(self):
+        """
+        Vaccines received are only those linked to an arrival report. We exclude those found e.g. during physical inventory
+        """
         # First find the corresponding VaccineRequestForms
         vrfs = VaccineRequestForm.objects.filter(
             campaign__country=self.vaccine_stock.country, vaccine_type=self.vaccine_stock.vaccine
@@ -128,12 +133,6 @@ class VaccineStockCalculator:
             arrival_reports = VaccineArrivalReport.objects.filter(request_form__in=vrfs)
             if not arrival_reports.exists():
                 arrival_reports = []
-
-        incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
-            "date_of_incident_report"
-        )
-        stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock).order_by("report_date")
-
         results = []
 
         for report in arrival_reports:
@@ -148,45 +147,14 @@ class VaccineStockCalculator:
                     "type": MovementTypeEnum.VACCINE_ARRIVAL_REPORT.value,
                 }
             )
+        return results
 
-        for report in incident_reports:
-            if (
-                report.usable_vials > 0
-                and report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
-            ):
-                results.append(
-                    {
-                        "date": report.date_of_incident_report,
-                        "action": report.stock_correction,
-                        "vials_in": report.usable_vials or 0,
-                        "doses_in": (report.usable_vials or 0) * self.get_doses_per_vial(),
-                        "vials_out": None,
-                        "doses_out": None,
-                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
-                    }
-                )
-            if report.unusable_vials > 0 and (
-                report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.LOSSES
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.RETURN
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.STEALING
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
-            ):
-                results.append(
-                    {
-                        "date": report.date_of_incident_report,
-                        "action": report.stock_correction,
-                        "vials_in": None,
-                        "doses_in": None,
-                        "vials_out": report.unusable_vials or 0,
-                        "doses_out": (report.unusable_vials or 0) * self.get_doses_per_vial(),
-                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
-                    }
-                )
+    def get_list_of_usable_vials(self):
+        # First get vaccines received from arrival reports
+        results = self.get_list_of_vaccines_received()
 
+        # Add stock movements (used and missing vials)
+        stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock).order_by("report_date")
         for movement in stock_movements:
             if movement.usable_vials_used > 0:
                 results.append(
@@ -213,20 +181,67 @@ class VaccineStockCalculator:
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
+
+        # Add incident reports (IN movements then OUT movements)
+        incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
+            "date_of_incident_report"
+        )
+        for report in incident_reports:
+            if (
+                report.usable_vials > 0
+                and report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
+            ):
+                results.append(
+                    {
+                        "date": report.date_of_incident_report,
+                        "action": report.stock_correction,
+                        "vials_in": report.usable_vials or 0,
+                        "doses_in": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                        "vials_out": None,
+                        "doses_out": None,
+                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    }
+                )
+            if report.usable_vials > 0 and (
+                report.stock_correction == IncidentReport.StockCorrectionChoices.LOSSES
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.RETURN
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.STEALING
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
+            ):
+                results.append(
+                    {
+                        "date": report.date_of_incident_report,
+                        "action": report.stock_correction,
+                        "vials_in": None,
+                        "doses_in": None,
+                        "vials_out": report.usable_vials or 0,
+                        "doses_out": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    }
+                )
+            if report.unusable_vials > 0 and (
+                report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
+            ):
+                results.append(
+                    {
+                        "date": report.date_of_incident_report,
+                        "action": report.stock_correction,
+                        "vials_in": None,
+                        "doses_in": None,
+                        "vials_out": report.unusable_vials or 0,
+                        "doses_out": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    }
+                )
+
         return results
 
-    def get_list_of_unusable_vials(self):
-        # Get all OutgoingStockMovements and IncidentReports for the VaccineStock
+    def get_list_of_used_vials(self):
+        # Used vials are those related to formA outgoing movements. Vials with e.g expired date become unusable, but have not been used
         outgoing_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock)
-        incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock)
-        destruction_reports = DestructionReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
-            "destruction_report_date"
-        )
-
-        # Prepare the results list
         results = []
-
-        # Add unusable vials from OutgoingStockMovements/FORMA
         for movement in outgoing_movements:
             if movement.usable_vials_used > 0:
                 results.append(
@@ -240,6 +255,17 @@ class VaccineStockCalculator:
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
+        return results
+
+    def get_list_of_unusable_vials(self):
+        # First get the used vials
+        results = self.get_list_of_used_vials()
+
+        # Get all IncidentReports and Destruction reports for the VaccineStock
+        incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock)
+        destruction_reports = DestructionReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
+            "destruction_report_date"
+        )
 
         for report in destruction_reports:
             results.append(
@@ -261,11 +287,12 @@ class VaccineStockCalculator:
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
             ):
                 results.append(
                     {
                         "date": report.date_of_incident_report,
-                        "action": report.get_stock_correction_display(),  # for every field FOO that has choices set, the object will have a get_FOO_display() method
+                        "action": report.stock_correction,  # for every field FOO that has choices set, the object will have a get_FOO_display() method
                         "vials_in": report.unusable_vials or 0,
                         "doses_in": (report.unusable_vials or 0) * self.get_doses_per_vial(),
                         "vials_out": None,
@@ -392,20 +419,25 @@ class VaccineStockSubitemBase(ModelViewSet):
 
     def get_queryset(self):
         vaccine_stock_id = self.request.query_params.get("vaccine_stock")
+        order = self.request.query_params.get("order")
 
         if self.model_class is None:
             raise NotImplementedError("model_class must be defined")
 
-        if vaccine_stock_id is None:
-            return self.model_class.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
-        else:
-            return self.model_class.objects.filter(
-                vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
-            )
+        queryset = self.model_class.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
+
+        if vaccine_stock_id is not None:
+            queryset = queryset.filter(vaccine_stock=vaccine_stock_id)
+
+        if order:
+            queryset = queryset.order_by(order)
+
+        return queryset
 
 
 class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name")
+    document = serializers.FileField(required=False)
 
     class Meta:
         model = OutgoingStockMovement
@@ -418,6 +450,9 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "usable_vials_used",
             "lot_numbers",
             "missing_vials",
+            "document",
+            "comment",
+            "round",
         ]
 
     def extract_campaign_data(self, validated_data):
@@ -449,6 +484,8 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
 
 
 class IncidentReportSerializer(serializers.ModelSerializer):
+    document = serializers.FileField(required=False)
+
     class Meta:
         model = IncidentReport
         fields = "__all__"
@@ -460,6 +497,8 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
 
 
 class DestructionReportSerializer(serializers.ModelSerializer):
+    document = serializers.FileField(required=False)
+
     class Meta:
         model = DestructionReport
         fields = "__all__"
@@ -589,9 +628,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_usable_vials()
+        results = self._sort_results(request, results)
 
         paginator = Paginator()
-        page = paginator.paginate_queryset(sorted(results, key=lambda x: x["date"]), request)
+        page = paginator.paginate_queryset(results, request)
         if page is not None:
             return paginator.get_paginated_response(page)
         return Response({"results": results})
@@ -615,9 +655,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_unusable_vials()
+        results = self._sort_results(request, results)
 
         paginator = Paginator()
-        page = paginator.paginate_queryset(sorted(results, key=lambda x: x["date"]), request)
+        page = paginator.paginate_queryset(results, request)
         if page is not None:
             return paginator.get_paginated_response(page)
         return Response({"results": results})
@@ -650,3 +691,25 @@ class VaccineStockManagementViewSet(ModelViewSet):
             .distinct()
             .order_by("id")
         )
+
+    def _sort_results(self, request: Request, results: list[dict]) -> list[dict]:
+        order = request.query_params.get(OrderingFilter.ordering_param)
+        reverse = False
+
+        if order and order.startswith("-"):
+            reverse = True
+            order = order.removeprefix("-")
+
+        valid_order_keys_and_defaults = {
+            "date": datetime.datetime.min,
+            "action": "",
+            "vials_in": 0,
+            "vials_out": 0,
+            "doses_in": 0,
+            "doses_out": 0,
+        }
+
+        if order not in valid_order_keys_and_defaults.keys():
+            return sorted(results, key=lambda d: d["date"])
+
+        return sorted(results, key=lambda d: d[order] or valid_order_keys_and_defaults[order], reverse=reverse)

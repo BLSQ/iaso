@@ -47,6 +47,8 @@ type Params = {
     entityTypes?: string;
     entityTypeIds?: string;
     locationLimit?: string;
+    groups?: string;
+    fieldsSearch?: string;
 };
 
 export const Beneficiaries: FunctionComponent = () => {
@@ -105,6 +107,7 @@ export const Beneficiaries: FunctionComponent = () => {
     }
     const { data: locations, isFetching: isFetchingLocations } =
         useGetBeneficiariesLocations(params, displayedLocation);
+
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}

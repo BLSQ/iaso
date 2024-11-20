@@ -1,7 +1,5 @@
-import { type } from 'cypress/types/jquery';
 import { FormDescriptor } from '../../forms/types/forms';
 
-/* eslint-disable camelcase */
 export type DuplicateEntity = {
     id: number;
     created_at: string; // DateTime
@@ -80,3 +78,5 @@ export type Analysis = {
     };
     task: number;
 };
+
+export type Parameters = { name: string; value: string | number }[];

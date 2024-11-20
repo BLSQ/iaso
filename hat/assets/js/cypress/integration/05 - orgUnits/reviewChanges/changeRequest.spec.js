@@ -1,16 +1,16 @@
 /// <reference types="cypress" />
 import moment from 'moment';
-import superUser from '../../../fixtures/profiles/me/superuser.json';
-import listFixture from '../../../fixtures/orgunits/changes/orgUnitChanges.json';
-import page2 from '../../../fixtures/orgunits/changes/orgUnitChanges-page2.json';
 import emptyFixture from '../../../fixtures/orgunits/changes/empty.json';
-import { testTablerender } from '../../../support/testTableRender';
-import { testPagination } from '../../../support/testPagination';
-import { testTableSort } from '../../../support/testTableSort';
-import { testPageFilters } from '../../../support/testPageFilters';
-import userRoles from '../../../fixtures/userRoles/list.json';
+import page2 from '../../../fixtures/orgunits/changes/orgUnitChanges-page2.json';
+import listFixture from '../../../fixtures/orgunits/changes/orgUnitChanges.json';
 import orgUnits from '../../../fixtures/orgunits/list.json';
-import orgUnitTypes from '../../../fixtures/orgunittypes/list.json';
+import orgUnitTypes from '../../../fixtures/orgunittypes/dropdown-list.json';
+import superUser from '../../../fixtures/profiles/me/superuser.json';
+import userRoles from '../../../fixtures/userRoles/list.json';
+import { testPageFilters } from '../../../support/testPageFilters';
+import { testPagination } from '../../../support/testPagination';
+import { testTablerender } from '../../../support/testTableRender';
+import { testTableSort } from '../../../support/testTableSort';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/changeRequest`;
@@ -23,13 +23,20 @@ const defaultQuery = {
     order: '-updated_at',
 };
 const newFilters = {
-    groups: {
+    projectIds: {
         value: [0],
         urlValue: '1',
-        selector: '#groups',
+        selector: '#projectIds',
         type: 'multi',
         clear: false,
     },
+    // groups: {
+    //     value: [0],
+    //     urlValue: '1',
+    //     selector: '#groups',
+    //     type: 'multi',
+    //     clear: false,
+    // },
     forms: {
         value: [0],
         urlValue: '1',
@@ -45,7 +52,7 @@ const newFilters = {
     },
     org_unit_type_id: {
         value: [0],
-        urlValue: orgUnitTypes.orgUnitTypes[0].id,
+        urlValue: orgUnitTypes[0].id,
         selector: '#org_unit_type_id',
         type: 'multi',
         clear: false,
@@ -89,13 +96,17 @@ const newFilters = {
 const openDialogForChangeRequestIndex = index => {
     table = cy.get('table');
     row = table.find('tbody').find('tr').eq(index);
-    const actionCol = row.find('td').eq(10);
+    const actionCol = row.find('td').eq(11);
     const editButton = actionCol.find('button').first();
     editButton.click();
-    cy.get('#approve-orgunit-changes-dialog').should('be.visible');
+    cy.url().should(
+        'eq',
+        `${baseUrl}/detail/accountId/1/changeRequestId/${listFixture.results[index].id}`,
+    );
 };
 
 const goToPage = (
+    // eslint-disable-next-line default-param-last
     fakeUser = superUser,
     formQuery,
     fixture = listFixture,
@@ -108,7 +119,7 @@ const goToPage = (
     cy.intercept('GET', '/api/groups/dropdown/**', {
         fixture: `groups/dropdownlist.json`,
     });
-    cy.intercept('GET', '/api/v2/orgunittypes/**', orgUnitTypes);
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', orgUnitTypes);
 
     cy.intercept('GET', '/api/forms/**', {
         fixture: 'forms/list.json',
@@ -134,10 +145,11 @@ const goToPage = (
 };
 
 const testRowContent = (index, changeRequest = listFixture.results[index]) => {
-    const groups = [];
-    changeRequest.groups.forEach(group => {
-        groups.push(group.name);
+    const projects = [];
+    changeRequest.projects.forEach(project => {
+        projects.push(project.name);
     });
+
     const changeRequestCreatedAt = moment
         .unix(changeRequest.created_at)
         .format('DD/MM/YYYY HH:mm');
@@ -147,20 +159,20 @@ const testRowContent = (index, changeRequest = listFixture.results[index]) => {
     cy.get('table').as('table');
     cy.get('@table').find('tbody').find('tr').eq(index).as('row');
     cy.get('@row').find('td').eq(0).should('contain', changeRequest.id);
-    cy.get('@row')
-        .find('td')
-        .eq(1)
-        .should('contain', changeRequest.org_unit_name);
+    cy.get('@row').find('td').eq(1).should('contain', projects.join(', '));
     cy.get('@row')
         .find('td')
         .eq(2)
-        .should('contain', changeRequest.org_unit_parent_name);
+        .should('contain', changeRequest.org_unit_name);
     cy.get('@row')
         .find('td')
         .eq(3)
+        .should('contain', changeRequest.org_unit_parent_name);
+    cy.get('@row')
+        .find('td')
+        .eq(4)
         .should('contain', changeRequest.org_unit_type_name);
 
-    cy.get('@row').find('td').eq(4).should('contain', groups.join(', '));
     cy.get('@row')
         .find('td')
         .eq(5)
@@ -178,10 +190,10 @@ const testRowContent = (index, changeRequest = listFixture.results[index]) => {
         .eq(7)
         .should('contain', changeRequest.created_by.username);
 
-    cy.get('@row').find('td').eq(8).should('contain', changeRequestUpdatedAt);
+    cy.get('@row').find('td').eq(9).should('contain', changeRequestUpdatedAt);
     cy.get('@row')
         .find('td')
-        .eq(9)
+        .eq(10)
         .should('contain', changeRequest.updated_by.username);
 };
 
@@ -222,7 +234,7 @@ describe('Organisations changes', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.results.length,
-            columns: 11,
+            columns: 12,
             withVisit: false,
             apiKey: 'orgunits/changes',
         });
@@ -246,7 +258,7 @@ describe('Organisations changes', () => {
         describe('Action columns', () => {
             it('should display correct amount of buttons', () => {
                 cy.wait('@getOrgUnitChanges').then(() => {
-                    getActionCol(10);
+                    getActionCol(11);
                     cy.get('@actionCol')
                         .find('button')
                         .should('have.length', 1);
@@ -280,11 +292,7 @@ describe('Organisations changes', () => {
                     ).as('approveChanges');
 
                     cy.get('#check-box-name').click();
-                    cy.get('#approve-orgunit-changes-dialog')
-                        .find('button')
-                        .eq(3)
-                        .click()
-                        .then(() => {});
+                    cy.get('[data-test="confirm-button"]').click();
                     cy.wait('@approveChanges').then(() => {
                         cy.wrap(interceptFlag).should('eq', true);
                     });
@@ -299,9 +307,7 @@ describe('Organisations changes', () => {
                 cy.wait('@getOrgUnitChanges').then(() => {
                     const orgUnitChangeIndex = 0;
                     openDialogForChangeRequestIndex(orgUnitChangeIndex);
-                    cy.get('#approve-orgunit-changes-dialog')
-                        .find('button')
-                        .eq(2)
+                    cy.get('[data-test="reject-button"]')
                         .click()
                         .then(() => {});
                     const textArea = cy.get('textarea');
@@ -340,9 +346,7 @@ describe('Organisations changes', () => {
                 cy.wait('@getOrgUnitChanges').then(() => {
                     const orgUnitChangeIndex = 0;
                     openDialogForChangeRequestIndex(orgUnitChangeIndex);
-                    cy.get('#approve-orgunit-changes-dialog')
-                        .find('button')
-                        .eq(1)
+                    cy.get('#top-bar-back-button')
                         .click()
                         .then(() => {});
                 });
@@ -356,15 +360,15 @@ describe('Organisations changes', () => {
                         order: 'id',
                     },
                     {
-                        colIndex: 1,
+                        colIndex: 2,
                         order: 'org_unit__name',
                     },
                     {
-                        colIndex: 2,
+                        colIndex: 3,
                         order: 'org_unit__parent__name',
                     },
                     {
-                        colIndex: 3,
+                        colIndex: 4,
                         order: 'org_unit__org_unit_type__name',
                     },
                     {
@@ -381,10 +385,14 @@ describe('Organisations changes', () => {
                     },
                     {
                         colIndex: 8,
-                        order: 'updated_at',
+                        order: 'payment_status',
                     },
                     {
                         colIndex: 9,
+                        order: 'updated_at',
+                    },
+                    {
+                        colIndex: 10,
                         order: 'updated_by__username',
                     },
                 ];
@@ -415,7 +423,8 @@ describe('Organisations changes', () => {
                     },
                     {
                         ...defaultQuery,
-                        groups: newFilters.groups.urlValue,
+                        projects: newFilters.projectIds.urlValue,
+                        // groups: newFilters.groups.urlValue,
                         forms: newFilters.forms.urlValue,
                         parent_id: newFilters.parent_id.urlValue,
                         org_unit_type_id: newFilters.org_unit_type_id.urlValue,
@@ -518,7 +527,7 @@ describe('Organisations changes', () => {
         it('should download orgUnit change request csv file via an anchor click', () => {
             goToPage();
             cy.wait('@getOrgUnitChanges').then(() => {
-                cy.fillMultiSelect('#groups', [1, 2], false);
+                // cy.fillMultiSelect('#groups', [1, 2], false);
                 cy.fillMultiSelect('#status', [0], false);
                 cy.get('[data-test="search-button"]').click();
                 cy.get('[data-test="download-buttons"]')
@@ -529,7 +538,8 @@ describe('Organisations changes', () => {
                 cy.get('@csvExportButton').should(
                     'have.attr',
                     'href',
-                    `/api/orgunits/changes/export_to_csv/?&groups=2,3&status=new`,
+                    // `/api/orgunits/changes/export_to_csv/?&groups=2,3&status=new`,
+                    `/api/orgunits/changes/export_to_csv/?&status=new`,
                 );
             });
         });

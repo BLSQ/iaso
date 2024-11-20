@@ -2210,6 +2210,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.refreshLqasData',
         defaultMessage: 'Refresh LQAS data',
     },
+    refreshIMData: {
+        id: 'iaso.polio.label.refreshIMData',
+        defaultMessage: 'Refresh IM data',
+    },
     districtsInScope: {
         id: 'iaso.polio.label.districtsInScope',
         defaultMessage: 'Districts in scope',
@@ -2481,6 +2485,18 @@ const MESSAGES = defineMessages({
     notShowTestCampaigns: {
         id: 'iaso.polio.notShowTestCampaigns',
         defaultMessage: 'Do not show test campaigns',
+    },
+    fileType: {
+        id: 'iaso.polio.label.fileType',
+        defaultMessage: 'File type',
+    },
+    campaignStatus: {
+        id: 'iaso.polio.label.campaignStatus',
+        defaultMessage: 'Campaign status',
+    },
+    vaccineRepository: {
+        id: 'iaso.polio.repository.title',
+        defaultMessage: 'Vaccine Management Repository',
     },
 });
 

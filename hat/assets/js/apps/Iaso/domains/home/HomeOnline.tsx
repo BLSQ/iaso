@@ -1,22 +1,21 @@
 import MenuIcon from '@mui/icons-material/Menu';
-import { Box, Container, Grid, IconButton, Typography } from '@mui/material';
+import { Box, Container, Grid, IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { CurrentUserInfos } from '../../components/nav/CurrentUser';
 import { LogoutButton } from '../../components/nav/LogoutButton';
 import iasoBg from '../../images/iaso-bg.jpg';
+import { useCurrentUser } from '../../utils/usersUtils';
 import { LogoSvg } from '../app/components/LogoSvg';
 import SidebarMenuComponent from '../app/components/SidebarMenuComponent';
 import { useSidebar } from '../app/contexts/SideBarContext';
 import { ThemeConfigContext } from '../app/contexts/ThemeConfigContext';
 import { LangSwitch } from './components/LangSwitch';
 import { useHomeButtons } from './hooks/useHomeButtons';
-import { CurrentUserInfos } from '../../components/nav/CurrentUser';
-import { useCurrentUser } from '../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     root: {
-        backgroundImage: `url("${iasoBg}")`,
         width: '100vw',
         height: '100vh',
         overflow: 'auto',
@@ -30,11 +29,6 @@ const useStyles = makeStyles(theme => ({
         textAlign: 'center',
         '& svg': { filter: 'drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.24))' },
         '& img': { filter: 'drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.24))' },
-    },
-    title: {
-        fontFamily: '"DINAlternate-Bold", "DIN Alternate", sans-serif',
-        fontSize: 50,
-        textAlign: 'center',
     },
     text: {
         fontFamily: '"DINAlternate-Bold", "DIN Alternate", sans-serif',
@@ -102,12 +96,14 @@ const useStyles = makeStyles(theme => ({
 export const HomeOnline: FunctionComponent = () => {
     const classes = useStyles();
     const { LOGO_PATH, APP_TITLE } = useContext(ThemeConfigContext);
-    const staticUrl = window.STATIC_URL ?? '/static/';
     const { toggleSidebar } = useSidebar();
     const homeButtons = useHomeButtons();
     const currentUser = useCurrentUser();
     return (
-        <Box className={classes.root}>
+        <Box
+            className={classes.root}
+            sx={{ backgroundImage: `url("${window.STATIC_URL}${iasoBg}")` }}
+        >
             <Grid className={classes.topMenu} container spacing={2}>
                 <Grid container item xs={6} justifyContent="flex-start">
                     <Box m={2}>
@@ -133,8 +129,16 @@ export const HomeOnline: FunctionComponent = () => {
                             version={(window as any).IASO_VERSION}
                         />
                     </Box>
-                    <Box p={4} display="flex" alignItems="center">
-                        <LangSwitch />
+                    <Box
+                        pr={4}
+                        pt={4}
+                        pb={4}
+                        display="flex"
+                        alignItems="center"
+                    >
+                        <Box pl={2} display="inline-flex">
+                            <LangSwitch />
+                        </Box>
                         <Box pl={2}>
                             <LogoutButton color="primary" />
                         </Box>
@@ -153,7 +157,7 @@ export const HomeOnline: FunctionComponent = () => {
                             {APP_TITLE !== 'Iaso' && LOGO_PATH && (
                                 <img
                                     alt="logo"
-                                    src={`${staticUrl}${LOGO_PATH}`}
+                                    src={`${window.STATIC_URL}${LOGO_PATH}`}
                                     style={{ width: 150, height: 'auto' }}
                                 />
                             )}
@@ -161,9 +165,6 @@ export const HomeOnline: FunctionComponent = () => {
                                 <LogoSvg width={150} height={160} />
                             )}
                         </Box>
-                        <Typography className={classes.title}>
-                            {APP_TITLE}
-                        </Typography>
                     </Box>
                 </Box>
 

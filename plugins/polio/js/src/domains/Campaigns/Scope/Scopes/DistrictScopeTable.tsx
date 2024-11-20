@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import MapIcon from '@mui/icons-material/Map';
 import {
     Box,
@@ -44,16 +43,9 @@ type Props = {
     field: FieldInputProps<Scope[]>;
     regionShapes: Shape[];
     filteredDistricts?: FilteredDistricts[];
-    toggleDistrictInVaccineScope: (
-        // eslint-disable-next-line no-unused-vars
-        district: FilteredDistricts,
-    ) => void;
-    toggleRegion: (
-        // eslint-disable-next-line no-unused-vars
-        district: FilteredDistricts,
-    ) => void;
+    toggleDistrictInVaccineScope: (district: FilteredDistricts) => void;
+    toggleRegion: (district: FilteredDistricts) => void;
     page: number;
-    // eslint-disable-next-line no-unused-vars
     setPage: (page: number) => void;
     isFetching: boolean;
     districtShapes: OrgUnit[];
@@ -270,38 +262,34 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                             />
                                         )}
                                         {isShapeInScope && (
-                                            <>
-                                                <IconButtonComponent
-                                                    size="small"
-                                                    onClick={() =>
-                                                        toggleDistrictInVaccineScope(
-                                                            shape,
-                                                        )
-                                                    }
-                                                    color="primary"
-                                                    icon="clear"
-                                                    tooltipMessage={
-                                                        MESSAGES.removeDistrict
-                                                    }
-                                                />
-                                            </>
+                                            <IconButtonComponent
+                                                size="small"
+                                                onClick={() =>
+                                                    toggleDistrictInVaccineScope(
+                                                        shape,
+                                                    )
+                                                }
+                                                color="primary"
+                                                icon="clear"
+                                                tooltipMessage={
+                                                    MESSAGES.removeDistrict
+                                                }
+                                            />
                                         )}
                                         {!isShapeInScope && (
-                                            <>
-                                                <IconButtonComponent
-                                                    size="small"
-                                                    onClick={() =>
-                                                        toggleDistrictInVaccineScope(
-                                                            shape,
-                                                        )
-                                                    }
-                                                    color="primary"
-                                                    overrideIcon={CheckIcon}
-                                                    tooltipMessage={
-                                                        MESSAGES.addDistrict
-                                                    }
-                                                />
-                                            </>
+                                            <IconButtonComponent
+                                                size="small"
+                                                onClick={() =>
+                                                    toggleDistrictInVaccineScope(
+                                                        shape,
+                                                    )
+                                                }
+                                                color="primary"
+                                                overrideIcon={CheckIcon}
+                                                tooltipMessage={
+                                                    MESSAGES.addDistrict
+                                                }
+                                            />
                                         )}
                                     </TableCell>
                                 </TableRow>

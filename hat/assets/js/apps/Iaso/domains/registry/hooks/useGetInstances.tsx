@@ -1,6 +1,5 @@
-/* eslint-disable camelcase */
-import { UseQueryResult } from 'react-query';
 import { getSort } from 'bluesquare-components';
+import { UseQueryResult } from 'react-query';
 
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
@@ -16,12 +15,13 @@ type ApiParams = {
     orgUnitTypeId?: number;
     form_ids?: string;
     limit: string;
-    order: string;
+    order: string | undefined;
     page: string;
     showDeleted: false;
     orgUnitParentId: string;
     org_unit_status?: OrgUnitStatus;
     planning_ids?: string;
+    project_ids?: string;
 };
 
 type InstanceApi = {
@@ -44,6 +44,7 @@ export const useGetInstanceApi = (
         orgUnitParentId: params.orgUnitId,
         org_unit_status: orgUnitStatus,
         planning_ids: params.planningIds,
+        project_ids: params.projectIds,
     };
     const url = makeUrlWithParams(
         '/api/instances/',

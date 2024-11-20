@@ -11,22 +11,8 @@ import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCan
 import IasoSearchComponent from './IasoSearchComponent';
 import Dhis2Search from './Dhis2SearchComponent';
 import MESSAGES from '../messages';
+import { mappingTypeOptions } from './MappingTypeOptions';
 import { useDataSources, useCreateMappingMutation } from '../hooks.js';
-
-const mappingTypeOptions = [
-    {
-        value: 'AGGREGATE',
-        label: MESSAGES.aggregate,
-    },
-    {
-        value: 'EVENT',
-        label: MESSAGES.event,
-    },
-    {
-        value: 'EVENT_TRACKER',
-        label: MESSAGES.eventTracker,
-    },
-];
 
 const CreateMappingVersionDialogComponent = () => {
     const createMappingRequest = useCreateMappingMutation();

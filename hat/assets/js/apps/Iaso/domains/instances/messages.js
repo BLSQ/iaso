@@ -115,11 +115,15 @@ const MESSAGES = defineMessages({
     },
     created_at: {
         id: 'iaso.instance.created_at',
-        defaultMessage: 'Created',
+        defaultMessage: 'Created in Iaso',
     },
     updated_at: {
-        id: 'iaso.instance.updated_at',
+        id: 'iaso.instance.last_sync_at',
         defaultMessage: 'Updated',
+    },
+    source_created_at: {
+        id: 'iaso.instance.source_created_at',
+        defaultMessage: 'Created on device',
     },
     last_modified_by: {
         id: 'iaso.instance.last_modified_by',
@@ -600,8 +604,7 @@ const MESSAGES = defineMessages({
     },
     filterParam: {
         id: 'iaso.submissions.filterParam',
-        defaultMessage:
-           'Select a form to enable data download',
+        defaultMessage: 'Select a form to enable data download',
     },
     searchSubmissionFormsParamsInfo: {
         id: 'iaso.submissions.searchSubmissionFormsParamsInfo',
@@ -611,6 +614,42 @@ const MESSAGES = defineMessages({
     beneficiaryInfo: {
         defaultMessage: 'Beneficiary information',
         id: 'iaso.entities.label.beneficiaryInfo',
+    },
+    projects: {
+        id: 'iaso.label.projects',
+        defaultMessage: 'Projects',
+    },
+    project_name: {
+        id: 'iaso.label.project',
+        defaultMessage: 'Project',
+    },
+    org_unit_type_name: {
+        id: 'iaso.instance.org_unit_type_name',
+        defaultMessage: 'Org unit type',
+    },
+    org_unit_name: {
+        id: 'iaso.instance.org_unit',
+        defaultMessage: 'Org unit',
+    },
+    parent: {
+        id: 'iaso.label.parent',
+        defaultMessage: 'Parent',
+    },
+    changeRequests: {
+        defaultMessage: 'Change requests',
+        id: 'iaso.label.changeRequests',
+    },
+    new: {
+        defaultMessage: 'New',
+        id: 'iaso.forms.newCap',
+    },
+    rejected: {
+        defaultMessage: 'Rejected',
+        id: 'iaso.forms.rejectedCap',
+    },
+    approved: {
+        defaultMessage: 'Approved',
+        id: 'iaso.label.approved',
     },
 });
 

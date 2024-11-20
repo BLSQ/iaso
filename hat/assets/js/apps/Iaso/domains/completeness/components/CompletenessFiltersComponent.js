@@ -14,29 +14,27 @@ function CompletenessFiltersComponent({
     setActiveInstanceStatuses,
 }) {
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid item xs={3}>
-                    <InputComponent
-                        type="select"
-                        clearable={false}
-                        onChange={(_, value) => setActivePeriodType(value)}
-                        label={MESSAGES.periodType}
-                        options={periodTypeOptions}
-                        value={activePeriodType}
-                        keyValue="periodType"
-                    />
-                </Grid>
-                <Grid item xs={3} />
-                <Grid item container xs={6} justifyContent="flex-end">
-                    <ChipListComponent
-                        options={instanceStatusOptions}
-                        value={activeInstanceStatuses}
-                        onChange={setActiveInstanceStatuses}
-                    />
-                </Grid>
+        <Grid container spacing={2}>
+            <Grid item xs={3}>
+                <InputComponent
+                    type="select"
+                    clearable={false}
+                    onChange={(_, value) => setActivePeriodType(value)}
+                    label={MESSAGES.periodType}
+                    options={periodTypeOptions}
+                    value={activePeriodType}
+                    keyValue="periodType"
+                />
             </Grid>
-        </>
+            <Grid item xs={3} />
+            <Grid item container xs={6} justifyContent="flex-end">
+                <ChipListComponent
+                    options={instanceStatusOptions}
+                    value={activeInstanceStatuses}
+                    onChange={setActiveInstanceStatuses}
+                />
+            </Grid>
+        </Grid>
     );
 }
 CompletenessFiltersComponent.propTypes = {

@@ -1,30 +1,33 @@
-import React, { createRef } from 'react';
-import { useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
-import { Popup } from 'react-leaflet';
-import classNames from 'classnames';
 import {
+    Box,
     Card,
     CardContent,
-    Grid,
-    Box,
-    Typography,
     Divider,
+    Grid,
+    Typography,
+    CardMedia,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import moment from 'moment';
 import {
-    textPlaceholder,
-    useSafeIntl,
     LoadingSpinner,
     commonStyles,
     mapPopupStyles,
-    LinkButton,
+    textPlaceholder,
+    useSafeIntl,
+    LinkWithLocation,
 } from 'bluesquare-components';
-import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
+import classNames from 'classnames';
+import moment from 'moment';
+import PropTypes from 'prop-types';
+import React, { createRef } from 'react';
+import { Popup } from 'react-leaflet';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
-import { baseUrls } from '../../../constants/urls.ts';
+import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
+import { usePopupState } from '../../../utils/map/usePopupState';
+import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
 import MESSAGES from '../messages.ts';
+import { LinkToOrgUnit } from './LinkToOrgUnit';
+import { baseUrls } from '../../../constants/urls.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -61,27 +64,33 @@ const OrgUnitPopupComponent = ({
     displayUseLocation,
     replaceLocation,
     titleMessage,
-    currentOrgUnit,
+    orgUnitId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const popup = createRef();
-    const reduxCurrentOrgUnit = useSelector(
-        state => state.orgUnits.currentSubOrgUnit,
+    const isOpen = usePopupState(popup);
+    const { data: currentOrgUnit } = useGetOrgUnitDetail(
+        isOpen ? orgUnitId : undefined,
     );
-    const activeOrgUnit = currentOrgUnit || reduxCurrentOrgUnit;
+
     const confirmDialog = () => {
-        replaceLocation(activeOrgUnit);
+        replaceLocation(currentOrgUnit);
     };
-    let groups = null;
-    if (activeOrgUnit && activeOrgUnit.groups.length > 0) {
-        groups = activeOrgUnit.groups.map(g => g.name).join(', ');
-    }
+
     return (
         <Popup className={classes.popup} ref={popup} pane="popupPane">
-            {!activeOrgUnit && <LoadingSpinner />}
-            {activeOrgUnit && (
+            {!currentOrgUnit && <LoadingSpinner />}
+            {currentOrgUnit && (
                 <Card className={classes.popupCard}>
+                    {currentOrgUnit.default_image && (
+                        <CardMedia
+                            href={currentOrgUnit.default_image.file}
+                            className={classes.popupCardMedia}
+                            image={currentOrgUnit.default_image.file}
+                            component="div"
+                        />
+                    )}
                     <CardContent
                         className={classNames(
                             classes.popupCardContent,
@@ -99,47 +108,49 @@ const OrgUnitPopupComponent = ({
                                 <Divider />
                             </Box>
                         )}
+
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.name)}
-                            value={activeOrgUnit.name}
+                            value={<LinkToOrgUnit orgUnit={currentOrgUnit} />}
                         />
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.type)}
-                            value={activeOrgUnit.org_unit_type_name}
-                        />
-                        <PopupItemComponent
-                            label={formatMessage(MESSAGES.groups)}
-                            value={groups}
-                        />
-                        <PopupItemComponent
-                            label={formatMessage(MESSAGES.source)}
-                            value={activeOrgUnit.source}
+                            value={currentOrgUnit.org_unit_type_name}
                         />
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.parent)}
                             value={
-                                activeOrgUnit.parent
-                                    ? activeOrgUnit.parent.name
-                                    : textPlaceholder
+                                currentOrgUnit.parent ? (
+                                    <LinkToOrgUnit
+                                        orgUnit={currentOrgUnit.parent}
+                                    />
+                                ) : (
+                                    textPlaceholder
+                                )
                             }
                         />
-                        {!activeOrgUnit.has_geo_json && (
-                            <>
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.latitude)}
-                                    value={activeOrgUnit.latitude}
-                                />
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.longitude)}
-                                    value={activeOrgUnit.longitude}
-                                />
-                            </>
-                        )}
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.created_at)}
                             value={moment
-                                .unix(activeOrgUnit.created_at)
+                                .unix(currentOrgUnit.created_at)
                                 .format('LTS')}
+                        />
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.instances)}
+                            value={
+                                <LinkWithLocation
+                                    className={classes.link}
+                                    to={`/${baseUrls.instances}/levels/${currentOrgUnit.id}`}
+                                >
+                                    {`${
+                                        currentOrgUnit.instances_count
+                                    } ${formatMessage(MESSAGES.orgUnitInstances)}`}
+                                </LinkWithLocation>
+                            }
+                        />
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.source)}
+                            value={currentOrgUnit.source}
                         />
                         <Box className={classes.actionBox}>
                             <Grid
@@ -165,17 +176,6 @@ const OrgUnitPopupComponent = ({
                                         confirm={() => confirmDialog()}
                                     />
                                 )}
-                                <LinkButton
-                                    target="_blank"
-                                    to={`/${baseUrls.orgUnitDetails}/orgUnitId/${activeOrgUnit.id}/tab/infos`}
-                                    className={classes.linkButton}
-                                    buttonClassName={classes.marginLeft}
-                                    variant="outlined"
-                                    color="primary"
-                                    size="small"
-                                >
-                                    {formatMessage(MESSAGES.see)}
-                                </LinkButton>
                             </Grid>
                         </Box>
                     </CardContent>
@@ -186,17 +186,16 @@ const OrgUnitPopupComponent = ({
 };
 
 OrgUnitPopupComponent.defaultProps = {
-    currentOrgUnit: null,
     displayUseLocation: false,
     replaceLocation: () => {},
     titleMessage: null,
 };
 
 OrgUnitPopupComponent.propTypes = {
-    currentOrgUnit: PropTypes.object,
     displayUseLocation: PropTypes.bool,
     replaceLocation: PropTypes.func,
     titleMessage: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+    orgUnitId: PropTypes.number.isRequired,
 };
 
 export default OrgUnitPopupComponent;

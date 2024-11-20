@@ -1,20 +1,19 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 
+import { FormHelperText, InputLabel } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     FormControl,
     commonStyles,
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-import { InputLabel, FormHelperText } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { useDebounce } from 'use-debounce';
 import { Optional } from '../../types/utils';
 
 type Props = {
     value?: string;
     label: string;
-    // eslint-disable-next-line no-unused-vars
     onChange: (newValue: string) => void;
     errors?: string[];
     required?: boolean;

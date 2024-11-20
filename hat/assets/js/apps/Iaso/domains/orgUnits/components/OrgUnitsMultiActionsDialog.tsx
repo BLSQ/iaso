@@ -1,15 +1,16 @@
 import React, { FunctionComponent, useState } from 'react';
 
+import ReportIcon from '@mui/icons-material/Report';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
     Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Tooltip,
     Typography,
     useTheme,
-    Tooltip,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -17,24 +18,23 @@ import {
     formatThousand,
     useSafeIntl,
 } from 'bluesquare-components';
-import ReportIcon from '@mui/icons-material/Report';
 // @ts-ignore
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
-import { UseMutateAsyncFunction } from 'react-query';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
+import { UseMutateAsyncFunction } from 'react-query';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
-import MESSAGES from '../messages';
-import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
-import { compareGroupVersions, decodeSearch } from '../utils';
+import InputComponent from '../../../components/forms/InputComponent';
+import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { useGetGroups } from '../hooks';
-import { OrgUnitParams, OrgUnit } from '../types/orgUnit';
+import MESSAGES from '../messages';
+import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { Group } from '../types/group';
+import { OrgUnit, OrgUnitParams } from '../types/orgUnit';
+import { OrgunitType } from '../types/orgunitTypes';
 import { SaveData } from '../types/saveMulti';
 import { Selection } from '../types/selection';
-import { Group } from '../types/group';
-import { OrgunitType } from '../types/orgunitTypes';
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
+import { compareGroupVersions, decodeSearch } from '../utils';
 
 type Props = {
     open: boolean;
@@ -90,7 +90,10 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
-    const { data: orgUnitTypes } = useGetOrgUnitTypes();
+    const { data: orgUnitTypes } = useGetOrgUnitTypesDropdownOptions(
+        undefined,
+        true,
+    );
     const [editGroups, setEditGroups] = useState<boolean>(false);
     const [groupsAdded, setGroupsAdded] = useState<Group[]>([]);
     const [groupsRemoved, setGroupsRemoved] = useState<Group[]>([]);
@@ -299,7 +302,6 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                             type="select"
                             options={orgUnitTypes || []}
                             label={MESSAGES.org_unit_type}
-                            isSearchable
                         />
                     )}
                 </div>
@@ -324,6 +326,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                                 type="radio"
                                 options={validationStatusOptions || []}
                                 loading={isLoadingValidationStatusOptions}
+                                labelString=""
                             />
                         </div>
                     )}

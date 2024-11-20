@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 export type FileContent = {
@@ -36,4 +35,5 @@ export type Beneficiary = {
     duplicates: number[];
     latitude?: number;
     longitude?: number;
+    nfc_cards?: number;
 };

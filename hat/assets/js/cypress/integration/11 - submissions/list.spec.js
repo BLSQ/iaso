@@ -28,6 +28,12 @@ const defaultQuery = {
 };
 
 const newFilters = {
+    projectIds: {
+        value: [0],
+        urlValue: '1',
+        selector: '#projectIds',
+        type: 'multi',
+    },
     search: {
         value: 'ZELDA',
         urlValue: 'ZELDA',
@@ -73,20 +79,21 @@ const newFilters = {
     dateFrom: {
         value: '10032022',
         urlValue: '10-03-2022',
-        apiValue: '2022-03-10 00:00',
+        apiValue: '2022-03-10',
         selector: '[data-test="start-date"] input',
         type: 'text',
     },
     dateTo: {
         value: '10032023',
         urlValue: '10-03-2023',
-        apiValue: '2023-03-10 23:59',
+        apiValue: '2023-03-10',
         selector: '[data-test="end-date"] input',
         type: 'text',
     },
 };
 
 const goToPage = (
+    // eslint-disable-next-line default-param-last
     fakeUser = superUser,
     formQuery,
     fixture = listFixture,
@@ -96,8 +103,8 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/v2/orgunittypes/', {
-        fixture: 'orgunittypes/list.json',
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', {
+        fixture: 'orgunittypes/dropdown-list.json',
     }).as('getOrgunittypes');
     cy.intercept(
         'GET',
@@ -130,7 +137,7 @@ const goToPage = (
 const testRowContent = (index, p = listFixture.instances[index]) => {
     cy.get('table').as('table');
     cy.get('@table').find('tbody').find('tr').eq(index).as('row');
-    cy.get('@row').find('td').eq(0).should('contain', p.form_name);
+    cy.get('@row').find('td').eq(0).should('contain', p.project_name);
     cy.get('@row').find('td').eq(3).should('contain', p.org_unit.name);
 };
 
@@ -178,6 +185,7 @@ describe('Submissions', () => {
                         orgUnitParentId: newFilters.levels.urlValue,
                         dateFrom: newFilters.dateFrom.apiValue,
                         dateTo: newFilters.dateTo.apiValue,
+                        project_ids: newFilters.projectIds.urlValue,
                         form_ids: newFilters.formIds.urlValue,
                     },
                 },
@@ -226,7 +234,7 @@ describe('Submissions', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.instances.length,
-            columns: 7,
+            columns: 8,
             withVisit: false,
             apiKey: 'instances',
         });
@@ -246,7 +254,7 @@ describe('Submissions', () => {
         describe('Action columns', () => {
             it('should display correct amount of buttons', () => {
                 cy.wait('@getSubmissions').then(() => {
-                    getActionCol(5);
+                    getActionCol(6);
                     cy.get('@actionCol')
                         .find('button')
                         .should('have.length', 2);
@@ -255,7 +263,7 @@ describe('Submissions', () => {
             // This test is flakey
             it('buttons should link to submission', () => {
                 cy.wait('@getSubmissions').then(() => {
-                    getActionCol(5);
+                    getActionCol(6);
                     cy.get('@actionCol')
                         .find('button')
                         .eq(0)
@@ -269,7 +277,7 @@ describe('Submissions', () => {
             });
             it('buttons should link to linked org unit', () => {
                 cy.wait('@getSubmissions').then(() => {
-                    getActionCol(5);
+                    getActionCol(6);
                     cy.get('@actionCol')
                         .find('button')
                         .eq(1)
@@ -286,7 +294,7 @@ describe('Submissions', () => {
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(1);
                     row.find('td')
-                        .eq(0)
+                        .eq(1)
                         .find('a')
                         .should(
                             'have.attr',
@@ -300,19 +308,15 @@ describe('Submissions', () => {
             cy.wait('@getSubmissions').then(() => {
                 const sorts = [
                     {
-                        colIndex: 1,
-                        order: 'updated_at',
-                    },
-                    {
                         colIndex: 2,
-                        order: 'period',
+                        order: 'updated_at',
                     },
                     {
                         colIndex: 3,
                         order: 'org_unit__name',
                     },
                     {
-                        colIndex: 4,
+                        colIndex: 5,
                         order: 'status',
                     },
                 ];
@@ -552,7 +556,7 @@ describe('Submissions', () => {
             cy.get('#ColumnsSelectDrawer-search').type('form');
             cy.get('@selectColumnsList').find('li').should('have.length', 2);
             cy.get('#ColumnsSelectDrawer-search-empty').click();
-            cy.get('@selectColumnsList').find('li').should('have.length', 13);
+            cy.get('@selectColumnsList').find('li').should('have.length', 15);
             const testIsActive = (keyName, withUrl = true) => {
                 cy.get('table').as('table');
                 cy.get('@table').find('thead').find('th').as('thead');

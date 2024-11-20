@@ -1,4 +1,3 @@
-import json
 import operator
 import typing
 import uuid
@@ -14,7 +13,6 @@ from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import Q, QuerySet
 from django.db.models.expressions import RawSQL
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
@@ -27,7 +25,7 @@ from ..utils.models.common import get_creator_name
 from .project import Project
 
 try:  # for typing
-    from .base import Account, Instance
+    from .base import Account
 except:
     pass
 
@@ -301,6 +299,9 @@ class OrgUnit(TreeModel):
     opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
     objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
+    default_image = models.ForeignKey(
+        "iaso.InstanceFile", on_delete=models.SET_NULL, null=True, blank=True, related_name="default_for_org_units"
+    )
 
     class Meta:
         indexes = [
@@ -310,6 +311,10 @@ class OrgUnit(TreeModel):
             models.Index(fields=["updated_at"]),
             models.Index(fields=["source_created_at"]),
         ]
+
+    @property
+    def source_created_at_with_fallback(self):
+        return self.source_created_at if self.source_created_at else self.created_at
 
     def root(self):
         if self.path is not None and len(self.path) > 1:
@@ -388,7 +393,7 @@ class OrgUnit(TreeModel):
             "id": self.id,
             "p": self.parent_id,
             "out": self.org_unit_type_id,
-            "c_a": self.source_created_at.timestamp() if self.source_created_at else None,
+            "c_a": self.source_created_at_with_fallback.timestamp(),
             "lat": self.location.y if self.location else None,
             "lon": self.location.x if self.location else None,
             "alt": self.location.z if self.location else None,
@@ -402,7 +407,7 @@ class OrgUnit(TreeModel):
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
             "validation_status": self.validation_status if self.org_unit_type else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "created_at": self.source_created_at_with_fallback.timestamp(),
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -410,7 +415,7 @@ class OrgUnit(TreeModel):
             "aliases": self.aliases,
         }
 
-    def as_dict(self, with_groups=True):
+    def as_dict(self):
         res = {
             "name": self.name,
             "short_name": self.name,
@@ -422,7 +427,7 @@ class OrgUnit(TreeModel):
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
             "org_unit_type_depth": self.org_unit_type.depth if self.org_unit_type else None,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "created_at": self.source_created_at_with_fallback.timestamp(),
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "validation_status": self.validation_status,
@@ -461,7 +466,7 @@ class OrgUnit(TreeModel):
                 else None
             ),
             "org_unit_type_id": self.org_unit_type_id,
-            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "created_at": self.source_created_at_with_fallback.timestamp(),
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "latitude": self.location.y if self.location else None,
@@ -471,6 +476,7 @@ class OrgUnit(TreeModel):
             "creator": get_creator_name(self.creator),
             "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
             "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
+            "default_image": self.default_image.as_dict() if self.default_image else None,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -504,6 +510,16 @@ class OrgUnit(TreeModel):
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
         return res
+
+    def as_very_small_dict(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "parent_id": self.parent_id,
+            "validation_status": self.validation_status,
+            "parent": self.parent.as_very_small_dict() if self.parent else None,
+            "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
+        }
 
     def as_dict_for_csv(self):
         return {
@@ -548,6 +564,11 @@ class OrgUnit(TreeModel):
             res["search_index"] = self.search_index
         if with_parents:
             res["parent"] = self.parent.as_dict_with_parents(light=True, light_parents=True) if self.parent else None
+        return res
+
+    def as_dict_for_entity(self):
+        res = self.as_location(with_parents=False)
+        res["groups"] = [group.as_small_dict() for group in self.groups.all()]
         return res
 
     def source_path(self):
@@ -733,6 +754,10 @@ class OrgUnitChangeRequest(models.Model):
         self.updated_by = user
         self.status = self.Statuses.REJECTED
         self.rejection_comment = rejection_comment
+        if self.kind == OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION:
+            rejected_org_unit = self.org_unit
+            rejected_org_unit.validation_status = OrgUnit.VALIDATION_REJECTED
+            rejected_org_unit.save()
         self.save()
 
     def approve(self, user: User, approved_fields: typing.List[str], rejection_comment: str = "") -> None:
@@ -741,6 +766,10 @@ class OrgUnitChangeRequest(models.Model):
         self.status = self.Statuses.APPROVED
         self.rejection_comment = rejection_comment
         self.approved_fields = approved_fields
+        if self.kind == OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION:
+            approved_org_unit = self.org_unit
+            approved_org_unit.validation_status = OrgUnit.VALIDATION_VALID
+            approved_org_unit.save()
         self.save()
 
     def __apply_changes(self, user: User, approved_fields: typing.List[str]) -> None:
@@ -764,9 +793,6 @@ class OrgUnitChangeRequest(models.Model):
                 new_value = getattr(self, field_name)
                 org_unit_field_name = field_name.replace("new_", "")
                 setattr(self.org_unit, org_unit_field_name, new_value)
-
-        if self.org_unit.validation_status == self.org_unit.VALIDATION_NEW:
-            self.org_unit.validation_status = self.org_unit.VALIDATION_VALID
 
         self.org_unit.save()
 

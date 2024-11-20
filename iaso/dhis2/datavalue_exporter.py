@@ -32,8 +32,7 @@ def get_event_date(instance, form_mapping):
     event_date_source = MappingVersion.get_event_date_source(form_mapping)
 
     if event_date_source == MappingVersion.EVENT_DATE_SOURCE_FROM_SUBMISSION_CREATED_AT:
-        created_at = instance.source_created_at if instance.source_created_at else instance.created_at
-        return created_at.strftime("%Y-%m-%d")
+        return instance.source_created_at_with_fallback.strftime("%Y-%m-%d")
     if event_date_source == MappingVersion.EVENT_DATE_SOURCE_FROM_SUBMISSION_PERIOD:
         dhis2_period = Period.from_string(instance.period)
         start = dhis2_period.start_date().strftime("%Y-%m-%d")

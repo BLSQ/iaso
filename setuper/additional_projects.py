@@ -11,15 +11,15 @@ def projects_mapper(account_name):
             "app_id": f"{account_name}.georegistry",
             "feature_flags": ["REQUIRE_AUTHENTICATION", "TAKE_GPS_ON_FORM", "MOBILE_ORG_UNIT_REGISTRY"],
             "linked_forms": [
-                "Equipment/Pop/Social mob./Microplans",
+                "Registry - Population Health area",
                 "Data for Health facility/Données Formation sanitaire",
             ],
         },
         {
-            "name": "Children vaccination/Vaccination des enfants",
+            "name": "Vaccination",
             "app_id": f"{account_name}.children",
             "feature_flags": ["REQUIRE_AUTHENTICATION", "ENTITY"],
-            "linked_forms": ["Child - Registration", "Child - Follow up"],
+            "linked_forms": ["Child/Enfant - Registration/Enregistrement", "Child/Enfant - Follow-up/Suivi"],
         },
     ]
     return projects
@@ -83,7 +83,7 @@ def link_forms_to_new_projects(projects, forms, iaso_client):
 
         if len(form_to_link_to_project) > 0:
             current_form = form_to_link_to_project[0]
-            current_form["project_ids"].extend(project_ids)
+            current_form["project_ids"] = project_ids
             iaso_client.patch(f"/api/forms/{current_form['id']}/", json=current_form)
 
 

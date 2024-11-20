@@ -69,15 +69,27 @@ class SourceVersionViewSet(ModelViewSet):
     f"""Data source API
 
     This API is restricted to authenticated users having at least one of the "{permission.MAPPINGS}",
-    "{permission.ORG_UNITS}", and "{permission.LINKS}" permissions
+    "{permission.ORG_UNITS}","{permission.ORG_UNITS_READ}", and "{permission.LINKS}" permissions
 
     GET /api/sourceversions/
     GET /api/sourceversions/<id>
     """
 
+    def get_permissions(self):
+        source_id = self.kwargs.get("pk", None)
+        if source_id:
+            try:
+                source_version = SourceVersion.objects.get(id=source_id)
+                if source_version.data_source.public:
+                    return []
+            except SourceVersion.DoesNotExist:
+                pass
+
+        return [permission() for permission in self.permission_classes]
+
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.MAPPINGS, permission.ORG_UNITS, permission.LINKS),  # type: ignore
+        HasPermission(permission.MAPPINGS, permission.ORG_UNITS, permission.ORG_UNITS_READ, permission.LINKS, permission.SOURCES),  # type: ignore
     ]
     serializer_class = SourceVersionSerializer
     results_key = "versions"
@@ -85,11 +97,14 @@ class SourceVersionViewSet(ModelViewSet):
     http_method_names = ["get", "post", "put", "head", "options", "trace", "delete"]
 
     def get_queryset(self):
-        profile = self.request.user.iaso_profile
+        profile = self.request.user.iaso_profile if not self.request.user.is_anonymous else None
 
-        versions = SourceVersion.objects.filter(data_source__projects__account=profile.account).prefetch_related(
-            "data_source"
-        )
+        if profile:
+            versions = SourceVersion.objects.filter(data_source__projects__account=profile.account).prefetch_related(
+                "data_source"
+            )
+        else:
+            versions = SourceVersion.objects.filter(data_source__public=True).prefetch_related("data_source")
 
         source_id = self.kwargs.get("source", None)
         if source_id:

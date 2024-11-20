@@ -120,16 +120,24 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_org_units: {
         id: 'iaso.permissions.orgUnits',
-        defaultMessage: 'Organisation units management',
+        defaultMessage: 'Organisation units management - Read and Write',
     },
     iaso_org_units_tooltip: {
         id: 'iaso.permissions.tooltip.orgUnits',
         defaultMessage:
             'Manage organisation units and pyramids, including uploading of geo data (GPS coordinates and shapes), and groups',
     },
+    iaso_org_units_read: {
+        id: 'iaso.permissions.orgUnits_read',
+        defaultMessage: 'Organisation units management - Read only',
+    },
+    iaso_org_units_read_tooltip: {
+        id: 'iaso.permissions.tooltip.orgUnits_read',
+        defaultMessage: 'See and read organisation units and pyramids',
+    },
     iaso_submissions: {
         id: 'iaso.permissions.submissions',
-        defaultMessage: 'Submissions - Read only',
+        defaultMessage: 'Forms and submissions - Read only',
     },
     iaso_submissions_tooltip: {
         id: 'iaso.permissions.tooltip.submissions',
@@ -146,7 +154,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_update_submission: {
         id: 'iaso.permissions.update_submission',
-        defaultMessage: 'Submissions - Read and Write',
+        defaultMessage: 'Forms and submissions - Read and Write',
     },
     iaso_update_submission_tooltip: {
         id: 'iaso.permissions.tooltip.update_submission',
@@ -224,7 +232,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_entity_type_write: {
         id: 'iaso.permissions.iaso_entity_type_write',
-        defaultMessage: 'Entity types - read and write',
+        defaultMessage: 'Entity types management',
     },
     iaso_entity_type_write_tooltip: {
         id: 'iaso.permissions.tooltip.iaso_entity_type_write',
@@ -328,6 +336,15 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'Manage multiple geo data sources: create or edit sources (name, description, project(s), default version, DHIS2 links)',
     },
+    iaso_mobile_app_offline_setup: {
+        id: 'iaso.permissions.mobile_app_offline_setup',
+        defaultMessage: 'Download offline setup for mobile app',
+    },
+    iaso_mobile_app_offline_setup_tooltip: {
+        id: 'iaso.permissions.mobile_app_offline_setup_tooltip',
+        defaultMessage:
+            'Allow the download of a zip archive to set up the mobile application without internet for a specific user.',
+    },
     iaso_polio_vaccine_authorizations_admin: {
         id: 'iaso.permissions.polio_vaccine_authorizations_admin',
         defaultMessage: 'Polio Vaccine Authorizations: Admin',
@@ -417,9 +434,17 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'trypelim.permissions.stats_graphs',
         defaultMessage: 'Graphs',
     },
+    iaso_trypelim_stats_reports: {
+        id: 'trypelim.permissions.stats_reports',
+        defaultMessage: 'Reports',
+    },
     iaso_trypelim_management_health_structures: {
         id: 'trypelim.permissions.management_health_structures',
         defaultMessage: 'Health structures',
+    },
+    iaso_trypelim_management_teams: {
+        id: 'trypelim.permissions.management_teams',
+        defaultMessage: 'Teams',
     },
     iaso_trypelim_lab: {
         id: 'trypelim.permissions.lab',
@@ -517,6 +542,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.tooltip.iaso_org_unit_change_request_review',
         defaultMessage: 'Org unit change request review',
     },
+    iaso_org_unit_change_request_configurations: {
+        id: 'iaso.permissions.iaso_org_unit_change_request_configurations',
+        defaultMessage: 'Org unit change request configurations',
+    },
     iaso_polio_vaccine_stock_management_read: {
         id: 'iaso.permissions.iaso_polio_vaccine_stock_management_read',
         defaultMessage: 'Polio vaccine stock management - Read',
@@ -557,6 +586,152 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_polio_chronogram_tooltip: {
         id: 'iaso.permissions.tooltip.iaso_polio_chronogram',
         defaultMessage: 'Manage polio chronogram - Read and Write',
+    },
+    iaso_polio_chronogram_restricted_write: {
+        id: 'iaso.permissions.iaso_polio_chronogram_restricted_write',
+        defaultMessage: 'Polio chronogram user - Restricted Write',
+    },
+    iaso_polio_chronogram_restricted_write_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_polio_chronogram_restricted_write',
+        defaultMessage: 'Manage polio chronogram - Restricted Write',
+    },
+    read: {
+        id: 'iaso.permissions.readEdit.read',
+        defaultMessage: 'Read',
+    },
+    write: {
+        id: 'iaso.permissions.readEdit.write',
+        defaultMessage: 'Write',
+    },
+    admin: {
+        id: 'iaso.permissions.readEdit.admin',
+        defaultMessage: 'Admin',
+    },
+    no_admin: {
+        id: 'iaso.permissions.readEdit.no_admin',
+        defaultMessage: 'No-admin',
+    },
+    all: {
+        id: 'iaso.permissions.readEdit.all',
+        defaultMessage: 'All',
+    },
+    geo_limited: {
+        id: 'iaso.permissions.readEdit.geo_limited',
+        defaultMessage: 'Geo-limited',
+    },
+    iaso_submission_permissions: {
+        id: 'iaso.permissions.readEdit.submission_permissions',
+        defaultMessage: 'Forms and submissions',
+    },
+    iaso_submission_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.submission_permissions',
+        defaultMessage: 'View and edit the forms submissions',
+    },
+    iaso_org_unit_permissions: {
+        id: 'iaso.permissions.readEdit.org_unit_permissions',
+        defaultMessage: 'Organisation units management',
+    },
+    iaso_org_unit_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.org_unit_permissions',
+        defaultMessage:
+            'Manage organisation units and pyramids, including uploading of geo data (GPS coordinates and shapes), and groups',
+    },
+    iaso_registry_permissions: {
+        id: 'iaso.permissions.readEdit.registry_permissions',
+        defaultMessage: 'Registry',
+    },
+    iaso_registry_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.registry_permissions',
+        defaultMessage:
+            'View and edit summary view of data collected per organisation unit',
+    },
+    iaso_source_permissions: {
+        id: 'iaso.permissions.readEdit.source_permissions',
+        defaultMessage: 'Geo data sources',
+    },
+    iaso_source_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.source_permissions',
+        defaultMessage: 'View and edit geo data sources',
+    },
+    iaso_entity_duplicate_permissions: {
+        id: 'iaso.permissions.readEdit.entity_duplicate_permissions',
+        defaultMessage: 'Entity duplicates',
+    },
+    iaso_entity_duplicate_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.entity_duplicate_permissions',
+        defaultMessage:
+            'View (without the possibility to merge them) and edit entity duplicates',
+    },
+    iaso_planning_permissions: {
+        id: 'iaso.permissions.readEdit.planning_permissions',
+        defaultMessage: 'Planning',
+    },
+    iaso_planning_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.planning_permissions',
+        defaultMessage: 'View and edit planning',
+    },
+    iaso_page_permissions: {
+        id: 'iaso.permissions.readEdit.page_permissions',
+        defaultMessage: 'Web embedded links management',
+    },
+    iaso_page_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.page_permissions',
+        defaultMessage:
+            'External links management: View and edit an external link',
+    },
+    iaso_polio_budget_permissions: {
+        id: 'iaso.permissions.readEdit.polio_budget_permissions',
+        defaultMessage: 'Polio budget',
+    },
+    iaso_polio_budget_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.polio_budget_permissions',
+        defaultMessage:
+            'View budget approval process and take action as defined by your role in the process. Extra admin powers: Override any step in the process if needed.',
+    },
+    iaso_polio_chronogram_permissions: {
+        id: 'iaso.permissions.readEdit.polio_chronogram_permissions',
+        defaultMessage: 'Polio chronogram',
+    },
+    iaso_polio_chronogram_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.polio_chronogram_permissions',
+        defaultMessage:
+            'Manage polio chronogram - Read and Write - Restricted Write',
+    },
+    iaso_polio_vaccine_supply_chain_permissions: {
+        id: 'iaso.permissions.readEdit.polio_vaccine_supply_chain_permissions',
+        defaultMessage: 'Polio vaccine supply chain',
+    },
+    iaso_polio_vaccine_supply_chain_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.polio_vaccine_supply_chain_permissions',
+        defaultMessage:
+            'See summary of vaccine supply chain, by country and vaccine. Edit and add supply chain data',
+    },
+    iaso_polio_vaccine_stock_management_permissions: {
+        id: 'iaso.permissions.readEdit.polio_vaccine_stock_management_permissions',
+        defaultMessage: 'Polio vaccine stock management',
+    },
+    iaso_polio_vaccine_stock_management_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.polio_vaccine_stock_management_permissions',
+        defaultMessage:
+            'See summary of vaccine stock management, by country and vaccine. Edit and add vaccine stock management data',
+    },
+    iaso_polio_vaccine_authorization_permissions: {
+        id: 'iaso.permissions.readEdit.polio_vaccine_authorization_permissions',
+        defaultMessage: 'Polio Vaccine Authorizations',
+    },
+    iaso_polio_vaccine_authorization_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.polio_vaccine_authorization_permissions',
+        defaultMessage:
+            'Admin and no-admin permission on managing polio vaccine authorizations',
+    },
+    iaso_user_permissions: {
+        id: 'iaso.permissions.readEdit.user_permissions',
+        defaultMessage: 'User management',
+    },
+    iaso_user_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.user_permissions',
+        defaultMessage:
+            'Managed (Edition rights limited to the users linked to the children org units of the current user.) and admin permissions on managing users of the account: create or edit users (user name, email, password, permissions/location/language/project/user role)',
     },
 });
 

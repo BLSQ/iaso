@@ -11,9 +11,11 @@ import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
 
 import {
+    QueryBuilderInput,
     commonStyles,
-    useSafeIntl,
+    useHumanReadableJsonLogic,
     useRedirectTo,
+    useSafeIntl,
 } from 'bluesquare-components';
 
 // @ts-ignore
@@ -30,6 +32,7 @@ import MESSAGES from '../messages';
 import { baseUrl } from '../config';
 
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { useGetGroups } from '../../orgUnits/hooks/requests/useGetGroups';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import {
     useGetBeneficiariesApiParams,
@@ -46,6 +49,13 @@ import {
     hasFeatureFlag,
 } from '../../../utils/featureFlags';
 
+import { Popper } from '../../forms/fields/components/Popper';
+import { parseJson } from '../../instances/utils/jsonLogicParse';
+import { useGetAllPossibleFields } from '../../forms/hooks/useGetPossibleFields';
+import { useGetAllFormDescriptors } from '../../forms/fields/hooks/useGetFormDescriptor';
+import { useGetQueryBuilderFieldsForAllForms } from '../../forms/fields/hooks/useGetQueryBuildersFields';
+import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace';
+
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
@@ -53,6 +63,23 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     params: Params;
     isFetching: boolean;
+};
+
+const createGroupsInputComponent = props => {
+    const { isFetchingGroups, handleChange, filters, groups } = props;
+    return (
+        <InputComponent
+            type="select"
+            multi
+            disabled={isFetchingGroups}
+            keyValue="groups"
+            onChange={handleChange}
+            value={!isFetchingGroups && filters?.groups}
+            label={MESSAGES.groups}
+            options={groups}
+            loading={isFetchingGroups}
+        />
+    );
 };
 
 const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
@@ -70,6 +97,8 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         submitterTeamId: params.submitterTeamId,
         entityTypeIds: params.entityTypeIds,
         locationLimit: params.locationLimit,
+        groups: params.groups,
+        fieldsSearch: params.fieldsSearch,
     });
 
     useEffect(() => {
@@ -82,6 +111,8 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
             submitterTeamId: params.submitterTeamId,
             entityTypeIds: params.entityTypeIds,
             locationLimit: params.locationLimit,
+            groups: params.groups,
+            fieldsSearch: params.fieldsSearch,
         });
     }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -100,6 +131,37 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     }, [filters.submitterTeamId, teamOptions]);
 
     const { data: usersOptions } = useGetUsersDropDown(selectedTeam);
+    const dataSourceId = currentUser?.account?.default_version?.data_source?.id;
+    const sourceVersionId = currentUser?.account?.default_version?.id;
+    const { data: groups, isFetching: isFetchingGroups } = useGetGroups({
+        dataSourceId,
+        sourceVersionId,
+    });
+
+    // Load QueryBuilder resources
+    const { allPossibleFields } = useGetAllPossibleFields();
+    const { data: formDescriptors } = useGetAllFormDescriptors();
+    const fields = useGetQueryBuilderFieldsForAllForms(
+        formDescriptors,
+        allPossibleFields,
+    );
+    const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
+    const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
+        fields,
+        queryBuilderListToReplace,
+    );
+    const fieldsSearchJson = filters.fieldsSearch
+        ? JSON.parse(filters.fieldsSearch)
+        : undefined;
+
+    const handleChangeQueryBuilder = value => {
+        if (value) {
+            const parsedValue = parseJson({ value, fields });
+            handleChange('fieldsSearch', JSON.stringify(parsedValue));
+        } else {
+            handleChange('fieldsSearch', undefined);
+        }
+    };
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -134,6 +196,15 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         [filters],
     );
 
+    const groupsInputComponent = useMemo(() => {
+        return createGroupsInputComponent({
+            isFetchingGroups,
+            handleChange,
+            filters,
+            groups,
+        });
+    }, [filters, groups, handleChange, isFetchingGroups]);
+
     const { url: apiUrl } = useGetBeneficiariesApiParams(params);
     return (
         <Box mb={1}>
@@ -167,6 +238,10 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                         />
                     )}
 
+                    {hasFeatureFlag(
+                        currentUser,
+                        SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+                    ) && groupsInputComponent}
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -202,6 +277,10 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                         dateFrom={filters.dateFrom}
                         dateTo={filters.dateTo}
                     />
+                    {!hasFeatureFlag(
+                        currentUser,
+                        SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+                    ) && groupsInputComponent}
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
@@ -221,35 +300,60 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                         options={usersOptions}
                     />
                 </Grid>
-
-                <Grid item xs={12} sm={6} md={3}>
-                    <Box
-                        mt={2}
-                        display="flex"
-                        justifyContent="flex-end"
-                        alignItems="end"
-                        flexDirection="column"
-                    >
-                        <Box mb={2}>
-                            <Button
-                                data-test="search-button"
-                                disabled={textSearchError || !filtersUpdated}
-                                variant="contained"
-                                color="primary"
-                                onClick={() => handleSearch()}
-                            >
-                                <SearchIcon className={classes.buttonIcon} />
-                                {formatMessage(MESSAGES.search)}
-                            </Button>
-                        </Box>
-                        <DownloadButtonsComponent
-                            csvUrl={`${apiUrl}&csv=true`}
-                            xlsxUrl={`${apiUrl}&xlsx=true`}
-                            disabled={isFetching}
-                        />
-                    </Box>
-                </Grid>
             </Grid>
+
+            <Box mt={-2}>
+                <Grid container columnSpacing={2}>
+                    <Grid item xs={12} sm={6}>
+                        <QueryBuilderInput
+                            label={MESSAGES.queryBuilder}
+                            onChange={handleChangeQueryBuilder}
+                            initialLogic={fieldsSearchJson}
+                            fields={fields}
+                            iconProps={{
+                                label: MESSAGES.queryBuilder,
+                                value: getHumanReadableJsonLogic(
+                                    fieldsSearchJson,
+                                ),
+                                onClear: () =>
+                                    handleChange('fieldsSearch', undefined),
+                            }}
+                            InfoPopper={<Popper />}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <Box
+                            mt={2}
+                            display="flex"
+                            justifyContent="flex-end"
+                            alignItems="end"
+                            flexDirection="column"
+                        >
+                            <Box mb={2}>
+                                <Button
+                                    data-test="search-button"
+                                    disabled={
+                                        textSearchError || !filtersUpdated
+                                    }
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => handleSearch()}
+                                >
+                                    <SearchIcon
+                                        className={classes.buttonIcon}
+                                    />
+                                    {formatMessage(MESSAGES.search)}
+                                </Button>
+                            </Box>
+                            <DownloadButtonsComponent
+                                csvUrl={`${apiUrl}&csv=true`}
+                                xlsxUrl={`${apiUrl}&xlsx=true`}
+                                disabled={isFetching}
+                            />
+                        </Box>
+                    </Grid>
+                </Grid>
+            </Box>
         </Box>
     );
 };

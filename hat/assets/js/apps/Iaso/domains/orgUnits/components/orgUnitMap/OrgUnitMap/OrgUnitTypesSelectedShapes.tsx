@@ -1,21 +1,18 @@
+import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
-import { useSafeIntl } from 'bluesquare-components';
+import MESSAGES from '../../../messages';
+import { OrgUnit } from '../../../types/orgUnit';
+import { OrgunitType } from '../../../types/orgunitTypes';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 import { orgunitsPane } from './OrgUnitMap';
-import MESSAGES from '../../../messages';
 import { SourceShape } from './SourceShape';
-import { OrgunitType } from '../../../types/orgunitTypes';
 import { MappedOrgUnit } from './types';
-import { OrgUnit } from '../../../types/orgUnit';
 
 type Props = {
     orgUnitTypes: (OrgunitType & { color: string })[];
     mappedOrgUnitTypesSelected: MappedOrgUnit[];
     mappedSourcesSelected: MappedOrgUnit[];
-    // eslint-disable-next-line no-unused-vars
-    fetchSubOrgUnitDetail: (orgUnit: OrgUnit) => void;
-    // eslint-disable-next-line no-unused-vars
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
 };
 
@@ -23,7 +20,6 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
     orgUnitTypes,
     mappedOrgUnitTypesSelected,
     mappedSourcesSelected,
-    fetchSubOrgUnitDetail,
     updateOrgUnitLocation,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -51,10 +47,6 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
                                     <GeoJSON
                                         key={o.id}
                                         data={o.geo_json}
-                                        eventHandlers={{
-                                            click: () =>
-                                                fetchSubOrgUnitDetail(o),
-                                        }}
                                         style={() => ({
                                             color: ot.color,
                                         })}
@@ -64,6 +56,7 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
                                                 MESSAGES.ouChild,
                                             )}
                                             displayUseLocation
+                                            orgUnitId={o.id}
                                             replaceLocation={selectedOrgUnit =>
                                                 updateOrgUnitLocation(
                                                     selectedOrgUnit,
@@ -80,9 +73,6 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
                                         shape={o}
                                         key={o.id}
                                         replaceLocation={updateOrgUnitLocation}
-                                        onClick={() => {
-                                            fetchSubOrgUnitDetail(o);
-                                        }}
                                     />
                                 )),
                             )}

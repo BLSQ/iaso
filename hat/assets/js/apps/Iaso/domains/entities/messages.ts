@@ -182,8 +182,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Updated',
     },
     created_at: {
-        id: 'iaso.forms.created_at',
-        defaultMessage: 'Created',
+        id: 'iaso.instance.source_created_at',
+        defaultMessage: 'Created on device',
     },
     attributes: {
         defaultMessage: 'Submission',
@@ -248,6 +248,14 @@ const MESSAGES = defineMessages({
     submissionsLocations: {
         id: 'iaso.label.submissionsLocations',
         defaultMessage: 'Submissions locations',
+    },
+    groups: {
+        defaultMessage: 'Group',
+        id: 'iaso.label.group',
+    },
+    queryBuilder: {
+        id: 'iaso.instance.queryBuilder',
+        defaultMessage: 'Search in submitted fields',
     },
 });
 

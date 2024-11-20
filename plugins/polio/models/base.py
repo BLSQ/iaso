@@ -1,6 +1,7 @@
 import datetime
 import json
 import math
+import os
 from collections import defaultdict
 from datetime import date
 from typing import Any, Tuple, Union
@@ -8,9 +9,11 @@ from uuid import uuid4
 
 import django.db.models.manager
 import pandas as pd
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.files.base import File
+from django.core.files.storage import FileSystemStorage
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
@@ -18,8 +21,10 @@ from django.db.models import Q, QuerySet, Sum
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+from django.utils.module_loading import import_string
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
+from storages.backends.s3boto3 import S3Boto3Storage
 from translated_fields import TranslatedField
 
 from beanstalk_worker import task_decorator
@@ -1074,10 +1079,26 @@ class NotificationManager(models.Manager):
         return OrgUnit.objects.filter(pk__in=countries_pk).defer("geom", "simplified_geom").order_by("name")
 
 
+class CustomPublicStorage(
+    S3Boto3Storage if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME") else import_string(settings.DEFAULT_FILE_STORAGE)
+):
+    if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME"):
+        default_acl = "public-read"
+        file_overwrite = False
+        querystring_auth = False
+        bucket_name = os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME", "")
+
+
 ## Terminology
 # VRF = Vaccine Request Form
 # VPA = Vaccine Pre Alert
 # VAR = Vaccine Arrival Report
+
+
+class VaccineRequestFormType(models.TextChoices):
+    NORMAL = "Normal", _("Normal")
+    MISSING = "Missing", _("Missing")
+    NOT_REQUIRED = "Not Required", _("Not Required")
 
 
 class VaccineRequestForm(SoftDeletableModel):
@@ -1087,7 +1108,10 @@ class VaccineRequestForm(SoftDeletableModel):
     date_vrf_signature = models.DateField(null=True, blank=True)
     date_vrf_reception = models.DateField(null=True, blank=True)
     date_dg_approval = models.DateField(null=True, blank=True)
-    quantities_ordered_in_doses = models.PositiveIntegerField()
+    quantities_ordered_in_doses = models.PositiveIntegerField(null=True, blank=True, default=0)
+    vrf_type = models.CharField(
+        max_length=20, choices=VaccineRequestFormType.choices, default=VaccineRequestFormType.NORMAL
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1101,6 +1125,8 @@ class VaccineRequestForm(SoftDeletableModel):
     quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
     comment = models.TextField(blank=True, null=True)
     target_population = models.PositiveIntegerField(null=True, blank=True)
+
+    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/vrf/", null=True, blank=True)
 
     objects = DefaultSoftDeletableManager()
 
@@ -1118,14 +1144,19 @@ class VaccineRequestForm(SoftDeletableModel):
             "total_doses_shipped"
         ]
 
+    def total_doses_received(self):
+        return self.vaccinearrivalreport_set.all().aggregate(total_doses_received=Coalesce(Sum("doses_received"), 0))[
+            "total_doses_received"
+        ]
+
     def __str__(self):
         return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 
 
-class VaccinePreAlert(SoftDeletableModel):
+class VaccinePreAlert(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     date_pre_alert_reception = models.DateField()
-    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None, unique=True)
     estimated_arrival_time = models.DateField(blank=True, null=True, default=None)
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
@@ -1135,7 +1166,9 @@ class VaccinePreAlert(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = DefaultSoftDeletableManager()
+    document = models.FileField(
+        storage=CustomPublicStorage(), upload_to="public_documents/prealert/", null=True, blank=True
+    )
 
     def save(self, *args, **kwargs):
         self.doses_per_vial = self.get_doses_per_vial()
@@ -1151,11 +1184,11 @@ class VaccinePreAlert(SoftDeletableModel):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
 
-class VaccineArrivalReport(SoftDeletableModel):
+class VaccineArrivalReport(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     arrival_report_date = models.DateField()
     doses_received = models.PositiveIntegerField()
-    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None, unique=True)
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
@@ -1165,8 +1198,6 @@ class VaccineArrivalReport(SoftDeletableModel):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    objects = DefaultSoftDeletableManager()
 
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
@@ -1210,6 +1241,7 @@ class VaccineStock(models.Model):
 # Form A
 class OutgoingStockMovement(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
     vaccine_stock = models.ForeignKey(
         VaccineStock, on_delete=models.CASCADE
     )  # Country can be deduced from the campaign
@@ -1218,6 +1250,11 @@ class OutgoingStockMovement(models.Model):
     usable_vials_used = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     missing_vials = models.PositiveIntegerField()
+    comment = models.TextField(blank=True, null=True)
+
+    document = models.FileField(
+        storage=CustomPublicStorage(), upload_to="public_documents/forma/", null=True, blank=True
+    )
 
 
 class DestructionReport(models.Model):
@@ -1227,6 +1264,11 @@ class DestructionReport(models.Model):
     destruction_report_date = models.DateField()
     unusable_vials_destroyed = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
+    comment = models.TextField(blank=True, null=True)
+
+    document = models.FileField(
+        storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/", null=True, blank=True
+    )
 
 
 class IncidentReport(models.Model):
@@ -1245,10 +1287,16 @@ class IncidentReport(models.Model):
     stock_correction = models.CharField(
         max_length=50, choices=StockCorrectionChoices.choices, default=StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
     )
+    title = models.CharField(max_length=255, null=True)
+    comment = models.TextField(blank=True, null=True)
     date_of_incident_report = models.DateField()  # Date du document
     incident_report_received_by_rrt = models.DateField()  # Date reception document
     unusable_vials = models.PositiveIntegerField()
     usable_vials = models.PositiveIntegerField()
+
+    document = models.FileField(
+        storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/", null=True, blank=True
+    )
 
 
 class Notification(models.Model):

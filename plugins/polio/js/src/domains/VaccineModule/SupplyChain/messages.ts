@@ -25,6 +25,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.dosesShipped',
         defaultMessage: 'Doses shipped',
     },
+    dosesReceived: {
+        id: 'iaso.polio.label.dosesReceived',
+        defaultMessage: 'Doses received',
+    },
+    dosesRequested: {
+        id: 'iaso.polio.label.dosesRequested',
+        defaultMessage: 'Doses requested',
+    },
     rounds: {
         id: 'iaso.polio.form.label.rounds',
         defaultMessage: 'Rounds',
@@ -117,6 +125,22 @@ const MESSAGES = defineMessages({
     vrfTitle: {
         id: 'iaso.polio.label.vrfTitle',
         defaultMessage: 'Vaccine request form',
+    },
+    vrfType: {
+        id: 'iaso.polio.label.vrfType',
+        defaultMessage: 'Vaccine request form Type',
+    },
+    vrfTypeNormal: {
+        id: 'iaso.polio.label.vrfTypeNormal',
+        defaultMessage: 'Normal',
+    },
+    vrfTypeMissing: {
+        id: 'iaso.polio.label.vrfTypeMissing',
+        defaultMessage: 'Missing',
+    },
+    vrfTypeNotRequired: {
+        id: 'iaso.polio.label.vrfTypeNotRequired',
+        defaultMessage: 'Not Required',
     },
     saveAll: {
         id: 'iaso.polio.label.saveAll',
@@ -254,6 +278,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.pleaseCreateVrf',
         defaultMessage: 'Create VRF to unlock this tab',
     },
+    notAvailableNotNormal: {
+        id: 'iaso.polio.form.notAvailableNotNormal',
+        defaultMessage: 'Available only if VRF is set as normal',
+    },
     arrival_reportsApiSuccess: {
         id: 'iaso.polio.api.arrival_reportsApiSuccess',
         defaultMessage: 'Arrival report(s) sucessfully updated',
@@ -313,6 +341,18 @@ const MESSAGES = defineMessages({
     targetPopulation: {
         id: 'iaso.polio.label.targetPopulation',
         defaultMessage: 'Target population',
+    },
+    document: {
+        id: 'iaso.polio.label.document',
+        defaultMessage: 'Document',
+    },
+    uniquePoNumberWarning: {
+        id: 'iaso.polio.label.uniquePoNumberWarning',
+        defaultMessage: 'This PO number is already in use',
+    },
+    PoNumberNoPrefix: {
+        id: 'iaso.polio.label.PoNumberNoPrefix',
+        defaultMessage: 'Please input PO number without prefix',
     },
 });
 

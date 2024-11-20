@@ -1,13 +1,17 @@
 import csv
 import datetime
 import io
+import json
 import math
+import pytz
 from time import gmtime, strftime
 from typing import Any, List, Union
 
+from iaso.models.storage import StorageDevice
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
-from django.db.models import Exists, Max, OuterRef, Q
+from django.db.models import Exists, Max, OuterRef, Q, Count
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -16,6 +20,7 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from hat.audit.models import ENTITY_API
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.menupermissions import models as permission
 from iaso.api.common import (
@@ -28,6 +33,7 @@ from iaso.api.common import (
 )
 from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
+from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -46,6 +52,7 @@ class EntitySerializer(serializers.ModelSerializer):
             "submitter",
             "org_unit",
             "duplicates",
+            "nfc_cards",
         ]
 
     entity_type_name = serializers.SerializerMethodField()
@@ -53,6 +60,7 @@ class EntitySerializer(serializers.ModelSerializer):
     submitter = serializers.SerializerMethodField()
     org_unit = serializers.SerializerMethodField()
     duplicates = serializers.SerializerMethodField()
+    nfc_cards = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
@@ -61,7 +69,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def get_org_unit(self, entity: Entity):
         if entity.attributes and entity.attributes.org_unit:
-            return entity.attributes.org_unit.as_location(with_parents=False)
+            return entity.attributes.org_unit.as_dict_for_entity()
         return None
 
     def get_submitter(self, entity: Entity):
@@ -74,6 +82,10 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def get_duplicates(self, entity: Entity):
         return _get_duplicates(entity)
+
+    def get_nfc_cards(self, entity: Entity):
+        nfc_count = StorageDevice.objects.filter(entity=entity, type=StorageDevice.NFC).count()
+        return nfc_count
 
     @staticmethod
     def get_entity_type_name(obj: Entity):
@@ -129,12 +141,15 @@ class EntityViewSet(ModelViewSet):
         show_deleted = self.request.query_params.get("show_deleted", None)
         created_by_id = self.request.query_params.get("created_by_id", None)
         created_by_team_id = self.request.query_params.get("created_by_team_id", None)
+        groups = self.request.query_params.get("groups", None)
+        fields_search = self.request.GET.get("fields_search", None)
 
         queryset = Entity.objects.filter_for_user(self.request.user)
 
         queryset = queryset.prefetch_related(
             "attributes__created_by__teams",
             "attributes__form",
+            "attributes__org_unit__groups",
             "attributes__org_unit__org_unit_type",
             "attributes__org_unit__parent",
             "attributes__org_unit__version__data_source",
@@ -158,21 +173,36 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(attributes__org_unit__path__descendants=parent.path)
 
         if date_from or date_to:
-            date_from_dt = datetime.datetime.strptime(date_from, "%Y-%m-%d") if date_from else datetime.datetime.min
-            date_to_dt = datetime.datetime.strptime(date_to, "%Y-%m-%d") if date_to else datetime.datetime.max
+            date_from_dt = datetime.datetime.min
+            if date_from:
+                parsed_date = datetime.datetime.strptime(date_from, "%Y-%m-%d")
+                date_from_dt = datetime.datetime.combine(parsed_date, datetime.time.min).replace(tzinfo=pytz.UTC)
 
-            instances_within_range = Instance.objects.filter(
-                entity=OuterRef("pk"), created_at__gte=date_from_dt, created_at__lte=date_to_dt
+            date_to_dt = datetime.datetime.max
+            if date_to:
+                parsed_date = datetime.datetime.strptime(date_to, "%Y-%m-%d")
+                date_to_dt = datetime.datetime.combine(parsed_date, datetime.time.max).replace(tzinfo=pytz.UTC)
+
+            instances_within_range = Instance.objects.annotate(
+                creation_timestamp=Coalesce("source_created_at", "created_at")
+            ).filter(
+                entity=OuterRef("pk"),
+                creation_timestamp__gte=date_from_dt,
+                creation_timestamp__lte=date_to_dt,
             )
-            queryset = queryset.annotate(has_instance_within_range=Exists(instances_within_range)).filter(
-                has_instance_within_range=True
-            )
+            queryset = queryset.filter(Exists(instances_within_range))
         if show_deleted:
             queryset = queryset.filter(deleted_at__isnull=True)
         if created_by_id:
             queryset = queryset.filter(attributes__created_by_id=created_by_id)
         if created_by_team_id:
             queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
+        if groups:
+            queryset = queryset.filter(attributes__org_unit__groups__in=groups.split(","))
+
+        if fields_search:
+            q = entities_jsonlogic_to_q(json.loads(fields_search))
+            queryset = queryset.filter(q)
 
         # location
         return queryset
@@ -221,6 +251,7 @@ class EntityViewSet(ModelViewSet):
 
     def list(self, request: Request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
+
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         is_export = any([csv_format, xlsx_format])
@@ -236,7 +267,9 @@ class EntityViewSet(ModelViewSet):
         queryset = queryset.order_by(*orders)
 
         # annotate with last instance on Entity, to allow ordering by it
-        entities = queryset.annotate(last_saved_instance=Max("instances__created_at"))
+        entities = queryset.annotate(
+            last_saved_instance=Max(Coalesce("instances__source_created_at", "instances__created_at"))
+        )
         result_list = []
         columns_list: List[Any] = []
 
@@ -285,7 +318,7 @@ class EntityViewSet(ModelViewSet):
             if attributes is not None and entity.attributes is not None:
                 file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
                 attributes_pk = attributes.pk
-                attributes_ou = entity.attributes.org_unit.as_location(with_parents=False) if entity.attributes.org_unit else None  # type: ignore
+                attributes_ou = entity.attributes.org_unit.as_dict_for_entity() if entity.attributes.org_unit else None  # type: ignore
                 attributes_latitude = attributes.location.y if attributes.location else None  # type: ignore
                 attributes_longitude = attributes.location.x if attributes.location else None  # type: ignore
             name = None
@@ -397,6 +430,16 @@ class EntityViewSet(ModelViewSet):
 
         res = {"columns": columns_list, "result": result_list}
         return Response(res)
+
+    def destroy(self, request, pk=None):
+        entity = Entity.objects_include_deleted.get(pk=pk)
+
+        entity = entity.soft_delete_with_instances_and_pending_duplicates(
+            audit_source=ENTITY_API,
+            user=request.user,
+        )
+
+        return Response(EntitySerializer(entity, many=False).data)
 
     @action(detail=False, methods=["GET"])
     def export_entity_submissions_list(self, request):

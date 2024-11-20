@@ -1,12 +1,11 @@
 import { TableBody } from '@mui/material';
 import React, { FunctionComponent } from 'react';
-import { HighlightFields } from '../../Dialogs/HighlightFieldsChanges';
+import { HighlightFields } from '../../Components/HighlightFieldsChanges';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
 import { OrgUnitChangeRequestDetails } from '../../types';
 
 type Props = {
     newFields: NewOrgUnitField[];
-    // eslint-disable-next-line no-unused-vars
     setSelected: (key: string) => void;
     isFetchingChangeRequest: boolean;
     changeRequest?: OrgUnitChangeRequestDetails;

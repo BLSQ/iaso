@@ -49,25 +49,28 @@ class ChronogramTaskTestCase(TestCase):
         cls.chronogram_task_1 = ChronogramTask.objects.create(
             period=Period.BEFORE,
             chronogram=cls.chronogram,
-            description="Assurer la commande des marqueurs",
+            description_en="Ordering markers",
+            description_fr="Assurer la commande des marqueurs",
             start_offset_in_days=-20,
-            user_in_charge=cls.user,
+            user_in_charge="John Doe",
             comment="Comment 1",
         )
         cls.chronogram_task_2 = ChronogramTask.objects.create(
             period=Period.DURING,
             chronogram=cls.chronogram,
-            description="Supervision journalière des activités logistiques",
+            description_en="Daily supervision of logistics activities",
+            description_fr="Supervision journalière des activités logistiques",
             start_offset_in_days=0,
-            user_in_charge=cls.user,
+            user_in_charge="John Doe",
             comment="Comment 2",
         )
         cls.chronogram_task_3 = ChronogramTask.objects.create(
             period=Period.AFTER,
             chronogram=cls.chronogram,
-            description="Partager le rapport de destruction des déchets",
+            description_en="Share waste destruction report",
+            description_fr="Partager le rapport de destruction des déchets",
             start_offset_in_days=14,
-            user_in_charge=cls.user,
+            user_in_charge="John Doe",
             comment="Comment 2",
         )
 
@@ -134,14 +137,14 @@ class ChronogramTaskTestCase(TestCase):
                 status=ChronogramTask.Status.DONE,
                 chronogram=self.chronogram,
                 start_offset_in_days=i,
-                user_in_charge=self.user,
+                user_in_charge="John Doe",
             )
         ChronogramTask.objects.create(
             period=Period.DURING,
             status=ChronogramTask.Status.DONE,
             chronogram=self.chronogram,
             start_offset_in_days=0,
-            user_in_charge=self.user,
+            user_in_charge="John Doe",
         )
 
         with self.assertNumQueries(1):
@@ -184,19 +187,22 @@ class ChronogramTemplateTaskTestCase(TestCase):
         cls.chronogram_template_1 = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.BEFORE,
-            description="Identifier les solutions pour palier aux gaps",
+            description_en="Identify solutions for gaps",
+            description_fr="",
             start_offset_in_days=-20,
         )
         cls.chronogram_template_2 = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.DURING,
-            description="Analyse quotidienne des tableaux de bord et rétro information",
+            description_en="Daily dashboard analysis and feedback",
+            description_fr="",
             start_offset_in_days=0,
         )
         cls.chronogram_template_3 = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.AFTER,
-            description="Elaboration de l'inventaire physique des vaccins à tous les niveaux",
+            description_en="Drawing up a physical inventory of vaccines at all levels",
+            description_fr="",
             start_offset_in_days=20,
         )
 
@@ -214,17 +220,17 @@ class ChronogramTemplateTaskTestCase(TestCase):
 
         self.assertEqual(3, chronogram.tasks.count())
 
-        task_1 = chronogram.tasks.get(description=self.chronogram_template_1.description)
+        task_1 = chronogram.tasks.get(description_en=self.chronogram_template_1.description_en)
         self.assertEqual(task_1.period, Period.BEFORE)
         self.assertEqual(task_1.start_offset_in_days, -20)
         self.assertEqual(task_1.created_by, self.user)
 
-        task_2 = chronogram.tasks.get(description=self.chronogram_template_2.description)
+        task_2 = chronogram.tasks.get(description_en=self.chronogram_template_2.description_en)
         self.assertEqual(task_2.period, Period.DURING)
         self.assertEqual(task_2.start_offset_in_days, 0)
         self.assertEqual(task_2.created_by, self.user)
 
-        task_3 = chronogram.tasks.get(description=self.chronogram_template_3.description)
+        task_3 = chronogram.tasks.get(description_en=self.chronogram_template_3.description_en)
         self.assertEqual(task_3.period, Period.AFTER)
         self.assertEqual(task_3.start_offset_in_days, 20)
         self.assertEqual(task_3.created_by, self.user)

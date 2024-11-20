@@ -1,4 +1,6 @@
 import gspread.utils  # type: ignore
+from translated_fields import TranslatedFieldAdmin
+
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import widgets
@@ -330,7 +332,7 @@ class SubActivityAdmin(admin.ModelAdmin):
 class ChronogramTaskAdminInline(admin.StackedInline):
     model = ChronogramTask
     extra = 0
-    raw_id_fields = ("user_in_charge", "created_by", "updated_by")
+    raw_id_fields = ("created_by", "updated_by")
     readonly_fields = (
         "created_at",
         "created_by",
@@ -340,16 +342,11 @@ class ChronogramTaskAdminInline(admin.StackedInline):
     )
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .valid()
-            .select_related("chronogram__round", "user_in_charge", "created_by", "updated_by")
-        )
+        return super().get_queryset(request).valid().select_related("chronogram__round", "created_by", "updated_by")
 
 
 @admin.register(Chronogram)
-class ChronogramAdmin(admin.ModelAdmin):
+class ChronogramAdmin(TranslatedFieldAdmin, admin.ModelAdmin):
     date_hierarchy = "created_at"
     list_display = ("pk", "obr_name", "created_at")
     list_display_links = ("pk", "obr_name")
@@ -380,7 +377,7 @@ class ChronogramAdmin(admin.ModelAdmin):
 
 
 @admin.register(ChronogramTemplateTask)
-class ChronogramTemplateTaskAdmin(admin.ModelAdmin):
+class ChronogramTemplateTaskAdmin(TranslatedFieldAdmin, admin.ModelAdmin):
     date_hierarchy = "created_at"
     list_display = ("pk", "start_offset_in_days", "description", "created_at")
     list_display_links = ("pk", "start_offset_in_days", "description")

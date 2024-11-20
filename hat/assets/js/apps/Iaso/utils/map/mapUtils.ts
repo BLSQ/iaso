@@ -115,7 +115,7 @@ export const customMarker = L.divIcon(customMarkerOptions);
 
 export const circleColorMarkerOptions = (
     color: string,
-    radius = 8,
+    radius = 10,
 ): Record<string, any> => ({
     className: 'marker-custom color circle-marker',
     pathOptions: {
@@ -171,7 +171,6 @@ export const polygonDrawOption = (
 };
 
 export const shapeOptions = (): {
-    // eslint-disable-next-line no-unused-vars
     onEachFeature: (feature: any, layer: any) => void;
 } => ({
     onEachFeature: (feature, layer) => {
@@ -191,7 +190,6 @@ type LatLng = {
 export type Bounds = {
     _northEast: LatLng;
     _southWest: LatLng;
-    // eslint-disable-next-line no-unused-vars
     extend: (bounds: Bounds) => Bounds;
     isValid: () => boolean;
 };

@@ -24,6 +24,7 @@ export type BulkSaveQuery = {
     search?: string;
     permissions?: string;
     location?: string;
+    organization?: string;
     orgUnitTypes?: string;
     ouParent?: string;
     ouChildren?: string;
@@ -46,6 +47,7 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
         search,
         permissions,
         location,
+        organization,
         orgUnitTypes,
         ouParent,
         ouChildren,
@@ -71,6 +73,7 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
         search,
         permissions,
         location,
+        organization,
         orgUnitTypes,
         ouParent,
         ouChildren,

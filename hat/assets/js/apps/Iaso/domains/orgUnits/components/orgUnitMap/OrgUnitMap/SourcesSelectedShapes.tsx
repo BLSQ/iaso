@@ -6,16 +6,12 @@ import { MappedOrgUnit } from './types';
 
 type Props = {
     mappedSourcesSelected: MappedOrgUnit[];
-    // eslint-disable-next-line no-unused-vars
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
-    // eslint-disable-next-line no-unused-vars
-    fetchSubOrgUnitDetail: (orgUnit: OrgUnit) => void;
 };
 
 export const SourcesSelectedShapes: FunctionComponent<Props> = ({
     mappedSourcesSelected,
     updateOrgUnitLocation,
-    fetchSubOrgUnitDetail,
 }) => {
     return (
         <>
@@ -32,9 +28,6 @@ export const SourcesSelectedShapes: FunctionComponent<Props> = ({
                                     shape={o}
                                     key={o.id}
                                     replaceLocation={updateOrgUnitLocation}
-                                    onClick={() => {
-                                        fetchSubOrgUnitDetail(o);
-                                    }}
                                 />
                             ))}
                         </Pane>

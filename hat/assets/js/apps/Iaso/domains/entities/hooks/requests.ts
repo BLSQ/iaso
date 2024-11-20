@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import moment from 'moment';
 
@@ -14,35 +13,22 @@ import {
 } from '../../../libs/Api';
 import MESSAGES from '../messages';
 
+import { Location } from '../components/ListMap';
+import getDisplayName, { Profile } from '../../../utils/usersUtils';
 import { makeUrlWithParams } from '../../../libs/utils';
 
 import { Beneficiary } from '../types/beneficiary';
-import { PaginatedInstances } from '../../instances/types/instance';
+import { DisplayedLocation } from '../types/locations';
 import { DropdownOptions } from '../../../types/utils';
-import getDisplayName, { Profile } from '../../../utils/usersUtils';
 import { DropdownTeamsOptions, Team } from '../../teams/types/team';
 import { ExtraColumn } from '../types/fields';
-import { DisplayedLocation } from '../types/locations';
-import { Location } from '../components/ListMap';
+import { PaginatedInstances } from '../../instances/types/instance';
+import { Params } from '../types/filters';
 
 export interface PaginatedBeneficiaries extends Pagination {
     result: Array<Beneficiary>;
     columns: Array<ExtraColumn>;
 }
-
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-    location?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    submitterId?: string;
-    submitterTeamId?: string;
-    entityTypeIds?: string;
-    locationLimit?: string;
-};
 
 type ApiParams = {
     limit?: string;
@@ -57,6 +43,9 @@ type ApiParams = {
     entity_type_ids?: string;
     asLocation?: boolean;
     locationLimit?: string;
+    groups?: string;
+    tab: string;
+    fields_search?: string;
 };
 
 type GetAPiParams = {
@@ -82,6 +71,9 @@ export const useGetBeneficiariesApiParams = (
         entity_type_ids: params.entityTypeIds,
         limit: params.pageSize || '20',
         page: params.page || '1',
+        groups: params.groups,
+        tab: params.tab || 'list',
+        fields_search: params.fieldsSearch,
     };
     if (asLocation) {
         apiParams.asLocation = true;
@@ -102,6 +94,7 @@ export const useGetBeneficiariesPaginated = (
         queryKey: ['beneficiaries', apiParams],
         queryFn: () => getRequest(url),
         options: {
+            enabled: apiParams.tab === 'list',
             staleTime: 60000,
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,
@@ -117,6 +110,7 @@ export const useGetBeneficiariesLocations = (
         queryKey: ['beneficiariesLocations', apiParams],
         queryFn: () => getRequest(url),
         options: {
+            enabled: apiParams.tab === 'map',
             staleTime: 60000,
             select: data =>
                 data?.result?.map(beneficiary => ({
@@ -160,12 +154,15 @@ export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
         },
     });
 
-export const useDeleteBeneficiary = (): UseMutationResult =>
+export const useSoftDeleteBeneficiary = (
+    onSuccess: (data: any) => void = _data => {},
+): UseMutationResult =>
     useSnackMutation({
-        mutationFn: body => deleteRequest(`/api/entities/${body.id}/`),
+        mutationFn: entityId => deleteRequest(`/api/entities/${entityId}/`),
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
         invalidateQueryKey: ['beneficiaries'],
+        options: { onSuccess },
     });
 
 export const useSaveBeneficiary = (): UseMutationResult =>

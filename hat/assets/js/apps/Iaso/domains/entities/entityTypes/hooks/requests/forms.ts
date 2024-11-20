@@ -10,11 +10,17 @@ export const useGetForm = (
     formId: number | undefined,
     enabled: boolean,
     fields?: string | undefined,
+    appId?: string,
 ): UseQueryResult<Form, Error> => {
     const queryKey: any[] = ['form', formId];
     let url = `/api/forms/${formId}`;
     if (fields) {
         url += `/?fields=${fields}`;
+        if (appId) {
+            url += `&app_id=${appId}`;
+        }
+    } else if (appId) {
+        url += `/?app_id=${appId}`;
     }
     return useSnackQuery({
         queryKey,
@@ -28,11 +34,14 @@ export const useGetForm = (
 
 export const useGetForms = (
     enabled: boolean,
+    fields?: string[] | undefined,
 ): UseQueryResult<Form[], Error> => {
+    const apiUrl = '/api/forms/?fields=id,name,latest_form_version';
+    const url = fields ? `${apiUrl},${fields.join(',')}` : apiUrl;
+
     return useSnackQuery({
         queryKey: ['forms'],
-        queryFn: () =>
-            getRequest('/api/forms/?fields=id,name,latest_form_version'),
+        queryFn: () => getRequest(url),
         options: {
             staleTime: 60000,
             enabled,

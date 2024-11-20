@@ -1,0 +1,4 @@
+username,password,email,first_name,last_name,orgunit,orgunit__source_ref,profile_language,dhis2_id,organization,permissions,user_roles,projects,phone_number,editable_org_unit_types
+bob,yodnj!30dln,bob@bluesquarehub.com,Bob,bio,,baz,fr,dhis2_id_1,,"iaso_forms, iaso_submissions","manager, area_manager",Project name,,
+bobette,!dsgd39hfghd,bobette@bluesquarehub.com,Bobette,von Zepplin,"Coruscant Jedi Council, 9999, Tatooine",baz,fr,dhis2_id_2,,,,Project name,,
+fanchon,frdghb30cd!hd,fanchon@srgrs.com,Fanchon,dsfsf,"Tatooine, Dagobah",,FR,dhis2_id_3,,iaso_forms,manager,Project name,,

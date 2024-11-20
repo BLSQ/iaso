@@ -1,5 +1,7 @@
 import json
+import logging
 import ntpath
+from copy import copy
 from time import gmtime, strftime
 from typing import Any, Dict, Union
 
@@ -8,7 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Count, Q, QuerySet, Prefetch
+from django.db.models import Count, F, Func, Prefetch, Q, QuerySet
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
@@ -20,7 +22,7 @@ from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
-from hat.audit.models import INSTANCE_API, log_modification
+from hat.audit.models import INSTANCE_API, Modification, log_modification
 from hat.common.utils import queryset_iterator
 from hat.menupermissions import models as permission
 from iaso.api.serializers import OrgUnitSerializer
@@ -35,13 +37,16 @@ from iaso.models import (
     Project,
 )
 from iaso.utils import timestamp_to_datetime
+from iaso.utils.file_utils import get_file_type
 
 from ..models.forms import CR_MODE_IF_REFERENCE_FORM
+from ..utils.models.common import get_creator_name
 from . import common
 from .comment import UserSerializerForComment
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, TimestampField, safe_api_import
 from .instance_filters import get_form_from_instance_filters, parse_instance_filters
-from ..utils.models.common import get_creator_name
+
+logger = logging.getLogger(__name__)
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -101,9 +106,14 @@ class HasInstancePermission(permissions.BasePermission):
 
 
 class InstanceFileSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     instance_id = serializers.IntegerField()
     file = serializers.FileField(use_url=True)
     created_at = TimestampField(read_only=True)
+    file_type = serializers.SerializerMethodField()
+
+    def get_file_type(self, obj):
+        return get_file_type(obj.file)
 
 
 class OrgUnitNestedSerializer(OrgUnitSerializer):
@@ -165,7 +175,14 @@ class InstancesViewSet(viewsets.ViewSet):
         instances = self.get_queryset()
         filters = parse_instance_filters(request.GET)
         instances = instances.for_filters(**filters)
-        queryset = InstanceFile.objects.filter(instance__in=instances)
+        queryset = InstanceFile.objects.filter(instance__in=instances).annotate(
+            file_extension=Func(F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')")
+        )
+
+        image_only = request.GET.get("image_only", "false").lower() == "true"
+        if image_only:
+            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
+            queryset = queryset.filter(file_extension__in=image_extensions)
 
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)
@@ -192,6 +209,7 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Date de modification", "width": 20},
             {"title": "Créé par", "width": 20},
             {"title": "Status", "width": 20},
+            {"title": "Entité", "width": 20},
             {"title": "Org unit", "width": 20},
             {"title": "Org unit id", "width": 20},
             {"title": "Référence externe", "width": 20},
@@ -209,12 +227,11 @@ class InstancesViewSet(viewsets.ViewSet):
             filename = "%s-%s" % (filename, form.id)
             if form.correlatable:
                 columns.append({"title": "correlation id", "width": 20})
+        else:
+            return Response({"error": "There is no form"}, status=status.HTTP_400_BAD_REQUEST)
 
         sub_columns = ["" for __ in columns]
-        # TODO: Check the logic here, it's going to fail in any case if there is no form
-        # Don't know what we are trying to achieve exactly
-        # The type ignore is obviously wrong since the type can be null, but the frontend always send forms.
-        latest_form_version = form.latest_version  # type: ignore
+        latest_form_version = form.latest_version
         questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
         if form and latest_form_version:
             file_content_template = questions_by_name
@@ -235,16 +252,8 @@ class InstancesViewSet(viewsets.ViewSet):
         filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
         def get_row(instance, **kwargs):
-            created_at_timestamp = (
-                instance.source_created_at.timestamp()
-                if instance.source_created_at
-                else instance.created_at.timestamp()
-            )
-            updated_at_timestamp = (
-                instance.source_updated_at.timestamp()
-                if instance.source_updated_at
-                else instance.updated_at.timestamp()
-            )
+            created_at_timestamp = instance.source_created_at_with_fallback.timestamp()
+            updated_at_timestamp = instance.source_updated_at_with_fallback.timestamp()
             org_unit = instance.org_unit
             file_content = instance.get_and_save_json_of_xml()
 
@@ -261,6 +270,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 timestamp_to_datetime(updated_at_timestamp),
                 get_creator_name(instance.created_by) if instance.created_by else None,
                 instance.status,
+                # Special format for UUID to stay consistent with other UUIDs coming from file_content_template
+                f"uuid:{instance.entity.uuid}" if instance.entity else None,
                 instance.org_unit.name,
                 instance.org_unit.id,
                 instance.org_unit.source_ref,
@@ -286,7 +297,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
         response: Union[HttpResponse, StreamingHttpResponse]
 
-        queryset = queryset.prefetch_related("created_by", "form_version__form")
+        queryset = queryset.prefetch_related("created_by", "entity", "form_version__form")
         queryset = queryset.prefetch_related(
             Prefetch("org_unit", queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"))
         )
@@ -374,6 +385,7 @@ class InstancesViewSet(viewsets.ViewSet):
             queryset = queryset.prefetch_related("org_unit__reference_instances")
             queryset = queryset.prefetch_related("org_unit__org_unit_type__reference_forms")
             queryset = queryset.prefetch_related("org_unit__version__data_source")
+            queryset = queryset.prefetch_related("project")
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)
@@ -507,9 +519,11 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(response)
 
     def delete(self, request, pk=None):
+        original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
-        instance.soft_delete(request.user)
+        instance.soft_delete()
+        log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
     def patch(self, request, pk=None):
@@ -564,10 +578,12 @@ class InstancesViewSet(viewsets.ViewSet):
         try:
             with transaction.atomic():
                 for instance in instances_query.iterator():
+                    original = copy(instance)
                     if is_deletion == True:
-                        instance.soft_delete(request.user)
+                        instance.soft_delete()
                     else:
-                        instance.restore(request.user)
+                        instance.restore()
+                    log_modification(original, instance, INSTANCE_API, user=request.user)
 
         except Exception as e:
             print(f"Error : {e}")
@@ -599,7 +615,13 @@ class InstancesViewSet(viewsets.ViewSet):
 
     @action(detail=False)
     def stats(self, request):
+        project_ids_param = request.GET.get("project_ids", None)
         projects = request.user.iaso_profile.account.project_set.all()
+
+        if project_ids_param:
+            project_ids_array = project_ids_param.split(",")
+            projects = projects.filter(id__in=project_ids_array)
+
         projects_ids = list(projects.values_list("id", flat=True))
 
         df = pd.read_sql_query(self.QUERY, connection, params=[projects_ids])
@@ -620,7 +642,13 @@ class InstancesViewSet(viewsets.ViewSet):
 
     @action(detail=False)
     def stats_sum(self, request):
+        project_ids_param = request.GET.get("project_ids", None)
         projects = request.user.iaso_profile.account.project_set.all()
+
+        if project_ids_param:
+            project_ids_array = project_ids_param.split(",")
+            projects = projects.filter(id__in=project_ids_array)
+
         projects_ids = list(projects.values_list("id", flat=True))
         QUERY = """
         select DATE_TRUNC('day', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)) as period,
@@ -638,6 +666,23 @@ class InstancesViewSet(viewsets.ViewSet):
         df["name"] = df["period"].apply(lambda x: x.strftime("%Y-%m-%d"))
         r = df.to_json(orient="table")
         return HttpResponse(r, content_type="application/json")
+
+    @action(detail=True, methods=["get"], url_path="instance_logs/(?P<logId>[^/.]+)")
+    def instance_logs(self, request, pk=None, logId=None):
+        """
+        GET /api/instances/<pk>/instance_logs/<logId>/
+        """
+        instance = get_object_or_404(Instance, pk=pk)
+        log = get_object_or_404(Modification, pk=logId)
+        log_dict = log.as_dict()
+        possible_fields = (
+            instance.form_version.possible_fields
+            if instance.form_version and instance.form_version.possible_fields
+            else []
+        )
+
+        log_dict["possible_fields"] = possible_fields
+        return Response(log_dict)
 
 
 def import_data(instances, user, app_id):
@@ -672,13 +717,58 @@ def import_data(instances, user, app_id):
 
         # TODO: check that planning_id is valid
         instance.planning_id = instance_data.get("planningId", None)
-        entityUuid = instance_data.get("entityUuid", None)
-        entityTypeId = instance_data.get("entityTypeId", None)
-        if entityUuid and entityTypeId:
-            entity, created = Entity.objects.get_or_create(
-                uuid=entityUuid, entity_type_id=entityTypeId, account=project.account
-            )
+        entity_uuid = instance_data.get("entityUuid", None)
+        entity_type_id = instance_data.get("entityTypeId", None)
+        if entity_uuid and entity_type_id:
+            # In case of duplicate UUIDs in the database, only allow 1 non-deleted one.
+            # If a non-deleted entity was found, ignore potential duplicates.
+            filters = {
+                "uuid": entity_uuid,
+                "entity_type_id": entity_type_id,
+                "account": project.account,
+            }
+            existing_entities = list(Entity.objects_include_deleted.filter(**filters))
+
+            if len(existing_entities) == 0:
+                entity = Entity.objects.create(**filters)
+            elif len(existing_entities) == 1:
+                entity = existing_entities[0]
+            else:
+                # In case of duplicates, try to take the "best" one. Best one would
+                # be one that's not deleted and that has valid attributes with a
+                # file attached. We first assign the first one to avoid having None.
+                # If there are multiple non-deleted entities, we send a Sentry,
+                # but don't break the upload.
+                if len([e for e in existing_entities if e.deleted_at is None]) > 1:
+                    logger.exception(
+                        f"Multiple non-deleted entities for UUID {entity_uuid}, entity_type_id {entity_type_id}"
+                    )
+
+                entity = sorted(existing_entities, key=_entity_correctness_score, reverse=True)[0]
+
+            if entity.deleted_at:
+                logger.info(
+                    f"Entity %s is soft-deleted for instance %s %s",
+                    entity.uuid,
+                    instance.uuid,
+                    instance.name,
+                )
+                if entity.merged_to:
+                    active_entity = entity.merged_to
+                    while active_entity.deleted_at and active_entity.merged_to:
+                        active_entity = active_entity.merged_to
+                    logger.info(
+                        f"Adding new instance %s %s to merged entity %s",
+                        instance.uuid,
+                        instance.name,
+                        active_entity.uuid,
+                    )
+                    entity = active_entity
+                else:
+                    instance.deleted = True
+
             instance.entity = entity
+
             # If instance's form is the same as the type reference form, set the instance as reference_instance
             if entity.entity_type.reference_form == instance.form:
                 entity.attributes = instance
@@ -704,9 +794,29 @@ def import_data(instances, user, app_id):
             if instance.form in instance.org_unit.org_unit_type.reference_forms.all():
                 oucr = OrgUnitChangeRequest()
                 oucr.org_unit = instance.org_unit
+                if user and not user.is_anonymous:
+                    oucr.created_by = user
                 previous_reference_instances = list(instance.org_unit.reference_instances.all())
                 new_reference_instances = list(filter(lambda i: i.form != instance.form, previous_reference_instances))
                 new_reference_instances.append(instance)
                 oucr.save()
                 oucr.new_reference_instances.set(new_reference_instances)
+                oucr.requested_fields = ["new_reference_instances"]
                 oucr.save()
+
+
+def _entity_correctness_score(entity):
+    """
+    A small function that allows sorting entities to pick the right one for
+    incoming data in case of duplicates. A deleted one is always less than an active
+    one, etc.
+    """
+    score = 0
+    if not entity.deleted_at:
+        score += 100
+    if entity.attributes:
+        score += 10
+    if entity.attributes and entity.attributes.file and not entity.attributes.file == "":
+        score += 1
+
+    return score

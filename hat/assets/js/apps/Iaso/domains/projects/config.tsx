@@ -1,19 +1,19 @@
-import React, { ReactElement, useMemo } from 'react';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { Box, Switch, Tooltip } from '@mui/material';
 import {
-    textPlaceholder,
-    IntlMessage,
     Column,
+    IntlMessage,
+    textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Box, Switch, Tooltip } from '@mui/material';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import React, { ReactElement, useMemo } from 'react';
 import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
-import { Project } from './types/project';
 import { FeatureFlag } from './types/featureFlag';
+import { Project } from './types/project';
 
 type Params = {
     pageSize: string;
@@ -24,11 +24,8 @@ type Params = {
 
 export const baseUrl = baseUrls.projects;
 export const columns = (
-    // eslint-disable-next-line no-unused-vars
     formatMessage: (msg: IntlMessage) => string,
-    // eslint-disable-next-line no-unused-vars
     params: Params,
-    // eslint-disable-next-line no-unused-vars
     saveProject: (s: Project) => Promise<any>,
 ): Array<Column> => [
     {
@@ -71,7 +68,6 @@ export const columns = (
 ];
 
 export const useFeatureFlagColumns = (
-    // eslint-disable-next-line no-unused-vars
     setFeatureFlag: (featureFlag: FeatureFlag, isChecked: boolean) => void,
     featureFlagsValues: (string | number)[],
 ): Array<Column> => {

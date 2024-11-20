@@ -9,15 +9,15 @@ import {
     useSafeIntl,
     useRedirectTo,
 } from 'bluesquare-components';
-import MESSAGES from '../messages';
+import MESSAGES from '../messages.ts';
 import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
-import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes.ts';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles.ts';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams.ts';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -51,7 +51,7 @@ const Filters = ({ baseUrl, params }) => {
         useGetUserRolesDropDown({});
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
-        useGetOrgUnitTypes();
+        useGetOrgUnitTypesDropdownOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
@@ -134,6 +134,31 @@ const Filters = ({ baseUrl, params }) => {
                     blockForbiddenChars
                 />
                 <InputComponent
+                    keyValue="projectsIds"
+                    onChange={handleChange}
+                    value={filters.projectsIds}
+                    type="select"
+                    options={allProjects}
+                    label={MESSAGES.projects}
+                    loading={isFetchingProjects}
+                    onEnterPressed={handleSearchPerms}
+                    clearable
+                    multi
+                />
+                <InputComponent
+                    keyValue="permissions"
+                    onChange={handleChange}
+                    value={filters.permissions}
+                    type="select"
+                    multi
+                    options={dropdown ?? []}
+                    label={MESSAGES.permissions}
+                    loading={isFetching}
+                    onEnterPressed={handleSearchPerms}
+                />
+            </Grid>
+            <Grid item xs={12} md={3}>
+                <InputComponent
                     keyValue="userRoles"
                     onChange={handleChange}
                     value={filters.userRoles}
@@ -144,6 +169,7 @@ const Filters = ({ baseUrl, params }) => {
                     loading={isFetchingUserRoles}
                     onEnterPressed={handleSearchUserRoles}
                 />
+
                 <InputComponent
                     keyValue="teamsIds"
                     onChange={handleChange}
@@ -156,32 +182,6 @@ const Filters = ({ baseUrl, params }) => {
                     clearable
                     multi
                 />
-            </Grid>
-            <Grid item xs={12} md={3}>
-                <InputComponent
-                    keyValue="permissions"
-                    onChange={handleChange}
-                    value={filters.permissions}
-                    type="select"
-                    multi
-                    options={dropdown ?? []}
-                    label={MESSAGES.permissions}
-                    loading={isFetching}
-                    onEnterPressed={handleSearchPerms}
-                />
-                <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
-                    <OrgUnitTreeviewModal
-                        toggleOnLabelClick={false}
-                        titleMessage={MESSAGES.location}
-                        onConfirm={orgUnit =>
-                            handleChange(
-                                'location',
-                                orgUnit ? orgUnit.id : undefined,
-                            )
-                        }
-                        initialSelection={initialOrgUnit}
-                    />
-                </Box>
             </Grid>
             <Grid item xs={12} md={3}>
                 <InputComponent
@@ -209,18 +209,19 @@ const Filters = ({ baseUrl, params }) => {
                 />
             </Grid>
             <Grid item xs={12} md={3}>
-                <InputComponent
-                    keyValue="projectsIds"
-                    onChange={handleChange}
-                    value={filters.projectsIds}
-                    type="select"
-                    options={allProjects}
-                    label={MESSAGES.projects}
-                    loading={isFetchingProjects}
-                    onEnterPressed={handleSearchPerms}
-                    clearable
-                    multi
-                />
+                <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
+                    <OrgUnitTreeviewModal
+                        toggleOnLabelClick={false}
+                        titleMessage={MESSAGES.location}
+                        onConfirm={orgUnit =>
+                            handleChange(
+                                'location',
+                                orgUnit ? orgUnit.id : undefined,
+                            )
+                        }
+                        initialSelection={initialOrgUnit}
+                    />
+                </Box>
                 <InputComponent
                     keyValue="ouParent"
                     type="checkbox"

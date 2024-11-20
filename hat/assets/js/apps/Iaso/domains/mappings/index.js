@@ -11,12 +11,15 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
-import mappingsTableColumns from './config';
+import { mappingsTableColumns } from './config';
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
 import { baseUrls } from '../../constants/urls.ts';
 import { useGetMappingVersions } from './hooks.js';
 import MESSAGES from './messages';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import * as Permission from '../../utils/permissions.ts';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { Filters } from './components/Filter';
 
 const baseUrl = baseUrls.mappings;
 
@@ -35,32 +38,41 @@ const Mappings = props => {
     return (
         <>
             {mappingVersionsResults.isFetching && <LoadingSpinner />}
+
             <TopBar title={formatMessage(MESSAGES.dhis2Mappings)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Table
-                    data={mappingVersionsResults?.data?.mapping_versions || []}
-                    pages={pages}
-                    defaultSorted={[
-                        { id: 'form_version__form__name', desc: true },
-                        { id: 'form_version__version_id', desc: true },
-                        { id: 'mapping__mapping_type', desc: true },
-                    ]}
-                    columns={mappingsTableColumns(formatMessage)}
-                    count={count}
-                    baseUrl={baseUrl}
-                    params={params}
-                    redirectTo={(_key, newParams) => {
-                        redirectToReplace(baseUrl, newParams);
-                    }}
-                />
-                <Grid
-                    container
-                    justifyContent="flex-end"
-                    alignItems="center"
-                    className={classes.marginTop}
-                >
-                    <CreateMappingVersionDialogComponent />
-                </Grid>
+                <Filters params={params} />
+                <Box mt={4}>
+                    <Grid container spacing={2} justifyContent="flex-end">
+                        <CreateMappingVersionDialogComponent />
+                    </Grid>
+                </Box>
+                <Box className={classes.containerFullHeightNoTabPadded}>
+                    <Table
+                        data={
+                            mappingVersionsResults?.data?.mapping_versions || []
+                        }
+                        pages={pages}
+                        defaultSorted={[
+                            { id: 'form_version__form__name', desc: true },
+                            { id: 'form_version__version_id', desc: true },
+                            { id: 'mapping__mapping_type', desc: true },
+                        ]}
+                        columns={mappingsTableColumns(formatMessage)}
+                        count={count}
+                        baseUrl={baseUrl}
+                        params={params}
+                        redirectTo={(_key, newParams) => {
+                            redirectToReplace(baseUrl, newParams);
+                        }}
+                    />
+                    <Grid
+                        container
+                        justifyContent="flex-end"
+                        alignItems="center"
+                        className={classes.marginTop}
+                    />
+                </Box>
             </Box>
         </>
     );

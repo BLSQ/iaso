@@ -1,5 +1,5 @@
 import { get } from 'lodash';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
@@ -12,9 +12,7 @@ type Props = {
     clearable?: boolean;
     required?: boolean;
     disabled?: boolean;
-    // eslint-disable-next-line no-unused-vars
     onChange?: (_keyValue: string, value: any) => void;
-    // eslint-disable-next-line no-unused-vars
     renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
     freeSolo?: boolean;
 };
@@ -35,6 +33,10 @@ export const Select: FunctionComponent<Props> = ({
     const hasError =
         form.errors &&
         Boolean(get(form.errors, field.name) && get(form.touched, field.name));
+    const errors = useMemo(
+        () => [get(form.errors, field.name)],
+        [field.name, form.errors],
+    );
 
     return (
         <InputComponent
@@ -56,7 +58,7 @@ export const Select: FunctionComponent<Props> = ({
                     form.setFieldValue(field.name, value);
                 }
             }}
-            errors={hasError ? [get(form.errors, field.name)] : []}
+            errors={hasError ? errors : []}
             freeSolo={freeSolo}
         />
     );

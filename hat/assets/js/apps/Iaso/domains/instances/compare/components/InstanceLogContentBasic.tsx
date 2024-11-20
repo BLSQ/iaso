@@ -1,17 +1,18 @@
 import React, { FunctionComponent } from 'react';
 import {
     Table,
-    TableBody,
     TableCell,
     TableRow,
     TableHead,
+    Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 
-import { formatLabel } from '../../utils';
+import classNames from 'classnames';
 import { FileContent } from '../../types/instance';
 import MESSAGES from '../messages';
+import InstanceLogContentBodyTable from './InstanceLogContentBodyTable';
 
 type Props = {
     fileContent: FileContent;
@@ -24,17 +25,20 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: 'transparent',
         borderTop: 'none !important',
         borderLeft: 'none !important',
-        borderRight: 'none !important',
+        // @ts-ignore
+        borderRight: `1px solid ${theme.palette.ligthGray.border}  !important`,
         // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
-    tableCell: {
-        backgroundColor: 'transparent',
-        borderTop: 'none !important',
-        borderLeft: 'none !important',
-        borderRight: 'none !important',
-        // @ts-ignore
-        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+    labelTableCellFixWith: {
+        width: '25.35%',
+        maxWidth: '25.35%',
+        minWidth: '25.35%',
+    },
+    versionValueTableCellFix: {
+        width: '37.35%',
+        maxWidth: '37.35%',
+        minWidth: '37.35%',
     },
 }));
 
@@ -51,63 +55,50 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
             <TableHead>
                 <TableRow>
                     <TableCell
-                        width={80}
                         align="left"
-                        className={classes.tableCellHead}
+                        className={classNames(
+                            classes.tableCellHead,
+                            classes.labelTableCellFixWith,
+                        )}
                     >
                         {formatMessage(MESSAGES.label)}
                     </TableCell>
-                    <TableCell align="left" className={classes.tableCellHead}>
-                        {formatMessage(MESSAGES.instanceLogsVersionA)}
+                    <TableCell
+                        align="left"
+                        className={classNames(
+                            classes.tableCellHead,
+                            classes.versionValueTableCellFix,
+                        )}
+                    >
+                        <Typography
+                            color={
+                                fileContent?.logA?.deleted ? 'error' : 'inherit'
+                            }
+                        >
+                            {formatMessage(MESSAGES.instanceLogsVersionA)}
+                        </Typography>
                     </TableCell>
-                    <TableCell align="left" className={classes.tableCellHead}>
-                        {formatMessage(MESSAGES.instanceLogsVersionB)}
+                    <TableCell
+                        align="left"
+                        className={classNames(
+                            classes.tableCellHead,
+                            classes.versionValueTableCellFix,
+                        )}
+                    >
+                        <Typography
+                            color={
+                                fileContent?.logB?.deleted ? 'error' : undefined
+                            }
+                        >
+                            {formatMessage(MESSAGES.instanceLogsVersionB)}
+                        </Typography>
                     </TableCell>
                 </TableRow>
             </TableHead>
-            <TableBody>
-                {fileContent.logA &&
-                    fileContent.logB &&
-                    Object.keys(fileContent.logA.json).map(labelKey => {
-                        const field = fileDescriptor?.children.find(
-                            child => child.name === labelKey,
-                        );
-
-                        if (
-                            labelKey !== 'meta' &&
-                            labelKey !== 'uuid' &&
-                            (fileContent.logA.json[labelKey] ||
-                                fileContent.logB.json[labelKey])
-                        ) {
-                            return (
-                                <TableRow key={labelKey}>
-                                    <TableCell
-                                        className={classes.tableCell}
-                                        align="left"
-                                    >
-                                        {fileDescriptor?.children && field
-                                            ? formatLabel(field)
-                                            : labelKey}
-                                    </TableCell>
-                                    <TableCell
-                                        className={classes.tableCell}
-                                        align="left"
-                                    >
-                                        {/* TO DO : display section titles for groups */}
-                                        {fileContent?.logA.json[labelKey]}
-                                    </TableCell>
-                                    <TableCell
-                                        className={classes.tableCell}
-                                        align="left"
-                                    >
-                                        {fileContent?.logB.json[labelKey]}
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        }
-                        return null;
-                    })}
-            </TableBody>
+            <InstanceLogContentBodyTable
+                fileContent={fileContent}
+                fileDescriptor={fileDescriptor}
+            />
         </Table>
     );
 };

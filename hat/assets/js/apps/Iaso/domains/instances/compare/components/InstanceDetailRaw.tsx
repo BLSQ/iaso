@@ -1,23 +1,24 @@
-import React, { FunctionComponent } from 'react';
 import { Box, Typography, TypographyVariant } from '@mui/material';
 import {
-    useSafeIntl,
-    LoadingSpinner,
     IconButton as IconButtonComponent,
+    LoadingSpinner,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 
+import { Accordion } from '../../../../components/Accordion/Accordion';
+import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
+import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
-import MESSAGES from '../messages';
+import { baseUrls } from '../../../../constants/urls';
 import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
 import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
 import InstanceFileContent from '../../components/InstanceFileContent';
-import { Instance } from '../../types/instance';
 import InstancesFilesList from '../../components/InstancesFilesListComponent';
+import { Instance } from '../../types/instance';
 import { getInstancesFilesList } from '../../utils';
-import { Accordion } from '../../../../components/Accordion/Accordion';
-import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
-import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
-import { baseUrls } from '../../../../constants/urls';
+import MESSAGES from '../messages';
+import { INSTANCE_METAS_FIELDS } from '../../constants';
 
 type Props = {
     data?: Instance;
@@ -26,6 +27,7 @@ type Props = {
     showTitle?: boolean;
     titleVariant?: TypographyVariant;
     height?: string | number;
+    titleColor?: string;
 };
 
 const styles = {
@@ -46,6 +48,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     showTitle = true,
     titleVariant = 'h5',
     height = '70vh',
+    titleColor = 'secondary',
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -68,7 +71,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
         <>
             {showTitle && (
                 <Box display="flex" alignItems="center">
-                    <Typography variant={titleVariant} color="secondary">
+                    <Typography variant={titleVariant} color={titleColor}>
                         {`${formatMessage(MESSAGES.submissionTitle)} - ${
                             data?.id
                         }`}
@@ -98,7 +101,10 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                     </AccordionSummary>
                     <AccordionDetails>
                         <Box p={2}>
-                            <InstanceDetailsInfos currentInstance={data} />
+                            <InstanceDetailsInfos
+                                instance_metas_fields={INSTANCE_METAS_FIELDS}
+                                currentInstance={data}
+                            />
                         </Box>
                     </AccordionDetails>
                 </Accordion>

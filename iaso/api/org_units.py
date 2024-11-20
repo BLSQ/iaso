@@ -23,21 +23,37 @@ from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
 from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import DataSource, Form, Group, Instance, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.utils import geojson_queryset
 from iaso.utils.gis import simplify_geom
 
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 
-
 # noinspection PyMethodMayBeStatic
+
+
+class HasCreateOrUnitPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        if not request.user.has_perm(permission.ORG_UNITS):
+            return False
+
+        return True
+
+
 class HasOrgUnitPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
+        if obj.version.data_source.public and request.method == "GET":
+            return True
+
         if not (
             request.user.is_authenticated
             and (
                 request.user.has_perm(permission.FORMS)
                 or request.user.has_perm(permission.ORG_UNITS)
+                or request.user.has_perm(permission.ORG_UNITS_READ)
                 or request.user.has_perm(permission.SUBMISSIONS)
                 or request.user.has_perm(permission.REGISTRY_WRITE)
                 or request.user.has_perm(permission.REGISTRY_READ)
@@ -46,8 +62,10 @@ class HasOrgUnitPermission(permissions.BasePermission):
         ):
             return False
 
-        if obj.version.data_source.read_only and request.method != "GET":
+        read_only = request.user.has_perm(permission.ORG_UNITS_READ) and not request.user.has_perm(permission.ORG_UNITS)
+        if (read_only or obj.version.data_source.read_only) and request.method != "GET":
             return False
+
         # TODO: can be handled with get_queryset()
         user_account = request.user.iaso_profile.account
         projects = obj.version.data_source.projects.all()
@@ -405,8 +423,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         errors = []
         org_unit = get_object_or_404(self.get_queryset(), id=pk)
+        profile = request.user.iaso_profile
 
         self.check_object_permissions(request, org_unit)
+
+        if org_unit.org_unit_type and not profile.has_org_unit_write_permission(org_unit.org_unit_type.pk):
+            errors.append(
+                {
+                    "errorKey": "org_unit_type_id",
+                    "errorMessage": _("You cannot create or edit an Org unit of this type"),
+                }
+            )
 
         original_copy = deepcopy(org_unit)
 
@@ -433,16 +460,19 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         "errorMessage": _(f"Invalid validation status : {validation_status}"),
                     }
                 )
-
         if "geo_json" in request.data:
             geo_json = request.data["geo_json"]
             geometry = geo_json["features"][0]["geometry"] if geo_json else None
             coordinates = geometry["coordinates"] if geometry else None
             if coordinates:
                 multi_polygon = MultiPolygon(*[Polygon(*coord) for coord in coordinates])
+                # keep geom and simplified geom consistent
+                org_unit.geom = multi_polygon
                 org_unit.simplified_geom = simplify_geom(multi_polygon)
             else:
+                # keep geom and simplified geom consistent
                 org_unit.simplified_geom = None
+                org_unit.geom = None
         elif "simplified_geom" in request.data:
             org_unit.simplified_geom = request.data["simplified_geom"]
 
@@ -507,7 +537,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.parent = parent_org_unit
                 else:
                     # User that are restricted to parts of the hierarchy cannot create root orgunit
-                    profile = request.user.iaso_profile
                     if profile.org_units.all():
                         errors.append(
                             {
@@ -531,6 +560,22 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
                     continue
                 new_groups.append(temp_group)
+
+        if "default_image" in request.data:
+            default_image_id = request.data["default_image"]
+            if default_image_id is not None:
+                try:
+                    default_image = InstanceFile.objects.get(id=default_image_id)
+                    org_unit.default_image = default_image
+                except InstanceFile.DoesNotExist:
+                    errors.append(
+                        {
+                            "errorKey": "default_image",
+                            "errorMessage": _("InstanceFile with id {} does not exist").format(default_image_id),
+                        }
+                    )
+            else:
+                org_unit.default_image = None
 
         opening_date = request.data.get("opening_date", None)
         org_unit.opening_date = None if not opening_date else self.get_date(opening_date)
@@ -569,7 +614,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 pass
         return None
 
-    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
+    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasCreateOrUnitPermission])
     def create_org_unit(self, request):
         """This endpoint is used by the React frontend"""
         errors = []
@@ -637,8 +682,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             org_unit.validation_status = validation_status
 
-        org_unit_type_id = request.data.get("org_unit_type_id", None)
-
         reference_instance_id = request.data.get("reference_instance_id", None)
 
         parent_id = request.data.get("parent_id", None)
@@ -660,8 +703,18 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if latitude and longitude:
             org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
 
+        org_unit_type_id = request.data.get("org_unit_type_id", None)
+
         if not org_unit_type_id:
             errors.append({"errorKey": "org_unit_type_id", "errorMessage": _("Org unit type is required")})
+
+        if not profile.has_org_unit_write_permission(org_unit_type_id):
+            errors.append(
+                {
+                    "errorKey": "org_unit_type_id",
+                    "errorMessage": _("You cannot create or edit an Org unit of this type"),
+                }
+            )
 
         if parent_id:
             parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
@@ -709,7 +762,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
-        org_unit: OrgUnit = get_object_or_404(self.get_queryset().prefetch_related("reference_instances"), pk=pk)
+        org_unit: OrgUnit = get_object_or_404(
+            self.get_queryset().prefetch_related("reference_instances"),
+            pk=pk,
+        )
+        # Get instances count for the Org unit and its descendants
+        instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
+        org_unit.instances_count = instances_count
+
         self.check_object_permissions(request, org_unit)
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None

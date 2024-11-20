@@ -59,9 +59,9 @@ const RecursiveTreeView = props => {
         }
         let label = _.truncate(Descriptor.getHumanLabel(node));
         if (Descriptor.hasChildren(node)) {
-            label = label +' (' + coverage.join(' / ') + ')';
+            label = `${label} (${coverage.join(' / ')})`;
         } else if (node.type) {
-            label = label +' (' + node.type + ')';
+            label = `${label} (${node.type})`;
         }
         return (
             <TreeItem

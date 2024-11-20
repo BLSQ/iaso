@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box, Divider, Grid, Typography } from '@mui/material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
@@ -17,11 +16,8 @@ type Props = {
     roundIndex: number;
     roundNumber: number;
     setParentFieldValue: (
-        // eslint-disable-next-line no-unused-vars
         field: string,
-        // eslint-disable-next-line no-unused-vars
         value: any,
-        // eslint-disable-next-line no-unused-vars
         shouldValidate?: boolean | undefined,
     ) => void;
     parentFieldValue: Round;

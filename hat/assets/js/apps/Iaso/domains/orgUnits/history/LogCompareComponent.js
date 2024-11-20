@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
 import {
     Table,
     TableBody,
@@ -15,14 +14,10 @@ import {
 import { makeStyles } from '@mui/styles';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
-
 import ValueWithErrorBoundary from './ValueWithErrorBoundary';
-
 import MESSAGES from '../../forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
 
@@ -67,6 +62,7 @@ const LogCompareComponent = ({
     compareLog,
     goToRevision,
     title,
+    showButtons = false,
     isNewValue = false,
 }) => {
     const [showAllFields, setShowAllFields] = React.useState(false);
@@ -183,21 +179,23 @@ const LogCompareComponent = ({
                     alignItems="center"
                     justifyContent="center"
                 >
-                    <Grid xs={6} item>
-                        <ConfirmDialog
-                            btnMessage={formatMessage(
-                                LOG_MESSAGES.goToRevision,
-                            )}
-                            question={formatMessage(
-                                LOG_MESSAGES.goToRevisionQuestion,
-                            )}
-                            message={formatMessage(
-                                LOG_MESSAGES.goToRevisionText,
-                            )}
-                            confirm={() => goToRevision(l)}
-                        />
-                    </Grid>
-                    {isNewValue && (
+                    {showButtons && (
+                        <Grid xs={6} item>
+                            <ConfirmDialog
+                                btnMessage={formatMessage(
+                                    LOG_MESSAGES.goToRevision,
+                                )}
+                                question={formatMessage(
+                                    LOG_MESSAGES.goToRevisionQuestion,
+                                )}
+                                message={formatMessage(
+                                    LOG_MESSAGES.goToRevisionText,
+                                )}
+                                confirm={() => goToRevision(l)}
+                            />
+                        </Grid>
+                    )}
+                    {isNewValue && showButtons && (
                         <Grid xs={6} item>
                             <ConfirmDialog
                                 btnMessage={formatMessage(
@@ -228,6 +226,7 @@ LogCompareComponent.defaultProps = {
     title: '',
     goToRevision: () => {},
     isNewValue: false,
+    showButtons: false,
 };
 
 LogCompareComponent.propTypes = {
@@ -236,6 +235,7 @@ LogCompareComponent.propTypes = {
     goToRevision: PropTypes.func,
     title: PropTypes.string.isRequired,
     isNewValue: PropTypes.bool,
+    showButtons: PropTypes.bool,
 };
 
 export default LogCompareComponent;

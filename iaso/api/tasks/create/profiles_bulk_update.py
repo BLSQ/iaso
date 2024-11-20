@@ -1,6 +1,5 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
-
 from iaso.api.tasks import TaskSerializer
 from iaso.tasks.profiles_bulk_update import profiles_bulk_update
 from hat.menupermissions import models as permission
@@ -18,17 +17,18 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
 
     def create(self, request):
         select_all = request.data.get("select_all", False)
-        selected_ids = request.data.get("selected_ids", [])
-        unselected_ids = request.data.get("unselected_ids", [])
-        projects_ids_added = request.data.get("projects_ids_added", None)
-        projects_ids_removed = request.data.get("projects_ids_removed", None)
-        roles_id_added = request.data.get("roles_id_added", None)
-        roles_id_removed = request.data.get("roles_id_removed", None)
-        location_ids_added = request.data.get("location_ids_added", None)
-        location_ids_removed = request.data.get("location_ids_removed", None)
+        selected_ids = request.data.get("selected_ids") or []
+        unselected_ids = request.data.get("unselected_ids") or []
+        projects_ids_added = request.data.get("projects_ids_added") or []
+        projects_ids_removed = request.data.get("projects_ids_removed") or []
+        roles_id_added = request.data.get("roles_id_added") or []
+        roles_id_removed = request.data.get("roles_id_removed") or []
+        location_ids_added = request.data.get("location_ids_added") or []
+        location_ids_removed = request.data.get("location_ids_removed") or []
         language = request.data.get("language", None)
-        teams_id_added = request.data.get("teams_id_added", None)
-        teams_id_removed = request.data.get("teams_id_removed", None)
+        teams_id_added = request.data.get("teams_id_added") or []
+        teams_id_removed = request.data.get("teams_id_removed") or []
+        organization = request.data.get("organization", None)
 
         search = request.data.get("search", None)
         perms = request.data.get("permissions", None)
@@ -54,6 +54,7 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
             location_ids_added=location_ids_added,
             location_ids_removed=location_ids_removed,
             language=language,
+            organization=organization,
             search=search,
             perms=perms,
             location=location,

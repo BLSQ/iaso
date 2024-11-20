@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from iaso.models import OrgUnit
+from iaso.models import OrgUnit, Account
 from plugins.wfp.models import *
 
 GENDERS = [("Male", _("Male")), ("Female", _("Female"))]
@@ -54,6 +54,7 @@ class Beneficiary(models.Model):
     birth_date = models.DateField()
     gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True)
     entity_id = models.IntegerField(null=True, blank=True)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
 
 
 class Journey(models.Model):

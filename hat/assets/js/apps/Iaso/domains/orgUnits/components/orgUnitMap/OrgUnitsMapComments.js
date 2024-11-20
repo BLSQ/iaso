@@ -1,19 +1,18 @@
-import React, { useCallback, useState } from 'react';
-import {
-    CommentWithThread,
-    AddComment,
-    useSafeIntl,
-} from 'bluesquare-components';
 import { Pagination } from '@mui/lab';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import {
+    AddComment,
+    CommentWithThread,
+    useSafeIntl,
+} from 'bluesquare-components';
+import React, { useCallback, useState } from 'react';
 
-import { useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
 import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
-import { useGetComments, sendComment } from '../../../../utils/requests';
+import PropTypes from 'prop-types';
+import { sendComment, useGetComments } from '../../../../utils/requests';
 
-import MESSAGES from '../../messages';
+import MESSAGES from '../../messages.ts';
 
 const styles = {
     commentsBlock: { marginBottom: '7px' },
@@ -54,19 +53,13 @@ const OrgUnitsMapComments = ({
     className,
     maxPages,
     inlineTextAreaButton,
-    getOrgUnitFromStore,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const globalStateOrgUnit = useSelector(
-        state => state.orgUnits.currentSubOrgUnit,
-    );
-    const orgUnitToUse = getOrgUnitFromStore ? globalStateOrgUnit : orgUnit;
     const [offset, setOffset] = useState(null);
-    // eslint-disable-next-line no-unused-vars
-    const [pageSize, _setPageSize] = useState(maxPages);
+    const [pageSize] = useState(maxPages);
     const commentsParams = {
-        orgUnitId: orgUnitToUse?.id,
+        orgUnitId: orgUnit?.id,
         offset,
         limit: pageSize,
     };
@@ -84,11 +77,11 @@ const OrgUnitsMapComments = ({
                 parent: id,
                 comment: text,
                 content_type: 'iaso-orgunit',
-                object_pk: orgUnitToUse?.id,
+                object_pk: orgUnit?.id,
             };
             await postComment(requestBody);
         },
-        [orgUnitToUse, postComment],
+        [orgUnit, postComment],
     );
     const formatComment = comment => {
         const mainComment = adaptComment(comment);
@@ -115,24 +108,23 @@ const OrgUnitsMapComments = ({
         async text => {
             const comment = {
                 comment: text,
-                object_pk: orgUnitToUse?.id,
+                object_pk: orgUnit?.id,
                 parent: null,
                 // content_type: 57,
                 content_type: 'iaso-orgunit',
             };
             await postComment(comment);
         },
-        [orgUnitToUse, postComment],
+        [orgUnit, postComment],
     );
 
     return (
         <>
             <Box px={2} component="div" className={classes.header}>
                 <Typography variant="body1">
-                    {orgUnitToUse?.name ??
-                        formatMessage(MESSAGES.selectOrgUnit)}
+                    {orgUnit?.name ?? formatMessage(MESSAGES.selectOrgUnit)}
                 </Typography>
-                {orgUnitToUse && (
+                {orgUnit && (
                     <AddComment
                         onConfirm={onConfirm}
                         inline={inlineTextAreaButton}
@@ -146,7 +138,7 @@ const OrgUnitsMapComments = ({
             </div>
             {comments?.count > 1 && (
                 <Pagination
-                    count={Math.ceil(comments?.count / pageSize)}
+                    count={Math.ceil((comments?.count ?? 0) / pageSize)}
                     onChange={(_, page) => {
                         setOffset(calculateOffset(page, pageSize));
                     }}
@@ -162,14 +154,12 @@ OrgUnitsMapComments.propTypes = {
     className: PropTypes.string,
     maxPages: PropTypes.number,
     inlineTextAreaButton: PropTypes.bool,
-    getOrgUnitFromStore: PropTypes.bool,
 };
 OrgUnitsMapComments.defaultProps = {
     orgUnit: null,
     className: '',
     maxPages: 5,
     inlineTextAreaButton: true,
-    getOrgUnitFromStore: false,
 };
 
 export { OrgUnitsMapComments };

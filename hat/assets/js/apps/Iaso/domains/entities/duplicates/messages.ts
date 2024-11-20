@@ -129,6 +129,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.entities.takeValuesFromB',
         defaultMessage: 'Take all values from B',
     },
+    softDeleteA: {
+        id: 'iaso.label.entities.deleteA',
+        defaultMessage: 'Delete beneficiary A',
+    },
+    softDeleteB: {
+        id: 'iaso.label.entities.deleteB',
+        defaultMessage: 'Delete beneficiary B',
+    },
     ignore: {
         id: 'iaso.label.ignore',
         defaultMessage: 'Ignore',
@@ -164,6 +172,18 @@ const MESSAGES = defineMessages({
     parameters: {
         id: 'iaso.label.parameters',
         defaultMessage: 'Parameters',
+    },
+    addParameters: {
+        id: 'iaso.label.addParameters',
+        defaultMessage: 'Add parameters',
+    },
+    removeParameter: {
+        id: 'iaso.label.removeParameter',
+        defaultMessage: 'Remove parameter',
+    },
+    parameterValue: {
+        id: 'iaso.label.parameterValue',
+        defaultMessage: 'Parameter Value',
     },
     entityType: {
         id: 'iaso.entityTypes.label',

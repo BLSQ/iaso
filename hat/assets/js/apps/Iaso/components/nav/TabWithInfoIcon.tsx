@@ -1,13 +1,13 @@
+import InfoIcon from '@mui/icons-material/Info';
+import { Tab, Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import classnames from 'classnames';
 import React, {
     FunctionComponent,
     ReactNode,
     useCallback,
     useMemo,
 } from 'react';
-import { Tab, Tooltip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import InfoIcon from '@mui/icons-material/Info';
-import classnames from 'classnames';
 
 export const useStyles = makeStyles(theme => ({
     tabError: {
@@ -34,7 +34,6 @@ type Props = {
     title: string;
     hasTabError: boolean;
     disabled: boolean;
-    // eslint-disable-next-line no-unused-vars
     handleChange: (_event: any, newValue: number | string) => void;
     showIcon: boolean;
     tooltipMessage: string;
@@ -55,7 +54,7 @@ export const TabWithInfoIcon: FunctionComponent<Props> = ({
     // Remove onChange to avoid bugs when tab is disabled
     const filteredProps = useMemo(() => {
         // @ts-ignore
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { onChange, ...rest } = props;
         return rest;
     }, [props]);
@@ -85,7 +84,6 @@ export const TabWithInfoIcon: FunctionComponent<Props> = ({
                     </Tooltip>
                 )) || <></>
             }
-            // eslint-disable-next-line react/jsx-props-no-spreading
             {...filteredProps}
             onClick={onChange}
         />

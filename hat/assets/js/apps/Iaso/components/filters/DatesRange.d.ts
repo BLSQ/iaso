@@ -1,6 +1,5 @@
 // DatesRange.d.ts
 import { ComponentType } from 'react';
-import { IntlShape } from 'react-intl';
 
 interface DatesRangeProps {
     dateFrom?: string;
@@ -19,6 +18,7 @@ interface DatesRangeProps {
     marginTop?: number;
     dateFromRequired?: boolean;
     dateToRequired?: boolean;
+    disabled?: boolean;
 }
 
 declare const DatesRange: ComponentType<DatesRangeProps>;

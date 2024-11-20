@@ -1,7 +1,7 @@
-import React, { FunctionComponent, ReactNode, useCallback } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
-import { Tab, Tooltip } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
+import { Tab, Tooltip } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent, ReactNode, useCallback } from 'react';
 
 import classnames from 'classnames';
 import MESSAGES from '../../../constants/messages';
@@ -20,7 +20,6 @@ type Props = {
     title: string;
     hasTabError: boolean;
     disabled: boolean;
-    // eslint-disable-next-line no-unused-vars
     handleChange: (_event: any, newValue: number) => void;
 };
 

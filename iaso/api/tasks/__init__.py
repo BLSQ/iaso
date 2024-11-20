@@ -6,17 +6,19 @@ from django.utils.text import slugify
 from django.shortcuts import get_object_or_404
 from gql.transport.requests import RequestsHTTPTransport
 from gql import Client, gql
-from rest_framework import permissions, serializers
+from lazy_services import LazyService  # type: ignore
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.models.json_config import Config
 from ..common import ModelViewSet, TimestampField, UserSerializer, HasPermission
 from hat.menupermissions import models as permission
-from iaso.models.base import ERRORED, RUNNING, SKIPPED, KILLED, SUCCESS, Task
+from iaso.models.base import ERRORED, RUNNING, SKIPPED, KILLED, SUCCESS, QUEUED, Task
 from iaso.utils.s3_client import generate_presigned_url_from_s3
 
 
+task_service = LazyService("BACKGROUND_TASK_SERVICE")
 logger = logging.getLogger(__name__)
 
 
@@ -72,7 +74,10 @@ class TaskSourceViewSet(ModelViewSet):
     PATCH /api/tasks/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.DATA_TASKS)]  # type: ignore
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(permission.DATA_TASKS),
+    ]  # type: ignore
     serializer_class = TaskSerializer
     results_key = "tasks"
     queryset = Task.objects.all()
@@ -82,6 +87,22 @@ class TaskSourceViewSet(ModelViewSet):
         profile = self.request.user.iaso_profile
         order = self.request.query_params.get("order", "created_at").split(",")
         return Task.objects.select_related("launcher").filter(account=profile.account).order_by(*order)
+
+    def get_permissions(self):
+        if self.action in ["retrieve", "relaunch"]:
+            # we handle additional permissions inside the action
+            self.permission_classes = [permissions.IsAuthenticated]
+        return super().get_permissions()
+
+    def retrieve(self, request, *args, **kwargs):
+        task = self.get_object()
+        current_user = request.user
+
+        if current_user.has_perm(permission.DATA_TASKS) or task.launcher == request.user:
+            serializer = self.get_serializer(task)
+            return Response(serializer.data)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
     @action(detail=True, methods=["get"], url_path="presigned-url")
     def generate_presigned_url(self, request, pk=None):
@@ -100,6 +121,32 @@ class TaskSourceViewSet(ModelViewSet):
             raise serializers.ValidationError(
                 {"presigned_url": "Could not create a presigned URL, are you sure the task generated a file?"}
             )
+
+    @action(detail=True, methods=["patch"], url_path="relaunch")
+    def relaunch(self, request, pk):
+        task = get_object_or_404(Task, pk=pk)
+        current_user = request.user
+
+        if current_user.has_perm(permission.DATA_TASKS) or task.launcher == request.user:
+            if task.status != ERRORED:
+                raise serializers.ValidationError({"status": f"You cannot relaunch a task with status {task.status}."})
+
+            task.status = QUEUED
+            task.launcher = current_user
+            task.save()
+            task.queue_answer = task_service.enqueue(
+                module_name=task.params["module"],
+                method_name=task.params["method"],
+                args=task.params["args"],
+                kwargs=task.params["kwargs"],
+                task_id=task.id,
+            )
+            task.save()
+
+            serializer = self.get_serializer(task)
+            return Response(serializer.data)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
 
 class ExternalTaskSerializer(TaskSerializer):
@@ -189,8 +236,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
         return ExternalTaskSerializer
 
     def create(self, request):
-        serializer_class = self.get_serializer_class()
-        serializer = serializer_class(data=request.data, context={"request": request})
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         task = serializer.save()
         data = serializer.validated_data
@@ -230,7 +276,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
             except:
                 logger.exception(f"Bad id_field configuration.Expected non-empty dict, got {id_field}")
                 return ERRORED
-        run_statuses = ["queued", "success", "failed"]
+        run_statuses = ["queued", "success", "failed", "stopped"]
         transport = RequestsHTTPTransport(
             url=openhexa_url,
             verify=True,
@@ -284,7 +330,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
         mutation_input = (
             {"id": pipeline, "versionId": pipeline_version, "config": oh_config}
             if pipeline_version
-            else {"id": pipeline, "config": config}
+            else {"id": pipeline, "config": oh_config}
         )
         try:
             run_mutation = gql(

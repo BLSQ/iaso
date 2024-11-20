@@ -59,7 +59,10 @@ def generate_xlsx(sheet_name, columns, queryset, get_row, sub_columns=None):
     # TODO: document sub_columns parameter
     """
     Generate an XLSX file with the provided parameters.
-    The with_link parameter is deprecated. To force
+
+    Excel requires sheet names to be less or equal to 31 characters:
+    https://learn.microsoft.com/en-us/openspecs/office_standards/ms-oi29500/ebf12ea5-2bb4-4af5-ab26-563f22d3f895
+
     :param sheet_name: Array of sheet names
     :param columns: Array of column descriptors. First array per sheet, second Array per column, then dict. Example
                     [[{"title": "This is the\ntitle", "width": 10}, {"title": "foo"}]]
@@ -81,10 +84,10 @@ def generate_xlsx(sheet_name, columns, queryset, get_row, sub_columns=None):
     if isinstance(sheet_name, list):
         i = 0
         for sheet in sheet_name:
-            write_sheet(wb, sheet, columns[i], queryset[i], get_row[i])
+            write_sheet(wb, sheet[:31], columns[i], queryset[i], get_row[i])
             i += 1
     else:
-        write_sheet(wb, sheet_name, columns, queryset, get_row, sub_columns)
+        write_sheet(wb, sheet_name[:31], columns, queryset, get_row, sub_columns)
 
     wb.close()
 

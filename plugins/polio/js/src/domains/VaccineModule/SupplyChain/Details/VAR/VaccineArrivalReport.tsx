@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
@@ -48,16 +47,29 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
 
     const poNumberOptions = useMemo(() => {
         return (
-            values.pre_alerts
-                ?.filter(
-                    preAlert => preAlert.po_number && preAlert.doses_shipped,
-                )
-                .map(preAlert => ({
-                    label: preAlert.po_number,
-                    value: preAlert.po_number,
-                })) || []
+            (
+                values.pre_alerts
+                    ?.filter(
+                        preAlert =>
+                            preAlert.po_number && preAlert.doses_shipped,
+                    )
+                    .map(preAlert => ({
+                        label: preAlert.po_number,
+                        value: preAlert.po_number,
+                    })) || []
+            )
+                // remove already selected numbers from dropdown
+                .filter(option => {
+                    return !(values?.arrival_reports ?? [])
+                        .map(report =>
+                            report.po_number
+                                ? `${report.po_number}`
+                                : undefined,
+                        )
+                        .includes(option.value);
+                })
         );
-    }, [values.pre_alerts]);
+    }, [values?.arrival_reports, values.pre_alerts]);
     const handleChangePoNumber = useCallback(
         (key, value) => {
             const preAlert = values.pre_alerts?.find(
@@ -70,8 +82,9 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                 );
             }
             setFieldValue(key, value);
+            setFieldTouched(key, true);
         },
-        [index, setFieldValue, values.pre_alerts],
+        [index, setFieldTouched, setFieldValue, values.pre_alerts],
     );
     return (
         <div className={classes.container}>
@@ -84,6 +97,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                 <Grid container>
                     <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={3}>
+                            {/* TODO Add errors */}
                             <Field
                                 label={formatMessage(MESSAGES.po_number)}
                                 name={`${VAR}[${index}].po_number`}

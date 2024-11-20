@@ -5,9 +5,10 @@
  * @param {{[p: string]: T}} urlParams
  */
 
-import React, { ReactElement } from 'react';
 import { textPlaceholder } from 'bluesquare-components';
-import { Nullable, Optional } from '../types/utils';
+import React, { ReactElement } from 'react';
+import { OptionsResponse } from '../types/general';
+import { DropdownOptions, Nullable, Optional } from '../types/utils';
 
 // url should include closing slash
 export const makeUrlWithParams = (
@@ -49,7 +50,6 @@ export const makeRegexValidator =
     ): {
         name: string;
         message: string;
-        // eslint-disable-next-line no-unused-vars
         test: (value: string) => boolean;
     } => ({
         name,
@@ -75,3 +75,40 @@ export const BooleanValue = (value: Array<unknown> | unknown): boolean => {
 export const PlaceholderValue: ReactElement | Optional<Nullable<string>> = (
     <span>{textPlaceholder}</span>
 );
+
+/**
+ *
+ * Helper method to convert choices from OPTIONS request payload to dropdown options usable in Select component
+ *
+ * @param data  - Response from OPTIONS request
+ * @param fields - Optional: selection of fields to be converted to dropdown list
+ * @returns Array of dropdown options
+ */
+export const mapOptions = (
+    data: OptionsResponse,
+    fields?: string[],
+): Record<string, DropdownOptions<string>[]> => {
+    const result = {};
+    if (!data) return result;
+    // Convert object to 2 dimensional array
+    Object.entries(data.actions.POST)
+        // Only keep "choices" fields
+        .filter(([, dict]) => dict.type === 'choice')
+        // Format the choices as DropdownOptions
+        .map(([key, dict]) => [
+            key,
+            dict.choices
+                .map(choice => [
+                    { label: choice.display_name, value: choice.value },
+                ])
+                .flat(),
+        ])
+        // Reconvert 2 dimensional array to object
+        .forEach(([key, dict]) => {
+            // Allow selection of fields to return
+            if (!fields || fields?.includes(key as string)) {
+                result[key as string] = dict;
+            }
+        });
+    return result;
+};

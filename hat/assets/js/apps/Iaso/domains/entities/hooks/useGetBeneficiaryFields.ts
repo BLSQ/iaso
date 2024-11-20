@@ -1,14 +1,16 @@
-import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
+import { useMemo } from 'react';
 
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
+import MESSAGES from '../messages';
 import { Beneficiary } from '../types/beneficiary';
 import { Field } from '../types/fields';
-import MESSAGES from '../messages';
-import { useGetFields } from './useGetFields';
 import { useGetBeneficiaryTypesDropdown } from './requests';
+import { useGetFields } from './useGetFields';
 
-export const useGetBeneficiaryFields = (beneficiary: Beneficiary) => {
+export const useGetBeneficiaryFields = (
+    beneficiary: Beneficiary | undefined,
+) => {
     const { formatMessage } = useSafeIntl();
 
     const { data: beneficiaryTypes } = useGetBeneficiaryTypesDropdown();
@@ -37,7 +39,7 @@ export const useGetBeneficiaryFields = (beneficiary: Beneficiary) => {
         () => [
             {
                 label: formatMessage(MESSAGES.nfcCards),
-                value: `${beneficiary?.attributes?.nfc_cards ?? 0}`,
+                value: `${beneficiary?.nfc_cards ?? 0}`,
                 key: 'nfcCards',
             },
             {
@@ -46,7 +48,7 @@ export const useGetBeneficiaryFields = (beneficiary: Beneficiary) => {
                 key: 'uuid',
             },
         ],
-        [beneficiary?.attributes?.nfc_cards, beneficiary?.uuid, formatMessage],
+        [beneficiary?.nfc_cards, beneficiary?.uuid, formatMessage],
     );
 
     return {

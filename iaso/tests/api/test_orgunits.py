@@ -1,14 +1,14 @@
-import typing
-
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
-from django.db import connection
-
-from hat.audit.models import Modification
-from iaso import models as m
-from iaso.models import OrgUnitType, OrgUnit
-from iaso.test import APITestCase
 import csv
 import io
+import typing
+
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
+from django.db import connection
+from iaso.utils.gis import simplify_geom
+from hat.audit.models import Modification
+from iaso import models as m
+from iaso.models import OrgUnit, OrgUnitType
+from iaso.test import APITestCase
 
 
 class OrgUnitAPITestCase(APITestCase):
@@ -128,6 +128,9 @@ class OrgUnitAPITestCase(APITestCase):
         )
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
+        cls.user_read_permission = cls.create_user_with_profile(
+            username="user_read_permission", account=star_wars, permissions=["iaso_org_units_read"]
+        )
         cls.luke = cls.create_user_with_profile(
             username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[jedi_council_endor]
         )
@@ -514,6 +517,51 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidOrgUnitData(response.json())
         self.assertEqual(response.data["reference_instances"], [])
 
+    def test_org_unit_retrieve_with_instances_count(self):
+        self.client.force_authenticate(self.yoda)
+
+        parent_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            name="Parent",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        descendant_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            name="Descendant",
+            parent=parent_org_unit,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=descendant_org_unit,
+            project=self.project,
+            json={"name": "a", "age": 18, "gender": "M"},
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=parent_org_unit,
+            project=self.project,
+            json={"name": "b", "age": 19, "gender": "F"},
+        )
+        # Test the descendant instances count
+        response_descendant = self.client.get(f"/api/orgunits/{descendant_org_unit.id}/")
+        self.assertJSONResponse(response_descendant, 200)
+        descendant_instances_count = response_descendant.json()["instances_count"]
+        self.assertEquals(descendant_instances_count, 1)
+
+        # Test the parent instances count
+        response_parent = self.client.get(f"/api/orgunits/{parent_org_unit.id}/")
+        self.assertJSONResponse(response_parent, 200)
+        parent_instances_count = response_parent.json()["instances_count"]
+        self.assertEquals(parent_instances_count, 2)
+
     def test_can_retrieve_org_units_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
@@ -578,9 +626,8 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.assertTrue(set(createds.items()).issubset(set(diff.items())))
 
-    def test_create_org_unit(self):
-        self.client.force_authenticate(self.yoda)
-        response = self.client.post(
+    def set_up_org_unit_creation(self):
+        return self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
             data={
@@ -598,6 +645,33 @@ class OrgUnitAPITestCase(APITestCase):
                 "opening_date": "01-01-2024",
             },
         )
+
+    def test_create_org_unit_with_read_permission(self):
+        """Check that we cannot create org unit with org units read only permission"""
+        self.client.force_authenticate(self.user_read_permission)
+        response = self.set_up_org_unit_creation()
+        self.assertJSONResponse(response, 403)
+
+    def test_create_org_unit_should_fail_with_restricted_editable_org_unit_types(self):
+        """
+        Check that we cannot create an org unit if writing rights are limited
+        by a set of org unit types that we are allowed to modify.
+        """
+        self.yoda.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type are now writable.
+            [self.jedi_squad]
+        )
+        self.client.force_authenticate(self.yoda)
+        response = self.set_up_org_unit_creation()
+        json_response = self.assertJSONResponse(response, 400)
+        self.assertEqual(json_response[0]["errorKey"], "org_unit_type_id")
+        self.assertEqual(json_response[0]["errorMessage"], "You cannot create or edit an Org unit of this type")
+        self.yoda.iaso_profile.editable_org_unit_types.clear()
+
+    def test_create_org_unit(self):
+        """Check that we can create org unit with only org units management permission"""
+        self.client.force_authenticate(self.yoda)
+        response = self.set_up_org_unit_creation()
         self.assertJSONResponse(response, 200)
         json = response.json()
         self.assertValidOrgUnitData(json)
@@ -827,8 +901,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.created_at, old_ou.created_at)
         self.assertNotEqual(ou.updated_at, old_ou.updated_at)
 
-    def test_edit_org_unit_unflag_reference_instance(self):
-        org_unit_type = self.jedi_council
+    def set_up_edit_org_flag_reference_instance(self, user):
         org_unit = self.jedi_council_corruscant
         form = self.reference_form
         instance = self.instance_related_to_reference_form
@@ -838,7 +911,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertIn(instance, org_unit.reference_instances.all())
 
         # GET /api/orgunits/id.
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(user)
         response = self.client.get(f"/api/orgunits/{org_unit.id}/")
         data = self.assertJSONResponse(response, 200)
 
@@ -850,6 +923,11 @@ class OrgUnitAPITestCase(APITestCase):
                 "reference_instance_action": m.Instance.REFERENCE_UNFLAG_CODE,
             }
         )
+
+        return org_unit, instance, data
+
+    def test_edit_org_unit_unflag_reference_instance(self):
+        org_unit, instance, data = self.set_up_edit_org_flag_reference_instance(self.yoda)
         response = self.client.patch(
             f"/api/orgunits/{org_unit.id}/",
             format="json",
@@ -858,6 +936,15 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertNotIn(instance, org_unit.reference_instances.all())
         self.assertEqual(response.data["reference_instances"], [])
+
+    def test_edit_org_unit_reference_instance_read_permission(self):
+        org_unit, _, data = self.set_up_edit_org_flag_reference_instance(self.user_read_permission)
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+        self.assertJSONResponse(response, 403)
 
     def test_edit_org_unit_flag_reference_instance(self):
         """Retrieve an orgunit data and modify the reference_instance_id"""
@@ -905,8 +992,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(old_modification_date, old_ou.updated_at)
         self.assertNotIn(self.instance_not_related_to_reference_form, old_ou.reference_instances.all())
 
-    def test_edit_org_unit_partial_update(self):
-        """Check tha we can only modify a part of the fille"""
+    def set_up_org_unit_partial_update(self):
         ou = m.OrgUnit(version=self.sw_version_1)
         ou.name = "test ou"
         ou.source_ref = "b"
@@ -917,8 +1003,14 @@ class OrgUnitAPITestCase(APITestCase):
         ou.groups.set([group_a, group_b])
         ou.save()
         old_modification_date = ou.updated_at
-        self.client.force_authenticate(self.yoda)
         data = {"source_ref": "new source ref", "opening_date": "01-01-2024"}
+
+        return ou, group_a, group_b, old_modification_date, data
+
+    def test_edit_org_unit_partial_update(self):
+        """Check that we can only modify a part of the file with org units management permission"""
+        ou, group_a, group_b, old_modification_date, data = self.set_up_org_unit_partial_update()
+        self.client.force_authenticate(self.yoda)
         response = self.client.patch(
             f"/api/orgunits/{ou.id}/",
             format="json",
@@ -933,6 +1025,65 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertQuerySetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
         self.assertEqual(response.data["reference_instances"], [])
+
+    def test_edit_org_unit_partial_update_remove_geojson_geom_simplified_geom_should_be_consistent(self):
+        """Check that if we remove the geojson both simplified_geom and geom are empty"""
+        ou = m.OrgUnit(version=self.sw_version_1)
+        ou.name = "test ou"
+        ou.source_ref = "b"
+        ou.geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
+        ou.simplified_geom = simplify_geom(MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])))
+        ou.save()
+        old_modification_date = ou.updated_at
+        self.client.force_authenticate(self.yoda)
+        data = {"geo_json": None}
+        response = self.client.patch(
+            f"/api/orgunits/{ou.id}/",
+            format="json",
+            data=data,
+        )
+        self.assertJSONResponse(response, 200)
+        ou.refresh_from_db()
+        self.assertGreater(ou.updated_at, old_modification_date)
+        self.assertEqual(ou.name, "test ou")
+        self.assertIsNone(ou.geom)
+        self.assertIsNone(ou.simplified_geom)
+
+    def test_edit_org_unit_partial_update_read_permission(self):
+        """Check that we can only modify a part of the file with org units read only permission"""
+        ou, _, _, _, data = self.set_up_org_unit_partial_update()
+        self.client.force_authenticate(self.user_read_permission)
+        response = self.client.patch(
+            f"/api/orgunits/{ou.id}/",
+            format="json",
+            data=data,
+        )
+        self.assertJSONResponse(response, 403)
+
+    def test_edit_org_unit_should_fail_with_restricted_editable_org_unit_types(self):
+        """
+        Check that we cannot edit an org unit if writing rights are limited
+        by a set of org unit types that we are allowed to modify.
+        """
+        org_unit = m.OrgUnit.objects.create(
+            name="Foo",
+            org_unit_type=self.jedi_council,
+            version=self.star_wars.default_version,
+        )
+        self.yoda.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type are now writable.
+            [self.jedi_squad]
+        )
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data={"name": "New name"},
+        )
+        json_response = self.assertJSONResponse(response, 400)
+        self.assertEqual(json_response[0]["errorKey"], "org_unit_type_id")
+        self.assertEqual(json_response[0]["errorMessage"], "You cannot create or edit an Org unit of this type")
+        self.yoda.iaso_profile.editable_org_unit_types.clear()
 
     def test_edit_org_unit_edit_bad_group_fail(self):
         """Check for a previous bug if an org unit is already member of a bad group
@@ -1196,7 +1347,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         jedi_squad_endor_2_children.save()
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(7):
             response = self.client.get(
                 f"/api/orgunits/?&parent_id={self.jedi_council_endor.pk}&limit=10&page=1&order=name&validation_status=all&onlyDirectChildren=true"
             )
@@ -1211,3 +1362,33 @@ class OrgUnitAPITestCase(APITestCase):
         # list of all direct children of the jedi_council_endor OU
         ou_ids_list = [self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk]
         self.assertEqual(sorted(ids_in_response), sorted(ou_ids_list))
+
+    def test_edit_org_unit_add_default_image(self):
+        old_ou = self.jedi_council_corruscant
+        self.client.force_authenticate(self.yoda)
+        image = m.InstanceFile.objects.create(file="path/to/image.jpg")
+        response = self.client.patch(
+            f"/api/orgunits/{old_ou.id}/",
+            format="json",
+            data={"default_image": image.id},
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertEqual(ou.default_image.id, image.id)
+
+    def test_edit_org_unit_remove_default_image(self):
+        old_ou = self.jedi_council_corruscant
+        image = m.InstanceFile.objects.create(file="path/to/image.jpg")
+        old_ou.default_image = image
+        old_ou.save()
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/orgunits/{old_ou.id}/",
+            format="json",
+            data={"default_image": None},
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertIsNone(ou.default_image)

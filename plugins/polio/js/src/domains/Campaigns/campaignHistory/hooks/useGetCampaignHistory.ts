@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import moment from 'moment';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';

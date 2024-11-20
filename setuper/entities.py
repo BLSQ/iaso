@@ -18,7 +18,7 @@ def setup_entities(account_name, iaso_client):
     # create a form
     reg_form_data = {
         "id": None,
-        "name": "Child - Registration",
+        "name": "Child/Enfant - Registration/Enregistrement",
         "short_name": "",
         "depth": None,
         "org_unit_type_ids": [hf_out["id"]],
@@ -45,7 +45,7 @@ def setup_entities(account_name, iaso_client):
     # create a form
     follow_form_data = {
         "id": None,
-        "name": "Child - Follow up",
+        "name": "Child/Enfant - Follow-up/Suivi",
         "short_name": "",
         "depth": None,
         "org_unit_type_ids": [hf_out["id"]],

@@ -1,16 +1,19 @@
 /* eslint-disable no-param-reassign */
-import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
-import isEmpty from 'lodash/isEmpty';
 import { Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import isEmpty from 'lodash/isEmpty';
+import PropTypes from 'prop-types';
+import React, { useCallback, useMemo } from 'react';
 import InputComponent from '../../../components/forms/InputComponent.tsx';
 import { APP_LOCALES } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
-import MESSAGES from '../messages';
 import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import MESSAGES from '../messages.ts';
+import { userHasPermission } from '../utils.js';
+import { USERS_ADMIN } from '../../../utils/permissions';
 
 const UsersInfos = ({
     setFieldValue,
@@ -18,6 +21,8 @@ const UsersInfos = ({
     initialData,
     allowSendEmailInvitation,
 }) => {
+    const loggedUser = useCurrentUser();
+    const isLoggedUserAdmin = userHasPermission(USERS_ADMIN, loggedUser);
     const { formatMessage } = useSafeIntl();
     const isEmailAdressExist = isEmpty(currentUser.email.value);
     const sendUserEmailInvitation = !!isEmailAdressExist;
@@ -38,6 +43,21 @@ const UsersInfos = ({
     }
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
+
+    const availableProjects = useMemo(() => {
+        if (!loggedUser || !loggedUser.projects) {
+            return [];
+        }
+        if (loggedUser.projects.length === 0) {
+            return allProjects;
+        }
+        return loggedUser.projects.map(project => {
+            return {
+                value: project.id.toString(),
+                label: project.name,
+            };
+        });
+    }, [allProjects, loggedUser]);
 
     const isInitialDataEmpty = isEmpty(initialData)
         ? MESSAGES.password
@@ -116,6 +136,14 @@ const UsersInfos = ({
                         type="text"
                         label={MESSAGES.dhis2_id}
                     />
+                    <InputComponent
+                        keyValue="organization"
+                        onChange={(key, value) => setFieldValue(key, value)}
+                        value={currentUser.organization?.value}
+                        errors={currentUser.organization?.errors ?? []}
+                        type="text"
+                        label={MESSAGES.organization}
+                    />
                     <InputWithInfos
                         infos={formatMessage(MESSAGES.homePageInfos)}
                     >
@@ -143,8 +171,14 @@ const UsersInfos = ({
                         type="select"
                         multi
                         label={MESSAGES.projects}
-                        options={allProjects}
+                        options={availableProjects}
                         loading={isFetchingProjects}
+                        disabled={!isLoggedUserAdmin}
+                        helperText={
+                            !isLoggedUserAdmin
+                                ? formatMessage(MESSAGES.userAdminOnly)
+                                : undefined
+                        }
                     />
                     <InputComponent
                         keyValue="language"

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, { useMemo, useState } from 'react';
 import {
     useSafeIntl,

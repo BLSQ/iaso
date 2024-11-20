@@ -1,10 +1,10 @@
-import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
 import { Box, Grid } from '@mui/material';
 import { grey } from '@mui/material/colors';
-
-import { LoadingSpinner, LazyImage } from 'bluesquare-components';
-import { getFileName } from '../../utils/filesUtils';
+import { LazyImage, LoadingSpinner } from 'bluesquare-components';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { ShortFile } from '../../domains/instances/types/instance';
+import { getFileName } from '../../utils/filesUtils';
+import { FavButton } from './FavButton';
 
 const styles = {
     imageItem: {
@@ -26,13 +26,16 @@ const styles = {
 
 type Props = {
     imageList: ShortFile[];
-    // eslint-disable-next-line no-unused-vars
     onImageClick: (index: number) => void;
+    onImageFavoriteClick?: (id: number) => void;
+    isDefaultImage?: (id: number) => boolean;
 };
 
 const LazyImagesList: FunctionComponent<Props> = ({
     imageList,
     onImageClick,
+    onImageFavoriteClick,
+    isDefaultImage,
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [width, setWidth] = useState<number | undefined>(undefined);
@@ -62,24 +65,44 @@ const LazyImagesList: FunctionComponent<Props> = ({
                             >
                                 {(src, loading, isVisible) => (
                                     <Box
-                                        onClick={() => onImageClick(index)}
-                                        role="button"
-                                        tabIndex={0}
-                                        sx={styles.imageContainer}
-                                        style={{
+                                        sx={{
+                                            ...styles.imageContainer,
+                                            position: 'relative',
                                             backgroundImage: loading
                                                 ? 'none'
                                                 : `url('${src}')`,
                                         }}
                                     >
-                                        {loading && isVisible && (
-                                            <LoadingSpinner
-                                                fixed={false}
-                                                transparent
-                                                padding={4}
-                                                size={25}
-                                            />
-                                        )}
+                                        {onImageFavoriteClick &&
+                                            isDefaultImage && (
+                                                <FavButton
+                                                    file={file}
+                                                    onImageFavoriteClick={
+                                                        onImageFavoriteClick
+                                                    }
+                                                    isDefaultImage={
+                                                        isDefaultImage
+                                                    }
+                                                />
+                                            )}
+                                        <Box
+                                            onClick={() => onImageClick(index)}
+                                            role="button"
+                                            tabIndex={0}
+                                            sx={{
+                                                width: '100%',
+                                                height: '100%',
+                                            }}
+                                        >
+                                            {loading && isVisible && (
+                                                <LoadingSpinner
+                                                    fixed={false}
+                                                    transparent
+                                                    padding={4}
+                                                    size={25}
+                                                />
+                                            )}
+                                        </Box>
                                     </Box>
                                 )}
                             </LazyImage>

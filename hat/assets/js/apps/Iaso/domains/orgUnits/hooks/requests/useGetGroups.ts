@@ -5,8 +5,8 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { getRequest } from 'Iaso/libs/Api';
 import { DropdownOptions } from '../../../../types/utils';
 
-import MESSAGES from '../../messages';
 import { staleTime } from '../../config';
+import MESSAGES from '../../messages';
 
 type Props = {
     dataSourceId?: number;
@@ -56,12 +56,18 @@ export const useGetGroups = ({
     });
 };
 
+// TODO CODE REVIEW
+// don't know why but useGetGroupDropdown endpoint
+// version vs sourceVersionId
+
 // Correspondance between the name in the filter object and what the API expect
 const queryParamsMap = new Map([
     ['dataSourceId', 'dataSource'],
-    ['sourceVersionId', 'sourceVersionId'],
+    ['sourceVersionId', 'version'],
     ['blockOfCountries', 'blockOfCountries'],
     ['appId', 'app_id'],
+    ['projectIds', 'projectIds'],
+    ['defaultVersion', 'defaultVersion'],
 ]);
 
 type Params = {
@@ -69,6 +75,8 @@ type Params = {
     sourceVersionId?: number;
     blockOfCountries?: string;
     appId?: string;
+    defaultVersion?: string;
+    projectIds?: string;
 };
 export const useGetGroupDropdown = (
     params: Params,

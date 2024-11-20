@@ -2,11 +2,12 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from hat.audit.audit_logger import AuditLogger
-from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API, Modification
+from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
 from iaso.api.payments.filters.potential_payments import filter_by_dates, filter_by_forms, filter_by_parent
 from iaso.api.payments.pagination import PaymentPagination
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.models.base import Task
+from iaso.models.payments import PaymentStatuses
 
 from ..common import TimestampField
 
@@ -143,7 +144,7 @@ class PaymentSerializer(serializers.ModelSerializer):
     pagination_class = PaymentPagination
 
     def validate_status(self, status):
-        if status not in Payment.Statuses:
+        if status not in PaymentStatuses:
             raise serializers.ValidationError("Invalid status")
         return status
 

@@ -7,7 +7,6 @@ import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils
 import { ReasonForDelay } from '../domains/Campaigns/Rounds/ReasonForDelayModal/hooks/reasons';
 import { SubActivityFormValues } from '../domains/Campaigns/SubActivities/types';
 
-/* eslint-disable camelcase */
 export type FormatForNFMArgs<T> = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
@@ -67,7 +66,7 @@ export type ConvertedLqasImData = {
     rounds: { number: number; data: LqasImDistrictDataWithNameAndRegion[] }[];
 };
 
-export type IMType = 'imGlobal' | 'imIHH' | 'imOHH';
+export type IMType = 'imGlobal' | 'imHH' | 'imOHH';
 
 export type LqasIMtype = IMType | 'lqas';
 

@@ -1,21 +1,20 @@
-/* eslint-disable camelcase */
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
     commonStyles,
     getTableUrl,
+    useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
 import classnames from 'classnames';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 // @ts-ignore
 import moment from 'moment';
 import { useLocation } from 'react-router-dom';
-import { DisplayIfUserHasPerm } from '../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { XlsxButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/XslxButton';
-import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { getCampaignColor } from '../../constants/campaignsColors';
 import { CampaignsCalendar } from './campaignCalendar';
 import { CalendarMap } from './campaignCalendar/map/CalendarMap';
@@ -27,16 +26,21 @@ import {
 
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../constants/messages';
-import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns';
+import { baseUrls } from '../../constants/urls';
+import {
+    CAMPAIGNS_ENDPOINT,
+    useGetCampaigns,
+} from '../Campaigns/hooks/api/useGetCampaigns';
 import { ExportCsvModal } from './ExportCsvModal';
-import { CampaignsFilters } from './campaignCalendar/CampaignsFilters';
+import {
+    CampaignsFilters,
+    getRedirectUrl,
+} from './campaignCalendar/CampaignsFilters';
 import { IsTestLegend } from './campaignCalendar/IsTestLegend';
+import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 import { TogglePeriod } from './campaignCalendar/TogglePeriod';
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import { CalendarParams, MappedCampaign } from './campaignCalendar/types';
-import { baseUrls } from '../../constants/urls';
-import { POLIO, POLIO_ADMIN } from '../../constants/permissions';
-import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {
@@ -66,6 +70,8 @@ export const Calendar: FunctionComponent = () => {
     const classes = useStyles();
     const currentUser = useCurrentUser();
     const isLogged = Boolean(currentUser);
+    const [campaignType, setCampaignType] = useState(params.campaignType);
+    const [isTypeSet, setIsTypeSet] = useState(!!params.campaignType);
 
     const orders = params.order || defaultOrder;
     const queryOptions = useMemo(
@@ -88,12 +94,12 @@ export const Calendar: FunctionComponent = () => {
         }),
         [
             orders,
-            params.campaignGroups,
-            params.campaignType,
-            params.campaignCategory,
             params.countries,
-            params.orgUnitGroups,
             params.search,
+            params.campaignCategory,
+            params.campaignGroups,
+            params.orgUnitGroups,
+            params.campaignType,
         ],
     );
 
@@ -101,8 +107,14 @@ export const Calendar: FunctionComponent = () => {
         data: campaigns = [],
         isLoading,
         isFetching,
-    } = useGetCampaigns(queryOptions);
+    } = useGetCampaigns(
+        queryOptions,
+        CAMPAIGNS_ENDPOINT,
+        ['calendar-campaigns'],
+        { enabled: isTypeSet },
+    );
 
+    const redirectToReplace = useRedirectToReplace();
     const currentDate = params.currentDate
         ? moment(params.currentDate, dateFormat)
         : moment();
@@ -158,6 +170,20 @@ export const Calendar: FunctionComponent = () => {
         }
     }, [filteredCampaigns, mappedCampaigns, isLoading]);
 
+    const redirectUrl = getRedirectUrl(true, isEmbedded);
+    useEffect(() => {
+        if (!params.campaignType && !isTypeSet) {
+            setCampaignType('polio');
+            setIsTypeSet(true);
+            redirectToReplace(redirectUrl, {
+                ...params,
+                campaignType: 'polio',
+            });
+        }
+        // only test once to force polio as type
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return (
         <div>
             {isLogged && !isPdf && (
@@ -192,6 +218,8 @@ export const Calendar: FunctionComponent = () => {
                                     isCalendar
                                     isEmbedded={isEmbedded}
                                     params={params}
+                                    setCampaignType={setCampaignType}
+                                    campaignType={campaignType}
                                 />
                             </Box>
                             <Grid
@@ -217,18 +245,14 @@ export const Calendar: FunctionComponent = () => {
                                         </XlsxButton>
                                     </Box>
                                 </Grid>
-                                <DisplayIfUserHasPerm
-                                    permissions={[POLIO, POLIO_ADMIN]}
-                                >
-                                    <Grid item>
-                                        <Box mb={2} mt={2}>
-                                            <ExportCsvModal
-                                                params={params}
-                                                iconProps={{}}
-                                            />
-                                        </Box>
-                                    </Grid>
-                                </DisplayIfUserHasPerm>
+                                <Grid item>
+                                    <Box mb={2} mt={2}>
+                                        <ExportCsvModal
+                                            params={params}
+                                            iconProps={{}}
+                                        />
+                                    </Box>
+                                </Grid>
                             </Grid>
                         </>
                     )}

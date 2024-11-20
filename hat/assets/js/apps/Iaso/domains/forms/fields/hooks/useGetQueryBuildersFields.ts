@@ -3,6 +3,7 @@ import { QueryBuilderFields } from 'bluesquare-components';
 import { formatLabel } from '../../../instances/utils';
 
 import { FormDescriptor, PossibleField } from '../../types/forms';
+import { PossibleFieldsForForm } from '../../hooks/useGetPossibleFields';
 
 import { iasoFields, Field } from '../constants';
 import { findDescriptorInChildren } from '../../../../utils';
@@ -27,7 +28,7 @@ export const useGetQueryBuildersFields = (
         ) {
             fields[field.fieldKey] = {
                 ...currentField.queryBuilder,
-                label: formatLabel(field),
+                label: `${formatLabel(field)} [${field.name}]`,
             };
             // in case the field needs a list of values to display
             if (currentField.useListValues) {
@@ -52,5 +53,32 @@ export const useGetQueryBuildersFields = (
             }
         }
     });
+    return fields;
+};
+
+export const useGetQueryBuilderFieldsForAllForms = (
+    formDescriptors?: FormDescriptor[],
+    allPossibleFields?: PossibleFieldsForForm[],
+): QueryBuilderFields => {
+    if (!allPossibleFields || !formDescriptors) return {};
+    const fields: QueryBuilderFields = {};
+
+    for (const { form_id, name, possibleFields } of allPossibleFields) {
+        const subfields = useGetQueryBuildersFields(
+            formDescriptors,
+            possibleFields,
+        );
+
+        fields[form_id] = {
+            label: name,
+            type: '!group',
+            mode: 'array',
+            conjunctions: ['AND', 'OR'],
+            operators: ['some', 'all', 'none'],
+            defaultOperator: 'some',
+            subfields,
+        };
+    }
+
     return fields;
 };

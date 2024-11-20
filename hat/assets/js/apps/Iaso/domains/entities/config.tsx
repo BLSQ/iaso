@@ -1,32 +1,33 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable camelcase */
-import React, { ReactElement, useMemo } from 'react';
 import {
-    IconButton as IconButtonComponent,
-    useSafeIntl,
     Column,
+    IconButton as IconButtonComponent,
     IntlFormatMessage,
+    LinkWithLocation,
+    textPlaceholder,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { ReactElement, useMemo } from 'react';
 
-import moment from 'moment';
-import _ from 'lodash';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
+import _ from 'lodash';
+import moment from 'moment';
 import {
     DateCell,
     DateTimeCell,
     DateTimeCellRfc,
 } from '../../components/Cells/DateTimeCell';
+import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 
 import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
 
-import { ExtraColumn } from './types/fields';
 import getDisplayName from '../../utils/usersUtils';
-import { useGetFieldValue } from './hooks/useGetFieldValue';
-import { formatLabel } from '../instances/utils';
 import { LinkToInstance } from '../instances/components/LinkToInstance';
+import { formatLabel } from '../instances/utils';
+import { filterOrgUnitsByGroupUrl } from '../orgUnits/utils';
+import { useGetFieldValue } from './hooks/useGetFieldValue';
+import { ExtraColumn } from './types/fields';
 
 export const baseUrl = baseUrls.entities;
 
@@ -59,6 +60,28 @@ export const useStaticColumns = (): Array<Column> => {
             },
         },
         {
+            Header: 'Groups',
+            id: 'attributes__org_unit__groups',
+            sortable: false,
+            Cell: settings => {
+                const groups = settings.row.original?.org_unit?.groups;
+                if (!groups || groups.length === 0) {
+                    return <span>{textPlaceholder}</span>;
+                }
+
+                return groups.map((group, index) => (
+                    <span key={group.id}>
+                        <LinkWithLocation
+                            to={filterOrgUnitsByGroupUrl(group.id)}
+                        >
+                            {group.name}
+                        </LinkWithLocation>
+                        {index !== groups.length - 1 && ', '}
+                    </span>
+                ));
+            },
+        },
+        {
             Header: 'HC',
             id: 'attributes__org_unit__name',
             accessor: 'attributes__org_unit__name',
@@ -66,7 +89,7 @@ export const useStaticColumns = (): Array<Column> => {
                 return settings.row.original?.org_unit ? (
                     <LinkToOrgUnit orgUnit={settings.row.original?.org_unit} />
                 ) : (
-                    <>--</>
+                    <span>{textPlaceholder}</span>
                 );
             },
         },
@@ -173,7 +196,7 @@ const generateColumnsFromFieldsList = (
                     return <DateCell value={moment(data).format('L')} />;
                 }
 
-                return <>{data ?? '--'}</>;
+                return <span>{data ?? '--'}</span>;
             },
         };
     });
@@ -204,8 +227,8 @@ export const useBeneficiariesDetailsColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.created_at),
-                id: 'created_at',
-                accessor: 'created_at',
+                id: 'source_created_at',
+                accessor: 'source_created_at',
                 Cell: DateTimeCell,
             },
             {

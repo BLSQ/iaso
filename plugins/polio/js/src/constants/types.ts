@@ -308,8 +308,6 @@ export type Campaign = {
     created_at: string;
     updated_at: string;
     deleted_at: Nullable<string>;
-    round_one?: any[];
-    round_two?: any[];
     rounds: Round[];
     org_unit: {
         id: number;

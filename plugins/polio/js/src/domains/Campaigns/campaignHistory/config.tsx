@@ -362,21 +362,6 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'last_budget_event', // deprecated
         },
         {
-            key: 'budget_requested_at_WFEDITABLE_old', // deprecated
-            getLogValue: log =>
-                convertDate(log.budget_requested_at_WFEDITABLE_old),
-        },
-        {
-            key: 'feedback_sent_to_rrt3_at_WFEDITABLE_old', // deprecated
-            getLogValue: log =>
-                convertDate(log.feedback_sent_to_rrt3_at_WFEDITABLE_old),
-        },
-        {
-            key: 're_submitted_to_orpg_at_WFEDITABLE_old', // deprecated
-            getLogValue: log =>
-                convertDate(log.re_submitted_to_orpg_at_WFEDITABLE_old),
-        },
-        {
             key: 'budget_rrt_oprtt_approval_at', // deprecated
             getLogValue: log => convertDate(log.budget_rrt_oprtt_approval_at),
         },

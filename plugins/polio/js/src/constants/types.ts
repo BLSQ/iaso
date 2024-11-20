@@ -359,7 +359,6 @@ export type Campaign = {
     preparedness_spreadsheet_url: Nullable<string>;
     preparedness_sync_status: PreparednessSyncStatus;
     budget_status: Nullable<BudgetStatusDeprecated>;
-    budget_responsible: Nullable<ResponsibleLevel>;
     is_test: boolean;
     budget_current_state_key: string;
     budget_current_state_label: Nullable<string>;

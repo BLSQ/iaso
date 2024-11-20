@@ -642,10 +642,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.responsible',
         defaultMessage: 'Responsible',
     },
-    budget_responsible: {
-        id: 'iaso.polio.label.responsible',
-        defaultMessage: 'Responsible',
-    },
     pending: {
         id: 'iaso.polio.label.pending',
         defaultMessage: 'Pending',

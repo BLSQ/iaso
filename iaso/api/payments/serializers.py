@@ -39,26 +39,34 @@ class OrgChangeRequestNestedSerializer(serializers.ModelSerializer):
             return True
         user_org_units = list(user.iaso_profile.org_units.all().values_list("id"))
         return obj.org_unit.id in user_org_units
-
-
-class PaymentSerializer(serializers.ModelSerializer):
-    change_requests = serializers.SerializerMethodField()
+    
+class AuditOrgChangeRequestNestedSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Payment
-        fields = ["id", "status", "created_at", "updated_at", "created_by", "updated_by", "user", "change_requests"]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        model = OrgUnitChangeRequest
+        fields = ["id", "uuid", "org_unit_id"]
+        read_only_fields = ["id", "updated_at"]
 
-    pagination_class = PaymentPagination
-    created_by = UserNestedSerializer()
-    updated_by = UserNestedSerializer()
-    user = UserNestedSerializer()
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
 
-    def get_change_requests(self, obj):
-        change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
-        return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
+
+# class PaymentSerializer(serializers.ModelSerializer):
+#     change_requests = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Payment
+#         fields = ["id", "status", "created_at", "updated_at", "created_by", "updated_by", "user", "change_requests"]
+#         read_only_fields = ["id", "created_at", "updated_at"]
+
+#     pagination_class = PaymentPagination
+#     created_by = UserNestedSerializer()
+#     updated_by = UserNestedSerializer()
+#     user = UserNestedSerializer()
+#     created_at = TimestampField(read_only=True)
+#     updated_at = TimestampField(read_only=True)
+
+#     def get_change_requests(self, obj):
+#         change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
+#         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
 
 class NestedPaymentSerializer(serializers.ModelSerializer):
@@ -201,7 +209,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     def get_change_requests(self, obj):
         change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
-        return OrgChangeRequestNestedSerializer(change_requests, many=True).data
+        return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
     def update(self, obj, validated_data):
         payment = super().update(obj, validated_data)
@@ -217,7 +225,7 @@ class AuditPaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = "__all__"
 
-    change_requests = OrgChangeRequestNestedSerializer(many=True)
+    change_requests = AuditOrgChangeRequestNestedSerializer(many=True)
     user = UserNestedSerializer()
 
 

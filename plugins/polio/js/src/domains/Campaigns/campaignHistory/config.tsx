@@ -364,20 +364,6 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'budget_submitted_at', // deprecated
             getLogValue: log => convertDate(log.budget_submitted_at),
         },
-
-        // Preparedness
-        {
-            key: 'preparedness_spreadsheet_url', // depreacted
-        },
-        {
-            key: 'preperadness_sync_status', // deprecated
-        },
-        {
-            key: 'surge_spreadsheet_url', // deprecated
-        },
-        {
-            key: 'country_name_in_surge_spreadsheet', // deprecated
-        },
         // Scopes
         {
             key: 'scopes',

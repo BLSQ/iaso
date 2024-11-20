@@ -561,10 +561,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.table.label.sync_status',
         defaultMessage: 'Synchronisation',
     },
-    preperadness_sync_status: {
-        id: 'iaso.polio.table.label.sync_status',
-        defaultMessage: 'Synchronisation',
-    },
     import: {
         id: 'iaso.polio.button.label.import',
         defaultMessage: 'Import',
@@ -587,10 +583,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Enter Google Sheet url',
     },
     preparednessGoogleSheetUrl: {
-        id: 'iaso.polio.title.preparednessGoogleSheetUrl',
-        defaultMessage: 'Preparedness Google Sheet URL',
-    },
-    preperadness_spreadsheet_url: {
         id: 'iaso.polio.title.preparednessGoogleSheetUrl',
         defaultMessage: 'Preparedness Google Sheet URL',
     },

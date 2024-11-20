@@ -39,14 +39,13 @@ class OrgChangeRequestNestedSerializer(serializers.ModelSerializer):
             return True
         user_org_units = list(user.iaso_profile.org_units.all().values_list("id"))
         return obj.org_unit.id in user_org_units
-    
-class AuditOrgChangeRequestNestedSerializer(serializers.ModelSerializer):
 
+
+class AuditOrgChangeRequestNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnitChangeRequest
         fields = ["id", "uuid", "org_unit_id"]
         read_only_fields = ["id", "updated_at"]
-
 
 
 # class PaymentSerializer(serializers.ModelSerializer):

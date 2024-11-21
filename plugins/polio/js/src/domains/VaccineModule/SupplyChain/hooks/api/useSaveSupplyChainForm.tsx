@@ -88,10 +88,6 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
         showSucessSnackBar: false,
         ignoreErrorCodes: [400],
         options: {
-            onError(error, variables, context) {
-                console.log('ERROR', error);
-                console.log('VARIABLES', variables);
-            },
             // Setting the cache value with the response onSuccess, so we can reset the form state (touched, etc) without losing data
             onSuccess: (
                 data: SupplyChainResponse,

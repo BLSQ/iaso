@@ -58,7 +58,6 @@ class StepAdmin(admin.ModelAdmin):
 class MonthlyStatisticsAdmin(admin.ModelAdmin):
     list_filter = (
         "org_unit",
-        "org_unit__name",
         "month",
         "gender",
         "admission_criteria",
@@ -70,7 +69,6 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "org_unit",
-        "org_unit__name",
         "month",
         "gender",
         "admission_criteria",
@@ -85,7 +83,6 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
 class YearlyStatisticsAdmin(admin.ModelAdmin):
     list_filter = (
         "org_unit",
-        "org_unit__name",
         "year",
         "gender",
         "admission_criteria",
@@ -97,7 +94,6 @@ class YearlyStatisticsAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "org_unit",
-        "org_unit__name",
         "year",
         "gender",
         "admission_criteria",

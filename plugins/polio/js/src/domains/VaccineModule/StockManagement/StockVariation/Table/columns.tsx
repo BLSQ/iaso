@@ -36,6 +36,12 @@ export const useFormATableColumns = (
                 sortable: true,
             },
             {
+                Header: formatMessage(MESSAGES.round),
+                accessor: 'round_number',
+                id: 'round__number',
+                sortable: true,
+            },
+            {
                 Header: formatMessage(MESSAGES.form_a_reception_date),
                 accessor: 'form_a_reception_date',
                 id: 'form_a_reception_date',

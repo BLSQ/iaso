@@ -40,6 +40,10 @@ export const useFormATableColumns = (
                 accessor: 'round_number',
                 id: 'round__number',
                 sortable: true,
+                Cell: settings =>
+                    settings.row.original.round_number
+                        ? settings.row.original.round_number
+                        : textPlaceholder,
             },
             {
                 Header: formatMessage(MESSAGES.form_a_reception_date),

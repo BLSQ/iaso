@@ -1,7 +1,6 @@
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    LoadingSpinner,
     commonStyles,
     useGoBack,
     useRedirectToReplace,
@@ -169,36 +168,30 @@ export const VaccineSupplyChainDetails: FunctionComponent = () => {
                 />
             </TopBar>
             <Box className={classnames(classes.containerFullHeightPadded)}>
-                {isLoading && <LoadingSpinner />}
-                {!isLoading && (
-                    <>
-                        {tab === VRF && (
-                            <VaccineRequestForm vrfData={vrfDetails} />
-                        )}
-                        {tab === PREALERT && (
-                            <PreAlerts items={values.pre_alerts} />
-                        )}
-                        {tab === VAR && (
-                            <VaccineArrivalReports
-                                items={values.arrival_reports}
+                {/* {isLoading && <LoadingSpinner />} */}
+                <>
+                    {tab === VRF && <VaccineRequestForm vrfData={vrfDetails} />}
+                    {tab === PREALERT && (
+                        <PreAlerts items={values.pre_alerts} />
+                    )}
+                    {tab === VAR && (
+                        <VaccineArrivalReports items={values.arrival_reports} />
+                    )}
+                    <Grid container spacing={2} justifyContent="flex-end">
+                        <Box style={{ display: 'inline-flex' }} mr={3}>
+                            <VaccineSupplyChainConfirmButtons
+                                className={classes.button}
+                                tab={tab}
+                                onSubmitTab={() => handleSubmit()}
+                                onSubmitAll={() => handleSubmit(true)}
+                                onCancel={onCancel}
+                                allowSaveTab={allowSaveTab}
+                                allowSaveAll={allowSaveAll}
+                                showSaveAllButton={Boolean(values?.vrf?.id)}
                             />
-                        )}
-                        <Grid container spacing={2} justifyContent="flex-end">
-                            <Box style={{ display: 'inline-flex' }} mr={3}>
-                                <VaccineSupplyChainConfirmButtons
-                                    className={classes.button}
-                                    tab={tab}
-                                    onSubmitTab={() => handleSubmit()}
-                                    onSubmitAll={() => handleSubmit(true)}
-                                    onCancel={onCancel}
-                                    allowSaveTab={allowSaveTab}
-                                    allowSaveAll={allowSaveAll}
-                                    showSaveAllButton={Boolean(values?.vrf?.id)}
-                                />
-                            </Box>
-                        </Grid>
-                    </>
-                )}
+                        </Box>
+                    </Grid>
+                </>
             </Box>
         </FormikProvider>
     );

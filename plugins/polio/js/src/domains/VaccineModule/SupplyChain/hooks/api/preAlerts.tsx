@@ -9,6 +9,7 @@ export const useGetPreAlertDetails = (vrfId?: string): UseQueryResult => {
         queryKey: ['preAlertDetails', vrfId],
         options: {
             enabled: Boolean(vrfId),
+            refetchOnWindowFocus: true,
         },
     });
 };

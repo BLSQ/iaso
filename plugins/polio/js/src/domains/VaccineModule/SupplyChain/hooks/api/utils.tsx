@@ -1,9 +1,5 @@
 import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
-import {
-    deleteRequest,
-    patchRequest,
-    postRequest,
-} from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { deleteRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 import {
     errorSnackBar,
@@ -197,25 +193,25 @@ export const handlePromiseErrors = ({
     data,
     key,
 }: HandlePromiseErrorsArgs): void => {
-    const failedPromises = data.filter(item => item.status === 'rejected');
+    const failedPromises = data.filter(item => item.value.status >= 400);
+
     if (failedPromises.length === 0) {
         const messageKey = `${key}ApiSuccess`;
         openSnackBar(succesfullSnackBar(key, MESSAGES[messageKey]));
     } else {
-        const failedEndpoints = failedPromises.map(item => item.value.message);
-        if (failedEndpoints.find(msg => msg.includes('add'))) {
+        const failedEndpoints = failedPromises.map(item => item.value.url);
+        if (failedEndpoints.find(url => url.includes('add'))) {
             const messageKey = `${key}CreateError`;
             openSnackBar(
                 errorSnackBar(
                     key,
                     MESSAGES[messageKey],
-                    failedPromises.find(item =>
-                        item.value.message.includes('add'),
-                    )?.value,
+                    failedPromises.find(item => item.value.url.includes('add'))
+                        ?.value.statusText,
                 ),
             );
         }
-        if (failedEndpoints.find(msg => msg.includes('update'))) {
+        if (failedEndpoints.find(url => url.includes('update'))) {
             const messageKey = `${key}UpdateError`;
 
             openSnackBar(
@@ -223,12 +219,12 @@ export const handlePromiseErrors = ({
                     key,
                     MESSAGES[messageKey],
                     failedPromises.find(item =>
-                        item.value.message.includes('update'),
-                    )?.value,
+                        item.value.url.includes('update'),
+                    )?.value.statusText,
                 ),
             );
         }
-        if (failedEndpoints.find(msg => msg.includes('delete'))) {
+        if (failedEndpoints.find(url => url.includes('delete'))) {
             const messageKey = `${key}DeleteError`;
             openSnackBar(
                 errorSnackBar(
@@ -236,7 +232,7 @@ export const handlePromiseErrors = ({
                     MESSAGES[messageKey],
                     failedPromises.find(item =>
                         item.value.message.includes('delete'),
-                    )?.value,
+                    )?.value.statusText,
                 ),
             );
         }

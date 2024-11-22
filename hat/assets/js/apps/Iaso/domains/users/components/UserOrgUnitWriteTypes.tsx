@@ -1,6 +1,5 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -15,21 +14,11 @@ type Props = {
     handleChange: (ouTypesIds: number[]) => void;
 };
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    warningMessage: {
-        paddingLeft: '15px',
-        marginRight: '100px',
-        color: theme.palette.warning.main,
-    },
-}));
-
 export const UserOrgUnitWriteTypes: FunctionComponent<Props> = ({
     currentUser,
     handleChange,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const classes: Record<string, string> = useStyles();
     const { data: orgUnitTypes, isLoading: isLoadingOrgUitTypes } =
         useGetOrgUnitTypesDropdownOptions(undefined, true);
 
@@ -43,7 +32,11 @@ export const UserOrgUnitWriteTypes: FunctionComponent<Props> = ({
                     direction="row"
                     spacing={1}
                     alignItems="center"
-                    className={classes.warningMessage}
+                    sx={{
+                        paddingLeft: '15px',
+                        marginRight: '100px',
+                        color: theme => theme.palette.warning.main,
+                    }}
                 >
                     <WarningAmberIcon />
                     <Typography>

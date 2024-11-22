@@ -171,51 +171,56 @@ type HandlePromiseErrorsArgs = {
     key: 'pre_alerts' | 'arrival_reports';
 };
 
-export const handlePromiseErrors = ({
+export const handlePromiseErrors = async ({
     data,
     key,
-}: HandlePromiseErrorsArgs): void => {
-    const failedPromises = data.filter(item => item.value.status >= 400);
+}: HandlePromiseErrorsArgs): Promise<void> => {
+    const errors = (
+        await Promise.all(
+            data.map(async item => {
+                if (item.value.status >= 400) {
+                    const errorText = await item.value.json();
+                    console.error('Error:', errorText);
+                    return {
+                        ...item,
+                        error: errorText,
+                    };
+                }
+                return null;
+            }),
+        )
+    ).filter(error => error !== null);
 
-    if (failedPromises.length === 0) {
+    if (errors.length === 0) {
         const messageKey = `${key}ApiSuccess`;
         openSnackBar(succesfullSnackBar(key, MESSAGES[messageKey]));
     } else {
-        const failedEndpoints = failedPromises.map(item => item.value.url);
-        if (failedEndpoints.find(url => url.includes('add'))) {
+        const failedCreate = errors.find(item =>
+            item.value.url.includes('add'),
+        );
+        const failedUpdate = errors.find(item =>
+            item.value.url.includes('update'),
+        );
+        const failedDelete = errors.find(item =>
+            item.value.url.includes('delete'),
+        );
+        if (failedCreate) {
             const messageKey = `${key}CreateError`;
             openSnackBar(
-                errorSnackBar(
-                    key,
-                    MESSAGES[messageKey],
-                    failedPromises.find(item => item.value.url.includes('add'))
-                        ?.value.statusText,
-                ),
+                errorSnackBar(key, MESSAGES[messageKey], failedCreate.error),
             );
         }
-        if (failedEndpoints.find(url => url.includes('update'))) {
+        if (failedUpdate) {
             const messageKey = `${key}UpdateError`;
 
             openSnackBar(
-                errorSnackBar(
-                    key,
-                    MESSAGES[messageKey],
-                    failedPromises.find(item =>
-                        item.value.url.includes('update'),
-                    )?.value.statusText,
-                ),
+                errorSnackBar(key, MESSAGES[messageKey], failedUpdate.error),
             );
         }
-        if (failedEndpoints.find(url => url.includes('delete'))) {
+        if (failedDelete) {
             const messageKey = `${key}DeleteError`;
             openSnackBar(
-                errorSnackBar(
-                    key,
-                    MESSAGES[messageKey],
-                    failedPromises.find(item =>
-                        item.value.message.includes('delete'),
-                    )?.value.statusText,
-                ),
+                errorSnackBar(key, MESSAGES[messageKey], failedDelete.error),
             );
         }
     }

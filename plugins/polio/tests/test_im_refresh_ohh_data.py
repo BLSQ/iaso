@@ -194,8 +194,6 @@ class RefreshIMOutOfHouseholdDataTestCase(APITestCase):
         response = self.client.get(f"{self.action_url}?country_id={self.country_org_unit.id}")
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
-        print("RESPONSE", response)
-        print("TASK", task)
         self.assertEqual(task["id"], self.task1.id)
         self.assertEqual(task["ended_at"], self.task1.ended_at)
         self.assertEqual(task["status"], self.task1.status)

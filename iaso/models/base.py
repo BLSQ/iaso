@@ -958,7 +958,12 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         return new_qs
 
 
-InstanceManager = models.Manager.from_queryset(InstanceQuerySet)
+class NonDeletedInstanceManager(models.Manager):
+    def get_queryset(self):
+        """
+        Exclude soft deleted instances from all results.
+        """
+        return super().get_queryset().filter(deleted=False)
 
 
 class Instance(models.Model):
@@ -1019,7 +1024,8 @@ class Instance(models.Model):
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
-    objects = InstanceManager()
+    objects = models.Manager.from_queryset(InstanceQuerySet)()
+    non_deleted_objects = NonDeletedInstanceManager.from_queryset(InstanceQuerySet)()
 
     # Is instance SoftDeleted. It doesn't use the SoftDeleteModel deleted_at like the rest for historical reason.
     deleted = models.BooleanField(default=False)

@@ -523,6 +523,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.user',
         defaultMessage: 'User',
     },
+    userRoleOrgUnitTypeRestrictionWarning: {
+        id: 'iaso.users.userRoleOrgUnitTypeRestrictionWarning',
+        defaultMessage:
+            'Org Unit Type Write restrictions from User role apply to this user. Refer to the user role configuration for more details',
+    },
 });
 
 export default MESSAGES;

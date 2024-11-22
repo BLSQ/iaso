@@ -198,9 +198,9 @@ class FormSerializer(DynamicFieldsModelSerializer):
                 before = data.get("periods_before_allowed", 0)
                 after = data.get("periods_after_allowed", 0)
                 if before + after < 1:
-                    tracker_errors[
-                        "periods_allowed"
-                    ] = "periods_before_allowed + periods_after_allowed should be greater than or equal to 1"
+                    tracker_errors["periods_allowed"] = (
+                        "periods_before_allowed + periods_after_allowed should be greater than or equal to 1"
+                    )
             if tracker_errors:
                 raise serializers.ValidationError(tracker_errors)
         return data

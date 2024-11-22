@@ -378,9 +378,9 @@ class InstanceAdmin(admin.GISModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "entity":
-            kwargs[
-                "queryset"
-            ] = Entity.objects_include_deleted.all()  # use the manager that includes soft-deleted objects
+            kwargs["queryset"] = (
+                Entity.objects_include_deleted.all()
+            )  # use the manager that includes soft-deleted objects
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
@@ -548,9 +548,9 @@ class EntityAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     readonly_fields = ("created_at",)
@@ -751,9 +751,9 @@ class WorkflowAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     def get_queryset(self, request):
@@ -932,9 +932,7 @@ class PotentialPaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("id", "change_request_ids", "user")
 
-    @admin.display(
-        description="Change Request IDs"
-    )
+    @admin.display(description="Change Request IDs")
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()
         if change_requests:
@@ -944,7 +942,6 @@ class PotentialPaymentAdmin(admin.ModelAdmin):
                 )
             )
         return "-"
-
 
 
 @admin.register(Payment)
@@ -952,9 +949,7 @@ class PaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("id", "status", "created_at", "updated_at", "change_request_ids")
 
-    @admin.display(
-        description="Change Request IDs"
-    )
+    @admin.display(description="Change Request IDs")
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()
         if change_requests:
@@ -966,15 +961,12 @@ class PaymentAdmin(admin.ModelAdmin):
         return "-"
 
 
-
 @admin.register(PaymentLot)
 class PaymentLotAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("id", "status", "created_at", "updated_at", "payment_ids")
 
-    @admin.display(
-        description="Payment IDs"
-    )
+    @admin.display(description="Payment IDs")
     def payment_ids(self, obj):
         payments = obj.payments.all()
         if payments:
@@ -984,7 +976,6 @@ class PaymentLotAdmin(admin.ModelAdmin):
                 )
             )
         return "-"
-
 
 
 @admin.register(DataSource)
@@ -1050,13 +1041,9 @@ class TenantUserAdmin(admin.ModelAdmin):
     def account(self, obj):
         return obj.account
 
-
-    @admin.display(
-        description="Total Accounts"
-    )
+    @admin.display(description="Total Accounts")
     def all_accounts_count(self, obj):
         return obj.main_user.tenant_users.count()
-
 
     @admin.display(
         description="Self Account",
@@ -1065,22 +1052,15 @@ class TenantUserAdmin(admin.ModelAdmin):
     def is_self_account(self, obj):
         return obj.main_user == obj.account_user
 
-
-    @admin.display(
-        description="All Account Users"
-    )
+    @admin.display(description="All Account Users")
     def all_account_users(self, obj):
         users = obj.get_all_account_users()
         return format_html("<br>".join(user.username for user in users))
 
-
-    @admin.display(
-        description="Other Accounts"
-    )
+    @admin.display(description="Other Accounts")
     def other_accounts(self, obj):
         accounts = obj.get_other_accounts()
         return format_html("<br>".join(str(account) for account in accounts))
-
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("main_user", "account_user__iaso_profile__account")

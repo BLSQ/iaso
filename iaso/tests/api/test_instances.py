@@ -263,7 +263,9 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.source_created_at)
-        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.source_created_at)
+        self.assertEqual(
+            datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.source_created_at
+        )
         self.assertEqual(timestamp_to_utc_datetime(1565258153709), last_instance.source_updated_at)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertIsNotNone(last_instance.project)
@@ -359,7 +361,9 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.source_created_at)
-        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.source_created_at)
+        self.assertEqual(
+            datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.source_created_at
+        )
         self.assertEqual(timestamp_to_utc_datetime(1565258153709), last_instance.source_updated_at)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertIsNotNone(last_instance.project)

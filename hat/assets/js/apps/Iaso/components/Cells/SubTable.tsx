@@ -1,9 +1,15 @@
-import { Table, TableBody, TableCell, TableRow } from '@mui/material';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableProps,
+    TableRow,
+} from '@mui/material';
 import { textPlaceholder } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { SxStyles } from '../../types/general';
 
-type SubTableProps = {
+type SubTableProps = TableProps & {
     values: any[];
     renderValue: (value: any) => string;
 };
@@ -24,9 +30,10 @@ const styles: SxStyles = {
 export const SubTable: FunctionComponent<SubTableProps> = ({
     values,
     renderValue,
+    ...tableProps
 }) => {
     return (
-        <Table sx={styles.table}>
+        <Table sx={styles.table} {...tableProps}>
             <TableBody>
                 {values.length === 0 ? (
                     <TableRow>

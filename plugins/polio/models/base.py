@@ -242,6 +242,16 @@ class RoundQuerySet(models.QuerySet):
         data["campaigns"] = data["campaigns"].values()
         return data
 
+    def filter_by_vaccine_name(self, vaccine_name):
+        return (
+            self.select_related("campaign")
+            .prefetch_related("scopes", "campaign-scopes")
+            .filter(
+                (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vaccine_name))
+                | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vaccine_name))
+            )
+        )
+
 
 def make_group_subactivity_scope():
     return Group.objects.create(name="hidden subactivityScope")

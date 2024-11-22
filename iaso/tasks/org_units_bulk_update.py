@@ -86,7 +86,7 @@ def org_units_bulk_update(
 
     # FIXME Task don't handle rollback properly if task is killed by user or other error
     with transaction.atomic():
-        for index, org_unit in enumerate(queryset.iterator()):
+        for index, org_unit in enumerate(queryset.iterator(chunk_size=2000)):
             if org_unit.org_unit_type and not user.iaso_profile.has_org_unit_write_permission(
                 org_unit_type_id=org_unit.org_unit_type.pk,
                 prefetched_editable_org_unit_type_ids=editable_org_unit_type_ids,

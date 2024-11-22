@@ -536,8 +536,8 @@ GroupSetManager = models.Manager.from_queryset(GroupSetQuerySet)
 
 class GroupSet(models.Model):
     class GroupBelonging(models.TextChoices):
-        SINGLE = _("SINGLE")
-        MULTIPLE = _("MULTIPLE")
+        SINGLE = "SINGLE", _("SINGLE")
+        MULTIPLE = "MULTIPLE", _("MULTIPLE")
 
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
@@ -666,12 +666,14 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         Implementation: we decided to make the lock calculation via annotations, so it's a lot faster with large querysets.
         """
 
+        user_org_unit_ids = list(OrgUnit.objects.filter_for_user(user).values_list("id", flat=True))
+
         return (
             self.annotate(
                 lock_applying_to_user=FilteredRelation(
                     "instancelock",
                     condition=Q(
-                        ~Q(instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(user)),
+                        ~Q(instancelock__top_org_unit_id__in=user_org_unit_ids),
                         Q(instancelock__unlocked_by__isnull=True),
                     ),
                 )
@@ -954,7 +956,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
             orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
 
             new_qs = new_qs.filter(org_unit__in=orgunits)
-        new_qs = new_qs.filter(project__account=profile.account_id)
+        new_qs = new_qs.filter(project__account_id=profile.account_id)
         return new_qs
 
 

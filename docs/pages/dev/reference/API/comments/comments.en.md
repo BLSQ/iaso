@@ -1,8 +1,8 @@
 # `Comments Management` API
 
-This document outlines the `Comments Management` API designed to manage comments associated with `OrgUnit` instances, with capabilities to view, create, and manage comments.
+This document outlines the `Comments Management` API designed to manage comments associated with `OrgUnit` instances, with capabilities to view and manage comments.
 
-## 1 - GET /api/comment/
+## 1 - GET /api/comments/
 
 API used to list all comments associated with `OrgUnit` instances.
 
@@ -55,7 +55,7 @@ API used to list all comments associated with `OrgUnit` instances.
 }
 ```
 
-## 2 - PATCH /api/comment/{id}/
+## 2 - PATCH /api/comments/{id}/
 
 API used to update the status of an existing comment.
 

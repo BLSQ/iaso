@@ -19,6 +19,7 @@ import { useVaccineRepositoryColumns } from './hooks/useVaccineRepositoryColumns
 import MESSAGES from './messages';
 import { VaccineRepositoryParams } from './types';
 import { VaccineRepositoryFilters } from './VaccineRepositoryFilters';
+import { LangSwitch } from '../../../../../../../hat/assets/js/apps/Iaso/domains/home/components/LangSwitch';
 
 const baseUrl = baseUrls.vaccineRepository;
 const embeddedVaccineRepositoryUrl = baseUrls.embeddedVaccineRepository;
@@ -82,9 +83,19 @@ export const VaccineRepository: FunctionComponent = () => {
                 }
             >
                 {isEmbedded && (
-                    <Typography variant="h4" color="primary" sx={{ mb: 2 }}>
-                        {formatMessage(MESSAGES.title)}
-                    </Typography>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                        }}
+                    >
+                        <Typography variant="h4" color="primary" sx={{ mb: 2 }}>
+                            {formatMessage(MESSAGES.title)}
+                        </Typography>
+                        <Box sx={{ display: 'flex' }} mt={1}>
+                            <LangSwitch />
+                        </Box>
+                    </Box>
                 )}
                 <VaccineRepositoryFilters
                     params={params}

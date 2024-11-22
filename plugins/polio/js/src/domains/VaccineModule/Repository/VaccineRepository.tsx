@@ -19,7 +19,7 @@ import { useVaccineRepositoryColumns } from './hooks/useVaccineRepositoryColumns
 import MESSAGES from './messages';
 import { VaccineRepositoryParams } from './types';
 import { VaccineRepositoryFilters } from './VaccineRepositoryFilters';
-import { LangSwitch } from '../../../../../../../hat/assets/js/apps/Iaso/domains/home/components/LangSwitch';
+import { OffLineLangSwitch } from '../../../../../../../hat/assets/js/apps/Iaso/domains/home/components/LangSwitch';
 
 const baseUrl = baseUrls.vaccineRepository;
 const embeddedVaccineRepositoryUrl = baseUrls.embeddedVaccineRepository;
@@ -93,7 +93,7 @@ export const VaccineRepository: FunctionComponent = () => {
                             {formatMessage(MESSAGES.title)}
                         </Typography>
                         <Box sx={{ display: 'flex' }} mt={1}>
-                            <LangSwitch />
+                            <OffLineLangSwitch />
                         </Box>
                     </Box>
                 )}

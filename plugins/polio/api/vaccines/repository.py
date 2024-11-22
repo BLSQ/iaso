@@ -259,12 +259,11 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
             .select_related(
                 "campaign",
                 "campaign__country",
-                # "campaign__scopes", # If I add this here, BOOM
             )
-            .prefetch_related("scopes")
+            .prefetch_related("scopes", "campaign-scopes")
         )
 
-        # Get campaign dates subquery
+        # Get campaign dates subquery here i.o filter to avoid error from calling annotate after union
         campaign_dates = (
             Round.objects.filter(campaign=OuterRef("campaign"))
             .values("campaign")
@@ -280,10 +279,9 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
         vaccines_qs = {}
         for vaccine in VACCINES:
             vaccine_name = vaccine[0]
-            vaccines_qs[vaccine_name] = rounds_queryset.filter(
-                (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vaccine_name))
-                | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vaccine_name))
-            ).annotate(vaccine_name=Value(vaccine_name))
+            vaccines_qs[vaccine_name] = rounds_queryset.filter_by_vaccine_name(vaccine_name).annotate(
+                vaccine_name=Value(vaccine_name)
+            )
         queryset_list = list(vaccines_qs.values())
         start_qs = queryset_list.pop()
         result_qs = start_qs.union(*queryset_list, all=True)

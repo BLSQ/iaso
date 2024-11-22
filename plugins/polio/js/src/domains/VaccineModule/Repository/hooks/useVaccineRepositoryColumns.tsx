@@ -29,6 +29,12 @@ export const useVaccineRepositoryColumns = (): Column[] => {
                 width: 20,
             },
             {
+                Header: formatMessage(MESSAGES.vaccine),
+                id: 'vaccine_name',
+                accessor: 'vaccine_name',
+                width: 20,
+            },
+            {
                 Header: formatMessage(MESSAGES.startDate),
                 id: 'started_at',
                 accessor: 'start_date',
@@ -51,7 +57,7 @@ export const useVaccineRepositoryColumns = (): Column[] => {
                 Header: 'Form A',
                 accessor: 'form_a_data',
                 Cell: FormADocumentsCells,
-                width: 30,
+                width: 20,
             },
         ],
         [formatMessage],

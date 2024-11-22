@@ -1,7 +1,6 @@
 """API endpoints and serializers for vaccine repository management."""
 
 from datetime import datetime, timedelta
-
 from django.db.models import Max, Min, OuterRef, Subquery
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -10,9 +9,11 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
+from django.db.models import OuterRef, Subquery, Q, Value
 
 from iaso.api.common import Paginator
 from plugins.polio.models import (
+    VACCINES,
     CampaignType,
     OutgoingStockMovement,
     Round,
@@ -29,6 +30,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
     round_number = serializers.IntegerField(source="number")
     start_date = serializers.DateField(source="started_at")
     end_date = serializers.DateField(source="ended_at")
+    vaccine_name = serializers.CharField()
 
     vrf_data = serializers.SerializerMethodField()
     pre_alert_data = serializers.SerializerMethodField()
@@ -78,19 +80,6 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         # Filter by campaign status
         campaign_status = request.query_params.get("campaign_status", None)
-
-        # Get campaign dates subquery
-        campaign_dates = (
-            Round.objects.filter(campaign=OuterRef("campaign"))
-            .values("campaign")
-            .annotate(campaign_started_at=Min("started_at"), campaign_ended_at=Max("ended_at"))
-        )
-
-        # Add campaign dates to main queryset
-        queryset = queryset.annotate(
-            campaign_started_at=Subquery(campaign_dates.values("campaign_started_at")),
-            campaign_ended_at=Subquery(campaign_dates.values("campaign_ended_at")),
-        )
 
         if campaign_status:
             today = datetime.now().date()
@@ -154,7 +143,7 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
                 campaign__vaccinerequestform__isnull=False, campaign__vaccinerequestform__vrf_type=vrf_type
             )
 
-        return queryset.distinct()
+        return queryset
 
 
 class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
@@ -165,7 +154,7 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
     serializer_class = VaccineRepositorySerializer
     pagination_class = Paginator
     filter_backends = [OrderingFilter, SearchFilter, VaccineReportingFilterBackend]
-    ordering_fields = ["campaign__country__name", "campaign__obr_name", "started_at"]
+    ordering_fields = ["campaign__country__name", "campaign__obr_name", "started_at", "vaccine_name"]
     ordering = ["-started_at"]
     search_fields = ["campaign__country__name", "campaign__obr_name"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -261,13 +250,42 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
         Get the queryset for Round objects with their campaigns.
         """
 
-        rounds_queryset = Round.objects.filter(
-            campaign__isnull=False,
-            campaign__deleted_at__isnull=True,
-            campaign__campaign_types__name=CampaignType.POLIO,
-        ).select_related(
-            "campaign",
-            "campaign__country",
+        rounds_queryset = (
+            Round.objects.filter(
+                campaign__isnull=False,
+                campaign__deleted_at__isnull=True,
+                campaign__campaign_types__name=CampaignType.POLIO,
+            )
+            .select_related(
+                "campaign",
+                "campaign__country",
+                # "campaign__scopes", # If I add this here, BOOM
+            )
+            .prefetch_related("scopes")
         )
 
-        return rounds_queryset
+        # Get campaign dates subquery
+        campaign_dates = (
+            Round.objects.filter(campaign=OuterRef("campaign"))
+            .values("campaign")
+            .annotate(campaign_started_at=Min("started_at"), campaign_ended_at=Max("ended_at"))
+        )
+
+        # Add campaign dates to main queryset
+        rounds_queryset = rounds_queryset.annotate(
+            campaign_started_at=Subquery(campaign_dates.values("campaign_started_at")),
+            campaign_ended_at=Subquery(campaign_dates.values("campaign_ended_at")),
+        )
+
+        vaccines_qs = {}
+        for vaccine in VACCINES:
+            vaccine_name = vaccine[0]
+            vaccines_qs[vaccine_name] = rounds_queryset.filter(
+                (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vaccine_name))
+                | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vaccine_name))
+            ).annotate(vaccine_name=Value(vaccine_name))
+        queryset_list = list(vaccines_qs.values())
+        start_qs = queryset_list.pop()
+        result_qs = start_qs.union(*queryset_list, all=True)
+
+        return result_qs

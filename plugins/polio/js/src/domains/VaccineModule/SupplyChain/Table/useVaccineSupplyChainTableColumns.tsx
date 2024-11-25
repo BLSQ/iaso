@@ -1,25 +1,21 @@
-import React, { ReactElement, useMemo } from 'react';
-import {
-    Column,
-    IconButton,
-    textPlaceholder,
-    useSafeIntl,
-} from 'bluesquare-components';
 import EditIcon from '@mui/icons-material/Edit';
-import { baseUrls } from '../../../../constants/urls';
-import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
-import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
+import React, { ReactElement, useMemo } from 'react';
 import {
     DateCell,
     MultiDateCell,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import MESSAGES from '../messages';
+import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
+import { SubTable } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/SubTable';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import { useDeleteVrf } from '../hooks/api/vrf';
 import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { POLIO_SUPPLY_CHAIN_WRITE } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
-import { SupplyChainList } from '../types';
 import { ColumnCell } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { POLIO_SUPPLY_CHAIN_WRITE } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { baseUrls } from '../../../../constants/urls';
+import { useDeleteVrf } from '../hooks/api/vrf';
+import MESSAGES from '../messages';
+import { SupplyChainList } from '../types';
 
 export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -95,27 +91,26 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 Cell: ({
                     row: { original },
                 }: ColumnCell<SupplyChainList>): ReactElement => {
-                    const poNumbers = original?.po_numbers ?? '';
-                    const poNumbersList = poNumbers.split(',');
+                    const poNumbers = original?.po_numbers;
+                    const poNumbersList = poNumbers ? poNumbers.split(',') : [];
                     return (
-                        <>
-                            {poNumbersList.map(poNumber => (
-                                <div key={poNumber}>
-                                    {poNumber ?? textPlaceholder}
-                                </div>
-                            ))}
-                        </>
+                        <SubTable
+                            values={poNumbersList}
+                            renderValue={poNumber => poNumber}
+                        />
                     );
                 },
             },
             {
                 Header: formatMessage(MESSAGES.estimatedDateOfArrival),
                 accessor: 'eta',
+                id: 'eta',
                 Cell: MultiDateCell,
             },
             {
                 Header: 'VAR',
                 accessor: 'var',
+                id: 'var',
                 Cell: MultiDateCell,
             },
         ];

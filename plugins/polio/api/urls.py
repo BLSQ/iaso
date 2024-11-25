@@ -12,7 +12,6 @@ from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampai
 from iaso.api.config import ConfigViewSet
 from plugins.polio.api.chronogram.views import ChronogramViewSet, ChronogramTaskViewSet, ChronogramTemplateTaskViewSet
 from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
-from plugins.polio.api.dashboards.forma import FormAStocksViewSet
 from plugins.polio.api.dashboards.forma import FormAStocksViewSetV2
 from plugins.polio.api.dashboards.launch_powerbi import LaunchPowerBIRefreshViewSet
 from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessDashboardViewSet

@@ -290,6 +290,7 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
     Endpoint used to transform Vaccine Stocks data from existing ODK forms stored in ONA.
     for display in PowerBI
     """
+
     # Still used by a dashboard
     @action(detail=False)
     def scopes(self, request):
@@ -307,6 +308,7 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
             cache.set(cache_key, r, 60 * 60)
 
         return HttpResponse(r, content_type="application/json")
+
     # deprecated
     @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
     def list(self, request):
@@ -319,7 +321,8 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
         else:
             r = df.to_json(orient="table")
             return HttpResponse(r, content_type="application/json")
-    #deprecated
+
+    # deprecated
     @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
     def retrieve(self, request, pk):
         df = fetch_and_match_forma_data(country_id=pk)
@@ -331,5 +334,3 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
         else:
             r = df.to_json(orient="table")
             return HttpResponse(r, content_type="application/json")
-
-

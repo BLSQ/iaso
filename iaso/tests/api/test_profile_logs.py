@@ -607,7 +607,7 @@ class ProfileLogsTestCase(APITestCase):
         self.client.force_authenticate(self.user_with_permission_1)
         response = self.client.get("/api/userlogs/")
         data = self.assertJSONResponse(response, 200)
-        self.assertEquals(data["count"], 6)
+        self.assertEqual(data["count"], 6)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
@@ -621,7 +621,7 @@ class ProfileLogsTestCase(APITestCase):
         self.client.force_authenticate(self.user_with_permission_1)
         response = self.client.get(f"/api/userlogs/?user_ids={self.edited_user_1.id}")
         data = self.assertJSONResponse(response, 200)
-        self.assertEquals(data["count"], 4)
+        self.assertEqual(data["count"], 4)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
@@ -631,7 +631,7 @@ class ProfileLogsTestCase(APITestCase):
             f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}"
         )
         data = self.assertJSONResponse(response, 200)
-        self.assertEquals(data["count"], 2)
+        self.assertEqual(data["count"], 2)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
@@ -639,7 +639,7 @@ class ProfileLogsTestCase(APITestCase):
 
         response = self.client.get(f"/api/userlogs/?user_ids={self.edited_user_1.id}&org_unit_id={self.org_unit_2.id}")
         data = self.assertJSONResponse(response, 200)
-        self.assertEquals(data["count"], 2)
+        self.assertEqual(data["count"], 2)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
@@ -649,7 +649,7 @@ class ProfileLogsTestCase(APITestCase):
             f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}&created_at_before=2020-02-14"
         )
         data = self.assertJSONResponse(response, 200)
-        self.assertEquals(data["count"], 1)
+        self.assertEqual(data["count"], 1)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
@@ -659,32 +659,32 @@ class ProfileLogsTestCase(APITestCase):
             f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}&created_at_after=2020-02-14"
         )
         data = self.assertJSONResponse(response, 200)
-        self.assertEquals(data["count"], 1)
+        self.assertEqual(data["count"], 1)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
         results = data["results"]
-        self.assertEquals(len(results), 1)
+        self.assertEqual(len(results), 1)
         user = results[0]["user"]
-        self.assertEquals(user["id"], self.edited_user_1.iaso_profile.id)
-        self.assertEquals(user["user_id"], self.edited_user_1.id)
-        self.assertEquals(user["username"], self.edited_user_1.username)
-        self.assertEquals(user["first_name"], self.edited_user_1.first_name)
-        self.assertEquals(user["last_name"], self.edited_user_1.last_name)
+        self.assertEqual(user["id"], self.edited_user_1.iaso_profile.id)
+        self.assertEqual(user["user_id"], self.edited_user_1.id)
+        self.assertEqual(user["username"], self.edited_user_1.username)
+        self.assertEqual(user["first_name"], self.edited_user_1.first_name)
+        self.assertEqual(user["last_name"], self.edited_user_1.last_name)
         modified_by = results[0]["modified_by"]
-        self.assertEquals(modified_by["id"], self.user_with_permission_1.iaso_profile.id)
-        self.assertEquals(modified_by["user_id"], self.user_with_permission_1.id)
-        self.assertEquals(modified_by["username"], self.user_with_permission_1.username)
-        self.assertEquals(modified_by["first_name"], self.user_with_permission_1.first_name)
-        self.assertEquals(modified_by["last_name"], self.user_with_permission_1.last_name)
+        self.assertEqual(modified_by["id"], self.user_with_permission_1.iaso_profile.id)
+        self.assertEqual(modified_by["user_id"], self.user_with_permission_1.id)
+        self.assertEqual(modified_by["username"], self.user_with_permission_1.username)
+        self.assertEqual(modified_by["first_name"], self.user_with_permission_1.first_name)
+        self.assertEqual(modified_by["last_name"], self.user_with_permission_1.last_name)
         past_location = results[0]["past_location"][0]
-        self.assertEquals(past_location["name"], self.org_unit_1.name)
-        self.assertEquals(past_location["id"], self.org_unit_1.id)
+        self.assertEqual(past_location["name"], self.org_unit_1.name)
+        self.assertEqual(past_location["id"], self.org_unit_1.id)
         new_location = results[0]["new_location"][0]
-        self.assertEquals(new_location["name"], self.org_unit_1.name)
-        self.assertEquals(new_location["id"], self.org_unit_1.id)
+        self.assertEqual(new_location["name"], self.org_unit_1.name)
+        self.assertEqual(new_location["id"], self.org_unit_1.id)
         fields_modified = results[0]["fields_modified"]
         self.assertListEqual(fields_modified, ["first_name", "last_name", "organization", "password"])
 
@@ -692,14 +692,14 @@ class ProfileLogsTestCase(APITestCase):
             f"/api/userlogs/?user_ids={self.edited_user_1.id}&modified_by={self.user_with_permission_1.id}&created_at_after=2020-02-14&created_at_before=2020-02-09"
         )
         data = self.assertJSONResponse(response, 200)
-        self.assertEquals(data["count"], 0)
+        self.assertEqual(data["count"], 0)
         try:
             jsonschema.validate(instance=data, schema=PROFILE_LOG_LIST_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
         results = data["results"]
-        self.assertEquals(results, [])
+        self.assertEqual(results, [])
 
     def test_retrieve(self):
         """GET /api/userlogs/{id} with USERS_ADMIN permission - golden path"""
@@ -710,57 +710,57 @@ class ProfileLogsTestCase(APITestCase):
             jsonschema.validate(instance=data, schema=PROFILE_LOG_DETAIL_SCHEMA)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
-        self.assertEquals(data["id"], self.log_1.id)
-        self.assertEquals(data["user"], self.log_1.user.id)
-        self.assertEquals(data["source"], self.log_1.source)
-        self.assertEquals(data["object_id"], self.log_1.object_id)
+        self.assertEqual(data["id"], self.log_1.id)
+        self.assertEqual(data["user"], self.log_1.user.id)
+        self.assertEqual(data["source"], self.log_1.source)
+        self.assertEqual(data["object_id"], self.log_1.object_id)
 
         past_value = data["past_value"][0]
-        self.assertEquals(past_value["pk"], self.log_1.past_value[0]["pk"])
+        self.assertEqual(past_value["pk"], self.log_1.past_value[0]["pk"])
 
         past_value_fields = past_value["fields"]
-        self.assertEquals(past_value_fields["user"], self.log_1.past_value[0]["fields"]["user"])
-        self.assertEquals(past_value_fields["account"], self.log_1.user.iaso_profile.account.id)
-        self.assertEquals(past_value_fields["email"], self.log_1.past_value[0]["fields"]["email"])
-        self.assertEquals(past_value_fields["username"], self.log_1.past_value[0]["fields"]["username"])
-        self.assertEquals(past_value_fields["first_name"], self.log_1.past_value[0]["fields"]["first_name"])
-        self.assertEquals(past_value_fields["last_name"], self.log_1.past_value[0]["fields"]["last_name"])
-        self.assertEquals(past_value_fields["home_page"], self.log_1.past_value[0]["fields"]["home_page"])
-        self.assertEquals(past_value_fields["organization"], self.log_1.past_value[0]["fields"]["organization"])
-        self.assertEquals(past_value_fields["phone_number"], self.log_1.past_value[0]["fields"]["phone_number"])
-        self.assertEquals(past_value_fields["deleted_at"], self.log_1.past_value[0]["fields"]["deleted_at"])
-        self.assertEquals(past_value_fields["user_permissions"], self.log_1.past_value[0]["fields"]["user_permissions"])
-        self.assertEquals(len(past_value_fields["org_units"]), 1)
-        self.assertEquals(past_value_fields["org_units"][0], {"id": self.org_unit_1.id, "name": self.org_unit_1.name})
-        self.assertEquals(len(past_value_fields["projects"]), 1)
-        self.assertEquals(past_value_fields["projects"][0], {"id": self.project_1.id, "name": self.project_1.name})
-        self.assertEquals(len(past_value_fields["user_roles"]), 1)
-        self.assertEquals(
+        self.assertEqual(past_value_fields["user"], self.log_1.past_value[0]["fields"]["user"])
+        self.assertEqual(past_value_fields["account"], self.log_1.user.iaso_profile.account.id)
+        self.assertEqual(past_value_fields["email"], self.log_1.past_value[0]["fields"]["email"])
+        self.assertEqual(past_value_fields["username"], self.log_1.past_value[0]["fields"]["username"])
+        self.assertEqual(past_value_fields["first_name"], self.log_1.past_value[0]["fields"]["first_name"])
+        self.assertEqual(past_value_fields["last_name"], self.log_1.past_value[0]["fields"]["last_name"])
+        self.assertEqual(past_value_fields["home_page"], self.log_1.past_value[0]["fields"]["home_page"])
+        self.assertEqual(past_value_fields["organization"], self.log_1.past_value[0]["fields"]["organization"])
+        self.assertEqual(past_value_fields["phone_number"], self.log_1.past_value[0]["fields"]["phone_number"])
+        self.assertEqual(past_value_fields["deleted_at"], self.log_1.past_value[0]["fields"]["deleted_at"])
+        self.assertEqual(past_value_fields["user_permissions"], self.log_1.past_value[0]["fields"]["user_permissions"])
+        self.assertEqual(len(past_value_fields["org_units"]), 1)
+        self.assertEqual(past_value_fields["org_units"][0], {"id": self.org_unit_1.id, "name": self.org_unit_1.name})
+        self.assertEqual(len(past_value_fields["projects"]), 1)
+        self.assertEqual(past_value_fields["projects"][0], {"id": self.project_1.id, "name": self.project_1.name})
+        self.assertEqual(len(past_value_fields["user_roles"]), 1)
+        self.assertEqual(
             past_value_fields["user_roles"][0],
             {"id": self.user_role.id, "name": m.UserRole.remove_user_role_name_prefix(self.user_role.group.name)},
         )
 
         new_value = data["new_value"][0]
-        self.assertEquals(new_value["pk"], self.log_1.new_value[0]["pk"])
+        self.assertEqual(new_value["pk"], self.log_1.new_value[0]["pk"])
 
         new_value_fields = new_value["fields"]
-        self.assertEquals(new_value_fields["user"], self.log_1.new_value[0]["fields"]["user"])
-        self.assertEquals(new_value_fields["account"], self.log_1.user.iaso_profile.account.id)
-        self.assertEquals(new_value_fields["email"], self.log_1.new_value[0]["fields"]["email"])
-        self.assertEquals(new_value_fields["username"], self.log_1.new_value[0]["fields"]["username"])
-        self.assertEquals(new_value_fields["first_name"], self.log_1.new_value[0]["fields"]["first_name"])
-        self.assertEquals(new_value_fields["last_name"], self.log_1.new_value[0]["fields"]["last_name"])
-        self.assertEquals(new_value_fields["home_page"], self.log_1.new_value[0]["fields"]["home_page"])
-        self.assertEquals(new_value_fields["organization"], self.log_1.new_value[0]["fields"]["organization"])
-        self.assertEquals(new_value_fields["phone_number"], self.log_1.new_value[0]["fields"]["phone_number"])
-        self.assertEquals(new_value_fields["deleted_at"], self.log_1.new_value[0]["fields"]["deleted_at"])
-        self.assertEquals(new_value_fields["user_permissions"], self.log_1.new_value[0]["fields"]["user_permissions"])
-        self.assertEquals(len(new_value_fields["org_units"]), 1)
-        self.assertEquals(new_value_fields["org_units"][0], {"id": self.org_unit_1.id, "name": self.org_unit_1.name})
-        self.assertEquals(len(new_value_fields["projects"]), 1)
-        self.assertEquals(new_value_fields["projects"][0], {"id": self.project_1.id, "name": self.project_1.name})
-        self.assertEquals(len(new_value_fields["user_roles"]), 1)
-        self.assertEquals(
+        self.assertEqual(new_value_fields["user"], self.log_1.new_value[0]["fields"]["user"])
+        self.assertEqual(new_value_fields["account"], self.log_1.user.iaso_profile.account.id)
+        self.assertEqual(new_value_fields["email"], self.log_1.new_value[0]["fields"]["email"])
+        self.assertEqual(new_value_fields["username"], self.log_1.new_value[0]["fields"]["username"])
+        self.assertEqual(new_value_fields["first_name"], self.log_1.new_value[0]["fields"]["first_name"])
+        self.assertEqual(new_value_fields["last_name"], self.log_1.new_value[0]["fields"]["last_name"])
+        self.assertEqual(new_value_fields["home_page"], self.log_1.new_value[0]["fields"]["home_page"])
+        self.assertEqual(new_value_fields["organization"], self.log_1.new_value[0]["fields"]["organization"])
+        self.assertEqual(new_value_fields["phone_number"], self.log_1.new_value[0]["fields"]["phone_number"])
+        self.assertEqual(new_value_fields["deleted_at"], self.log_1.new_value[0]["fields"]["deleted_at"])
+        self.assertEqual(new_value_fields["user_permissions"], self.log_1.new_value[0]["fields"]["user_permissions"])
+        self.assertEqual(len(new_value_fields["org_units"]), 1)
+        self.assertEqual(new_value_fields["org_units"][0], {"id": self.org_unit_1.id, "name": self.org_unit_1.name})
+        self.assertEqual(len(new_value_fields["projects"]), 1)
+        self.assertEqual(new_value_fields["projects"][0], {"id": self.project_1.id, "name": self.project_1.name})
+        self.assertEqual(len(new_value_fields["user_roles"]), 1)
+        self.assertEqual(
             new_value_fields["user_roles"][0],
             {"id": self.user_role.id, "name": m.UserRole.remove_user_role_name_prefix(self.user_role.group.name)},
         )

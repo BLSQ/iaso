@@ -14,7 +14,8 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: 'transparent',
         borderTop: 'none !important',
         borderLeft: 'none !important',
-        borderRight: 'none !important',
+        // @ts-ignore
+        borderRight: `1px solid ${theme.palette.ligthGray.border}  !important`,
         // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },

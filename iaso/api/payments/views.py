@@ -25,6 +25,7 @@ from iaso.models.payments import PaymentStatuses
 from iaso.tasks.create_payment_lot import create_payment_lot
 from rest_framework.exceptions import ValidationError
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
+from django.db import IntegrityError
 
 from .serializers import (
     PaymentAuditLogger,
@@ -97,8 +98,12 @@ class PaymentLotsViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
 
     def get_queryset(self):
-        # Filter out PaymentLot with task because they're still being created by the worker
-        queryset = PaymentLot.objects.filter(task__isnull=True)
+        payments = (
+            Payment.objects.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+            .values_list("payment_lot_id", flat=True)
+            .distinct()
+        )
+        queryset = PaymentLot.objects.filter(id__in=payments)
 
         change_requests_prefetch = Prefetch(
             "payments__change_requests",
@@ -201,6 +206,8 @@ class PaymentLotsViewSet(ModelViewSet):
             # the mark_as_sent query_param is used to only update related_payments' statuses, so we don't perform any other update when it's true
             if mark_as_sent:
                 task = mark_payments_as_read(payment_lot_id=instance.pk, api=PAYMENT_LOT_API, user=request.user)
+                instance.task = task
+                instance.save()
                 return Response(
                     {"task": TaskSerializer(instance=task).data},
                     status=status.HTTP_201_CREATED,
@@ -469,13 +476,19 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
                 potential_payment__task__isnull=True,
             )
             if change_requests.exists():
-                potential_payment, created = PotentialPayment.objects.get_or_create(
-                    user_id=user["created_by"],
-                )
-                for change_request in change_requests:
-                    change_request.potential_payment = potential_payment
-                    change_request.save()
-                potential_payment.save()
+                try:
+                    potential_payment, created = PotentialPayment.objects.get_or_create(
+                        user_id=user["created_by"],
+                    )
+                    for change_request in change_requests:
+                        change_request.potential_payment = potential_payment
+                        change_request.save()
+                    potential_payment.save()
+                # If there was a race condition, we return the existing PotentialPayment
+                except IntegrityError:
+                    return PotentialPayment.objects.get(
+                        user_id=user["created_by"],
+                    )
 
     @swagger_auto_schema(auto_schema=None)
     def retrieve(self, request, *args, **kwargs):

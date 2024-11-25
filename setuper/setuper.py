@@ -11,6 +11,7 @@ from review_change_proposal import setup_review_change_proposal
 from create_submission_with_picture import create_submission_with_picture
 from additional_projects import create_projects, link_new_projects_to_main_data_source
 from user_roles_permissions import create_user_role
+from org_unit_pictures import associate_favorite_picture
 import string
 import random
 import argparse
@@ -94,6 +95,7 @@ def create_account(
 
     if seed_instances:
         setup_instances(account_name, iaso_client=iaso_client)
+        associate_favorite_picture(iaso_client=iaso_client)
 
     if seed_entities:
         setup_entities(account_name, iaso_client=iaso_client)

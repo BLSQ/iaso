@@ -1,10 +1,11 @@
-import React from 'react';
-import sinon from 'sinon';
+import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
 import { expect } from 'chai';
 import { configure, mount, render, shallow } from 'enzyme';
-import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
 import nodeFetch from 'node-fetch';
+import React from 'react';
+import sinon from 'sinon';
 import { mockMessages } from './utils/intl';
+import './utils/pdf';
 import { baseUrl as baseUrlConst } from './utils/requests';
 
 configure({ adapter: new Adapter() });

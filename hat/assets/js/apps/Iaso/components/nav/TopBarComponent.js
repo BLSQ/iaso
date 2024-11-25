@@ -15,8 +15,8 @@ import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 import { useSidebar } from '../../domains/app/contexts/SideBarContext.tsx';
 import { CurrentUserInfos } from './CurrentUser/index.tsx';
-import { LogoutButton } from './LogoutButton.tsx';
 import { HomePageButton } from './HomePageButton.tsx';
+import { LogoutButton } from './LogoutButton.tsx';
 
 const styles = theme => ({
     menuButton: {
@@ -77,7 +77,7 @@ function TopBar(props) {
                         container
                         item
                         direction="row"
-                        xs={9}
+                        xs={7}
                         alignItems="center"
                     >
                         {!displayBackButton && displayMenuButton && (
@@ -111,7 +111,7 @@ function TopBar(props) {
                         </Typography>
                     </Grid>
                     {currentUser && !isMobileLayout && (
-                        <Grid container item xs={3} justifyContent="flex-end">
+                        <Grid container item xs={5} justifyContent="flex-end">
                             <Box
                                 display="flex"
                                 alignItems="center"
@@ -122,9 +122,11 @@ function TopBar(props) {
                                     version={window.IASO_VERSION}
                                 />
                             </Box>
+
                             <Box display="flex" justifyContent="center" pl={2}>
                                 <HomePageButton />
                             </Box>
+
                             <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />
                             </Box>

@@ -3,9 +3,11 @@ import { Box, Grid, Paper, Typography } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
+import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
+import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
@@ -22,7 +24,7 @@ type Props = {
 export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
     const classes: Record<string, string> = usePaperStyles();
     const { formatMessage } = useSafeIntl();
-    const { values, setFieldValue, setFieldTouched } =
+    const { values, setFieldValue, setFieldTouched, errors } =
         useFormikContext<SupplyChainFormData>();
     const { pre_alerts } = values as SupplyChainFormData;
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
@@ -37,6 +39,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
           )
         : 0;
 
+    const documentErrors = useMemo(() => {
+        return processErrorDocsBase(errors[index]?.document);
+    }, [errors, index]);
     const onDelete = useCallback(() => {
         if (values?.pre_alerts?.[index].id) {
             setFieldValue(`pre_alerts[${index}].to_delete`, true);
@@ -139,6 +144,29 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                     )}:`}{' '}
                                     <NumberCell value={current_vials_shipped} />
                                 </Typography>
+                            </Box>
+                        </Grid>
+
+                        <Grid item xs={12} md={4}>
+                            <Box>
+                                <DocumentUploadWithPreview
+                                    errors={documentErrors}
+                                    onFilesSelect={files => {
+                                        if (files.length) {
+                                            setFieldTouched(
+                                                `pre_alerts[${index}].document`,
+                                                true,
+                                            );
+                                            setFieldValue(
+                                                `pre_alerts[${index}].document`,
+                                                files,
+                                            );
+                                        }
+                                    }}
+                                    document={
+                                        values?.pre_alerts?.[index]?.document
+                                    }
+                                />
                             </Box>
                         </Grid>
                     </Grid>

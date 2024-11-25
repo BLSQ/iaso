@@ -72,6 +72,8 @@ class ProfileModelTestCase(TestCase):
         self.profile1.user_roles.clear()
 
     def test_with_editable_org_unit_types(self):
+        self.assertEqual(self.profile1.get_editable_org_unit_type_ids(), set())
+
         org_unit_type_country = m.OrgUnitType.objects.create(name="Country")
         org_unit_type_region = m.OrgUnitType.objects.create(name="Region")
         org_unit_type_district = m.OrgUnitType.objects.create(name="District")

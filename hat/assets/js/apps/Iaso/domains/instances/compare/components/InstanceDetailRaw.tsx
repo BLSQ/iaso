@@ -18,6 +18,7 @@ import InstancesFilesList from '../../components/InstancesFilesListComponent';
 import { Instance } from '../../types/instance';
 import { getInstancesFilesList } from '../../utils';
 import MESSAGES from '../messages';
+import { INSTANCE_METAS_FIELDS } from '../../constants';
 
 type Props = {
     data?: Instance;
@@ -100,7 +101,10 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                     </AccordionSummary>
                     <AccordionDetails>
                         <Box p={2}>
-                            <InstanceDetailsInfos currentInstance={data} />
+                            <InstanceDetailsInfos
+                                instance_metas_fields={INSTANCE_METAS_FIELDS}
+                                currentInstance={data}
+                            />
                         </Box>
                     </AccordionDetails>
                 </Accordion>

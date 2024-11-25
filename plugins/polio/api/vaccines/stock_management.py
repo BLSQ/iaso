@@ -1,12 +1,12 @@
+import datetime
 import enum
-from typing import Union
 
-from django.db.models import QuerySet
 from drf_yasg import openapi
-from drf_yasg.utils import no_body, swagger_auto_schema
-from rest_framework import filters, serializers, status, viewsets
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
@@ -437,6 +437,8 @@ class VaccineStockSubitemBase(ModelViewSet):
 
 class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name")
+    document = serializers.FileField(required=False)
+    round_number = serializers.SerializerMethodField()
 
     class Meta:
         model = OutgoingStockMovement
@@ -449,7 +451,14 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "usable_vials_used",
             "lot_numbers",
             "missing_vials",
+            "document",
+            "comment",
+            "round",
+            "round_number",
         ]
+
+    def get_round_number(self, obj):
+        return obj.round.number if obj.round else None
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -480,6 +489,8 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
 
 
 class IncidentReportSerializer(serializers.ModelSerializer):
+    document = serializers.FileField(required=False)
+
     class Meta:
         model = IncidentReport
         fields = "__all__"
@@ -491,6 +502,8 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
 
 
 class DestructionReportSerializer(serializers.ModelSerializer):
+    document = serializers.FileField(required=False)
+
     class Meta:
         model = DestructionReport
         fields = "__all__"
@@ -620,9 +633,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_usable_vials()
+        results = self._sort_results(request, results)
 
         paginator = Paginator()
-        page = paginator.paginate_queryset(sorted(results, key=lambda x: x["date"]), request)
+        page = paginator.paginate_queryset(results, request)
         if page is not None:
             return paginator.get_paginated_response(page)
         return Response({"results": results})
@@ -646,9 +660,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_unusable_vials()
+        results = self._sort_results(request, results)
 
         paginator = Paginator()
-        page = paginator.paginate_queryset(sorted(results, key=lambda x: x["date"]), request)
+        page = paginator.paginate_queryset(results, request)
         if page is not None:
             return paginator.get_paginated_response(page)
         return Response({"results": results})
@@ -681,3 +696,25 @@ class VaccineStockManagementViewSet(ModelViewSet):
             .distinct()
             .order_by("id")
         )
+
+    def _sort_results(self, request: Request, results: list[dict]) -> list[dict]:
+        order = request.query_params.get(OrderingFilter.ordering_param)
+        reverse = False
+
+        if order and order.startswith("-"):
+            reverse = True
+            order = order.removeprefix("-")
+
+        valid_order_keys_and_defaults = {
+            "date": datetime.datetime.min,
+            "action": "",
+            "vials_in": 0,
+            "vials_out": 0,
+            "doses_in": 0,
+            "doses_out": 0,
+        }
+
+        if order not in valid_order_keys_and_defaults.keys():
+            return sorted(results, key=lambda d: d["date"])
+
+        return sorted(results, key=lambda d: d[order] or valid_order_keys_and_defaults[order], reverse=reverse)

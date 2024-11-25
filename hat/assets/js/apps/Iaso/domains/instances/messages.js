@@ -623,6 +623,34 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.project',
         defaultMessage: 'Project',
     },
+    org_unit_type_name: {
+        id: 'iaso.instance.org_unit_type_name',
+        defaultMessage: 'Org unit type',
+    },
+    org_unit_name: {
+        id: 'iaso.instance.org_unit',
+        defaultMessage: 'Org unit',
+    },
+    parent: {
+        id: 'iaso.label.parent',
+        defaultMessage: 'Parent',
+    },
+    changeRequests: {
+        defaultMessage: 'Change requests',
+        id: 'iaso.label.changeRequests',
+    },
+    new: {
+        defaultMessage: 'New',
+        id: 'iaso.forms.newCap',
+    },
+    rejected: {
+        defaultMessage: 'Rejected',
+        id: 'iaso.forms.rejectedCap',
+    },
+    approved: {
+        defaultMessage: 'Approved',
+        id: 'iaso.label.approved',
+    },
 });
 
 export default MESSAGES;

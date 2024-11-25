@@ -16,6 +16,8 @@ import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
+import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import {
     DateInput,
     NumberInput,
@@ -220,10 +222,16 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             unusable_vials: incident?.unusable_vials || 0,
             movement: getInitialMovement(incident),
             vaccine_stock: vaccineStockId,
+            document: incident?.document,
         },
         onSubmit: handleSubmit,
         validationSchema,
     });
+
+    const documentErrors = useMemo(() => {
+        return processErrorDocsBase(formik.errors.document);
+    }, [formik.errors.document]);
+
     const incidentTypeOptions = useIncidentOptions();
     const titleMessage = incident?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
@@ -383,13 +391,27 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         </Box>
                     </>
                 )}
-                <Field
-                    label={formatMessage(MESSAGES.comment)}
-                    name="comment"
-                    multiline
-                    component={TextInput}
-                    shrinkLabel={false}
-                />
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.comment)}
+                        name="comment"
+                        multiline
+                        component={TextInput}
+                        shrinkLabel={false}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <DocumentUploadWithPreview
+                        errors={documentErrors}
+                        onFilesSelect={files => {
+                            if (files.length) {
+                                formik.setFieldTouched('document', true);
+                                formik.setFieldValue('document', files);
+                            }
+                        }}
+                        document={formik.values.document}
+                    />
+                </Box>
             </ConfirmCancelModal>
         </FormikProvider>
     );

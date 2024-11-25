@@ -388,8 +388,9 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
                     concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
 
                 concerned_entity = None
-                if "entity_id" in log_data and log_data["entity_id"] is not None:
-                    concerned_entity = Entity.objects.get(uuid=log_data["entity_id"])
+                entity_id = log_data.get("entity_id") or log_data.get("entity_uuid")
+                if entity_id:
+                    concerned_entity = Entity.objects.get(uuid=entity_id)
 
                 account = user.iaso_profile.account
 

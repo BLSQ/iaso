@@ -1218,8 +1218,17 @@ class CampaignViewSet(ModelViewSet):
                 item = {}
                 item["id"] = org_unit.id
                 item["org_unit_name"] = org_unit.name
-                item["org_unit_parent_name"] = org_unit.parent.name
-                item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
+
+                if org_unit.parent:
+                    item["org_unit_parent_name"] = org_unit.parent.name
+                else:
+                    item["org_unit_parent_name"] = ""
+
+                if org_unit.parent and org_unit.parent.parent:
+                    item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
+                else:
+                    item["org_unit_parent_of_parent_name"] = ""
+
                 item["obr_name"] = campaign.obr_name
                 item["round_number"] = "R" + str(round.number)
                 item["start_date"] = round.started_at

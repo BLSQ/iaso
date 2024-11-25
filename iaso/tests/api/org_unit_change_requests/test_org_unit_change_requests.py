@@ -6,10 +6,7 @@ from iaso.api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
 from iaso.utils.models.common import get_creator_name
 import time_machine
 
-from django.contrib.auth.models import Group
-
 from iaso.test import APITestCase
-from django.contrib.gis.geos import Point
 from iaso import models as m
 
 
@@ -59,12 +56,16 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         org_unit_type.projects.set([project])
         user.iaso_profile.org_units.set([org_unit])
 
+        cls.form_3 = form_3
+        cls.instance_1 = instance_1
+        cls.instance_2 = instance_2
+        cls.instance_3 = instance_3
         cls.org_unit = org_unit
+        cls.org_unit_change_request_csv_columns = OrgUnitChangeRequestViewSet.org_unit_change_request_csv_columns()
         cls.org_unit_type = org_unit_type
         cls.project = project
         cls.user = user
         cls.user_with_review_perm = user_with_review_perm
-        cls.org_unit_change_request_csv_columns = OrgUnitChangeRequestViewSet.org_unit_change_request_csv_columns()
         cls.version = version
 
     def test_list_ok(self):
@@ -73,7 +74,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(10):
             # filter_for_user_and_app_id
             #   1. SELECT OrgUnit
             # get_queryset
@@ -81,14 +82,12 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             #   3. SELECT OrgUnitChangeRequest
             # prefetch
             #   4. PREFETCH OrgUnit.groups
-            #   5. PREFETCH OrgUnit.reference_instances
-            #   6. PREFETCH OrgUnit.reference_instances__form
-            #   7. PREFETCH OrgUnitChangeRequest.new_groups
-            #   8. PREFETCH OrgUnitChangeRequest.old_groups
-            #   9. PREFETCH OrgUnitChangeRequest.new_reference_instances
-            #  10. PREFETCH OrgUnitChangeRequest.old_reference_instances
-            #  11. PREFETCH OrgUnitChangeRequest.{new/old}_reference_instances__form
-            #  12. PREFETCH OrgUnitChangeRequest.org_unit_type.projects
+            #   5. PREFETCH OrgUnit.reference_instances__form
+            #   6. PREFETCH OrgUnitChangeRequest.new_groups
+            #   7. PREFETCH OrgUnitChangeRequest.old_groups
+            #   8. PREFETCH OrgUnitChangeRequest.new_reference_instances__form
+            #   9. PREFETCH OrgUnitChangeRequest.old_reference_instances__form
+            #  10. PREFETCH OrgUnitChangeRequest.org_unit_type.projects
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data["results"]))
@@ -100,10 +99,47 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
     def test_retrieve_ok(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(9):
             response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.data["id"], change_request.pk)
+
+    def test_retrieve_should_not_include_soft_deleted_intances(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request.new_reference_instances.set([self.instance_1.pk])
+        change_request.old_reference_instances.set([self.instance_2.pk])
+
+        m.OrgUnitReferenceInstance.objects.filter(org_unit=self.org_unit).delete()
+        m.OrgUnitReferenceInstance.objects.create(org_unit=self.org_unit, form=self.form_3, instance=self.instance_3)
+
+        self.client.force_authenticate(self.user)
+
+        with self.assertNumQueries(9):
+            response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(response.data["id"], change_request.pk)
+            self.assertEqual(len(response.data["new_reference_instances"]), 1)
+            self.assertEqual(response.data["new_reference_instances"][0]["id"], self.instance_1.pk)
+            self.assertEqual(len(response.data["old_reference_instances"]), 1)
+            self.assertEqual(response.data["old_reference_instances"][0]["id"], self.instance_2.pk)
+            self.assertEqual(len(response.data["org_unit"]["reference_instances"]), 1)
+            self.assertEqual(response.data["org_unit"]["reference_instances"][0]["id"], self.instance_3.pk)
+
+        # Soft delete instances.
+        self.instance_1.deleted = True
+        self.instance_1.save()
+        self.instance_2.deleted = True
+        self.instance_2.save()
+        self.instance_3.deleted = True
+        self.instance_3.save()
+
+        with self.assertNumQueries(9):
+            response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(response.data["id"], change_request.pk)
+            self.assertEqual(len(response.data["new_reference_instances"]), 0)
+            self.assertEqual(len(response.data["old_reference_instances"]), 0)
+            self.assertEqual(len(response.data["org_unit"]["reference_instances"]), 0)
 
     def test_retrieve_without_auth(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
@@ -270,6 +306,8 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         change_request.refresh_from_db()
         self.assertEqual(change_request.status, change_request.Statuses.REJECTED)
+        self.org_unit.refresh_from_db()
+        self.assertEqual(self.org_unit.validation_status, m.OrgUnit.VALIDATION_REJECTED)
 
     @time_machine.travel(DT, tick=False)
     def test_partial_update_approve(self):
@@ -295,6 +333,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.org_unit.refresh_from_db()
         self.assertEqual(self.org_unit.name, "Foo")
         self.assertIsNone(self.org_unit.closed_date)
+        self.assertEqual(self.org_unit.validation_status, m.OrgUnit.VALIDATION_VALID)
 
     def test_partial_update_approve_fail_wrong_status(self):
         self.client.force_authenticate(self.user_with_review_perm)

@@ -181,7 +181,7 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
     def get_units_count(self, obj: OrgUnitType):
         orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
             self.context["request"].user, self.context["request"].query_params.get("app_id")
-        ).filter(Q(validated=True) & Q(org_unit_type__id=obj.id))
+        ).filter(Q(validation_status=OrgUnit.VALIDATION_VALID) & Q(org_unit_type__id=obj.id))
         orgunits_count = orgUnits.count()
         return orgunits_count
 
@@ -243,3 +243,10 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
                 raise serializers.ValidationError({"project_ids": "Invalid project ids"})
         validate_reference_forms(data)
         return data
+
+
+class OrgUnitTypesDropdownSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnitType
+        fields = ["id", "name", "depth"]
+        read_only_fields = ["id", "name", "depth"]

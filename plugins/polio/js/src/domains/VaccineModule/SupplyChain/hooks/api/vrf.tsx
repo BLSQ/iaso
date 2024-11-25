@@ -3,8 +3,10 @@ import {
     renderTagsWithTooltip,
     textPlaceholder,
 } from 'bluesquare-components';
+import moment from 'moment';
 import { useMemo } from 'react';
 import { UseMutationResult, UseQueryResult } from 'react-query';
+import { PostArg } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     errorSnackBar,
@@ -18,8 +20,7 @@ import { useUrlParams } from '../../../../../../../../../hat/assets/js/apps/Iaso
 import {
     deleteRequest,
     getRequest,
-    patchRequest,
-    postRequest,
+    iasoFetch,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import {
     useSnackMutation,
@@ -182,25 +183,94 @@ export const useGetVrfDetails = (id?: string): UseQueryResult => {
     });
 };
 
-const getRoundsForApi = (
-    rounds: number[] | string | undefined,
-): { number: number }[] | undefined => {
-    if (!rounds) return undefined;
-    if (Array.isArray(rounds)) return rounds.map(r => ({ number: r }));
-    return rounds.split(',').map(r => ({ number: parseInt(r, 10) }));
+const createFormDataRequest = (
+    method: 'PATCH' | 'POST',
+    arg1: PostArg,
+): Promise<any> => {
+    const { url, data = {}, fileData = {}, signal = null } = arg1;
+
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+        let converted_value = value;
+        if (typeof converted_value === 'object') {
+            converted_value = JSON.stringify(converted_value);
+        }
+        formData.append(key, converted_value);
+    });
+
+    const init: Record<string, unknown> = {
+        method,
+        body: formData,
+        signal,
+        headers: {
+            'Accept-Language': moment.locale(),
+        },
+    };
+
+    if (Object.keys(fileData).length > 0) {
+        Object.entries(fileData).forEach(([key, value]) => {
+            if (key === 'files' && Array.isArray(value) && value.length > 0) {
+                formData.append('document', value[0]); // Use 'document' key
+            } else if (Array.isArray(value)) {
+                value.forEach((blob, index) => {
+                    formData.append(`${key}[${index}]`, blob);
+                });
+            } else {
+                formData.append(key, value);
+            }
+        });
+    }
+
+    return iasoFetch(url, init).then(response => response.json());
+};
+
+export const patchRequest2 = (arg1: PostArg): Promise<any> => {
+    return createFormDataRequest('PATCH', arg1);
+};
+
+export const postRequest2 = (arg1: PostArg): Promise<any> => {
+    return createFormDataRequest('POST', arg1);
 };
 
 export const saveVrf = (
     vrf: Optional<Partial<VRFFormData>>,
 ): Promise<any>[] => {
-    const payload: Partial<VRF> = {
-        ...vrf,
-        rounds: getRoundsForApi(vrf?.rounds),
-    };
-    if (vrf?.id) {
-        return [patchRequest(`${apiUrl}${vrf?.id}/`, payload)];
+    const filteredParams = vrf
+        ? Object.fromEntries(
+              Object.entries(vrf).filter(
+                  ([key, value]) =>
+                      value !== undefined &&
+                      value !== null &&
+                      key !== 'document',
+              ),
+          )
+        : {};
+
+    const { rounds } = filteredParams;
+    if (Array.isArray(rounds)) {
+        if (rounds.length > 0) {
+            filteredParams.rounds = rounds.join(',');
+        } else {
+            filteredParams.rounds = '';
+        }
     }
-    return [postRequest(apiUrl, payload)];
+    const requestBody: any = {
+        url: `${apiUrl}${vrf?.id ? `${vrf.id}/` : ''}`,
+        data: filteredParams,
+    };
+
+    if (vrf?.document) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+        const { files, ...data } = filteredParams;
+        const fileData = { files: vrf.document };
+        requestBody.data = data;
+        requestBody.fileData = fileData;
+    }
+
+    if (vrf?.id) {
+        return [patchRequest2(requestBody)];
+    }
+    return [postRequest2(requestBody)];
 };
 
 export const handleVrfPromiseErrors = (

@@ -14,7 +14,6 @@ import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from '../../../libs/validation';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import {
     SaveUserRoleQuery,
     useSaveUserRole,
@@ -113,7 +112,6 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         setUserRolePermissoins(newPermissions);
         setFieldValue('permissions', newPermissions);
     };
-    const currentUser = useCurrentUser();
     return (
         <>
             {dialogType === 'create' && (
@@ -155,6 +153,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                     />
                     <OrgUnitWriteTypes
                         userRole={values}
+                        userRolePermissions={userRolePermissions}
                         handleChange={newEditableOrgUnitTypeIds => {
                             onChange(
                                 'editable_org_unit_type_ids',

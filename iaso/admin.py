@@ -1,15 +1,18 @@
 from copy import copy
 from typing import Any, Protocol
 
-import requests
 from django import forms as django_forms
-from django.contrib.admin import RelatedOnlyFieldListFilter, widgets
+from django.contrib import admin
+from django.contrib.admin import widgets
+from django.contrib.admin.widgets import AutocompleteSelect
+from django.contrib.auth import get_user_model
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.http import HttpResponseRedirect
-from django.urls import reverse
+from django.db.models import Count, Q
+from django.http import HttpResponseRedirect, JsonResponse
+from django.urls import path, reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
@@ -71,6 +74,7 @@ from .models import (
     StorageLogEntry,
     StoragePassword,
     Task,
+    TenantUser,
     UserRole,
     Workflow,
     WorkflowChange,
@@ -353,6 +357,13 @@ class InstanceAdmin(admin.GeoModelAdmin):
             "entity",
         )
         return queryset
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "entity":
+            kwargs[
+                "queryset"
+            ] = Entity.objects_include_deleted.all()  # use the manager that includes soft-deleted objects
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(InstanceFile)
@@ -900,7 +911,7 @@ class ConfigAdmin(admin.ModelAdmin):
 @admin.register(PotentialPayment)
 class PotentialPaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
-    list_display = ("id", "change_request_ids")
+    list_display = ("id", "change_request_ids", "user")
 
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()
@@ -985,6 +996,65 @@ class OrgUnitChangeRequestConfigurationAdmin(admin.ModelAdmin):
 @admin.register(GroupSet)
 class GroupSetAdmin(admin.ModelAdmin):
     autocomplete_fields = ["source_version"]
+
+
+@admin.register(TenantUser)
+class TenantUserAdmin(admin.ModelAdmin):
+    list_display = (
+        "main_user",
+        "account_user",
+        "account",
+        "created_at",
+        "updated_at",
+        "all_accounts_count",
+        "is_self_account",
+    )
+    list_filter = ("account_user__iaso_profile__account",)
+    search_fields = ("main_user__username", "account_user__username", "account_user__iaso_profile__account__name")
+    raw_id_fields = ("main_user", "account_user")
+    readonly_fields = ("created_at", "updated_at", "account", "all_account_users", "other_accounts")
+
+    def get_urls(self):
+        urls = super().get_urls()
+        return urls
+
+    def account(self, obj):
+        return obj.account
+
+    account.admin_order_field = "account_user__iaso_profile__account"
+    account.short_description = "Account"
+
+    def all_accounts_count(self, obj):
+        return obj.main_user.tenant_users.count()
+
+    all_accounts_count.short_description = "Total Accounts"
+
+    def is_self_account(self, obj):
+        return obj.main_user == obj.account_user
+
+    is_self_account.boolean = True
+    is_self_account.short_description = "Self Account"
+
+    def all_account_users(self, obj):
+        users = obj.get_all_account_users()
+        return format_html("<br>".join(user.username for user in users))
+
+    all_account_users.short_description = "All Account Users"
+
+    def other_accounts(self, obj):
+        accounts = obj.get_other_accounts()
+        return format_html("<br>".join(str(account) for account in accounts))
+
+    other_accounts.short_description = "Other Accounts"
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("main_user", "account_user__iaso_profile__account")
+
+    class Media:
+        js = ("admin/js/vendor/select2/select2.full.min.js", "admin/js/autocomplete.js")
+        css = {
+            "all": ("admin/css/vendor/select2/select2.min.css",),
+        }
 
 
 admin.site.register(AccountFeatureFlag)

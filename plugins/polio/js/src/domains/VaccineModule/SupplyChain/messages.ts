@@ -25,6 +25,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.dosesShipped',
         defaultMessage: 'Doses shipped',
     },
+    dosesReceived: {
+        id: 'iaso.polio.label.dosesReceived',
+        defaultMessage: 'Doses received',
+    },
     dosesRequested: {
         id: 'iaso.polio.label.dosesRequested',
         defaultMessage: 'Doses requested',
@@ -337,6 +341,10 @@ const MESSAGES = defineMessages({
     targetPopulation: {
         id: 'iaso.polio.label.targetPopulation',
         defaultMessage: 'Target population',
+    },
+    document: {
+        id: 'iaso.polio.label.document',
+        defaultMessage: 'Document',
     },
     uniquePoNumberWarning: {
         id: 'iaso.polio.label.uniquePoNumberWarning',

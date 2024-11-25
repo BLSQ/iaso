@@ -191,7 +191,13 @@ class Entity(SoftDeletableModel):
         verbose_name_plural = "Entities"
 
     def __str__(self):
-        return f"{self.name}"
+        return "%s %s %s %d" % (self.entity_type.name, self.uuid, self.name, self.id)
+
+    def get_nfc_cards(self):
+        from iaso.models.storage import StorageDevice
+
+        nfc_count = StorageDevice.objects.filter(entity=self, type=StorageDevice.NFC).count()
+        return nfc_count
 
     def as_small_dict(self):
         return {
@@ -204,6 +210,11 @@ class Entity(SoftDeletableModel):
             "entity_type_name": self.entity_type and self.entity_type.name,
             "attributes": self.attributes and self.attributes.as_dict(),
         }
+
+    def as_small_dict_with_nfc_cards(self, instance):
+        entity_dict = self.as_small_dict()
+        entity_dict["nfc_cards"] = self.get_nfc_cards()
+        return entity_dict
 
     def as_dict(self):
         instances = dict()

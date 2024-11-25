@@ -5,11 +5,9 @@ import time_machine
 
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 
 from hat.audit.models import Modification
 from iaso import models as m
-from iaso.models.deduplication import ValidationStatus
 from iaso.test import TestCase
 
 
@@ -192,6 +190,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(change_request.updated_at, self.DT)
         self.assertEqual(change_request.updated_by, self.user)
         self.assertEqual(change_request.rejection_comment, "Foo Bar Baz.")
+        self.assertEqual(change_request.org_unit.validation_status, m.OrgUnit.VALIDATION_REJECTED)
 
     @time_machine.travel(DT, tick=False)
     def test_approve(self):
@@ -248,7 +247,6 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertIn("parent", diff["modified"])
         self.assertIn("org_unit_type", diff["modified"])
         self.assertIn("location", diff["modified"])
-        self.assertIn("validation_status", diff["modified"])
 
         self.assertEqual(diff["modified"]["name"]["before"], "Hôpital Général")
         self.assertEqual(diff["modified"]["name"]["after"], "New name given in a change request")
@@ -304,3 +302,20 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         self.assertEqual(diff["modified"]["closed_date"]["before"], "2055-01-01")
         self.assertIsNone(diff["modified"]["closed_date"]["after"])
+
+    def test_exclude_soft_deleted_new_reference_instances(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, requested_fields=["new_reference_instances"]
+        )
+        change_request.new_reference_instances.set([self.new_instance1, self.new_instance2])
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 1)
+
+        self.new_instance1.deleted = True
+        self.new_instance1.save()
+        self.new_instance2.deleted = True
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)

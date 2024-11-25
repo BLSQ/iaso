@@ -1,20 +1,27 @@
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
-import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
-import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
-import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
-import { DateInput } from '../../../../../components/Inputs/DateInput';
-import { NumberInput } from '../../../../../components/Inputs';
+import { Field, useFormikContext } from 'formik';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+} from 'react';
+import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
+import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import { TextArea } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
-import MESSAGES from '../../messages';
+import { NumberInput } from '../../../../../components/Inputs';
+import { DateInput } from '../../../../../components/Inputs/DateInput';
+import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import {
     renderRoundTag,
     useCampaignDropDowns,
     useGetCountriesOptions,
 } from '../../hooks/api/vrf';
-import { useSharedStyles } from '../shared';
 import { useSkipEffectUntilValue } from '../../hooks/utils';
+import MESSAGES from '../../messages';
+import { useSharedStyles } from '../shared';
 
 type Props = { className?: string; vrfData: any };
 
@@ -37,7 +44,8 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         },
     ];
 
-    const { values, setFieldTouched, setFieldValue } = useFormikContext<any>();
+    const { values, setFieldTouched, setFieldValue, errors } =
+        useFormikContext<any>();
     const {
         campaigns,
         vaccines,
@@ -88,6 +96,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
 
     const isNormalType = values?.vrf?.vrf_type === 'Normal';
 
+    const documentErrors = useMemo(() => {
+        return processErrorDocsBase(errors.document);
+    }, [errors.document]);
     return (
         <Box className={className} mb={3}>
             <Box mb={2}>
@@ -304,16 +315,29 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         disabled={false}
                                     />
                                 </Grid>
+                                <Grid item xs={6} md={3}>
+                                    <Box>
+                                        <DocumentUploadWithPreview
+                                            errors={documentErrors}
+                                            onFilesSelect={files => {
+                                                if (files.length) {
+                                                    setFieldTouched(
+                                                        'vrf.document',
+                                                        true,
+                                                    );
+                                                    setFieldValue(
+                                                        'vrf.document',
+                                                        files,
+                                                    );
+                                                }
+                                            }}
+                                            document={values?.vrf?.document}
+                                        />
+                                    </Box>
+                                </Grid>
                             </Grid>
-                            <Grid
-                                container
-                                item
-                                xs={12}
-                                md={9}
-                                lg={6}
-                                spacing={2}
-                            >
-                                <Grid item xs={12}>
+                            <Grid container item xs={12} spacing={2}>
+                                <Grid item xs={12} lg={6}>
                                     {/* With MUI 5, the spacing isn't taken into account if there's only one <Grid> item
                                       so the <Box> is used to compensate and align the TextArea with the other fields
                                     */}
@@ -329,6 +353,10 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         />
                                     </Box>
                                 </Grid>
+
+                                {/* <Grid item xs={12} lg={6}>
+                           
+                                </Grid> */}
                             </Grid>
                         </>
                     )}

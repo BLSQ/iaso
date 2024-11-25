@@ -12,6 +12,7 @@ import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { LinkToPlanning } from '../plannings/components/LinkToPlanning.tsx';
 import { usePrettyPeriod } from '../periods/utils';
 import MESSAGES from './messages';
+import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -30,6 +31,68 @@ const PrettyPeriod = ({ value }) => {
     const formatPeriod = usePrettyPeriod();
     return formatPeriod(value);
 };
+export const INSTANCE_MAP_METAS_FIELDS = [
+    {
+        key: 'org_unit_type_name',
+        type: 'info',
+        renderValue: data => {
+            return data.org_unit.org_unit_type.name;
+        },
+    },
+    {
+        key: 'org_unit_name',
+        type: 'info',
+        renderValue: data => {
+            return <LinkToOrgUnit orgUnit={data.org_unit} />;
+        },
+    },
+    {
+        key: 'parent',
+        type: 'info',
+        renderValue: data => {
+            return <LinkToOrgUnit orgUnit={data.org_unit.parent} />;
+        },
+    },
+    {
+        key: 'form_name',
+        type: 'info',
+        renderValue: data => {
+            return (
+                <LinkToForm formId={data.form_id} formName={data.form_name} />
+            );
+        },
+    },
+    {
+        key: 'created_by',
+        type: 'info',
+        renderValue: data => {
+            return data.created_by
+                ? getDisplayName(data.created_by)
+                : textPlaceholder;
+        },
+    },
+    {
+        key: 'created_at',
+        render: value => displayDateFromTimestamp(value),
+        type: 'info',
+    },
+    {
+        key: 'org_unit',
+        render: value => {
+            if (!value) return null;
+            return (
+                <OrgUnitTooltip
+                    key={value.id}
+                    orgUnit={value}
+                    domComponent="span"
+                >
+                    <OrgUnitLabel orgUnit={value} withType withSource={false} />
+                </OrgUnitTooltip>
+            );
+        },
+        type: 'location',
+    },
+];
 
 export const INSTANCE_METAS_FIELDS = [
     {

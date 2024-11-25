@@ -1,24 +1,29 @@
 import datetime
-
 import jsonschema
-from django.contrib.auth.models import AnonymousUser
-from django.utils import timezone
-from rest_framework.test import APIClient
+import time_machine
 
-import hat.menupermissions.models as permissions
+from django.contrib.auth.models import AnonymousUser
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio import models as pm
+import hat.menupermissions.models as permissions
+
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
+
 BASE_URL_SUB_RESOURCES = "/api/polio/vaccine/stock/"
 
+DT = datetime.datetime(2024, 10, 29, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
+
+@time_machine.travel(DT, tick=False)
 class VaccineStockManagementAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         # Set up data for the whole TestCase
-        cls.now = timezone.now()
+        cls.now = DT
         cls.account = m.Account.objects.create(name="test_account")
         cls.project = m.Project.objects.create(name="Polio", app_id="polio.projects", account=cls.account)
         cls.org_unit_type_country = m.OrgUnitType.objects.create(name="COUNTRY", category="COUNTRY")
@@ -100,6 +105,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             usable_vials_used=10,
             lot_numbers=["LOT123"],
             missing_vials=2,
+            comment="Hello world",
         )
         cls.destruction_report = pm.DestructionReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -108,6 +114,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             destruction_report_date=cls.now,
             unusable_vials_destroyed=3,
             lot_numbers=["LOT456"],
+            comment="Goodbye World",
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -160,7 +167,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
         results = response.json()["results"]
         self.assertEqual(len(results), 1)
         stock = results[0]
-        print("stock", stock)
         self.assertEqual(stock["country_name"], "Testland")
         self.assertEqual(stock["vaccine_type"], pm.VACCINES[0][0])
         self.assertEqual(stock["vials_received"], 20)  # 400 doses / 20 doses per vial
@@ -213,24 +219,65 @@ class VaccineStockManagementAPITestCase(APITestCase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
+        # Default order should be `date ASC`.
+
+        self.assertEqual(data["results"][0]["date"], "2024-10-23")
+        self.assertEqual(data["results"][0]["vials_in"], 16)
+        self.assertEqual(data["results"][0]["doses_in"], 320)
+        self.assertEqual(data["results"][0]["type"], "incident_report")  # Physical inventory
+
+        self.assertEqual(data["results"][1]["date"], "2024-10-24")
+        self.assertEqual(data["results"][1]["vials_in"], 20)
+        self.assertEqual(data["results"][1]["doses_in"], 400)
+        self.assertEqual(data["results"][1]["type"], "vaccine_arrival_report")  # From arrival report
+
+        self.assertEqual(data["results"][2]["date"], "2024-10-24")
+        self.assertEqual(data["results"][2]["vials_out"], 1)
+        self.assertEqual(data["results"][2]["doses_out"], 20)
+        self.assertEqual(data["results"][2]["type"], "incident_report")  # Broken
+
+        self.assertEqual(data["results"][3]["date"], "2024-10-25")
+        self.assertEqual(data["results"][3]["vials_out"], 1)
+        self.assertEqual(data["results"][3]["doses_out"], 20)
+        self.assertEqual(data["results"][3]["type"], "incident_report")  # Expiry date
+
+        self.assertEqual(data["results"][4]["date"], "2024-10-26")
+        self.assertEqual(data["results"][4]["vials_out"], 10)
+        self.assertEqual(data["results"][4]["doses_out"], 200)
+        self.assertEqual(data["results"][4]["type"], "outgoing_stock_movement")  # Outgoing movement (form A)
+
+        self.assertEqual(data["results"][5]["date"], "2024-10-26")
+        self.assertEqual(data["results"][5]["vials_out"], 2)
+        self.assertEqual(data["results"][5]["doses_out"], 40)
+        self.assertEqual(data["results"][5]["type"], "outgoing_stock_movement")  # missing vials (form A)
+
+        # Order by `vials_in DESC`.
+
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/?order=-vials_in")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["results"]), 6)
+
         self.assertEqual(data["results"][0]["vials_in"], 20)
-        self.assertEqual(data["results"][0]["doses_in"], 400)
-        self.assertEqual(data["results"][0]["type"], "vaccine_arrival_report")  # From arrival report
-        self.assertEqual(data["results"][1]["vials_out"], 10)
-        self.assertEqual(data["results"][1]["doses_out"], 200)
-        self.assertEqual(data["results"][1]["type"], "outgoing_stock_movement")  # Outgoing movement (form A)
-        self.assertEqual(data["results"][2]["vials_out"], 2)
-        self.assertEqual(data["results"][2]["doses_out"], 40)
-        self.assertEqual(data["results"][2]["type"], "outgoing_stock_movement")  # missing vials (form A)
-        self.assertEqual(data["results"][3]["vials_in"], 16)
-        self.assertEqual(data["results"][3]["doses_in"], 320)
-        self.assertEqual(data["results"][3]["type"], "incident_report")  # Physical inventory
-        self.assertEqual(data["results"][4]["vials_out"], 1)
-        self.assertEqual(data["results"][4]["doses_out"], 20)
-        self.assertEqual(data["results"][4]["type"], "incident_report")  # Broken
-        self.assertEqual(data["results"][5]["vials_out"], 1)
-        self.assertEqual(data["results"][5]["doses_out"], 20)
-        self.assertEqual(data["results"][5]["type"], "incident_report")  # Expiry date
+        self.assertEqual(data["results"][1]["vials_in"], 16)
+        self.assertEqual(data["results"][2]["vials_in"], None)
+        self.assertEqual(data["results"][3]["vials_in"], None)
+        self.assertEqual(data["results"][4]["vials_in"], None)
+        self.assertEqual(data["results"][5]["vials_in"], None)
+
+        # Order by `vials_in ASC`.
+
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/?order=vials_in")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["results"]), 6)
+
+        self.assertEqual(data["results"][0]["vials_in"], None)
+        self.assertEqual(data["results"][1]["vials_in"], None)
+        self.assertEqual(data["results"][2]["vials_in"], None)
+        self.assertEqual(data["results"][3]["vials_in"], None)
+        self.assertEqual(data["results"][4]["vials_in"], 16)
+        self.assertEqual(data["results"][5]["vials_in"], 20)
 
     def test_unusable_vials_endpoint(self):
         # Authenticate and make request to the API
@@ -276,18 +323,51 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # Check that the response contains the expected number of unusable vials entries
         self.assertEqual(len(data["results"]), 4)
 
-        self.assertEqual(data["results"][0]["vials_in"], 10)
-        self.assertEqual(data["results"][0]["doses_in"], 200)
-        self.assertEqual(data["results"][0]["type"], "outgoing_stock_movement")
-        self.assertEqual(data["results"][1]["vials_out"], 3)
-        self.assertEqual(data["results"][1]["doses_out"], 60)
-        self.assertEqual(data["results"][1]["type"], "destruction_report")
-        self.assertEqual(data["results"][2]["vials_in"], 1)
+        # Default order should be `date ASC`.
+
+        self.assertEqual(data["results"][0]["date"], "2024-10-23")
+        self.assertEqual(data["results"][0]["vials_in"], 20)
+        self.assertEqual(data["results"][0]["doses_in"], 400)
+        self.assertEqual(data["results"][0]["type"], "incident_report")
+
+        self.assertEqual(data["results"][1]["date"], "2024-10-25")
+        self.assertEqual(data["results"][1]["vials_in"], 1)
+        self.assertEqual(data["results"][1]["doses_in"], 20)
+        self.assertEqual(data["results"][1]["type"], "incident_report")
+
+        self.assertEqual(data["results"][2]["date"], "2024-10-26")
+        self.assertEqual(data["results"][2]["vials_in"], 10)
+        self.assertEqual(data["results"][2]["doses_in"], 200)
+        self.assertEqual(data["results"][2]["type"], "outgoing_stock_movement")
+
+        self.assertEqual(data["results"][3]["date"], "2024-10-29")
+        self.assertEqual(data["results"][3]["vials_out"], 3)
+        self.assertEqual(data["results"][3]["doses_out"], 60)
+        self.assertEqual(data["results"][3]["type"], "destruction_report")
+
+        # Order by `doses_in DESC`.
+
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/get_unusable_vials/?order=-doses_in")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["results"]), 4)
+
+        self.assertEqual(data["results"][0]["doses_in"], 400)
+        self.assertEqual(data["results"][1]["doses_in"], 200)
         self.assertEqual(data["results"][2]["doses_in"], 20)
-        self.assertEqual(data["results"][2]["type"], "incident_report")
-        self.assertEqual(data["results"][3]["vials_in"], 20)
+        self.assertEqual(data["results"][3]["doses_in"], None)
+
+        # Order by `doses_in ASC`.
+
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/get_unusable_vials/?order=doses_in")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["results"]), 4)
+
+        self.assertEqual(data["results"][0]["doses_in"], None)
+        self.assertEqual(data["results"][1]["doses_in"], 20)
+        self.assertEqual(data["results"][2]["doses_in"], 200)
         self.assertEqual(data["results"][3]["doses_in"], 400)
-        self.assertEqual(data["results"][3]["type"], "incident_report")
 
     def test_summary_endpoint(self):
         # Authenticate as a user with read/write permissions
@@ -499,6 +579,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "usable_vials_used",
             "lot_numbers",
             "missing_vials",
+            "round",
         }
         self.assertTrue(expected_keys.issubset(first_result.keys()))
 
@@ -531,3 +612,139 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # Verify that the results are ordered by date_of_incident_report
         dates = [result["form_a_reception_date"] for result in data["results"]]
         self.assertEqual(dates, sorted(dates))
+
+    def test_documents_upload_and_download(self):
+        self.client.force_authenticate(self.user_rw_perms)
+        # Test creation and retrieval of OutgoingStockMovement with document via ORM
+
+        # Define paths to the PDF files
+        PDF_FILE_PATH = "testdata/test_pdf.pdf"
+
+        with open(PDF_FILE_PATH, "rb") as pdf_file:
+            pdf_file_content = pdf_file.read()
+
+            # Test creation and retrieval of OutgoingStockMovement with document via ORM
+            outgoing_stock_movement = pm.OutgoingStockMovement.objects.create(
+                campaign=self.campaign,
+                vaccine_stock=self.vaccine_stock,
+                report_date=self.now,
+                form_a_reception_date="2023-10-01",
+                usable_vials_used=999,
+                missing_vials=111,
+                document=SimpleUploadedFile("document_path_1.pdf", pdf_file_content),
+            )
+
+            self.assertIn("document_path_1", outgoing_stock_movement.document.name)
+
+            # Query the newly created OutgoingStockMovement via ORM
+            queried_movement = pm.OutgoingStockMovement.objects.get(pk=outgoing_stock_movement.pk)
+            self.assertEqual(queried_movement.usable_vials_used, 999)
+            self.assertEqual(queried_movement.missing_vials, 111)
+            self.assertIn("document_path_1", queried_movement.document.name)
+
+            # Query the newly created OutgoingStockMovement via API
+            response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{outgoing_stock_movement.pk}/")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.data["usable_vials_used"], 999)
+            self.assertEqual(response.data["missing_vials"], 111)
+            self.assertIn("document_path_1", response.data["document"])
+
+            # Test creation and retrieval of IncidentReport with document via ORM
+            incident_report = pm.IncidentReport.objects.create(
+                vaccine_stock=self.vaccine_stock,
+                date_of_incident_report=self.now - datetime.timedelta(days=2),
+                incident_report_received_by_rrt=self.now - datetime.timedelta(days=1),
+                stock_correction=pm.IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
+                document=SimpleUploadedFile("document_path_2.pdf", pdf_file_content),
+                unusable_vials=7,  # 1 vial will be moved from usable to unusable
+                usable_vials=3,
+            )
+
+            self.assertIn("document_path_2", incident_report.document.name)
+
+            # Query the newly created IncidentReport via ORM
+            queried_incident = pm.IncidentReport.objects.get(pk=incident_report.pk)
+            self.assertEqual(queried_incident.unusable_vials, 7)
+            self.assertEqual(queried_incident.usable_vials, 3)
+            self.assertIn("document_path_2", queried_incident.document.name)
+
+            # Query the newly created IncidentReport via API
+            response = self.client.get(f"{BASE_URL_SUB_RESOURCES}incident_report/{incident_report.pk}/")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.data["unusable_vials"], 7)
+            self.assertEqual(response.data["usable_vials"], 3)
+            self.assertIn("document_path_2", response.data["document"])
+
+            # Test creation and retrieval of DestructionReport with document via ORM
+            destruction_report = pm.DestructionReport.objects.create(
+                vaccine_stock=self.vaccine_stock,
+                rrt_destruction_report_reception_date=self.now - datetime.timedelta(days=1),
+                destruction_report_date=self.now,
+                action="Destroyed due to expiration",
+                document=SimpleUploadedFile("document_path_3.pdf", pdf_file_content, content_type="application/pdf"),
+                unusable_vials_destroyed=3,
+            )
+
+            self.assertIn("document_path_3", destruction_report.document.name)
+
+            # Query the newly created DestructionReport via ORM
+            queried_destruction = pm.DestructionReport.objects.get(pk=destruction_report.pk)
+            self.assertEqual(queried_destruction.unusable_vials_destroyed, 3)
+            self.assertEqual(queried_destruction.action, "Destroyed due to expiration")
+            self.assertIn("document_path_3", queried_destruction.document.name)
+
+            # Query the newly created DestructionReport via API
+            response = self.client.get(f"{BASE_URL_SUB_RESOURCES}destruction_report/{destruction_report.pk}/")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.data["unusable_vials_destroyed"], 3)
+            self.assertEqual(response.data["action"], "Destroyed due to expiration")
+            self.assertIn("document_path_3", response.data["document"])
+
+            # Test creation and retrieval of OutgoingStockMovement with document via API
+            data = {
+                "campaign": self.campaign.obr_name,
+                "vaccine_stock": self.vaccine_stock.pk,
+                "form_a_reception_date": "2023-10-03",
+                "report_date": "2023-10-04",
+                "usable_vials_used": 999,
+                "missing_vials": 111,
+                "document": SimpleUploadedFile("document_path_4.pdf", pdf_file_content, content_type="application/pdf"),
+            }
+
+            response = self.client.post(
+                f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", data=data, format="multipart"
+            )
+
+            self.assertEqual(response.status_code, 201)
+            self.assertIn("document_path_4", response.data["document"])
+
+            # Test creation and retrieval of IncidentReport with document via API
+            data = {
+                "vaccine_stock": self.vaccine_stock.pk,
+                "date_of_incident_report": "2023-10-05",
+                "incident_report_received_by_rrt": "2023-10-06",
+                "stock_correction": pm.IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
+                "unusable_vials": 7,
+                "usable_vials": 3,
+                "document": SimpleUploadedFile("document_path_5.pdf", pdf_file_content, content_type="application/pdf"),
+            }
+
+            response = self.client.post(f"{BASE_URL_SUB_RESOURCES}incident_report/", data=data, format="multipart")
+
+            self.assertEqual(response.status_code, 201)
+            self.assertIn("document_path_5", response.data["document"])
+
+            # Test creation and retrieval of DestructionReport with document via API
+            data = {
+                "vaccine_stock": self.vaccine_stock.pk,
+                "rrt_destruction_report_reception_date": "2023-10-05",
+                "destruction_report_date": "2023-10-06",
+                "action": "Destroyed due to expiration",
+                "unusable_vials_destroyed": 3,
+                "document": SimpleUploadedFile("document_path_6.pdf", pdf_file_content, content_type="application/pdf"),
+            }
+
+            response = self.client.post(f"{BASE_URL_SUB_RESOURCES}destruction_report/", data=data, format="multipart")
+
+            self.assertEqual(response.status_code, 201)
+            self.assertIn("document_path_6", response.data["document"])

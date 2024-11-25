@@ -118,6 +118,7 @@ data
 # dev environment
 .env*
 \.idea/*
+\.run/*
 
 
 

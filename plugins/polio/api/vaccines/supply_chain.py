@@ -1,9 +1,8 @@
-import json
 from logging import getLogger
 from typing import Any
 
 from django import forms
-from django.core.files.base import ContentFile
+from django.db import IntegrityError
 from django.db.models import Max, Min, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
@@ -269,7 +268,10 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                         setattr(ar, key, item[key])
 
                 if is_different:
-                    ar.save()
+                    try:
+                        ar.save()
+                    except IntegrityError as e:
+                        raise serializers.ValidationError(str(e))
 
                 arrival_reports.append(ar)
 
@@ -327,7 +329,6 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        print("VaccineRequestFormPostSerializer instance created with data: %s", self.initial_data)
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)

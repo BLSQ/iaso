@@ -419,7 +419,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             org_units = self.validate_org_units(request, profile)
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, profile)
-            editable_org_unit_types = self.validate_editable_org_unit_types(request)
+            editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
         except ProfileError as error:
             # Delete profile if error since we're creating a new user
             profile.delete()
@@ -483,7 +483,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             org_units = self.validate_org_units(request, profile)
             user_roles_data = self.validate_user_roles(request)
             projects = self.validate_projects(request, profile)
-            editable_org_unit_types = self.validate_editable_org_unit_types(request)
+            editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
         except ProfileError as error:
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
@@ -650,37 +650,42 @@ class ProfilesViewSet(viewsets.ViewSet):
         return user_permissions
 
     def validate_org_units(self, request, profile) -> QuerySet[OrgUnit]:
-        existing_org_units = set(profile.org_units.values_list("id", flat=True))
-        org_units = request.data.get("org_units", [])
-        managed_org_units = []
+        org_unit = request.data.get("org_units", [])
+        if not org_unit:
+            return OrgUnit.objects.none()
+
+        org_unit_ids = set([ou["id"] for ou in org_unit if ou.get("id")])
+        existing_org_unit_ids = set(profile.org_units.values_list("id", flat=True))
+
+        if org_unit_ids == existing_org_unit_ids:
+            # No change detected, the user must be trying to change another field.
+            return OrgUnit.objects.filter(id__in=org_unit_ids)
+
         filtered_org_unit_ids = []
+        if request.user.has_perm(permission.USERS_MANAGED):
+            profile_org_units = request.user.iaso_profile.org_units.all()
+            managed_org_units = OrgUnit.objects.hierarchy(profile_org_units).values_list("id", flat=True)
+            if profile_org_units.exists():
+                for org_unit_id in org_unit_ids:
+                    if (
+                        org_unit_id not in managed_org_units
+                        and org_unit_id not in existing_org_unit_ids
+                        and not request.user.is_superuser
+                    ):
+                        raise PermissionDenied(
+                            f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
+                            f"pyramid. Trying to assign {org_unit_id}."
+                        )
+                    filtered_org_unit_ids.append(org_unit_id)
+
+        valid_ids = filtered_org_unit_ids or org_unit_ids
+        org_units = OrgUnit.objects.filter(id__in=valid_ids)
 
         if request.user.has_perm(permission.USERS_MANAGED):
-            managed_org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list(
-                "id", flat=True
-            )
-
-        for org_unit in org_units:
-            org_unit_id = int(org_unit.get("id"))
-            if (
-                managed_org_units
-                and org_unit_id not in managed_org_units
-                and org_unit_id not in existing_org_units
-                and not request.user.is_superuser
-            ):
-                raise PermissionDenied(
-                    f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
-                    f"pyramid. Trying to assign {org_unit_id}."
-                )
-            filtered_org_unit_ids.append(org_unit_id)
-
-        filtered_org_units = OrgUnit.objects.filter(id__in=filtered_org_unit_ids)
-
-        if request.user.has_perm(permission.USERS_MANAGED):
-            org_unit_type_ids_to_check = set(filtered_org_units.values_list("org_unit_type_id", flat=True))
+            org_unit_type_ids_to_check = set(org_units.values_list("org_unit_type_id", flat=True))
             self._validate_profile_editable_org_unit_types(request.user.iaso_profile, org_unit_type_ids_to_check)
 
-        return filtered_org_units
+        return org_units
 
     def validate_user_roles(self, request):
         result = {"groups": [], "user_roles": []}
@@ -712,9 +717,14 @@ class ProfilesViewSet(viewsets.ViewSet):
                 result.append(project)
         return result
 
-    def validate_editable_org_unit_types(self, request) -> QuerySet[OrgUnitType]:
+    def validate_editable_org_unit_types(self, request, profile: Profile) -> QuerySet[OrgUnitType]:
         editable_org_unit_type_ids = set(request.data.get("editable_org_unit_type_ids", []))
         editable_org_unit_types = OrgUnitType.objects.filter(pk__in=editable_org_unit_type_ids)
+        existing_editable_org_unit_type_ids = set(profile.editable_org_unit_types.values_list("id", flat=True))
+
+        if editable_org_unit_type_ids == existing_editable_org_unit_type_ids:
+            # No change detected, the user must be trying to change another field.
+            return editable_org_unit_types
 
         if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
             raise ValidationError("Invalid editable org unit type submitted.")

@@ -1,4 +1,5 @@
 from django.db.models import Count
+from iaso.api.group_sets.serializers import GroupSetSerializer
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -43,15 +44,17 @@ class GroupSerializer(serializers.ModelSerializer):
             "name",
             "source_ref",
             "source_version",
+            "group_sets",
             "org_unit_count",
             "created_at",
             "updated_at",
             "block_of_countries",  # It's used to mark a group containing only countries
         ]
-        read_only_fields = ["id", "source_version", "org_unit_count", "created_at", "updated_at"]
+        read_only_fields = ["id", "source_version", "group_sets", "org_unit_count", "created_at", "updated_at"]
         ref_name = "iaso_group_serializer"
 
     source_version = SourceVersionSerializerForGroup(read_only=True)
+    group_sets = GroupSetSerializer(many=True, read_only=True)
     org_unit_count = serializers.IntegerField(read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -104,7 +107,9 @@ class GroupsViewSet(ModelViewSet):
             return Group.objects.none()
 
         profile = self.request.user.iaso_profile
-        queryset = Group.objects.filter(source_version__data_source__projects__in=profile.account.project_set.all())
+        queryset = Group.objects.filter(
+            source_version__data_source__projects__in=profile.account.project_set.all()
+        ).prefetch_related("group_sets")
         return queryset
 
     def filter_queryset(self, queryset):

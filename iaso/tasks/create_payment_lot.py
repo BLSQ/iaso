@@ -84,8 +84,6 @@ def create_payment_lot(
         # We want to filter out potential payments assigned to another task.
         # Since the task is assigned in the view after it's created, we filter out potential payments with no task or with the current task assigned (for safety)
         potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
-        for p in potential_payments:
-            print(p.task.id)
         potential_payments_for_lot = potential_payments.filter(task=the_task)
         # potential_payments_for_lot = potential_payments.filter((Q(task__isnull=True) | Q(task=the_task)))
         payment_lot.potential_payments.add(*potential_payments_for_lot, bulk=False)

@@ -158,6 +158,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                     {hasDevFeatures && (
                         <OrgUnitWriteTypes
                             userRole={values}
+                            userRolePermissions={userRolePermissions}
                             handleChange={newEditableOrgUnitTypeIds => {
                                 onChange(
                                     'editable_org_unit_type_ids',
@@ -189,6 +190,5 @@ const editUserRoleModalWithIcon = makeFullModal(
 
 export {
     createUserRoleModalWithButton as CreateUserRoleDialog,
-    editUserRoleModalWithIcon as EditUserRoleDialog
+    editUserRoleModalWithIcon as EditUserRoleDialog,
 };
-

@@ -665,17 +665,18 @@ class ProfilesViewSet(viewsets.ViewSet):
         if request.user.has_perm(permission.USERS_MANAGED):
             profile_org_units = request.user.iaso_profile.org_units.all()
             managed_org_units = OrgUnit.objects.hierarchy(profile_org_units).values_list("id", flat=True)
-            for org_unit_id in org_unit_ids:
-                if (
-                    org_unit_id not in managed_org_units
-                    and org_unit_id not in existing_org_unit_ids
-                    and not request.user.is_superuser
-                ):
-                    raise PermissionDenied(
-                        f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
-                        f"pyramid. Trying to assign {org_unit_id}."
-                    )
-                filtered_org_unit_ids.append(org_unit_id)
+            if profile_org_units.exists():
+                for org_unit_id in org_unit_ids:
+                    if (
+                        org_unit_id not in managed_org_units
+                        and org_unit_id not in existing_org_unit_ids
+                        and not request.user.is_superuser
+                    ):
+                        raise PermissionDenied(
+                            f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
+                            f"pyramid. Trying to assign {org_unit_id}."
+                        )
+                    filtered_org_unit_ids.append(org_unit_id)
 
         valid_ids = filtered_org_unit_ids or org_unit_ids
         org_units = OrgUnit.objects.filter(id__in=valid_ids)

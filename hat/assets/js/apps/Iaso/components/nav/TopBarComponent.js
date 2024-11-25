@@ -44,8 +44,14 @@ const styles = theme => ({
 const useStyles = makeStyles(styles);
 
 function TopBar(props) {
-    const { title, children, displayBackButton, goBack, displayMenuButton } =
-        props;
+    const {
+        title,
+        children,
+        displayBackButton,
+        goBack,
+        displayMenuButton,
+        disableShadow,
+    } = props;
     const classes = useStyles();
 
     const { APP_TITLE } = useContext(ThemeConfigContext);
@@ -65,6 +71,7 @@ function TopBar(props) {
             color="primary"
             id="top-bar"
             sx={{ zIndex: 10 }}
+            elevation={disableShadow ? 0 : 4}
         >
             <Toolbar className={classes.root}>
                 <Grid
@@ -145,6 +152,7 @@ TopBar.defaultProps = {
     goBack: () => null,
     title: '',
     displayMenuButton: true,
+    disableShadow: false,
 };
 
 TopBar.propTypes = {
@@ -153,6 +161,7 @@ TopBar.propTypes = {
     displayBackButton: PropTypes.bool,
     goBack: PropTypes.func,
     displayMenuButton: PropTypes.bool,
+    disableShadow: PropTypes.bool,
 };
 
 export default TopBar;

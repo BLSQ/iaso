@@ -183,9 +183,6 @@ class ProfileAPITestCase(APITestCase):
         cls.permission = Permission.objects.create(
             name="iaso permission", content_type_id=1, codename="iaso_permission"
         )
-        # cls.permission = Permission.objects.create(
-        #     name="iaso permission 2", content_type_id=1, codename="iaso_permission2"
-        # )
         cls.group = Group.objects.create(name="user role")
         cls.group.permissions.add(cls.permission)
         cls.user_role = m.UserRole.objects.create(group=cls.group, account=cls.account)
@@ -1112,6 +1109,35 @@ class ProfileAPITestCase(APITestCase):
         jum = Profile.objects.get(user=self.jum)
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
+
+    def test_update_user_should_fail_when_assigning_an_org_unit_outside_of_the_author_own_health_pyramid(self):
+        user = self.jam
+        user.iaso_profile.org_units.set([self.jedi_squad_1])
+
+        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
+        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+
+        profile_to_modify = Profile.objects.get(user=self.jum)
+        profile_to_modify.org_units.set([self.jedi_squad_1])
+
+        self.client.force_authenticate(user)
+        data = {
+            "user_name": "new_user_name",
+            "org_units": [
+                {"id": self.jedi_council_corruscant.pk},
+                {"id": "foo"},
+                {"bar": "foo"},
+            ],
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_modify.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"],
+            (
+                f"User with menupermissions.iaso_users_managed cannot assign an OrgUnit outside "
+                f"of their own health pyramid. Trying to assign {self.jedi_council_corruscant.pk}."
+            ),
+        )
 
     def test_update_user_should_fail_with_restricted_editable_org_unit_types_for_field_editableorgunittypeids(self):
         """

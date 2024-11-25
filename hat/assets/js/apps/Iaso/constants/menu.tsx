@@ -20,7 +20,6 @@ import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRou
 import Input from '@mui/icons-material/Input';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
-import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
 import RuleIcon from '@mui/icons-material/Rule';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
@@ -31,7 +30,7 @@ import Settings from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
-
+import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import BeneficiarySvg from '../components/svg/Beneficiary';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
@@ -158,7 +157,7 @@ const menuItems = (
                 {
                     label: formatMessage(MESSAGES.configuration),
                     key: 'configuration',
-                    icon: props => <SettingsSuggestIcon {...props} />,
+                    icon: props => <Settings {...props} />,
                     subMenu: [
                         {
                             label: formatMessage(MESSAGES.orgUnitType),
@@ -210,7 +209,7 @@ const menuItems = (
                     label: formatMessage(MESSAGES.reviewChangeProposals),
                     permissions: paths.orgUnitChangeRequestPath.permissions,
                     key: CHANGE_REQUEST,
-                    icon: props => <CategoryIcon {...props} />,
+                    icon: props => <PublishedWithChangesIcon {...props} />,
                 },
                 {
                     label: formatMessage(MESSAGES.changeRequestConfig),

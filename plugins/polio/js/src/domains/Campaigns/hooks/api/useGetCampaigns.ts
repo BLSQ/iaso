@@ -25,7 +25,6 @@ export type Options = {
     orgUnitGroups?: number[];
     show_test?: boolean;
     enabled?: boolean;
-    last_budget_event__status?: string;
     fieldset?: string;
     filterLaunched?: boolean;
     notShowTest?: boolean;
@@ -47,7 +46,6 @@ export type GetCampaignsParams = {
     show_test?: boolean;
     // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
     enabled?: boolean;
-    last_budget_event__status?: string;
     fieldset?: string;
     format?: string;
     not_show_test?: boolean;
@@ -84,8 +82,7 @@ export const useGetCampaignsOptions = (
             show_test: options.show_test ?? false,
             // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
             enabled: options.enabled ?? true,
-            last_budget_event__status: options.last_budget_event__status,
-            fieldset: asCsv ? undefined : options.fieldset ?? undefined,
+            fieldset: asCsv ? undefined : (options.fieldset ?? undefined),
         }),
         [
             asCsv,
@@ -103,7 +100,6 @@ export const useGetCampaignsOptions = (
             options.orgUnitGroups,
             options.show_test,
             options.enabled,
-            options.last_budget_event__status,
             options.fieldset,
         ],
     );
@@ -171,7 +167,6 @@ export const useCampaignParams = (params: Options): Options => {
                 (params.campaignCategory === 'test' ||
                     params.campaignCategory === 'all') &&
                 !params.notShowTest,
-            last_budget_event__status: params.last_budget_event__status,
             fieldset: 'list',
             orgUnitGroups: params.orgUnitGroups,
         };

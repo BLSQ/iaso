@@ -27,6 +27,8 @@ import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
 import UsersInfos from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
+import * as Permissions from '../../../utils/permissions';
+import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
@@ -72,6 +74,10 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const { user, setFieldValue, setFieldErrors } = useInitialUser(initialData);
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
+    const [hasNoOrgUnitManagementWrite, setHasNoOrgUnitManagementWrite] =
+        useState<boolean>(
+            !user.permissions.value.includes(Permissions.ORG_UNITS),
+        );
     const saveUser = useCallback(() => {
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
@@ -151,8 +157,10 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         }
         return '';
     }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
+
     const currentUser = useCurrentUser();
     const hasDevFeatures = hasFeatureFlag(currentUser, SHOW_DEV_FEATURES);
+
     return (
         <>
             <WarningModal
@@ -213,15 +221,29 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
-                    {hasDevFeatures && (
-                        <Tab
-                            classes={{
-                                root: classes.tab,
-                            }}
-                            value="orgUnitWriteTypes"
-                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
-                        />
-                    )}
+                    {hasDevFeatures &&
+                        (hasNoOrgUnitManagementWrite ? (
+                            <UsersDialogTabDisabled
+                                label={formatMessage(
+                                    MESSAGES.orgUnitWriteTypes,
+                                )}
+                                disabled
+                                tooltipMessage={formatMessage(
+                                    MESSAGES.OrgUnitTypeWriteDisableTooltip,
+                                    { type: formatMessage(MESSAGES.user) },
+                                )}
+                            />
+                        ) : (
+                            <Tab
+                                classes={{
+                                    root: classes.tab,
+                                }}
+                                value="orgUnitWriteTypes"
+                                label={formatMessage(
+                                    MESSAGES.orgUnitWriteTypes,
+                                )}
+                            />
+                        ))}
                 </Tabs>
                 <div className={classes.root} id="user-profile-dialog">
                     <div
@@ -240,9 +262,14 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         <PermissionsAttribution
                             isSuperUser={initialData?.is_superuser}
                             currentUser={user}
-                            handleChange={permissions =>
-                                setFieldValue('user_permissions', permissions)
-                            }
+                            handleChange={permissions => {
+                                setFieldValue('user_permissions', permissions);
+                                setHasNoOrgUnitManagementWrite(
+                                    !permissions.includes(
+                                        Permissions.ORG_UNITS,
+                                    ),
+                                );
+                            }}
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)
                             }

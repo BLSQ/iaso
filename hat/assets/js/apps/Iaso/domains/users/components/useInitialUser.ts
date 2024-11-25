@@ -88,6 +88,14 @@ export const useInitialUser = (
                 value: get(initialData, 'editable_org_unit_type_ids', []),
                 errors: [],
             },
+            user_roles_editable_org_unit_type_ids: {
+                value: get(
+                    initialData,
+                    'user_roles_editable_org_unit_type_ids',
+                    [],
+                ),
+                errors: [],
+            },
         };
     }, [initialData]);
     const [user, setUser] = useState<UserDialogData>(initialUser);
@@ -128,9 +136,17 @@ export const useInitialUser = (
             }
 
             if (fieldName === 'user_roles') {
+                let user_roles_editable_org_unit_type_ids: any = [];
                 const userRolesPermissions: UserRole[] = (userRoles || [])
                     .filter(userRole => fieldValue.includes(userRole.value))
                     .map(userRole => {
+                        user_roles_editable_org_unit_type_ids = [
+                            ...new Set([
+                                ...user_roles_editable_org_unit_type_ids,
+                                ...(userRole.original
+                                    ?.editable_org_unit_type_ids ?? []),
+                            ]),
+                        ];
                         const role = {
                             ...(userRole.original as UserRole),
                             permissions: userRole.original?.permissions,
@@ -139,6 +155,10 @@ export const useInitialUser = (
                     });
                 newUser.user_roles_permissions = {
                     value: userRolesPermissions,
+                    errors: [],
+                };
+                newUser.user_roles_editable_org_unit_type_ids = {
+                    value: user_roles_editable_org_unit_type_ids,
                     errors: [],
                 };
             }

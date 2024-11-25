@@ -1,17 +1,13 @@
-from copy import copy
 from typing import Any, Protocol
 
 from django import forms as django_forms
 from django.contrib import admin
 from django.contrib.admin import widgets, SimpleListFilter
-from django.contrib.admin.widgets import AutocompleteSelect
-from django.contrib.auth import get_user_model
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import Count, Q
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe

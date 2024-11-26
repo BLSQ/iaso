@@ -21,13 +21,11 @@ import { defaultVaccineOptions } from '../SupplyChain/constants';
 type Props = {
     params: VaccineRepositoryParams;
     disableDates?: boolean;
-    isEmbedded?: boolean;
     redirectUrl: string;
 };
 
 export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
     params,
-    isEmbedded = false,
     redirectUrl,
 }) => {
     const redirectToReplace = useRedirectToReplace();
@@ -118,8 +116,8 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="vaccine_type"
-                        multi
                         clearable
+                        multi={false}
                         onChange={(key, value) => {
                             setVaccineType(value);
                         }}

@@ -264,17 +264,17 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
                     rounds_queryset = rounds_queryset.filter(
                         campaign__vaccinerequestform__isnull=False,
                         campaign__vaccinerequestform__vaccine_type=vaccine_type,
-                    )
+                    ).distinct()
                 elif file_type == "PRE_ALERT":
                     rounds_queryset = rounds_queryset.filter(
                         campaign__vaccinerequestform__isnull=False,
                         campaign__vaccinerequestform__vaccineprealert__isnull=False,
                         campaign__vaccinerequestform__vaccine_type=vaccine_type,
-                    )
+                    ).distinct()
                 elif file_type == "FORM_A":
                     rounds_queryset = rounds_queryset.filter(
                         outgoingstockmovement__isnull=False, outgoingstockmovement__vaccine_stock__vaccine=vaccine_type
-                    )
+                    ).distinct()
             return rounds_queryset.filter_by_vaccine_name(vaccine_type).annotate(vaccine_name=Value(vaccine_type))
         else:
             vaccines_qs = {}
@@ -286,18 +286,19 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
                     if file_type == "VRF":
                         qs_filtered_for_files = qs_filtered_for_files.filter(
                             campaign__vaccinerequestform__isnull=False,
-                            campaign__vaccinerequestform__vaccine_type=vaccine_type,
-                        )
+                            campaign__vaccinerequestform__vaccine_type=vaccine_name,
+                        ).distinct()
                     elif file_type == "PRE_ALERT":
                         qs_filtered_for_files = qs_filtered_for_files.filter(
                             campaign__vaccinerequestform__isnull=False,
                             campaign__vaccinerequestform__vaccineprealert__isnull=False,
-                            campaign__vaccinerequestform__vaccine_type=vaccine_type,
-                        )
+                            campaign__vaccinerequestform__vaccine_type=vaccine_name,
+                        ).distinct()
                     elif file_type == "FORM_A":
                         qs_filtered_for_files = qs_filtered_for_files.filter(
-                            outgoingstockmovement__isnull=False, outgoingstockmovement__vaccine_stock__vaccine=vaccine_type
-                        )
+                            outgoingstockmovement__isnull=False,
+                            outgoingstockmovement__vaccine_stock__vaccine=vaccine_name,
+                        ).distinct()
                 vaccines_qs[vaccine_name] = qs_filtered_for_files.filter_by_vaccine_name(vaccine_name).annotate(
                     vaccine_name=Value(vaccine_name)
                 )

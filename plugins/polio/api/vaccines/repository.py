@@ -37,7 +37,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
     form_a_data = serializers.SerializerMethodField()
 
     def get_vrf_data(self, obj):
-        vrfs = VaccineRequestForm.objects.filter(campaign=obj.campaign, rounds=obj)
+        vrfs = VaccineRequestForm.objects.filter(campaign=obj.campaign, rounds=obj, vaccine_type=obj.vaccine_name)
         return [
             {
                 "date": vrf.date_vrf_reception,
@@ -50,7 +50,9 @@ class VaccineRepositorySerializer(serializers.Serializer):
         ]
 
     def get_pre_alert_data(self, obj):
-        pre_alerts = VaccinePreAlert.objects.filter(request_form__campaign=obj.campaign, request_form__rounds=obj)
+        pre_alerts = VaccinePreAlert.objects.filter(
+            request_form__campaign=obj.campaign, request_form__rounds=obj, request_form__vaccine_type=obj.vaccine_name
+        )
         return [
             {
                 "date": pa.date_pre_alert_reception,
@@ -61,7 +63,9 @@ class VaccineRepositorySerializer(serializers.Serializer):
         ]
 
     def get_form_a_data(self, obj):
-        form_as = OutgoingStockMovement.objects.filter(campaign=obj.campaign, round=obj)
+        form_as = OutgoingStockMovement.objects.filter(
+            campaign=obj.campaign, round=obj, vaccine_stock__vaccine=obj.vaccine_name
+        )
         return [
             {
                 "date": fa.form_a_reception_date,

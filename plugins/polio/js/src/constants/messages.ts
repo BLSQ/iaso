@@ -2446,6 +2446,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.repository.title',
         defaultMessage: 'Vaccine Management Repository',
     },
+    countries: {
+        id: 'iaso.polio.repository.label.countries',
+        defaultMessage: 'Countries',
+    },
 });
 
 export default MESSAGES;

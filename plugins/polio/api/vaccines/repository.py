@@ -210,18 +210,6 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
             campaign_ended_at=Subquery(campaign_dates.values("campaign_ended_at")),
         )
 
-        # Filter by campaign status
-        campaign_status = request.query_params.get("campaign_status", None)
-
-        if campaign_status:
-            today = datetime.now().date()
-            if campaign_status.upper() == "ONGOING":
-                rounds_queryset = rounds_queryset.filter(campaign_started_at__lte=today, campaign_ended_at__gte=today)
-            elif campaign_status.upper() == "PAST":
-                rounds_queryset = rounds_queryset.filter(campaign_started_at__lt=today, campaign_ended_at__lt=today)
-            elif campaign_status.upper() == "PREPARING":
-                rounds_queryset = rounds_queryset.filter(campaign_started_at__gte=today)
-
         # Filter by country block
         country_block = request.query_params.get("country_block", None)
         if country_block:
@@ -240,20 +228,12 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
             except ValueError:
                 raise ValidationError("countries must be a comma-separated list of integers")
 
-        # Filter by campaign category
-        campaign_category = request.query_params.get("campaignCategory", None)
-        if campaign_category == "test":
-            rounds_queryset = rounds_queryset.filter(campaign__is_test=True)
-        if campaign_category == "preventive":
-            rounds_queryset = rounds_queryset.filter(campaign__is_preventive=True)
-        if campaign_category == "regular":
-            rounds_queryset = rounds_queryset.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
-
         # Filter by campaign
         campaign = request.query_params.get("campaign", None)
         if campaign:
             rounds_queryset = rounds_queryset.filter(campaign__obr_name=campaign)
 
+        # TODO move this logic in the for loop to associate the right forms with the right round
         # Filter by file type
         file_type = request.query_params.get("file_type", None)
         if file_type:
@@ -275,14 +255,22 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
                 campaign__vaccinerequestform__isnull=False, campaign__vaccinerequestform__vrf_type=vrf_type
             )
 
-        vaccines_qs = {}
-        for vaccine in VACCINES:
-            vaccine_name = vaccine[0]
-            vaccines_qs[vaccine_name] = rounds_queryset.filter_by_vaccine_name(vaccine_name).annotate(
-                vaccine_name=Value(vaccine_name)
-            )
-        queryset_list = list(vaccines_qs.values())
-        start_qs = queryset_list.pop()
-        result_qs = start_qs.union(*queryset_list, all=True)
 
-        return result_qs
+        # Filter by vaccine
+        vaccine_type = request.query_params.get("vaccine_type", None)
+        if vaccine_type:
+            return rounds_queryset.filter_by_vaccine_name(vaccine_type).annotate(
+                vaccine_name=Value(vaccine_type)
+            )
+        else :
+            vaccines_qs = {}
+            for vaccine in VACCINES:
+                vaccine_name = vaccine[0]
+                vaccines_qs[vaccine_name] = rounds_queryset.filter_by_vaccine_name(vaccine_name).annotate(
+                    vaccine_name=Value(vaccine_name)
+                )
+            queryset_list = list(vaccines_qs.values())
+            start_qs = queryset_list.pop()
+            result_qs = start_qs.union(*queryset_list, all=True)
+
+            return result_qs

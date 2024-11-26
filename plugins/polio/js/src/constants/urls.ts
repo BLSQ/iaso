@@ -92,11 +92,9 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
         params: [
             ...paginationPathParams,
             'countries',
-            'campaignType',
-            'campaignCategory',
-            'file_type',
             'country_block',
-            'campaignStatus',
+            'vaccine_type',
+            'file_type',
         ],
     },
     embeddedCalendar: {
@@ -114,11 +112,9 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
         params: [
             ...paginationPathParams,
             'countries',
-            'campaignType',
-            'campaignCategory',
-            'file_type',
             'country_block',
-            'campaignStatus',
+            'vaccine_type',
+            'file_type',
         ],
     },
     lqasCountry: {

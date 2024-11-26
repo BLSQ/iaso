@@ -46,7 +46,7 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         user.iaso_profile.org_units.set([org_unit])
 
         cls.org_unit = org_unit
-        cls.org_unit = other_org_unit
+        cls.other_org_unit = other_org_unit
         cls.org_unit_type = org_unit_type
         cls.project = project
         cls.user = user

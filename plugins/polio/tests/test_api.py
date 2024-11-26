@@ -259,9 +259,8 @@ class PolioAPITestCase(APITestCase):
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", payload, format="json")
 
         r = self.assertJSONResponse(response, 200)
-        self.assertNotEqual(r["round_one"], None, r)
-        self.assertEqual(r["round_one"]["started_at"], "2021-02-01", r)
         self.assertEqual(len(r["rounds"]), 1)
+        self.assertEqual(r["rounds"][0]["started_at"], "2021-02-01")
 
     def test_create_campaign_with_round_one_and_two(self):
         self.client.force_authenticate(self.yoda)
@@ -295,12 +294,9 @@ class PolioAPITestCase(APITestCase):
         self.assertQuerySetEqual(rounds, [1, 2], lambda r: r.number)
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
-        self.assertNotEqual(r["round_one"], None, r)
-        # self.assertHasField(r["round_one"], "started_at", r)
-        self.assertEqual(r["round_one"]["started_at"], "2021-02-01", r)
         self.assertEqual(len(r["rounds"]), 2)
-        self.assertNotEqual(r["round_two"], None, r)
-        self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
+        self.assertEqual(r["rounds"][0]["started_at"], "2021-02-01")
+        self.assertEqual(r["rounds"][1]["started_at"], "2021-04-01")
 
     @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_patch_campaign(self):
@@ -442,14 +438,11 @@ class PolioAPITestCase(APITestCase):
         # check via the api
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
-        self.assertNotEqual(r["round_one"], None, r)
-        # self.assertHasField(r["round_one"], "started_at", r)
-        self.assertEqual(r["round_one"]["started_at"], "2021-02-01", r)
-        self.assertEqual(r["round_one"]["districts_count_calculated"], 2, r["round_one"])
         self.assertEqual(len(r["rounds"]), 2)
-        self.assertNotEqual(r["round_two"], None, r)
-        self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
-        self.assertEqual(r["round_two"]["districts_count_calculated"], 2, r["round_two"])
+        self.assertEqual(r["rounds"][0]["started_at"], "2021-02-01")
+        self.assertEqual(r["rounds"][0]["districts_count_calculated"], 2)
+        self.assertEqual(r["rounds"][1]["started_at"], "2021-04-01")
+        self.assertEqual(r["rounds"][1]["districts_count_calculated"], 2)
 
         scope_bOPV = c.scopes.get(vaccine="bOPV")
         scope_mOPV2 = c.scopes.get(vaccine="mOPV2")
@@ -516,15 +509,13 @@ class PolioAPITestCase(APITestCase):
         self.assertQuerySetEqual(first_round.scopes.get(vaccine="mOPV2").group.org_units.all(), [self.child_org_unit])
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
-        self.assertNotEqual(r["round_one"], None, r)
-        # self.assertHasField(r["round_one"], "started_at", r)
-        self.assertEqual(r["round_one"]["started_at"], "2021-02-01", r)
-        self.assertEqual(r["round_one"]["districts_count_calculated"], 2, r["round_one"])
         self.assertEqual(len(r["rounds"]), 2)
-        self.assertNotEqual(r["round_two"], None, r)
-        self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
-        self.assertEqual(r["round_two"]["districts_count_calculated"], 0, r["round_two"])
-        round_one = list(filter(lambda r: r["number"] == 1, r["rounds"]))[0]
+        self.assertEqual(r["rounds"][0]["started_at"], "2021-02-01")
+        self.assertEqual(r["rounds"][0]["districts_count_calculated"], 2)
+        self.assertEqual(r["rounds"][1]["started_at"], "2021-04-01")
+        self.assertEqual(r["rounds"][1]["districts_count_calculated"], 0)
+
+        round_one = r["rounds"][0]
 
         self.assertEqual(
             round_one["scopes"],

@@ -632,7 +632,7 @@ class InstancesViewSet(viewsets.ViewSet):
         # Pivot on the form_id because there might be form with duplicate name
         df = df.pivot(index="month", columns="form_id", values="value")
         if not df.empty:
-            df.index = df.index.to_period("M")
+            df.index = df.index.to_period("ME")
             df = df.sort_index()
             df = df.reindex(pd.period_range(df.index[0], df.index[-1], freq="M"))
             df["name"] = df.index.astype(str)  # Name column is the month

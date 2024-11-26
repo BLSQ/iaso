@@ -255,14 +255,11 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
                 campaign__vaccinerequestform__isnull=False, campaign__vaccinerequestform__vrf_type=vrf_type
             )
 
-
         # Filter by vaccine
         vaccine_type = request.query_params.get("vaccine_type", None)
         if vaccine_type:
-            return rounds_queryset.filter_by_vaccine_name(vaccine_type).annotate(
-                vaccine_name=Value(vaccine_type)
-            )
-        else :
+            return rounds_queryset.filter_by_vaccine_name(vaccine_type).annotate(vaccine_name=Value(vaccine_type))
+        else:
             vaccines_qs = {}
             for vaccine in VACCINES:
                 vaccine_name = vaccine[0]

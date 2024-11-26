@@ -44,7 +44,6 @@ type Props = {
     onSearch: (searches: any) => void;
     currentTab: string;
     counts: Count[];
-    setDeletedTab: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const baseUrl = baseUrls.orgUnits;
@@ -80,7 +79,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     currentTab,
     paramsSearches,
     counts,
-    setDeletedTab,
 }) => {
     const currentUser = useCurrentUser();
     const redirectTo = useRedirectTo();
@@ -128,9 +126,9 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
         newParams => {
             redirectTo(baseUrl, newParams);
             setSearches(decodeSearch(decodeURI(newParams.searches)));
-            setDeletedTab(true);
+            onSearch(newParams);
         },
-        [redirectTo, setDeletedTab],
+        [redirectTo, onSearch],
     );
     const handleAddDynamicTab = useCallback(
         newParams => {

@@ -48,7 +48,7 @@ import { useGetOrgUnitsTableColumns } from '../hooks/useGetOrgUnitsTableColumns'
 type Props = {
     params: OrgUnitParams;
     resetPageToOne: string;
-    orgUnitsData: OrgUnitResult;
+    orgUnitsData?: OrgUnitResult;
     saveMulti: UseMutateAsyncFunction<unknown, unknown, unknown, unknown>;
 };
 

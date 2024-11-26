@@ -1139,7 +1139,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertListEqual(
             r["schema"]["fields"],
             [
-                {"freq": "M", "name": "index", "type": "datetime"},
+                {"freq": "ME", "name": "index", "type": "datetime"},
                 {"name": "Hydroponics study", "type": "integer"},
                 {"name": "Form five", "type": "integer"},
                 {"name": "Hydroponic public survey", "type": "integer"},
@@ -1162,7 +1162,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertListEqual(
             r["schema"]["fields"],
             [
-                {"name": "index", "type": "datetime", "freq": "M"},
+                {"name": "index", "type": "datetime", "freq": "ME"},
                 {"name": "Form five", "type": "integer"},
                 {"name": "name", "type": "string"},
             ],

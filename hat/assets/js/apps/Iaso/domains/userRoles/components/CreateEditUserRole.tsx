@@ -14,8 +14,6 @@ import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from '../../../libs/validation';
-import { hasFeatureFlag, SHOW_DEV_FEATURES } from '../../../utils/featureFlags';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import {
     SaveUserRoleQuery,
     useSaveUserRole,
@@ -114,8 +112,6 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         setUserRolePermissoins(newPermissions);
         setFieldValue('permissions', newPermissions);
     };
-    const currentUser = useCurrentUser();
-    const hasDevFeatures = hasFeatureFlag(currentUser, SHOW_DEV_FEATURES);
     return (
         <>
             {dialogType === 'create' && (
@@ -155,17 +151,16 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                         label={MESSAGES.name}
                         required
                     />
-                    {hasDevFeatures && (
-                        <OrgUnitWriteTypes
-                            userRole={values}
-                            handleChange={newEditableOrgUnitTypeIds => {
-                                onChange(
-                                    'editable_org_unit_type_ids',
-                                    newEditableOrgUnitTypeIds,
-                                );
-                            }}
-                        />
-                    )}
+                    <OrgUnitWriteTypes
+                        userRole={values}
+                        userRolePermissions={userRolePermissions}
+                        handleChange={newEditableOrgUnitTypeIds => {
+                            onChange(
+                                'editable_org_unit_type_ids',
+                                newEditableOrgUnitTypeIds,
+                            );
+                        }}
+                    />
                     <PermissionsAttribution
                         userRolePermissions={userRolePermissions}
                         handleChange={newPermissions => {
@@ -189,6 +184,5 @@ const editUserRoleModalWithIcon = makeFullModal(
 
 export {
     createUserRoleModalWithButton as CreateUserRoleDialog,
-    editUserRoleModalWithIcon as EditUserRoleDialog
+    editUserRoleModalWithIcon as EditUserRoleDialog,
 };
-

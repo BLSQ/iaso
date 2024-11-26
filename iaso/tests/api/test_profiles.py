@@ -118,33 +118,33 @@ class ProfileAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.MODULES = [module["codename"] for module in MODULES]
-        cls.ghi = m.Account.objects.create(name="Global Health Initiative", modules=cls.MODULES)
+        cls.account = m.Account.objects.create(name="Global Health Initiative", modules=cls.MODULES)
         cls.another_account = m.Account.objects.create(name="Another account")
 
         # TODO : make the org unit creations shorter and reusable
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens",
             app_id="stars.empire.agriculture.hydroponics",
-            account=cls.ghi,
+            account=cls.account,
         )
-        sw_source = m.DataSource.objects.create(name="Evil Empire")
-        sw_source.projects.add(cls.project)
-        cls.sw_source = sw_source
-        cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
-        cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
-        cls.jedi_council.sub_unit_types.add(cls.jedi_squad)
+        datasource = m.DataSource.objects.create(name="Evil Empire")
+        datasource.projects.add(cls.project)
+        cls.datasource = datasource
+        cls.sub_unit_type = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
+        cls.parent_org_unit_type = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
+        cls.parent_org_unit_type.sub_unit_types.add(cls.sub_unit_type)
 
         cls.mock_multipolygon = None
         cls.mock_point = None
 
-        cls.elite_group = m.Group.objects.create(name="Elite councils")
-        cls.sw_source = sw_source
-        sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        cls.ghi.default_version = sw_version_1
-        cls.ghi.save()
-        cls.jedi_squad_1 = m.OrgUnit.objects.create(
-            org_unit_type=cls.jedi_squad,
-            version=sw_version_1,
+        cls.org_unit_group = m.Group.objects.create(name="Elite councils")
+        cls.datasource = datasource
+        source_version_1 = m.SourceVersion.objects.create(data_source=datasource, number=1)
+        cls.account.default_version = source_version_1
+        cls.account.save()
+        cls.org_unit_from_sub_type = m.OrgUnit.objects.create(
+            org_unit_type=cls.sub_unit_type,
+            version=source_version_1,
             name="Jedi Squad 1",
             geom=cls.mock_multipolygon,
             simplified_geom=cls.mock_multipolygon,
@@ -154,9 +154,9 @@ class ProfileAPITestCase(APITestCase):
             source_ref=None,
         )
 
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            org_unit_type=cls.jedi_council,
-            version=sw_version_1,
+        cls.org_unit_from_parent_type = m.OrgUnit.objects.create(
+            org_unit_type=cls.parent_org_unit_type,
+            version=source_version_1,
             name="Corruscant Jedi Council",
             geom=cls.mock_multipolygon,
             simplified_geom=cls.mock_multipolygon,
@@ -165,11 +165,11 @@ class ProfileAPITestCase(APITestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="FooBarB4z00",
         )
-        cls.jedi_council_corruscant.groups.set([cls.elite_group])
+        cls.org_unit_from_parent_type.groups.set([cls.org_unit_group])
 
-        cls.jedi_council_corruscant_child = m.OrgUnit.objects.create(
-            org_unit_type=cls.jedi_council,
-            version=sw_version_1,
+        cls.child_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=cls.parent_org_unit_type,
+            version=source_version_1,
             name="Corruscant Jedi Council",
             geom=cls.mock_multipolygon,
             simplified_geom=cls.mock_multipolygon,
@@ -177,18 +177,15 @@ class ProfileAPITestCase(APITestCase):
             location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="PvtAI4RUMkr",
-            parent=cls.jedi_council_corruscant,
+            parent=cls.org_unit_from_parent_type,
         )
 
         cls.permission = Permission.objects.create(
             name="iaso permission", content_type_id=1, codename="iaso_permission"
         )
-        # cls.permission = Permission.objects.create(
-        #     name="iaso permission 2", content_type_id=1, codename="iaso_permission2"
-        # )
         cls.group = Group.objects.create(name="user role")
         cls.group.permissions.add(cls.permission)
-        cls.user_role = m.UserRole.objects.create(group=cls.group, account=cls.ghi)
+        cls.user_role = m.UserRole.objects.create(group=cls.group, account=cls.account)
 
         cls.group_another_account = Group.objects.create(name="user role with another account")
         cls.group_another_account.permissions.add(cls.permission)
@@ -197,24 +194,28 @@ class ProfileAPITestCase(APITestCase):
         )
 
         # Users.
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=cls.ghi, permissions=[permission._FORMS])
-        cls.john = cls.create_user_with_profile(username="johndoe", account=cls.ghi, is_superuser=True)
+        cls.jane = cls.create_user_with_profile(
+            username="janedoe", account=cls.account, permissions=[permission._FORMS]
+        )
+        cls.john = cls.create_user_with_profile(username="johndoe", account=cls.account, is_superuser=True)
         cls.jim = cls.create_user_with_profile(
-            username="jim", account=cls.ghi, permissions=[permission._FORMS, permission._USERS_ADMIN]
+            username="jim", account=cls.account, permissions=[permission._FORMS, permission._USERS_ADMIN]
         )
         cls.jam = cls.create_user_with_profile(
             username="jam",
-            account=cls.ghi,
+            account=cls.account,
             permissions=[permission._USERS_MANAGED],
             language="en",
         )
-        cls.jom = cls.create_user_with_profile(username="jom", account=cls.ghi, permissions=[], language="fr")
-        cls.jum = cls.create_user_with_profile(username="jum", account=cls.ghi, permissions=[], projects=[cls.project])
+        cls.jom = cls.create_user_with_profile(username="jom", account=cls.account, permissions=[], language="fr")
+        cls.jum = cls.create_user_with_profile(
+            username="jum", account=cls.account, permissions=[], projects=[cls.project]
+        )
         cls.user_managed_geo_limit = cls.create_user_with_profile(
             username="managedGeoLimit",
-            account=cls.ghi,
+            account=cls.account,
             permissions=[permission._USERS_MANAGED],
-            org_units=[cls.jedi_council_corruscant],
+            org_units=[cls.org_unit_from_parent_type],
         )
         cls.team1 = Team.objects.create(project=cls.project, name="team1", manager=cls.jane)
         cls.team1.users.add(cls.jane)
@@ -313,8 +314,8 @@ class ProfileAPITestCase(APITestCase):
         self.assertValidProfileListData(response.json(), 7)
 
     def test_profile_list_export_as_csv(self):
-        self.john.iaso_profile.org_units.set([self.jedi_squad_1, self.jedi_council_corruscant])
-        self.jum.iaso_profile.editable_org_unit_types.set([self.jedi_squad])
+        self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
+        self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?csv=true")
@@ -342,18 +343,18 @@ class ProfileAPITestCase(APITestCase):
         )
 
         expected_csv += "janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
-        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",{self.jedi_council_corruscant.source_ref},,,,,,,,\r\n'
+        expected_csv += f'johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
         expected_csv += 'jim,,,,,,,,,,"iaso_forms,iaso_users",,,,\r\n'
         expected_csv += "jam,,,,,,,en,,,iaso_users_managed,,,,\r\n"
         expected_csv += "jom,,,,,,,fr,,,,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,,,{self.project.name},,{self.jedi_squad.pk}\r\n"
-        expected_csv += f'managedGeoLimit,,,,,{self.jedi_council_corruscant.id},{self.jedi_council_corruscant.source_ref},,,,iaso_users_managed,"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
+        expected_csv += f"jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
+        expected_csv += f'managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,iaso_users_managed,"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
     def test_profile_list_export_as_xlsx(self):
-        self.john.iaso_profile.org_units.set([self.jedi_squad_1, self.jedi_council_corruscant])
-        self.jum.iaso_profile.editable_org_unit_types.set([self.jedi_squad])
+        self.john.iaso_profile.org_units.set([self.org_unit_from_sub_type, self.org_unit_from_parent_type])
+        self.jum.iaso_profile.editable_org_unit_types.set([self.sub_unit_type])
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?xlsx=true")
@@ -396,21 +397,21 @@ class ProfileAPITestCase(APITestCase):
                 "last_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "orgunit": {
                     0: None,
-                    1: f"{self.jedi_squad_1.id},{self.jedi_council_corruscant.id}",
+                    1: f"{self.org_unit_from_sub_type.id},{self.org_unit_from_parent_type.id}",
                     2: None,
                     3: None,
                     4: None,
                     5: None,
-                    6: f"{self.jedi_council_corruscant.id}",
+                    6: f"{self.org_unit_from_parent_type.id}",
                 },
                 "orgunit__source_ref": {
                     0: None,
-                    1: self.jedi_council_corruscant.source_ref,
+                    1: self.org_unit_from_parent_type.source_ref,
                     2: None,
                     3: None,
                     4: None,
                     5: None,
-                    6: self.jedi_council_corruscant.source_ref,
+                    6: self.org_unit_from_parent_type.source_ref,
                 },
                 "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None, 6: None},
                 "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
@@ -441,7 +442,7 @@ class ProfileAPITestCase(APITestCase):
                     2: None,
                     3: None,
                     4: None,
-                    5: self.jedi_squad.pk,
+                    5: self.sub_unit_type.pk,
                     6: None,
                 },
             },
@@ -491,8 +492,8 @@ class ProfileAPITestCase(APITestCase):
 
     def test_profile_list_managed_user_only_user_manager_with_org_unit(self):
         """GET /profiles/ with auth (superuser)"""
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
-        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
+        self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
         self.client.force_authenticate(self.jam)
         response = self.client.get("/api/profiles/?managedUsersOnly=true")
         self.assertJSONResponse(response, 200)
@@ -561,12 +562,12 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertTrue(user.has_perm(permission.USERS_MANAGED))
         self.assertFalse(user.has_perm(permission.USERS_ADMIN))
-        self.assertEqual(self.jedi_squad_1.org_unit_type_id, self.jedi_squad.id)
+        self.assertEqual(self.org_unit_from_sub_type.org_unit_type_id, self.sub_unit_type.id)
 
-        user.iaso_profile.org_units.set([self.jedi_council_corruscant])
+        user.iaso_profile.org_units.set([self.org_unit_from_parent_type])
         user.iaso_profile.editable_org_unit_types.set(
             # Only org units of this type is now writable.
-            [self.jedi_squad]
+            [self.sub_unit_type]
         )
 
         self.client.force_authenticate(user)
@@ -578,13 +579,14 @@ class ProfileAPITestCase(APITestCase):
             "email": "unittest_last_name",
             "user_permissions": ["iaso_forms"],
             "user_roles": [self.user_role.id],
-            "org_units": [{"id": self.jedi_council_corruscant.id}],
+            "org_units": [{"id": self.org_unit_from_parent_type.id}],
         }
 
         response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
-            response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
+            response.data["detail"],
+            f"The user does not have rights on the following org unit types: {self.parent_org_unit_type.name}",
         )
 
     def test_create_user_should_fail_with_restricted_editable_org_unit_types_for_field_editableorgunittypeids(self):
@@ -597,10 +599,10 @@ class ProfileAPITestCase(APITestCase):
         self.assertTrue(user.has_perm(permission.USERS_MANAGED))
         self.assertFalse(user.has_perm(permission.USERS_ADMIN))
 
-        user.iaso_profile.org_units.set([self.jedi_council_corruscant])
+        user.iaso_profile.org_units.set([self.org_unit_from_parent_type])
         user.iaso_profile.editable_org_unit_types.set(
             # Only org units of this type is now writable.
-            [self.jedi_squad]
+            [self.sub_unit_type]
         )
 
         self.client.force_authenticate(user)
@@ -611,8 +613,8 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "first_name",
             "last_name": "last_name",
             "email": "test@test.com",
-            "org_units": [{"id": self.jedi_council_corruscant.id}],
-            "editable_org_unit_type_ids": [self.jedi_council.id],
+            "org_units": [{"id": self.org_unit_from_parent_type.id}],
+            "editable_org_unit_type_ids": [self.parent_org_unit_type.id],
         }
 
         response = self.client.post("/api/profiles/", data=data, format="json")
@@ -688,7 +690,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertQuerySetEqual(user.user_permissions.all(), [])
         self.assertEqual(m.User.objects.filter(username=data["user_name"]).count(), 1)
         # check that we have copied the account from the creator account
-        self.assertEqual(profile.account, self.ghi)
+        self.assertEqual(profile.account, self.account)
 
         profile_id = profile.id
         user_id = user.id
@@ -706,9 +708,9 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
-            "org_units": [{"id": self.jedi_council_corruscant.id}],
+            "org_units": [{"id": self.org_unit_from_parent_type.id}],
             "user_permissions": ["iaso_forms"],
-            "editable_org_unit_type_ids": [self.jedi_squad.id],
+            "editable_org_unit_type_ids": [self.sub_unit_type.id],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
@@ -720,14 +722,14 @@ class ProfileAPITestCase(APITestCase):
 
         profile = m.Profile.objects.get(pk=response_data["id"])
         self.assertEqual(profile.editable_org_unit_types.count(), 1)
-        self.assertEqual(profile.editable_org_unit_types.first(), self.jedi_squad)
+        self.assertEqual(profile.editable_org_unit_types.first(), self.sub_unit_type)
 
         user = profile.user
         self.assertEqual(user.username, data["user_name"])
         self.assertEqual(user.first_name, data["first_name"])
 
         self.assertEqual(m.User.objects.filter(username=data["user_name"]).count(), 1)
-        self.assertEqual(profile.account, self.ghi)
+        self.assertEqual(profile.account, self.account)
 
         self.assertQuerySetEqual(
             user.user_permissions.all(),
@@ -786,7 +788,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
-            "org_units": [{"id": self.jedi_council_corruscant_child.id}],
+            "org_units": [{"id": self.child_org_unit.id}],
             "user_permissions": ["iaso_forms"],
         }
 
@@ -805,7 +807,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(user.first_name, data["first_name"])
 
         self.assertEqual(m.User.objects.filter(username=data["user_name"]).count(), 1)
-        self.assertEqual(profile.account, self.ghi)
+        self.assertEqual(profile.account, self.account)
 
         self.assertQuerySetEqual(
             user.user_permissions.all(),
@@ -884,7 +886,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response_data["account"]["feature_flags"], [])
 
         # add a feature flags
-        self.ghi.feature_flags.add(aff)
+        self.account.feature_flags.add(aff)
 
         response = self.client.get("/api/profiles/me/")
         self.assertJSONResponse(response, 200)
@@ -894,7 +896,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response_data["account"]["feature_flags"], ["shape"])
 
         # remove feature flags
-        self.ghi.feature_flags.remove(aff)
+        self.account.feature_flags.remove(aff)
         response = self.client.get("/api/profiles/me/")
         self.assertJSONResponse(response, 200)
         response_data = response.json()
@@ -912,9 +914,9 @@ class ProfileAPITestCase(APITestCase):
 
     def test_search_user_by_org_units(self):
         self.client.force_authenticate(self.jane)
-        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
+        self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
 
-        response = self.client.get(f"/api/profiles/?location={self.jedi_council_corruscant.pk}&limit=100")
+        response = self.client.get(f"/api/profiles/?location={self.org_unit_from_parent_type.pk}&limit=100")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
@@ -922,9 +924,9 @@ class ProfileAPITestCase(APITestCase):
 
     def test_search_user_by_org_units_type(self):
         self.client.force_authenticate(self.jane)
-        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
+        self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
 
-        response = self.client.get(f"/api/profiles/?orgUnitTypes={self.jedi_council.pk}&limit=100")
+        response = self.client.get(f"/api/profiles/?orgUnitTypes={self.parent_org_unit_type.pk}&limit=100")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
@@ -932,10 +934,10 @@ class ProfileAPITestCase(APITestCase):
 
     def test_search_user_by_children_ou(self):
         self.client.force_authenticate(self.jane)
-        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant_child])
+        self.jane.iaso_profile.org_units.set([self.child_org_unit])
 
         response = self.client.get(
-            f"/api/profiles/?location={self.jedi_council_corruscant.pk}&ouParent=false&ouChildren=true"
+            f"/api/profiles/?location={self.org_unit_from_parent_type.pk}&ouParent=false&ouChildren=true"
         )
 
         self.assertEqual(response.status_code, 200)
@@ -944,10 +946,10 @@ class ProfileAPITestCase(APITestCase):
 
     def test_search_user_by_parent_ou(self):
         self.client.force_authenticate(self.jane)
-        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
+        self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])
 
         response = self.client.get(
-            f"/api/profiles/?location={self.jedi_council_corruscant_child.pk}&ouParent=true&ouChildren=false&limit=100"
+            f"/api/profiles/?location={self.child_org_unit.pk}&ouParent=true&ouChildren=false&limit=100"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
@@ -971,8 +973,8 @@ class ProfileAPITestCase(APITestCase):
         self.assertIn("jim", user_names)
 
     def test_user_with_managed_permission_can_update_profile_of_user_in_sub_org_unit(self):
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
-        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
+        self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
         self.client.force_authenticate(self.jam)
         jum = Profile.objects.get(user=self.jum)
         data = {
@@ -985,9 +987,26 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
 
+    def test_user_with_managed_permission_without_location_can_update_profile_of_user_in_whole_pyramid(self):
+        self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
+        self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "org_units": [{"id": self.org_unit_from_parent_type.id}],
+            "user_permissions": [permission._FORMS, permission._USERS_MANAGED],
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        jum.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(jum.org_units.values_list("id", flat=True)), [self.org_unit_from_parent_type.id])
+
     def test_user_with_managed_permission_cannot_grant_user_admin_permission(self):
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
-        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
+        self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
         self.client.force_authenticate(self.jam)
         jum = Profile.objects.get(user=self.jum)
         data = {
@@ -1000,9 +1019,9 @@ class ProfileAPITestCase(APITestCase):
     def test_user_with_managed_permission_cannot_grant_user_admin_permission_through_user_roles(self):
         group = Group.objects.create(name="admin")
         group.permissions.set([Permission.objects.get(codename=permission._USERS_ADMIN)])
-        role = m.UserRole.objects.create(account=self.ghi, group=group)
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
-        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        role = m.UserRole.objects.create(account=self.account, group=group)
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
+        self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
         self.client.force_authenticate(self.jam)
         jum = Profile.objects.get(user=self.jum)
         data = {
@@ -1015,9 +1034,9 @@ class ProfileAPITestCase(APITestCase):
     def test_user_with_managed_permission_can_grant_user_roles(self):
         group = Group.objects.create(name="admin")
         group.permissions.set([Permission.objects.get(codename=permission._FORMS)])
-        role = m.UserRole.objects.create(account=self.ghi, group=group)
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
-        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        role = m.UserRole.objects.create(account=self.account, group=group)
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
+        self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
         self.client.force_authenticate(self.jam)
         jum = Profile.objects.get(user=self.jum)
         data = {
@@ -1028,13 +1047,13 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_user_with_managed_permission_can_assign_org_unit_within_their_health_pyramid(self):
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
-        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
+        self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
         self.client.force_authenticate(self.jam)
         jum = Profile.objects.get(user=self.jum)
         data = {
             "user_name": "jum",
-            "org_units": [{"id": self.jedi_council_corruscant.id}],
+            "org_units": [{"id": self.org_unit_from_parent_type.id}],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
@@ -1042,31 +1061,31 @@ class ProfileAPITestCase(APITestCase):
     def test_user_with_managed_permission_can_assign_org_unit_within_their_health_pyramid_with_existing_ones_outside(
         self,
     ):
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
-        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id, self.jedi_squad_1])
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
+        self.jum.iaso_profile.org_units.set([self.child_org_unit.id, self.org_unit_from_sub_type])
         self.client.force_authenticate(self.jam)
         jum = Profile.objects.get(user=self.jum)
         data = {
             "user_name": "jum",
-            "org_units": [{"id": self.jedi_council_corruscant.id}, {"id": self.jedi_squad_1.id}],
+            "org_units": [{"id": self.org_unit_from_parent_type.id}, {"id": self.org_unit_from_sub_type.id}],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
 
     def test_user_with_managed_permission_cannot_assign_org_unit_outside_of_their_health_pyramid(self):
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
-        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
+        self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
         self.client.force_authenticate(self.jam)
         jum = Profile.objects.get(user=self.jum)
         data = {
             "user_name": "jum",
-            "org_units": [{"id": self.jedi_squad_1.id}],
+            "org_units": [{"id": self.org_unit_from_sub_type.id}],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_managed_permission_cannot_update_profile_of_user_not_in_sub_org_unit(self):
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.client.force_authenticate(self.jam)
         data = {
             "user_name": "unittest_user_name",
@@ -1079,7 +1098,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_managed_permission_can_update_profile_if_not_themselves_in_sub_org_unit(self):
-        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jum.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.client.force_authenticate(self.jam)
         data = {
             "user_name": "unittest_user_name",
@@ -1090,6 +1109,35 @@ class ProfileAPITestCase(APITestCase):
         jum = Profile.objects.get(user=self.jum)
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
+
+    def test_update_user_should_fail_when_assigning_an_org_unit_outside_of_the_author_own_health_pyramid(self):
+        user = self.jam
+        user.iaso_profile.org_units.set([self.org_unit_from_sub_type])
+
+        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
+        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+
+        profile_to_modify = Profile.objects.get(user=self.jum)
+        profile_to_modify.org_units.set([self.org_unit_from_sub_type])
+
+        self.client.force_authenticate(user)
+        data = {
+            "user_name": "new_user_name",
+            "org_units": [
+                {"id": self.org_unit_from_parent_type.pk},
+                {"id": "foo"},
+                {"bar": "foo"},
+            ],
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_modify.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"],
+            (
+                f"User with menupermissions.iaso_users_managed cannot assign an OrgUnit outside "
+                f"of their own health pyramid. Trying to assign {self.org_unit_from_parent_type.pk}."
+            ),
+        )
 
     def test_update_user_should_fail_with_restricted_editable_org_unit_types_for_field_editableorgunittypeids(self):
         """
@@ -1103,7 +1151,7 @@ class ProfileAPITestCase(APITestCase):
 
         user.iaso_profile.editable_org_unit_types.set(
             # Only org units of this type is now writable.
-            [self.jedi_squad]
+            [self.sub_unit_type]
         )
 
         self.client.force_authenticate(user)
@@ -1111,14 +1159,14 @@ class ProfileAPITestCase(APITestCase):
 
         data = {
             "user_name": "new_user_name",
-            "editable_org_unit_type_ids": [self.jedi_squad.id],
+            "editable_org_unit_type_ids": [self.sub_unit_type.id],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
 
         data = {
             "user_name": "new_user_name",
-            "editable_org_unit_type_ids": [self.jedi_council.id],
+            "editable_org_unit_type_ids": [self.parent_org_unit_type.id],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
@@ -1136,25 +1184,25 @@ class ProfileAPITestCase(APITestCase):
         self.assertTrue(user.has_perm(permission.USERS_MANAGED))
         self.assertFalse(user.has_perm(permission.USERS_ADMIN))
 
-        user.iaso_profile.org_units.set([self.jedi_council_corruscant])
+        user.iaso_profile.org_units.set([self.org_unit_from_parent_type])
         user.iaso_profile.editable_org_unit_types.set(
             # Only org units of this type is now writable.
-            [self.jedi_squad]
+            [self.sub_unit_type]
         )
 
         jum_profile = Profile.objects.get(user=self.jum)
-        jum_profile.org_units.set([self.jedi_council_corruscant])
+        jum_profile.org_units.set([self.org_unit_from_parent_type])
         jum_profile.editable_org_unit_types.set(
             # Only org units of this type is now writable.
-            [self.jedi_council]
+            [self.parent_org_unit_type]
         )
 
         self.client.force_authenticate(user)
 
         data = {
             "user_name": "new_user_name",
-            "org_units": [{"id": self.jedi_council_corruscant.id}],
-            "editable_org_unit_type_ids": [self.jedi_council.id],
+            "org_units": [{"id": self.org_unit_from_parent_type.id}],
+            "editable_org_unit_type_ids": [self.parent_org_unit_type.id],
         }
         response = self.client.patch(f"/api/profiles/{jum_profile.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
@@ -1162,7 +1210,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(self.jum.username, "new_user_name")
 
     def test_user_with_managed_permission_cannot_create_users(self):
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.client.force_authenticate(self.jam)
         data = {
             "user_name": "unittest_user_name",
@@ -1174,15 +1222,15 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_managed_permission_cannot_delete_users(self):
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.client.force_authenticate(self.jam)
         jum = Profile.objects.get(user=self.jum)
         response = self.client.delete(f"/api/profiles/{jum.id}/")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_managed_permission_cannot_update_from_unmanaged_org_unit(self):
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
-        self.jum.iaso_profile.org_units.set([self.jedi_squad_1.id])
+        self.jam.iaso_profile.org_units.set([self.child_org_unit.id])
+        self.jum.iaso_profile.org_units.set([self.org_unit_from_sub_type.id])
         self.client.force_authenticate(self.jam)
         data = {
             "user_name": "unittest_user_name",
@@ -1195,7 +1243,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_update_user_add_phone_number(self):
-        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.client.force_authenticate(self.john)
         jum = Profile.objects.get(user=self.jum)
         data = {
@@ -1212,7 +1260,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
 
         def test_update_user_with_malformed_phone_number(self):
-            self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+            self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
             self.client.force_authenticate(self.jam)
             jum = Profile.objects.get(user=self.jum)
             data = {
@@ -1255,7 +1303,7 @@ class ProfileAPITestCase(APITestCase):
 
         # Case 2.
         # Changing `projects` should not be allowed for users without `permission._USERS_ADMIN`.
-        new_project = m.Project.objects.create(name="New project", app_id="new.project", account=self.ghi)
+        new_project = m.Project.objects.create(name="New project", app_id="new.project", account=self.account)
         data = {
             "user_name": "jum_new_user_name",
             "projects": [new_project.id],
@@ -1296,11 +1344,11 @@ class ProfileAPITestCase(APITestCase):
         organization = "Bluesquare"
         org_units = [
             {
-                "id": f"{self.jedi_council_corruscant.id}",
-                "name": self.jedi_council_corruscant.name,
-                "validation_status": self.jedi_council_corruscant.validation_status,
+                "id": f"{self.org_unit_from_parent_type.id}",
+                "name": self.org_unit_from_parent_type.name,
+                "validation_status": self.org_unit_from_parent_type.validation_status,
                 "has_children": False,
-                "org_unit_type_id": self.jedi_council.id,
+                "org_unit_type_id": self.parent_org_unit_type.id,
                 "org_unit_type_short_name": "Cnc",
             }
         ]
@@ -1384,7 +1432,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(new_profile["home_page"], data["home_page"])
         self.assertEqual(new_profile["phone_number"], f'+{data["phone_number"]}')
         self.assertEqual(len(new_profile["org_units"]), 1)
-        self.assertIn(self.jedi_council_corruscant.id, new_profile["org_units"])
+        self.assertIn(self.org_unit_from_parent_type.id, new_profile["org_units"])
         self.assertEqual(len(new_profile["user_roles"]), 1)
         self.assertIn(self.user_role.id, new_profile["user_roles"])
         self.assertEqual(len(new_profile["projects"]), 1)
@@ -1431,7 +1479,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(new_profile["home_page"], data["home_page"])
         self.assertEqual(new_profile["phone_number"], f'+{data["phone_number"]}')
         self.assertEqual(len(new_profile["org_units"]), 1)
-        self.assertIn(self.jedi_council_corruscant.id, new_profile["org_units"])
+        self.assertIn(self.org_unit_from_parent_type.id, new_profile["org_units"])
         self.assertEqual(len(new_profile["user_roles"]), 1)
         self.assertIn(self.user_role.id, new_profile["user_roles"])
         self.assertEqual(len(new_profile["projects"]), 1)
@@ -1455,7 +1503,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(past_profile["home_page"], data["home_page"])
         self.assertEqual(past_profile["phone_number"], f'+{data["phone_number"]}')
         self.assertEqual(len(past_profile["org_units"]), 1)
-        self.assertIn(self.jedi_council_corruscant.id, past_profile["org_units"])
+        self.assertIn(self.org_unit_from_parent_type.id, past_profile["org_units"])
         self.assertEqual(len(past_profile["user_roles"]), 1)
         self.assertIn(self.user_role.id, past_profile["user_roles"])
         self.assertEqual(len(past_profile["projects"]), 1)
@@ -1476,19 +1524,19 @@ class ProfileAPITestCase(APITestCase):
             "user_name": new_user_name,
             "org_units": [
                 {
-                    "id": f"{self.jedi_council_corruscant.id}",
-                    "name": self.jedi_council_corruscant.name,
-                    "validation_status": self.jedi_council_corruscant.validation_status,
+                    "id": f"{self.org_unit_from_parent_type.id}",
+                    "name": self.org_unit_from_parent_type.name,
+                    "validation_status": self.org_unit_from_parent_type.validation_status,
                     "has_children": False,
-                    "org_unit_type_id": self.jedi_council.id,
+                    "org_unit_type_id": self.parent_org_unit_type.id,
                     "org_unit_type_short_name": "Cnc",
                 },
                 {
-                    "id": f"{self.jedi_squad_1.id}",
-                    "name": self.jedi_squad_1.name,
-                    "validation_status": self.jedi_squad_1.validation_status,
+                    "id": f"{self.org_unit_from_sub_type.id}",
+                    "name": self.org_unit_from_sub_type.name,
+                    "validation_status": self.org_unit_from_sub_type.validation_status,
                     "has_children": False,
-                    "org_unit_type_id": self.jedi_squad.id,
+                    "org_unit_type_id": self.sub_unit_type.id,
                     "org_unit_type_short_name": "Jds",
                 },
             ],
@@ -1532,7 +1580,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(past_value["phone_number"], f'+{data["phone_number"]}')
         self.assertEqual(len(past_value["org_units"]), 1)
         self.assertIn(
-            self.jedi_council_corruscant.id,
+            self.org_unit_from_parent_type.id,
             past_value["org_units"],
         )
         self.assertEqual(len(past_value["user_roles"]), 1)
@@ -1550,8 +1598,8 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(new_value["home_page"], new_data["home_page"])
         self.assertEqual(new_value["organization"], new_data["organization"])
         self.assertEqual(len(new_value["org_units"]), 2)
-        self.assertIn(self.jedi_council_corruscant.id, new_value["org_units"])
-        self.assertIn(self.jedi_squad_1.id, new_value["org_units"])
+        self.assertIn(self.org_unit_from_parent_type.id, new_value["org_units"])
+        self.assertIn(self.org_unit_from_sub_type.id, new_value["org_units"])
         self.assertEqual(new_value["user_roles"], [])
 
     def test_log_on_user_updates_own_profile(self):

@@ -90,8 +90,10 @@ class Step(models.Model):
 
 
 class MonthlyStatistics(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True)
     month = models.CharField(max_length=8, null=True, blank=True)
+    year = models.CharField(max_length=6, null=True, blank=True)
     gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True)
     admission_criteria = models.CharField(max_length=255, choices=ADMISSION_CRITERIAS, null=True, blank=True)
     admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)

@@ -57,7 +57,7 @@ class StepAdmin(admin.ModelAdmin):
 @admin.register(MonthlyStatistics)
 class MonthlyStatisticsAdmin(admin.ModelAdmin):
     list_filter = (
-        "org_unit",
+        "account",
         "month",
         "gender",
         "admission_criteria",
@@ -69,13 +69,19 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "org_unit",
+        "account",
         "month",
+        "year",
         "gender",
         "admission_criteria",
         "admission_type",
         "nutrition_programme",
         "programme_type",
         "exit_type",
+        "number_visits",
+        "given_sachet_rusf",
+        "given_sachet_rutf",
+        "given_quantity_csb",
     )
 
 

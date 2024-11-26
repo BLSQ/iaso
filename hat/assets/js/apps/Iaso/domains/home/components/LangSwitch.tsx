@@ -56,3 +56,33 @@ export const LangSwitch: FunctionComponent = () => {
         </>
     );
 };
+export const OffLineLangSwitch: FunctionComponent = () => {
+    const classes: Record<string, string> = useStyles();
+    const { locale: activeLocale } = useLocale();
+    const { setLocale } = useLocale();
+    const handleClick = useCallback(
+        localeCode => {
+            setLocale(localeCode);
+        },
+        [setLocale],
+    );
+    return (
+        <>
+            {APP_LOCALES.map((locale, index) => (
+                <Box key={locale.code}>
+                    <Box
+                        className={classNames(
+                            classes.languageSwitch,
+                            locale.code === activeLocale &&
+                                classes.languageSwitchActive,
+                        )}
+                        onClick={() => handleClick(locale.code)}
+                    >
+                        {locale.code}
+                    </Box>
+                    {index + 1 !== APP_LOCALES.length && '-'}
+                </Box>
+            ))}
+        </>
+    );
+};

@@ -1,11 +1,17 @@
-import React, { FunctionComponent } from 'react';
 import { UrlParams } from 'bluesquare-components';
-import { baseUrls } from '../../../../constants/urls';
+import React, { FunctionComponent } from 'react';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { useVaccineSupplyChainTableColumns } from './useVaccineSupplyChainTableColumns';
+import { baseUrls } from '../../../../constants/urls';
 import { useGetVrfList } from '../hooks/api/vrf';
+import { useVaccineSupplyChainTableColumns } from './useVaccineSupplyChainTableColumns';
 
 type Props = { params: Partial<UrlParams> };
+
+const getCellProps = () => ({
+    style: {
+        padding: '0px',
+    },
+});
 
 export const VaccineSupplyChainTable: FunctionComponent<Props> = ({
     params,
@@ -23,6 +29,7 @@ export const VaccineSupplyChainTable: FunctionComponent<Props> = ({
             columnSelectorEnabled
             columnSelectorButtonType="button"
             marginTop={false}
+            cellProps={getCellProps}
             extraProps={{
                 loading: isFetching,
                 params,

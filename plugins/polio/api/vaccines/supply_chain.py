@@ -329,7 +329,6 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        print("VaccineRequestFormPostSerializer instance created with data: %s", self.initial_data)
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)

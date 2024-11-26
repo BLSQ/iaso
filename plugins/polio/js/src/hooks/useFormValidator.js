@@ -434,7 +434,6 @@ export const useFormValidator = () => {
             .isValidOutbreakDeclaration(formatMessage),
 
         detection_first_draft_submitted_at: yup.date().nullable(),
-        detection_rrt_oprtt_approval_at: yup.date().nullable(),
 
         investigation_at: yup
             .date()
@@ -487,8 +486,6 @@ export const useFormValidator = () => {
         who_disbursed_to_co_at: yup.date().nullable(),
         spreadsheet_url: yup.string().url().nullable(),
 
-        eomg: yup.date().nullable(),
-        budget_submitted_at: yup.date().nullable(),
         district_count: yup
             .number()
             .nullable()

@@ -45,7 +45,6 @@ class VaccineRepositoryAPITestCase(APITestCase):
             obr_name="Test Campaign",
             country=cls.country,
             account=cls.account,
-            vacine=pm.VACCINES[0][0],
         )
         cls.campaign.campaign_types.add(cls.polio_type)
 
@@ -119,7 +118,6 @@ class VaccineRepositoryAPITestCase(APITestCase):
             obr_name="Another Campaign",
             country=self.zambia,
             account=self.account,
-            vacine=pm.VACCINES[0][0],
         )
         campaign2.campaign_types.add(self.polio_type)
 

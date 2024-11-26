@@ -96,7 +96,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             obr_name="RDC_CAMPAIGN_1",
             country=cls.org_unit_DRC,
             account=cls.account,
-            vacine=pm.VACCINES[0][0],
         )
 
         cls.campaign_rdc_1_round_1 = pm.Round.objects.create(
@@ -144,7 +143,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             obr_name="CHAD_CAMPAIGN_1",
             country=cls.org_unit_CHAD,
             account=cls.account,
-            vacine=pm.VACCINES[0][0],
         )
 
         cls.campaign_chad_1_round_1 = pm.Round.objects.create(
@@ -185,7 +183,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             obr_name="BE_CAMPAIGN_1",
             country=cls.org_unit_BE,
             account=cls.another_account,  # different account
-            vacine=pm.VACCINES[0][0],
         )
 
         cls.campaign_be_1_round_1 = pm.Round.objects.create(
@@ -314,7 +311,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             obr_name="TEST_CAMPAIGN",
             country=self.org_unit_DRC,
             account=self.account,
-            vacine=pm.VACCINES[0][0],
         )
 
         campaign_test_round_1 = pm.Round.objects.create(

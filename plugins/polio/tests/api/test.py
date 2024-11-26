@@ -26,13 +26,12 @@ class PolioTestCaseMixin:
             version=source_version,
             name=district_name,
             validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
+            source_ref="PvtAI4Rr",
         )
         campaign = pm.Campaign.objects.create(
             obr_name=obr_name,
             country=country,
             account=account,
-            vacine=pm.VACCINES[0][0],
             separate_scopes_per_round=False,
         )
         scope_group = m.Group.objects.create(name="campaign_scope", source_version=source_version)

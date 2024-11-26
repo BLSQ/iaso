@@ -27,7 +27,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
     country_name = serializers.CharField(source="campaign.country.name")
     campaign_obr_name = serializers.CharField(source="campaign.obr_name")
     round_id = serializers.IntegerField(source="id")
-    round_number = serializers.IntegerField(source="number")
+    number = serializers.IntegerField()
     start_date = serializers.DateField(source="started_at")
     end_date = serializers.DateField(source="ended_at")
     vaccine_name = serializers.CharField()
@@ -74,78 +74,6 @@ class VaccineRepositorySerializer(serializers.Serializer):
         ]
 
 
-class VaccineReportingFilterBackend(filters.BaseFilterBackend):
-    """Filter backend for vaccine reporting that handles campaign status, country, and file type filtering."""
-
-    def filter_queryset(self, request, queryset, view):
-        # Filter by campaign status
-        campaign_status = request.query_params.get("campaign_status", None)
-
-        if campaign_status:
-            today = datetime.now().date()
-            if campaign_status.upper() == "ONGOING":
-                queryset = queryset.filter(campaign_started_at__lte=today, campaign_ended_at__gte=today)
-            elif campaign_status.upper() == "PAST":
-                queryset = queryset.filter(campaign_started_at__lt=today, campaign_ended_at__lt=today)
-            elif campaign_status.upper() == "PREPARING":
-                queryset = queryset.filter(campaign_started_at__gte=today)
-
-        # Filter by country block
-        country_block = request.query_params.get("country_block", None)
-        if country_block:
-            try:
-                country_block_ids = [int(id) for id in country_block.split(",")]
-                queryset = queryset.filter(campaign__country__groups__in=country_block_ids)
-            except ValueError:
-                raise ValidationError("country_block must be a comma-separated list of integers")
-
-        # Filter by country (multi)
-        countries = request.query_params.get("countries", None)
-        if countries:
-            try:
-                country_ids = [int(id) for id in countries.split(",")]
-                queryset = queryset.filter(campaign__country__id__in=country_ids)
-            except ValueError:
-                raise ValidationError("countries must be a comma-separated list of integers")
-
-        # Filter by campaign category
-        campaign_category = request.query_params.get("campaignCategory", None)
-        if campaign_category == "test":
-            queryset = queryset.filter(campaign__is_test=True)
-        if campaign_category == "preventive":
-            queryset = queryset.filter(campaign__is_preventive=True)
-        if campaign_category == "regular":
-            queryset = queryset.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
-
-        # Filter by campaign
-        campaign = request.query_params.get("campaign", None)
-        if campaign:
-            queryset = queryset.filter(campaign__obr_name=campaign)
-
-        # Filter by file type
-        file_type = request.query_params.get("file_type", None)
-        if file_type:
-            file_type = file_type.upper()
-            if file_type == "VRF":
-                queryset = queryset.filter(campaign__vaccinerequestform__isnull=False)
-            elif file_type == "PRE_ALERT":
-                queryset = queryset.filter(
-                    campaign__vaccinerequestform__isnull=False,
-                    campaign__vaccinerequestform__vaccineprealert__isnull=False,
-                ).distinct("id")
-            elif file_type == "FORM_A":
-                queryset = queryset.filter(outgoingstockmovement__isnull=False)
-
-        # Filter by VRF type
-        vrf_type = request.query_params.get("vrf_type", None)
-        if vrf_type:
-            queryset = queryset.filter(
-                campaign__vaccinerequestform__isnull=False, campaign__vaccinerequestform__vrf_type=vrf_type
-            )
-
-        return queryset
-
-
 class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
     """
     ViewSet for retrieving vaccine repository data.
@@ -153,8 +81,8 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
 
     serializer_class = VaccineRepositorySerializer
     pagination_class = Paginator
-    filter_backends = [OrderingFilter, SearchFilter, VaccineReportingFilterBackend]
-    ordering_fields = ["campaign__country__name", "campaign__obr_name", "started_at", "vaccine_name"]
+    filter_backends = [OrderingFilter, SearchFilter]
+    ordering_fields = ["campaign__country__name", "campaign__obr_name", "started_at", "vaccine_name", "number"]
     ordering = ["-started_at"]
     search_fields = ["campaign__country__name", "campaign__obr_name"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -248,8 +176,10 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
     def get_queryset(self):
         """
         Get the queryset for Round objects with their campaigns.
+        The filtering has been moved here, because we return a union of querysets to duplicate the rounds that have several vaccines
+        and django will complain if we try to call filter() after union()
         """
-
+        request = self.request
         rounds_queryset = (
             Round.objects.filter(
                 campaign__isnull=False,
@@ -260,7 +190,7 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
                 "campaign",
                 "campaign__country",
             )
-            .prefetch_related("scopes", "campaign-scopes")
+            .prefetch_related("scopes", "campaign__scopes")
         )
 
         # Get campaign dates subquery here i.o filter to avoid error from calling annotate after union
@@ -275,6 +205,71 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
             campaign_started_at=Subquery(campaign_dates.values("campaign_started_at")),
             campaign_ended_at=Subquery(campaign_dates.values("campaign_ended_at")),
         )
+
+        # Filter by campaign status
+        campaign_status = request.query_params.get("campaign_status", None)
+
+        if campaign_status:
+            today = datetime.now().date()
+            if campaign_status.upper() == "ONGOING":
+                rounds_queryset = rounds_queryset.filter(campaign_started_at__lte=today, campaign_ended_at__gte=today)
+            elif campaign_status.upper() == "PAST":
+                rounds_queryset = rounds_queryset.filter(campaign_started_at__lt=today, campaign_ended_at__lt=today)
+            elif campaign_status.upper() == "PREPARING":
+                rounds_queryset = rounds_queryset.filter(campaign_started_at__gte=today)
+
+        # Filter by country block
+        country_block = request.query_params.get("country_block", None)
+        if country_block:
+            try:
+                country_block_ids = [int(id) for id in country_block.split(",")]
+                rounds_queryset = rounds_queryset.filter(campaign__country__groups__in=country_block_ids)
+            except ValueError:
+                raise ValidationError("country_block must be a comma-separated list of integers")
+
+        # Filter by country (multi)
+        countries = request.query_params.get("countries", None)
+        if countries:
+            try:
+                country_ids = [int(id) for id in countries.split(",")]
+                rounds_queryset = rounds_queryset.filter(campaign__country__id__in=country_ids)
+            except ValueError:
+                raise ValidationError("countries must be a comma-separated list of integers")
+
+        # Filter by campaign category
+        campaign_category = request.query_params.get("campaignCategory", None)
+        if campaign_category == "test":
+            rounds_queryset = rounds_queryset.filter(campaign__is_test=True)
+        if campaign_category == "preventive":
+            rounds_queryset = rounds_queryset.filter(campaign__is_preventive=True)
+        if campaign_category == "regular":
+            rounds_queryset = rounds_queryset.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
+
+        # Filter by campaign
+        campaign = request.query_params.get("campaign", None)
+        if campaign:
+            rounds_queryset = rounds_queryset.filter(campaign__obr_name=campaign)
+
+        # Filter by file type
+        file_type = request.query_params.get("file_type", None)
+        if file_type:
+            file_type = file_type.upper()
+            if file_type == "VRF":
+                rounds_queryset = rounds_queryset.filter(campaign__vaccinerequestform__isnull=False)
+            elif file_type == "PRE_ALERT":
+                rounds_queryset = rounds_queryset.filter(
+                    campaign__vaccinerequestform__isnull=False,
+                    campaign__vaccinerequestform__vaccineprealert__isnull=False,
+                ).distinct("id")
+            elif file_type == "FORM_A":
+                rounds_queryset = rounds_queryset.filter(outgoingstockmovement__isnull=False)
+
+        # Filter by VRF type
+        vrf_type = request.query_params.get("vrf_type", None)
+        if vrf_type:
+            rounds_queryset = rounds_queryset.filter(
+                campaign__vaccinerequestform__isnull=False, campaign__vaccinerequestform__vrf_type=vrf_type
+            )
 
         vaccines_qs = {}
         for vaccine in VACCINES:

@@ -1436,7 +1436,6 @@ class ProfileQuerySet(models.QuerySet):
         )
 
 
-
 class Profile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")

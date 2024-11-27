@@ -25,6 +25,7 @@ class MobileEntityTypeSerializer(serializers.ModelSerializer):
             "reference_form",
             "entities_count",
             "account",
+            "code",
             "fields_detail_info_view",
             "fields_list_view",
             "fields_duplicate_search",

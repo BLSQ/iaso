@@ -1,6 +1,7 @@
-import { Box } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import InputComponent from '../../../components/forms/InputComponent';
 import { InputWithInfos } from '../../../components/InputWithInfos';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
@@ -20,8 +21,31 @@ export const UserOrgUnitWriteTypes: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { data: orgUnitTypes, isLoading: isLoadingOrgUitTypes } =
         useGetOrgUnitTypesDropdownOptions(undefined, true);
+
+    const userRolesOrgUnitTypeRestrictions =
+        currentUser.user_roles_editable_org_unit_type_ids.value.length > 0;
+
     return (
         <Box>
+            {userRolesOrgUnitTypeRestrictions && (
+                <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={{
+                        paddingLeft: '15px',
+                        marginRight: '100px',
+                        color: theme => theme.palette.warning.main,
+                    }}
+                >
+                    <WarningAmberIcon />
+                    <Typography>
+                        {formatMessage(
+                            MESSAGES.userRoleOrgUnitTypeRestrictionWarning,
+                        )}
+                    </Typography>
+                </Stack>
+            )}
             <InputWithInfos
                 infos={formatMessage(MESSAGES.orgUnitWriteTypesInfos)}
             >

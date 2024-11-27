@@ -302,6 +302,36 @@ class MobileOrgUnitAPITestCase(APITestCase):
             },
         )
 
+        # Ensure soft deleted instances are not returned.
+
+        instance2.deleted = True
+        instance2.save()
+
+        response = self.client.get(f"{BASE_URL}{self.raditz.pk}/reference_instances/", data=params)
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(
+            response.data,
+            {
+                "count": 1,
+                "instances": [
+                    {
+                        "id": instance1.pk,
+                        "uuid": None,
+                        "form_id": form1.id,
+                        "form_version_id": form_version1.id,
+                        "created_at": 1698310800.0,
+                        "updated_at": 1698310800.0,
+                        "json": {"key": "foo"},
+                    },
+                ],
+                "has_next": False,
+                "has_previous": False,
+                "page": 1,
+                "pages": 1,
+                "limit": 10,
+            },
+        )
+
     def test_post_to_retrieve_list(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(

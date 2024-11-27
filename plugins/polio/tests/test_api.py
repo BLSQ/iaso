@@ -260,7 +260,6 @@ class PolioAPITestCase(APITestCase):
 
         r = self.assertJSONResponse(response, 200)
         self.assertNotEqual(r["round_one"], None, r)
-        # self.assertHasField(r["round_one"], "started_at", r)
         self.assertEqual(r["round_one"]["started_at"], "2021-02-01", r)
         self.assertEqual(len(r["rounds"]), 1)
 

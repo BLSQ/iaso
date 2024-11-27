@@ -311,7 +311,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         except ValueError:
             org_unit = get_object_or_404(authorized_org_units, uuid=pk)
 
-        reference_instances = org_unit.reference_instances.all()
+        reference_instances = org_unit.reference_instances(manager="non_deleted_objects").all().order_by("id")
 
         filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
 

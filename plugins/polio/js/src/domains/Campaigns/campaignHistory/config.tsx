@@ -86,9 +86,6 @@ export const useGetConfig = (): Record<string, any> => {
             ],
         },
         {
-            key: 'eomg',
-        },
-        {
             key: 'description',
         },
         {
@@ -140,9 +137,6 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'outbreak_declaration_date',
             getLogValue: log => convertDate(log.outbreak_declaration_date),
         },
-        {
-            key: 'vacine', // deprecated
-        },
         // Detection
         {
             key: 'detection_status',
@@ -151,17 +145,8 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'detection_responsible',
         },
         {
-            key: 'cvdpv_notified_at', // deprecated
-            getLogValue: log => convertDate(log.cvdpv_notified_at),
-        },
-        {
             key: 'pv2_notified_at', // deprecated
             getLogValue: log => convertDate(log.pv2_notified_at),
-        },
-        {
-            key: 'detection_rrt_oprtt_approval_at', // deprecated
-            getLogValue: log =>
-                convertDate(log.detection_rrt_oprtt_approval_at),
         },
 
         // Risk assessment
@@ -354,56 +339,6 @@ export const useGetConfig = (): Record<string, any> => {
         },
         {
             key: 'no_regret_fund_amount',
-        },
-        {
-            key: 'budget_submitted_at',
-            getLogValue: log => convertDate(log.budget_submitted_at),
-        },
-        {
-            key: 'budget_responsible', // deprecated
-        },
-        {
-            key: 'last_budget_event', // deprecated
-        },
-        {
-            key: 'budget_requested_at_WFEDITABLE_old', // deprecated
-            getLogValue: log =>
-                convertDate(log.budget_requested_at_WFEDITABLE_old),
-        },
-        {
-            key: 'feedback_sent_to_rrt3_at_WFEDITABLE_old', // deprecated
-            getLogValue: log =>
-                convertDate(log.feedback_sent_to_rrt3_at_WFEDITABLE_old),
-        },
-        {
-            key: 're_submitted_to_orpg_at_WFEDITABLE_old', // deprecated
-            getLogValue: log =>
-                convertDate(log.re_submitted_to_orpg_at_WFEDITABLE_old),
-        },
-        {
-            key: 'budget_rrt_oprtt_approval_at', // deprecated
-            getLogValue: log => convertDate(log.budget_rrt_oprtt_approval_at),
-        },
-        {
-            key: 'eomg', // deprecated
-        },
-        {
-            key: 'budget_submitted_at', // deprecated
-            getLogValue: log => convertDate(log.budget_submitted_at),
-        },
-
-        // Preparedness
-        {
-            key: 'preparedness_spreadsheet_url', // depreacted
-        },
-        {
-            key: 'preperadness_sync_status', // deprecated
-        },
-        {
-            key: 'surge_spreadsheet_url', // deprecated
-        },
-        {
-            key: 'country_name_in_surge_spreadsheet', // deprecated
         },
         // Scopes
         {
@@ -703,24 +638,5 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'creation_email_send_at',
             getLogValue: log => convertDate(log.creation_email_send_at),
         },
-        // DEPRECATED FIELDS ?
-        // {
-        //     key: 'last_budget_event',
-        // },
-        // {
-        //     key: 'pv2_notified_at',
-        //     getLogValue: log => convertDate(log.pv2_notified_at),
-        // },
-        // {
-        //     key: 'detection_rrt_oprtt_approval_at',
-
-        //     getLogValue: log =>
-        //         convertDate(log.detection_rrt_oprtt_approval_at_WFEDITABLE, 'L'),
-        // },
-        // {
-        //     key: 'detection_first_draft_submitted_at',
-        //     getLogValue: log =>
-        //         convertDate(log.detection_first_draft_submitted_at_WFEDITABLE, 'L'),
-        // },
     ];
 };

@@ -5,6 +5,9 @@ import {
     textPlaceholder,
     LinkWithLocation,
 } from 'bluesquare-components';
+import { Chip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { useNavigate } from 'react-router-dom';
 import GroupsDialog from './components/GroupsDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
@@ -12,7 +15,14 @@ import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls';
 import { filterOrgUnitsByGroupUrl } from '../utils';
 
+const useStyles = makeStyles(() => ({
+    groupSetChip: {
+        margin: '2px !important',
+    },
+}));
+
 export const baseUrl = baseUrls.groups;
+const groupSetUrl = baseUrls.groupSetDetail;
 
 const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
     {
@@ -40,6 +50,29 @@ const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
     {
         Header: formatMessage(MESSAGES.sourceRef),
         accessor: 'source_ref',
+    },
+    {
+        Header: formatMessage(MESSAGES.groupSet),
+        accessor: 'group_sets',
+        Cell: settings => {
+            const classes = useStyles();
+            const navigate = useNavigate();
+            return (
+                <span>
+                    {settings.row.original.group_sets.map(g => (
+                        <Chip
+                            className={classes.groupSetChip}
+                            label={g.name}
+                            color="primary"
+                            key={g.id}
+                            onClick={() => {
+                                navigate(`/${groupSetUrl}/groupSetId/${g.id}`);
+                            }}
+                        />
+                    ))}
+                </span>
+            );
+        },
     },
     {
         Header: formatMessage(MESSAGES.orgUnit),

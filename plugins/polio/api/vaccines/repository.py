@@ -274,12 +274,14 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
             rounds_queryset = rounds_queryset.filter(
                 campaign__vaccinerequestform__isnull=False, campaign__vaccinerequestform__vrf_type=vrf_type
             )
-
+        rounds_queryset = rounds_queryset.order_by()
         vaccines_qs = {}
         for vaccine in VACCINES:
             vaccine_name = vaccine[0]
-            vaccines_qs[vaccine_name] = rounds_queryset.filter_by_vaccine_name(vaccine_name).annotate(
-                vaccine_name=Value(vaccine_name)
+            vaccines_qs[vaccine_name] = (
+                rounds_queryset.filter_by_vaccine_name(vaccine_name)
+                .annotate(vaccine_name=Value(vaccine_name))
+                .distinct("id", "vaccine_name")
             )
         queryset_list = list(vaccines_qs.values())
         start_qs = queryset_list.pop()

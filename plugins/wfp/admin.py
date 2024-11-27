@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Beneficiary, Journey, Step, Visit, MonthlyStatistics, YearlyStatistics
+from .models import Beneficiary, Journey, Step, Visit, MonthlyStatistics
 
 
 @admin.register(Beneficiary)
@@ -82,29 +82,4 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "given_sachet_rusf",
         "given_sachet_rutf",
         "given_quantity_csb",
-    )
-
-
-@admin.register(YearlyStatistics)
-class YearlyStatisticsAdmin(admin.ModelAdmin):
-    list_filter = (
-        "org_unit",
-        "year",
-        "gender",
-        "admission_criteria",
-        "admission_type",
-        "nutrition_programme",
-        "programme_type",
-        "exit_type",
-    )
-    list_display = (
-        "id",
-        "org_unit",
-        "year",
-        "gender",
-        "admission_criteria",
-        "admission_type",
-        "nutrition_programme",
-        "programme_type",
-        "exit_type",
     )

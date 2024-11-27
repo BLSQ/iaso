@@ -438,6 +438,7 @@ class VaccineStockSubitemBase(ModelViewSet):
 class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name")
     document = serializers.FileField(required=False)
+    round_number = serializers.SerializerMethodField()
 
     class Meta:
         model = OutgoingStockMovement
@@ -453,7 +454,11 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "document",
             "comment",
             "round",
+            "round_number",
         ]
+
+    def get_round_number(self, obj):
+        return obj.round.number if obj.round else None
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)

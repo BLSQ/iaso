@@ -416,8 +416,7 @@ class PolioAPITestCase(APITestCase):
             country=self.org_unit,
             onset_at=now().date(),
             account=self.account,
-            cvdpv_notified_at=datetime.date(2022, 9, 12),
-            vacine="mOPV2",
+            cvdpv2_notified_at=datetime.date(2022, 9, 12),
         )
 
         round.campaign = campaign_active
@@ -525,16 +524,12 @@ class PolioAPITestCase(APITestCase):
             version=self.star_wars.default_version,
         )
 
-        c = Campaign.objects.create(
-            country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
-        )
+        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", account=self.account)
 
         c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
         c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
 
-        c2 = Campaign.objects.create(
-            country_id=org_unit_2.id, obr_name="orb campaign 2", vacine="vacin", account=self.account
-        )
+        c2 = Campaign.objects.create(country_id=org_unit_2.id, obr_name="orb campaign 2", account=self.account)
 
         c2_round_1 = c2.rounds.create(
             number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2)
@@ -563,7 +558,7 @@ class PolioAPITestCase(APITestCase):
         When a campaign was not linked to a country, export XLSX calendar triggered an error('NoneType' object has no attribute 'id'):
             - This test checks if the error does not occur even when a campaign is not linked to country
         """
-        c = Campaign.objects.create(obr_name="orb campaign", vacine="vacin", account=self.account)
+        c = Campaign.objects.create(obr_name="orb campaign", account=self.account)
         c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
@@ -585,9 +580,7 @@ class PolioAPITestCase(APITestCase):
             version=self.star_wars.default_version,
         )
 
-        c = Campaign.objects.create(
-            country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
-        )
+        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", account=self.account)
         round = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=None)
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
@@ -608,9 +601,7 @@ class PolioAPITestCase(APITestCase):
             org_unit_type=self.jedi_squad,
             version=self.star_wars.default_version,
         )
-        c = Campaign.objects.create(
-            country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", is_test=True, account=self.account
-        )
+        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", is_test=True, account=self.account)
         c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
@@ -632,9 +623,7 @@ class PolioAPITestCase(APITestCase):
             version=self.star_wars.default_version,
         )
 
-        c = Campaign.objects.create(
-            country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
-        )
+        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", account=self.account)
 
         c_round_1 = Round.objects.create(
             number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2)
@@ -757,7 +746,6 @@ class PolioAPICampaignCsvTestCase(APITestCase):
                 unicef_disbursed_to_co_at=datetime.date(2022, 3, 4),
                 unicef_disbursed_to_moh_at=datetime.date(2022, 3, 5),
                 gpei_coordinator="Test coordinator",
-                doses_requested=500,
             )
 
         cls.org_unit = create_org_unit(5453, "Country name", cls.jedi_squad, cls.star_wars.default_version)
@@ -813,12 +801,12 @@ class PolioAPICampaignCsvTestCase(APITestCase):
             campaign.unicef_disbursed_to_moh_at.strftime("%Y-%m-%d"),
             campaign.gpei_coordinator,
             str(round.target_population),
-            str(campaign.doses_requested),
+            str(round.doses_requested),
             str(round.cost),
             str(round.lqas_district_passing),
             str(round.lqas_district_failing),
             round.preparedness_spreadsheet_url,
-            campaign.preperadness_sync_status,
+            round.preparedness_sync_status,
         ]
 
     def test_csv_campaigns_export(self):
@@ -840,6 +828,7 @@ class PolioAPICampaignCsvTestCase(APITestCase):
             lqas_district_failing=2,
             preparedness_spreadsheet_url="https://docs.google.com/spreadsheets/d/test",
             preparedness_sync_status="FINISHED",
+            doses_requested=0,
         )
         self.c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
 
@@ -868,6 +857,7 @@ class PolioAPICampaignCsvTestCase(APITestCase):
         )
         first_data_row = data[1]
         row_data = self.row_data(self.c, c_round_1)
+
         self.assertEqual(
             first_data_row,
             row_data,
@@ -898,6 +888,7 @@ class PolioAPICampaignCsvTestCase(APITestCase):
             lqas_district_failing=3,
             preparedness_spreadsheet_url="https://docs.google.com/spreadsheets/d/test2",
             preparedness_sync_status="FINISHED",
+            doses_requested=0,
         )
         self.c2.rounds.create(number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7))
         response = self.client.get(
@@ -948,6 +939,7 @@ class PolioAPICampaignCsvTestCase(APITestCase):
             lqas_district_failing=3,
             preparedness_spreadsheet_url="https://docs.google.com/spreadsheets/d/test3",
             preparedness_sync_status="FINISHED",
+            doses_requested=0,
         )
         self.c3.rounds.create(number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7))
         response = self.client.get("/api/polio/campaigns/csv_campaigns_export/")

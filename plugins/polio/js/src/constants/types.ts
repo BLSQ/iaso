@@ -308,8 +308,6 @@ export type Campaign = {
     created_at: string;
     updated_at: string;
     deleted_at: Nullable<string>;
-    round_one?: any[];
-    round_two?: any[];
     rounds: Round[];
     org_unit: {
         id: number;
@@ -340,12 +338,10 @@ export type Campaign = {
     creation_email_sent_at: Nullable<string>; // date time
     onset_at: Nullable<string>; // date
     outbreak_declaration_date: Nullable<string>; // date
-    cvdpv_notified_at: Nullable<string>; // date
     cvdpv2_notified_at: Nullable<string>; // date
     pv_notified_at: Nullable<string>; // date
     pv2_notified_at: Nullable<string>; // date
     virus: Nullable<Virus>;
-    vacine: Nullable<Vaccine>;
     detection_status: DetectionStatus;
     detection_responsible: Nullable<DetectionResponsible>;
     detection_first_draft_submitted_at: Nullable<string>; // date
@@ -358,11 +354,9 @@ export type Campaign = {
     ag_nopv_group_met_at: Nullable<string>; // date
     dg_authorized_at: Nullable<string>; // date
     verification_score: Nullable<number>;
-    doses_requested: Nullable<number>;
     preparedness_spreadsheet_url: Nullable<string>;
     preparedness_sync_status: PreparednessSyncStatus;
     budget_status: Nullable<BudgetStatusDeprecated>;
-    budget_responsible: Nullable<ResponsibleLevel>;
     is_test: boolean;
     budget_current_state_key: string;
     budget_current_state_label: Nullable<string>;
@@ -370,18 +364,15 @@ export type Campaign = {
     who_disbursed_to_moh_at: Nullable<string>; // date
     unicef_disbursed_to_co_at: Nullable<string>; // date
     unicef_disbursed_to_moh_at: Nullable<string>; // date
-    eomg: Nullable<string>; // date
     no_regret_fund_amount: Nullable<number>; // decimal
     payment_mode: Nullable<PaymentMode>;
     district_count: Nullable<number>;
     budget_rrt_oprrt_approval_at: Nullable<string>; // date
-    budget_submitted_at: Nullable<string>; // date
     is_preventive: boolean;
     enable_send_weekly_emails: boolean;
     initial_org_unit: Nullable<number>;
     country: Nullable<number>;
     group: Nullable<number>; // Doesn't appear nullbale in swagger but had anull value in payload
-    last_budget_event: Nullable<number>;
     campaign_types: CampaignType[];
 };
 
@@ -521,7 +512,6 @@ export type PolioCampaignValues = DefaultCampaignValues & {
     cvdpv2_notified_at?: string | null;
     outbreak_declaration_date?: string | null;
     detection_first_draft_submitted_at?: string | null;
-    detection_rrt_oprtt_approval_at?: string | null;
     investigation_at?: string | null;
     risk_assessment_first_draft_submitted_at?: string | null;
     risk_assessment_rrt_oprtt_approval_at?: string | null;
@@ -553,8 +543,6 @@ export type PolioCampaignValues = DefaultCampaignValues & {
     who_disbursed_to_moh_at?: string | null;
     who_disbursed_to_co_at?: string | null;
     spreadsheet_url?: string | null;
-    eomg?: string | null;
-    budget_submitted_at?: string | null;
     district_count?: number;
     no_regret_fund_amount?: number;
     verification_score?: number;

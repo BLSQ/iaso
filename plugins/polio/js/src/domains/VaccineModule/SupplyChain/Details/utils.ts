@@ -190,7 +190,6 @@ export const makeHandleSubmit =
                         setInitialValues(newInitialValues);
                         formik.setErrors(newErrors);
                         formik.setTouched(newTouched);
-                        console.log('newValues', newValues);
                         formik.setValues(newValues);
                     }
                 },

@@ -6,6 +6,7 @@ import moment from 'moment';
 
 import React, { ReactElement } from 'react';
 import { apiDateFormats } from '../../utils/dates';
+import { SubTable } from './SubTable';
 /* DateTimeCell
    For use in Table's columns to display DateTime
  */
@@ -50,11 +51,10 @@ export const MultiDateCell = (cellInfo: {
     const value = cellInfo?.value ?? '';
     const valueAsList = value.split(',');
     return (
-        <>
-            {valueAsList.map((lineData, index) => (
-                <div key={`${lineData}${index}`}>{convertToDate(lineData)}</div>
-            ))}
-        </>
+        <SubTable
+            values={valueAsList}
+            renderValue={lineData => convertToDate(lineData)}
+        />
     );
 };
 

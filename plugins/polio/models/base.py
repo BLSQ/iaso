@@ -620,62 +620,6 @@ class Campaign(SoftDeletableModel):
     # END fields moved to the `Budget` model. ************************************************
     # ----------------------------------------------------------------------------------------
 
-    # ----------------------------------------------------------------------------------------
-    # START deprecated fields. ***************************************************************
-    cvdpv_notified_at = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("cVDPV Notification"),
-    )
-    # Replaced by the vaccines property.
-    vacine = models.CharField(max_length=5, choices=VACCINES, null=True, blank=True)
-    # Deprecated
-    detection_rrt_oprtt_approval_at = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("RRT/OPRTT Approval"),
-    )
-    # Moved to round.
-    doses_requested = models.IntegerField(null=True, blank=True)
-    # Preparedness deprecated fields -> Moved to round
-    preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
-    preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
-    # Budget deprecated fields.
-    budget_requested_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
-    feedback_sent_to_rrt3_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
-    re_submitted_to_orpg_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
-    budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
-    last_budget_event = models.ForeignKey(
-        "BudgetEvent", null=True, blank=True, on_delete=models.SET_NULL, related_name="lastbudgetevent"
-    )
-    # Removed in PR POLIO-614.
-    eomg = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("EOMG"),
-    )
-    # Moved to Rounds
-    round_one = models.OneToOneField(
-        Round, on_delete=models.PROTECT, related_name="campaign_round_one", null=True, blank=True
-    )
-    round_two = models.OneToOneField(
-        Round, on_delete=models.PROTECT, related_name="campaign_round_two", null=True, blank=True
-    )
-    # budget form, DEPRECATED
-    budget_rrt_oprtt_approval_at = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("Budget Approval"),
-    )
-    # budget form, DEPRECATED.
-    budget_submitted_at = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("Budget Submission"),
-    )
-    # END deprecated fields. *****************************************************************
-    # ----------------------------------------------------------------------------------------
-
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
 
@@ -1020,14 +964,6 @@ class BudgetEvent(SoftDeletableModel):
     def __str__(self):
         return str(self.campaign)
 
-    def save(self, *args, **kwargs):
-        super(BudgetEvent, self).save(*args, **kwargs)
-        if self.campaign.last_budget_event is None:
-            self.campaign.last_budget_event = self
-        elif self.campaign.last_budget_event.created_at < self.created_at:
-            self.campaign.last_budget_event = self
-        self.campaign.save()
-
 
 # Deprecated
 class BudgetFiles(models.Model):
@@ -1153,10 +1089,10 @@ class VaccineRequestForm(SoftDeletableModel):
         return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 
 
-class VaccinePreAlert(SoftDeletableModel):
+class VaccinePreAlert(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     date_pre_alert_reception = models.DateField()
-    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None, unique=True)
     estimated_arrival_time = models.DateField(blank=True, null=True, default=None)
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
@@ -1169,8 +1105,6 @@ class VaccinePreAlert(SoftDeletableModel):
     document = models.FileField(
         storage=CustomPublicStorage(), upload_to="public_documents/prealert/", null=True, blank=True
     )
-
-    objects = DefaultSoftDeletableManager()
 
     def save(self, *args, **kwargs):
         self.doses_per_vial = self.get_doses_per_vial()
@@ -1186,11 +1120,11 @@ class VaccinePreAlert(SoftDeletableModel):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
 
-class VaccineArrivalReport(SoftDeletableModel):
+class VaccineArrivalReport(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     arrival_report_date = models.DateField()
     doses_received = models.PositiveIntegerField()
-    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None, unique=True)
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
@@ -1200,8 +1134,6 @@ class VaccineArrivalReport(SoftDeletableModel):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    objects = DefaultSoftDeletableManager()
 
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]

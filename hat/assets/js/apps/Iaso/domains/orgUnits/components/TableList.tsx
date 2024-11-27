@@ -3,11 +3,15 @@ import { Box } from '@mui/material';
 import {
     selectionInitialState,
     setTableSelection,
+    Table,
+    useRedirectToReplace,
     useSafeIntl,
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 import React, {
+    Dispatch,
     FunctionComponent,
+    SetStateAction,
     useCallback,
     useMemo,
     useState,
@@ -15,7 +19,6 @@ import React, {
 
 // COMPONENTS
 import { UseMutateAsyncFunction } from 'react-query';
-import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { OrgUnitsMultiActionsDialog } from './OrgUnitsMultiActionsDialog';
 // COMPONENTS
 
@@ -36,6 +39,7 @@ import MESSAGES from '../messages';
 // CONSTANTS
 
 // HOOKS
+import { convertObjectToString } from '../../../utils/dataManipulation';
 import { ORG_UNITS } from '../../../utils/permissions';
 import {
     useCheckUserHasWriteTypePermission,
@@ -50,6 +54,7 @@ type Props = {
     resetPageToOne: string;
     orgUnitsData?: OrgUnitResult;
     saveMulti: UseMutateAsyncFunction<unknown, unknown, unknown, unknown>;
+    setResetPageToOne: Dispatch<SetStateAction<string>>;
 };
 
 const baseUrl = baseUrls.orgUnits;
@@ -58,8 +63,11 @@ export const TableList: FunctionComponent<Props> = ({
     resetPageToOne,
     orgUnitsData,
     saveMulti,
+    setResetPageToOne,
 }) => {
     const { formatMessage } = useSafeIntl();
+
+    const redirectToReplace = useRedirectToReplace();
     const currentUser = useCurrentUser();
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
@@ -109,6 +117,14 @@ export const TableList: FunctionComponent<Props> = ({
         [checkUserHasWriteTypePermission],
     );
 
+    const handleTableParamsChange = useCallback(
+        newParams => {
+            setResetPageToOne(convertObjectToString(newParams));
+            redirectToReplace(baseUrl, newParams);
+        },
+        [redirectToReplace, setResetPageToOne],
+    );
+
     useSkipEffectOnMount(() => {
         handleTableSelection('reset');
     }, [resetPageToOne]);
@@ -122,7 +138,7 @@ export const TableList: FunctionComponent<Props> = ({
                 saveMulti={saveMulti}
             />
             <Box mt={-4}>
-                <TableWithDeepLink
+                <Table
                     resetPageToOne={resetPageToOne}
                     data={orgUnitsData?.orgunits || []}
                     count={orgUnitsData?.count}
@@ -142,9 +158,7 @@ export const TableList: FunctionComponent<Props> = ({
                         handleTableSelection(selectionType, items, totalCount)
                     }
                     getIsSelectionDisabled={getIsSelectionDisabled}
-                    onTableSelectionChange={newParams =>
-                        console.log('newParams', newParams)
-                    }
+                    onTableParamsChange={handleTableParamsChange}
                 />
             </Box>
         </>

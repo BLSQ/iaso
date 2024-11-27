@@ -1,26 +1,26 @@
-import React, {
-    FunctionComponent,
-    useMemo,
-    useState,
-    useEffect,
-    useCallback,
-} from 'react';
-import { Box, Tabs, Tab } from '@mui/material';
+import { Box, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
-    useSafeIntl,
     LoadingSpinner,
-    useSkipEffectOnMount,
     makeRedirectionUrl,
+    useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { useQueryClient } from 'react-query';
 
 // COMPONENTS
 import { useNavigate } from 'react-router-dom';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
+import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import { OrgUnitsMap } from './components/OrgUnitsMap';
 import { TableList } from './components/TableList';
 // COMPONENTS
@@ -31,25 +31,25 @@ import { Search } from './types/search';
 // TYPES
 
 // UTILS
-import { decodeSearch } from './utils';
-import { convertObjectToString } from '../../utils/dataManipulation';
 import { getChipColors } from '../../constants/chipColors';
+import { convertObjectToString } from '../../utils/dataManipulation';
+import { decodeSearch } from './utils';
 // UTILS
 
 // CONSTANTS
+import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
-import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 // CONSTANTS
 
 // HOOKS
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import {
     useGetOrgUnits,
     useGetOrgUnitsLocations,
 } from './hooks/requests/useGetOrgUnits';
-import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 // HOOKS
 
 const useStyles = makeStyles(theme => ({
@@ -239,7 +239,7 @@ export const OrgUnits: FunctionComponent = () => {
     return (
         <>
             {isLoading && <LoadingSpinner fixed={false} absolute />}
-            <TopBar title={formatMessage(MESSAGES.title)} />
+            <TopBar title={formatMessage(MESSAGES.title)} disableShadow />
 
             <Box className={classes.container}>
                 <OrgUnitFiltersContainer

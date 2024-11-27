@@ -916,6 +916,7 @@
     "iaso.orgUnitsTypes.create": "Create org unit type",
     "iaso.orgUnitsTypes.dialog.delete": "Are you sure you want to delete this org Unit type?",
     "iaso.orgUnitsTypes.dialog.deleteText": "This operation cannot be undone.",
+    "iaso.orgUnitsTypes.dialog.eraseReferenceFormsWarning": "Watch out! Adding an extra project to this list will erase all the currently selected reference forms for the project(s), and you will need to select them again in the list (to avoid inconsistencies, as reference forms must be included in all selected projects). Are you sure you want to proceed?",
     "iaso.orgUnitsTypes.projects": "Projects",
     "iaso.orgUnitsTypes.subTypesErrors": "A sub org unit type cannot be a parent too ({typeName})",
     "iaso.orgUnitsTypes.update": "Update org unit type",

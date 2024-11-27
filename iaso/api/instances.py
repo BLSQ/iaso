@@ -577,7 +577,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
         try:
             with transaction.atomic():
-                for instance in instances_query.iterator():
+                for instance in instances_query.iterator(chunk_size=2000):
                     original = copy(instance)
                     if is_deletion == True:
                         instance.soft_delete()

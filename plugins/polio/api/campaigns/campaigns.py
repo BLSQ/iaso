@@ -129,21 +129,6 @@ class CampaignTypeSerializer(serializers.ModelSerializer):
 
 
 class CampaignSerializer(serializers.ModelSerializer):
-    round_one = serializers.SerializerMethodField(read_only=True)
-    round_two = serializers.SerializerMethodField(read_only=True)
-
-    def get_round_one(self, campaign):
-        for round in campaign.rounds.all():
-            if round.number == 1:
-                return RoundSerializer(round).data
-        return None
-
-    def get_round_two(self, campaign):
-        for round in campaign.rounds.all():
-            if round.number == 2:
-                return RoundSerializer(round).data
-        return None
-
     rounds = RoundSerializer(many=True, required=False)
     org_unit: Field = OrgUnitSerializer(source="initial_org_unit", read_only=True)
     top_level_org_unit_name: Field = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
@@ -427,7 +412,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         # fields = "__all__"
         exclude = ["geojson"]
 
-        read_only_fields = ["preperadness_sync_status", "creation_email_send_at", "group"]
+        read_only_fields = ["creation_email_send_at", "group"]
 
 
 class ListCampaignSerializer(CampaignSerializer):
@@ -469,21 +454,6 @@ class ListCampaignSerializer(CampaignSerializer):
 
 class AnonymousCampaignSerializer(CampaignSerializer):
     rounds = RoundAnonymousSerializer(many=True)
-    round_one = serializers.SerializerMethodField(read_only=True)
-    round_two = serializers.SerializerMethodField(read_only=True)
-
-    def get_round_one(self, campaign):
-        for round in campaign.rounds.all():
-            if round.number == 1:
-                return RoundAnonymousSerializer(round).data
-        return None
-
-    def get_round_two(self, campaign):
-        for round in campaign.rounds.all():
-            if round.number == 2:
-                return RoundAnonymousSerializer(round).data
-        return None
-
     campaign_types = CampaignTypeSerializer(many=True, required=False)
 
     class Meta:
@@ -498,7 +468,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "initial_org_unit",
             "creation_email_send_at",
             "onset_at",
-            "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
             "pv2_notified_at",
@@ -508,7 +477,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "detection_status",
             "detection_responsible",
             "detection_first_draft_submitted_at",
-            "detection_rrt_oprtt_approval_at",
             "risk_assessment_status",
             "risk_assessment_responsible",
             "investigation_at",
@@ -517,23 +485,17 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "ag_nopv_group_met_at",
             "dg_authorized_at",
             "verification_score",
-            "doses_requested",
             "budget_status",
             "who_disbursed_to_co_at",
             "who_disbursed_to_moh_at",
             "unicef_disbursed_to_co_at",
             "unicef_disbursed_to_moh_at",
-            "eomg",
             "no_regret_fund_amount",
             "payment_mode",
-            "round_one",
-            "round_two",
             "rounds",
             "created_at",
             "updated_at",
             "district_count",
-            "budget_rrt_oprtt_approval_at",
-            "budget_submitted_at",
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
@@ -560,7 +522,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "initial_org_unit",
             "creation_email_send_at",
             "onset_at",
-            "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
             "pv2_notified_at",
@@ -569,7 +530,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "detection_status",
             "detection_responsible",
             "detection_first_draft_submitted_at",
-            "detection_rrt_oprtt_approval_at",
             "risk_assessment_status",
             "risk_assessment_responsible",
             "investigation_at",
@@ -578,20 +538,16 @@ class SmallCampaignSerializer(CampaignSerializer):
             "ag_nopv_group_met_at",
             "dg_authorized_at",
             "verification_score",
-            "doses_requested",
             "budget_status",
             "who_disbursed_to_co_at",
             "who_disbursed_to_moh_at",
             "unicef_disbursed_to_co_at",
             "unicef_disbursed_to_moh_at",
-            "eomg",
             "no_regret_fund_amount",
             "payment_mode",
             "created_at",
             "updated_at",
             "district_count",
-            "budget_rrt_oprtt_approval_at",
-            "budget_submitted_at",
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
@@ -996,7 +952,7 @@ class CampaignViewSet(ModelViewSet):
     @action(methods=["GET"], detail=False, serializer_class=None)
     def csv_campaigns_export(self, request, **kwargs):
         """
-        It generates a csv export for all campaigns and their related rounds informations
+        It generates a csv export for all campaigns and their related rounds information
 
             parameters:
                 self: a self
@@ -1039,7 +995,7 @@ class CampaignViewSet(ModelViewSet):
                 round.target_population if (round.target_population and (round.target_population > 0)) else ""
             )
 
-            item["doses_requested"] = campaign.doses_requested
+            item["doses_requested"] = round.doses_requested
             if round.lqas_district_failing == 0 and round.lqas_district_passing == 0:
                 item["lqas_district_passing"] = ""
                 item["lqas_district_failing"] = ""

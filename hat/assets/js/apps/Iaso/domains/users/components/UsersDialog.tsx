@@ -17,18 +17,17 @@ import React, {
 import { MutateFunction, useQueryClient } from 'react-query';
 
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
-import { hasFeatureFlag, SHOW_DEV_FEATURES } from '../../../utils/featureFlags';
+import * as Permissions from '../../../utils/permissions';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
 import PermissionsAttribution from './PermissionsAttribution';
 import { useInitialUser } from './useInitialUser';
 import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
+import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 import UsersInfos from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
-import * as Permissions from '../../../utils/permissions';
-import UsersDialogTabDisabled from './UsersDialogTabDisabled';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
@@ -157,10 +156,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         }
         return '';
     }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
-
-    const currentUser = useCurrentUser();
-    const hasDevFeatures = hasFeatureFlag(currentUser, SHOW_DEV_FEATURES);
-
     return (
         <>
             <WarningModal
@@ -221,29 +216,24 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
-                    {hasDevFeatures &&
-                        (hasNoOrgUnitManagementWrite ? (
-                            <UsersDialogTabDisabled
-                                label={formatMessage(
-                                    MESSAGES.orgUnitWriteTypes,
-                                )}
-                                disabled
-                                tooltipMessage={formatMessage(
-                                    MESSAGES.OrgUnitTypeWriteDisableTooltip,
-                                    { type: formatMessage(MESSAGES.user) },
-                                )}
-                            />
-                        ) : (
-                            <Tab
-                                classes={{
-                                    root: classes.tab,
-                                }}
-                                value="orgUnitWriteTypes"
-                                label={formatMessage(
-                                    MESSAGES.orgUnitWriteTypes,
-                                )}
-                            />
-                        ))}
+                    {hasNoOrgUnitManagementWrite ? (
+                        <UsersDialogTabDisabled
+                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
+                            disabled
+                            tooltipMessage={formatMessage(
+                                MESSAGES.OrgUnitTypeWriteDisableTooltip,
+                                { type: formatMessage(MESSAGES.user) },
+                            )}
+                        />
+                    ) : (
+                        <Tab
+                            classes={{
+                                root: classes.tab,
+                            }}
+                            value="orgUnitWriteTypes"
+                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
+                        />
+                    )}
                 </Tabs>
                 <div className={classes.root} id="user-profile-dialog">
                     <div

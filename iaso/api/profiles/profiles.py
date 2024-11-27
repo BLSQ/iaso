@@ -71,7 +71,7 @@ class HasProfilePermission(permissions.BasePermission):
             user_managed_org_units = profile.org_units.filter(id__in=org_units).all()
             if not user_managed_org_units or len(user_managed_org_units) == 0:
                 raise PermissionDenied(
-                    "The user we are trying to modify is not part of any OrgUnit " "managed by the current user"
+                    "The user we are trying to modify is not part of any OrgUnit managed by the current user"
                 )
         return True
 
@@ -654,7 +654,14 @@ class ProfilesViewSet(viewsets.ViewSet):
         if not org_unit:
             return OrgUnit.objects.none()
 
-        org_unit_ids = set([ou["id"] for ou in org_unit if ou.get("id")])
+        # Convert the ids received from the APIs to int.
+        org_unit_ids = []
+        for ou in org_unit:
+            try:
+                org_unit_ids.append(int(ou["id"]))
+            except (KeyError, ValueError):
+                pass
+        org_unit_ids = set(org_unit_ids)
         existing_org_unit_ids = set(profile.org_units.values_list("id", flat=True))
 
         if org_unit_ids == existing_org_unit_ids:
@@ -662,13 +669,14 @@ class ProfilesViewSet(viewsets.ViewSet):
             return OrgUnit.objects.filter(id__in=org_unit_ids)
 
         filtered_org_unit_ids = []
-        if request.user.has_perm(permission.USERS_MANAGED):
+        if request.user.has_perm(permission.USERS_MANAGED) and not request.user.has_perm(permission.USERS_ADMIN):
             profile_org_units = request.user.iaso_profile.org_units.all()
             managed_org_units = OrgUnit.objects.hierarchy(profile_org_units).values_list("id", flat=True)
+            # Only filter if there's an org unit limitation in place.
             if profile_org_units.exists():
                 for org_unit_id in org_unit_ids:
                     if (
-                        org_unit_id not in managed_org_units
+                        org_unit_id not in list(managed_org_units)
                         and org_unit_id not in existing_org_unit_ids
                         and not request.user.is_superuser
                     ):
@@ -681,7 +689,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         valid_ids = filtered_org_unit_ids or org_unit_ids
         org_units = OrgUnit.objects.filter(id__in=valid_ids)
 
-        if request.user.has_perm(permission.USERS_MANAGED):
+        if request.user.has_perm(permission.USERS_MANAGED) and not request.user.has_perm(permission.USERS_ADMIN):
             org_unit_type_ids_to_check = set(org_units.values_list("org_unit_type_id", flat=True))
             self._validate_profile_editable_org_unit_types(request.user.iaso_profile, org_unit_type_ids_to_check)
 

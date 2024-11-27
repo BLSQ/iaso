@@ -1,17 +1,13 @@
-from copy import copy
 from typing import Any, Protocol
 
 from django import forms as django_forms
 from django.contrib import admin
-from django.contrib.admin import widgets
-from django.contrib.admin.widgets import AutocompleteSelect
-from django.contrib.auth import get_user_model
+from django.contrib.admin import widgets, SimpleListFilter
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import Count, Q
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
@@ -84,6 +80,28 @@ from .models import (
 from .models.data_store import JsonDataStore
 from .models.microplanning import Assignment, Planning, Team
 from .utils.gis import convert_2d_point_to_3d
+
+
+class EntityAutocompleteFilter(SimpleListFilter):
+    """
+    Limit `entity` list_filter to only entities linked to at least one storage device.
+    """
+
+    title = "entity"
+    parameter_name = "entity"
+
+    def lookups(self, request, model_admin):
+        lookups = []
+        storage_device_ids = set(StorageDevice.objects.values_list("entity_id", flat=True))
+        entities = Entity.objects.filter(id__in=storage_device_ids).only("pk", "name")
+        for entity in entities:
+            lookups.append([entity.pk, entity.name])
+        return lookups
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(entity__id=self.value())
+        return queryset
 
 
 class IasoJSONEditorWidget(JSONEditorWidget):
@@ -684,7 +702,7 @@ class InstanceLockAdmin(admin.ModelAdmin):
 
 class StorageLogEntryInline(admin.TabularInline):
     model = StorageLogEntry
-    raw_id_fields = ("instances", "org_unit")
+    raw_id_fields = ("entity", "instances", "org_unit", "performed_by")
 
 
 @admin.register(StorageDevice)
@@ -703,9 +721,10 @@ class StorageDeviceAdmin(admin.ModelAdmin):
         "updated_at",
     )
     readonly_fields = ("created_at", "updated_at", "status_updated_at")
-    list_display = ("account", "type", "customer_chosen_id")
-    list_filter = ("account", "type", "status")
+    list_display = ("account", "type", "customer_chosen_id", "entity")
+    list_filter = ("account", "type", "status", EntityAutocompleteFilter)
     raw_id_fields = ("org_unit",)
+    autocomplete_fields = ["entity"]
     inlines = [
         StorageLogEntryInline,
     ]

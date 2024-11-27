@@ -193,7 +193,7 @@ export const OrgUnits: FunctionComponent = () => {
     return (
         <>
             {isLoading && <LoadingSpinner fixed={false} absolute />}
-            <TopBar title={formatMessage(MESSAGES.title)} />
+            <TopBar title={formatMessage(MESSAGES.title)} disableShadow />
 
             <Box className={classes.container}>
                 <OrgUnitFiltersContainer
@@ -220,46 +220,57 @@ export const OrgUnits: FunctionComponent = () => {
                             />
                         </Box>
                     )}
-                <Box px={4}>
-                    <Tabs
-                        value={tab}
-                        classes={{
-                            root: classes.tabs,
-                        }}
-                        className={classes.marginBottom}
-                        indicatorColor="primary"
-                        onChange={(event, newtab) => handleChangeTab(newtab)}
-                    >
-                        <Tab
-                            value="list"
-                            label={formatMessage(MESSAGES.list)}
-                        />
-                        <Tab value="map" label={formatMessage(MESSAGES.map)} />
-                    </Tabs>
-                    {tab === 'list' && (
-                        <TableList
-                            params={params}
-                            saveMulti={saveMulti}
-                            resetPageToOne={resetPageToOne}
-                            orgUnitsData={orgUnitsData}
-                            setResetPageToOne={setResetPageToOne}
-                        />
-                    )}
-
-                    <Box className={tab === 'map' ? '' : classes.hiddenOpacity}>
-                        <Box className={classes.containerMarginNeg}>
-                            <OrgUnitsMap
-                                getSearchColor={getSearchColor}
-                                orgUnits={
-                                    orgUnitsDataLocation || {
-                                        locations: [],
-                                        shapes: [],
-                                    }
-                                }
+                {isSearchActive && (
+                    <Box px={4}>
+                        <Tabs
+                            value={tab}
+                            classes={{
+                                root: classes.tabs,
+                            }}
+                            className={classes.marginBottom}
+                            indicatorColor="primary"
+                            onChange={(event, newtab) =>
+                                handleChangeTab(newtab)
+                            }
+                        >
+                            <Tab
+                                value="list"
+                                label={formatMessage(MESSAGES.list)}
                             />
+                            <Tab
+                                value="map"
+                                label={formatMessage(MESSAGES.map)}
+                            />
+                        </Tabs>
+                        {tab === 'list' && (
+                            <TableList
+                                params={params}
+                                saveMulti={saveMulti}
+                                resetPageToOne={resetPageToOne}
+                                orgUnitsData={orgUnitsData}
+                                setResetPageToOne={setResetPageToOne}
+                            />
+                        )}
+
+                        <Box
+                            className={
+                                tab === 'map' ? '' : classes.hiddenOpacity
+                            }
+                        >
+                            <Box className={classes.containerMarginNeg}>
+                                <OrgUnitsMap
+                                    getSearchColor={getSearchColor}
+                                    orgUnits={
+                                        orgUnitsDataLocation || {
+                                            locations: [],
+                                            shapes: [],
+                                        }
+                                    }
+                                />
+                            </Box>
                         </Box>
                     </Box>
-                </Box>
+                )}
             </Box>
         </>
     );

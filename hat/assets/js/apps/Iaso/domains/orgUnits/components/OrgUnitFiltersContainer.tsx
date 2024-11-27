@@ -59,7 +59,7 @@ const useStyles = makeStyles(theme => ({
     },
     tabsContainer: {
         backgroundColor: `${theme.palette.primary.main} !important`,
-        zIndex: '900 !important',
+        zIndex: '9 !important',
         position: 'fixed',
         top: '64px !important',
     },

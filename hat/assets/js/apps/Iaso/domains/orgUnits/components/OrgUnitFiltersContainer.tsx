@@ -125,8 +125,12 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     const handleDeleteDynamicTab = useCallback(
         newParams => {
             redirectTo(baseUrl, newParams);
-            setSearches(decodeSearch(decodeURI(newParams.searches)));
-            onSearch(newParams);
+            const newSearches = decodeSearch(decodeURI(newParams.searches));
+            setSearches(newSearches);
+            onSearch({
+                ...newParams,
+                searches: newSearches,
+            });
         },
         [redirectTo, onSearch],
     );
@@ -184,7 +188,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                 <Box className={classes.tabsContainerShadow} />
             </AppBar>
             <Box px={4} mt={4}>
-                {searches.map((search, searchIndex) => (
+                {searches.map((_, searchIndex) => (
                     <Box
                         key={searchIndex}
                         className={

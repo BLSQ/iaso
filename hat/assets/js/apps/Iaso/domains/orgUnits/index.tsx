@@ -5,6 +5,7 @@ import {
     LoadingSpinner,
     makeRedirectionUrl,
     useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import React, {
     FunctionComponent,
@@ -92,7 +93,9 @@ export const OrgUnits: FunctionComponent = () => {
     // HOOKS
 
     // STATE
-    const [resetPageToOne, setResetPageToOne] = useState<string>('');
+    const [resetPageToOne, setResetPageToOne] = useState<string>(
+        convertObjectToString(params),
+    );
     const [tab, setTab] = useState<string>(params.tab ?? 'list');
     // STATE
 
@@ -156,7 +159,6 @@ export const OrgUnits: FunctionComponent = () => {
 
     const onSearch = useCallback(
         newParams => {
-            // handleTableSelection('reset');
             const tempParams = {
                 ...newParams,
                 searches: JSON.stringify(newParams.searches),
@@ -184,6 +186,10 @@ export const OrgUnits: FunctionComponent = () => {
         [params, navigate],
     );
     // TABS
+    // Adapt query key to invalidate react query cache and refetch data
+    useSkipEffectOnMount(() => {
+        setResetPageToOne(convertObjectToString(params));
+    }, [params.order, params.pageSize, params.page, params.locationLimit]);
 
     const isLoading =
         isFetchingOrgUnits ||

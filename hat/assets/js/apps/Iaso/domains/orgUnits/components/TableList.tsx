@@ -112,7 +112,6 @@ export const TableList: FunctionComponent<Props> = ({
     useSkipEffectOnMount(() => {
         handleTableSelection('reset');
     }, [resetPageToOne]);
-
     return (
         <>
             <OrgUnitsMultiActionsDialog
@@ -134,6 +133,7 @@ export const TableList: FunctionComponent<Props> = ({
                     marginTop={false}
                     extraProps={{
                         columns,
+                        data: orgUnitsData,
                     }}
                     multiSelect
                     selection={selection}
@@ -142,6 +142,9 @@ export const TableList: FunctionComponent<Props> = ({
                         handleTableSelection(selectionType, items, totalCount)
                     }
                     getIsSelectionDisabled={getIsSelectionDisabled}
+                    onTableSelectionChange={newParams =>
+                        console.log('newParams', newParams)
+                    }
                 />
             </Box>
         </>

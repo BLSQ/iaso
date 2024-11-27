@@ -1,9 +1,5 @@
 import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
-import {
-    deleteRequest,
-    patchRequest,
-    postRequest,
-} from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { deleteRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 import {
     errorSnackBar,
@@ -137,51 +133,33 @@ export const normalizePromiseResult = (
     return result;
 };
 
-export const findPromiseOrigin = (
-    settledPromise: PromiseSettledResult<any>[],
-): Optional<TabValue> => {
-    if (!settledPromise) {
-        throw new Error(
-            `findPromiseOrigin expected PromiseSettledResult, got ${settledPromise}`,
-        );
+export const findPromiseOrigin = (url: string): Optional<TabValue> => {
+    if (!url) {
+        return VRF;
     }
 
-    // @ts-ignore
-    const { value, reason } = settledPromise[0] ?? {};
-
-    // If there's no arrival reports or no pre alerts, settledPromise may be an empty array.
-    // In this case we return undefined to skip adding an entry to the aggregated response when using saveAll
-    if (!value && !reason) {
-        return undefined;
-    }
-    const foundValue = value
-        ? Object.keys(value)[0]
-        : Object.keys(reason.details)[0];
-    // Since there's only 1 vrf, the form of the response doesn't provide a key.
-    // Since it's also the only tab in that situation, we can infer that if the found value is neither VAR nor PRREALERT, it must be VRF
-    return foundValue === VAR || foundValue === PREALERT ? foundValue : VRF;
+    if (url.includes(PREALERT)) return PREALERT;
+    if (url.includes(VAR)) return VAR;
+    return VRF;
 };
 
 export const addEntryToResponse = (
     response: Record<string, any>,
-    update: PromiseFulfilledResult<PromiseSettledResult<any>[]>,
+    update: PromiseFulfilledResult<any>,
 ): void => {
-    const key = findPromiseOrigin(update.value);
+    const key = findPromiseOrigin(update.value.url);
     if (key) {
-        const convertedArray: any[] = (
-            update.value as PromiseSettledResult<any>[]
-        ).map(item => normalizePromiseResult(item));
-        response[key] = convertedArray;
+        if (!response[key]) {
+            response[key] = [];
+        }
+        response[key].push(normalizePromiseResult(update));
     }
 };
 
 export const parsePromiseResults = (
     allUpdates: PromiseFulfilledResult<PromiseSettledResult<any>[]>[],
-): Record<string, ParsedSettledPromise<any> | ParsedSettledPromise<any>[]> => {
-    const response: Record<
-        string,
-        ParsedSettledPromise<any> | ParsedSettledPromise<any>[]
-    > = {};
+): Record<string, ParsedSettledPromise<any>> => {
+    const response: Record<string, ParsedSettledPromise<any>> = {};
     allUpdates.forEach(update => {
         addEntryToResponse(response, update);
     });
@@ -197,25 +175,25 @@ export const handlePromiseErrors = ({
     data,
     key,
 }: HandlePromiseErrorsArgs): void => {
-    const failedPromises = data.filter(item => item.status === 'rejected');
+    const failedPromises = data.filter(item => item.value.status >= 400);
+
     if (failedPromises.length === 0) {
         const messageKey = `${key}ApiSuccess`;
         openSnackBar(succesfullSnackBar(key, MESSAGES[messageKey]));
     } else {
-        const failedEndpoints = failedPromises.map(item => item.value.message);
-        if (failedEndpoints.find(msg => msg.includes('add'))) {
+        const failedEndpoints = failedPromises.map(item => item.value.url);
+        if (failedEndpoints.find(url => url.includes('add'))) {
             const messageKey = `${key}CreateError`;
             openSnackBar(
                 errorSnackBar(
                     key,
                     MESSAGES[messageKey],
-                    failedPromises.find(item =>
-                        item.value.message.includes('add'),
-                    )?.value,
+                    failedPromises.find(item => item.value.url.includes('add'))
+                        ?.value.statusText,
                 ),
             );
         }
-        if (failedEndpoints.find(msg => msg.includes('update'))) {
+        if (failedEndpoints.find(url => url.includes('update'))) {
             const messageKey = `${key}UpdateError`;
 
             openSnackBar(
@@ -223,12 +201,12 @@ export const handlePromiseErrors = ({
                     key,
                     MESSAGES[messageKey],
                     failedPromises.find(item =>
-                        item.value.message.includes('update'),
-                    )?.value,
+                        item.value.url.includes('update'),
+                    )?.value.statusText,
                 ),
             );
         }
-        if (failedEndpoints.find(msg => msg.includes('delete'))) {
+        if (failedEndpoints.find(url => url.includes('delete'))) {
             const messageKey = `${key}DeleteError`;
             openSnackBar(
                 errorSnackBar(
@@ -236,7 +214,7 @@ export const handlePromiseErrors = ({
                     MESSAGES[messageKey],
                     failedPromises.find(item =>
                         item.value.message.includes('delete'),
-                    )?.value,
+                    )?.value.statusText,
                 ),
             );
         }

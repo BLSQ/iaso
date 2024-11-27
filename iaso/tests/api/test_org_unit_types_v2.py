@@ -43,8 +43,8 @@ class OrgUnitTypesAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.data_source_1 = data_source_1 = m.DataSource.objects.create(name="DataSource1")
-        version_1 = m.SourceVersion.objects.create(number=1, data_source=data_source_1)
-        ghi = m.Account.objects.create(name="Global Health Initiative", default_version=version_1)
+        cls.version_1 = m.SourceVersion.objects.create(number=1, data_source=data_source_1)
+        ghi = m.Account.objects.create(name="Global Health Initiative", default_version=cls.version_1)
         cls.ead = ead = m.Project.objects.create(name="End All Diseases", account=ghi)
         cls.esd = esd = m.Project.objects.create(name="End Some Diseases", account=ghi)
         cls.data_source_2 = data_source_2 = m.DataSource.objects.create(name="DataSource2")
@@ -100,6 +100,59 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertValidOrgUnitTypeListData(response_data, 5)
         for org_unit_type_data in response_data["orgUnitTypes"]:
             self.assertEqual(len(org_unit_type_data["projects"]), 1)
+
+    def test_org_unit_types_list_count_valid_orgunits(self):
+        """GET /orgunittypes/ with checks on the count of valid org units"""
+
+        # Prepare org units
+        ou_type1_ok = m.OrgUnit.objects.create(
+            name="OU 1 ok",
+            org_unit_type=self.org_unit_type_1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            version=self.version_1,
+        )
+        ou_type1_new = m.OrgUnit.objects.create(
+            name="OU 1 new",
+            org_unit_type=self.org_unit_type_1,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
+            version=self.version_1,
+        )
+        ou_type1_rejected = m.OrgUnit.objects.create(
+            name="OU 1 rejected",
+            org_unit_type=self.org_unit_type_1,
+            validation_status=m.OrgUnit.VALIDATION_REJECTED,
+            version=self.version_1,
+        )
+        ou_type2_ok = m.OrgUnit.objects.create(
+            name="OU 2 ok",
+            org_unit_type=self.org_unit_type_2,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            version=self.version_1,
+        )
+
+        # Link projects to datasource
+        self.data_source_1.projects.set([self.ead, self.esd])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/v2/orgunittypes/?order=id")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()["orgUnitTypes"]
+
+        result_out_1 = response_data[0]
+        total_org_units_type_1 = m.OrgUnit.objects.filter(org_unit_type=self.org_unit_type_1).count()
+        self.assertEqual(result_out_1["name"], self.org_unit_type_1.name)
+        self.assertEqual(result_out_1["units_count"], 1)
+        self.assertLess(result_out_1["units_count"], total_org_units_type_1)
+
+        result_out_2 = response_data[1]
+        total_org_units_type_2 = m.OrgUnit.objects.filter(org_unit_type=self.org_unit_type_2).count()
+        self.assertEqual(result_out_2["name"], self.org_unit_type_2.name)
+        self.assertEqual(result_out_2["units_count"], 1)
+        self.assertEqual(result_out_2["units_count"], total_org_units_type_2)
+
+        for other_types in response_data[2:]:
+            self.assertEqual(other_types["units_count"], 0)
 
     def test_org_unit_types_retrieve_without_auth_or_app_id(self):
         """GET /orgunittypes/<org_unit_type_id>/ without auth or app id should result in a 200 empty response"""

@@ -99,6 +99,8 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
     const formStateUpdated = useRef(null);
     const projectsEmptyUpdated = useRef(null);
+    const prevProjectIds = useRef(formState.project_ids.value);
+
     const { formatMessage } = useSafeIntl();
 
     const [referenceFormsMessage, setReferenceFormsMessage] = useState(
@@ -110,6 +112,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     const [projectsEmpty, setProjectsEmpty] = useState(
         !!isEmpty(formState.project_ids.value),
     );
+    const [selectedProjectIds, setSelectedProjectIds] = useState(null);
 
     const { data: allProjects } = useGetProjectsDropdownOptions();
     const { data: allOrgUnitTypes, isLoading: isLoadingOrgUitTypes } =
@@ -176,6 +179,30 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
     const currentUser = useCurrentUser();
 
+    const handleOpenConfirmModal = useCallback(
+        newProjectIds => {
+            prevProjectIds.current = formState.project_ids.value;
+            setSelectedProjectIds(newProjectIds);
+            setConfirmCancelDialogOpen(true);
+        },
+        [formState.project_ids.value],
+    );
+
+    const handleDialogConfirm = useCallback(() => {
+        if (selectedProjectIds) {
+            setAllForms(getFormPerProjects(selectedProjectIds));
+            setFieldValue('project_ids', selectedProjectIds);
+        }
+        setSelectedProjectIds(null);
+        setConfirmCancelDialogOpen(false);
+    }, [getFormPerProjects, selectedProjectIds, setFieldValue]);
+
+    const handleDialogCancel = useCallback(() => {
+        setFieldValue('project_ids', prevProjectIds.current);
+        setSelectedProjectIds(null);
+        setConfirmCancelDialogOpen(false);
+    }, [setFieldValue]);
+
     const onChange = useCallback(
         (keyValue, value) => {
             if (
@@ -186,14 +213,14 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
             ) {
                 setFieldValue(keyValue, commaSeparatedIdsToArray(value));
                 if (keyValue === 'project_ids') {
-                    if (formState.reference_forms_ids.value.length > 0) {
-                        setConfirmCancelDialogOpen(true);
-                    }
-
                     const projectIds = value
                         ?.split(',')
-                        .map((val: string) => parseInt(val, 10));
-                    setAllForms(getFormPerProjects(projectIds));
+                        .map(val => parseInt(val, 10));
+                    if (formState.reference_forms_ids.value.length > 0) {
+                        handleOpenConfirmModal(projectIds);
+                    } else {
+                        setAllForms(getFormPerProjects(projectIds));
+                    }
                 }
             } else {
                 setFieldValue(keyValue, value);
@@ -208,6 +235,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         [
             setFieldValue,
             formState.reference_forms_ids.value.length,
+            handleOpenConfirmModal,
             getFormPerProjects,
             setFieldErrors,
             formatMessage,
@@ -278,13 +306,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     }, [allProjects, orgUnitType.projects]);
     const [confirmCancelDialogOpen, setConfirmCancelDialogOpen] =
         useState(false);
-    const handleCustomDialogConfirm = () => {
-        setConfirmCancelDialogOpen(false);
-    };
 
-    const handleCustomDialogCancel = () => {
-        setConfirmCancelDialogOpen(false);
-    };
     return (
         //  @ts-ignore
         <>
@@ -405,15 +427,15 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
             {/* @ts-ignore */}
             <ConfirmCancelModal
-                onConfirm={() => handleCustomDialogConfirm()}
+                onConfirm={() => handleDialogConfirm()}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.confirm}
                 maxWidth="md"
                 open={confirmCancelDialogOpen}
                 closeDialog={() => null}
-                onClose={() => handleCustomDialogCancel()}
+                onClose={() => handleDialogCancel()}
                 onCancel={() => {
-                    handleCustomDialogCancel();
+                    handleDialogCancel();
                 }}
                 id="confirm-cancel-dialog"
                 dataTestId="confirm-cancel-dialog"

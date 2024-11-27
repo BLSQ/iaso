@@ -409,22 +409,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.disbursedToMohUnicef',
         defaultMessage: 'Disbursed to MOH (Unicef)',
     },
-    roundOneStart: {
-        id: 'iaso.polio.form.label.roundOneStart',
-        defaultMessage: 'Round 1 Start',
-    },
-    roundOneEnd: {
-        id: 'iaso.polio.form.label.roundOneEnd',
-        defaultMessage: 'Round 1 End',
-    },
-    roundTwoStart: {
-        id: 'iaso.polio.form.label.roundtwoStart',
-        defaultMessage: 'Round 2 Start',
-    },
-    roundTwoEnd: {
-        id: 'iaso.polio.form.label.roundtwoEnd',
-        defaultMessage: 'Round 2 End',
-    },
     mop_up_started_at: {
         id: 'iaso.polio.form.label.mopUpStart',
         defaultMessage: 'Mop Up Start',
@@ -512,22 +496,6 @@ const MESSAGES = defineMessages({
     preparedness: {
         id: 'iaso.polio.title.preparedness',
         defaultMessage: 'Preparedness',
-    },
-    roundOne: {
-        id: 'iaso.polio.title.roundOne',
-        defaultMessage: 'Round 1',
-    },
-    round_one: {
-        id: 'iaso.polio.title.roundOne',
-        defaultMessage: 'Round 1',
-    },
-    roundTwo: {
-        id: 'iaso.polio.title.roundTwo',
-        defaultMessage: 'Round 2',
-    },
-    round_two: {
-        id: 'iaso.polio.title.roundTwo',
-        defaultMessage: 'Round 2',
     },
     deleteWarning: {
         id: 'iaso.polio.label.deleteWarning',

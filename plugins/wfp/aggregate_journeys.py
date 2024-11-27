@@ -3,9 +3,7 @@ from operator import itemgetter
 
 
 class AGGREGATE_JOURNEY:
-
     def group_visit_by_admission(self, current_visit, row, assistance):
-
         visit_by_admission_type = groupby(list(current_visit), key=itemgetter("visit__journey__admission_type"))
         for admission_type, visit_admission_type in visit_by_admission_type:
             if admission_type is not None:

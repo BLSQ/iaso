@@ -118,7 +118,7 @@ def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
     # Convert to GeoDataframe, and group by org unit type
     # as we want one layer per OrgUnitType
     ou_gdf = gpd.GeoDataFrame(df, geometry="geography")
-    # we might need to do a ou_gdf.set_crs(crs="EPSG:4326") if there is an issue
+    ou_gdf.set_crs(crs="EPSG:4326")
     ou_gdf["layer_name"] = "level-" + ou_gdf["depth"].astype(str) + "-" + ou_gdf["type"]
 
     ou_gdf_by_type = ou_gdf.groupby("layer_name")

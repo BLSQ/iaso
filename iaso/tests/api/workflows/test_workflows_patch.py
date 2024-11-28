@@ -36,7 +36,9 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
         self.client.force_authenticate(self.blue_adult_1)
 
         response = self.client.patch(f"{BASE_API}1000/", data={"status": "PUBLISHED"})
-        self.assertContains(response, "No WorkflowVersion matches the given query", status_code=status.HTTP_404_NOT_FOUND)
+        self.assertContains(
+            response, "No WorkflowVersion matches the given query", status_code=status.HTTP_404_NOT_FOUND
+        )
 
     def test_patch_transition_ok(self):
         self.client.force_authenticate(self.blue_adult_1)

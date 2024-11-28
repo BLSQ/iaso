@@ -9,7 +9,6 @@ from uuid import uuid4
 
 import django.db.models.manager
 import pandas as pd
-from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.files.base import File

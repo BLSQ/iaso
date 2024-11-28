@@ -2,6 +2,7 @@ import csv
 import json
 
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.serializers.json import DjangoJSONEncoder
 
 from iaso.management.commands.command_logger import CommandLogger
 
@@ -18,14 +19,13 @@ def color(status):
     return CommandLogger.END
 
 
-class ShapelyJsonEncoder(json.JSONEncoder):
-    def __init__(self, **kwargs):
-        super(ShapelyJsonEncoder, self).__init__(**kwargs)
-
+class ShapelyJsonEncoder(DjangoJSONEncoder):
     def default(self, obj):
         if hasattr(obj, "as_dict"):
             return obj.as_dict()
-        return obj.wkt
+        if hasattr(obj, "wkt"):
+            return obj.wkt
+        return super().default(obj)
 
 
 class Dumper:
@@ -60,8 +60,11 @@ class Dumper:
         self.iaso_logger.info(json.dumps(stats, indent=4))
         return stats
 
+    def as_json(self, diffs):
+        return json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder)
+
     def dump_as_json(self, diffs):
-        self.iaso_logger.info(json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder))
+        self.iaso_logger.info(self.as_json(diffs))
 
     def dump_as_csv(self, diffs, fields, csv_file, number_of_parents=5):
         res = []

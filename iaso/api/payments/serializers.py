@@ -48,26 +48,6 @@ class AuditOrgChangeRequestNestedSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "updated_at"]
 
 
-# class PaymentSerializer(serializers.ModelSerializer):
-#     change_requests = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = Payment
-#         fields = ["id", "status", "created_at", "updated_at", "created_by", "updated_by", "user", "change_requests"]
-#         read_only_fields = ["id", "created_at", "updated_at"]
-
-#     pagination_class = PaymentPagination
-#     created_by = UserNestedSerializer()
-#     updated_by = UserNestedSerializer()
-#     user = UserNestedSerializer()
-#     created_at = TimestampField(read_only=True)
-#     updated_at = TimestampField(read_only=True)
-
-#     def get_change_requests(self, obj):
-#         change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
-#         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
-
-
 class NestedPaymentSerializer(serializers.ModelSerializer):
     change_requests = serializers.SerializerMethodField()
     can_see_change_requests = serializers.SerializerMethodField()
@@ -128,7 +108,7 @@ class PaymentLotSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         if user.is_superuser:
             return True
-        user_org_units = sorted(list(user.iaso_profile.org_units.all().values_list("id")))
+        user_org_units = sorted(list(user.iaso_profile.get_hierarchy_for_user().values_list("id"), flat=True))
         change_requests_org_units_for_lot = sorted(
             list(OrgUnitChangeRequest.objects.filter(payment__in=obj.payments.all()).values_list("org_unit__id"))
         )

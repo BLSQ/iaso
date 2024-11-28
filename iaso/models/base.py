@@ -958,7 +958,12 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         return new_qs
 
 
-InstanceManager = models.Manager.from_queryset(InstanceQuerySet)
+class NonDeletedInstanceManager(models.Manager):
+    def get_queryset(self):
+        """
+        Exclude soft deleted instances from all results.
+        """
+        return super().get_queryset().filter(deleted=False)
 
 
 class Instance(models.Model):
@@ -1019,7 +1024,8 @@ class Instance(models.Model):
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
-    objects = InstanceManager()
+    objects = models.Manager.from_queryset(InstanceQuerySet)()
+    non_deleted_objects = NonDeletedInstanceManager.from_queryset(InstanceQuerySet)()
 
     # Is instance SoftDeleted. It doesn't use the SoftDeleteModel deleted_at like the rest for historical reason.
     deleted = models.BooleanField(default=False)
@@ -1323,10 +1329,20 @@ class Instance(models.Model):
             ),
         }
 
+        result["change_requests"] = self.get_instance_change_requests_data()
+
         if with_entity and self.entity_id:
             result["entity"] = self.entity.as_small_dict_with_nfc_cards(self)
 
         return result
+
+    def get_instance_change_requests_data(self):
+        from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestListSerializer
+
+        org_unit_change_requests = self.orgunitchangerequest_set.all()
+        serializer = OrgUnitChangeRequestListSerializer(org_unit_change_requests, many=True)
+
+        return serializer.data
 
     def as_small_dict(self):
         return {

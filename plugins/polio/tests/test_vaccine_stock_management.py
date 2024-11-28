@@ -61,7 +61,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
             obr_name="Test Campaign",
             country=cls.country,
             account=cls.account,
-            vacine=pm.VACCINES[0][0],
         )
 
         cls.campaign_round_1 = pm.Round.objects.create(

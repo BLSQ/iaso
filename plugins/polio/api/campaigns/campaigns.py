@@ -427,7 +427,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         # fields = "__all__"
         exclude = ["geojson"]
 
-        read_only_fields = ["preperadness_sync_status", "creation_email_send_at", "group"]
+        read_only_fields = ["creation_email_send_at", "group"]
 
 
 class ListCampaignSerializer(CampaignSerializer):
@@ -498,7 +498,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "initial_org_unit",
             "creation_email_send_at",
             "onset_at",
-            "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
             "pv2_notified_at",
@@ -508,7 +507,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "detection_status",
             "detection_responsible",
             "detection_first_draft_submitted_at",
-            "detection_rrt_oprtt_approval_at",
             "risk_assessment_status",
             "risk_assessment_responsible",
             "investigation_at",
@@ -517,13 +515,11 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "ag_nopv_group_met_at",
             "dg_authorized_at",
             "verification_score",
-            "doses_requested",
             "budget_status",
             "who_disbursed_to_co_at",
             "who_disbursed_to_moh_at",
             "unicef_disbursed_to_co_at",
             "unicef_disbursed_to_moh_at",
-            "eomg",
             "no_regret_fund_amount",
             "payment_mode",
             "round_one",
@@ -532,8 +528,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "created_at",
             "updated_at",
             "district_count",
-            "budget_rrt_oprtt_approval_at",
-            "budget_submitted_at",
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
@@ -560,7 +554,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "initial_org_unit",
             "creation_email_send_at",
             "onset_at",
-            "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
             "pv2_notified_at",
@@ -569,7 +562,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "detection_status",
             "detection_responsible",
             "detection_first_draft_submitted_at",
-            "detection_rrt_oprtt_approval_at",
             "risk_assessment_status",
             "risk_assessment_responsible",
             "investigation_at",
@@ -578,20 +570,16 @@ class SmallCampaignSerializer(CampaignSerializer):
             "ag_nopv_group_met_at",
             "dg_authorized_at",
             "verification_score",
-            "doses_requested",
             "budget_status",
             "who_disbursed_to_co_at",
             "who_disbursed_to_moh_at",
             "unicef_disbursed_to_co_at",
             "unicef_disbursed_to_moh_at",
-            "eomg",
             "no_regret_fund_amount",
             "payment_mode",
             "created_at",
             "updated_at",
             "district_count",
-            "budget_rrt_oprtt_approval_at",
-            "budget_submitted_at",
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
@@ -996,7 +984,7 @@ class CampaignViewSet(ModelViewSet):
     @action(methods=["GET"], detail=False, serializer_class=None)
     def csv_campaigns_export(self, request, **kwargs):
         """
-        It generates a csv export for all campaigns and their related rounds informations
+        It generates a csv export for all campaigns and their related rounds information
 
             parameters:
                 self: a self
@@ -1039,7 +1027,7 @@ class CampaignViewSet(ModelViewSet):
                 round.target_population if (round.target_population and (round.target_population > 0)) else ""
             )
 
-            item["doses_requested"] = campaign.doses_requested
+            item["doses_requested"] = round.doses_requested
             if round.lqas_district_failing == 0 and round.lqas_district_passing == 0:
                 item["lqas_district_passing"] = ""
                 item["lqas_district_failing"] = ""
@@ -1218,8 +1206,17 @@ class CampaignViewSet(ModelViewSet):
                 item = {}
                 item["id"] = org_unit.id
                 item["org_unit_name"] = org_unit.name
-                item["org_unit_parent_name"] = org_unit.parent.name
-                item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
+
+                if org_unit.parent:
+                    item["org_unit_parent_name"] = org_unit.parent.name
+                else:
+                    item["org_unit_parent_name"] = ""
+
+                if org_unit.parent and org_unit.parent.parent:
+                    item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
+                else:
+                    item["org_unit_parent_of_parent_name"] = ""
+
                 item["obr_name"] = campaign.obr_name
                 item["round_number"] = "R" + str(round.number)
                 item["start_date"] = round.started_at

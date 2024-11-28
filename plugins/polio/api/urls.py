@@ -37,9 +37,8 @@ from plugins.polio.api.rounds.round import RoundViewSet
 from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryViewset
 from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizationViewSet
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
-from plugins.polio.api.vaccines.supply_chain import (
-    VaccineRequestFormViewSet,
-)
+from plugins.polio.api.vaccines.supply_chain import VaccineRequestFormViewSet
+from plugins.polio.api.vaccines.repository import VaccineRepositoryViewSet
 from plugins.polio.api.vaccines.stock_management import (
     VaccineStockManagementViewSet,
     OutgoingStockMovementViewSet,
@@ -93,6 +92,7 @@ router.register(r"polio/tasks/refreshim/ohh", RefreshIMOutOfHouseholdDataViewset
 router.register(r"polio/tasks/refreshim/hh_ohh", RefreshIMAllDataViewset, basename="refreshimhhohh")
 router.register(r"polio/vaccine/request_forms", VaccineRequestFormViewSet, basename="vaccine_request_forms")
 router.register(r"polio/vaccine/vaccine_stock", VaccineStockManagementViewSet, basename="vaccine_stocks")
+router.register(r"polio/vaccine/repository", VaccineRepositoryViewSet, basename="vaccine_repository")
 router.register(
     r"polio/vaccine/stock/outgoing_stock_movement", OutgoingStockMovementViewSet, basename="outgoing_stock_movement"
 )

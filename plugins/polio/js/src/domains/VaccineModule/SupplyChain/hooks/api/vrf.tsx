@@ -3,10 +3,10 @@ import {
     renderTagsWithTooltip,
     textPlaceholder,
 } from 'bluesquare-components';
-import { PostArg } from 'hat/assets/js/apps/Iaso/types/general';
 import moment from 'moment';
 import { useMemo } from 'react';
 import { UseMutationResult, UseQueryResult } from 'react-query';
+import { PostArg } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     errorSnackBar,

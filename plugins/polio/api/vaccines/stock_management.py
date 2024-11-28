@@ -75,7 +75,7 @@ class VaccineStockCalculator:
         destruction_reports = self.destruction_reports
         if end_date:
             destruction_reports = destruction_reports.filter(destruction_report_date__lte=end_date)
-        return sum(report.unusable_vials_destroyed or 0 for report in self.destruction_reports)
+        return sum(report.unusable_vials_destroyed or 0 for report in destruction_reports)
 
     def get_total_of_usable_vials(self, end_date=None):
         results = self.get_list_of_usable_vials(end_date)

@@ -164,4 +164,6 @@ class PolioReasonSForDelayTestCase(APITestCase):
                 "name_en": new_name_en,
             },
         )
-        self.assertContains(response, "No ReasonForDelay matches the given query", status_code=status.HTTP_404_NOT_FOUND)
+        self.assertContains(
+            response, "No ReasonForDelay matches the given query", status_code=status.HTTP_404_NOT_FOUND
+        )

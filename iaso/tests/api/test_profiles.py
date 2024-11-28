@@ -8,6 +8,7 @@ from django.contrib.auth.models import Group, Permission
 from django.core import mail
 from django.test import override_settings
 from django.utils.translation import gettext as _
+from rest_framework import status
 
 from hat.menupermissions import models as permission
 from hat.menupermissions.constants import MODULES
@@ -635,10 +636,7 @@ class ProfileAPITestCase(APITestCase):
             "user_roles": [self.user_role.id, self.user_role_another_account.id],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
-        self.assertEqual(response.status_code, 404)
-
-        response_data = response.json()
-        self.assertEqual(response_data["detail"], "Not found.")
+        self.assertContains(response, "No UserRole matches the given query", status_code=status.HTTP_404_NOT_FOUND)
 
     def test_create_profile_duplicate_user(self):
         self.client.force_authenticate(self.jim)

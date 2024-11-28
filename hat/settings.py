@@ -454,7 +454,7 @@ if USE_S3:
             "OPTIONS": {
                 "location": "iasostatics",
                 "default_acl": "public-read",
-            }
+            },
         }
         STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (AWS_STORAGE_BUCKET_NAME, STATIC_LOCATION)
 
@@ -504,7 +504,7 @@ STORAGES = {
             "querystring_auth": False,
             "bucket_name": os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME", ""),
         },
-    }
+    },
 }
 
 # Javascript/CSS Files:

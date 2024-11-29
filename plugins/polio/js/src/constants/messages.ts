@@ -2446,6 +2446,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.repository.title',
         defaultMessage: 'Vaccine Management Repository',
     },
+    scopesWillBeDeleted: {
+        id: 'iaso.polio.campaign.label.scopesWillBeDeleted',
+        defaultMessage: 'The previous scopes will be deleted',
+    },
+    scopeWarningTitle: {
+        id: 'iaso.polio.campaign.label.scopeWarningTitle',
+        defaultMessage: 'Scope type has been changed',
+    },
+    proceed: {
+        id: 'blsq.label.proceed',
+        defaultMessage: 'proceed',
+    },
+    doYouWantToClose: {
+        id: 'blsq.dialog.doYouWantToClose',
+        defaultMessage: 'Do you want to close?',
+    },
+    unsavedDataWillBeLost: {
+        id: 'blsq.dialog.unsavedDataWillBeLost',
+        defaultMessage: 'Unsaved data will be lost',
+    },
 });
 
 export default MESSAGES;

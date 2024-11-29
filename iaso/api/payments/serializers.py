@@ -108,11 +108,13 @@ class PaymentLotSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         if user.is_superuser:
             return True
-        user_org_units = sorted(list(user.iaso_profile.get_hierarchy_for_user().values_list("id", flat=True)))
-        change_requests_org_units_for_lot = sorted(
-            list(OrgUnitChangeRequest.objects.filter(payment__in=obj.payments.all()).values_list("org_unit__id"))
+        user_org_units = set(user.iaso_profile.get_hierarchy_for_user().values_list("id", flat=True))
+        change_requests_org_units_for_lot = (
+            OrgUnitChangeRequest.objects.filter(payment__in=obj.payments.all())
+            .values_list("org_unit__id", flat=True)
+            .distinct()
         )
-        return user_org_units == change_requests_org_units_for_lot
+        return set(change_requests_org_units_for_lot).issubset(user_org_units)
 
     def get_payments(self, obj):
         payments = obj.payments.all()

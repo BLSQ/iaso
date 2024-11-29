@@ -294,7 +294,6 @@ class CampaignSerializer(serializers.ModelSerializer):
         initial_org_unit = validated_data.get("initial_org_unit")
         account = self.context["request"].user.iaso_profile.account
         separate_scopes_per_round = validated_data.get("separate_scopes_per_round", instance.separate_scopes_per_round)
-        print("VALIDATED DATA", separate_scopes_per_round)
         switch_to_scope_per_round = separate_scopes_per_round and not instance.separate_scopes_per_round
         switch_to_scope_per_campaign = not separate_scopes_per_round and instance.separate_scopes_per_round
         keep_scope_per_round = separate_scopes_per_round and instance.separate_scopes_per_round

@@ -34,4 +34,4 @@ class Migration(migrations.Migration):
         ("polio", "0205_remove_campaign_budget_requested_at_wfeditable_old_and_more"),
     ]
 
-    operations = [migrations.RunPython(delete_unused_scopes, migrations.RunPython.noop)]
+    operations = [migrations.RunPython(delete_unused_scopes, migrations.RunPython.noop, elidable=True)]

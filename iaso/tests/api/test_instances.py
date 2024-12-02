@@ -961,7 +961,7 @@ class InstancesAPITestCase(APITestCase):
     def test_can_retrieve_submissions_list_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
-            f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
+            f"/api/instances/?form_ids={self.instance_1.form.id}&order=id&csv=true", headers={"Content-Type": "text/csv"}
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
@@ -970,7 +970,7 @@ class InstancesAPITestCase(APITestCase):
         response_string = "".join(s for s in response_csv)
         reader = csv.reader(io.StringIO(response_string), delimiter=",")
         data = list(reader)
-        row_to_test = data[len(data) - 1]
+        row_to_test = data[1]  # row 0 is the headers
         expected_row = [
             f"{self.instance_1.id}",
             "",
@@ -1688,7 +1688,7 @@ class InstancesAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response_yoda = self.client.get(
             "/api/instances/",
-            {query.USER_IDS: self.yoda.id},
+            {query.USER_IDS: self.yoda.id, "order": "id"},
             headers={"Content-Type": "application/json"},
         )
         self.assertEqual(response_yoda.status_code, 200)
@@ -1696,7 +1696,8 @@ class InstancesAPITestCase(APITestCase):
         instances = response_yoda.json()["instances"]
         self.assertEqual(self.instance_1.id, instances[0].get("id"))
         self.assertEqual(self.instance_4.id, instances[1].get("id"))
-        self.assertEqual(self.instance_5.id, instances[3].get("id"))
+        self.assertEqual(self.instance_5.id, instances[2].get("id"))
+        self.assertEqual(self.instance_8.id, instances[3].get("id"))
 
         self.client.force_authenticate(self.yoda)
         response_yoda_deleted = self.client.get(
@@ -1721,7 +1722,7 @@ class InstancesAPITestCase(APITestCase):
 
         response_supervisor = self.client.get(
             "/api/instances/",
-            {query.USER_IDS: self.supervisor.id},
+            {query.USER_IDS: self.supervisor.id, "order": "id"},
             headers={"Content-Type": "application/json"},
         )
         self.assertEqual(response_supervisor.status_code, 200)
@@ -1732,7 +1733,7 @@ class InstancesAPITestCase(APITestCase):
 
         response_yoda_guest = self.client.get(
             "/api/instances/",
-            {query.USER_IDS: f"{self.yoda.id},{self.guest.id}"},
+            {query.USER_IDS: f"{self.yoda.id},{self.guest.id}", "order": "id"},
             headers={"Content-Type": "application/json"},
         )
         self.assertEqual(response_yoda_guest.status_code, 200)
@@ -1740,9 +1741,10 @@ class InstancesAPITestCase(APITestCase):
         instances = response_yoda_guest.json()["instances"]
 
         self.assertEqual(self.instance_1.id, instances[0].get("id"))
-        self.assertEqual(self.instance_4.id, instances[1].get("id"))
-        self.assertEqual(self.instance_8.id, instances[2].get("id"))
-        self.assertEqual(self.instance_2.id, instances[4].get("id"))
+        self.assertEqual(self.instance_2.id, instances[1].get("id"))
+        self.assertEqual(self.instance_4.id, instances[2].get("id"))
+        self.assertEqual(self.instance_5.id, instances[3].get("id"))
+        self.assertEqual(self.instance_8.id, instances[4].get("id"))
 
     def test_instances_bad_sent_date_from(self):
         self.client.force_authenticate(self.yoda)
@@ -1769,6 +1771,7 @@ class InstancesAPITestCase(APITestCase):
             {
                 query.SENT_DATE_FROM: "2020-02-01",
                 query.SENT_DATE_TO: "2020-02-01",
+                "order": "id",
             },
             headers={"Content-Type": "application/json"},
         )
@@ -1796,6 +1799,7 @@ class InstancesAPITestCase(APITestCase):
             {
                 query.SENT_DATE_FROM: "2020-02-05",
                 query.SENT_DATE_TO: "2020-02-05",
+                "order": "id",
             },
             headers={"Content-Type": "application/json"},
         )
@@ -1803,6 +1807,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertValidInstanceListData(response.json(), 2)
         instances = response.json()["instances"]
         self.assertEqual(self.instance_4.id, instances[0].get("id"))
+        self.assertEqual(self.instance_8.id, instances[1].get("id"))
 
     def test_instances_bad_modification_date_from(self):
         self.client.force_authenticate(self.yoda)
@@ -1829,6 +1834,7 @@ class InstancesAPITestCase(APITestCase):
             {
                 query.MODIFICATION_DATE_FROM: "2020-02-10",
                 query.MODIFICATION_DATE_TO: "2020-02-10",
+                "order": "id",
             },
             headers={"Content-Type": "application/json"},
         )

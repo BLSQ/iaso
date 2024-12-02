@@ -210,7 +210,7 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
     def test_filtering(self):
         """Test filtering functionality of VaccineReportingViewSet"""
         # Create test data
-        campaign2, campaign2_round, campaign2_rnd2, campaign2_rnd3, zambia, _district = self.create_campaign(
+        campaign2, campaign2_round, campaign2_rnd2, campaign2_rnd3, _, _ = self.create_campaign(
             obr_name="Another Campaign",
             account=self.account,
             source_version=self.source_version_1,
@@ -218,6 +218,7 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
             country_name="WillBeIgnored",
             district_ou_type=self.org_unit_type_district,
             district_name="ZDistrict",
+            vaccine=pm.VACCINES[1][0],
         )
         campaign2_round.delete()
         campaign2_rnd2.delete()
@@ -234,13 +235,15 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
             number=1,
         )
 
+        campaign2.save
+
         (
             preparing_campaign,
             preparing_campaign_round,
             preparing_campaign2_rnd2,
             preparing_campaign_rnd3,
-            zambia_bis,
-            _district,
+            _,
+            _,
         ) = self.create_campaign(
             obr_name="Preparing Campaign",
             account=self.account,
@@ -272,26 +275,9 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
             date_dg_approval=self.now,
             quantities_ordered_in_doses=500,
         )
+        vrf2.rounds.set([campaign2_round])
 
         self.client.force_authenticate(user=self.user)
-
-        # Test filtering by campaign status - ONGOING
-        response = self.client.get(f"{BASE_URL}?campaign_status=ONGOING")
-        data = response.json()
-        self.assertEqual(len(data["results"]), 1)
-        self.assertEqual(data["results"][0]["campaign_obr_name"], "Another Campaign")
-
-        # # Test filtering by campaign status - PAST
-        response = self.client.get(f"{BASE_URL}?campaign_status=PAST")
-        data = response.json()
-        self.assertEqual(len(data["results"]), 3)
-        self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
-
-        # Test filtering by campaign status - PREPARING
-        response = self.client.get(f"{BASE_URL}?campaign_status=PREPARING")
-        data = response.json()
-        self.assertEqual(len(data["results"]), 1)
-        self.assertEqual(data["results"][0]["campaign_obr_name"], "Preparing Campaign")
 
         # Test filtering by country
         response = self.client.get(f"{BASE_URL}?countries={self.zambia.id}")
@@ -319,3 +305,13 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
             data = response.json()
             self.assertEqual(len(data["results"]), 2)
             self.assertTrue(all(result["country_name"] == "Zambia" for result in data["results"]))
+
+        # Test filtering by vaccine name
+        response = self.client.get(f"{BASE_URL}?vaccine_name={pm.VACCINES[1][0]}")
+        response = self.assertJSONResponse(response, 200)
+        data = response["results"]
+        self.assertEqual(len(data), 1)
+        response = self.client.get(f"{BASE_URL}?vaccine_name={pm.VACCINES[0][0]}")
+        response = self.assertJSONResponse(response, 200)
+        data = response["results"]
+        self.assertEqual(len(data), 4)

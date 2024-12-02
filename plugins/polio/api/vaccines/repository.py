@@ -314,6 +314,4 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
             )
         )
 
-        print("COUNT", rounds_queryset.count())
-
         return rounds_queryset

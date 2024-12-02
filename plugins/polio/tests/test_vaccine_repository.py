@@ -23,7 +23,7 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
         cls.org_unit_type_country = m.OrgUnitType.objects.create(name="Country")
         cls.org_unit_type_district = m.OrgUnitType.objects.create(name="District")
 
-        cls.campaign, cls.campaign_round_1, _rnd2, _rnd3, cls.testland, _district = cls.create_campaign(
+        cls.campaign, cls.campaign_round_1, _, _, cls.testland, _district = cls.create_campaign(
             obr_name="Test Campaign",
             account=cls.account,
             source_version=cls.source_version_1,
@@ -93,16 +93,16 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertIn("pre_alert_data", result)
         self.assertIn("form_a_data", result)
 
-    # def test_search_filter(self):
-    #     """Test search functionality"""
-    #     self.client.force_authenticate(user=self.user)
-    #     response = self.client.get(f"{BASE_URL}?search=Test Campaign")
-    #     data = response.json()
-    #     self.assertEqual(len(data["results"]), 1)
-    #     self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
+    def test_search_filter(self):
+        """Test search functionality"""
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(f"{BASE_URL}?search=Test Campaign")
+        data = response.json()
+        self.assertEqual(len(data["results"]), 3)
+        self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
 
     def test_rounds_are_split_by_vaccine(self):
-        campaign2, campaign2_rnd1, campaign2_rnd2, campaign2_rnd3, zambia, district = self.create_campaign(
+        campaign2, _, _, _, _, district = self.create_campaign(
             obr_name="Test scopes",
             account=self.account,
             source_version=self.source_version_1,

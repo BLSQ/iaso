@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 
 import time_machine
@@ -7,6 +6,7 @@ import time_machine
 from iaso import models as m
 from iaso.diffing import Differ, Dumper
 from iaso.test import TestCase
+from django.contrib.gis.geos import MultiPolygon, Polygon
 
 
 test_logger = logging.getLogger(__name__)
@@ -36,11 +36,12 @@ class DifferTestCase(TestCase):
         cls.org_unit_type_region = m.OrgUnitType.objects.create(category="REGION")
         cls.org_unit_type_district = m.OrgUnitType.objects.create(category="DISTRICT")
 
-        # FIELDS = ["name", "parent", "geometry", "groups", "opening_date", "closed_date"]
-        # TODO = ["geometry", "groups"]
-        # group1 = m.Group.objects.create(name="Group 1")
-        # group2 = m.Group.objects.create(name="Group 2")
-        # org_unit.groups.set([group1, group2])
+        cls.group_dhis2 = m.Group.objects.create(
+            name="Group 1", source_ref="group-dhis2", source_version=cls.source_version_dhis2
+        )
+        cls.group_iaso = m.Group.objects.create(
+            name="Group 2", source_ref="group-iaso", source_version=cls.source_version_iaso
+        )
 
         # Angola pyramid in DHIS2.
         cls.angola_country_dhis2 = m.OrgUnit.objects.create(
@@ -52,7 +53,10 @@ class DifferTestCase(TestCase):
             closed_date=datetime.date(2025, 11, 28),
             version=cls.source_version_dhis2,
             source_ref="id-1",
+            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
         )
+        cls.angola_country_dhis2.groups.set([cls.group_dhis2])
+
         cls.angola_region_dhis2 = m.OrgUnit.objects.create(
             name="Huila",
             parent=cls.angola_country_dhis2,
@@ -63,6 +67,7 @@ class DifferTestCase(TestCase):
             version=cls.source_version_dhis2,
             source_ref="id-2",
         )
+
         cls.angola_district_dhis2 = m.OrgUnit.objects.create(
             name="Cuvango",
             parent=cls.angola_region_dhis2,
@@ -84,7 +89,10 @@ class DifferTestCase(TestCase):
             closed_date=datetime.date(2025, 11, 28),
             version=cls.source_version_iaso,
             source_ref="id-1",
+            geom=MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])),
         )
+        cls.angola_country_iaso.groups.set([cls.group_iaso])
+
         cls.angola_region_iaso = m.OrgUnit.objects.create(
             name="Huila",
             parent=cls.angola_country_dhis2,
@@ -95,6 +103,7 @@ class DifferTestCase(TestCase):
             version=cls.source_version_iaso,
             source_ref="id-2",
         )
+
         cls.angola_district_iaso = m.OrgUnit.objects.create(
             name="Cuvango",
             parent=cls.angola_region_dhis2,
@@ -125,7 +134,7 @@ class DifferTestCase(TestCase):
             # Options.
             ignore_groups=True,
             show_deleted_org_units=False,
-            field_names=["name"],
+            field_names=["name"],  # ["name", "parent", "geometry", "groups", "opening_date", "closed_date"]
         )
 
         dumper = Dumper(test_logger)
@@ -134,83 +143,92 @@ class DifferTestCase(TestCase):
         expected_json_diffs = [
             {
                 "org_unit": {
-                    "name": "Angola",
-                    "short_name": "Angola",
                     "id": self.angola_country_iaso.pk,
-                    "source": "Data source",
-                    "source_id": self.data_source.pk,
-                    "source_ref": "id-1",
-                    "parent_id": None,
-                    "org_unit_type_id": self.org_unit_type_country.pk,
-                    "org_unit_type_name": "",
-                    "org_unit_type_depth": None,
-                    "created_at": 1732813200.0,
-                    "updated_at": 1732813200.0,
-                    "aliases": None,
+                    "name": "Angola",
+                    "uuid": None,
+                    "custom": False,
+                    "validated": True,
                     "validation_status": "VALID",
-                    "latitude": None,
-                    "longitude": None,
-                    "altitude": None,
-                    "has_geo_json": False,
-                    "version": 2,
-                    "opening_date": "28/11/2022",
-                    "closed_date": "28/11/2025",
+                    "version": self.source_version_iaso.pk,
+                    "parent": None,
+                    "path": str(self.angola_country_iaso.path),
+                    "aliases": None,
+                    "org_unit_type": self.org_unit_type_country.pk,
+                    "sub_source": None,
+                    "source_ref": "id-1",
+                    "geom": "MULTIPOLYGON (((-1.3 2.5, -1.7 2.8, -1.1 4.1, -1.3 2.5)))",
+                    "simplified_geom": None,
+                    "catchment": None,
+                    "geom_ref": None,
+                    "gps_source": None,
+                    "location": None,
+                    "source_created_at": None,
+                    "creator": None,
+                    "extra_fields": {},
+                    "opening_date": "2022-11-28",
+                    "closed_date": "2025-11-28",
+                    "default_image": None,
+                    "reference_instances": [],
                 },
                 "orgunit_ref": {
-                    "name": "Angola",
-                    "short_name": "Angola",
                     "id": self.angola_country_iaso.pk,
-                    "source": "Data source",
-                    "source_id": self.data_source.pk,
-                    "source_ref": "id-1",
-                    "parent_id": None,
-                    "org_unit_type_id": self.org_unit_type_country.pk,
-                    "org_unit_type_name": "",
-                    "org_unit_type_depth": None,
-                    "created_at": 1732813200.0,
-                    "updated_at": 1732813200.0,
-                    "aliases": None,
+                    "name": "Angola",
+                    "uuid": None,
+                    "custom": False,
+                    "validated": True,
                     "validation_status": "VALID",
-                    "latitude": None,
-                    "longitude": None,
-                    "altitude": None,
-                    "has_geo_json": False,
-                    "version": 2,
-                    "opening_date": "28/11/2022",
-                    "closed_date": "28/11/2025",
+                    "version": self.source_version_iaso.pk,
+                    "parent": None,
+                    "path": str(self.angola_country_iaso.path),
+                    "aliases": None,
+                    "org_unit_type": self.org_unit_type_country.pk,
+                    "sub_source": None,
+                    "source_ref": "id-1",
+                    "geom": "MULTIPOLYGON (((-1.3 2.5, -1.7 2.8, -1.1 4.1, -1.3 2.5)))",
+                    "simplified_geom": None,
+                    "catchment": None,
+                    "geom_ref": None,
+                    "gps_source": None,
+                    "location": None,
+                    "source_created_at": None,
+                    "creator": None,
+                    "extra_fields": {},
+                    "opening_date": "2022-11-28",
+                    "closed_date": "2025-11-28",
+                    "default_image": None,
+                    "reference_instances": [],
                 },
                 "orgunit_dhis2": {
-                    "name": "Angola new",
-                    "short_name": "Angola new",
                     "id": self.angola_country_dhis2.pk,
-                    "source": "Data source",
-                    "source_id": self.data_source.pk,
-                    "source_ref": "id-1",
-                    "parent_id": None,
-                    "org_unit_type_id": self.org_unit_type_country.pk,
-                    "org_unit_type_name": "",
-                    "org_unit_type_depth": None,
-                    "created_at": 1732813200.0,
-                    "updated_at": 1732813200.0,
-                    "aliases": None,
+                    "name": "Angola new",
+                    "uuid": None,
+                    "custom": False,
+                    "validated": True,
                     "validation_status": "VALID",
-                    "latitude": None,
-                    "longitude": None,
-                    "altitude": None,
-                    "has_geo_json": False,
-                    "version": 1,
-                    "opening_date": "28/11/2022",
-                    "closed_date": "28/11/2025",
+                    "version": self.source_version_dhis2.pk,
+                    "parent": None,
+                    "path": str(self.angola_country_dhis2.path),
+                    "aliases": None,
+                    "org_unit_type": self.org_unit_type_country.pk,
+                    "sub_source": None,
+                    "source_ref": "id-1",
+                    "geom": "MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
+                    "simplified_geom": None,
+                    "catchment": None,
+                    "geom_ref": None,
+                    "gps_source": None,
+                    "location": None,
+                    "source_created_at": None,
+                    "creator": None,
+                    "extra_fields": {},
+                    "opening_date": "2022-11-28",
+                    "closed_date": "2025-11-28",
+                    "default_image": None,
+                    "reference_instances": [],
                 },
                 "status": "modified",
                 "comparisons": [
-                    {
-                        "field": "name",
-                        "before": "Angola new",
-                        "after": "Angola",
-                        "status": "modified",
-                        "distance": None,
-                    }
+                    {"field": "name", "before": "Angola new", "after": "Angola", "status": "modified", "distance": None}
                 ],
             }
         ]

@@ -308,7 +308,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                 org_units = scope.get("group", {}).get("org_units")
                 scope, created = instance.scopes.get_or_create(vaccine=vaccine)
                 source_version_id = None
-                name = f"scope for campaign {instance.obr_name}" + (f" - {vaccine}" if vaccine else "")
+                name = f"scope for campaign {instance.obr_name} - {vaccine or ''}"
                 if org_units:
                     source_version_ids = set([ou.version_id for ou in org_units])
                     if len(source_version_ids) != 1:

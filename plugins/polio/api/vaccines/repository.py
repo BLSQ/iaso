@@ -252,6 +252,8 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
                 campaign__isnull=False,
                 campaign__deleted_at__isnull=True,
                 campaign__campaign_types__name=CampaignType.POLIO,
+                campaign__vaccinerequestform__isnull=False,
+                campaign__vaccinerequestform__deleted_at__isnull=True,  # Soft deletion, Yay!
             )
             .select_related(
                 "campaign",

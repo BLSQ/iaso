@@ -3,6 +3,7 @@ import json
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.serializers.json import DjangoJSONEncoder
+from django.forms import model_to_dict
 
 from iaso.management.commands.command_logger import CommandLogger
 
@@ -21,9 +22,15 @@ def color(status):
 
 class ShapelyJsonEncoder(DjangoJSONEncoder):
     def default(self, obj):
-        if hasattr(obj, "as_dict"):
+        if obj.__class__.__name__ in ["Diff", "Comparison"]:
             return obj.as_dict()
-        if hasattr(obj, "wkt"):
+        if obj.__class__.__name__ == "OrgUnit":
+            return model_to_dict(obj)
+        if obj.__class__.__name__ == "PathValue":
+            # See django_ltree.fields
+            # https://github.com/mariocesar/django-ltree/blob/154c7e31dc004a753c5f6387680464a23510a8ce/django_ltree/fields.py#L27-L28
+            return str(obj)
+        if obj.__class__.__name__ == "MultiPolygon":
             return obj.wkt
         return super().default(obj)
 

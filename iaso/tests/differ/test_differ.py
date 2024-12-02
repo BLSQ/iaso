@@ -37,85 +37,100 @@ class DifferTestCase(TestCase):
         cls.org_unit_type_district = m.OrgUnitType.objects.create(category="DISTRICT")
 
         cls.group_dhis2 = m.Group.objects.create(
-            name="Group 1", source_ref="group-dhis2", source_version=cls.source_version_dhis2
+            name="Group DHIS2", source_ref="group-id", source_version=cls.source_version_dhis2
         )
-        cls.group_iaso = m.Group.objects.create(
-            name="Group 2", source_ref="group-iaso", source_version=cls.source_version_iaso
+        cls.group_iaso_a = m.Group.objects.create(
+            name="Group IASO A", source_ref="group-id", source_version=cls.source_version_iaso
+        )
+        cls.group_iaso_b = m.Group.objects.create(
+            name="Group IASO B", source_ref="group-id", source_version=cls.source_version_iaso
         )
 
         # Angola pyramid in DHIS2.
+
         cls.angola_country_dhis2 = m.OrgUnit.objects.create(
-            name="Angola",
             parent=None,
+            version=cls.source_version_dhis2,
+            source_ref="id-1",
+            name="Angola",
             validation_status=m.OrgUnit.VALIDATION_VALID,
             org_unit_type=cls.org_unit_type_country,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            version=cls.source_version_dhis2,
-            source_ref="id-1",
             geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
         )
         cls.angola_country_dhis2.groups.set([cls.group_dhis2])
 
         cls.angola_region_dhis2 = m.OrgUnit.objects.create(
-            name="Huila",
             parent=cls.angola_country_dhis2,
+            version=cls.source_version_dhis2,
+            source_ref="id-2",
+            name="Huila",
             org_unit_type=cls.org_unit_type_region,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            version=cls.source_version_dhis2,
-            source_ref="id-2",
+            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
         )
 
         cls.angola_district_dhis2 = m.OrgUnit.objects.create(
-            name="Cuvango",
             parent=cls.angola_region_dhis2,
+            version=cls.source_version_dhis2,
+            source_ref="id-3",
+            name="Cuvango",
             org_unit_type=cls.org_unit_type_district,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            version=cls.source_version_dhis2,
-            source_ref="id-3",
+            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
         )
 
         # Angola pyramid in IASO.
+
         cls.angola_country_iaso = m.OrgUnit.objects.create(
-            name="Angola",
             parent=None,
+            version=cls.source_version_iaso,
+            source_ref="id-1",
+            name="Angola",
             validation_status=m.OrgUnit.VALIDATION_VALID,
             org_unit_type=cls.org_unit_type_country,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            version=cls.source_version_iaso,
-            source_ref="id-1",
-            geom=MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])),
+            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
         )
-        cls.angola_country_iaso.groups.set([cls.group_iaso])
+        cls.angola_country_iaso.groups.set([cls.group_iaso_a, cls.group_iaso_b])
 
         cls.angola_region_iaso = m.OrgUnit.objects.create(
+            parent=cls.angola_country_iaso,
+            version=cls.source_version_iaso,
+            source_ref="id-2",
             name="Huila",
-            parent=cls.angola_country_dhis2,
             org_unit_type=cls.org_unit_type_region,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            version=cls.source_version_iaso,
-            source_ref="id-2",
+            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
         )
 
         cls.angola_district_iaso = m.OrgUnit.objects.create(
+            parent=cls.angola_region_iaso,
+            version=cls.source_version_iaso,
+            source_ref="id-3",
             name="Cuvango",
-            parent=cls.angola_region_dhis2,
             org_unit_type=cls.org_unit_type_district,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            version=cls.source_version_iaso,
-            source_ref="id-3",
+            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
         )
 
     def test_diff_and_dump_as_json_for_name(self):
+        """
+        Test that the dump as json method works as expected.
+
+        The diff is limited to the `name` field and to the `country`
+        org unit type to limit its size.
+        """
         # Change the name in DHIS2.
         self.angola_country_dhis2.name = "Angola new"
         self.angola_country_dhis2.save()
@@ -134,7 +149,7 @@ class DifferTestCase(TestCase):
             # Options.
             ignore_groups=True,
             show_deleted_org_units=False,
-            field_names=["name"],  # ["name", "parent", "geometry", "groups", "opening_date", "closed_date"]
+            field_names=["name"],
         )
 
         dumper = Dumper(test_logger)
@@ -156,7 +171,7 @@ class DifferTestCase(TestCase):
                     "org_unit_type": self.org_unit_type_country.pk,
                     "sub_source": None,
                     "source_ref": "id-1",
-                    "geom": "MULTIPOLYGON (((-1.3 2.5, -1.7 2.8, -1.1 4.1, -1.3 2.5)))",
+                    "geom": "MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
                     "simplified_geom": None,
                     "catchment": None,
                     "geom_ref": None,
@@ -184,7 +199,7 @@ class DifferTestCase(TestCase):
                     "org_unit_type": self.org_unit_type_country.pk,
                     "sub_source": None,
                     "source_ref": "id-1",
-                    "geom": "MULTIPOLYGON (((-1.3 2.5, -1.7 2.8, -1.1 4.1, -1.3 2.5)))",
+                    "geom": "MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
                     "simplified_geom": None,
                     "catchment": None,
                     "geom_ref": None,
@@ -234,3 +249,55 @@ class DifferTestCase(TestCase):
         ]
 
         self.assertJSONEqual(json_diffs, expected_json_diffs)
+
+    def test_full_diff(self):
+        """
+        Test that the full diff works as expected.
+        """
+        # Changes in DHIS2.
+        self.angola_country_dhis2.name = "Angola new"
+        self.angola_country_dhis2.geom = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+        self.angola_country_dhis2.opening_date = datetime.date(2022, 12, 28)
+        self.angola_country_dhis2.closed_date = datetime.date(2025, 12, 28)
+        self.angola_country_dhis2.save()
+
+        self.angola_region_dhis2.name = "Huila new"
+        self.angola_region_dhis2.geom = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+        self.angola_region_dhis2.opening_date = datetime.date(2022, 12, 28)
+        self.angola_region_dhis2.closed_date = datetime.date(2025, 12, 28)
+        self.angola_region_dhis2.save()
+
+        self.angola_district_dhis2.name = "Cuvango new"
+        self.angola_district_dhis2.parent = self.angola_country_dhis2
+        self.angola_district_dhis2.geom = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+        self.angola_district_dhis2.opening_date = datetime.date(2022, 12, 28)
+        self.angola_district_dhis2.closed_date = datetime.date(2025, 12, 28)
+        self.angola_district_dhis2.save()
+
+        diffs, fields = Differ(test_logger).diff(
+            # DHIS2.
+            version=self.source_version_dhis2,
+            validation_status=None,
+            top_org_unit=None,
+            org_unit_types=None,
+            # IASO.
+            version_ref=self.source_version_iaso,
+            validation_status_ref=None,
+            top_org_unit_ref=None,
+            org_unit_types_ref=None,
+            # Options.
+            ignore_groups=False,
+            show_deleted_org_units=False,
+            field_names=["name", "parent", "geometry", "opening_date", "closed_date"],
+        )
+
+        self.assertEqual(len(diffs), 3)
+
+        for diff in diffs:
+            self.assertEqual(diff.status, "modified")
+
+        country_diff = diffs[0]
+
+        for comparison in country_diff.comparisons:
+            print("-" * 80)
+            print(comparison.as_dict())

@@ -918,6 +918,7 @@
     "iaso.orgUnitsTypes.create": "Créer un type d'unité d'organisation",
     "iaso.orgUnitsTypes.dialog.delete": "Etes-vous certain de vouloir effacer ce type d'unité d'organisation ?",
     "iaso.orgUnitsTypes.dialog.deleteText": "Cette opération est définitive.",
+    "iaso.orgUnitsTypes.dialog.eraseReferenceFormsWarning": "Attention ! Ajouter un projet supplémentaire à cette liste effacera tous les formulaires de référence actuellement sélectionnés pour le(s) projet(s), et vous devrez les sélectionner à nouveau dans la liste (pour éviter les incohérences, car les formulaires de référence doivent être inclus dans tous les projets sélectionnés). Êtes-vous sûr de vouloir continuer ?",
     "iaso.orgUnitsTypes.projects": "Projets",
     "iaso.orgUnitsTypes.subTypesErrors": "Un sous type d'unité d'organisation ne peut pas aussi être parent ({typeName})",
     "iaso.orgUnitsTypes.update": "Mettre à jour le type d'unité d'organisation",

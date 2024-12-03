@@ -19,7 +19,7 @@ export USE_S3="false"
 export RDS_PASSWORD="postgres"
 export DB_READONLY_USERNAME="postgres"
 export DB_READONLY_PASSWORD="postgres"
-export PLUGINS="polio"
+export PLUGINS="trypelim"
 set  -o allexport
 source .env
 

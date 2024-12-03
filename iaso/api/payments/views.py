@@ -21,6 +21,7 @@ from iaso.api.payments.filters import payments_lots as payments_lots_filters
 from iaso.api.payments.filters import potential_payments as potential_payments_filters
 from iaso.api.tasks import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
+from iaso.models.org_unit import OrgUnit
 from iaso.models.payments import PaymentStatuses
 from iaso.tasks.create_payment_lot import create_payment_lot
 from rest_framework.exceptions import ValidationError
@@ -449,11 +450,13 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     def get_queryset(self):
         queryset = (
             PotentialPayment.objects.prefetch_related("change_requests")
+            .prefetch_related("change_requests__org_unit")
             .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
             # Filter out potential payments already linked to a task as this means there's a task running converting them into Payment
             .filter(task__isnull=True)
             .distinct()
         )
+
         queryset = queryset.annotate(change_requests_count=Count("change_requests"))
 
         return queryset
@@ -572,7 +575,15 @@ class PaymentsViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
 
     def get_queryset(self) -> models.QuerySet:
-        return Payment.objects.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+        user = self.request.user
+        localisation = user.iaso_profile.org_units
+        queryset = Payment.objects.filter(
+            created_by__iaso_profile__account=self.request.user.iaso_profile.account
+        ).prefetch_related("change_requests__org_unit")
+        if localisation:
+            authorized_org_units = OrgUnit.objects.filter_for_user(user)
+            queryset = queryset.filter(change_requests__org_unit__in=authorized_org_units)
+        return queryset
 
     def update(self, request, *args, **kwargs):
         with transaction.atomic():

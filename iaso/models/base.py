@@ -1463,6 +1463,9 @@ class Profile(models.Model):
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
 
+    def get_hierarchy_for_user(self):
+        return OrgUnit.objects.filter_for_user_and_app_id(self.user)
+
     def get_user_roles_editable_org_unit_type_ids(self):
         try:
             return self.annotated_user_roles_editable_org_unit_type_ids

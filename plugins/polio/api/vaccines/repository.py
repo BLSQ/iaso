@@ -1,7 +1,6 @@
 """API endpoints and serializers for vaccine repository management."""
 
 from datetime import datetime, timedelta
-
 from django.db.models import Max, Min, OuterRef, Subquery
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -10,9 +9,11 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
+from django.db.models import OuterRef, Subquery, Q, Value, Case, When, CharField
 
 from iaso.api.common import Paginator
 from plugins.polio.models import (
+    VACCINES,
     CampaignType,
     OutgoingStockMovement,
     Round,
@@ -22,75 +23,12 @@ from plugins.polio.models import (
 )
 
 
-class VaccineRepositorySerializer(serializers.Serializer):
-    country_name = serializers.CharField(source="campaign.country.name")
-    campaign_obr_name = serializers.CharField(source="campaign.obr_name")
-    round_id = serializers.IntegerField(source="id")
-    round_number = serializers.IntegerField(source="number")
-    start_date = serializers.DateField(source="started_at")
-    end_date = serializers.DateField(source="ended_at")
-
-    vrf_data = serializers.SerializerMethodField()
-    pre_alert_data = serializers.SerializerMethodField()
-    form_a_data = serializers.SerializerMethodField()
-
-    def get_vrf_data(self, obj):
-        vrfs = VaccineRequestForm.objects.filter(campaign=obj.campaign, rounds=obj)
-        return [
-            {
-                "date": vrf.date_vrf_reception,
-                "file": vrf.document.url if vrf.document else None,
-                "is_missing": vrf.vrf_type == VaccineRequestFormType.MISSING,
-                "is_not_required": vrf.vrf_type == VaccineRequestFormType.NOT_REQUIRED,
-                "id": vrf.id,
-            }
-            for vrf in vrfs
-        ]
-
-    def get_pre_alert_data(self, obj):
-        pre_alerts = VaccinePreAlert.objects.filter(request_form__campaign=obj.campaign, request_form__rounds=obj)
-        return [
-            {
-                "date": pa.date_pre_alert_reception,
-                "file": pa.document.url if pa.document else None,
-                "vrf_id": pa.request_form.id,
-            }
-            for pa in pre_alerts
-        ]
-
-    def get_form_a_data(self, obj):
-        form_as = OutgoingStockMovement.objects.filter(campaign=obj.campaign, round=obj)
-        return [
-            {
-                "date": fa.form_a_reception_date,
-                "file": fa.document.url if fa.document else None,
-                "is_late": fa.form_a_reception_date > (obj.ended_at + timedelta(days=14))
-                if fa.form_a_reception_date and obj.ended_at
-                else None,
-            }
-            for fa in form_as
-        ]
-
-
 class VaccineReportingFilterBackend(filters.BaseFilterBackend):
     """Filter backend for vaccine reporting that handles campaign status, country, and file type filtering."""
 
     def filter_queryset(self, request, queryset, view):
         # Filter by campaign status
         campaign_status = request.query_params.get("campaign_status", None)
-
-        # Get campaign dates subquery
-        campaign_dates = (
-            Round.objects.filter(campaign=OuterRef("campaign"))
-            .values("campaign")
-            .annotate(campaign_started_at=Min("started_at"), campaign_ended_at=Max("ended_at"))
-        )
-
-        # Add campaign dates to main queryset
-        queryset = queryset.annotate(
-            campaign_started_at=Subquery(campaign_dates.values("campaign_started_at")),
-            campaign_ended_at=Subquery(campaign_dates.values("campaign_ended_at")),
-        )
 
         if campaign_status:
             today = datetime.now().date()
@@ -157,6 +95,65 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         return queryset.distinct()
 
 
+class VaccineRepositorySerializer(serializers.Serializer):
+    country_name = serializers.CharField(source="campaign__country__name")
+    campaign_obr_name = serializers.CharField(source="campaign__obr_name")
+    round_id = serializers.IntegerField(source="id")
+    number = serializers.IntegerField()
+    start_date = serializers.DateField(source="started_at")
+    end_date = serializers.DateField(source="ended_at")
+    vaccine_name = serializers.CharField()
+
+    vrf_data = serializers.SerializerMethodField()
+    pre_alert_data = serializers.SerializerMethodField()
+    form_a_data = serializers.SerializerMethodField()
+
+    def get_vrf_data(self, obj):
+        vrfs = VaccineRequestForm.objects.filter(
+            campaign__id=obj["campaign__id"], rounds=obj["id"], vaccine_type=obj["vaccine_name"]
+        )
+        return [
+            {
+                "date": vrf.date_vrf_reception,
+                "file": vrf.document.url if vrf.document else None,
+                "is_missing": vrf.vrf_type == VaccineRequestFormType.MISSING,
+                "is_not_required": vrf.vrf_type == VaccineRequestFormType.NOT_REQUIRED,
+                "id": vrf.id,
+            }
+            for vrf in vrfs
+        ]
+
+    def get_pre_alert_data(self, obj):
+        pre_alerts = VaccinePreAlert.objects.filter(
+            request_form__campaign=obj["campaign__id"],
+            request_form__rounds=obj["id"],
+            request_form__vaccine_type=obj["vaccine_name"],
+        )
+        return [
+            {
+                "date": pa.date_pre_alert_reception,
+                "file": pa.document.url if pa.document else None,
+                "vrf_id": pa.request_form.id,
+            }
+            for pa in pre_alerts
+        ]
+
+    def get_form_a_data(self, obj):
+        form_as = OutgoingStockMovement.objects.filter(
+            campaign=obj["campaign__id"], round=obj["id"], vaccine_stock__vaccine=obj["vaccine_name"]
+        )
+        return [
+            {
+                "date": fa.form_a_reception_date,
+                "file": fa.document.url if fa.document else None,
+                "is_late": fa.form_a_reception_date > (obj["ended_at"] + timedelta(days=14))
+                if fa.form_a_reception_date and obj["ended_at"]
+                else None,
+            }
+            for fa in form_as
+        ]
+
+
 class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
     """
     ViewSet for retrieving vaccine repository data.
@@ -165,7 +162,7 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
     serializer_class = VaccineRepositorySerializer
     pagination_class = Paginator
     filter_backends = [OrderingFilter, SearchFilter, VaccineReportingFilterBackend]
-    ordering_fields = ["campaign__country__name", "campaign__obr_name", "started_at"]
+    ordering_fields = ["campaign__country__name", "campaign__obr_name", "started_at", "vaccine_name", "number"]
     ordering = ["-started_at"]
     search_fields = ["campaign__country__name", "campaign__obr_name"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -260,14 +257,59 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
         """
         Get the queryset for Round objects with their campaigns.
         """
+        rounds_queryset = (
+            Round.objects.filter(
+                campaign__isnull=False,
+                campaign__deleted_at__isnull=True,
+                campaign__campaign_types__name=CampaignType.POLIO,
+            )
+            .select_related(
+                "campaign",
+                "campaign__country",
+            )
+            .prefetch_related("scopes", "campaign__scopes")
+        )
 
-        rounds_queryset = Round.objects.filter(
-            campaign__isnull=False,
-            campaign__deleted_at__isnull=True,
-            campaign__campaign_types__name=CampaignType.POLIO,
-        ).select_related(
-            "campaign",
-            "campaign__country",
+        # Get campaign dates subquery
+        campaign_dates = (
+            Round.objects.filter(campaign=OuterRef("campaign"))
+            .values("campaign")
+            .annotate(campaign_started_at=Min("started_at"), campaign_ended_at=Max("ended_at"))
+        )
+
+        # Add campaign dates to main queryset
+        rounds_queryset = rounds_queryset.annotate(
+            campaign_started_at=Subquery(campaign_dates.values("campaign_started_at")),
+            campaign_ended_at=Subquery(campaign_dates.values("campaign_ended_at")),
+        )
+
+        # This query assumes that campaign__scopes is empty if separate scopes per round and vice-versa
+        # Fixed in POLIO-1770
+        rounds_queryset = rounds_queryset.values(
+            "campaign__country__name",
+            "campaign__country__id",
+            "campaign__obr_name",
+            "campaign__scopes__id",
+            "campaign__scopes__vaccine",
+            "campaign__separate_scopes_per_round",
+            "id",
+            "campaign__id",
+            "started_at",
+            "ended_at",
+            "number",
+            "scopes__id",
+            "scopes__vaccine",
+            "campaign_started_at",
+            "campaign_ended_at",
+        )
+
+        # 393 results without filter
+        rounds_queryset = rounds_queryset.annotate(
+            vaccine_name=Case(
+                When(campaign__separate_scopes_per_round=False, then="campaign__scopes__vaccine"),
+                default="scopes__vaccine",
+                output_field=CharField(),
+            )
         )
 
         return rounds_queryset

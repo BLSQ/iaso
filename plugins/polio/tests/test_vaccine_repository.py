@@ -65,6 +65,7 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
             date_dg_approval=cls.now - datetime.timedelta(days=10),
             quantities_ordered_in_doses=500,
         )
+        cls.vaccine_request_form.rounds.set([cls.campaign_round_1])
 
         # Create users
         cls.anon = AnonymousUser()
@@ -82,14 +83,43 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 200)
 
-    def test_list_only_returns_campaigns_with_vrf(self):
+    def test_list_only_returns_campaigns_with_vrf_or_forma(self):
+        forma_campaign, forma_rnd1, _, _, _, _ = self.create_campaign(
+            obr_name="FormA_Campaign",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.org_unit_type_country,
+            country_name="Testland",
+            district_ou_type=self.org_unit_type_district,
+        )
+        forma_campaign.country = self.testland
+        forma_campaign.campaign_types.add(self.polio_type)
+
+        forma_campaign.save()
+
+        vaccine_stock = pm.VaccineStock.objects.create(
+            account=self.account, country=self.testland, vaccine=pm.VACCINES[0][0]
+        )
+        vaccine_stock.save()
+
+        forma = pm.OutgoingStockMovement.objects.create(
+            campaign=forma_campaign,
+            vaccine_stock=vaccine_stock,
+            round=forma_rnd1,
+            report_date=self.now,
+            form_a_reception_date=self.now,
+            usable_vials_used=500,
+            missing_vials=0,
+        )
+        forma.save()
+
         self.client.force_authenticate(user=self.user)
         response = self.client.get(BASE_URL)
         data = self.assertJSONResponse(response, 200)
         results = data["results"]
-        print("RES", results)
         campaign_names = [r["campaign_obr_name"] for r in results]
         self.assertNotIn(self.campaign_no_vrf.obr_name, campaign_names)
+        self.assertIn(forma_campaign.obr_name, campaign_names)
 
     def test_list_response_structure(self):
         """Test the structure of the list response"""
@@ -122,7 +152,7 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
     #     self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
 
     def test_rounds_are_split_by_vaccine(self):
-        campaign2, _, _, _, _, district = self.create_campaign(
+        campaign2, campaign2_rnd_1, campaign2_rnd_2, campaign2_rnd_3, _, district = self.create_campaign(
             obr_name="Test scopes",
             account=self.account,
             source_version=self.source_version_1,
@@ -137,7 +167,7 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
         scope_group.org_units.set([district])  # FIXME: we should actually have children org units
         scope = pm.CampaignScope.objects.create(campaign=campaign2, vaccine=pm.VACCINES[1][0], group=scope_group)
 
-        vaccine_request_form = pm.VaccineRequestForm.objects.create(
+        vaccine_request_form_vaccine1 = pm.VaccineRequestForm.objects.create(
             campaign=campaign2,
             vaccine_type=pm.VACCINES[0][0],
             date_vrf_reception=self.now - datetime.timedelta(days=30),
@@ -145,6 +175,16 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
             date_dg_approval=self.now - datetime.timedelta(days=10),
             quantities_ordered_in_doses=500,
         )
+        vaccine_request_form_vaccine1.rounds.set([campaign2_rnd_1, campaign2_rnd_2, campaign2_rnd_3])
+        vaccine_request_form_vaccine2 = pm.VaccineRequestForm.objects.create(
+            campaign=campaign2,
+            vaccine_type=pm.VACCINES[1][0],
+            date_vrf_reception=self.now - datetime.timedelta(days=30),
+            date_vrf_signature=self.now - datetime.timedelta(days=20),
+            date_dg_approval=self.now - datetime.timedelta(days=10),
+            quantities_ordered_in_doses=500,
+        )
+        vaccine_request_form_vaccine2.rounds.set([campaign2_rnd_1, campaign2_rnd_2, campaign2_rnd_3])
 
         self.client.force_authenticate(user=self.user)
 
@@ -162,7 +202,7 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
         """Test ordering functionality"""
         # Create another country and campaign for ordering test
 
-        campaign2, campaign2_round, campaign2_rnd2, campaign2_rnd3, zambia, _district = self.create_campaign(
+        campaign2, campaign2_round, campaign2_rnd2, campaign2_rnd3, _, _ = self.create_campaign(
             obr_name="Another Campaign",
             account=self.account,
             source_version=self.source_version_1,
@@ -177,7 +217,7 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
         campaign2_round.number = 1
         campaign2_round.save()
 
-        pm.VaccineRequestForm.objects.create(
+        vrf2 = pm.VaccineRequestForm.objects.create(
             campaign=campaign2,
             vaccine_type=pm.VACCINES[0][0],
             date_vrf_reception=self.now,
@@ -185,6 +225,7 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
             date_dg_approval=self.now,
             quantities_ordered_in_doses=500,
         )
+        vrf2.rounds.set([campaign2_round, campaign2_rnd2, campaign2_rnd3])
 
         self.client.force_authenticate(user=self.user)
 
@@ -204,13 +245,13 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get(f"{BASE_URL}?order=number")
         data = response.json()
         self.assertEqual(data["results"][0]["number"], 1)
-        self.assertEqual(data["results"][5]["number"], 3)
+        self.assertEqual(data["results"][3]["number"], 3)
 
         # Test reverse ordering by round number
         response = self.client.get(f"{BASE_URL}?order=-number")
         data = response.json()
         self.assertEqual(data["results"][0]["number"], 3)
-        self.assertEqual(data["results"][5]["number"], 1)
+        self.assertEqual(data["results"][3]["number"], 1)
 
         # Test ordering by country name
         response = self.client.get(f"{BASE_URL}?order=campaign__country__name")
@@ -234,7 +275,7 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get(f"{BASE_URL}?order=-started_at")
         data = response.json()
         self.assertEqual(data["results"][0]["start_date"], campaign2_rnd3.started_at.strftime("%Y-%m-%d"))
-        self.assertEqual(data["results"][5]["start_date"], self.campaign_round_1.started_at.strftime("%Y-%m-%d"))
+        self.assertEqual(data["results"][3]["start_date"], self.campaign_round_1.started_at.strftime("%Y-%m-%d"))
 
     def test_filtering(self):
         """Test filtering functionality of VaccineReportingViewSet"""
@@ -271,6 +312,7 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
             date_vrf_signature=self.now,
             date_dg_approval=self.now,
             quantities_ordered_in_doses=500,
+            vaccine_type=pm.VACCINES[1][0],
         )
         vrf2.rounds.set([campaign2_round])
 
@@ -304,15 +346,14 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
             number=1,
         )
 
-        preparing_campaign.campaign_types.add(self.polio_type)
-
         vrf_for_preparing_campaign = pm.VaccineRequestForm.objects.create(
             campaign=preparing_campaign,
             date_vrf_signature=self.now,
             date_dg_approval=self.now,
             quantities_ordered_in_doses=500,
+            vaccine_type=pm.VACCINES[0][0],
         )
-        vrf_for_preparing_campaign.rounds.set([campaign2_round])
+        vrf_for_preparing_campaign.rounds.set([preparing_campaign_round])
 
         self.client.force_authenticate(user=self.user)
 
@@ -325,15 +366,17 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
         # Test filtering by campaign name
         response = self.client.get(f"{BASE_URL}?campaign=Test Campaign")
         data = response.json()
-        self.assertEqual(len(data["results"]), 3)
+        # VRF covers only round 1, so there should be only one result
+        self.assertEqual(len(data["results"]), 1)
         self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
+        self.assertEqual(data["results"][0]["number"], 1)
 
         # Test filtering by file type - VRF
         response = self.client.get(f"{BASE_URL}?file_type=VRF")
         data = response.json()
         self.assertEqual(
-            len(data["results"]), 5
-        )  # 2 campaigns have VRFs: 1 round for campaign 2, 3 for self.campaign. 1 for preparing_campaign
+            len(data["results"]), 3
+        )  # 1 round for campaign 2, 1 for self.campaign. 1 for preparing_campaign
 
         # Test filtering by country block
         country_group = self.zambia.groups.first()
@@ -351,4 +394,6 @@ class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get(f"{BASE_URL}?vaccine_name={pm.VACCINES[0][0]}")
         response = self.assertJSONResponse(response, 200)
         data = response["results"]
-        self.assertEqual(len(data), 4)
+        self.assertEqual(
+            len(data), 2
+        )  # Only 1 round of self.campaign is cvovered by the vrf, the others should be filtered out

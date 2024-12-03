@@ -1,6 +1,13 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Box, Grid } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
+import { Box, Grid, Typography } from '@mui/material';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { makeStyles } from '@mui/styles';
 import { FilterButton } from '../../../../components/FilterButton';
 import { useFilterState } from '../../../../hooks/useFilterState';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -21,23 +28,59 @@ import { useGetProfilesDropdown } from '../../../instances/hooks/useGetProfilesD
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { usePaymentStatusOptions } from '../hooks/api/useGetPaymentStatusOptions';
+import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
+import { useGetDataSources } from '../../hooks/requests/useGetDataSources';
+import { useDefaultSourceVersion } from '../../../dataSources/utils';
 
 const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = { params: ApproveOrgUnitParams };
-
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
+    advancedSettings: {
+        color: theme.palette.primary.main,
+        alignSelf: 'center',
+        textAlign: 'right',
+        flex: '1',
+        cursor: 'pointer',
+    },
+}));
 export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
+    const defaultSourceVersion = useDefaultSourceVersion();
+    const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
     // IA-3641 hard coding values fro groups dropdown until refactor
-    // const { data: groupOptions, isLoading: isLoadingGroups } =
-    //     useGetGroupDropdown({});
-    const groupOptions = [];
-    const isLoadingGroups = false;
+    const { data: groupOptions, isLoading: isLoadingGroups } =
+        useGetGroupDropdown({});
+    // const groupOptions = [];
+    // const isLoadingGroups = false;
     // IA-3641 -----END
+    const { data: dataSources, isFetching: isFetchingDataSources } =
+        useGetDataSources(true);
+    const initialDataSource =
+        dataSources?.find(
+            source =>
+                source.value === defaultSourceVersion.source.id.toString(),
+        )?.value || '';
+
+    const [dataSource, setDataSource] = useState(initialDataSource);
+
+    useEffect(() => {
+        const updatedDataSource = dataSources?.find(
+            source =>
+                source.value === defaultSourceVersion.source.id.toString(),
+        )?.value;
+
+        if (updatedDataSource) {
+            setDataSource(updatedDataSource);
+        }
+    }, [dataSources, defaultSourceVersion.source.id]);
+
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: forms, isFetching: isLoadingForms } = useGetForms();
@@ -82,6 +125,10 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         [handleChange],
     );
 
+    const handleDataSourceChange = (_, newValue) => {
+        setDataSource(newValue);
+    };
+
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={4} lg={3}>
@@ -117,9 +164,47 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     options={groupOptions}
                     loading={isLoadingGroups}
                     labelString={formatMessage(MESSAGES.group)}
-                    disabled
-                    helperText={formatMessage(MESSAGES.featureDisabled)}
                 />
+                <Box mt={2}>
+                    {!showAdvancedSettings && (
+                        <Typography
+                            data-test="advanced-settings"
+                            variant="overline"
+                            className={classes.advancedSettings}
+                            onClick={() => setShowAdvancedSettings(true)}
+                        >
+                            {formatMessage(MESSAGES.showAdvancedSettings)}
+                        </Typography>
+                    )}
+                    {showAdvancedSettings && (
+                        <>
+                            <InputComponent
+                                type="select"
+                                disabled={isFetchingDataSources}
+                                keyValue="source"
+                                onChange={handleDataSourceChange}
+                                value={isFetchingDataSources ? '' : dataSource}
+                                label={MESSAGES.source}
+                                options={dataSources}
+                                loading={isFetchingDataSources}
+                            />
+
+                            <Box ml={1}>
+                                <Typography
+                                    data-test="advanced-settings"
+                                    variant="overline"
+                                    onClick={() =>
+                                        setShowAdvancedSettings(false)
+                                    }
+                                >
+                                    {formatMessage(
+                                        MESSAGES.hideAdvancedSettings,
+                                    )}
+                                </Typography>
+                            </Box>
+                        </>
+                    )}
+                </Box>
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
                 <Box id="ou-tree-input">

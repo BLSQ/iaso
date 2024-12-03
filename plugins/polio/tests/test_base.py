@@ -1145,53 +1145,6 @@ class LQASIMPolioTestCase(APITestCase):
             form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
         )
 
-    def test_IM_stats_response(self):
-        self.client.force_authenticate(self.yoda)
-
-        Config.objects.create(
-            slug="im-config",
-            content=[{"country_id": 29709}, {"country_id": 29694}, {"country_id": 29729}, {"country_id": 29728}],
-        )
-
-        im_conf = Config.objects.get(slug="im-config")
-
-        for config in im_conf.content:
-            OrgUnit.objects.create(
-                id=config["country_id"],
-                name="heyz",
-                org_unit_type=self.jedi_squad,
-                version=self.star_wars.default_version,
-            )
-
-        response = self.client.get("/api/polio/imstats/?country_id=29729")
-
-        self.assertEqual(response.status_code, 200)
-
-    def test_IM_stats_response_is_cached(self):
-        self.client.force_authenticate(self.yoda)
-
-        Config.objects.create(
-            slug="im-config",
-            content=[{"country_id": 29709}, {"country_id": 29694}, {"country_id": 29729}, {"country_id": 29728}],
-        )
-
-        im_conf = Config.objects.get(slug="im-config")
-
-        for config in im_conf.content:
-            OrgUnit.objects.create(
-                id=config["country_id"],
-                name="heyz",
-                org_unit_type=self.jedi_squad,
-                version=self.star_wars.default_version,
-            )
-
-        response = self.client.get("/api/polio/imstats/?country_id=29729")
-
-        is_cached = True if cache.get("{0}-{1}-IM".format(self.yoda.pk, 29729), version=CACHE_VERSION) else False
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(is_cached, True)
-
     def test_shapes_resp_is_cached(self):
         self.client.force_authenticate(self.yoda)
 

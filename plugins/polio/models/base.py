@@ -401,7 +401,7 @@ class CampaignType(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify_underscore(self.name)
-        super(CampaignType, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 class CampaignQuerySet(models.QuerySet):

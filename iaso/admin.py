@@ -120,7 +120,7 @@ class IasoJSONEditorWidget(JSONEditorWidget):
         if options:
             default_options.update(options)
 
-        super(IasoJSONEditorWidget, self).__init__(
+        super().__init__(
             attrs=attrs, mode=mode, options=default_options, width=width, height=height
         )
 

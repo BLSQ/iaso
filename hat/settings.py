@@ -456,7 +456,7 @@ if USE_S3:
                 "default_acl": "public-read",
             },
         }
-        STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (AWS_STORAGE_BUCKET_NAME, STATIC_LOCATION)
+        STATIC_URL = "https://{}.s3.amazonaws.com/{}/".format(AWS_STORAGE_BUCKET_NAME, STATIC_LOCATION)
 
     MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME  # subdirectories will depend on field
 

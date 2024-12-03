@@ -125,7 +125,6 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
                 />
                 <InputComponent
                     keyValue="file_type"
-                    clearable
                     onChange={(_key, value) => {
                         setFileType(value);
                     }}

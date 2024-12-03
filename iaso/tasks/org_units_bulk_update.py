@@ -92,9 +92,9 @@ def org_units_bulk_update(
                 prefetched_editable_org_unit_type_ids=editable_org_unit_type_ids,
             ):
                 skipped_messages.append(
-                        f"Org unit `{org_unit.name}` (#{org_unit.pk}) silently skipped "
-                        f"because user `{user.username}` (#{user.pk}) cannot edit "
-                        f"an org unit of type `{org_unit.org_unit_type.name}` (#{org_unit.org_unit_type.pk})."
+                    f"Org unit `{org_unit.name}` (#{org_unit.pk}) silently skipped "
+                    f"because user `{user.username}` (#{user.pk}) cannot edit "
+                    f"an org unit of type `{org_unit.org_unit_type.name}` (#{org_unit.org_unit_type.pk})."
                 )
                 continue
 

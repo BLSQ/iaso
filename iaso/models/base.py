@@ -981,7 +981,12 @@ class Instance(models.Model):
     STATUS_EXPORTED = "EXPORTED"
 
     ALWAYS_ALLOWED_PATHS_XML = {
-        "formhub", "formhub/uuid", "meta", "meta/instanceID", "meta/editUserID", "meta/deprecatedID"
+        "formhub",
+        "formhub/uuid",
+        "meta",
+        "meta/instanceID",
+        "meta/editUserID",
+        "meta/deprecatedID",
     }
 
     REFERENCE_FLAG_CODE = "flag"

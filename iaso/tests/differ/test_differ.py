@@ -46,6 +46,8 @@ class DifferTestCase(TestCase):
             name="Group IASO B", source_ref="group-id", source_version=cls.source_version_iaso
         )
 
+        cls.multi_polygon = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
+
         # Angola pyramid in DHIS2.
 
         cls.angola_country_dhis2 = m.OrgUnit.objects.create(
@@ -57,7 +59,7 @@ class DifferTestCase(TestCase):
             org_unit_type=cls.org_unit_type_country,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
+            geom=cls.multi_polygon,
         )
         cls.angola_country_dhis2.groups.set([cls.group_dhis2])
 
@@ -70,7 +72,7 @@ class DifferTestCase(TestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
+            geom=cls.multi_polygon,
         )
 
         cls.angola_district_dhis2 = m.OrgUnit.objects.create(
@@ -82,7 +84,7 @@ class DifferTestCase(TestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
+            geom=cls.multi_polygon,
         )
 
         # Angola pyramid in IASO.
@@ -96,7 +98,7 @@ class DifferTestCase(TestCase):
             org_unit_type=cls.org_unit_type_country,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
+            geom=cls.multi_polygon,
         )
         cls.angola_country_iaso.groups.set([cls.group_iaso_a, cls.group_iaso_b])
 
@@ -109,7 +111,7 @@ class DifferTestCase(TestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
+            geom=cls.multi_polygon,
         )
 
         cls.angola_district_iaso = m.OrgUnit.objects.create(
@@ -121,7 +123,7 @@ class DifferTestCase(TestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
-            geom=MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])),
+            geom=cls.multi_polygon,
         )
 
     def test_diff_and_dump_as_json_for_name(self):
@@ -254,22 +256,25 @@ class DifferTestCase(TestCase):
         """
         Test that the full diff works as expected.
         """
+
+        multi_polygon_dhis2 = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+
         # Changes in DHIS2.
         self.angola_country_dhis2.name = "Angola new"
-        self.angola_country_dhis2.geom = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+        self.angola_country_dhis2.geom = multi_polygon_dhis2
         self.angola_country_dhis2.opening_date = datetime.date(2022, 12, 28)
         self.angola_country_dhis2.closed_date = datetime.date(2025, 12, 28)
         self.angola_country_dhis2.save()
 
         self.angola_region_dhis2.name = "Huila new"
-        self.angola_region_dhis2.geom = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+        self.angola_region_dhis2.geom = multi_polygon_dhis2
         self.angola_region_dhis2.opening_date = datetime.date(2022, 12, 28)
         self.angola_region_dhis2.closed_date = datetime.date(2025, 12, 28)
         self.angola_region_dhis2.save()
 
         self.angola_district_dhis2.name = "Cuvango new"
         self.angola_district_dhis2.parent = self.angola_country_dhis2
-        self.angola_district_dhis2.geom = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+        self.angola_district_dhis2.geom = multi_polygon_dhis2
         self.angola_district_dhis2.opening_date = datetime.date(2022, 12, 28)
         self.angola_district_dhis2.closed_date = datetime.date(2025, 12, 28)
         self.angola_district_dhis2.save()
@@ -293,11 +298,155 @@ class DifferTestCase(TestCase):
 
         self.assertEqual(len(diffs), 3)
 
-        for diff in diffs:
-            self.assertEqual(diff.status, "modified")
-
         country_diff = diffs[0]
+        country_diff_comparisons = [comparison.as_dict() for comparison in country_diff.comparisons]
+        self.assertEqual(country_diff.status, "modified")
+        self.assertCountEqual(
+            country_diff_comparisons,
+            [
+                {
+                    "field": "name",
+                    "before": "Angola new",
+                    "after": "Angola",
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "parent",
+                    "before": None,
+                    "after": None,
+                    "status": "same",
+                    "distance": 0,
+                },
+                {
+                    "field": "geometry",
+                    "before": multi_polygon_dhis2,
+                    "after": self.multi_polygon,
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "opening_date",
+                    "before": datetime.date(2022, 12, 28),
+                    "after": datetime.date(2022, 11, 28),
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "closed_date",
+                    "before": datetime.date(2025, 12, 28),
+                    "after": datetime.date(2025, 11, 28),
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "group:group-id:Group DHIS2",
+                    "before": [{"id": "group-id", "name": "Group DHIS2"}],
+                    "after": [{"id": "group-id", "name": "Group IASO A"}, {"id": "group-id", "name": "Group IASO B"}],
+                    "status": "modified",
+                    "distance": None,
+                },
+            ],
+        )
 
-        for comparison in country_diff.comparisons:
-            print("-" * 80)
-            print(comparison.as_dict())
+        region_diff = diffs[1]
+        region_diff_comparisons = [comparison.as_dict() for comparison in region_diff.comparisons]
+        self.assertEqual(region_diff.status, "modified")
+        self.assertCountEqual(
+            region_diff_comparisons,
+            [
+                {
+                    "field": "name",
+                    "before": "Huila new",
+                    "after": "Huila",
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "parent",
+                    "before": "id-1",
+                    "after": "id-1",
+                    "status": "same",
+                    "distance": 0,
+                },
+                {
+                    "field": "geometry",
+                    "before": multi_polygon_dhis2,
+                    "after": self.multi_polygon,
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "opening_date",
+                    "before": datetime.date(2022, 12, 28),
+                    "after": datetime.date(2022, 11, 28),
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "closed_date",
+                    "before": datetime.date(2025, 12, 28),
+                    "after": datetime.date(2025, 11, 28),
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "group:group-id:Group DHIS2",
+                    "before": [],
+                    "after": [],
+                    "status": "same",
+                    "distance": 0,
+                },
+            ],
+        )
+
+        district_diff = diffs[2]
+        district_diff_comparisons = [comparison.as_dict() for comparison in district_diff.comparisons]
+        self.assertEqual(district_diff.status, "modified")
+        self.assertCountEqual(
+            district_diff_comparisons,
+            [
+                {
+                    "field": "name",
+                    "before": "Cuvango new",
+                    "after": "Cuvango",
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "parent",
+                    "before": "id-1",
+                    "after": "id-2",
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "geometry",
+                    "before": multi_polygon_dhis2,
+                    "after": self.multi_polygon,
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "opening_date",
+                    "before": datetime.date(2022, 12, 28),
+                    "after": datetime.date(2022, 11, 28),
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "closed_date",
+                    "before": datetime.date(2025, 12, 28),
+                    "after": datetime.date(2025, 11, 28),
+                    "status": "modified",
+                    "distance": None,
+                },
+                {
+                    "field": "group:group-id:Group DHIS2",
+                    "before": [],
+                    "after": [],
+                    "status": "same",
+                    "distance": 0,
+                },
+            ],
+        )

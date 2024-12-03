@@ -5,16 +5,13 @@ import {
     LoadingSpinner,
     makeRedirectionUrl,
     useSafeIntl,
-    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from 'react';
-import { useQueryClient } from 'react-query';
 
 // COMPONENTS
 import { useNavigate } from 'react-router-dom';
@@ -85,16 +82,15 @@ const baseUrl = baseUrls.orgUnits;
 export const OrgUnits: FunctionComponent = () => {
     // HOOKS
     const params = useParamsObject(baseUrl) as unknown as OrgUnitParams;
-    const queryClient = useQueryClient();
     const navigate = useNavigate();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     // HOOKS
 
     // STATE
-    const [resetPageToOne, setResetPageToOne] = useState<string>('');
-    const [deletedTab, setDeletedTab] = useState<boolean>(false);
-    const [refresh, setRefresh] = useState<boolean>(false);
+    const [resetPageToOne, setResetPageToOne] = useState<string>(
+        convertObjectToString(params),
+    );
     const [tab, setTab] = useState<string>(params.tab ?? 'list');
     // STATE
 
@@ -120,22 +116,22 @@ export const OrgUnits: FunctionComponent = () => {
     // REQUESTS HOOKS
     const { mutateAsync: saveMulti, isLoading: isSavingMulti } =
         useBulkSaveOrgUnits();
-    const {
-        data: orgUnitsData,
-        isFetching: isFetchingOrgUnits,
-        refetch: fetchOrgUnits,
-    } = useGetOrgUnits({
-        params: apiParams,
-        isSearchActive,
-    });
+    const { data: orgUnitsData, isFetching: isFetchingOrgUnits } =
+        useGetOrgUnits({
+            params: apiParams,
+            isSearchActive,
+            enabled: isSearchActive, // this is required to count result in search tab
+            resetPageToOne,
+        });
     const {
         data: orgUnitsDataLocation,
         isFetching: isFetchingOrgUnitsDataLocation,
-        refetch: fetchOrgUnitsLocations,
     } = useGetOrgUnitsLocations({
         params: apiParamsLocations,
         searches,
         isSearchActive,
+        enabled: tab === 'map' && isSearchActive,
+        resetPageToOne,
     });
     // REQUESTS HOOKS
 
@@ -156,16 +152,8 @@ export const OrgUnits: FunctionComponent = () => {
         [searches],
     );
 
-    const handleSearch = useCallback(() => {
-        if (isSearchActive) {
-            fetchOrgUnits();
-            fetchOrgUnitsLocations();
-        }
-    }, [fetchOrgUnits, fetchOrgUnitsLocations, isSearchActive]);
-
     const onSearch = useCallback(
         newParams => {
-            // handleTableSelection('reset');
             const tempParams = {
                 ...newParams,
                 searches: JSON.stringify(newParams.searches),
@@ -177,7 +165,6 @@ export const OrgUnits: FunctionComponent = () => {
             navigate(makeRedirectionUrl(baseUrl, tempParams), {
                 replace: true,
             });
-            setRefresh(true);
         },
         [navigate],
     );
@@ -195,39 +182,6 @@ export const OrgUnits: FunctionComponent = () => {
     );
     // TABS
 
-    // onload, if searchActive is true and cache empty => set launch search
-    useEffect(() => {
-        if (isSearchActive) {
-            const cachedOrgUnits = queryClient.getQueryData(['orgunits']);
-            const cachedLocations = queryClient.getQueryData([
-                'orgunitslocations',
-            ]);
-            if (!cachedOrgUnits || !cachedLocations) {
-                handleSearch();
-            }
-        }
-    }, [handleSearch, isSearchActive, queryClient]);
-
-    // trigger search on order, page size and page
-    useSkipEffectOnMount(() => {
-        handleSearch();
-    }, [params.order, params.page, params.pageSize]);
-
-    // trigger search after delete tab redirection
-    useSkipEffectOnMount(() => {
-        if (isSearchActive && deletedTab) {
-            setDeletedTab(false);
-            handleSearch();
-        }
-    }, [apiParams.searches]);
-
-    useSkipEffectOnMount(() => {
-        if (refresh) {
-            setRefresh(false);
-            handleSearch();
-        }
-    }, [searches, refresh]);
-
     const isLoading =
         isFetchingOrgUnits ||
         isSavingMulti ||
@@ -244,7 +198,6 @@ export const OrgUnits: FunctionComponent = () => {
                     currentTab={tab}
                     paramsSearches={searches || []}
                     counts={(!isLoading && orgUnitsData?.counts) || []}
-                    setDeletedTab={setDeletedTab}
                 />
                 {tab === 'list' &&
                     orgUnitsData &&
@@ -263,58 +216,57 @@ export const OrgUnits: FunctionComponent = () => {
                             />
                         </Box>
                     )}
-                <Box px={4}>
-                    {orgUnitsData && (
-                        <>
-                            <Tabs
-                                value={tab}
-                                classes={{
-                                    root: classes.tabs,
-                                }}
-                                className={classes.marginBottom}
-                                indicatorColor="primary"
-                                onChange={(event, newtab) =>
-                                    handleChangeTab(newtab)
-                                }
-                            >
-                                <Tab
-                                    value="list"
-                                    label={formatMessage(MESSAGES.list)}
-                                />
-                                <Tab
-                                    value="map"
-                                    label={formatMessage(MESSAGES.map)}
-                                />
-                            </Tabs>
-                            {tab === 'list' && (
-                                <TableList
-                                    params={params}
-                                    saveMulti={saveMulti}
-                                    resetPageToOne={resetPageToOne}
-                                    orgUnitsData={orgUnitsData}
-                                />
-                            )}
+                {isSearchActive && (
+                    <Box px={4}>
+                        <Tabs
+                            value={tab}
+                            classes={{
+                                root: classes.tabs,
+                            }}
+                            className={classes.marginBottom}
+                            indicatorColor="primary"
+                            onChange={(event, newtab) =>
+                                handleChangeTab(newtab)
+                            }
+                        >
+                            <Tab
+                                value="list"
+                                label={formatMessage(MESSAGES.list)}
+                            />
+                            <Tab
+                                value="map"
+                                label={formatMessage(MESSAGES.map)}
+                            />
+                        </Tabs>
+                        {tab === 'list' && (
+                            <TableList
+                                params={params}
+                                saveMulti={saveMulti}
+                                resetPageToOne={resetPageToOne}
+                                orgUnitsData={orgUnitsData}
+                                setResetPageToOne={setResetPageToOne}
+                            />
+                        )}
 
-                            <div
-                                className={
-                                    tab === 'map' ? '' : classes.hiddenOpacity
-                                }
-                            >
-                                <div className={classes.containerMarginNeg}>
-                                    <OrgUnitsMap
-                                        getSearchColor={getSearchColor}
-                                        orgUnits={
-                                            orgUnitsDataLocation || {
-                                                locations: [],
-                                                shapes: [],
-                                            }
+                        <Box
+                            className={
+                                tab === 'map' ? '' : classes.hiddenOpacity
+                            }
+                        >
+                            <Box className={classes.containerMarginNeg}>
+                                <OrgUnitsMap
+                                    getSearchColor={getSearchColor}
+                                    orgUnits={
+                                        orgUnitsDataLocation || {
+                                            locations: [],
+                                            shapes: [],
                                         }
-                                    />
-                                </div>
-                            </div>
-                        </>
-                    )}
-                </Box>
+                                    }
+                                />
+                            </Box>
+                        </Box>
+                    </Box>
+                )}
             </Box>
         </>
     );

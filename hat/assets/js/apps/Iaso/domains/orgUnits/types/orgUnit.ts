@@ -116,7 +116,6 @@ export type OrgUnitParams = UrlParams & {
     searchTabIndex: string;
     searchActive?: string;
     searches: string;
-    pageSize?: string;
 };
 
 export type OrgUnitsApi = {

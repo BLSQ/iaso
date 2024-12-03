@@ -498,17 +498,18 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
 
     # Comma Separated List of all estimated arrival times
     def get_eta(self, obj):
-        pre_alerts, arrival_report_matching, arrival_reports = self.get_prefetched_data(obj)
-
-        estimated_arrival_dates = []
+        pre_alerts, _, arrival_reports = self.get_prefetched_data(obj)
+        estimated_arrival_dates = {}
         for pre_alert in pre_alerts:
-            matching_reports = arrival_report_matching.get(pre_alert.po_number, [])
-            if matching_reports:
-                for _ in matching_reports:
-                    estimated_arrival_dates.append(str(pre_alert.estimated_arrival_time))
-            else:
-                estimated_arrival_dates.append(str(pre_alert.estimated_arrival_time))
-        return ",".join(estimated_arrival_dates)
+            if pre_alert.po_number not in estimated_arrival_dates:
+                estimated_arrival_dates[pre_alert.po_number] = str(pre_alert.estimated_arrival_time)
+
+        # Add missing arrival report po numbers from pre_alerts
+        for arrival_report in arrival_reports:
+            if arrival_report.po_number not in estimated_arrival_dates:
+                estimated_arrival_dates[arrival_report.po_number] = ""
+
+        return ",".join([eta for _, eta in estimated_arrival_dates.items()])
 
     # Comma Separated List of all arrival report dates
     def get_var(self, obj):

@@ -776,20 +776,6 @@ class Campaign(SoftDeletableModel):
         vaccine_names = sorted({scope.vaccine for scope in scopes_with_orgunits_and_vaccine})
         return ", ".join(vaccine_names)
 
-    def get_round_one(self):
-        try:
-            round = self.rounds.get(number=1)
-            return round
-        except Round.DoesNotExist:
-            return None
-
-    def get_round_two(self):
-        try:
-            round = self.rounds.get(number=2)
-            return round
-        except Round.DoesNotExist:
-            return None
-
     def update_geojson_field(self):
         "Update the geojson field on the campaign DO NOT TRIGGER the save() you have to do it manually"
         campaign = self

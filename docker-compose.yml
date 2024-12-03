@@ -61,25 +61,39 @@ services:
             POSTGRES_PASSWORD: postgres
 
     # the webpack dev server
-    webpack:
-        image: iaso-webpack
-        platform: linux/amd64
-        build:
-            context: .
-            dockerfile: docker/webpack/Dockerfile
-        depends_on:
-            - iaso
-        ports:
-            - '3000:3000'
-        volumes: *hat_volumes
-        env_file:
-            -   .env
-        logging: *iaso_logging
-        command: start_webpack
+    # webpack:
+    #     image: iaso-webpack
+    #     platform: linux/amd64
+    #     build:
+    #         context: .
+    #         dockerfile: docker/webpack/Dockerfile
+    #     depends_on:
+    #         - iaso
+    #     ports:
+    #         - '3000:3000'
+    #     volumes: *hat_volumes
+    #     environment: *hat_environment
+    #     logging: *iaso_logging
+    #     command: start_webpack
 
-    # celery worker for wfp plugin
-    redis:
-        image: redis:7
+    couchdb:
+        image: couchdb:1.7
+        profiles:
+            - 'trypelim'
         ports:
-        - "6379:6379"
-        profiles: ["celery"]
+            - '5984:5984'
+        volumes:
+            # enable cors for mobile app in-browser development:
+            - ./plugins/trypelim/couchdb/config-dev.ini:/usr/local/etc/couchdb/local.ini
+        environment:
+            COUCHDB_USER: admin
+            COUCHDB_PASSWORD: secret
+        logging: *iaso_logging
+
+    redis:
+        image: redis:3.2
+        profiles:
+            - 'trypelim'
+        ports:
+            - '6379:6379'
+        logging: *iaso_logging

@@ -3,6 +3,7 @@ import {
     extractParams,
     extractParamsConfig,
     extractUrls,
+    paginationPathParamsWithPrefix,
 } from '../../../../../hat/assets/js/apps/Iaso/constants/urls';
 import { paginationPathParams } from '../../../../../hat/assets/js/apps/Iaso/routing/common';
 import {
@@ -91,12 +92,19 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
         url: VACCINE_REPOSITORY_BASE_URL,
         params: [
             ...paginationPathParams,
+            ...paginationPathParamsWithPrefix('report'),
             'countries',
             'campaignType',
             'campaignCategory',
             'file_type',
             'country_block',
             'campaignStatus',
+            'tab',
+            'accountId',
+            'reportCountries',
+            'reportCountryBlock',
+            'reportFileType',
+            'reportVaccineType',
         ],
     },
     embeddedCalendar: {
@@ -113,12 +121,18 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
         url: EMBEDDED_VACCINE_REPOSITORY_URL,
         params: [
             ...paginationPathParams,
+            ...paginationPathParamsWithPrefix('report'),
             'countries',
             'campaignType',
             'campaignCategory',
             'file_type',
             'country_block',
             'campaignStatus',
+            'tab',
+            'reportCountries',
+            'reportCountryBlock',
+            'reportFileType',
+            'reportVaccineType',
         ],
     },
     lqasCountry: {

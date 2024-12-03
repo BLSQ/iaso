@@ -1,25 +1,20 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Tab, Tabs, Typography } from '@mui/material';
 import {
-    Column,
     MENU_HEIGHT_WITHOUT_TABS,
+    useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { OffLineLangSwitch } from '../../../../../../../hat/assets/js/apps/Iaso/domains/home/components/LangSwitch';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { SxStyles } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { baseUrls } from '../../../constants/urls';
-import {
-    tableDefaults,
-    useGetVaccineReporting,
-} from './hooks/useGetVaccineReporting';
-import { useVaccineRepositoryColumns } from './hooks/useVaccineRepositoryColumns';
+import { Forms } from './forms';
 import MESSAGES from './messages';
+import { Reports } from './reports';
 import { VaccineRepositoryParams } from './types';
-import { VaccineRepositoryFilters } from './VaccineRepositoryFilters';
-import { OffLineLangSwitch } from '../../../../../../../hat/assets/js/apps/Iaso/domains/home/components/LangSwitch';
 
 const baseUrl = baseUrls.vaccineRepository;
 const embeddedVaccineRepositoryUrl = baseUrls.embeddedVaccineRepository;
@@ -37,17 +32,6 @@ const styles: SxStyles = {
         // '& td': { padding: 0 },
     },
 };
-const NOPADDING_CELLS_IDS = ['vrf_data', 'pre_alert_data', 'form_a_data'];
-
-const getCellProps = cell => {
-    const { id } = cell.column as Column;
-    return {
-        style: {
-            padding: NOPADDING_CELLS_IDS.includes(id as string) ? 0 : undefined,
-            verticalAlign: 'top',
-        },
-    };
-};
 
 // Campaigns status filter should be on another ticket with better specs
 // What about the colors, what does green says ?
@@ -62,9 +46,17 @@ export const VaccineRepository: FunctionComponent = () => {
     const params = useParamsObject(
         redirectUrl,
     ) as unknown as VaccineRepositoryParams;
+    const redirectTo = useRedirectTo();
+    const [tab, setTab] = useState(params.tab ?? 'forms');
     const { formatMessage } = useSafeIntl();
-    const { data, isFetching } = useGetVaccineReporting(params);
-    const columns = useVaccineRepositoryColumns();
+    const handleChangeTab = (newTab: string) => {
+        setTab(newTab);
+        const newParams = {
+            ...params,
+            tab: newTab,
+        };
+        redirectTo(baseUrl, newParams);
+    };
 
     return (
         <>
@@ -97,27 +89,18 @@ export const VaccineRepository: FunctionComponent = () => {
                         </Box>
                     </Box>
                 )}
-                <VaccineRepositoryFilters
-                    params={params}
-                    isEmbedded={isEmbedded}
-                    redirectUrl={redirectUrl}
-                />
-                <TableWithDeepLink
-                    marginTop={false}
-                    data={data?.results ?? []}
-                    pages={data?.pages ?? 1}
-                    defaultSorted={[{ id: tableDefaults.order, desc: true }]}
-                    columns={columns}
-                    count={data?.count ?? 0}
-                    baseUrl={redirectUrl}
-                    countOnTop
-                    params={params}
-                    cellProps={getCellProps}
-                    extraProps={{
-                        loading: isFetching,
-                        defaultPageSize: tableDefaults.limit,
-                    }}
-                />
+
+                <Tabs
+                    textColor="inherit"
+                    indicatorColor="secondary"
+                    value={tab}
+                    onChange={(_, newtab) => handleChangeTab(newtab)}
+                >
+                    <Tab value="forms" label="VRF AN CO" />
+                    <Tab value="reports" label="REPORTS" />
+                </Tabs>
+                {tab === 'forms' && <Forms params={params} />}
+                {tab === 'reports' && <Reports params={params} />}
             </Box>
         </>
     );

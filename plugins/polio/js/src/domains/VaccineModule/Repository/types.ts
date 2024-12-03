@@ -1,7 +1,17 @@
 import { PaginationParams } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { CampaignCategory } from '../../Campaigns/hooks/api/useGetCampaigns';
 
-export type VaccineRepositoryParams = PaginationParams & {
+export type ReportParams = {
+    reportCountries?: string;
+    reportCountryBlock?: string;
+    reportFileType?: string;
+    reportVaccineType?: string;
+    reportPageSize?: string;
+    reportOrder?: string;
+    reportPage?: string;
+};
+
+export type FormsParams = {
     countries?: string;
     campaignType?: string;
     campaignCategory?: CampaignCategory;
@@ -10,6 +20,13 @@ export type VaccineRepositoryParams = PaginationParams & {
     file_type?: string;
     campaignStatus?: string;
 };
+
+export type VaccineRepositoryParams = PaginationParams &
+    ReportParams &
+    FormsParams & {
+        tab?: string;
+        accountId?: string;
+    };
 
 export type DocumentData = {
     date?: string;

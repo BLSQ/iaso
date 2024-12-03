@@ -8,25 +8,25 @@ import React, {
     useState,
 } from 'react';
 import { FormattedMessage } from 'react-intl';
-import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { useGetGroupDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
-import MESSAGES from '../../../constants/messages';
-import { useGetCountries } from '../../../hooks/useGetCountries';
+import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import MESSAGES from '../../../../constants/messages';
+import { useGetCountries } from '../../../../hooks/useGetCountries';
 
-import { appId } from '../../../constants/app';
-import { useCampaignCategoryOptions } from '../../Campaigns/hooks/useCampaignCategoryOptions';
-import { useGetCampaignStatus } from './hooks/useGetCampaignStatus';
-import { useGetFileTypes } from './hooks/useGetFileTypes';
-import { VaccineRepositoryParams } from './types';
+import { appId } from '../../../../constants/app';
+import { useCampaignCategoryOptions } from '../../../Campaigns/hooks/useCampaignCategoryOptions';
+import { useGetCampaignStatus } from '../hooks/useGetCampaignStatus';
+import { useGetFileTypes } from '../hooks/useGetFileTypes';
+import { FormsParams } from '../types';
 
 type Props = {
-    params: VaccineRepositoryParams;
+    params: FormsParams;
     disableDates?: boolean;
     isEmbedded?: boolean;
     redirectUrl: string;
 };
 
-export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
+export const Filters: FunctionComponent<Props> = ({
     params,
     isEmbedded = false,
     redirectUrl,

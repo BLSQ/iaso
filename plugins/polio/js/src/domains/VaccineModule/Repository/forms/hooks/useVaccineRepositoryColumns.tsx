@@ -1,10 +1,10 @@
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
-import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import { DocumentsCells } from '../components/DocumentsCell';
-import { FormADocumentsCells } from '../components/FormADocumentCells';
-import { VrfDocumentsCells } from '../components/VrfDocumentsCell';
-import MESSAGES from '../messages';
+import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { DocumentsCells } from '../../components/DocumentsCell';
+import { FormADocumentsCells } from '../../components/FormADocumentCells';
+import { VrfDocumentsCells } from '../../components/VrfDocumentsCell';
+import MESSAGES from '../../messages';
 
 export const useVaccineRepositoryColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();

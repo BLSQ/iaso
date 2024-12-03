@@ -250,7 +250,7 @@ class ProfileAPITestCase(APITestCase):
             "dhis2_id": "",
         }
 
-        response = self.client.patch("/api/profiles/{0}/".format(jim.id), data=data, format="json")
+        response = self.client.patch("/api/profiles/{}/".format(jim.id), data=data, format="json")
 
         self.assertEqual(response.status_code, 200, response)
 

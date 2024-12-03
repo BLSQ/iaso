@@ -128,7 +128,7 @@ class TeamSerializer(serializers.ModelSerializer):
         return r
 
     def validate(self, attrs):
-        validated_data = super(TeamSerializer, self).validate(attrs)
+        validated_data = super().validate(attrs)
 
         user = self.context["request"].user
         validated_data["created_by"] = user

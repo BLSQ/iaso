@@ -34,15 +34,15 @@ export const useGetReportFileTypes = (): DropdownOptions<string>[] => {
     return useMemo(
         () => [
             {
-                value: 'IR,DR',
+                value: 'INCIDENT,DESTRUCTION',
                 label: formatMessage(MESSAGES.all),
             },
             {
-                value: 'IR',
+                value: 'INCIDENT',
                 label: formatMessage(MESSAGES.incidentReports),
             },
             {
-                value: 'DR',
+                value: 'DESTRUCTION',
                 label: formatMessage(MESSAGES.destructionReports),
             },
         ],

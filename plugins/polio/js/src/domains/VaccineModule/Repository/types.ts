@@ -33,7 +33,7 @@ export type DocumentData = {
     file?: string;
 };
 
-export type VaccineReporting = {
+export type VaccineRepositotyForms = {
     country_name: string;
     campaign_obr_name: string;
     rounds_count: string;
@@ -43,4 +43,11 @@ export type VaccineReporting = {
     form_a_data: DocumentData[];
     incident_reports: DocumentData[];
     destruction_reports: DocumentData[];
+};
+
+export type VaccineRepositoryReports = {
+    country_name: string;
+    vaccine: string;
+    incident_report_data: DocumentData[];
+    destruction_report_data: DocumentData[];
 };

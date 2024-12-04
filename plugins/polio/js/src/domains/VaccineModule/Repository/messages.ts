@@ -69,6 +69,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.destructionReports',
         defaultMessage: 'Destruction reports',
     },
+    vaccine: {
+        id: 'iaso.polio.vaccine',
+        defaultMessage: 'Vaccine',
+    },
 });
 
 export default MESSAGES;

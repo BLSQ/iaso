@@ -34,12 +34,14 @@ export const PaymentLotActionCell = ({
     ].join(',');
     return (
         <>
-            <IconButton
-                icon="remove-red-eye"
-                url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${userIds}/paymentIds/${paymentIds}`}
-                tooltipMessage={MESSAGES.viewChangeRequestforLot}
-                disabled={disableButtons}
-            />
+            {paymentLot.can_see_change_requests && (
+                <IconButton
+                    icon="remove-red-eye"
+                    url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${userIds}/paymentIds/${paymentIds}`}
+                    tooltipMessage={MESSAGES.viewChangeRequestforLot}
+                    disabled={disableButtons}
+                />
+            )}
 
             {paymentLot.status === 'new' && (
                 <IconButton

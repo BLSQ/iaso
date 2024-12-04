@@ -278,26 +278,35 @@ class CampaignSerializer(serializers.ModelSerializer):
         rounds = validated_data.pop("rounds", [])
         initial_org_unit = validated_data.get("initial_org_unit")
         account = self.context["request"].user.iaso_profile.account
+        separate_scopes_per_round = validated_data.get("separate_scopes_per_round", instance.separate_scopes_per_round)
+        switch_to_scope_per_round = separate_scopes_per_round and not instance.separate_scopes_per_round
+        switch_to_scope_per_campaign = not separate_scopes_per_round and instance.separate_scopes_per_round
+        keep_scope_per_round = separate_scopes_per_round and instance.separate_scopes_per_round
+        keep_scope_per_campaign = not separate_scopes_per_round and not instance.separate_scopes_per_round
 
-        for scope in campaign_scopes:
-            vaccine = scope.get("vaccine", "")
-            org_units = scope.get("group", {}).get("org_units")
-            scope, created = instance.scopes.get_or_create(vaccine=vaccine)
-            source_version_id = None
-            name = f"scope for campaign {instance.obr_name}" + (f" - {vaccine}" if vaccine else "")
-            if org_units:
-                source_version_ids = set([ou.version_id for ou in org_units])
-                if len(source_version_ids) != 1:
-                    raise serializers.ValidationError("All orgunit should be in the same source version")
-                source_version_id = list(source_version_ids)[0]
-            if not scope.group:
-                scope.group = Group.objects.create(name=name, source_version_id=source_version_id)
-            else:
-                scope.group.source_version_id = source_version_id
-                scope.group.name = name
-                scope.group.save()
+        if switch_to_scope_per_round and instance.scopes.exists():
+            instance.scopes.all().delete()
 
-            scope.group.org_units.set(org_units)
+        if switch_to_scope_per_campaign or keep_scope_per_campaign:
+            for scope in campaign_scopes:
+                vaccine = scope.get("vaccine", "")
+                org_units = scope.get("group", {}).get("org_units")
+                scope, created = instance.scopes.get_or_create(vaccine=vaccine)
+                source_version_id = None
+                name = f"scope for campaign {instance.obr_name} - {vaccine or ''}"
+                if org_units:
+                    source_version_ids = set([ou.version_id for ou in org_units])
+                    if len(source_version_ids) != 1:
+                        raise serializers.ValidationError("All orgunit should be in the same source version")
+                    source_version_id = list(source_version_ids)[0]
+                if not scope.group:
+                    scope.group = Group.objects.create(name=name, source_version_id=source_version_id)
+                else:
+                    scope.group.source_version_id = source_version_id
+                    scope.group.name = name
+                    scope.group.save()
+
+                scope.group.org_units.set(org_units)
 
         round_instances = []
         # find existing round either by id or number
@@ -340,27 +349,30 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_instance = round_serializer.save()
             round_instances.append(round_instance)
             round_datelogs = []
-            for scope in scopes:
-                vaccine = scope.get("vaccine", "")
-                org_units = scope.get("group", {}).get("org_units")
-                source_version_id = None
-                if org_units:
-                    source_version_ids = set([ou.version_id for ou in org_units])
-                    if len(source_version_ids) != 1:
-                        raise serializers.ValidationError("All orgunit should be in the same source version")
-                    source_version_id = list(source_version_ids)[0]
-                name = f"scope for round {round_instance.number} campaign {instance.obr_name}" + (
-                    f" - {vaccine}" if vaccine else ""
-                )
-                scope, created = round_instance.scopes.get_or_create(vaccine=vaccine)
-                if not scope.group:
-                    scope.group = Group.objects.create(name=name)
-                else:
-                    scope.group.source_version_id = source_version_id
-                    scope.group.name = name
-                    scope.group.save()
+            if switch_to_scope_per_campaign and round.scopes.exists():
+                round.scopes.all().delete()
+            if switch_to_scope_per_round or keep_scope_per_round:
+                for scope in scopes:
+                    vaccine = scope.get("vaccine", "")
+                    org_units = scope.get("group", {}).get("org_units")
+                    source_version_id = None
+                    if org_units:
+                        source_version_ids = set([ou.version_id for ou in org_units])
+                        if len(source_version_ids) != 1:
+                            raise serializers.ValidationError("All orgunit should be in the same source version")
+                        source_version_id = list(source_version_ids)[0]
+                    name = f"scope for round {round_instance.number} campaign {instance.obr_name}" + (
+                        f" - {vaccine}" if vaccine else ""
+                    )
+                    scope, created = round_instance.scopes.get_or_create(vaccine=vaccine)
+                    if not scope.group:
+                        scope.group = Group.objects.create(name=name)
+                    else:
+                        scope.group.source_version_id = source_version_id
+                        scope.group.name = name
+                        scope.group.save()
 
-                scope.group.org_units.set(org_units)
+                    scope.group.org_units.set(org_units)
 
         # When some rounds need to be deleted, the payload contains only the rounds to keep.
         # So we have to detect if somebody wants to delete a round to prevent deletion of

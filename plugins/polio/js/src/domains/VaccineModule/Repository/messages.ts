@@ -61,6 +61,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.vrfTypeMissing',
         defaultMessage: 'Missing',
     },
+    vaccine: {
+        id: 'iaso.polio.vaccine',
+        defaultMessage: 'Vaccine',
+    },
 });
 
 export default MESSAGES;

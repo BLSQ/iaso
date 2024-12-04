@@ -7,7 +7,7 @@ import orgUnitTypes from '../../fixtures/orgunittypes/dropdown-list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/sources/links/list`;
+const baseUrl = `${siteBaseUrl}/dashboard/settings/sources/links/list`;
 
 describe('Links', () => {
     beforeEach(() => {

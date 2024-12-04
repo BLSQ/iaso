@@ -96,12 +96,15 @@ export const usePaymentColumns = ({
                     accessor: 'action',
                     sortable: false,
                     Cell: settings => {
+                        if (!settings.row.original.can_see_change_requests) {
+                            return '';
+                        }
                         return (
                             <IconButton
                                 icon="remove-red-eye"
                                 url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${settings.row.original.user.id}/potentialPaymentIds/${settings.row.original.id}`}
                                 tooltipMessage={
-                                    MESSAGES.viewChangeRequestsForPotentialPayment // change text to payment lot
+                                    MESSAGES.viewChangeRequestsForPotentialPayment
                                 }
                             />
                         );
@@ -127,13 +130,15 @@ export const usePaymentColumns = ({
                         const payment = settings.row.original;
                         return (
                             <>
-                                <IconButton
-                                    icon="remove-red-eye"
-                                    url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${settings.row.original.user.id}/paymentIds/${payment.id}`}
-                                    tooltipMessage={
-                                        MESSAGES.viewChangeRequestsForPayment
-                                    }
-                                />
+                                {payment.can_see_change_request && (
+                                    <IconButton
+                                        icon="remove-red-eye"
+                                        url={`/${baseUrls.orgUnitsChangeRequest}/userIds/${settings.row.original.user.id}/paymentIds/${payment.id}`}
+                                        tooltipMessage={
+                                            MESSAGES.viewChangeRequestsForPayment
+                                        }
+                                    />
+                                )}
                                 <EditPaymentDialog
                                     status={payment.status}
                                     id={payment.id}

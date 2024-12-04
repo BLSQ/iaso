@@ -34,7 +34,7 @@ const GroupSets = () => {
     const isLoading = isFetching;
     const createGroupSet = () => {
         // how to use the paths ?
-        navigate('/orgunits/groupSet/groupSetId/new');
+        navigate('/orgunits/configuration/groupSet/groupSetId/new');
     };
     return (
         <>

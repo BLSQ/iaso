@@ -13,7 +13,6 @@ from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampai
 from iaso.api.config import ConfigViewSet
 from plugins.polio.api.chronogram.views import ChronogramViewSet, ChronogramTaskViewSet, ChronogramTemplateTaskViewSet
 from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
-from plugins.polio.api.dashboards.forma import FormAStocksViewSet
 from plugins.polio.api.dashboards.forma import FormAStocksViewSetV2
 from plugins.polio.api.dashboards.launch_powerbi import LaunchPowerBIRefreshViewSet
 from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessDashboardViewSet
@@ -26,7 +25,6 @@ from plugins.polio.api.dashboards.supply_chain import (
 )
 from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
 from plugins.polio.api.lqas_im.countries_with_lqas_im import CountriesWithLqasIMConfigViewSet
-from plugins.polio.api.lqas_im.im_stats import IMStatsViewSet
 from plugins.polio.api.lqas_im.lqas_im_country import LQASIMCountryViewset
 from plugins.polio.api.lqas_im.lqasim_global_map import LQASIMGlobalMapViewSet
 from plugins.polio.api.lqas_im.lqasim_zoom_in_map import LQASIMZoominMapBackgroundViewSet, LQASIMZoominMapViewSet
@@ -68,9 +66,7 @@ router.register(r"polio/budgetsteps", BudgetStepViewSet, basename="BudgetStep")
 router.register(r"polio/workflow", WorkflowViewSet, basename="BudgetWorkflow")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
-router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
-router.register(r"polio/forma", FormAStocksViewSet, basename="forma")
 router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")

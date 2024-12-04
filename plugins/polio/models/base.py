@@ -13,7 +13,6 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.files.base import File
-from django.core.files.storage import FileSystemStorage
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
@@ -242,6 +241,16 @@ class RoundQuerySet(models.QuerySet):
         data["countries"] = data["countries"].values()
         data["campaigns"] = data["campaigns"].values()
         return data
+
+    def filter_by_vaccine_name(self, vaccine_name):
+        return (
+            self.select_related("campaign")
+            .prefetch_related("scopes", "campaign__scopes")
+            .filter(
+                (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vaccine_name))
+                | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vaccine_name))
+            )
+        )
 
 
 def make_group_subactivity_scope():
@@ -769,20 +778,6 @@ class Campaign(SoftDeletableModel):
 
         vaccine_names = sorted({scope.vaccine for scope in scopes_with_orgunits_and_vaccine})
         return ", ".join(vaccine_names)
-
-    def get_round_one(self):
-        try:
-            round = self.rounds.get(number=1)
-            return round
-        except Round.DoesNotExist:
-            return None
-
-    def get_round_two(self):
-        try:
-            round = self.rounds.get(number=2)
-            return round
-        except Round.DoesNotExist:
-            return None
 
     def update_geojson_field(self):
         "Update the geojson field on the campaign DO NOT TRIGGER the save() you have to do it manually"

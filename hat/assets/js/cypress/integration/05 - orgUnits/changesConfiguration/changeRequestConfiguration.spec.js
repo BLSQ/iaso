@@ -12,7 +12,7 @@ import { testTablerender } from '../../../support/testTableRender';
 import { testTableSort } from '../../../support/testTableSort';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/changeRequestConfig/configuration`;
+const baseUrl = `${siteBaseUrl}/dashboard/validation/changeRequestConfig`;
 
 let interceptFlag = false;
 const defaultQuery = {

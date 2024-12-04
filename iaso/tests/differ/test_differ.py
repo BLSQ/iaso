@@ -138,13 +138,13 @@ class DifferTestCase(TestCase):
         self.angola_country_dhis2.save()
 
         diffs, fields = Differ(test_logger).diff(
-            # DHIS2.
-            version=self.source_version_dhis2,
+            # Actual version.
+            version=self.source_version_iaso,
             validation_status=None,
             top_org_unit=None,
             org_unit_types=[self.org_unit_type_country],
-            # IASO.
-            version_ref=self.source_version_iaso,
+            # New version.
+            version_ref=self.source_version_dhis2,
             validation_status_ref=None,
             top_org_unit_ref=None,
             org_unit_types_ref=[self.org_unit_type_country],
@@ -160,62 +160,6 @@ class DifferTestCase(TestCase):
         expected_json_diffs = [
             {
                 "org_unit": {
-                    "id": self.angola_country_iaso.pk,
-                    "name": "Angola",
-                    "uuid": None,
-                    "custom": False,
-                    "validated": True,
-                    "validation_status": "VALID",
-                    "version": self.source_version_iaso.pk,
-                    "parent": None,
-                    "path": str(self.angola_country_iaso.path),
-                    "aliases": None,
-                    "org_unit_type": self.org_unit_type_country.pk,
-                    "sub_source": None,
-                    "source_ref": "id-1",
-                    "geom": "MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
-                    "simplified_geom": None,
-                    "catchment": None,
-                    "geom_ref": None,
-                    "gps_source": None,
-                    "location": None,
-                    "source_created_at": None,
-                    "creator": None,
-                    "extra_fields": {},
-                    "opening_date": "2022-11-28",
-                    "closed_date": "2025-11-28",
-                    "default_image": None,
-                    "reference_instances": [],
-                },
-                "orgunit_ref": {
-                    "id": self.angola_country_iaso.pk,
-                    "name": "Angola",
-                    "uuid": None,
-                    "custom": False,
-                    "validated": True,
-                    "validation_status": "VALID",
-                    "version": self.source_version_iaso.pk,
-                    "parent": None,
-                    "path": str(self.angola_country_iaso.path),
-                    "aliases": None,
-                    "org_unit_type": self.org_unit_type_country.pk,
-                    "sub_source": None,
-                    "source_ref": "id-1",
-                    "geom": "MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
-                    "simplified_geom": None,
-                    "catchment": None,
-                    "geom_ref": None,
-                    "gps_source": None,
-                    "location": None,
-                    "source_created_at": None,
-                    "creator": None,
-                    "extra_fields": {},
-                    "opening_date": "2022-11-28",
-                    "closed_date": "2025-11-28",
-                    "default_image": None,
-                    "reference_instances": [],
-                },
-                "orgunit_dhis2": {
                     "id": self.angola_country_dhis2.pk,
                     "name": "Angola new",
                     "uuid": None,
@@ -243,9 +187,71 @@ class DifferTestCase(TestCase):
                     "default_image": None,
                     "reference_instances": [],
                 },
+                "orgunit_ref": {
+                    "id": self.angola_country_dhis2.pk,
+                    "name": "Angola new",
+                    "uuid": None,
+                    "custom": False,
+                    "validated": True,
+                    "validation_status": "VALID",
+                    "version": self.source_version_dhis2.pk,
+                    "parent": None,
+                    "path": str(self.angola_country_dhis2.path),
+                    "aliases": None,
+                    "org_unit_type": self.org_unit_type_country.pk,
+                    "sub_source": None,
+                    "source_ref": "id-1",
+                    "geom": "MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
+                    "simplified_geom": None,
+                    "catchment": None,
+                    "geom_ref": None,
+                    "gps_source": None,
+                    "location": None,
+                    "source_created_at": None,
+                    "creator": None,
+                    "extra_fields": {},
+                    "opening_date": "2022-11-28",
+                    "closed_date": "2025-11-28",
+                    "default_image": None,
+                    "reference_instances": [],
+                },
+                "orgunit_dhis2": {
+                    "id": self.angola_country_iaso.pk,
+                    "name": "Angola",
+                    "uuid": None,
+                    "custom": False,
+                    "validated": True,
+                    "validation_status": "VALID",
+                    "version": self.source_version_iaso.pk,
+                    "parent": None,
+                    "path": str(self.angola_country_iaso.path),
+                    "aliases": None,
+                    "org_unit_type": self.org_unit_type_country.pk,
+                    "sub_source": None,
+                    "source_ref": "id-1",
+                    "geom": "MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
+                    "simplified_geom": None,
+                    "catchment": None,
+                    "geom_ref": None,
+                    "gps_source": None,
+                    "location": None,
+                    "source_created_at": None,
+                    "creator": None,
+                    "extra_fields": {},
+                    "opening_date": "2022-11-28",
+                    "closed_date": "2025-11-28",
+                    "default_image": None,
+                    "reference_instances": [],
+                },
                 "status": "modified",
                 "comparisons": [
-                    {"field": "name", "before": "Angola new", "after": "Angola", "status": "modified", "distance": None}
+                    {
+                        "field": "name",
+                        "before": "Angola",
+                        "after": "Angola new",
+                        "status": "modified",
+                        "distance": None,
+                    }
                 ],
             }
         ]
@@ -280,13 +286,13 @@ class DifferTestCase(TestCase):
         self.angola_district_dhis2.save()
 
         diffs, fields = Differ(test_logger).diff(
-            # DHIS2.
-            version=self.source_version_dhis2,
+            # Actual version.
+            version=self.source_version_iaso,
             validation_status=None,
             top_org_unit=None,
             org_unit_types=None,
-            # IASO.
-            version_ref=self.source_version_iaso,
+            # New version.
+            version_ref=self.source_version_dhis2,
             validation_status_ref=None,
             top_org_unit_ref=None,
             org_unit_types_ref=None,
@@ -299,154 +305,226 @@ class DifferTestCase(TestCase):
         self.assertEqual(len(diffs), 3)
 
         country_diff = diffs[0]
-        country_diff_comparisons = [comparison.as_dict() for comparison in country_diff.comparisons]
         self.assertEqual(country_diff.status, "modified")
-        self.assertCountEqual(
-            country_diff_comparisons,
-            [
-                {
-                    "field": "name",
-                    "before": "Angola new",
-                    "after": "Angola",
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "parent",
-                    "before": None,
-                    "after": None,
-                    "status": "same",
-                    "distance": 0,
-                },
-                {
-                    "field": "geometry",
-                    "before": multi_polygon_dhis2,
-                    "after": self.multi_polygon,
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "opening_date",
-                    "before": datetime.date(2022, 12, 28),
-                    "after": datetime.date(2022, 11, 28),
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "closed_date",
-                    "before": datetime.date(2025, 12, 28),
-                    "after": datetime.date(2025, 11, 28),
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "group:group-id:Group DHIS2",
-                    "before": [{"id": "group-id", "name": "Group DHIS2"}],
-                    "after": [{"id": "group-id", "name": "Group IASO A"}, {"id": "group-id", "name": "Group IASO B"}],
-                    "status": "modified",
-                    "distance": None,
-                },
-            ],
+        country_diff_comparisons = [comparison.as_dict() for comparison in country_diff.comparisons]
+        self.assertEqual(7, len(country_diff_comparisons))
+        self.assertDictEqual(
+            country_diff_comparisons[0],
+            {
+                "field": "name",
+                "before": "Angola",
+                "after": "Angola new",
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            country_diff_comparisons[1],
+            {
+                "field": "parent",
+                "before": None,
+                "after": None,
+                "status": "same",
+                "distance": 0,
+            },
+        )
+        self.assertDictEqual(
+            country_diff_comparisons[2],
+            {
+                "field": "geometry",
+                "before": self.multi_polygon,
+                "after": multi_polygon_dhis2,
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            country_diff_comparisons[3],
+            {
+                "field": "opening_date",
+                "before": datetime.date(2022, 11, 28),
+                "after": datetime.date(2022, 12, 28),
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            country_diff_comparisons[4],
+            {
+                "field": "closed_date",
+                "before": datetime.date(2025, 11, 28),
+                "after": datetime.date(2025, 12, 28),
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            country_diff_comparisons[5],
+            {
+                "field": "group:group-id:Group IASO A",
+                "before": [{"id": "group-id", "name": "Group IASO A"}, {"id": "group-id", "name": "Group IASO B"}],
+                "after": [{"id": "group-id", "name": "Group DHIS2"}],
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            country_diff_comparisons[6],
+            {
+                "field": "group:group-id:Group IASO B",
+                "before": [{"id": "group-id", "name": "Group IASO A"}, {"id": "group-id", "name": "Group IASO B"}],
+                "after": [{"id": "group-id", "name": "Group DHIS2"}],
+                "status": "modified",
+                "distance": None,
+            },
         )
 
         region_diff = diffs[1]
-        region_diff_comparisons = [comparison.as_dict() for comparison in region_diff.comparisons]
         self.assertEqual(region_diff.status, "modified")
-        self.assertCountEqual(
-            region_diff_comparisons,
-            [
-                {
-                    "field": "name",
-                    "before": "Huila new",
-                    "after": "Huila",
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "parent",
-                    "before": "id-1",
-                    "after": "id-1",
-                    "status": "same",
-                    "distance": 0,
-                },
-                {
-                    "field": "geometry",
-                    "before": multi_polygon_dhis2,
-                    "after": self.multi_polygon,
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "opening_date",
-                    "before": datetime.date(2022, 12, 28),
-                    "after": datetime.date(2022, 11, 28),
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "closed_date",
-                    "before": datetime.date(2025, 12, 28),
-                    "after": datetime.date(2025, 11, 28),
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "group:group-id:Group DHIS2",
-                    "before": [],
-                    "after": [],
-                    "status": "same",
-                    "distance": 0,
-                },
-            ],
+        region_diff_comparisons = [comparison.as_dict() for comparison in region_diff.comparisons]
+        self.assertEqual(7, len(region_diff_comparisons))
+        self.assertDictEqual(
+            region_diff_comparisons[0],
+            {
+                "field": "name",
+                "before": "Huila",
+                "after": "Huila new",
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            region_diff_comparisons[1],
+            {
+                "field": "parent",
+                "before": "id-1",
+                "after": "id-1",
+                "status": "same",
+                "distance": 0,
+            },
+        )
+        self.assertDictEqual(
+            region_diff_comparisons[2],
+            {
+                "field": "geometry",
+                "before": self.multi_polygon,
+                "after": multi_polygon_dhis2,
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            region_diff_comparisons[3],
+            {
+                "field": "opening_date",
+                "before": datetime.date(2022, 11, 28),
+                "after": datetime.date(2022, 12, 28),
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            region_diff_comparisons[4],
+            {
+                "field": "closed_date",
+                "before": datetime.date(2025, 11, 28),
+                "after": datetime.date(2025, 12, 28),
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            region_diff_comparisons[5],
+            {
+                "field": "group:group-id:Group IASO A",
+                "before": [],
+                "after": [],
+                "status": "same",
+                "distance": 0,
+            },
+        )
+        self.assertDictEqual(
+            region_diff_comparisons[6],
+            {
+                "field": "group:group-id:Group IASO B",
+                "before": [],
+                "after": [],
+                "status": "same",
+                "distance": 0,
+            },
         )
 
         district_diff = diffs[2]
-        district_diff_comparisons = [comparison.as_dict() for comparison in district_diff.comparisons]
         self.assertEqual(district_diff.status, "modified")
-        self.assertCountEqual(
-            district_diff_comparisons,
-            [
-                {
-                    "field": "name",
-                    "before": "Cuvango new",
-                    "after": "Cuvango",
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "parent",
-                    "before": "id-1",
-                    "after": "id-2",
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "geometry",
-                    "before": multi_polygon_dhis2,
-                    "after": self.multi_polygon,
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "opening_date",
-                    "before": datetime.date(2022, 12, 28),
-                    "after": datetime.date(2022, 11, 28),
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "closed_date",
-                    "before": datetime.date(2025, 12, 28),
-                    "after": datetime.date(2025, 11, 28),
-                    "status": "modified",
-                    "distance": None,
-                },
-                {
-                    "field": "group:group-id:Group DHIS2",
-                    "before": [],
-                    "after": [],
-                    "status": "same",
-                    "distance": 0,
-                },
-            ],
+        district_diff_comparisons = [comparison.as_dict() for comparison in district_diff.comparisons]
+        self.assertEqual(7, len(district_diff_comparisons))
+        self.assertDictEqual(
+            district_diff_comparisons[0],
+            {
+                "field": "name",
+                "before": "Cuvango",
+                "after": "Cuvango new",
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            district_diff_comparisons[1],
+            {
+                "field": "parent",
+                "before": "id-2",
+                "after": "id-1",
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            district_diff_comparisons[2],
+            {
+                "field": "geometry",
+                "before": self.multi_polygon,
+                "after": multi_polygon_dhis2,
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            district_diff_comparisons[3],
+            {
+                "field": "opening_date",
+                "before": datetime.date(2022, 11, 28),
+                "after": datetime.date(2022, 12, 28),
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            district_diff_comparisons[4],
+            {
+                "field": "closed_date",
+                "before": datetime.date(2025, 11, 28),
+                "after": datetime.date(2025, 12, 28),
+                "status": "modified",
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            district_diff_comparisons[5],
+            {
+                "field": "group:group-id:Group IASO A",
+                "before": [],
+                "after": [],
+                "status": "same",
+                "distance": 0,
+            },
+        )
+        self.assertDictEqual(
+            district_diff_comparisons[6],
+            {
+                "field": "group:group-id:Group IASO B",
+                "before": [],
+                "after": [],
+                "status": "same",
+                "distance": 0,
+            },
         )

@@ -1,14 +1,13 @@
 import { PaginationParams } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
-import { CampaignCategory } from '../../Campaigns/hooks/api/useGetCampaigns';
+import { Vaccine } from '../../../constants/types';
 
 export type VaccineRepositoryParams = PaginationParams & {
     countries?: string;
     campaignType?: string;
-    campaignCategory?: CampaignCategory;
     country_block?: string;
     campaignGroups?: string;
     file_type?: string;
-    campaignStatus?: string;
+    vaccine_name?: Vaccine;
 };
 
 export type DocumentData = {

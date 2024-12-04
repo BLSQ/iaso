@@ -14,21 +14,18 @@ import MESSAGES from '../../../constants/messages';
 import { useGetCountries } from '../../../hooks/useGetCountries';
 
 import { appId } from '../../../constants/app';
-import { useCampaignCategoryOptions } from '../../Campaigns/hooks/useCampaignCategoryOptions';
-import { useGetCampaignStatus } from './hooks/useGetCampaignStatus';
 import { useGetFileTypes } from './hooks/useGetFileTypes';
 import { VaccineRepositoryParams } from './types';
+import { defaultVaccineOptions } from '../SupplyChain/constants';
 
 type Props = {
     params: VaccineRepositoryParams;
     disableDates?: boolean;
-    isEmbedded?: boolean;
     redirectUrl: string;
 };
 
 export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
     params,
-    isEmbedded = false,
     redirectUrl,
 }) => {
     const redirectToReplace = useRedirectToReplace();
@@ -38,13 +35,9 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
     const [fileType, setFileType] = useState(
         params.file_type || 'VRF,PRE_ALERT,FORM_A',
     );
-    const [campaignStatus, setCampaignStatus] = useState(params.campaignStatus);
+    const [vaccineName, setVaccineName] = useState(params.vaccine_name);
     const [countryBlocks, setCountryBlocks] = useState(params.country_block);
-    const [campaignCategory, setCampaignCategory] = useState(
-        isEmbedded
-            ? (params.campaignCategory ?? 'all')
-            : params.campaignCategory,
-    );
+
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
@@ -52,10 +45,9 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
                 ...params,
                 countries,
                 page: undefined,
-                campaignCategory,
                 country_block: countryBlocks,
                 file_type: fileType,
-                campaignStatus,
+                vaccine_name: vaccineName,
             };
             redirectToReplace(redirectUrl, urlParams);
         }
@@ -63,10 +55,9 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
         filtersUpdated,
         params,
         countries,
-        campaignCategory,
         countryBlocks,
+        vaccineName,
         fileType,
-        campaignStatus,
         redirectToReplace,
         redirectUrl,
     ]);
@@ -77,94 +68,74 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
 
     const countriesList = (data && data.orgUnits) || [];
 
-    const campaignCategoryOptions = useCampaignCategoryOptions();
-
     const fileTypes = useGetFileTypes();
-    const campaignStatusOptions = useGetCampaignStatus();
     useEffect(() => {
         setFiltersUpdated(true);
-    }, [countries, campaignCategory, countryBlocks, fileType, campaignStatus]);
+    }, [countries, countryBlocks, fileType, vaccineName]);
 
     useEffect(() => {
         setFiltersUpdated(false);
     }, []);
 
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="campaignStatus"
-                        clearable
-                        onChange={(key, value) => {
-                            setCampaignStatus(value);
-                        }}
-                        value={campaignStatus}
-                        type="select"
-                        options={campaignStatusOptions}
-                        label={MESSAGES.campaignStatus}
-                    />
-                    <InputComponent
-                        loading={isFetchingGroupedOrgUnits}
-                        keyValue="country_block"
-                        multi
-                        clearable
-                        onChange={(key, value) => {
-                            setCountryBlocks(value);
-                        }}
-                        value={countryBlocks}
-                        type="select"
-                        options={groupedOrgUnits}
-                        label={MESSAGES.countryBlock}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        loading={isFetchingCountries}
-                        keyValue="countries"
-                        multi
-                        clearable
-                        onChange={(_, value) => {
-                            setCountries(value);
-                        }}
-                        value={countries}
-                        type="select"
-                        options={countriesList.map(c => ({
-                            label: c.name,
-                            value: c.id,
-                        }))}
-                        label={MESSAGES.country}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="campaignCategory"
-                        clearable
-                        onChange={(_key, value) => {
-                            setCampaignCategory(value);
-                        }}
-                        value={campaignCategory}
-                        type="select"
-                        options={campaignCategoryOptions}
-                        label={MESSAGES.campaignCategory}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="file_type"
-                        clearable
-                        onChange={(_key, value) => {
-                            setFileType(value);
-                        }}
-                        value={fileType}
-                        type="select"
-                        options={fileTypes}
-                        label={MESSAGES.fileType}
-                    />
-                </Grid>
+        <Grid container spacing={2}>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    loading={isFetchingCountries}
+                    keyValue="countries"
+                    multi
+                    clearable
+                    onChange={(_, value) => {
+                        setCountries(value);
+                    }}
+                    value={countries}
+                    type="select"
+                    options={countriesList.map(c => ({
+                        label: c.name,
+                        value: c.id,
+                    }))}
+                    label={MESSAGES.country}
+                />
+                <InputComponent
+                    keyValue="vaccine_name"
+                    clearable
+                    onChange={(key, value) => {
+                        setVaccineName(value);
+                    }}
+                    value={vaccineName}
+                    type="select"
+                    options={defaultVaccineOptions}
+                    label={MESSAGES.vaccine}
+                />
             </Grid>
 
-            <Grid container item xs={12} justifyContent="flex-end">
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    loading={isFetchingGroupedOrgUnits}
+                    keyValue="country_block"
+                    multi
+                    clearable
+                    onChange={(key, value) => {
+                        setCountryBlocks(value);
+                    }}
+                    value={countryBlocks}
+                    type="select"
+                    options={groupedOrgUnits}
+                    label={MESSAGES.countryBlock}
+                />
+                <InputComponent
+                    keyValue="file_type"
+                    clearable
+                    onChange={(_key, value) => {
+                        setFileType(value);
+                    }}
+                    value={fileType}
+                    type="select"
+                    options={fileTypes}
+                    label={MESSAGES.fileType}
+                />
+            </Grid>
+            <Grid container item xs={12} md={6} justifyContent="flex-end">
                 <Box mt={2}>
                     <Button
                         disabled={!filtersUpdated}
@@ -179,6 +150,6 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
                     </Button>
                 </Box>
             </Grid>
-        </>
+        </Grid>
     );
 };

@@ -99,7 +99,6 @@ export const VaccineRepository: FunctionComponent = () => {
                 )}
                 <VaccineRepositoryFilters
                     params={params}
-                    isEmbedded={isEmbedded}
                     redirectUrl={redirectUrl}
                 />
                 <TableWithDeepLink

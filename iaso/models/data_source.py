@@ -1,7 +1,10 @@
-from django.contrib.postgres.fields import ArrayField
-from django.db import models
-from django.contrib.auth.models import AnonymousUser, User
 import typing
+
+from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class DataSource(models.Model):
@@ -161,3 +164,84 @@ class SourceVersion(models.Model):
             group_report[name] = self.orgunit_set.filter(groups__id=ident).count()
         report["groups"] = group_report
         return report
+
+
+class DataSourceSynchronization(models.Model):
+    """
+    This table allows to synchronize two pyramids by creating "change requests"
+    based on their diff.
+
+    The diff is stored in JSON and generated using the `diffing` module:
+
+        diff = Differ().diff()
+        json_diff = Dumper().as_json(diff)
+
+    Basic business use case:
+
+    - often, a pyramid of org units is created in DHIS2 and imported in IASO
+    - IASO is then used to update the pyramid
+    - but meanwhile, people may continue to make changes in DHIS2
+    - as a consequence, the two pyramids diverge
+    - so we need to synchronize the changes in the two pyramids
+    """
+
+    class SynchronizableFields(models.TextChoices):
+        NAME = "name", _("Name")
+        PARENT = "parent", _("Parent")
+        OPENING_DATE = "opening_date", _("Opening date")
+        CLOSED_DATE = "closed_date", _("Closed date")
+        GROUPS = "groups", _("Groups")
+
+    name = models.CharField(
+        max_length=255,
+        help_text=_("Used in the UI e.g. to filter Change Requests by Data Source Synchronization operations."),
+    )
+    left_source_version = models.ForeignKey(
+        SourceVersion,
+        on_delete=models.CASCADE,
+        related_name="used_as_left_sync_sources",
+        help_text=_("Left pyramid to sync."),
+    )
+    right_source_version = models.ForeignKey(
+        SourceVersion,
+        on_delete=models.CASCADE,
+        related_name="used_as_right_sync_sources",
+        help_text=_("Right pyramid to sync."),
+    )
+    fields_to_sync = ArrayField(
+        models.CharField(max_length=20, choices=SynchronizableFields.choices),
+        size=len(SynchronizableFields),
+    )
+    json_diff = models.JSONField(null=True, blank=True, help_text=_("The diff used to create change requests."))
+    sync_task = models.OneToOneField(
+        "Task",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text=_("The background task that used the diff to create change requests."),
+    )
+
+    # Metadata.
+    account = models.ForeignKey("Account", on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        User, null=True, on_delete=models.SET_NULL, related_name="created_data_source_synchronizations"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("Data source synchronization")
+
+    def __str__(self) -> str:
+        return self.name
+
+    def clean(self, *args, **kwargs):
+        super().clean()
+        self.clean_fields_to_sync()
+
+    def clean_fields_to_sync(self) -> None:
+        max_length = len(self.SynchronizableFields)
+        if len(self.fields_to_sync) > max_length:
+            raise ValidationError(f"You can only select up to {max_length} fields to synchronize.")
+        if len(set(self.fields_to_sync)) != len(self.fields_to_sync):
+            raise ValidationError("Fields to synchronize must be unique.")

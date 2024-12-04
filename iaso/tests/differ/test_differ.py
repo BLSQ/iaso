@@ -3,10 +3,11 @@ import logging
 
 import time_machine
 
+from django.contrib.gis.geos import MultiPolygon, Polygon
+
 from iaso import models as m
 from iaso.diffing import Differ, Dumper
 from iaso.test import TestCase
-from django.contrib.gis.geos import MultiPolygon, Polygon
 
 
 test_logger = logging.getLogger(__name__)

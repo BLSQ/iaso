@@ -31,7 +31,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.reportCountries);
     const [fileType, setFileType] = useState(params.reportFileType || 'IR,DR');
-    const [vaccineType, setVaccineType] = useState(params.reportVaccineType);
+    const [vaccineName, setVaccineName] = useState(params.reportVaccineName);
     const [countryBlocks, setCountryBlocks] = useState(
         params.reportCountryBlock,
     );
@@ -45,7 +45,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                 page: undefined,
                 reportCountryBlock: countryBlocks,
                 reportFileType: fileType,
-                reportVaccineType: vaccineType,
+                reportVaccineName: vaccineName,
             };
             redirectToReplace(redirectUrl, urlParams);
         }
@@ -57,7 +57,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
         fileType,
         redirectToReplace,
         redirectUrl,
-        vaccineType,
+        vaccineName,
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     // Pass the appId to have it works in the embedded vaccine stock where the user is not connected
@@ -69,7 +69,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
     const fileTypes = useGetReportFileTypes();
     useEffect(() => {
         setFiltersUpdated(true);
-    }, [countries, countryBlocks, fileType, vaccineType]);
+    }, [countries, countryBlocks, fileType, vaccineName]);
 
     useEffect(() => {
         setFiltersUpdated(false);
@@ -126,12 +126,12 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
-                        keyValue="reportVaccineType"
+                        keyValue="reportVaccineName"
                         clearable
                         onChange={(_key, value) => {
-                            setVaccineType(value);
+                            setVaccineName(value);
                         }}
-                        value={vaccineType}
+                        value={vaccineName}
                         type="select"
                         options={defaultVaccineOptions}
                         label={MESSAGES.vaccine}

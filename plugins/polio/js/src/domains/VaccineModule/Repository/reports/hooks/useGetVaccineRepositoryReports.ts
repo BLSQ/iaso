@@ -86,7 +86,7 @@ export const useGetVaccineRepositoryReports = (
             countries: params.reportCountries,
             country_block: params.reportCountryBlock,
             file_type: params.reportFileType,
-            vaccine_type: params.reportVaccineType,
+            vaccine_name: params.reportVaccineName,
             page_size: params.reportPageSize || tableDefaults.limit,
             order: params.reportOrder || tableDefaults.order,
             page: params.reportPage || `${tableDefaults.page}`,

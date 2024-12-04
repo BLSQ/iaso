@@ -3,6 +3,7 @@ from rest_framework import routers
 # TOFIX: Still haven't understood the exact problem but this should be
 # the first import to avoid some 'BudgetProcess' errors in tests:
 # `AttributeError: 'str' object has no attribute '_meta'`
+from plugins.polio.api.dashboards.vaccine_stock_history import VaccineStockHistoryDashboardViewSet
 from plugins.polio.budget.api import BudgetProcessViewSet, BudgetStepViewSet, WorkflowViewSet
 
 from plugins.polio.api.campaigns.campaign_groups import CampaignGroupViewSet
@@ -43,6 +44,7 @@ from plugins.polio.api.vaccines.stock_management import (
     IncidentReportViewSet,
 )
 
+from plugins.polio.tasks.api.launch_vaccine_stock_archive import ArchiveVaccineStockViewSet
 from plugins.polio.tasks.api.refresh_im_data import (
     RefreshIMAllDataViewset,
     RefreshIMHouseholdDataViewset,
@@ -96,10 +98,16 @@ router.register(r"polio/vaccine/stock/incident_report", IncidentReportViewSet, b
 router.register(r"polio/notifications", NotificationViewSet, basename="notifications")
 
 router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
+router.register(r"tasks/create/archivevaccinestock", ArchiveVaccineStockViewSet, basename="archive_vaccine_stock")
 router.register(
     r"polio/dashboards/vaccine_request_forms",
     VaccineRequestFormDashboardViewSet,
     basename="dashboard_vaccine_request_forms",
+)
+router.register(
+    r"polio/dashboards/vaccine_stock_history",
+    VaccineStockHistoryDashboardViewSet,
+    basename="dashboard_vaccine_stock_history",
 )
 router.register(
     r"polio/dashboards/pre_alerts",

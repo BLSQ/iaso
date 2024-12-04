@@ -41,11 +41,7 @@ export const Forms: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <>
-            <Filters
-                params={params}
-                isEmbedded={isEmbedded}
-                redirectUrl={redirectUrl}
-            />
+            <Filters params={params} redirectUrl={redirectUrl} />
             <TableWithDeepLink
                 marginTop={false}
                 data={data?.results ?? []}

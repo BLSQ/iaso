@@ -20,12 +20,12 @@ export const useVaccineRepositoryReportsColumns = (): Column[] => {
                 width: 20,
             },
             {
-                Header: 'IR',
+                Header: formatMessage(MESSAGES.incidentReports),
                 accessor: 'incident_report_data',
                 Cell: DocumentsCells,
             },
             {
-                Header: 'DR',
+                Header: formatMessage(MESSAGES.destructionReports),
                 accessor: 'destruction_report_data',
                 Cell: DocumentsCells,
             },

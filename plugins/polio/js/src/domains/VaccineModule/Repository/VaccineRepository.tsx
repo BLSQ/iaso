@@ -96,8 +96,11 @@ export const VaccineRepository: FunctionComponent = () => {
                     value={tab}
                     onChange={(_, newtab) => handleChangeTab(newtab)}
                 >
-                    <Tab value="forms" label="VRF AN CO" />
-                    <Tab value="reports" label="REPORTS" />
+                    <Tab value="forms" label={formatMessage(MESSAGES.forms)} />
+                    <Tab
+                        value="reports"
+                        label={formatMessage(MESSAGES.reports)}
+                    />
                 </Tabs>
                 {tab === 'forms' && <Forms params={params} />}
                 {tab === 'reports' && <Reports params={params} />}

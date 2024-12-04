@@ -663,11 +663,11 @@ class ETL:
 
         monthly_Statistic.save()
 
-    def journey_with_visit_and_steps_per_visit(self, account, program):
+    def journey_with_visit_and_steps_per_visit(self, account, programme):
         aggregated_journeys = []
         journeys = (
             Step.objects.select_related("visit", "visit__journey", "visit__org_unit_id")
-            .filter(visit__journey__programme_type=program, visit__journey__beneficiary__account=account)
+            .filter(visit__journey__programme_type=programme, visit__journey__beneficiary__account=account)
             .values(
                 "visit__journey__admission_type",
                 "assistance_type",

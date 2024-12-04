@@ -23,7 +23,7 @@ const mockVaccineRepositoryReports = () => ({
     limit: 10,
     results: [
         {
-            country_name: 'Algeria',
+            country_name: 'ALGERIA',
             country_id: 29688,
             vaccine: 'mOPV2',
             incident_report_data: [
@@ -31,11 +31,36 @@ const mockVaccineRepositoryReports = () => ({
                     date: '2021-03-16',
                     file: '/media/public_documents/forma/openiaso_pAu8Lar.pdf',
                 },
+                {
+                    date: '2021-03-18',
+                    file: undefined,
+                },
             ],
             destruction_report_data: [
                 {
                     date: undefined,
                     file: undefined,
+                },
+            ],
+        },
+        {
+            country_name: 'ANGOLA',
+            country_id: 29679,
+            vaccine: 'mOPV2',
+            incident_report_data: [
+                {
+                    date: '2021-03-18',
+                    file: undefined,
+                },
+            ],
+            destruction_report_data: [
+                {
+                    date: undefined,
+                    file: undefined,
+                },
+                {
+                    date: '2021-03-16',
+                    file: '/media/public_documents/forma/openiaso_pAu8Lar.pdf',
                 },
             ],
         },

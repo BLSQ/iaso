@@ -17,10 +17,10 @@ import { appId } from '../../../../constants/app';
 import { useCampaignCategoryOptions } from '../../../Campaigns/hooks/useCampaignCategoryOptions';
 import { useGetCampaignStatus } from '../hooks/useGetCampaignStatus';
 import { useGetFileTypes } from '../hooks/useGetFileTypes';
-import { FormsParams } from '../types';
+import { VaccineRepositoryParams } from '../types';
 
 type Props = {
-    params: FormsParams;
+    params: VaccineRepositoryParams;
     disableDates?: boolean;
     isEmbedded?: boolean;
     redirectUrl: string;

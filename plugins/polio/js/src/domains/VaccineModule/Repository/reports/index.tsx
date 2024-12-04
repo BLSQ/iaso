@@ -43,7 +43,7 @@ export const Reports: FunctionComponent<Props> = ({ params }) => {
     const columns = useVaccineRepositoryReportsColumns();
     return (
         <>
-            <Filters params={reportParams} redirectUrl={redirectUrl} />
+            <Filters params={params} redirectUrl={redirectUrl} />
             <TableWithDeepLink
                 marginTop={false}
                 data={data?.results ?? []}
@@ -53,7 +53,7 @@ export const Reports: FunctionComponent<Props> = ({ params }) => {
                 count={data?.count ?? 0}
                 baseUrl={redirectUrl}
                 countOnTop
-                params={reportParams}
+                params={params}
                 cellProps={getCellProps}
                 extraProps={{
                     loading: isFetching,

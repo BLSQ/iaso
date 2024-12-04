@@ -33,10 +33,7 @@ const getCellProps = cell => {
 
 export const Forms: FunctionComponent<Props> = ({ params }) => {
     const location = useLocation();
-    const formsParams = getNonPrefixedParams('report', params, [
-        'accountId',
-        'tab',
-    ]);
+    const formsParams = getNonPrefixedParams('report', params, ['accountId']);
     const isEmbedded = location.pathname.includes(embeddedVaccineRepositoryUrl);
     const redirectUrl = isEmbedded ? embeddedVaccineRepositoryUrl : baseUrl;
     const { data, isFetching } = useGetVaccineReporting(formsParams);
@@ -45,7 +42,7 @@ export const Forms: FunctionComponent<Props> = ({ params }) => {
     return (
         <>
             <Filters
-                params={formsParams}
+                params={params}
                 isEmbedded={isEmbedded}
                 redirectUrl={redirectUrl}
             />
@@ -58,7 +55,7 @@ export const Forms: FunctionComponent<Props> = ({ params }) => {
                 count={data?.count ?? 0}
                 baseUrl={redirectUrl}
                 countOnTop
-                params={formsParams}
+                params={params}
                 cellProps={getCellProps}
                 extraProps={{
                     loading: isFetching,

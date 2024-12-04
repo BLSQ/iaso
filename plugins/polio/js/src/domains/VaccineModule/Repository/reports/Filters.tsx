@@ -16,10 +16,10 @@ import { useGetCountries } from '../../../../hooks/useGetCountries';
 import { appId } from '../../../../constants/app';
 import { defaultVaccineOptions } from '../../SupplyChain/constants';
 import { useGetReportFileTypes } from '../hooks/useGetFileTypes';
-import { ReportParams } from '../types';
+import { VaccineRepositoryParams } from '../types';
 
 type Props = {
-    params: ReportParams;
+    params: VaccineRepositoryParams;
     disableDates?: boolean;
     isEmbedded?: boolean;
     redirectUrl: string;

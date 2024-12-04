@@ -9,7 +9,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from django.db.models import OuterRef, Subquery, Q, Value, Case, When, CharField
+from django.db.models import OuterRef, Subquery, Q, Value, Case, When, CharField, Exists
 
 from iaso.api.common import Paginator
 from plugins.polio.models import (
@@ -298,5 +298,11 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
                 output_field=CharField(),
             )
         )
-
+        # Keep only lines that will have inputs from Vaccine Module in them, i.e. either form A or VRF
+        vrf_subquery = VaccineRequestForm.objects.filter(vaccine_type=OuterRef("vaccine_name"), rounds=OuterRef("id"))
+        forma_subquery = OutgoingStockMovement.objects.filter(
+            vaccine_stock__vaccine=OuterRef("vaccine_name"), round=OuterRef("id")
+        )
+        test_qs = rounds_queryset.filter(Exists(forma_subquery))
+        rounds_queryset = rounds_queryset.filter(Q(Exists(vrf_subquery)) | Q(Exists(forma_subquery)))
         return rounds_queryset

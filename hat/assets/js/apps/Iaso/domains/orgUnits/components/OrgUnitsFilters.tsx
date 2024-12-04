@@ -24,7 +24,6 @@ import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import { getChipColors } from '../../../constants/chipColors';
 
 import { useCurrentUser } from '../../../utils/usersUtils';
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { useGetDataSources } from '../hooks/requests/useGetDataSources';
 import { useGetGroups } from '../hooks/requests/useGetGroups';
 import { useGetOrgUnit } from './TreeView/requests';
@@ -33,11 +32,12 @@ import { InputWithInfos } from '../../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../../types/utils';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetVersionLabel } from '../hooks/useGetVersionLabel';
+import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import { useInstancesOptions } from '../hooks/utils/useInstancesOptions';
 import MESSAGES from '../messages';
+import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { DataSource } from '../types/dataSources';
 import { Search } from '../types/search';
-import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 type Props = {
     searches: [Search];
@@ -126,7 +126,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus(true);
+    } = useGetOrgUnitValidationStatus(true);
     const handleChange = (key, value) => {
         const newFilters: Record<string, unknown> = {
             ...filters,

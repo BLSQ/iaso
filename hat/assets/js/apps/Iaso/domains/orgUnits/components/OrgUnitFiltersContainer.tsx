@@ -44,7 +44,6 @@ type Props = {
     onSearch: (searches: any) => void;
     currentTab: string;
     counts: Count[];
-    setDeletedTab: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const baseUrl = baseUrls.orgUnits;
@@ -60,7 +59,7 @@ const useStyles = makeStyles(theme => ({
     },
     tabsContainer: {
         backgroundColor: `${theme.palette.primary.main} !important`,
-        zIndex: '900 !important',
+        zIndex: '9 !important',
         position: 'fixed',
         top: '64px !important',
     },
@@ -80,7 +79,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     currentTab,
     paramsSearches,
     counts,
-    setDeletedTab,
 }) => {
     const currentUser = useCurrentUser();
     const redirectTo = useRedirectTo();
@@ -127,10 +125,14 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     const handleDeleteDynamicTab = useCallback(
         newParams => {
             redirectTo(baseUrl, newParams);
-            setSearches(decodeSearch(decodeURI(newParams.searches)));
-            setDeletedTab(true);
+            const newSearches = decodeSearch(decodeURI(newParams.searches));
+            setSearches(newSearches);
+            onSearch({
+                ...newParams,
+                searches: newSearches,
+            });
         },
-        [redirectTo, setDeletedTab],
+        [redirectTo, onSearch],
     );
     const handleAddDynamicTab = useCallback(
         newParams => {
@@ -186,7 +188,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                 <Box className={classes.tabsContainerShadow} />
             </AppBar>
             <Box px={4} mt={4}>
-                {searches.map((search, searchIndex) => (
+                {searches.map((_, searchIndex) => (
                     <Box
                         key={searchIndex}
                         className={

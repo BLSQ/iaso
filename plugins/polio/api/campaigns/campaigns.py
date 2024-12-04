@@ -129,21 +129,6 @@ class CampaignTypeSerializer(serializers.ModelSerializer):
 
 
 class CampaignSerializer(serializers.ModelSerializer):
-    round_one = serializers.SerializerMethodField(read_only=True)
-    round_two = serializers.SerializerMethodField(read_only=True)
-
-    def get_round_one(self, campaign):
-        for round in campaign.rounds.all():
-            if round.number == 1:
-                return RoundSerializer(round).data
-        return None
-
-    def get_round_two(self, campaign):
-        for round in campaign.rounds.all():
-            if round.number == 2:
-                return RoundSerializer(round).data
-        return None
-
     rounds = RoundSerializer(many=True, required=False)
     org_unit: Field = OrgUnitSerializer(source="initial_org_unit", read_only=True)
     top_level_org_unit_name: Field = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
@@ -481,21 +466,6 @@ class ListCampaignSerializer(CampaignSerializer):
 
 class AnonymousCampaignSerializer(CampaignSerializer):
     rounds = RoundAnonymousSerializer(many=True)
-    round_one = serializers.SerializerMethodField(read_only=True)
-    round_two = serializers.SerializerMethodField(read_only=True)
-
-    def get_round_one(self, campaign):
-        for round in campaign.rounds.all():
-            if round.number == 1:
-                return RoundAnonymousSerializer(round).data
-        return None
-
-    def get_round_two(self, campaign):
-        for round in campaign.rounds.all():
-            if round.number == 2:
-                return RoundAnonymousSerializer(round).data
-        return None
-
     campaign_types = CampaignTypeSerializer(many=True, required=False)
 
     class Meta:
@@ -534,8 +504,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "unicef_disbursed_to_moh_at",
             "no_regret_fund_amount",
             "payment_mode",
-            "round_one",
-            "round_two",
             "rounds",
             "created_at",
             "updated_at",

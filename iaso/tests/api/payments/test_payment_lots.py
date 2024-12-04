@@ -22,6 +22,9 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         cls.user = cls.create_user_with_profile(
             username="user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
         )
+        cls.geo_limited_user = cls.create_user_with_profile(
+            username="other_user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
+        )
         cls.payment_beneficiary = cls.create_user_with_profile(
             username="payment_beneficiary", first_name="John", last_name="Doe", account=account
         )
@@ -35,6 +38,13 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             version=version,
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
+        cls.other_org_unit = m.OrgUnit.objects.create(
+            name="Some other place",
+            org_unit_type=org_unit_type,
+            version=version,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        cls.geo_limited_user.iaso_profile.org_units.set([cls.other_org_unit])
         cls.payment_lot = m.PaymentLot.objects.create(name="Test Payment Lot", created_by=cls.user, updated_by=cls.user)
         cls.payment = m.Payment.objects.create(
             user=cls.payment_beneficiary,
@@ -302,3 +312,22 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         self.runAndValidateTask(task, "ERRORED")
         # No new payment lot created, we find only the one from setup
         self.assertEqual(m.PaymentLot.objects.count(), 1)
+
+    def test_geo_limited_user_cannot_see_change_requests_not_in_org_units(self):
+        self.client.force_authenticate(self.geo_limited_user)
+        response = self.client.get(f"/api/payments/lots/")
+        self.assertJSONResponse(response, 200)
+        data = response.json()
+        results = data["results"]
+        result = results[0]
+        self.assertEqual(len(results), 1)
+        self.assertFalse(result["can_see_change_requests"])
+        self.assertEqual(len(result["payments"]), 2)
+        change_requests = result["payments"][0]["change_requests"]
+        self.assertEqual(len(change_requests), 1)
+        for change_request in change_requests:
+            self.assertFalse(change_request["can_see_change_request"])
+        change_requests = result["payments"][1]["change_requests"]
+        self.assertEqual(len(change_requests), 1)
+        for change_request in change_requests:
+            self.assertFalse(change_request["can_see_change_request"])

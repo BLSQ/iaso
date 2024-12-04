@@ -244,8 +244,6 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
     def get_queryset(self):
         """
         Get the queryset for Round objects with their campaigns.
-        The filtering has been moved here, because we return a union of querysets to duplicate the rounds that have several vaccines
-        and django will complain if we try to call filter() after union()
         """
         rounds_queryset = (
             Round.objects.filter(

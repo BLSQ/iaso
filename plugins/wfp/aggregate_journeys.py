@@ -2,7 +2,7 @@ from itertools import groupby
 from operator import itemgetter
 
 
-class AGGREGATE_JOURNEY:
+class AggregatedJourney:
     def group_visit_by_admission(self, current_visit, row, assistance):
         visit_by_admission_type = groupby(list(current_visit), key=itemgetter("visit__journey__admission_type"))
         for admission_type, visit_admission_type in visit_by_admission_type:
@@ -35,9 +35,9 @@ class AGGREGATE_JOURNEY:
                 row["number_visits"] = len(all_visits)
         return row
 
-    def group_by_period(self, visit_by_period, org_unit, all_journey, assistance):
+    def group_by_period(self, visits_by_period, org_unit, all_journeys, assistance):
         row = None
-        for period, visit in visit_by_period:
+        for period, visit in visits_by_period:
             if period is not None:
                 month_year = period.split("/")
                 row = {"year": month_year[0], "month": month_year[1]}
@@ -58,5 +58,5 @@ class AGGREGATE_JOURNEY:
             row["given_sachet_rusf"] = assistance.get("rusf_quantity", 0)
             row["given_sachet_rutf"] = assistance.get("rutf_quantity", 0)
             row["given_quantity_csb"] = assistance.get("csb_quantity", 0)
-            all_journey.append(row)
-        return all_journey
+            all_journeys.append(row)
+        return all_journeys

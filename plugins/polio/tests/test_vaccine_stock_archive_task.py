@@ -82,7 +82,6 @@ class TestVaccineStockArchive(TaskAPITestCase):
             obr_name="RDC_CAMPAIGN_1",
             country=cls.org_unit_DRC,
             account=cls.account,
-            vacine=pm.VACCINES[0][0],
             separate_scopes_per_round=False,
         )
         rdc_scope_group = m.Group.objects.create(name="campaign_rdc_1_scope", source_version=cls.source_version_1)

@@ -4,7 +4,7 @@ import math
 import os
 from collections import defaultdict
 from datetime import date
-from typing import Any, Tuple, Union
+from typing import Any, Tuple, Union, Optional
 from uuid import uuid4
 
 import django.db.models.manager
@@ -29,6 +29,7 @@ from translated_fields import TranslatedField
 from beanstalk_worker import task_decorator
 from iaso.models import Group, OrgUnit
 from iaso.models.base import Account, Task
+from iaso.models.entity import UserNotAuthError
 from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
@@ -565,6 +566,8 @@ class Campaign(SoftDeletableModel):
     )
     verification_score = models.IntegerField(null=True, blank=True)
     # END OF Risk assessment field
+
+    # Unusable vials leftover 14 days after the last round ends
 
     # ----------------------------------------------------------------------------------------
     # START fields moved to the `Budget` model. **********************************************
@@ -1167,6 +1170,36 @@ class VaccineStock(models.Model):
 
     def __str__(self):
         return f"{self.country} - {self.vaccine}"
+
+
+class VaccineStockHistoryQuerySet(models.QuerySet):
+    def filter_for_user(self, user: Optional[Union[User, AnonymousUser]]):
+        if not user or not user.is_authenticated:
+            raise UserNotAuthError(f"User not Authenticated")
+
+        profile = user.iaso_profile
+        self = self.filter(vaccine_stock__account=profile.account)
+
+        return self
+
+
+class VaccineStockHistory(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="history")
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name="stock_on_closing")
+    unusable_vials_in = models.IntegerField(null=True)
+    unusable_vials_out = models.IntegerField(null=True)
+    unusable_doses_in = models.IntegerField(null=True)
+    unusable_doses_out = models.IntegerField(null=True)
+    usable_vials_in = models.IntegerField(null=True)
+    usable_vials_out = models.IntegerField(null=True)
+    usable_doses_in = models.IntegerField(null=True)
+    usable_doses_out = models.IntegerField(null=True)
+
+    objects = models.Manager.from_queryset(VaccineStockHistoryQuerySet)()
+
+    class Meta:
+        unique_together = ("round", "vaccine_stock")
 
 
 # Form A

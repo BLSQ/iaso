@@ -16,7 +16,7 @@ from django.db.models.functions import Cast
 from hat.audit.models import Modification
 from iaso.models import Account, OrgUnitType, CommentIaso, StoragePassword, StorageDevice, StorageLogEntry
 from iaso.models import BulkCreateUserCsvFile
-from iaso.models import ExportLog, ExportRequest
+from iaso.models import ExportLog
 from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping, Profile, InstanceFile, InstanceLock
 from iaso.models.base import Task, QUEUED, KILLED
 from iaso.models.entity import Entity, EntityType
@@ -117,6 +117,11 @@ class Command(BaseCommand):
                     f"delete vector_control_apiimport where headers->>'QUERY_STRING' like 'app_id={project.app_id}%'"
                 )
                 forms = Form.objects_include_deleted.filter(projects__in=[project])
+
+                print(
+                    "OrgUnitChangeRequestConfiguration delete",
+                    project.orgunitchangerequestconfiguration_set.all().delete(),
+                )
 
                 print(
                     "OrgUnit remove reference_instance",

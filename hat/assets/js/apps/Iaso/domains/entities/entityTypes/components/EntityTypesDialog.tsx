@@ -169,9 +169,11 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                 value: field.name,
                 label: field.is_latest
                     ? formatLabel(field)
-                    : `${formatLabel(field)} (deprecated)`,
+                    : `${formatLabel(field)} (${formatMessage(
+                          MESSAGES.deprecated,
+                      )})`,
             })),
-        [possibleFields],
+        [formatMessage, possibleFields],
     );
 
     return (

@@ -164,25 +164,25 @@ class GroupsViewSet(ModelViewSet):
         if user and user.is_authenticated:
             account = user.iaso_profile.account
             # Filter on version ids (linked to the account)""
-            data_source = (
-                self.request.query_params.get("data_source")
-                if self.request.query_params.get("data_source")
+            default_version = (
+                self.request.query_params.get("default_version")
+                if self.request.query_params.get("default_version")
                 else account.default_version
             )
             versions = SourceVersion.objects.filter(
-                data_source__projects__account=account, data_source__default_version=data_source
+                data_source__projects__account=account, data_source__default_version=default_version
             )
 
         else:
             # this check if project need auth
-            data_source = (
-                self.request.query_params.get("data_source")
-                if self.request.query_params.get("data_source")
+            default_version = (
+                self.request.query_params.get("default_version")
+                if self.request.query_params.get("default_version")
                 else project.account.default_version
             )
             project = Project.objects.get_for_user_and_app_id(user, app_id)
             versions = SourceVersion.objects.filter(
-                data_source__projects=project, data_source__default_version=data_source
+                data_source__projects=project, data_source__default_version=default_version
             )
         groups = Group.objects.filter(source_version__in=versions).distinct()
 

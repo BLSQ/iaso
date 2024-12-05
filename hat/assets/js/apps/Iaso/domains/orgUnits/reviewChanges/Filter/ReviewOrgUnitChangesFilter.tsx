@@ -31,6 +31,7 @@ import { usePaymentStatusOptions } from '../hooks/api/useGetPaymentStatusOptions
 import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetDataSources } from '../../hooks/requests/useGetDataSources';
 import { useDefaultSourceVersion } from '../../../dataSources/utils';
+import { useGetVersionLabel } from '../../hooks/useGetVersionLabel';
 
 const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = { params: ApproveOrgUnitParams };
@@ -53,20 +54,20 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
-    // IA-3641 hard coding values fro groups dropdown until refactor
     const { data: groupOptions, isLoading: isLoadingGroups } =
         useGetGroupDropdown({});
-    // const groupOptions = [];
-    // const isLoadingGroups = false;
-    // IA-3641 -----END
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources(true);
-    const initialDataSource =
-        dataSources?.find(
-            source =>
-                source.value === defaultSourceVersion.source.id.toString(),
-        )?.value || '';
+    const initialDataSource = useMemo(
+        () =>
+            dataSources?.find(
+                source =>
+                    source.value === defaultSourceVersion.source.id.toString(),
+            )?.value || '',
+        [dataSources, defaultSourceVersion.source.id],
+    );
 
     const [dataSource, setDataSource] = useState(initialDataSource);
 
@@ -129,6 +130,21 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         setDataSource(newValue);
     };
 
+    const getVersionLabel = useGetVersionLabel(dataSources);
+
+    const versionsDropDown = useMemo(() => {
+        if (!dataSources || !initialDataSource) return [];
+        return (
+            dataSources
+                .filter(src => src.value === initialDataSource)[0]
+                ?.original?.versions.sort((a, b) => a.number - b.number)
+                .map(version => ({
+                    label: getVersionLabel(version.id),
+                    value: version.id.toString(),
+                })) ?? []
+        );
+    }, [dataSources, getVersionLabel, initialDataSource]);
+
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={4} lg={3}>
@@ -186,6 +202,17 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                                 value={isFetchingDataSources ? '' : dataSource}
                                 label={MESSAGES.source}
                                 options={dataSources}
+                                loading={isFetchingDataSources}
+                            />
+                            <InputComponent
+                                type="select"
+                                disabled={isFetchingDataSources}
+                                keyValue="version"
+                                onChange={handleChange}
+                                value={defaultSourceVersion.version.id}
+                                label={MESSAGES.sourceVersion}
+                                options={versionsDropDown}
+                                clearable={false}
                                 loading={isFetchingDataSources}
                             />
 

@@ -49,6 +49,9 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
     const defaultSourceVersion = useDefaultSourceVersion();
+    const [defaultSelectedVersionId, setDefaultSelectedVersionId] = useState(
+        defaultSourceVersion.version.id,
+    );
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
@@ -128,22 +131,28 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
 
     const handleDataSourceChange = (_, newValue) => {
         setDataSource(newValue);
+        const selectedSource = dataSources?.filter(
+            source => source.value === newValue,
+        )[0];
+        setDefaultSelectedVersionId(
+            selectedSource?.original?.default_version.id,
+        );
     };
 
     const getVersionLabel = useGetVersionLabel(dataSources);
 
     const versionsDropDown = useMemo(() => {
-        if (!dataSources || !initialDataSource) return [];
+        if (!dataSources || !dataSource) return [];
         return (
             dataSources
-                .filter(src => src.value === initialDataSource)[0]
+                .filter(src => src.value === dataSource)[0]
                 ?.original?.versions.sort((a, b) => a.number - b.number)
                 .map(version => ({
                     label: getVersionLabel(version.id),
                     value: version.id.toString(),
                 })) ?? []
         );
-    }, [dataSources, getVersionLabel, initialDataSource]);
+    }, [dataSource, dataSources, getVersionLabel]);
 
     return (
         <Grid container spacing={2}>
@@ -209,7 +218,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                                 disabled={isFetchingDataSources}
                                 keyValue="version"
                                 onChange={handleChange}
-                                value={defaultSourceVersion.version.id}
+                                value={defaultSelectedVersionId}
                                 label={MESSAGES.sourceVersion}
                                 options={versionsDropDown}
                                 clearable={false}

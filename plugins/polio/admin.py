@@ -271,38 +271,31 @@ class NotificationAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("org_unit")
-    
+
+
 @admin.register(VaccineStockHistory)
 class VaccineStockHistoryAdmin(admin.ModelAdmin):
-    list_display = (
-        "get_campaign_name",
-        "get_round_number",
-        "round",
-        "get_vaccine_name",
-        "get_country"
-       
-    )
+    list_display = ("get_campaign_name", "get_round_number", "round", "get_vaccine_name", "get_country")
     # list_filter = ("get_country", "get_vaccine_name","get_campaign_name")
-
 
     @admin.display(description="Campaign name")
     def get_campaign_name(self, obj):
         if obj.round:
             return obj.round.campaign.obr_name
         return None
-    
+
     @admin.display(description="Round number")
     def get_round_number(self, obj):
         if obj.round:
             return obj.round.number
         return None
-    
+
     @admin.display(description="Vaccine")
     def get_vaccine_name(self, obj):
         if obj.round:
             return obj.vaccine_stock.vaccine
         return None
-    
+
     @admin.display(description="Country")
     def get_country(self, obj):
         if obj.round:

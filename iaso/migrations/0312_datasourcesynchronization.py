@@ -9,7 +9,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0309_alter_potentialpayment_user"),
+        ("iaso", "0311_alter_tenantuser_account_user_and_more"),
     ]
 
     operations = [

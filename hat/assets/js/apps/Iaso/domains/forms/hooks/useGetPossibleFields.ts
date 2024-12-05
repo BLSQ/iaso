@@ -1,14 +1,14 @@
+import { cloneDeep } from 'lodash';
 import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
-import { cloneDeep } from 'lodash';
 import { DropdownOptions } from '../../../types/utils';
 import {
     useGetForm,
     useGetForms,
 } from '../../entities/entityTypes/hooks/requests/forms';
 
-import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
+import { useSnackQuery } from '../../../libs/apiHooks';
 
 import { Form, PossibleField } from '../types/forms';
 
@@ -29,10 +29,11 @@ type AllResults = {
 export const usePossibleFields = (
     isFetchingForm: boolean,
     form?: Form,
+    possible_fields_key = 'possible_fields',
 ): Result => {
     return useMemo(() => {
         const possibleFields =
-            form?.possible_fields?.map(field => ({
+            form?.[possible_fields_key]?.map(field => ({
                 ...field,
                 fieldKey: field.name.replace('.', ''),
             })) || [];
@@ -40,7 +41,7 @@ export const usePossibleFields = (
             possibleFields,
             isFetchingForm,
         };
-    }, [form?.possible_fields, isFetchingForm]);
+    }, [form, isFetchingForm, possible_fields_key]);
 };
 
 export const useGetPossibleFields = (

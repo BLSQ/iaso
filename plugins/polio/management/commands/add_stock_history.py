@@ -1,10 +1,8 @@
 from django.core.management.base import BaseCommand
 from datetime import timedelta
-from iaso.management.commands.command_logger import CommandLogger
 from plugins.polio.models import Round, VaccineStock
 from logging import getLogger
 from django.db.models import Q
-
 from plugins.polio.models.base import VACCINES, VaccineStockHistory
 from plugins.polio.tasks.archive_vaccine_stock_for_rounds import archive_stock_for_round
 
@@ -25,7 +23,11 @@ class Command(BaseCommand):
             rounds_for_vaccine = rounds_to_update.filter(
                 (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vaccine))
                 | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vaccine))
-            ).exclude(id__in=VaccineStockHistory.objects.filter(vaccine_stock__vaccine=vaccine).values("round_id"))
+            ).exclude(
+                id__in=VaccineStockHistory.objects.filter(vaccine_stock__vaccine=vaccine).values_list(
+                    "round_id", flat=True
+                )
+            )
             vaccine_stock = VaccineStock.objects.filter(vaccine=vaccine)
             for round_to_update in rounds_for_vaccine:
                 reference_date = round_to_update.ended_at + timedelta(days=14)

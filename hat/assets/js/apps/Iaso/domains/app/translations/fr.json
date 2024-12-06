@@ -938,7 +938,7 @@
     "iaso.pages.create": "Créer un lien intégré",
     "iaso.pages.dialog.delete.content": "Cette opération est irréversible",
     "iaso.pages.dialog.delete.title": "Etes-vous sur de vouloir effacer ce lien intégré ?",
-    "iaso.pages.dialog.helper": "Entrer les informations du link intégré",
+    "iaso.pages.dialog.helper": "Entrer les informations du lien intégré",
     "iaso.pages.edit": "Editer un lien intégré",
     "iaso.pages.errors.name": "Le nom est un champ requis",
     "iaso.pages.errors.slug": "Le slug est un champ requis",

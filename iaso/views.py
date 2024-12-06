@@ -84,8 +84,17 @@ def page(request, page_slug):
             content,
         )
     elif page.type == SUPERSET:
-        # TODO: Use dedicated column for dashboard_id?
-        content.update({"dashboard_id": page.content, "title": page.name, "page": page})
+        content.update(
+            {
+                "config": {
+                    "superset_url": settings.SUPERSET_URL,
+                    "dashboard_id": page.superset_dashboard_id,
+                    "dashboard_ui_config": page.superset_dashboard_ui_config,
+                },
+                "title": page.name,
+                "page": page,
+            }
+        )
         response = render(
             request,
             "iaso/pages/superset.html",

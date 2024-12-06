@@ -119,8 +119,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Raw html',
     },
     superset: {
-        id: 'iaso.label.superset',
+        id: 'iaso.pages.superset',
         defaultMessage: 'Superset',
+    },
+    superset_dashboard_id: {
+        id: 'iaso.pages.superset_dashboard_id',
+        defaultMessage: 'Dashboard ID',
     },
     needsAuthentication: {
         id: 'iaso.label.needsAuthentication',

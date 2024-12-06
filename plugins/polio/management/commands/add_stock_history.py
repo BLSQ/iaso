@@ -27,7 +27,10 @@ class Command(BaseCommand):
                 | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vaccine))
             )
             for round_to_update in rounds_for_vaccine:
-                vaccine_stock = VaccineStock.objects.filter(vaccine=vaccine, country=round_to_update.campaign.country)
+                vaccine_stock = VaccineStock.objects.filter(
+                    vaccine=vaccine, country=round_to_update.campaign.country
+                ).first()
+                # If vaccine stock is None, archived_round will be empty
                 archived_round = VaccineStockHistory.objects.filter(vaccine_stock=vaccine_stock, round=round_to_update)
                 if not archived_round.exists():
                     reference_date = round_to_update.ended_at + timedelta(days=14)

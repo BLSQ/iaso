@@ -406,7 +406,7 @@ class DifferTestCase(TestCase):
 
         self.assertEqual(len(diffs), 3)
 
-        country_diff = diffs[0]
+        country_diff = next((diff for diff in diffs if diff.org_unit.org_unit_type == self.org_unit_type_country), None)
         self.assertEqual(country_diff.status, "modified")
         country_diff_comparisons = [comparison.as_dict() for comparison in country_diff.comparisons]
         self.assertEqual(7, len(country_diff_comparisons))
@@ -481,7 +481,7 @@ class DifferTestCase(TestCase):
             },
         )
 
-        region_diff = diffs[1]
+        region_diff = next((diff for diff in diffs if diff.org_unit.org_unit_type == self.org_unit_type_region), None)
         self.assertEqual(region_diff.status, "modified")
         region_diff_comparisons = [comparison.as_dict() for comparison in region_diff.comparisons]
         self.assertEqual(7, len(region_diff_comparisons))
@@ -556,7 +556,9 @@ class DifferTestCase(TestCase):
             },
         )
 
-        district_diff = diffs[2]
+        district_diff = next(
+            (diff for diff in diffs if diff.org_unit.org_unit_type == self.org_unit_type_district), None
+        )
         self.assertEqual(district_diff.status, "modified")
         district_diff_comparisons = [comparison.as_dict() for comparison in district_diff.comparisons]
         self.assertEqual(7, len(district_diff_comparisons))

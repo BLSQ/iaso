@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import InfoIcon from '@mui/icons-material/Info';
 import {
     Table,
     TableBody,
@@ -6,19 +6,23 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    Tooltip,
     useTheme,
 } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
-import { Instance } from '../types/instance';
-import MESSAGES from '../messages';
+import React, { FunctionComponent } from 'react';
 import { baseUrls } from '../../../constants/urls';
 import { colorCodes } from '../../orgUnits/reviewChanges/Components/ReviewOrgUnitChangesInfos';
+import MESSAGES from '../messages';
+import { Instance } from '../types/instance';
 
 type Props = {
     currentInstance: Instance;
+    disabled?: boolean;
 };
 const InstanceDetailsChangeRequests: FunctionComponent<Props> = ({
     currentInstance,
+    disabled = false,
 }) => {
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
@@ -50,11 +54,28 @@ const InstanceDetailsChangeRequests: FunctionComponent<Props> = ({
                                     )}
                                 </TableCell>
                                 <TableCell>
-                                    <IconButton
-                                        url={`/${baseUrls.orgUnitsChangeRequestDetail}/changeRequestId/${changeRequest.id}`}
-                                        icon="remove-red-eye"
-                                        tooltipMessage={MESSAGES.status}
-                                    />
+                                    {!disabled && (
+                                        <IconButton
+                                            url={`/${baseUrls.orgUnitsChangeRequestDetail}/changeRequestId/${changeRequest.id}`}
+                                            icon="remove-red-eye"
+                                            tooltipMessage={MESSAGES.status}
+                                        />
+                                    )}
+                                    {disabled && (
+                                        <Tooltip
+                                            title={formatMessage(
+                                                MESSAGES.disabledReason,
+                                            )}
+                                            arrow
+                                        >
+                                            <InfoIcon
+                                                color="primary"
+                                                sx={{
+                                                    cursor: 'pointer',
+                                                }}
+                                            />
+                                        </Tooltip>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         );

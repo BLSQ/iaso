@@ -9,7 +9,7 @@ export const useVaccineRepositoryReportsColumns = (): Column[] => {
         () => [
             {
                 Header: formatMessage(MESSAGES.country),
-                id: 'country_name',
+                id: 'country__name',
                 accessor: 'country_name',
                 align: 'left',
             },
@@ -23,11 +23,13 @@ export const useVaccineRepositoryReportsColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.incidentReports),
                 accessor: 'incident_report_data',
                 Cell: DocumentsCells,
+                sortable: false,
             },
             {
                 Header: formatMessage(MESSAGES.destructionReports),
                 accessor: 'destruction_report_data',
                 Cell: DocumentsCells,
+                sortable: false,
             },
         ],
         [formatMessage],

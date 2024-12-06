@@ -53,6 +53,7 @@ export const Reports: FunctionComponent<Props> = ({ params }) => {
                 count={data?.count ?? 0}
                 baseUrl={redirectUrl}
                 countOnTop
+                paramsPrefix="report"
                 params={params}
                 cellProps={getCellProps}
                 extraProps={{

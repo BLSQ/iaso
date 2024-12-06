@@ -44,11 +44,14 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         # Filter by file type
         file_type = request.query_params.get("file_type", None)
         if file_type:
-            file_type = file_type.upper()
-            if file_type == "IR":
-                queryset = queryset.filter(incidentreport__isnull=False)
-            elif file_type == "DR":
-                queryset = queryset.filter(destructionreport__isnull=False)
+            try:
+                filetypes = [tp.strip().upper() for tp in file_type.split(",")]
+                if "INCIDENT" in filetypes:
+                    queryset = queryset.filter(incidentreport__isnull=False)
+                if "DESTRUCTION" in filetypes:
+                    queryset = queryset.filter(destructionreport__isnull=False)
+            except ValueError:
+                raise ValidationError("file_type must be a comma-separated list of strings")
 
         return queryset.distinct()
 

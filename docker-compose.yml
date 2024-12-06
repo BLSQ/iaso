@@ -85,13 +85,6 @@ services:
             DISABLE_PASSWORD_LOGINS:
             MAINTENANCE_MODE:
             SERVER_URL:
-            SUPERSET_DB_NAME:
-            SUPERSET_DB_HOSTNAME:
-            SUPERSET_DB_PASSWORD:
-            SUPERSET_PORT:
-            SUPERSET_DB_USERNAME:
-            SUPERSET_SECRET_KEY:
-            SUPERSET_IASO_USER_TOKEN:
             SUPERSET_URL:
             SUPERSET_ADMIN_USERNAME:
             SUPERSET_ADMIN_PASSWORD:

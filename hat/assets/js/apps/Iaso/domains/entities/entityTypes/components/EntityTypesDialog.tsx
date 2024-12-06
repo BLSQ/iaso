@@ -151,7 +151,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     return (
                         <Chip
                             color={
-                                field && field.is_latest
+                                field?.is_latest
                                     ? 'primary'
                                     : 'secondary'
                             }

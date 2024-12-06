@@ -1,8 +1,7 @@
 import datetime
+import json
 
 import time_machine
-
-from django.core.exceptions import ValidationError
 
 from iaso import models as m
 from iaso.test import TestCase
@@ -77,13 +76,6 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             "name": "New synchronization",
             "left_source_version": self.source_version_iaso,
             "right_source_version": self.source_version_dhis2,
-            "fields_to_sync": [
-                "parent",
-                "name",
-                "opening_date",
-                "closed_date",
-                "groups",
-            ],
             "json_diff": None,
             "sync_task": None,
             "account": self.account,
@@ -97,7 +89,6 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(data_source_sync.name, kwargs["name"])
         self.assertEqual(data_source_sync.left_source_version, kwargs["left_source_version"])
         self.assertEqual(data_source_sync.right_source_version, kwargs["right_source_version"])
-        self.assertEqual(data_source_sync.fields_to_sync, kwargs["fields_to_sync"])
         self.assertEqual(data_source_sync.json_diff, kwargs["json_diff"])
         self.assertEqual(data_source_sync.sync_task, kwargs["sync_task"])
         self.assertEqual(data_source_sync.account, kwargs["account"])
@@ -105,24 +96,54 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(data_source_sync.created_at, self.DT)
         self.assertEqual(data_source_sync.updated_at, self.DT)
 
-    def test_clean_fields_to_sync(self):
-        data_source_sync = m.DataSourceSynchronization(
-            name="Foo",
-            account=self.account,
-            created_by=self.user,
-            left_source_version=self.source_version_iaso,
-            right_source_version=self.source_version_dhis2,
-        )
+    def test_create_json_diff(self):
+        # Change the name in DHIS2.
+        self.angola_country_dhis2.name = "Angola new"
+        self.angola_country_dhis2.save()
 
-        data_source_sync.fields_to_sync = ["name", "name"]
-        with self.assertRaises(ValidationError) as error:
-            data_source_sync.clean_fields_to_sync()
-        self.assertIn("Fields to synchronize must be unique.", error.exception.messages)
+        kwargs = {
+            "name": "New synchronization",
+            "left_source_version": self.source_version_iaso,
+            "right_source_version": self.source_version_dhis2,
+            "json_diff": None,
+            "sync_task": None,
+            "account": self.account,
+            "created_by": self.user,
+        }
+        data_source_sync = m.DataSourceSynchronization.objects.create(**kwargs)
+        self.assertIsNone(data_source_sync.json_diff)
+        self.assertEqual(data_source_sync.json_diff_config, "")
 
-        data_source_sync.fields_to_sync = ["name", "parent", "opening_date", "closed_date", "groups", "foo"]
-        with self.assertRaises(ValidationError) as error:
-            data_source_sync.clean_fields_to_sync()
-        self.assertIn(
-            f"You can only select up to {len(data_source_sync.SynchronizableFields)} fields to synchronize.",
-            error.exception.messages,
+        data_source_sync.create_json_diff(
+            ignore_groups=True,
+            field_names=["name"],
         )
+        json_diff = json.loads(data_source_sync.json_diff)
+        comparisons = json_diff[0]["comparisons"]
+        expected_comparisons = [
+            {
+                "field": "name",
+                "before": "Angola",
+                "after": "Angola new",
+                "status": "modified",
+                "distance": None,
+            }
+        ]
+        self.assertEqual(comparisons, expected_comparisons)
+
+        expected_json_diff_config = (
+            "{"
+            f"'version': <SourceVersion: Data source  {self.source_version_iaso.number}>, "
+            "'validation_status': None, "
+            "'top_org_unit': None, "
+            "'org_unit_types': None, "
+            f"'version_ref': <SourceVersion: Data source  {self.source_version_dhis2.number}>, "
+            "'validation_status_ref': None, "
+            "'top_org_unit_ref': None, "
+            "'org_unit_types_ref': None, "
+            "'ignore_groups': True, "
+            "'show_deleted_org_units': False, "
+            "'field_names': ['name']"
+            "}"
+        )
+        self.assertEqual(data_source_sync.json_diff_config, expected_json_diff_config)

@@ -1,10 +1,16 @@
+import logging
 import typing
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
+if typing.TYPE_CHECKING:
+    from iaso.models import OrgUnit, OrgUnitType
+
+
+logger = logging.getLogger(__name__)
 
 
 class DataSource(models.Model):
@@ -185,13 +191,6 @@ class DataSourceSynchronization(models.Model):
     - so we need to synchronize the changes in the two pyramids
     """
 
-    class SynchronizableFields(models.TextChoices):
-        NAME = "name", _("Name")
-        PARENT = "parent", _("Parent")
-        OPENING_DATE = "opening_date", _("Opening date")
-        CLOSED_DATE = "closed_date", _("Closed date")
-        GROUPS = "groups", _("Groups")
-
     name = models.CharField(
         max_length=255,
         help_text=_("Used in the UI e.g. to filter Change Requests by Data Source Synchronization operations."),
@@ -208,11 +207,12 @@ class DataSourceSynchronization(models.Model):
         related_name="used_as_right_sync_sources",
         help_text=_("Right pyramid to sync."),
     )
-    fields_to_sync = ArrayField(
-        models.CharField(max_length=20, choices=SynchronizableFields.choices),
-        size=len(SynchronizableFields),
-    )
+
     json_diff = models.JSONField(null=True, blank=True, help_text=_("The diff used to create change requests."))
+    json_diff_config = models.TextField(
+        blank=True, help_text=_("A string representing the parameters used for the diff.")
+    )
+
     sync_task = models.OneToOneField(
         "Task",
         null=True,
@@ -235,13 +235,41 @@ class DataSourceSynchronization(models.Model):
     def __str__(self) -> str:
         return self.name
 
-    def clean(self, *args, **kwargs):
-        super().clean()
-        self.clean_fields_to_sync()
+    def create_json_diff(
+        self,
+        logger_to_use: logging.Logger = None,
+        left_validation_status: typing.Union[str, None] = None,
+        left_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
+        left_org_unit_types: typing.Optional[set["OrgUnitType"]] = None,
+        right_validation_status: typing.Union[str, None] = None,
+        right_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
+        right_org_unit_types: typing.Optional[set["OrgUnitType"]] = None,
+        ignore_groups: typing.Optional[bool] = False,
+        show_deleted_org_units: typing.Optional[bool] = False,
+        field_names: typing.Optional[list[str]] = None,
+    ) -> None:
+        # Prevent a circular import.
+        from iaso.diffing import Differ, Dumper
 
-    def clean_fields_to_sync(self) -> None:
-        max_length = len(self.SynchronizableFields)
-        if len(self.fields_to_sync) > max_length:
-            raise ValidationError(f"You can only select up to {max_length} fields to synchronize.")
-        if len(set(self.fields_to_sync)) != len(self.fields_to_sync):
-            raise ValidationError("Fields to synchronize must be unique.")
+        differ_params = {
+            # Actual version.
+            "version": self.left_source_version,
+            "validation_status": left_validation_status,
+            "top_org_unit": left_top_org_unit,
+            "org_unit_types": left_org_unit_types,
+            # New version.
+            "version_ref": self.right_source_version,
+            "validation_status_ref": right_validation_status,
+            "top_org_unit_ref": right_top_org_unit,
+            "org_unit_types_ref": right_org_unit_types,
+            # Options.
+            "ignore_groups": ignore_groups,
+            "show_deleted_org_units": show_deleted_org_units,
+            "field_names": field_names,
+        }
+
+        diffs, fields = Differ(logger_to_use or logger).diff(**differ_params)
+
+        self.json_diff = Dumper(logger_to_use).as_json(diffs)
+        self.json_diff_config = str(differ_params)
+        self.save(update_fields=["json_diff", "json_diff_config"])

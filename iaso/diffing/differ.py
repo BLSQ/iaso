@@ -41,16 +41,19 @@ class Differ:
 
     def diff(
         self,
-        version_ref,
-        version,
+        version,  # Actual version.
+        version_ref,  # New version.
+        # Actual version params.
+        validation_status=None,
+        top_org_unit=None,
+        org_unit_types=None,
+        # New version.
+        validation_status_ref=None,
+        top_org_unit_ref=None,
+        org_unit_types_ref=None,
+        # Diff options.
         ignore_groups=False,
         show_deleted_org_units=False,
-        validation_status=None,
-        validation_status_ref=None,
-        top_org_unit=None,
-        top_org_unit_ref=None,
-        org_unit_types=None,
-        org_unit_types_ref=None,
         field_names=None,
     ):
         if field_names is None:

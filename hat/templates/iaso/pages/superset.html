@@ -1,9 +1,10 @@
+{% load static %}
 <!doctype html>
 <html>
     <head>
         <title>{{title}}</title>
         {{ analytics_script | safe }}
-        <script src="https://unpkg.com/@superset-ui/embedded-sdk"></script>
+        <script src="{% static 'superset.js' %}"></script>
     </head>
 
     <body>
@@ -29,7 +30,7 @@
                 document.getElementById('config').textContent,
             );
 
-            supersetEmbeddedSdk.embedDashboard({
+            window.embedDashboard({
                 id: config.dashboard_id,
                 supersetDomain: config.superset_url,
                 mountPoint: containerRef,

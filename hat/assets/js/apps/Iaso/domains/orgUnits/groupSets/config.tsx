@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react';
-import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
 import { Chip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
+import React, { useMemo } from 'react';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
-import MESSAGES from './messages';
-import { baseUrls } from '../../../constants/urls';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
+import { baseUrls } from '../../../constants/urls';
+import MESSAGES from './messages';
 
-import * as Permission from '../../../utils/permissions';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+import * as Permission from '../../../utils/permissions';
 
 export const baseUrl = baseUrls.groupSets;
 
@@ -51,6 +51,7 @@ export const useGroupSetsTableColumns = (deleteGroupSet): Column[] => {
                                     className={classes.groupChip}
                                     label={g.name}
                                     color="primary"
+                                    key={g.id}
                                 />
                             ))}
                         </span>

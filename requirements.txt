@@ -70,6 +70,7 @@ jsonschema==4.23.0  # https://github.com/python-jsonschema/jsonschema/tags
 # Web server and auth.
 # ------------------------------------------------------------------------------
 oauth2client==4.1.3  # https://github.com/googleapis/oauth2client/tags
+gunicorn==23.0.0  # https://github.com/benoitc/gunicorn/tags
 
 # DHIS2 API wrapper.
 # ------------------------------------------------------------------------------

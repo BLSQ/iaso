@@ -129,15 +129,13 @@ class DifferTestCase(TestCase):
 
     def test_diff_and_dump_as_json_for_name(self):
         """
-        Test that the dump as json method works as expected.
-
-        The diff is limited to the `name` field and to the `country`
-        org unit type to limit its size.
+        Test `Dumper.as_json()` for a field update.
         """
         # Change the name in DHIS2.
         self.angola_country_dhis2.name = "Angola new"
         self.angola_country_dhis2.save()
 
+        # Limit the diff size with restrictions on `field_names` and `org_unit_types_ref`.
         diffs, fields = Differ(test_logger).diff(
             # Actual version.
             version=self.source_version_iaso,
@@ -259,7 +257,110 @@ class DifferTestCase(TestCase):
 
         self.assertJSONEqual(json_diffs, expected_json_diffs)
 
-    def test_full_diff(self):
+    def test_diff_and_dump_as_json_for_a_new_org_unit_in_dhis2(self):
+        """
+        Test `Dumper.as_json()` for a new org unit in DHIS2 that doesn't exist in IASO.
+        """
+
+        # Delete the IASO org unit to simulate an org unit existing only in DHIS2.
+        self.angola_country_iaso.delete()
+
+        # Limit the diff size with restrictions on `field_names` and `org_unit_types_ref`.
+        diffs, fields = Differ(test_logger).diff(
+            # Actual version.
+            version=self.source_version_iaso,
+            validation_status=None,
+            top_org_unit=None,
+            org_unit_types=[self.org_unit_type_country],
+            # New version.
+            version_ref=self.source_version_dhis2,
+            validation_status_ref=None,
+            top_org_unit_ref=None,
+            org_unit_types_ref=[self.org_unit_type_country],
+            # Options.
+            ignore_groups=True,
+            show_deleted_org_units=False,
+            field_names=["name"],
+        )
+
+        dumper = Dumper(test_logger)
+        json_diffs = dumper.as_json(diffs)
+
+        expected_json_diffs = [
+            {
+                "org_unit": {
+                    "id": self.angola_country_dhis2.pk,
+                    "name": "Angola",
+                    "uuid": None,
+                    "custom": False,
+                    "validated": True,
+                    "validation_status": "VALID",
+                    "version": self.source_version_dhis2.pk,
+                    "parent": None,
+                    "path": str(self.angola_country_dhis2.path),
+                    "aliases": None,
+                    "org_unit_type": self.org_unit_type_country.pk,
+                    "sub_source": None,
+                    "source_ref": "id-1",
+                    "geom": "MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
+                    "simplified_geom": None,
+                    "catchment": None,
+                    "geom_ref": None,
+                    "gps_source": None,
+                    "location": None,
+                    "source_created_at": None,
+                    "creator": None,
+                    "extra_fields": {},
+                    "opening_date": "2022-11-28",
+                    "closed_date": "2025-11-28",
+                    "default_image": None,
+                    "reference_instances": [],
+                },
+                "orgunit_ref": {
+                    "id": self.angola_country_dhis2.pk,
+                    "name": "Angola",
+                    "uuid": None,
+                    "custom": False,
+                    "validated": True,
+                    "validation_status": "VALID",
+                    "version": self.source_version_dhis2.pk,
+                    "parent": None,
+                    "path": str(self.angola_country_dhis2.path),
+                    "aliases": None,
+                    "org_unit_type": self.org_unit_type_country.pk,
+                    "sub_source": None,
+                    "source_ref": "id-1",
+                    "geom": "MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))",
+                    "simplified_geom": None,
+                    "catchment": None,
+                    "geom_ref": None,
+                    "gps_source": None,
+                    "location": None,
+                    "source_created_at": None,
+                    "creator": None,
+                    "extra_fields": {},
+                    "opening_date": "2022-11-28",
+                    "closed_date": "2025-11-28",
+                    "default_image": None,
+                    "reference_instances": [],
+                },
+                "orgunit_dhis2": None,
+                "status": "new",
+                "comparisons": [
+                    {
+                        "field": "name",
+                        "before": None,
+                        "after": "Angola",
+                        "status": "new",
+                        "distance": None,
+                    }
+                ],
+            }
+        ]
+
+        self.assertJSONEqual(json_diffs, expected_json_diffs)
+
+    def test_full_python_diff(self):
         """
         Test that the full diff works as expected.
         """

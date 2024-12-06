@@ -762,6 +762,7 @@
     "iaso.polio.preparednessRoundStarted": "La préparation de campagne ne peut être éditée après le début du round",
     "iaso.polio.PREPARING": "En préparation",
     "iaso.polio.raStatus": "Statut RA",
+    "iaso.polio.reports": "Rapports",
     "iaso.polio.repository.title": "Archives de la gestion des vaccins",
     "iaso.polio.restoreCampaign": "Restaurer la campagne",
     "iaso.polio.ROUND1DONE": "Round 1 terminé",

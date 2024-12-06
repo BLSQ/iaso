@@ -763,6 +763,7 @@
     "iaso.polio.preparednessRoundStarted": "Preparedness can't be edited if round already started",
     "iaso.polio.PREPARING": "Preparing",
     "iaso.polio.raStatus": "RA Status",
+    "iaso.polio.reports": "Reports",
     "iaso.polio.repository.title": "Vaccine Management Repository",
     "iaso.polio.restoreCampaign": "Restore campaign",
     "iaso.polio.ROUND1DONE": "Round 1 completed",

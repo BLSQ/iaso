@@ -616,3 +616,44 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(ent1.instances.count() + ent2.instances.count(), 3)
         err_msg = f"Multiple non-deleted entities for UUID {ent1.uuid}, entity_type_id {self.default_entity_type.id}"
         mock_logger.exception.assert_called_once_with(err_msg)
+
+    def test_storage_logs(self, mock_download_file):
+        entity_uuid = "5475bfcf-5a3f-4170-9d88-245d89352362"
+        files_for_zip = [
+            "instances.json",
+            "storageLogs.json",
+            entity_uuid,  # the folder with XML submission
+        ]
+        with zipfile.ZipFile(f"/tmp/{entity_uuid}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir("storage_logs_and_change_requests"), files_for_zip)
+
+        mock_download_file.return_value = f"/tmp/{entity_uuid}.zip"
+
+        self.assertEqual(m.Entity.objects.count(), 0)
+        self.assertEqual(m.Instance.objects.count(), 0)
+        self.assertEqual(m.InstanceFile.objects.count(), 0)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        mock_download_file.assert_called_once()
+
+        # check Task status and result
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.api_import.refresh_from_db()
+        self.assertEqual(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        # Instances (Submissions) + Entity were created
+        self.assertEqual(m.Entity.objects.count(), 1)
+        entity = m.Entity.objects.get(uuid=entity_uuid)
+        self.assertEqual(m.Instance.objects.count(), 1)
+
+        # Storage logs
+        # TODO

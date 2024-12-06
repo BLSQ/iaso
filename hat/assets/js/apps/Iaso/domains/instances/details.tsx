@@ -26,6 +26,7 @@ import { ClassNames } from '../../types/utils';
 import { BeneficiaryBaseInfo } from '../entities/components/BeneficiaryBaseInfo';
 import { useGetBeneficiaryFields } from '../entities/hooks/useGetBeneficiaryFields';
 import { useGetInstance } from './compare/hooks/useGetInstance';
+import InstanceDetailsChangeRequests from './components/InstanceDetailsChangeRequests';
 import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
 import InstanceDetailsLocation from './components/InstanceDetailsLocation';
@@ -33,14 +34,13 @@ import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistor
 import InstanceFileContent from './components/InstanceFileContent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import SpeedDialInstance from './components/SpeedDialInstance';
+import { INSTANCE_METAS_FIELDS } from './constants';
 import {
     ReassignInstancePayload,
     useReassignInstance,
 } from './hooks/useReassignInstance';
 import MESSAGES from './messages';
 import { getInstancesFilesList } from './utils';
-import { INSTANCE_METAS_FIELDS } from './constants';
-import InstanceDetailsChangeRequests from './components/InstanceDetailsChangeRequests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -232,6 +232,7 @@ const InstanceDetails: FunctionComponent = () => {
                                 >
                                     <InstanceDetailsChangeRequests
                                         currentInstance={currentInstance}
+                                        disabled={currentInstance.deleted}
                                     />
                                 </WidgetPaper>
                             )}

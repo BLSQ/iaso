@@ -651,6 +651,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Approved',
         id: 'iaso.label.approved',
     },
+    disabledReason: {
+        defaultMessage:
+            'Change request is not available as submission is deleted',
+        id: 'iaso.instances.disabledReason',
+    },
 });
 
 export default MESSAGES;

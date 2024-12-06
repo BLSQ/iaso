@@ -69,8 +69,12 @@ export const CurrentUserInfos: FunctionComponent<Props> = ({
             >
                 {currentUser?.user_name}
             </Box>
-            <Box sx={{ mx: 1 }}>-</Box>
-            <AccountSwitch />
+            {currentUser.account && (
+                <>
+                    <Box sx={{ mx: 1 }}>-</Box>
+                    <AccountSwitch />
+                </>
+            )}
             <Popover
                 id="mouse-over-popover"
                 className={classes.popover}

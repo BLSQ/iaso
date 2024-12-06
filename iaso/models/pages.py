@@ -52,5 +52,8 @@ class Page(models.Model):
         help_text="Language and locale for the PowerBI embedded report e.g en-us or fr-be",
     )
 
+    superset_dashboard_id = models.TextField(blank=True, null=True)
+    superset_dashboard_ui_config = models.JSONField(blank=True, null=True)
+
     def __str__(self):
         return "%s " % (self.name,)

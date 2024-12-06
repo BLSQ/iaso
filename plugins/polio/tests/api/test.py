@@ -13,6 +13,7 @@ class PolioTestCaseMixin:
         district_ou_type,
         country_name="Groland",
         district_name="Groville",
+        vaccine=pm.VACCINES[0][0],
     ):
         country = m.OrgUnit.objects.create(
             org_unit_type=country_ou_type,
@@ -26,18 +27,17 @@ class PolioTestCaseMixin:
             version=source_version,
             name=district_name,
             validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
+            source_ref="PvtAI4Rr",
         )
         campaign = pm.Campaign.objects.create(
             obr_name=obr_name,
             country=country,
             account=account,
-            vacine=pm.VACCINES[0][0],
             separate_scopes_per_round=False,
         )
         scope_group = m.Group.objects.create(name="campaign_scope", source_version=source_version)
         scope_group.org_units.set([district])  # FIXME: we should actually have children org units
-        scope = pm.CampaignScope.objects.create(campaign=campaign, vaccine=pm.VACCINES[0][0], group=scope_group)
+        scope = pm.CampaignScope.objects.create(campaign=campaign, vaccine=vaccine, group=scope_group)
 
         round_1 = pm.Round.objects.create(
             campaign=campaign,

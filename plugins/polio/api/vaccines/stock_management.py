@@ -1,6 +1,6 @@
 import datetime
 import enum
-
+from django.db.models import OuterRef, Subquery, Exists, Q
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, serializers, status
@@ -8,7 +8,8 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.request import Request
 from rest_framework.response import Response
-
+from rest_framework.exceptions import ValidationError
+from django.utils.dateparse import parse_date
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
@@ -18,6 +19,7 @@ from plugins.polio.models import (
     DestructionReport,
     IncidentReport,
     OutgoingStockMovement,
+    Round,
     VaccineArrivalReport,
     VaccineRequestForm,
     VaccineStock,
@@ -59,21 +61,24 @@ class VaccineStockCalculator:
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.vaccine_stock.vaccine]
 
-    def get_vials_used(self):
-        results = self.get_list_of_used_vials()
+    def get_vials_used(self, end_date=None):
+        results = self.get_list_of_used_vials(end_date)
         total = 0
         for result in results:
             total += result["vials_in"]
 
         return total
 
-    def get_vials_destroyed(self):
+    def get_vials_destroyed(self, end_date=None):
         if not self.destruction_reports.exists():
             return 0
-        return sum(report.unusable_vials_destroyed or 0 for report in self.destruction_reports)
+        destruction_reports = self.destruction_reports
+        if end_date:
+            destruction_reports = destruction_reports.filter(destruction_report_date__lte=end_date)
+        return sum(report.unusable_vials_destroyed or 0 for report in destruction_reports)
 
-    def get_total_of_usable_vials(self):
-        results = self.get_list_of_usable_vials()
+    def get_total_of_usable_vials(self, end_date=None):
+        results = self.get_list_of_usable_vials(end_date)
         total_vials_in = 0
         total_doses_in = 0
 
@@ -86,11 +91,10 @@ class VaccineStockCalculator:
                 total_vials_in -= result["vials_out"]
             if result["doses_out"]:
                 total_doses_in -= result["doses_out"]
-
         return total_vials_in, total_doses_in
 
-    def get_vials_received(self):
-        results = self.get_list_of_vaccines_received()
+    def get_vials_received(self, end_date=None):
+        results = self.get_list_of_vaccines_received(end_date)
 
         total_vials_in = 0
 
@@ -100,8 +104,8 @@ class VaccineStockCalculator:
 
         return total_vials_in
 
-    def get_total_of_unusable_vials(self):
-        results = self.get_list_of_unusable_vials()
+    def get_total_of_unusable_vials(self, end_date=None):
+        results = self.get_list_of_unusable_vials(end_date)
 
         total_vials_in = 0
         total_doses_in = 0
@@ -118,7 +122,7 @@ class VaccineStockCalculator:
 
         return total_vials_in, total_doses_in
 
-    def get_list_of_vaccines_received(self):
+    def get_list_of_vaccines_received(self, end_date=None):
         """
         Vaccines received are only those linked to an arrival report. We exclude those found e.g. during physical inventory
         """
@@ -126,11 +130,28 @@ class VaccineStockCalculator:
         vrfs = VaccineRequestForm.objects.filter(
             campaign__country=self.vaccine_stock.country, vaccine_type=self.vaccine_stock.vaccine
         )
+        if end_date:
+            eligible_rounds = (
+                Round.objects.filter(campaign=OuterRef("campaign"))
+                .filter(
+                    (
+                        Q(campaign__separate_scopes_per_round=False)
+                        & Q(campaign__scopes__vaccine=self.vaccine_stock.vaccine)
+                    )
+                    | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=self.vaccine_stock.vaccine))
+                )
+                .filter(ended_at__lte=end_date)
+                .filter(id__in=OuterRef("rounds"))
+            )
+            vrfs = vrfs.filter(Exists(Subquery(eligible_rounds)))
+
         if not vrfs.exists():
             arrival_reports = []
         else:
             # Then find the corresponding VaccineArrivalReports
             arrival_reports = VaccineArrivalReport.objects.filter(request_form__in=vrfs)
+            if end_date:
+                arrival_reports = arrival_reports.filter(arrival_report_date__lte=end_date)
             if not arrival_reports.exists():
                 arrival_reports = []
         results = []
@@ -149,12 +170,14 @@ class VaccineStockCalculator:
             )
         return results
 
-    def get_list_of_usable_vials(self):
+    def get_list_of_usable_vials(self, end_date=None):
         # First get vaccines received from arrival reports
-        results = self.get_list_of_vaccines_received()
+        results = self.get_list_of_vaccines_received(end_date)
 
         # Add stock movements (used and missing vials)
         stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock).order_by("report_date")
+        if end_date:
+            stock_movements = stock_movements.filter(report_date__lte=end_date)
         for movement in stock_movements:
             if movement.usable_vials_used > 0:
                 results.append(
@@ -186,6 +209,8 @@ class VaccineStockCalculator:
         incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
             "date_of_incident_report"
         )
+        if end_date:
+            incident_reports = incident_reports.filter(date_of_incident_report__lte=end_date)
         for report in incident_reports:
             if (
                 report.usable_vials > 0
@@ -238,9 +263,11 @@ class VaccineStockCalculator:
 
         return results
 
-    def get_list_of_used_vials(self):
+    def get_list_of_used_vials(self, end_date=None):
         # Used vials are those related to formA outgoing movements. Vials with e.g expired date become unusable, but have not been used
         outgoing_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock)
+        if end_date:
+            outgoing_movements = outgoing_movements.filter(report_date__lte=end_date)
         results = []
         for movement in outgoing_movements:
             if movement.usable_vials_used > 0:
@@ -257,15 +284,20 @@ class VaccineStockCalculator:
                 )
         return results
 
-    def get_list_of_unusable_vials(self):
+    def get_list_of_unusable_vials(self, end_date=None):
         # First get the used vials
-        results = self.get_list_of_used_vials()
+        results = self.get_list_of_used_vials(end_date)
 
         # Get all IncidentReports and Destruction reports for the VaccineStock
         incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock)
+        if end_date:
+            incident_reports = incident_reports.filter(date_of_incident_report__lte=end_date)
+
         destruction_reports = DestructionReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
             "destruction_report_date"
         )
+        if end_date:
+            destruction_reports = destruction_reports.filter(destruction_report_date__lte=end_date)
 
         for report in destruction_reports:
             results.append(
@@ -631,8 +663,14 @@ class VaccineStockManagementViewSet(ModelViewSet):
         except VaccineStock.DoesNotExist:
             return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        end_date = request.query_params.get("end_date", None)
+        if end_date:
+            parsed_end_date = parse_date(end_date)
+            if not parsed_end_date:
+                raise ValidationError("The 'end_date' query parameter is not a valid date.")
+
         calc = VaccineStockCalculator(vaccine_stock)
-        results = calc.get_list_of_usable_vials()
+        results = calc.get_list_of_usable_vials(end_date)
         results = self._sort_results(request, results)
 
         paginator = Paginator()
@@ -658,8 +696,14 @@ class VaccineStockManagementViewSet(ModelViewSet):
         except VaccineStock.DoesNotExist:
             return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        end_date = request.query_params.get("end_date", None)
+        if end_date:
+            parsed_end_date = parse_date(end_date)
+            if not parsed_end_date:
+                raise ValidationError("The 'end_date' query parameter is not a valid date.")
+
         calc = VaccineStockCalculator(vaccine_stock)
-        results = calc.get_list_of_unusable_vials()
+        results = calc.get_list_of_unusable_vials(end_date)
         results = self._sort_results(request, results)
 
         paginator = Paginator()

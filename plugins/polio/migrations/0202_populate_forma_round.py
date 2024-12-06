@@ -9,16 +9,10 @@ def populate_forma_round(apps, schema_editor):
 
     total_movements = OutgoingStockMovement.objects.count()
     movements_with_round = 0
-    print(f"\nTotal Form A movements to process: {total_movements}")
 
     for movement in OutgoingStockMovement.objects.all():
         # Get all rounds for this campaign ordered by start date
         campaign_rounds = Round.objects.filter(campaign=movement.campaign).order_by("number")
-        print(f"\nProcessing Form A for campaign {movement.campaign.obr_name} with {campaign_rounds.count()} rounds")
-        for round in campaign_rounds:
-            print(f"Round {round.number} started at {round.started_at}")
-
-        print(f"Form A reception date: {movement.form_a_reception_date}")
 
         # Find the appropriate round for this Form A
         current_round = None
@@ -27,20 +21,16 @@ def populate_forma_round(apps, schema_editor):
 
             if next_round:
                 # If Form A is between this round and next round
-                print(f"Checking if Form A is between {round.number} and {next_round.number}")
                 if (
                     round.started_at
                     and next_round.started_at
                     and round.started_at <= movement.form_a_reception_date < next_round.started_at
                 ):
-                    print(f"Form A is between {round.number} and {next_round.number}")
                     current_round = round
                     break
             else:
                 # For the last round, just check if Form A is after its start
-                print(f"Checking if Form A is after {round.number}")
                 if round.started_at and round.started_at <= movement.form_a_reception_date:
-                    print(f"Form A is after {round.number}")
                     current_round = round
                     break
 
@@ -49,11 +39,6 @@ def populate_forma_round(apps, schema_editor):
 
         if current_round:
             movements_with_round += 1
-            print(f"Added round {current_round} to Form A")
-        else:
-            print("No matching round found for Form A")
-
-    print(f"\nMigration complete: {movements_with_round}/{total_movements} Form A movements were assigned a round")
 
 
 def reverse_populate_forma_round(apps, schema_editor):

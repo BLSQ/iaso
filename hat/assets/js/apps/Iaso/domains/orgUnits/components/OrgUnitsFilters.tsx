@@ -119,6 +119,22 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     } = useGetOrgUnitValidationStatus(true);
     // DATA
 
+    const getNewSourceVersionId = useCallback(
+        (newDataSourceId: number) => {
+            const dataSource = dataSources?.find(
+                src => src?.original?.id === newDataSourceId,
+            );
+            const versions = dataSource?.original?.versions || [];
+            return (
+                dataSource?.original?.default_version?.id ||
+                (versions.length > 0
+                    ? versions[versions.length - 1]?.id
+                    : undefined)
+            );
+        },
+        [dataSources],
+    );
+
     // EVENTS
     const handleChange = useCallback(
         (key, value) => {
@@ -131,15 +147,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             if (key === 'source') {
                 setInitialOrgUnitId(undefined);
                 const newDataSourceId = parseInt(value, 10);
-                const dataSource = dataSources?.find(
-                    src => src?.original?.id === newDataSourceId,
-                );
-                const versions = dataSource?.original?.versions || [];
                 const newSourceVersionId =
-                    dataSource?.original?.default_version?.id ||
-                    (versions.length > 0
-                        ? versions[versions.length - 1]?.id
-                        : undefined);
+                    getNewSourceVersionId(newDataSourceId);
                 setSourceVersionId(newSourceVersionId);
                 newFilters.version = newSourceVersionId?.toString();
                 setDataSourceId(newDataSourceId);
@@ -167,7 +176,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             tempSearches[searchIndex] = newFilters;
             setSearches(tempSearches);
         },
-        [filters, searches, searchIndex, setSearches, dataSources],
+        [filters, searches, searchIndex, setSearches, getNewSourceVersionId],
     );
 
     const handleLocationLimitChange = useCallback(
@@ -223,15 +232,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     }, [dataSourceId, dataSources, filters?.version]);
 
     useEffect(() => {
-        // if no dataSourceId or sourceVersionId are provided, use the default from user
-        if (
-            !dataSourceId &&
-            !sourceVersionId &&
-            !filters?.version &&
-            currentUser?.account?.default_version?.data_source?.id &&
-            !filters?.group
-        ) {
-            // TO-DO => IA-1491 when coming from groups page, we need to prefill source and version from the selected group !
+        if (!dataSourceId) {
             setDataSourceId(
                 filters?.source ??
                     currentUser?.account?.default_version?.data_source?.id,
@@ -240,8 +241,13 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 filters?.version ?? currentUser?.account?.default_version?.id,
             );
         }
+        if (dataSourceId && !sourceVersionId) {
+            const newSourceVersionId = getNewSourceVersionId(dataSourceId);
+            setSourceVersionId(newSourceVersionId);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
     // USE EFFECTS
 
     const versionsDropDown = useMemo(() => {

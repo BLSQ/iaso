@@ -81,10 +81,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     locationLimit,
     setLocationLimit,
 }) => {
-    const classes: Record<string, string> = useStyles();
-    const { formatMessage }: { formatMessage: IntlFormatMessage } =
-        useSafeIntl();
-    const currentUser = useCurrentUser();
+    // STATES
     const [dataSourceId, setDataSourceId] = useState<number | undefined>(
         currentSearch?.source ? parseInt(currentSearch?.source, 10) : undefined,
     );
@@ -99,19 +96,15 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const [initialOrgUnitId, setInitialOrgUnitId] = useState<
         string | undefined
     >(currentSearch?.levels);
-    const [filters, setFilters] = useState<Record<string, any>>(currentSearch);
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
+    const [filters, setFilters] = useState<Record<string, any>>(currentSearch);
+    // STATES
+
+    // DATA
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-
-    useSkipEffectOnMount(() => {
-        setInitialOrgUnitId(currentSearch?.levels);
-    }, [currentSearch?.levels]);
-
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources(true);
-
-    const getVersionLabel = useGetVersionLabel(dataSources);
     const { data: projects, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
     const { data: groups, isFetching: isFetchingGroups } = useGetGroups({
@@ -120,51 +113,62 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     });
     const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
         useGetOrgUnitTypesDropdownOptions(projectId);
-
-    const instancesOptions = useInstancesOptions();
-
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
     } = useGetOrgUnitValidationStatus(true);
-    const handleChange = (key, value) => {
-        const newFilters: Record<string, unknown> = {
-            ...filters,
-        };
-        if (key === 'version') {
-            setSourceVersionId(parseInt(value, 10));
-        }
-        if (key === 'source') {
-            setInitialOrgUnitId(undefined);
-            setSourceVersionId(undefined);
-            setDataSourceId(parseInt(value, 10));
-            delete newFilters.levels;
-            delete newFilters.orgUnitParentId;
-        }
-        if (key === 'levels') {
-            setInitialOrgUnitId(value);
-        }
-        if (key === 'project') {
-            setInitialOrgUnitId(undefined);
-            newFilters.orgUnitTypeId = undefined;
-            setProjectId(parseInt(value, 10));
-        }
-        if ((!value || value === '') && newFilters[key]) {
-            delete newFilters[key];
-        } else {
-            newFilters[key] = value;
-        }
-        if (newFilters.source && newFilters.version) {
-            delete newFilters.source;
-        }
-        setFilters(newFilters);
-        const tempSearches: [Record<string, unknown>] = [...searches];
-        tempSearches[searchIndex] = newFilters;
-        setSearches(tempSearches);
-    };
-    const currentColor = filters?.color
-        ? `#${filters.color}`
-        : getChipColors(searchIndex);
+    // DATA
+
+    // EVENTS
+    const handleChange = useCallback(
+        (key, value) => {
+            const newFilters: Record<string, unknown> = {
+                ...filters,
+            };
+            if (key === 'version') {
+                setSourceVersionId(parseInt(value, 10));
+            }
+            if (key === 'source') {
+                setInitialOrgUnitId(undefined);
+                const newDataSourceId = parseInt(value, 10);
+                const dataSource = dataSources?.find(
+                    src => src?.original?.id === newDataSourceId,
+                );
+                const versions = dataSource?.original?.versions || [];
+                const newSourceVersionId =
+                    dataSource?.original?.default_version?.id ||
+                    (versions.length > 0
+                        ? versions[versions.length - 1]?.id
+                        : undefined);
+                setSourceVersionId(newSourceVersionId);
+                newFilters.version = newSourceVersionId?.toString();
+                setDataSourceId(newDataSourceId);
+                delete newFilters.levels;
+                delete newFilters.orgUnitParentId;
+            }
+            if (key === 'levels') {
+                setInitialOrgUnitId(value);
+            }
+            if (key === 'project') {
+                setInitialOrgUnitId(undefined);
+                newFilters.orgUnitTypeId = undefined;
+                setProjectId(parseInt(value, 10));
+            }
+            if ((!value || value === '') && newFilters[key]) {
+                delete newFilters[key];
+            } else {
+                newFilters[key] = value;
+            }
+            if (newFilters.source && newFilters.version) {
+                delete newFilters.source;
+            }
+            setFilters(newFilters);
+            const tempSearches: [Record<string, unknown>] = [...searches];
+            tempSearches[searchIndex] = newFilters;
+            setSearches(tempSearches);
+        },
+        [filters, searches, searchIndex, setSearches, dataSources],
+    );
 
     const handleLocationLimitChange = useCallback(
         (key: string, value: number) => {
@@ -172,6 +176,31 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         },
         [setLocationLimit],
     );
+    // EVENTS
+
+    const currentColor = filters?.color
+        ? `#${filters.color}`
+        : getChipColors(searchIndex);
+
+    // HOOKS
+    const currentUser = useCurrentUser();
+    const instancesOptions = useInstancesOptions();
+    const getVersionLabel = useGetVersionLabel(dataSources);
+    const classes: Record<string, string> = useStyles();
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
+    // HOOKS
+
+    // USE EFFECTS
+    useSkipEffectOnMount(() => {
+        setInitialOrgUnitId(currentSearch?.levels);
+    }, [currentSearch?.levels]);
+
+    useSkipEffectOnMount(() => {
+        if (filters !== currentSearch) {
+            setFilters(currentSearch);
+        }
+    }, [currentSearch]);
 
     // Splitting this effect from the one below, so we can use the deps array
     useEffect(() => {
@@ -213,34 +242,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+    // USE EFFECTS
 
-    // Set the version to the dataSources default version when changing source, or the first version if no default is set
-    useEffect(() => {
-        if (dataSourceId) {
-            const dataSource = dataSources?.find(
-                src => src?.original?.id === dataSourceId,
-            );
-            if (
-                dataSource &&
-                !dataSource.original?.versions.find(
-                    version => version.id === sourceVersionId,
-                )
-            ) {
-                const selectedVersion =
-                    dataSource.original?.default_version?.id ||
-                    dataSource.original?.versions[
-                        dataSource.original.versions.length - 1
-                    ]?.id;
-                setSourceVersionId(selectedVersion);
-            }
-        }
-    }, [dataSourceId, sourceVersionId, dataSources]);
-
-    useSkipEffectOnMount(() => {
-        if (filters !== currentSearch) {
-            setFilters(currentSearch);
-        }
-    }, [currentSearch]);
     const versionsDropDown = useMemo(() => {
         if (!dataSources || !dataSourceId) return [];
         return (

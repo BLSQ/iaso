@@ -42,7 +42,7 @@ RUN ls ./hat/assets
 
 
 ########### Django Builder ########################################################################
-FROM python:3.9 as base
+FROM python:3.12 as base
 
 RUN apt-get update && apt-get --yes  --no-install-recommends install \
     gettext \

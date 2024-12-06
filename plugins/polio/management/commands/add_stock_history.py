@@ -13,9 +13,11 @@ class Command(BaseCommand):
     help = """Compute stock history and add it when missing"""
 
     def handle(self, *args, **options):
-        rounds_to_update = Round.objects.filter(
-            vaccinerequestform__isnull=False, vaccinerequestform__deleted_at__isnull=True
-        ).order_by("ended_at")
+        rounds_to_update = (
+            Round.objects.filter(vaccinerequestform__isnull=False, vaccinerequestform__deleted_at__isnull=True)
+            .select_related("campaign__country")
+            .order_by("ended_at")
+        )
 
         vaccines = [v[0] for v in VACCINES]
 
@@ -23,14 +25,12 @@ class Command(BaseCommand):
             rounds_for_vaccine = rounds_to_update.filter(
                 (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vaccine))
                 | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vaccine))
-            ).exclude(
-                id__in=VaccineStockHistory.objects.filter(vaccine_stock__vaccine=vaccine).values_list(
-                    "round_id", flat=True
-                )
             )
-            vaccine_stock = VaccineStock.objects.filter(vaccine=vaccine)
             for round_to_update in rounds_for_vaccine:
-                reference_date = round_to_update.ended_at + timedelta(days=14)
-                archive_stock_for_round(
-                    round=round_to_update, vaccine_stock=vaccine_stock, reference_date=reference_date
-                )
+                vaccine_stock = VaccineStock.objects.filter(vaccine=vaccine, country=round_to_update.campaign.country)
+                archived_round = VaccineStockHistory.objects.filter(vaccine_stock=vaccine_stock, round=round_to_update)
+                if not archived_round.exists():
+                    reference_date = round_to_update.ended_at + timedelta(days=14)
+                    archive_stock_for_round(
+                        round=round_to_update, vaccine_stock=vaccine_stock, reference_date=reference_date
+                    )

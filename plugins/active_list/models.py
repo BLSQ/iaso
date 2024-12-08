@@ -106,11 +106,42 @@ class ActivePatientsList(models.Model):
 
     active = models.BooleanField(default=True)  # denormalized information
     import_source = models.ForeignKey(Import, on_delete=models.CASCADE, choices=SOURCE_CHOICES)
-    validation_status = models.CharField(max_length=255, null=True, choices=VALIDATION_STATUS_CHOICES, default="WAITING_FOR_VALIDATION")
+    validation_status = models.CharField(
+        max_length=255, null=True, choices=VALIDATION_STATUS_CHOICES, default="WAITING_FOR_VALIDATION"
+    )
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
 
     class Meta:
         db_table = "active_list"  # Optional: to match the exact table name
+
+
+PATIENT_LIST_DISPLAY_FIELDS = {
+    "number": "Index",
+    #  "region": "Région",
+    # "district": "District",
+    #  "code_ets": "Code établissement",
+    #  "facility_name": "Nom établissement",
+    #   "period": "Période",
+    "identifier_code": "Code identificateur",
+    "sex": "Sexe",
+    "age": "Âge",
+    "weight": "Poids",
+    "new_inclusion": "Nouvelle inclusion",
+    "transfer_in": "Transfert entrant",
+    "return_to_care": "Retour aux soins",
+    "tb_hiv": "TB/VIH",
+    "hiv_type": "Type de VIH",
+    "treatment_line": "Ligne de traitement",
+    "last_dispensation_date": "Date de dernière dispensation",
+    "days_dispensed": "Jours dispensés",
+    "regimen": "Régime",
+    "stable": "Stable",
+    "transfer_out": "Transfert sortant",
+    "death": "Décès",
+    "art_stoppage": "Arrêt du TAR",
+    "served_elsewhere": "Servi ailleurs",
+    "active": "Actif",
+}
 
 
 class Validation(models.Model):

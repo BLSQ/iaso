@@ -76,3 +76,42 @@ function fillSelectWithMonths () {
   selectBox.value = months[5]
   $('#period').val(months[5])
 }
+
+function formatTimestamp(timestamp) {
+  const options = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    timeZone: 'UTC', // Important: Keep the timestamp in UTC
+  };
+
+  const date = new Date(timestamp);
+  return date.toLocaleString(navigator.language, options);
+}
+
+function generateTable (data) {
+  var table = $('<table id="generatedTable"></table>') // Create the table element
+  var thead = $('<thead></thead>')
+  var tbody = $('<tbody></tbody>')
+  // Create table header row
+  var headerRow = $('<tr></tr>')
+  for (var key in data[0]) { // Assuming all objects have the same keys
+    headerRow.append($('<th></th>').text(key))
+  }
+  thead.append(headerRow)
+  table.append(thead)
+
+  // Create table data rows
+  $(data).each(function (index, obj) {
+    var row = $('<tr></tr>')
+    for (var key in obj) {
+      row.append($('<td></td>').text(obj[key]))
+    }
+    tbody.append(row)
+  })
+  table.append(tbody)
+  return table
+}

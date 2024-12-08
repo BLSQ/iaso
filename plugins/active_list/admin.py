@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Import, ActivePatientsList, Validation
 
+
 @admin.register(Import)
 class ImportAdmin(admin.ModelAdmin):
     list_display = (
@@ -15,7 +16,8 @@ class ImportAdmin(admin.ModelAdmin):
     )
     list_filter = ("source", "month", "creation_date")
     search_fields = ("file_name", "hash_key")
-    raw_id_fields = ( "org_unit", )
+    raw_id_fields = ("org_unit",)
+
 
 @admin.register(ActivePatientsList)
 class ActivePatientsListAdmin(admin.ModelAdmin):

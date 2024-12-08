@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Listing des patients</h2>
+
+<br/>
+<div>
+    <div>Période de rapportage</div>
+    <select id="monthSelect"></select><br/><br/>
+    <div>Choisissez votre établissement:</div>
+    <select id="regionSelect"></select><br/><br/>
+    <select id="districtSelect"></select><br/><br/>
+    <select id="facilitySelect"></select><br/><br/>
+</div>
+<div id="dataContainer">
+    <div id="table-container"></div>
+</div>
+<script src="{% static 'patient_list.js' %}">
+</script>
+{% endblock %}

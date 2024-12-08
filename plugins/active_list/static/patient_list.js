@@ -1,11 +1,12 @@
 var monthSelect = $('#monthSelect');
 var regionSelect = $('#regionSelect');
 var districtSelect = $('#districtSelect');
+var facilitySelect = $('#facilitySelect')
 
-var districtSelectBox = $('#districtSelectBox');
 var dataContainer = $('#dataContainer');
 regionSelect.hide();
-districtSelectBox.hide();
+districtSelect.hide();
+facilitySelect.hide();
 dataContainer.hide();
 monthSelect.on('change', function () {
   $('#period').val(this.value);
@@ -18,31 +19,45 @@ $.getJSON('/api/orgunits/treesearch/?parent_id=2247722&validation_status=VALID&i
 });
 
 regionSelect.on('change', function () {
-  districtSelectBox.hide();
-
+  districtSelect.hide();
+  facilitySelect.hide();
   $.getJSON('/api/orgunits/treesearch/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
     fillSelect('#districtSelect', data);
 
-    districtSelectBox.show();
+    districtSelect.show();
     dataContainer.hide();
   });
 });
-
 districtSelect.on('change', function () {
+  facilitySelect.hide()
   $.getJSON('/api/orgunits/treesearch/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
-    var orgUnitId = districtSelect.val();
+    fillSelect('#facilitySelect', data)
+    facilitySelect.show()
+  })
+})
+
+facilitySelect.on('change', function () {
+  $.getJSON('/api/orgunits/treesearch/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
+    var orgUnitId = facilitySelect.val();
     var period = monthSelect.val();
-    console.log(orgUnitId, period);
-    $.getJSON('/active_list/validation_api/' + orgUnitId + '/' + period, function (data) {
+    $.getJSON('/active_list/patient_list_api/' + orgUnitId + '/' + period +'/', function (data) {
       var table = generateTable(data.table_content);
-      $("#completeness").text(data.completeness);
+
       $('#table-container').html(table);
+      $("#generatedTable").tablesorter();
       dataContainer.show();
     });
 
   });
 });
 
+$(document).ready(function () {
+  $('form').submit(function (event) {
+    event.preventDefault()
+  })
+
+  fillSelectWithMonths()
+})
 
 $(document).ready(function () {
   fillSelectWithMonths();

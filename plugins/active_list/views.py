@@ -3,6 +3,8 @@ import os
 import uuid
 import pandas as pd
 import math
+
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
 
@@ -11,7 +13,14 @@ from .settings import OPENHEXA_USER, OPENHEXA_PASSWORD
 from django.utils.encoding import smart_str
 from .openhexa import *
 
-from .models import Import, SOURCE_EXCEL, ActivePatientsList, VALIDATION_STATUS_CHOICES, Validation
+from .models import (
+    Import,
+    SOURCE_EXCEL,
+    ActivePatientsList,
+    VALIDATION_STATUS_CHOICES,
+    Validation,
+    PATIENT_LIST_DISPLAY_FIELDS,
+)
 
 UPLOAD_FOLDER = "upload"  # Create this folder in your project directory
 
@@ -41,6 +50,17 @@ RESPONSES = {
 }
 
 
+@login_required
+def homepage(request):
+    return render(request, "homepage.html", {})
+
+
+@login_required
+def patient_list(request):
+    return render(request, "patient_list.html", {})
+
+
+@login_required
 def upload(request):
     if request.method == "POST":
         org_unit_id = request.POST.get("org_unit_id")
@@ -66,8 +86,8 @@ def upload(request):
     return render(request, "upload.html", {})
 
 
+@login_required
 def validation(request, org_unit_id=None, period=None):
-
     org_unit = None
 
     return render(
@@ -84,13 +104,15 @@ def validation(request, org_unit_id=None, period=None):
 
 def validation_api(request, org_unit_id, period):
     org_units = OrgUnit.objects.filter(parent_id=org_unit_id).order_by("name")
-    print("couco qsdfqsdu")
-    res = []
+
+    table_content = []
+    report_count = 0
     for org_unit in org_units:
         obj = {}
-        obj["site"] = org_unit.name
+        obj["Site"] = org_unit.name
         latest_import = Import.objects.filter(org_unit=org_unit).filter(month=period).order_by("-creation_date").first()
         if latest_import:
+            report_count = report_count + 1
             obj["A rapporté"] = "Oui"
             latest_validation = Validation.objects.filter(source_import=latest_import).order_by("-created_at").first()
             if latest_validation:
@@ -99,14 +121,34 @@ def validation_api(request, org_unit_id, period):
             else:
                 obj["Statut"] = ""
                 obj["Observation"] = ""
+            obj["Dernière modification"] = latest_import.creation_date.strftime(("%d/%m/%y %H:%M:%S"))
         else:
             obj["A rapporté"] = "Non"
             obj["Statut"] = ""
             obj["Observation"] = ""
-        res.append(obj)
+            obj["Dernière modification"] = ""
+        table_content.append(obj)
+
+    res = {"table_content": table_content, "completeness": "%s/%s" % (report_count, len(org_units))}
     return JsonResponse(res, status=200, safe=False)
 
 
+def patient_list_api(request, org_unit_id, period):
+    last_import = Import.objects.filter(org_unit=org_unit_id).filter(month=period).order_by("-creation_date").first()
+    patients = ActivePatientsList.objects.filter(import_source=last_import).order_by("number").all()
+
+    table_content = []
+    for patient in patients:
+        patient_object = {}
+        for field in PATIENT_LIST_DISPLAY_FIELDS:
+            patient_object[PATIENT_LIST_DISPLAY_FIELDS[field]] = getattr(patient, field)
+        table_content.append(patient_object)
+    print(table_content)
+    res = {
+        "table_content": table_content,
+        # "completeness": "%s/%s" % (report_count, len(org_units))
+    }
+    return JsonResponse(res, status=200, safe=False)
 
 
 def check_presence(file_hash, org_unit_id, month):

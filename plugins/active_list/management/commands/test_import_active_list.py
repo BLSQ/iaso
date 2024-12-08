@@ -70,7 +70,9 @@ class Command(BaseCommand):
         # Map values in column `stable`
         df["stable"] = df["stable"].map({"Oui": True, "Non": False})
         df["sex"] = df["sex"].map({"F": "FEMALE", "M": "MALE"})
-        df["treatment_line"] = df["treatment_line"].map({"1er Ligne": "1STLINE", "2e Ligne": "2NDLINE", "3e Ligne": "3RDLINE"})
+        df["treatment_line"] = df["treatment_line"].map(
+            {"1er Ligne": "1STLINE", "2e Ligne": "2NDLINE", "3e Ligne": "3RDLINE"}
+        )
         df["hiv_type"] = df["hiv_type"].map({"1": "HIV1", "2": "HIV2", "1&2": "HIV 1&2"})
 
         # Convert `last_dispensation_date` to datetime

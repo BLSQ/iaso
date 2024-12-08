@@ -12,7 +12,7 @@ monthSelect.on('change', function () {
   $('#period').val(this.value);
 });
 
-$.getJSON('/api/orgunits/tree/?parent_id=2247722&validation_status=VALID&ignoreEmptyNames=true', function (data) {
+$.getJSON('/api/orgunits/tree/?validation_status=VALID&ignoreEmptyNames=true', function (data) {
 
   fillSelect('#regionSelect', data);
   regionSelect.show();

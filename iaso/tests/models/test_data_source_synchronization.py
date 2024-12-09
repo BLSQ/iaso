@@ -74,8 +74,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
     def test_create(self):
         kwargs = {
             "name": "New synchronization",
-            "left_source_version": self.source_version_iaso,
-            "right_source_version": self.source_version_dhis2,
+            "source_version_to_update": self.source_version_iaso,
+            "source_version_to_compare_with": self.source_version_dhis2,
             "json_diff": None,
             "sync_task": None,
             "account": self.account,
@@ -87,8 +87,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         data_source_sync.refresh_from_db()
 
         self.assertEqual(data_source_sync.name, kwargs["name"])
-        self.assertEqual(data_source_sync.left_source_version, kwargs["left_source_version"])
-        self.assertEqual(data_source_sync.right_source_version, kwargs["right_source_version"])
+        self.assertEqual(data_source_sync.source_version_to_update, kwargs["source_version_to_update"])
+        self.assertEqual(data_source_sync.source_version_to_compare_with, kwargs["source_version_to_compare_with"])
         self.assertEqual(data_source_sync.json_diff, kwargs["json_diff"])
         self.assertEqual(data_source_sync.sync_task, kwargs["sync_task"])
         self.assertEqual(data_source_sync.account, kwargs["account"])
@@ -103,8 +103,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
 
         kwargs = {
             "name": "New synchronization",
-            "left_source_version": self.source_version_iaso,
-            "right_source_version": self.source_version_dhis2,
+            "source_version_to_update": self.source_version_iaso,
+            "source_version_to_compare_with": self.source_version_dhis2,
             "json_diff": None,
             "sync_task": None,
             "account": self.account,

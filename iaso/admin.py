@@ -1081,7 +1081,7 @@ class TenantUserAdmin(admin.ModelAdmin):
 
 @admin.register(DataSourceSynchronization)
 class DataSourceSynchronizationAdmin(admin.ModelAdmin):
-    autocomplete_fields = ("account", "created_by", "left_source_version", "right_source_version")
+    autocomplete_fields = ("account", "created_by", "source_version_to_update", "source_version_to_compare_with")
     readonly_fields = ("created_at", "updated_at", "sync_task")
     formfield_overrides = {
         ArrayField: {

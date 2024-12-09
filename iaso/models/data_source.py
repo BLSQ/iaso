@@ -195,17 +195,17 @@ class DataSourceSynchronization(models.Model):
         max_length=255,
         help_text=_("Used in the UI e.g. to filter Change Requests by Data Source Synchronization operations."),
     )
-    left_source_version = models.ForeignKey(
+    source_version_to_update = models.ForeignKey(
         SourceVersion,
         on_delete=models.CASCADE,
-        related_name="used_as_left_sync_sources",
-        help_text=_("Left pyramid to sync."),
+        related_name="synchronized_as_source_version_to_update",
+        help_text=_("The pyramid for which we want to generate change requests."),
     )
-    right_source_version = models.ForeignKey(
+    source_version_to_compare_with = models.ForeignKey(
         SourceVersion,
         on_delete=models.CASCADE,
-        related_name="used_as_right_sync_sources",
-        help_text=_("Right pyramid to sync."),
+        related_name="synchronized_as_source_version_to_compare_with",
+        help_text=_("The pyramid as a comparison."),
     )
 
     json_diff = models.JSONField(null=True, blank=True, help_text=_("The diff used to create change requests."))
@@ -238,12 +238,12 @@ class DataSourceSynchronization(models.Model):
     def create_json_diff(
         self,
         logger_to_use: logging.Logger = None,
-        left_validation_status: typing.Union[str, None] = None,
-        left_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
-        left_org_unit_types: typing.Optional[set["OrgUnitType"]] = None,
-        right_validation_status: typing.Union[str, None] = None,
-        right_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
-        right_org_unit_types: typing.Optional[set["OrgUnitType"]] = None,
+        source_version_to_update_validation_status: typing.Union[str, None] = None,
+        source_version_to_update_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
+        source_version_to_update_org_unit_types: typing.Optional[set["OrgUnitType"]] = None,
+        source_version_to_compare_with_validation_status: typing.Union[str, None] = None,
+        source_version_to_compare_with_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
+        source_version_to_compare_with_org_unit_types: typing.Optional[set["OrgUnitType"]] = None,
         ignore_groups: typing.Optional[bool] = False,
         show_deleted_org_units: typing.Optional[bool] = False,
         field_names: typing.Optional[list[str]] = None,
@@ -253,15 +253,15 @@ class DataSourceSynchronization(models.Model):
 
         differ_params = {
             # Actual version.
-            "version": self.left_source_version,
-            "validation_status": left_validation_status,
-            "top_org_unit": left_top_org_unit,
-            "org_unit_types": left_org_unit_types,
+            "version": self.source_version_to_update,
+            "validation_status": source_version_to_update_validation_status,
+            "top_org_unit": source_version_to_update_top_org_unit,
+            "org_unit_types": source_version_to_update_org_unit_types,
             # New version.
-            "version_ref": self.right_source_version,
-            "validation_status_ref": right_validation_status,
-            "top_org_unit_ref": right_top_org_unit,
-            "org_unit_types_ref": right_org_unit_types,
+            "version_ref": self.source_version_to_compare_with,
+            "validation_status_ref": source_version_to_compare_with_validation_status,
+            "top_org_unit_ref": source_version_to_compare_with_top_org_unit,
+            "org_unit_types_ref": source_version_to_compare_with_org_unit_types,
             # Options.
             "ignore_groups": ignore_groups,
             "show_deleted_org_units": show_deleted_org_units,

@@ -83,6 +83,9 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         return queryset.distinct()
 
 
+FILE_ORDERING = ["vrf_data", "pre_alert_data", "form_a_data", "-vrf_data", "-pre_alert_data", "-form_a_data"]
+
+
 class VaccineRepositorySerializer(serializers.Serializer):
     country_name = serializers.CharField(source="campaign__country__name")
     campaign_obr_name = serializers.CharField(source="campaign__obr_name")
@@ -100,6 +103,10 @@ class VaccineRepositorySerializer(serializers.Serializer):
         vrfs = VaccineRequestForm.objects.filter(
             campaign__id=obj["campaign__id"], rounds=obj["id"], vaccine_type=obj["vaccine_name"]
         )
+        order = self.context.get("request").query_params["order"]
+        if order in FILE_ORDERING:
+            ordering_key = "-date_vrf_reception" if "-" in order else "date_vrf_reception"
+            vrfs = vrfs.order_by(ordering_key)
         return [
             {
                 "date": vrf.date_vrf_reception,
@@ -117,6 +124,10 @@ class VaccineRepositorySerializer(serializers.Serializer):
             request_form__rounds=obj["id"],
             request_form__vaccine_type=obj["vaccine_name"],
         )
+        order = self.context.get("request").query_params["order"]
+        if order in FILE_ORDERING:
+            ordering_key = "-date_pre_alert_reception" if "-" in order else "date_pre_alert_reception"
+            pre_alerts = pre_alerts.order_by(ordering_key)
         return [
             {
                 "date": pa.date_pre_alert_reception,
@@ -130,6 +141,11 @@ class VaccineRepositorySerializer(serializers.Serializer):
         form_as = OutgoingStockMovement.objects.filter(
             campaign=obj["campaign__id"], round=obj["id"], vaccine_stock__vaccine=obj["vaccine_name"]
         )
+        order = self.context.get("request").query_params["order"]
+        if order in FILE_ORDERING:
+            ordering_key = "-form_a_reception_date" if "-" in order else "form_a_reception_date"
+            form_as = form_as.order_by(ordering_key)
+
         return [
             {
                 "date": fa.form_a_reception_date,
@@ -142,6 +158,31 @@ class VaccineRepositorySerializer(serializers.Serializer):
         ]
 
 
+class CustomOrderingFilter(OrderingFilter):
+    def filter_queryset(self, request, queryset, view):
+        ordering = self.get_ordering(request, queryset, view)
+        print("ordering", ordering)
+        if ordering and ordering not in FILE_ORDERING:
+            return queryset.order_by(*ordering)
+        else:
+            if "vrf_data" in ordering:
+                if "-" in ordering:
+                    return queryset.order_by("-last_vrf")
+                else:
+                    return queryset.order_by("first_vrf")
+            if "pre_alert_data" in ordering:
+                if "-" in ordering:
+                    return queryset.order_by("-last_pre_alert")
+                else:
+                    return queryset.order_by("first_pr_alert")
+            if "form_a_data" in ordering:
+                if "-" in ordering:
+                    return queryset.order_by("-last_form_a")
+                else:
+                    return queryset.order_by("first_form_a")
+        return queryset
+
+
 class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
     """
     ViewSet for retrieving vaccine repository data.
@@ -149,8 +190,18 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
 
     serializer_class = VaccineRepositorySerializer
     pagination_class = Paginator
-    filter_backends = [OrderingFilter, SearchFilter, VaccineReportingFilterBackend]
-    ordering_fields = ["campaign__country__name", "campaign__obr_name", "started_at", "vaccine_name", "number"]
+    filter_backends = [CustomOrderingFilter, SearchFilter, VaccineReportingFilterBackend]
+    # TODO rename field in front-end to match first/last_vrf etc
+    ordering_fields = [
+        "campaign__country__name",
+        "campaign__obr_name",
+        "started_at",
+        "vaccine_name",
+        "number",
+        "form_a_data",
+        "pre_alert_data",
+        "vrf_data",
+    ]
     ordering = ["-started_at"]
     search_fields = ["campaign__country__name", "campaign__obr_name"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -303,6 +354,44 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
         forma_subquery = OutgoingStockMovement.objects.filter(
             vaccine_stock__vaccine=OuterRef("vaccine_name"), round=OuterRef("id")
         )
-        test_qs = rounds_queryset.filter(Exists(forma_subquery))
+
         rounds_queryset = rounds_queryset.filter(Q(Exists(vrf_subquery)) | Q(Exists(forma_subquery)))
+
+        # Annotate queryset with vrf, pre-alert and formA dates (oldest and latest) to enable ordering
+        vrfs = (
+            VaccineRequestForm.objects.filter(
+                campaign__id=OuterRef("campaign__id"),
+                vaccine_type=OuterRef("vaccine_name"),
+            )
+            .filter(Exists(Round.objects.filter(id=OuterRef("id"), vaccinerequestform__id=OuterRef("pk"))))
+            .annotate(first_vrf=Min("date_vrf_reception"), last_vrf=Max("date_vrf_reception"))
+        )
+
+        form_as = (
+            OutgoingStockMovement.objects.filter(
+                campaign=OuterRef("campaign__id"), vaccine_stock__vaccine=OuterRef("vaccine_name")
+            )
+            .filter(Exists(Round.objects.filter(id=OuterRef("id"), outgoingstockmovement__id=OuterRef("pk"))))
+            .annotate(first_form_a=Min("form_a_reception_date"), last_form_a=Max("form_a_reception_date"))
+        )
+
+        pre_alerts = (
+            VaccinePreAlert.objects.filter(
+                request_form__campaign=OuterRef("campaign_id"),
+                request_form__vaccine_type=OuterRef("vaccine_name"),
+            )
+            .filter(
+                Exists(Round.objects.filter(id=OuterRef("id"), vaccinerequestform__id=OuterRef("request_form__id")))
+            )
+            .annotate(first_pre_alert=Min("date_pre_alert_reception"), last_pre_alert=Max("date_pre_alert_reception"))
+        )
+
+        rounds_queryset = rounds_queryset.annotate(
+            first_vrf=Subquery(vrfs.values("first_vrf")),
+            last_vrf=Subquery(vrfs.values("last_vrf")),
+            first_form_a=Subquery(form_as.values("first_form_a")),
+            last_form_a=Subquery(form_as.values("last_form_a")),
+            first_pre_alert=Subquery(pre_alerts.values("first_pre_alert")),
+            last_pre_alert=Subquery(pre_alerts.values("last_pre_alert")),
+        )
         return rounds_queryset

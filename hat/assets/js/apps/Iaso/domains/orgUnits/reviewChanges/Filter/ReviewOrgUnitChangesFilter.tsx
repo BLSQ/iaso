@@ -15,8 +15,6 @@ import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../components/TreeView/requests';
-// IA-3641 uncomment when UI has been refactored to limlit size of API call
-// import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { DropdownOptions } from '../../../../types/utils';
 import DatesRange from '../../../../components/filters/DatesRange';
@@ -49,7 +47,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
     const defaultSourceVersion = useDefaultSourceVersion();
-    const [defaultSelectedVersionId, setDefaultSelectedVersionId] = useState(
+    const [selectedVersionId, setSelectedVersionId] = useState(
         defaultSourceVersion.version.id,
     );
     const classes = useStyles();
@@ -129,14 +127,16 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         [handleChange],
     );
 
-    const handleDataSourceChange = (_, newValue) => {
-        setDataSource(newValue);
-        const selectedSource = dataSources?.filter(
-            source => source.value === newValue,
-        )[0];
-        setDefaultSelectedVersionId(
-            selectedSource?.original?.default_version.id,
-        );
+    const handleDataSourceVersionChange = (key, newValue) => {
+        if (key === 'source') {
+            setDataSource(newValue);
+            const selectedSource = dataSources?.filter(
+                source => source.value === newValue,
+            )[0];
+            setSelectedVersionId(selectedSource?.original?.default_version.id);
+        } else {
+            setSelectedVersionId(newValue);
+        }
     };
 
     const getVersionLabel = useGetVersionLabel(dataSources);
@@ -207,7 +207,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                                 type="select"
                                 disabled={isFetchingDataSources}
                                 keyValue="source"
-                                onChange={handleDataSourceChange}
+                                onChange={handleDataSourceVersionChange}
                                 value={isFetchingDataSources ? '' : dataSource}
                                 label={MESSAGES.source}
                                 options={dataSources}
@@ -217,8 +217,8 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                                 type="select"
                                 disabled={isFetchingDataSources}
                                 keyValue="version"
-                                onChange={handleChange}
-                                value={defaultSelectedVersionId}
+                                onChange={handleDataSourceVersionChange}
+                                value={selectedVersionId}
                                 label={MESSAGES.sourceVersion}
                                 options={versionsDropDown}
                                 clearable={false}

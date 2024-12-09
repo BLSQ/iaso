@@ -1,6 +1,5 @@
 import logging
 import typing
-from collections import defaultdict
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
@@ -41,7 +40,7 @@ class DataSource(models.Model):
     public = models.BooleanField(default=False)
 
     def __str__(self):
-        return "%s " % (self.name,)
+        return f"#{self.pk} {self.name}"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -210,11 +209,15 @@ class DataSourceSynchronization(models.Model):
     )
 
     json_diff = models.JSONField(null=True, blank=True, help_text=_("The diff used to create change requests."))
-    json_diff_config = models.TextField(
-        blank=True, help_text=_("A string representing the parameters used for the diff.")
+    diff_config = models.TextField(
+        blank=True, help_text=_("A string representation of the parameters used for the diff.")
     )
-    count_create = models.PositiveIntegerField(default=0)
-    count_update = models.PositiveIntegerField(default=0)
+    count_create = models.PositiveIntegerField(
+        default=0, help_text=_("The number of change requests that will be generated to create an org unit.")
+    )
+    count_update = models.PositiveIntegerField(
+        default=0, help_text=_("The number of change requests that will be generated to update an org unit.")
+    )
 
     sync_task = models.OneToOneField(
         "Task",
@@ -247,10 +250,10 @@ class DataSourceSynchronization(models.Model):
         logger_to_use: logging.Logger = None,
         source_version_to_update_validation_status: typing.Union[str, None] = None,
         source_version_to_update_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
-        source_version_to_update_org_unit_types: typing.Optional[set["OrgUnitType"]] = None,
+        source_version_to_update_org_unit_types: typing.Optional[list["OrgUnitType"]] = None,
         source_version_to_compare_with_validation_status: typing.Union[str, None] = None,
         source_version_to_compare_with_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
-        source_version_to_compare_with_org_unit_types: typing.Optional[set["OrgUnitType"]] = None,
+        source_version_to_compare_with_org_unit_types: typing.Optional[list["OrgUnitType"]] = None,
         ignore_groups: typing.Optional[bool] = False,
         show_deleted_org_units: typing.Optional[bool] = False,
         field_names: typing.Optional[list[str]] = None,
@@ -259,12 +262,12 @@ class DataSourceSynchronization(models.Model):
         from iaso.diffing import Differ, Dumper
 
         differ_params = {
-            # Actual version.
+            # Version to update.
             "version": self.source_version_to_update,
             "validation_status": source_version_to_update_validation_status,
             "top_org_unit": source_version_to_update_top_org_unit,
             "org_unit_types": source_version_to_update_org_unit_types,
-            # New version.
+            # Version to compare with.
             "version_ref": self.source_version_to_compare_with,
             "validation_status_ref": source_version_to_compare_with_validation_status,
             "top_org_unit_ref": source_version_to_compare_with_top_org_unit,
@@ -274,15 +277,18 @@ class DataSourceSynchronization(models.Model):
             "show_deleted_org_units": show_deleted_org_units,
             "field_names": field_names,
         }
-
         diffs, fields = Differ(logger_to_use or logger).diff(**differ_params)
 
-        stats = defaultdict(int)
+        coun_status = {
+            "new": 0,
+            "modified": 0,
+        }
         for diff in diffs:
-            stats[diff.status] += 1
+            if diff.status in coun_status:
+                coun_status[diff.status] += 1
 
-        self.count_create = stats.get("new", 0)
-        self.count_update = stats.get("modified", 0)
+        self.count_create = coun_status["new"]
+        self.count_update = coun_status["modified"]
         self.json_diff = Dumper(logger_to_use).as_json(diffs)
-        self.json_diff_config = str(differ_params)
-        self.save(update_fields=["json_diff", "json_diff_config"])
+        self.diff_config = str(differ_params)
+        self.save(update_fields=["json_diff", "diff_config"])

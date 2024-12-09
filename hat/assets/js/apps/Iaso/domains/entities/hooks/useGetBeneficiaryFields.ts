@@ -1,6 +1,7 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
 
+import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor';
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import MESSAGES from '../messages';
 import { Beneficiary } from '../types/beneficiary';
@@ -15,6 +16,10 @@ export const useGetBeneficiaryFields = (
 
     const { data: beneficiaryTypes } = useGetBeneficiaryTypesDropdown();
     const { possibleFields } = useGetPossibleFields(
+        beneficiary?.attributes?.form_id,
+    );
+
+    const { data: formDescriptors } = useGetFormDescriptor(
         beneficiary?.attributes?.form_id,
     );
 
@@ -33,6 +38,7 @@ export const useGetBeneficiaryFields = (
         detailFields,
         beneficiary,
         possibleFields,
+        formDescriptors,
     );
 
     const staticFields = useMemo(

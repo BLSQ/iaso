@@ -406,6 +406,7 @@
     "iaso.instance.warningSoftDeleted": "Cette soumission a été marquée comme effacée, elle n'apparaitra plus dans les recherches ou les tableaux de complétude.",
     "iaso.instance.warningSoftDeletedDerived": "Si ce formulaire sert à générer des soumissions dérivées, celle-ci prendra toujours en compte cette soumission, c'est à vous de décider si vous les regénérez.",
     "iaso.instance.warningSoftDeletedExport": "Si l'soumission a été exportée précédemment, les données dans dhis2 sont sans doute toujours présentes.",
+    "iaso.instances.disabledReason": "La demande de changement n'est pas disponible car la soumission a été supprimée",
     "iaso.instances.editLocationWithInstanceGps": "Pousser le GPS à partir de la soumission",
     "iaso.instances.forceExport": "Forcer l'export des soumissions déjà exportées",
     "iaso.instances.label.created_by__username": "Crée par",

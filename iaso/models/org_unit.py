@@ -132,7 +132,7 @@ class OrgUnitType(models.Model):
     objects = OrgUnitTypeManager()
 
     def __str__(self):
-        return "%s" % self.name
+        return f"#{self.pk} {self.name}"
 
     def as_dict(self, sub_units=True, app_id=None):
         res = {
@@ -311,6 +311,9 @@ class OrgUnit(TreeModel):
             models.Index(fields=["updated_at"]),
             models.Index(fields=["source_created_at"]),
         ]
+
+    def __str__(self) -> str:
+        return f"#{self.pk} {self.name}"
 
     @property
     def source_created_at_with_fallback(self):

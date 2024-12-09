@@ -40,6 +40,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
 
         # Org unit type.
         cls.org_unit_type_country = m.OrgUnitType.objects.create(category="COUNTRY")
+        cls.org_unit_type_region = m.OrgUnitType.objects.create(category="REGION")
+        cls.org_unit_type_district = m.OrgUnitType.objects.create(category="DISTRICT")
 
         # Pyramid in DHIS2.
         cls.angola_country_dhis2 = m.OrgUnit.objects.create(
@@ -54,6 +56,28 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         )
         cls.angola_country_dhis2.groups.set([cls.group_dhis2])
 
+        cls.angola_region_dhis2 = m.OrgUnit.objects.create(
+            parent=cls.angola_country_dhis2,
+            version=cls.source_version_dhis2,
+            source_ref="id-2",
+            name="Huila",
+            org_unit_type=cls.org_unit_type_region,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            opening_date=datetime.date(2022, 11, 28),
+            closed_date=datetime.date(2025, 11, 28),
+        )
+
+        cls.angola_district_dhis2 = m.OrgUnit.objects.create(
+            parent=cls.angola_region_dhis2,
+            version=cls.source_version_dhis2,
+            source_ref="id-3",
+            name="Cuvango",
+            org_unit_type=cls.org_unit_type_district,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            opening_date=datetime.date(2022, 11, 28),
+            closed_date=datetime.date(2025, 11, 28),
+        )
+
         # Pyramid in IASO.
         cls.angola_country_iaso = m.OrgUnit.objects.create(
             parent=None,
@@ -66,6 +90,17 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             closed_date=datetime.date(2025, 11, 28),
         )
         cls.angola_country_iaso.groups.set([cls.group_iaso_a, cls.group_iaso_b])
+
+        cls.angola_region_iaso = m.OrgUnit.objects.create(
+            parent=cls.angola_country_iaso,
+            version=cls.source_version_iaso,
+            source_ref="id-2",
+            name="Huila",
+            org_unit_type=cls.org_unit_type_region,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            opening_date=datetime.date(2022, 11, 28),
+            closed_date=datetime.date(2025, 11, 28),
+        )
 
         cls.account = m.Account.objects.create(name="Account")
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
@@ -112,9 +147,11 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         }
         data_source_sync = m.DataSourceSynchronization.objects.create(**kwargs)
         self.assertIsNone(data_source_sync.json_diff)
-        self.assertEqual(data_source_sync.json_diff_config, "")
+        self.assertEqual(data_source_sync.diff_config, "")
 
         data_source_sync.create_json_diff(
+            source_version_to_update_org_unit_types=[self.org_unit_type_country],
+            source_version_to_compare_with_org_unit_types=[self.org_unit_type_country],
             ignore_groups=True,
             field_names=["name"],
         )
@@ -131,22 +168,22 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         ]
         self.assertEqual(comparisons, expected_comparisons)
 
-        expected_json_diff_config = (
+        expected_diff_config = (
             "{"
-            f"'version': <SourceVersion: Data source  {self.source_version_iaso.number}>, "
+            f"'version': <SourceVersion: {str(self.source_version_iaso)}>, "
             "'validation_status': None, "
             "'top_org_unit': None, "
-            "'org_unit_types': None, "
-            f"'version_ref': <SourceVersion: Data source  {self.source_version_dhis2.number}>, "
+            f"'org_unit_types': [<OrgUnitType: {str(self.org_unit_type_country)}>], "
+            f"'version_ref': <SourceVersion: {str(self.source_version_dhis2)}>, "
             "'validation_status_ref': None, "
             "'top_org_unit_ref': None, "
-            "'org_unit_types_ref': None, "
+            f"'org_unit_types_ref': [<OrgUnitType: {str(self.org_unit_type_country)}>], "
             "'ignore_groups': True, "
             "'show_deleted_org_units': False, "
             "'field_names': ['name']"
             "}"
         )
-        self.assertEqual(data_source_sync.json_diff_config, expected_json_diff_config)
+        self.assertEqual(data_source_sync.diff_config, expected_diff_config)
 
         self.assertEqual(data_source_sync.count_create, 0)
         self.assertEqual(data_source_sync.count_update, 1)

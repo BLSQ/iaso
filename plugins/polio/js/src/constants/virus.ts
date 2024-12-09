@@ -59,6 +59,11 @@ const polioVaccines: PolioVaccine[] = [
         label: 'bOPV',
         color: '#ffff00',
     },
+    {
+        value: 'nOPV & bOPV',
+        label: 'nOPV & bOPV',
+        color: '#00ff00',
+    },
 ];
 
 export const OTHER_VACCINE_COLOR = '#ea8418';

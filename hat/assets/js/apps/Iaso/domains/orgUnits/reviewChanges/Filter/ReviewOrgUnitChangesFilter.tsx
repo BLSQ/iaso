@@ -57,8 +57,15 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
-    const { data: groupOptions, isLoading: isLoadingGroups } =
-        useGetGroupDropdown({});
+    const {
+        data: groupOptions,
+        isLoading: isLoadingGroups,
+        refetch: refetchGroups,
+    } = useGetGroupDropdown(
+        selectedVersionId
+            ? { defaultVersion: selectedVersionId.toString() }
+            : {},
+    );
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources(true);
     const initialDataSource = useMemo(
@@ -69,6 +76,12 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             )?.value || '',
         [dataSources, defaultSourceVersion.source.id],
     );
+
+    useEffect(() => {
+        if (selectedVersionId) {
+            refetchGroups();
+        }
+    }, [selectedVersionId, refetchGroups]);
 
     const [dataSource, setDataSource] = useState(initialDataSource);
 

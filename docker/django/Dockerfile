@@ -7,7 +7,14 @@ RUN apt-get update && apt-get --yes install \
 		gettext-base \
 		postgresql-client \
 		libgdal-dev \
+		locales \
     &&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Making sure that the right locale is set
+RUN sed -i 's/^# *\(en_GB.UTF-8\)/\1/' /etc/locale.gen && locale-gen
+ENV LANG en_GB.UTF-8
+ENV LANGUAGE en_GB.UTF-8
+ENV LC_ALL en_GB.UTF-8
 
 WORKDIR /opt/app
 

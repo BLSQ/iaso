@@ -147,3 +147,7 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             "}"
         )
         self.assertEqual(data_source_sync.json_diff_config, expected_json_diff_config)
+
+        self.assertEqual(data_source_sync.count_create, 0)
+        self.assertEqual(data_source_sync.count_update, 1)
+        self.assertEqual(data_source_sync.total_change_requests, 1)

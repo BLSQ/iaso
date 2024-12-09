@@ -161,6 +161,9 @@ module.exports = {
             dependOn: 'common',
             import: './assets/js/apps/Iaso/index',
         },
+        superset: {
+            import: './assets/js/supersetSDK',
+        },
     },
 
     output: {

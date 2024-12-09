@@ -46,7 +46,9 @@ const InstanceDetailsChangeRequests: FunctionComponent<Props> = ({
                             <TableRow key={changeRequest.id}>
                                 <TableCell
                                     sx={{
-                                        color: theme.palette[statusColor].main,
+                                        color: disabled
+                                            ? theme.palette.text.disabled
+                                            : theme.palette[statusColor].main,
                                     }}
                                 >
                                     {formatMessage(

@@ -1,5 +1,6 @@
 import logging
 import typing
+from collections import defaultdict
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
@@ -212,6 +213,8 @@ class DataSourceSynchronization(models.Model):
     json_diff_config = models.TextField(
         blank=True, help_text=_("A string representing the parameters used for the diff.")
     )
+    count_create = models.PositiveIntegerField(default=0)
+    count_update = models.PositiveIntegerField(default=0)
 
     sync_task = models.OneToOneField(
         "Task",
@@ -234,6 +237,10 @@ class DataSourceSynchronization(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    @property
+    def total_change_requests(self):
+        return self.count_create + self.count_update
 
     def create_json_diff(
         self,
@@ -270,6 +277,12 @@ class DataSourceSynchronization(models.Model):
 
         diffs, fields = Differ(logger_to_use or logger).diff(**differ_params)
 
+        stats = defaultdict(int)
+        for diff in diffs:
+            stats[diff.status] += 1
+
+        self.count_create = stats.get("new", 0)
+        self.count_update = stats.get("modified", 0)
         self.json_diff = Dumper(logger_to_use).as_json(diffs)
         self.json_diff_config = str(differ_params)
         self.save(update_fields=["json_diff", "json_diff_config"])

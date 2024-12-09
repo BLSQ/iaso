@@ -42,7 +42,9 @@ const useStyles = makeStyles(theme => ({
     confirmMessageIcon: {
         fontSize: 120,
         display: 'block',
-        margin: '0 auto',
+        marginRight: theme.spacing(1),
+        position: 'relative',
+        top: 5,
     },
 }));
 

@@ -110,6 +110,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
             maxWidth="xs"
             allowConfirm={allowConfirm}
             closeDialog={closeDialog}
+            onClose={closeDialog}
             onCancel={closeDialog}
         >
             {isPeriodRequired && (

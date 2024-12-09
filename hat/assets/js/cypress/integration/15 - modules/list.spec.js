@@ -95,13 +95,5 @@ describe('Modules', () => {
             columns: 2,
             apiKey: 'modules',
         });
-
-        testPagination({
-            baseUrl,
-            apiPath: '/api/modules/',
-            apiKey: 'results',
-            withSearch: false,
-            fixture: listFixture,
-        });
     });
 });

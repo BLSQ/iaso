@@ -9,7 +9,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from django.db.models import OuterRef, Subquery, Q, Value, Case, When, CharField
+from django.db.models import OuterRef, Subquery, Q, Value, Case, When, CharField, Exists
 
 from iaso.api.common import Paginator
 from plugins.polio.models import (
@@ -27,17 +27,10 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
     """Filter backend for vaccine reporting that handles campaign status, country, and file type filtering."""
 
     def filter_queryset(self, request, queryset, view):
-        # Filter by campaign status
-        campaign_status = request.query_params.get("campaign_status", None)
-
-        if campaign_status:
-            today = datetime.now().date()
-            if campaign_status.upper() == "ONGOING":
-                queryset = queryset.filter(campaign_started_at__lte=today, campaign_ended_at__gte=today)
-            elif campaign_status.upper() == "PAST":
-                queryset = queryset.filter(campaign_started_at__lt=today, campaign_ended_at__lt=today)
-            elif campaign_status.upper() == "PREPARING":
-                queryset = queryset.filter(campaign_started_at__gte=today)
+        # Filter by vaccine name (single)
+        vaccine_name = request.query_params.get("vaccine_name", None)
+        if vaccine_name:
+            queryset = queryset.filter(vaccine_name=vaccine_name)
 
         # Filter by country block
         country_block = request.query_params.get("country_block", None)
@@ -57,15 +50,6 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
             except ValueError:
                 raise ValidationError("countries must be a comma-separated list of integers")
 
-        # Filter by campaign category
-        campaign_category = request.query_params.get("campaignCategory", None)
-        if campaign_category == "test":
-            queryset = queryset.filter(campaign__is_test=True)
-        if campaign_category == "preventive":
-            queryset = queryset.filter(campaign__is_preventive=True)
-        if campaign_category == "regular":
-            queryset = queryset.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
-
         # Filter by campaign
         campaign = request.query_params.get("campaign", None)
         if campaign:
@@ -76,14 +60,18 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         if file_type:
             file_type = file_type.upper()
             if file_type == "VRF":
-                queryset = queryset.filter(campaign__vaccinerequestform__isnull=False)
+                queryset = queryset.filter(
+                    campaign__vaccinerequestform__isnull=False,
+                )
             elif file_type == "PRE_ALERT":
                 queryset = queryset.filter(
                     campaign__vaccinerequestform__isnull=False,
                     campaign__vaccinerequestform__vaccineprealert__isnull=False,
                 ).distinct("id")
             elif file_type == "FORM_A":
-                queryset = queryset.filter(outgoingstockmovement__isnull=False)
+                queryset = queryset.filter(
+                    outgoingstockmovement__isnull=False,
+                )
 
         # Filter by VRF type
         vrf_type = request.query_params.get("vrf_type", None)
@@ -303,7 +291,6 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
             "campaign_ended_at",
         )
 
-        # 393 results without filter
         rounds_queryset = rounds_queryset.annotate(
             vaccine_name=Case(
                 When(campaign__separate_scopes_per_round=False, then="campaign__scopes__vaccine"),
@@ -311,5 +298,11 @@ class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
                 output_field=CharField(),
             )
         )
-
+        # Keep only lines that will have inputs from Vaccine Module in them, i.e. either form A or VRF
+        vrf_subquery = VaccineRequestForm.objects.filter(vaccine_type=OuterRef("vaccine_name"), rounds=OuterRef("id"))
+        forma_subquery = OutgoingStockMovement.objects.filter(
+            vaccine_stock__vaccine=OuterRef("vaccine_name"), round=OuterRef("id")
+        )
+        test_qs = rounds_queryset.filter(Exists(forma_subquery))
+        rounds_queryset = rounds_queryset.filter(Q(Exists(vrf_subquery)) | Q(Exists(forma_subquery)))
         return rounds_queryset

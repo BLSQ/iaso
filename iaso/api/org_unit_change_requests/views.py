@@ -88,6 +88,12 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             )
             .exclude_soft_deleted_new_reference_instances()
         )
+
+        if not self.request.query_params.get("source_version_id"):
+            org_units_change_requests = org_units_change_requests.filter(
+                org_unit__version=self.request.user.iaso_profile.account.default_version
+            )
+
         return org_units_change_requests.filter(org_unit__in=org_units)
 
     def has_org_unit_permission(self, org_unit_to_change: OrgUnit) -> None:

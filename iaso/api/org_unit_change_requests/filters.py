@@ -42,12 +42,6 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Apply default source version filtering when `source_version_id` is not in query params
-        if not self.request.query_params.get("source_version_id"):
-            self.queryset = self.queryset.filter(
-                org_unit__version=self.request.user.iaso_profile.account.default_version
-            )
-
         self.form.fields["created_at"].fields[0].input_formats = settings.API_DATE_INPUT_FORMATS
         self.form.fields["created_at"].fields[-1].input_formats = settings.API_DATE_INPUT_FORMATS
 

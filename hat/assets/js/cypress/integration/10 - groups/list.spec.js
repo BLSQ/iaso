@@ -15,7 +15,7 @@ import { testSearchField } from '../../support/testSearchField';
 import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/groups`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/configuration/groups`;
 
 let interceptFlagGroups = false;
 

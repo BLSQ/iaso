@@ -18,6 +18,9 @@ class PBWG:
         existing_beneficiaries = ETL().existing_beneficiaries()
         instances = self.group_visit_by_entity(entities)
 
+        # Cleaning monthly statistics then update the table with fresh data
+        MonthlyStatistics.objects.all().filter(account=account, programme_type="PLW").delete()
+
         for index, instance in enumerate(instances):
             logger.info(
                 f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"

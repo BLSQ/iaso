@@ -1,10 +1,10 @@
 import { UseQueryResult } from 'react-query';
 
-import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { optionsRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
-import { ChronogramMetaData, ChronogramTaskMetaData } from '../types';
 import { apiBaseUrl } from '../constants';
+import { ChronogramMetaData, ChronogramTaskMetaData } from '../types';
 
 const mapChoices = choices =>
     choices.map(choice => ({
@@ -18,7 +18,7 @@ export const useOptionChronogram = (): UseQueryResult<
 > =>
     useSnackQuery({
         queryKey: ['optionChronogram'],
-        queryFn: () => optionsRequest(`${apiBaseUrl}`),
+        queryFn: () => optionsRequest(`${apiBaseUrl}/`),
         options: {
             staleTime: 1000 * 60 * 15, // in ms
             cacheTime: 1000 * 60 * 5,

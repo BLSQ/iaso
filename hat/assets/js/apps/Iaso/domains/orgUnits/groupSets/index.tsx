@@ -3,13 +3,12 @@ import { makeStyles } from '@mui/styles';
 import {
     AddButton as AddButtonComponent,
     commonStyles,
-    Table,
-    useRedirectTo,
-    useSafeIntl,
+    useSafeIntl
 } from 'bluesquare-components';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '../../../components/nav/TopBarComponent';
+import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { Filters } from './components/Filters';
@@ -23,7 +22,6 @@ const useStyles = makeStyles(theme => ({
 const baseUrl = baseUrls.groupSets;
 const GroupSets = () => {
     const params = useParamsObject(baseUrl);
-    const redirectTo = useRedirectTo();
     const classes = useStyles();
     const { mutate: deleteGroupSet } = useDeleteGroupSet();
     const tableColumns = useGroupSetsTableColumns(deleteGroupSet);
@@ -33,8 +31,7 @@ const GroupSets = () => {
     const navigate = useNavigate();
     const isLoading = isFetching;
     const createGroupSet = () => {
-        // how to use the paths ?
-        navigate('/orgunits/groupSet/groupSetId/new');
+        navigate(`/${baseUrls.groupSetDetail}/groupSetId/new`);
     };
     return (
         <>
@@ -56,20 +53,18 @@ const GroupSets = () => {
                 </Box>
 
                 {tableColumns && (
-                    <Table
+                    <TableWithDeepLink
                         data={data?.group_sets ?? []}
                         pages={data?.pages ?? 1}
                         defaultSorted={[{ id: 'name', desc: false }]}
                         columns={tableColumns}
                         count={data?.count ?? 0}
                         baseUrl={baseUrl}
-                        redirectTo={(_, newParams) =>
-                            redirectTo(baseUrl, newParams)
-                        }
                         marginTop={false}
                         extraProps={{
                             loading: isLoading,
                         }}
+                        params={params}
                     />
                 )}
             </Box>

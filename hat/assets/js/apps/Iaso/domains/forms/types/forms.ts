@@ -56,6 +56,7 @@ export type PossibleField = {
     name: string;
     type: FieldType;
     fieldKey: string;
+    is_latest?: boolean;
 };
 export type ChildrenDescriptor = {
     label: string;

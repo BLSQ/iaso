@@ -9,6 +9,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
+from django.db.models import Prefetch
 
 from iaso.api.common import Paginator
 from plugins.polio.models import VaccineStock, DestructionReport, IncidentReport
@@ -64,23 +65,21 @@ class VaccineRepositoryReportSerializer(serializers.Serializer):
     destruction_report_data = serializers.SerializerMethodField()
 
     def get_incident_report_data(self, obj):
-        incident_reports = obj.incidentreport_set.all()
         return [
             {
                 "date": ir.date_of_incident_report,
                 "file": ir.document.url if ir.document else None,
             }
-            for ir in incident_reports
+            for ir in obj.prefetched_incident_reports
         ]
 
     def get_destruction_report_data(self, obj):
-        destruction_reports = obj.destructionreport_set.all()
         return [
             {
                 "date": dr.destruction_report_date,
                 "file": dr.document.url if dr.document else None,
             }
-            for dr in destruction_reports
+            for dr in obj.prefetched_destruction_reports
         ]
 
 
@@ -98,12 +97,26 @@ class VaccineRepositoryReportsViewSet(GenericViewSet, ListModelMixin):
 
     def get_queryset(self):
         """Get the queryset for VaccineStock objects."""
-        return (
-            VaccineStock.objects.select_related("country")
-            .prefetch_related("incidentreport_set", "destructionreport_set")
-            .filter(Q(incidentreport__isnull=False) | Q(destructionreport__isnull=False))
-            .distinct()
+        base_qs = VaccineStock.objects.select_related(
+            "country",
+        ).filter(Q(incidentreport__isnull=False) | Q(destructionreport__isnull=False))
+
+        incident_qs = IncidentReport.objects.only(
+            "vaccine_stock_id",
+            "date_of_incident_report",
+            "document",
         )
+
+        destruction_qs = DestructionReport.objects.only(
+            "vaccine_stock_id",
+            "destruction_report_date",
+            "document",
+        )
+
+        return base_qs.prefetch_related(
+            Prefetch("incidentreport_set", queryset=incident_qs, to_attr="prefetched_incident_reports"),
+            Prefetch("destructionreport_set", queryset=destruction_qs, to_attr="prefetched_destruction_reports"),
+        ).distinct()
 
     @swagger_auto_schema(
         manual_parameters=[

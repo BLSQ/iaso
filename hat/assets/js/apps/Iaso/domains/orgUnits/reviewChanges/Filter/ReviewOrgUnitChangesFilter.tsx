@@ -46,28 +46,34 @@ const useStyles = makeStyles(theme => ({
 export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
-    const defaultSourceVersion = useDefaultSourceVersion();
-    const [selectedVersionId, setSelectedVersionId] = useState(
-        defaultSourceVersion.version.id,
-    );
     const classes = useStyles();
-    const { formatMessage } = useSafeIntl();
+
+    const defaultSourceVersion = useDefaultSourceVersion();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
-    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
-
-    const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
-    const {
-        data: groupOptions,
-        isLoading: isLoadingGroups,
-        refetch: refetchGroups,
-    } = useGetGroupDropdown(
-        selectedVersionId
-            ? { defaultVersion: selectedVersionId.toString() }
-            : {},
-    );
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources(true);
+    const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
+    const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
+        useGetOrgUnitTypesDropdownOptions();
+    const { data: forms, isFetching: isLoadingForms } = useGetForms();
+    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
+    const { data: userRoles, isFetching: isFetchingUserRoles } =
+        useGetUserRolesDropDown();
+
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
+    const { data: paymentStatuses, isFetching: isFetchingPaymentStatuses } =
+        usePaymentStatusOptions();
+
+    const formOptions = useMemo(
+        () =>
+            forms?.map(form => ({
+                label: form.name,
+                value: form.id,
+            })) || [],
+        [forms],
+    );
     const initialDataSource = useMemo(
         () =>
             dataSources?.find(
@@ -77,13 +83,27 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         [dataSources, defaultSourceVersion.source.id],
     );
 
+    const [selectedVersionId, setSelectedVersionId] = useState(
+        defaultSourceVersion.version.id,
+    );
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+    const [dataSource, setDataSource] = useState(initialDataSource);
+
+    const { formatMessage } = useSafeIntl();
+
+    const {
+        data: groupOptions,
+        isLoading: isLoadingGroups,
+        refetch: refetchGroups,
+    } = useGetGroupDropdown(
+        selectedVersionId ? { defaultVersion: selectedVersionId } : {},
+    );
+
     useEffect(() => {
         if (selectedVersionId) {
             refetchGroups();
         }
     }, [selectedVersionId, refetchGroups]);
-
-    const [dataSource, setDataSource] = useState(initialDataSource);
 
     useEffect(() => {
         const updatedDataSource = dataSources?.find(
@@ -96,25 +116,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         }
     }, [dataSources, defaultSourceVersion.source.id]);
 
-    const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
-        useGetOrgUnitTypesDropdownOptions();
-    const { data: forms, isFetching: isLoadingForms } = useGetForms();
-    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
-    const { data: userRoles, isFetching: isFetchingUserRoles } =
-        useGetUserRolesDropDown();
-
-    const { data: allProjects, isFetching: isFetchingProjects } =
-        useGetProjectsDropdownOptions();
-    const { data: paymentStatuses, isFetching: isFetchingPaymentStatuses } =
-        usePaymentStatusOptions();
-    const formOptions = useMemo(
-        () =>
-            forms?.map(form => ({
-                label: form.name,
-                value: form.id,
-            })) || [],
-        [forms],
-    );
     const statusOptions: DropdownOptions<string>[] = useMemo(
         () => [
             {
@@ -150,6 +151,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         } else {
             setSelectedVersionId(newValue);
         }
+        filters.groups = [];
     };
 
     const getVersionLabel = useGetVersionLabel(dataSources);
@@ -260,6 +262,12 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}
                         titleMessage={MESSAGES.parent}
+                        source={
+                            dataSource
+                                ? dataSource.toString()
+                                : initialDataSource.toString()
+                        }
+                        version={selectedVersionId}
                         onConfirm={orgUnit => {
                             handleChange('parent_id', orgUnit?.id);
                         }}

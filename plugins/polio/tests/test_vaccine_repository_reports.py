@@ -9,7 +9,7 @@ from iaso.test import APITestCase
 from plugins.polio import models as pm
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
-REPORTS_URL = "/api/polio/vaccine/repository/reports/"
+REPORTS_URL = "/api/polio/vaccine/repository_reports/"
 
 
 class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
@@ -91,29 +91,19 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get(REPORTS_URL)
         self.assertEqual(response.status_code, 200)
 
-    def test_authenticated_user_can_see_reports(self):
-        """Test that authenticated users can access the reports endpoint"""
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(REPORTS_URL)
-        self.assertEqual(response.status_code, 200)
-
     def test_reports_list_response_structure(self):
         """Test the structure of the reports list response"""
         self.client.force_authenticate(user=self.user)
         response = self.client.get(REPORTS_URL)
         data = response.json()
 
-        # Check pagination fields
-        self.assertIn("count", data)
-        self.assertIn("results", data)
-
         # Check result fields
-        result = data["results"][0]
+        result = data[0]
         self.assertIn("country_name", result)
         self.assertIn("country_id", result)
         self.assertIn("vaccine", result)
-        self.assertIn("incident_reports", result)
-        self.assertIn("destruction_reports", result)
+        self.assertIn("incident_report_data", result)
+        self.assertIn("destruction_report_data", result)
 
     def test_reports_filtering(self):
         """Test filtering functionality of reports endpoint"""
@@ -122,33 +112,33 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
         # Test filtering by country
         response = self.client.get(f"{REPORTS_URL}?countries={self.testland.id}")
         data = response.json()
-        self.assertEqual(len(data["results"]), 1)
-        self.assertEqual(data["results"][0]["country_name"], "Testland")
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["country_name"], "Testland")
 
         # Test filtering by vaccine name
         response = self.client.get(f"{REPORTS_URL}?vaccine_name={pm.VACCINES[0][0]}")
         data = response.json()
-        self.assertEqual(len(data["results"]), 1)
-        self.assertEqual(data["results"][0]["vaccine"], pm.VACCINES[0][0])
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["vaccine"], pm.VACCINES[0][0])
 
         # Test filtering by file type
         response = self.client.get(f"{REPORTS_URL}?file_type=INCIDENT")
         data = response.json()
-        self.assertEqual(len(data["results"]), 1)
-        self.assertTrue(len(data["results"][0]["incident_reports"]) > 0)
+        self.assertEqual(len(data), 1)
+        self.assertTrue(len(data[0]["incident_report_data"]) > 0)
 
         response = self.client.get(f"{REPORTS_URL}?file_type=DESTRUCTION")
         data = response.json()
-        self.assertEqual(len(data["results"]), 1)
-        self.assertTrue(len(data["results"][0]["destruction_reports"]) > 0)
+        self.assertEqual(len(data), 1)
+        self.assertTrue(len(data[0]["destruction_report_data"]) > 0)
 
         # Test filtering by country block
         country_group = self.testland.groups.first()
         if country_group:
             response = self.client.get(f"{REPORTS_URL}?country_block={country_group.id}")
             data = response.json()
-            self.assertEqual(len(data["results"]), 1)
-            self.assertEqual(data["results"][0]["country_name"], "Testland")
+            self.assertEqual(len(data), 1)
+            self.assertEqual(data[0]["country_name"], "Testland")
 
     def test_reports_ordering(self):
         """Test ordering functionality of reports endpoint"""
@@ -170,19 +160,19 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(user=self.user)
 
         # Test ordering by country name
-        response = self.client.get(f"{REPORTS_URL}?ordering=country__name")
+        response = self.client.get(f"{REPORTS_URL}?order=country__name")
         data = response.json()
-        self.assertEqual(data["results"][0]["country_name"], "Testland")
-        self.assertEqual(data["results"][1]["country_name"], "Zambia")
+        self.assertEqual(data[0]["country_name"], "Testland")
+        self.assertEqual(data[1]["country_name"], "Zambia")
 
         # Test reverse ordering by country name
-        response = self.client.get(f"{REPORTS_URL}?ordering=-country__name")
+        response = self.client.get(f"{REPORTS_URL}?order=-country__name")
         data = response.json()
-        self.assertEqual(data["results"][0]["country_name"], "Zambia")
-        self.assertEqual(data["results"][1]["country_name"], "Testland")
+        self.assertEqual(data[0]["country_name"], "Zambia")
+        self.assertEqual(data[1]["country_name"], "Testland")
 
         # Test ordering by vaccine
-        response = self.client.get(f"{REPORTS_URL}?ordering=vaccine")
+        response = self.client.get(f"{REPORTS_URL}?order=vaccine")
         data = response.json()
-        self.assertEqual(data["results"][0]["vaccine"], pm.VACCINES[0][0])
-        self.assertEqual(data["results"][1]["vaccine"], pm.VACCINES[1][0])
+        self.assertEqual(data[0]["vaccine"], pm.VACCINES[0][0])
+        self.assertEqual(data[1]["vaccine"], pm.VACCINES[1][0])

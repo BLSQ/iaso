@@ -49,6 +49,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const classes = useStyles();
 
     const defaultSourceVersion = useDefaultSourceVersion();
+
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const { data: dataSources, isFetching: isFetchingDataSources } =
@@ -148,8 +149,13 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 source => source.value === newValue,
             )[0];
             setSelectedVersionId(selectedSource?.original?.default_version.id);
+            handleChange(
+                'source_version_id',
+                selectedSource?.original?.default_version.id,
+            );
         } else {
             setSelectedVersionId(newValue);
+            handleChange('source_version_id', newValue);
         }
         filters.groups = [];
     };
@@ -233,7 +239,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                                 disabled={isFetchingDataSources}
                                 keyValue="version"
                                 onChange={handleDataSourceVersionChange}
-                                value={selectedVersionId}
+                                value={selectedVersionId.toString()}
                                 label={MESSAGES.sourceVersion}
                                 options={versionsDropDown}
                                 clearable={false}

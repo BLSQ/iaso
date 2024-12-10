@@ -3,8 +3,8 @@ from django.db import models
 
 
 class TenantUser(models.Model):
-    main_user = models.ForeignKey(User, on_delete=models.PROTECT, related_name="tenant_users")
-    account_user = models.OneToOneField(User, on_delete=models.PROTECT, related_name="tenant_user")
+    main_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tenant_users")
+    account_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="tenant_user")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

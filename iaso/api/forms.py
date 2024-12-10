@@ -3,20 +3,21 @@ from copy import copy
 from datetime import timedelta
 from xml.sax.saxutils import escape
 
-from django.db.models import Max, Q, Count
-from django.http import StreamingHttpResponse, HttpResponse
+from django.db.models import BooleanField, Case, Count, Max, Q, When
+from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.dateparse import parse_date
-from rest_framework import serializers, permissions, status
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
-from django.db.models import Count, BooleanField, Case, When
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
-from hat.audit.models import log_modification, FORM_API
+from hat.audit.models import FORM_API, log_modification
 from hat.menupermissions import models as permission
-from iaso.models import Form, Project, OrgUnitType, OrgUnit, FormPredefinedFilter
+from iaso.models import Form, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
 from iaso.utils import timestamp_to_datetime
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+
+from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
 
@@ -107,6 +108,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "legend_threshold",
             "change_request_mode",
             "has_mappings",
+            "possible_fields_with_latest_version",
         ]
         read_only_fields = [
             "id",
@@ -142,6 +144,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
     has_attachments = serializers.SerializerMethodField()
     reference_form_of_org_unit_types = serializers.SerializerMethodField()
     has_mappings = serializers.BooleanField(read_only=True)
+    possible_fields_with_latest_version = serializers.SerializerMethodField()
 
     @staticmethod
     def get_latest_form_version(obj: Form):
@@ -158,6 +161,18 @@ class FormSerializer(DynamicFieldsModelSerializer):
     @staticmethod
     def get_has_attachments(obj: Form):
         return len(obj.attachments.all()) > 0
+
+    @staticmethod
+    def get_possible_fields_with_latest_version(obj: Form):
+        latest_version = obj.latest_version
+        if not latest_version:
+            return obj.possible_fields
+
+        # Get the field names from the latest version
+        latest_version_fields = set(question["name"] for question in latest_version.questions_by_name().values())
+
+        # Add a flag to each possible field indicating if it's part of the latest version
+        return [{**field, "is_latest": field["name"] in latest_version_fields} for field in obj.possible_fields]
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)

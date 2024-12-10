@@ -2,6 +2,11 @@ from .models import *
 from iaso.models import *
 from datetime import datetime, timedelta, date
 from dateutil.relativedelta import *
+from itertools import groupby
+from operator import itemgetter
+from django.db.models import Value, CharField
+from django.db.models.functions import Extract, Concat
+from plugins.wfp.aggregate_journeys import AggregatedJourney
 
 
 class ETL:
@@ -10,6 +15,7 @@ class ETL:
 
     def delete_beneficiaries(self):
         beneficiary = Beneficiary.objects.all().delete()
+        MonthlyStatistics.objects.all().delete()
 
         print("EXISTING BENEFICIARY DELETED", beneficiary[1]["wfp.Beneficiary"])
         print("EXISTING STEPS DELETED", beneficiary[1]["wfp.Step"])
@@ -216,9 +222,7 @@ class ETL:
             return "referred_from_otp_sam"
         elif admission_type == "referred_from_tsfp":
             return "referred_from_tsfp_mam"
-        elif admission_type == "referred_from_sc_itp":
-            return "referred_from_sc"
-        elif admission_type == "returned_from_sc":
+        elif admission_type in ["referred_from_sc_itp", "returned_from_sc"]:
             return "referred_from_sc"
         elif admission_type == "returnee":
             return "returned_referral"
@@ -637,3 +641,72 @@ class ETL:
         journey.save()
 
         return journey
+
+    def save_monthly_journey(self, monthly_journey, account):
+        monthly_Statistic = MonthlyStatistics()
+        orgUnit = OrgUnit.objects.get(id=monthly_journey.get("org_unit"))
+
+        monthly_Statistic.org_unit = orgUnit
+        monthly_Statistic.gender = monthly_journey.get("gender")
+        monthly_Statistic.month = monthly_journey.get("month")
+        monthly_Statistic.year = monthly_journey.get("year")
+        monthly_Statistic.number_visits = monthly_journey.get("number_visits")
+        monthly_Statistic.programme_type = monthly_journey.get("programme_type")
+        monthly_Statistic.nutrition_programme = monthly_journey.get("nutrition_programme")
+        monthly_Statistic.admission_type = monthly_journey.get("admission_type")
+        monthly_Statistic.admission_criteria = monthly_journey.get("admission_criteria")
+        monthly_Statistic.given_sachet_rusf = monthly_journey.get("given_sachet_rusf")
+        monthly_Statistic.given_sachet_rutf = monthly_journey.get("given_sachet_rutf")
+        monthly_Statistic.given_quantity_csb = monthly_journey.get("given_quantity_csb")
+        monthly_Statistic.exit_type = monthly_journey.get("exit_type")
+        monthly_Statistic.account = account
+
+        monthly_Statistic.save()
+
+    def journey_with_visit_and_steps_per_visit(self, account, programme):
+        aggregated_journeys = []
+        journeys = (
+            Step.objects.select_related("visit", "visit__journey", "visit__org_unit_id")
+            .filter(visit__journey__programme_type=programme, visit__journey__beneficiary__account=account)
+            .values(
+                "visit__journey__admission_type",
+                "assistance_type",
+                "instance_id",
+                "quantity_given",
+                "visit",
+                "visit__id",
+                "visit__date",
+                "visit__journey",
+                "visit__org_unit_id",
+                "visit__journey__admission_criteria",
+                "visit__journey__nutrition_programme",
+                "visit__journey__programme_type",
+                "visit__journey__end_date",
+                "visit__journey__exit_type",
+                "visit__journey__beneficiary__gender",
+                "visit__journey__beneficiary__account",
+                year=Extract("visit__date", "year"),
+                month=Extract("visit__date", "month"),
+                period=Concat(
+                    Extract("visit__date", "year"),
+                    Value("/"),
+                    Extract("visit__date", "month"),
+                    output_field=CharField(),
+                ),
+            )
+            .order_by("visit__id")
+        )
+        data_by_journey = groupby(list(journeys), key=itemgetter("visit__org_unit_id"))
+
+        for org_unit, journeys in data_by_journey:
+            visits_by_period = groupby(journeys, key=itemgetter("period"))
+            assistance = {"rutf_quantity": 0, "rusf_quantity": 0, "csb_quantity": 0}
+            aggregated_journeys = AggregatedJourney().group_by_period(
+                visits_by_period, org_unit, aggregated_journeys, assistance
+            )
+
+        for index, journey in enumerate(aggregated_journeys):
+            logger.info(
+                f"---------------------------------------- Journey N° {(index+1)} -----------------------------------"
+            )
+            self.save_monthly_journey(journey, account)

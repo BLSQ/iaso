@@ -32,6 +32,7 @@ import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
 import { useValidateCampaign } from '../hooks/useValidateCampaign';
 import { PolioDialogTabs } from './PolioDialogTabs';
 import { usePolioDialogTabs } from './usePolioDialogTabs';
+import { WarningModal } from './WarningModal';
 
 type Props = {
     isOpen: boolean;
@@ -58,6 +59,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         isOpen,
     );
     const [isBackdropOpen, setIsBackdropOpen] = useState(false);
+    const [isScopeWarningOpen, setIsScopeWarningOpen] = useState(false);
     const [isUpdated, setIsUpdated] = useState(false);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -132,6 +134,30 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         }
         onClose();
     };
+
+    const handleConfirm = useCallback(() => {
+        // If scope type has changed
+        if (
+            formik.values.separate_scopes_per_round !==
+                formik.initialValues.separate_scopes_per_round &&
+            formik.values.id
+        ) {
+            // Open warning modal
+            setIsScopeWarningOpen(true);
+        } else {
+            formik.handleSubmit();
+        }
+        // All hooks deps present, but ES-lint wants to add formik object, which is too much
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        formik.handleSubmit,
+        formik.values.id,
+        formik.values.separate_scopes_per_round,
+        formik.initialValues.separate_scopes_per_round,
+    ]);
+
+    const scopeWarningTitle = formatMessage(MESSAGES.scopeWarningTitle);
+    const scopeWarningBody = formatMessage(MESSAGES.scopesWillBeDeleted);
     const tabs = usePolioDialogTabs(formik, selectedCampaign);
     const [selectedTab, setSelectedTab] = useState(0);
 
@@ -162,6 +188,14 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 open={isBackdropOpen}
                 closeDialog={() => setIsBackdropOpen(false)}
                 onConfirm={() => handleClose()}
+            />
+            <WarningModal
+                title={scopeWarningTitle}
+                body={scopeWarningBody}
+                open={isScopeWarningOpen}
+                closeDialog={() => setIsScopeWarningOpen(false)}
+                onConfirm={() => formik.handleSubmit()}
+                dataTestId="scopewarning-modal"
             />
             <Box pt={1}>
                 <Grid container spacing={0}>
@@ -224,7 +258,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                     {formatMessage(MESSAGES.close)}
                 </Button>
                 <Button
-                    onClick={() => formik.handleSubmit()}
+                    onClick={handleConfirm}
                     color="primary"
                     variant="contained"
                     autoFocus

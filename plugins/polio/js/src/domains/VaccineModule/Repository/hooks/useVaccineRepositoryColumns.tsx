@@ -1,5 +1,5 @@
+import React, { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
-import { useMemo } from 'react';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { DocumentsCells } from '../components/DocumentsCell';
 import { FormADocumentsCells } from '../components/FormADocumentCells';
@@ -24,8 +24,17 @@ export const useVaccineRepositoryColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.roundNumbers),
-                id: 'round_number',
-                accessor: 'round_number',
+                id: 'number',
+                accessor: 'number',
+                width: 20,
+                Cell: settings => (
+                    <span>{`${settings.row.original.number}`}</span>
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.vaccine),
+                id: 'vaccine_name',
+                accessor: 'vaccine_name',
                 width: 20,
             },
             {
@@ -51,7 +60,7 @@ export const useVaccineRepositoryColumns = (): Column[] => {
                 Header: 'Form A',
                 accessor: 'form_a_data',
                 Cell: FormADocumentsCells,
-                width: 30,
+                width: 20,
             },
         ],
         [formatMessage],

@@ -2,11 +2,11 @@ import { QueryBuilderFields } from 'bluesquare-components';
 
 import { formatLabel } from '../../../instances/utils';
 
-import { FormDescriptor, PossibleField } from '../../types/forms';
 import { PossibleFieldsForForm } from '../../hooks/useGetPossibleFields';
+import { FormDescriptor, PossibleField } from '../../types/forms';
 
-import { iasoFields, Field } from '../constants';
 import { findDescriptorInChildren } from '../../../../utils';
+import { Field, iasoFields } from '../constants';
 
 export const useGetQueryBuildersFields = (
     formDescriptors?: FormDescriptor[],

@@ -1,10 +1,11 @@
+import React from 'react';
 import { FieldType } from '../../forms/types/forms';
 
 export type Field = {
+    value: string | number | React.ReactNode;
     label: string;
-    value?: string | number;
-    key?: string;
-    type?: FieldType;
+    type?: string;
+    key: string;
 };
 
 export type ExtraColumn = {

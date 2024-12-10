@@ -88,7 +88,20 @@ export const iasoFields: Field[] = [
     {
         type: 'select_multiple',
         alias: 'select multiple',
-        disabled: true,
+        useListValues: true,
+        queryBuilder: {
+            type: 'multiselect',
+            excludeOperators: [
+                'proximity',
+                'select_any_in',
+                'select_not_any_in',
+            ],
+            valueSources: ['value'],
+        },
+    },
+    {
+        type: 'select_all_that_apply',
+        alias: 'select all that apply',
         useListValues: true,
         queryBuilder: {
             type: 'multiselect',

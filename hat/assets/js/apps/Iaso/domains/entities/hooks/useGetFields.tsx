@@ -1,18 +1,19 @@
-import { PossibleField } from '../../forms/types/forms';
+import { FormDescriptor, PossibleField } from '../../forms/types/forms';
 
 import { useGetFieldValue } from './useGetFieldValue';
 
+import { formatLabel } from '../../instances/utils';
 import { Beneficiary } from '../types/beneficiary';
 import { Field } from '../types/fields';
-import { formatLabel } from '../../instances/utils';
 
 export const useGetFields = (
     fieldsKeys: string[],
     beneficiary?: Beneficiary,
     possibleFields?: PossibleField[],
+    formDescriptors?: FormDescriptor[],
 ): Field[] => {
     const fields: Field[] = [];
-    const getValue = useGetFieldValue();
+    const getValue = useGetFieldValue(formDescriptors);
     if (possibleFields && beneficiary?.attributes?.file_content) {
         const fileContent = beneficiary.attributes.file_content;
         fieldsKeys.forEach(fieldKey => {

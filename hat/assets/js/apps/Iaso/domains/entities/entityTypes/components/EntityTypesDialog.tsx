@@ -150,11 +150,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     );
                     return (
                         <Chip
-                            color={
-                                field?.is_latest
-                                    ? 'primary'
-                                    : 'secondary'
-                            }
+                            color={field?.is_latest ? 'primary' : 'secondary'}
                             label={option.label}
                             {...getTagProps({ index })}
                         />
@@ -193,7 +189,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
                 renderTrigger={renderTrigger}
-                maxWidth="xs"
+                maxWidth="md"
                 onOpen={() => {
                     resetForm();
                     setIsOpen(true);

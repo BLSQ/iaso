@@ -239,7 +239,11 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                                 disabled={isFetchingDataSources}
                                 keyValue="version"
                                 onChange={handleDataSourceVersionChange}
-                                value={selectedVersionId.toString()}
+                                value={
+                                    selectedVersionId
+                                        ? selectedVersionId?.toString()
+                                        : ''
+                                }
                                 label={MESSAGES.sourceVersion}
                                 options={versionsDropDown}
                                 clearable={false}

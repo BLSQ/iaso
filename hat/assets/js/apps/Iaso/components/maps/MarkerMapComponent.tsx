@@ -65,7 +65,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const styles: Record<string, SxProps<Theme>> = useStyles();
-
+    console.log('maxZoom', maxZoom);
     const boundsOptions: Record<string, [number, number] | number> = {
         padding: [50, 50],
         maxZoom: maxZoom || currentTile.maxZoom,

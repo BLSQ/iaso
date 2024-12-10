@@ -1,27 +1,25 @@
 import { TableCell, TableRow } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { LoadingSpinner } from 'bluesquare-components';
-import classNames from 'classnames';
 import React, { FunctionComponent } from 'react';
+import { SxStyles } from '../../types/general';
 import { NumberCell } from '../Cells/NumberCell';
-
-const useStyles = makeStyles(theme => ({
-    withBorder: {
-        // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
-    },
-    boldTitle: {
-        fontWeight: 'bold',
-    },
-}));
 
 type RowProps = {
     label?: string;
-    value?: string | number;
+    value?: string | number | React.ReactNode;
     isLoading?: boolean;
     withLeftCellBorder?: boolean;
     boldLeftCellText?: boolean;
     className?: string;
+};
+
+const styles: SxStyles = {
+    withBorder: (theme: any) => ({
+        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+    }),
+    boldTitle: {
+        fontWeight: 'bold',
+    },
 };
 
 export const PaperTableRow: FunctionComponent<RowProps> = ({
@@ -32,14 +30,13 @@ export const PaperTableRow: FunctionComponent<RowProps> = ({
     boldLeftCellText = true,
     className,
 }) => {
-    const classes = useStyles();
-    const borderClass = withLeftCellBorder ? classes.withBorder : '';
-    const boldTitle = boldLeftCellText ? classes.boldTitle : '';
+    const cellStyles = {
+        ...(withLeftCellBorder ? styles.withBorder : {}),
+        ...(boldLeftCellText ? styles.boldTitle : {}),
+    };
     return (
         <TableRow className={className}>
-            <TableCell className={classNames(borderClass, boldTitle)}>
-                {label}
-            </TableCell>
+            <TableCell sx={cellStyles}>{label}</TableCell>
             <TableCell>
                 {isLoading && (
                     <LoadingSpinner
@@ -49,7 +46,7 @@ export const PaperTableRow: FunctionComponent<RowProps> = ({
                         size={25}
                     />
                 )}
-                {!isLoading && typeof value === 'string' && value}
+                {!isLoading && typeof value !== 'number' && value}
                 {!isLoading && typeof value === 'number' && (
                     <NumberCell value={value as number | undefined} />
                 )}

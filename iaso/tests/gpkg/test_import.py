@@ -86,10 +86,14 @@ class GPKGImport(TestCase):
         ou = OrgUnit.objects.create(name="bla", source_ref="cdd3e94c-3c2a-4ab1-8900-be97f82347de", version=version)
         g = Group.objects.create(source_version=version, source_ref="group_b", name="Previous name of group B")
         ou.groups.set([g])
-        self.assertQuerySetEqual(ou.groups.all(), ["<Group: Previous name of group B | hey  2 >"], transform=repr)
+        self.assertEqual(ou.groups.count(), 1)
+        self.assertEqual(ou.groups.first().name, "Previous name of group B")
+        self.assertEqual(ou.groups.first().source_version, version)
         ou2 = OrgUnit.objects.create(name="bla2", source_ref="3c24c6ca-3012-4d38-abe8-6d620fe1deb8", version=version)
         ou2.groups.set([g])
-        self.assertQuerySetEqual(ou2.groups.all(), ["<Group: Previous name of group B | hey  2 >"], transform=repr)
+        self.assertEqual(ou2.groups.count(), 1)
+        self.assertEqual(ou2.groups.first().name, "Previous name of group B")
+        self.assertEqual(ou2.groups.first().source_version, version)
 
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
@@ -128,11 +132,14 @@ class GPKGImport(TestCase):
         self.assertEqual(g.name, "Group B")
 
         ou2.refresh_from_db()
-        self.assertQuerySetEqual(
-            ou2.groups.all().order_by("source_ref"),
-            ["<Group: Group A | hey  2 >", "<Group: Group B | hey  2 >"],
-            transform=repr,
-        )
+
+        ou2_groups = ou2.groups.all().order_by("source_ref")
+        self.assertEqual(ou2_groups.count(), 2)
+        self.assertEqual(ou2_groups[0].name, "Group A")
+        self.assertEqual(ou2_groups[0].source_version.number, version_number)
+        self.assertEqual(ou2_groups[1].name, "Group B")
+        self.assertEqual(ou2_groups[1].source_version.number, version_number)
+
         mod = mods.get(object_id=ou2.id)
         old = mod.past_value[0]
         new = mod.new_value[0]

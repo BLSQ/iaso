@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
+from iaso.models.data_source import SourceVersion
 from rest_framework.exceptions import ValidationError
 from iaso.api.common import parse_comma_separated_numeric_values
 from iaso.models import OrgUnit, OrgUnitChangeRequest
@@ -36,9 +37,17 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     potential_payment_ids = django_filters.CharFilter(
         method="filter_potential_payments", label=_("Potential Payment IDs (comma-separated)")
     )
+    source_version_id = django_filters.NumberFilter(method="filter_source_version_id", label=_("Source version ID"))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Apply default source version filtering when `source_version_id` is not in query params
+        if not self.request.query_params.get("source_version_id"):
+            self.queryset = self.queryset.filter(
+                org_unit__version=self.request.user.iaso_profile.account.default_version
+            )
+
         self.form.fields["created_at"].fields[0].input_formats = settings.API_DATE_INPUT_FORMATS
         self.form.fields["created_at"].fields[-1].input_formats = settings.API_DATE_INPUT_FORMATS
 
@@ -126,6 +135,12 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
             return queryset.filter(pending_filter)
         else:
             return queryset.filter(payment__status=value)
+
+    def filter_source_version_id(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
+        source_version = SourceVersion.objects.get(pk=value)
+        if source_version:
+            queryset = queryset.filter(org_unit__version=value)
+        return queryset
 
     # This filter is used when redirecting from potential payments to see related change requests. It is not otherwise visible in the UI
     def filter_potential_payments(self, queryset: QuerySet, name: str, value: str) -> QuerySet:

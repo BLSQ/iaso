@@ -65,11 +65,13 @@ class GPKGImport(TestCase):
         self.assertEqual(c2.geom, None)
         self.assertEqual(c2.simplified_geom, None)
         self.assertEqual(c2.location, Point(13.9993, 5.1795, 0.0, srid=4326))
-        self.assertQuerySetEqual(
-            c2.groups.all().order_by("source_ref"),
-            ["<Group: Group A | test  1 >", "<Group: Group B | test  1 >"],
-            transform=repr,
-        )
+
+        c2_groups = c2.groups.all().order_by("source_ref")
+        self.assertEqual(c2_groups.count(), 2)
+        self.assertEqual(c2_groups[0].name, "Group A")
+        self.assertEqual(c2_groups[0].source_version.number, 1)
+        self.assertEqual(c2_groups[1].name, "Group B")
+        self.assertEqual(c2_groups[1].source_version.number, 1)
 
         self.assertEqual(OrgUnitType.objects.count(), 3)
         self.assertEqual(DataSource.objects.count(), 1)

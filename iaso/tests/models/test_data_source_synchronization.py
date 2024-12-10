@@ -150,12 +150,15 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(data_source_sync.diff_config, "")
 
         data_source_sync.create_json_diff(
+            source_version_to_update_validation_status=m.OrgUnit.VALIDATION_VALID,
             source_version_to_update_org_unit_types=[self.org_unit_type_country],
+            source_version_to_compare_with_validation_status=m.OrgUnit.VALIDATION_VALID,
             source_version_to_compare_with_org_unit_types=[self.org_unit_type_country],
             ignore_groups=True,
             field_names=["name"],
         )
         json_diff = json.loads(data_source_sync.json_diff)
+
         comparisons = json_diff[0]["comparisons"]
         expected_comparisons = [
             {
@@ -171,11 +174,11 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         expected_diff_config = (
             "{"
             f"'version': <SourceVersion: {str(self.source_version_iaso)}>, "
-            "'validation_status': None, "
+            f"'validation_status': '{m.OrgUnit.VALIDATION_VALID}', "
             "'top_org_unit': None, "
             f"'org_unit_types': [<OrgUnitType: {str(self.org_unit_type_country)}>], "
             f"'version_ref': <SourceVersion: {str(self.source_version_dhis2)}>, "
-            "'validation_status_ref': None, "
+            f"'validation_status_ref': '{m.OrgUnit.VALIDATION_VALID}', "
             "'top_org_unit_ref': None, "
             f"'org_unit_types_ref': [<OrgUnitType: {str(self.org_unit_type_country)}>], "
             "'ignore_groups': True, "

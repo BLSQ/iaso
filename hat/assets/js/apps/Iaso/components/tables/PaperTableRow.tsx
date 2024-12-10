@@ -1,4 +1,4 @@
-import { TableCell, TableRow } from '@mui/material';
+import { TableCell, TableRow, Theme } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { SxStyles } from '../../types/general';
@@ -8,17 +8,18 @@ type RowProps = {
     label?: string;
     value?: string | number | React.ReactNode;
     isLoading?: boolean;
-    withLeftCellBorder?: boolean;
-    boldLeftCellText?: boolean;
     className?: string;
+    withoutPadding?: boolean;
 };
 
 const styles: SxStyles = {
-    withBorder: (theme: any) => ({
+    label: (theme: Theme) => ({
+        fontWeight: 'bold',
+        // @ts-ignore
         borderRight: `1px solid ${theme.palette.ligthGray.border}`,
     }),
-    boldTitle: {
-        fontWeight: 'bold',
+    cellNoPadding: {
+        padding: 0,
     },
 };
 
@@ -26,18 +27,13 @@ export const PaperTableRow: FunctionComponent<RowProps> = ({
     label,
     value,
     isLoading = false,
-    withLeftCellBorder = true,
-    boldLeftCellText = true,
     className,
+    withoutPadding = false,
 }) => {
-    const cellStyles = {
-        ...(withLeftCellBorder ? styles.withBorder : {}),
-        ...(boldLeftCellText ? styles.boldTitle : {}),
-    };
     return (
         <TableRow className={className}>
-            <TableCell sx={cellStyles}>{label}</TableCell>
-            <TableCell>
+            <TableCell sx={styles.label}>{label}</TableCell>
+            <TableCell sx={withoutPadding ? styles.cellNoPadding : {}}>
                 {isLoading && (
                     <LoadingSpinner
                         fixed={false}

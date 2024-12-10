@@ -2,7 +2,6 @@ import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
-    LinkButton,
     LoadingSpinner,
     useGoBack,
     useSafeIntl,
@@ -25,7 +24,7 @@ import { Beneficiary } from './types/beneficiary';
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     titleRow: { fontWeight: 'bold' },
-    fullWidth: { width: '100%' },
+    fullWidth: { width: '100%', height: 'auto' },
 }));
 
 export const Details: FunctionComponent = () => {
@@ -72,21 +71,25 @@ export const Details: FunctionComponent = () => {
             {isLoading && <LoadingSpinner />}
             {!isLoading && (
                 <Box className={`${classes.containerFullHeightNoTabPadded}`}>
-                    <Grid container spacing={2}>
-                        <Grid container item xs={12} md={4}>
+                    <Grid container spacing={2} alignItems="flex-start">
+                        <Grid item xs={12} md={4}>
                             <BeneficiaryBaseInfo
                                 beneficiary={beneficiary}
                                 fields={beneficiaryFields}
+                                hasDuplicates={duplicates.length > 0}
+                                duplicateUrl={duplicateUrl}
                             />
                         </Grid>
 
-                        <Grid container item xs={12} md={8}>
+                        <Grid item xs={12} md={8}>
                             <WidgetPaper
                                 className={classes.fullWidth}
                                 title={formatMessage(MESSAGES.submissions)}
                             >
+                                <Divider />
                                 <TableWithDeepLink
                                     marginTop={false}
+                                    marginBottom={false}
                                     countOnTop={false}
                                     elevation={0}
                                     baseUrl={baseUrls.entityDetails}
@@ -101,7 +104,11 @@ export const Details: FunctionComponent = () => {
                                     }}
                                 />
                                 <Divider />
-                                <Box display="flex" py={2}>
+                                <Box
+                                    display="flex"
+                                    justifyContent="flex-end"
+                                    p={2}
+                                >
                                     <Box mr={1} ml={2}>
                                         <CsvButton
                                             csvUrl={`/api/entities/?csv=true&id=${entityId}`}
@@ -113,27 +120,6 @@ export const Details: FunctionComponent = () => {
                                 </Box>
                             </WidgetPaper>
                         </Grid>
-                        {/* <Grid container item xs={7} justifyContent="flex-end">
-                            <Box>
-                                <LinkButton to={duplicateUrl}>
-                                    {formatMessage(MESSAGES.seeDuplicates)}
-                                </LinkButton>
-                            </Box>
-                        </Grid> */}
-                        {duplicates.length > 0 && (
-                            <Grid
-                                container
-                                item
-                                xs={7}
-                                justifyContent="flex-end"
-                            >
-                                <Box>
-                                    <LinkButton to={duplicateUrl}>
-                                        {formatMessage(MESSAGES.seeDuplicates)}
-                                    </LinkButton>
-                                </Box>
-                            </Grid>
-                        )}
                     </Grid>
                 </Box>
             )}

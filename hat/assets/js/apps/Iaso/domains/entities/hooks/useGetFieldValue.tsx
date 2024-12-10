@@ -95,6 +95,7 @@ export const useGetFieldValue = (
                             longitude={longitude}
                             latitude={latitude}
                             maxZoom={8}
+                            mapHeight={200}
                         />
                     </Box>
                 );

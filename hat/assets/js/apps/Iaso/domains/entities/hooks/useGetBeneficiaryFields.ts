@@ -41,7 +41,7 @@ export const useGetBeneficiaryFields = (
         formDescriptors,
     );
 
-    const staticFields = useMemo(
+    const staticFields: Field[] = useMemo(
         () => [
             {
                 label: formatMessage(MESSAGES.nfcCards),

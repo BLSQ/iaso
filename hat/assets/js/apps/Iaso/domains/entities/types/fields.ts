@@ -4,7 +4,7 @@ import { FieldType } from '../../forms/types/forms';
 export type Field = {
     value: string | number | React.ReactNode;
     label: string;
-    type: string;
+    type?: string;
     key: string;
 };
 

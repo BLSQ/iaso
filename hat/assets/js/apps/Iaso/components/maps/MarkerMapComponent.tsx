@@ -30,7 +30,6 @@ const useStyles = () => {
                 string,
                 SxProps<Theme>
             >),
-            height: 400,
             minWidth: 200,
             marginBottom: 0,
             position: 'relative',
@@ -65,7 +64,6 @@ export const MarkerMap: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const styles: Record<string, SxProps<Theme>> = useStyles();
-    console.log('maxZoom', maxZoom);
     const boundsOptions: Record<string, [number, number] | number> = {
         padding: [50, 50],
         maxZoom: maxZoom || currentTile.maxZoom,
@@ -89,7 +87,12 @@ export const MarkerMap: FunctionComponent<Props> = ({
     );
     if (latitude === undefined || longitude === undefined) return null;
     return (
-        <Box sx={styles.mapContainer} height={mapHeight}>
+        <Box
+            sx={{
+                ...styles.mapContainer,
+                height: mapHeight,
+            }}
+        >
             {!isMarkerInside && (
                 <Box sx={styles.alertContainer}>
                     <Alert severity="warning" sx={styles.alert}>

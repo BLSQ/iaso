@@ -100,7 +100,7 @@ export const useGetGroupDropdown = (
                 return data.map(group => {
                     return {
                         value: group.id,
-                        label: group.display_name,
+                        label: group.name,
                         original: group,
                     };
                 });

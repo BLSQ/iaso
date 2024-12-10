@@ -30,11 +30,13 @@ from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, log_modific
 from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances import import_data as import_instances
 from iaso.api.mobile.org_units import import_data as import_org_units
+from iaso.api.storage import import_storage_logs
 from iaso.models import Project, Instance
 from iaso.utils.s3_client import download_file
 
 INSTANCES_JSON = "instances.json"
 ORG_UNITS_JSON = "orgUnits.json"
+STORAGE_LOGS_JSON = "storageLogs.json"
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +89,11 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
 
                 duplicated_count = duplicate_instance_files(new_instance_files)
                 stats["new_instance_files"] = len(new_instance_files) + duplicated_count
+
+                if STORAGE_LOGS_JSON in zip_ref.namelist():
+                    logger.info("Processing storage logs")
+                    storage_logs_data = read_json_file_from_zip(zip_ref, STORAGE_LOGS_JSON)
+                    import_storage_logs(storage_logs_data, user)
 
     except Exception as e:
         logger.exception("Exception! Rolling back import: " + str(e))

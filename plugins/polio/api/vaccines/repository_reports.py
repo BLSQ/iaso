@@ -64,7 +64,7 @@ class VaccineRepositoryReportSerializer(serializers.Serializer):
     destruction_report_data = serializers.SerializerMethodField()
 
     def get_incident_report_data(self, obj):
-        incident_reports = IncidentReport.objects.filter(vaccine_stock=obj)
+        incident_reports = obj.incidentreport_set.all()
         return [
             {
                 "date": ir.date_of_incident_report,
@@ -74,7 +74,7 @@ class VaccineRepositoryReportSerializer(serializers.Serializer):
         ]
 
     def get_destruction_report_data(self, obj):
-        destruction_reports = DestructionReport.objects.filter(vaccine_stock=obj)
+        destruction_reports = obj.destructionreport_set.all()
         return [
             {
                 "date": dr.destruction_report_date,

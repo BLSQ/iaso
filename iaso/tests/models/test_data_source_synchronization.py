@@ -132,20 +132,22 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(data_source_sync.updated_at, self.DT)
 
     def test_create_json_diff(self):
+        """
+        Test that `create_json_diff()` works as expected.
+        """
         # Change the name in DHIS2.
         self.angola_country_dhis2.name = "Angola new"
         self.angola_country_dhis2.save()
 
-        kwargs = {
-            "name": "New synchronization",
-            "source_version_to_update": self.source_version_iaso,
-            "source_version_to_compare_with": self.source_version_dhis2,
-            "json_diff": None,
-            "sync_task": None,
-            "account": self.account,
-            "created_by": self.user,
-        }
-        data_source_sync = m.DataSourceSynchronization.objects.create(**kwargs)
+        data_source_sync = m.DataSourceSynchronization.objects.create(
+            name="New synchronization",
+            source_version_to_update=self.source_version_iaso,
+            source_version_to_compare_with=self.source_version_dhis2,
+            json_diff=None,
+            sync_task=None,
+            account=self.account,
+            created_by=self.user,
+        )
         self.assertIsNone(data_source_sync.json_diff)
         self.assertEqual(data_source_sync.diff_config, "")
 

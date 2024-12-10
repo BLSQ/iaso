@@ -891,9 +891,10 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.data["reference_instances"], [])
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerySetEqual(
-            ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"], transform=repr
-        )
+        ou_groups = ou.groups.all().order_by("name")
+        self.assertEqual(ou_groups.count(), 1)
+        self.assertEqual(ou_groups.first().name, self.elite_group.name)
+        self.assertEqual(ou_groups.first().source_version, self.sw_version_1)
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, old_ou.name)
         self.assertEqual(ou.parent, old_ou.parent)

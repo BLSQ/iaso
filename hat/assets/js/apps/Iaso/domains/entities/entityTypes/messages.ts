@@ -114,6 +114,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.beneficiaries',
         defaultMessage: 'Beneficiaries',
     },
+    deprecated: {
+        id: 'iaso.label.deprecated',
+        defaultMessage: 'deprecated',
+    },
 });
 
 export default MESSAGES;

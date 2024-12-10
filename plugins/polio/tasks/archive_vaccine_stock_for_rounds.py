@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 
 def archive_stock_for_round(round, vaccine_stock, reference_date, country=None):
     vaccine_stock_for_vaccine = vaccine_stock
-    if not country:
-        vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.filter(country=round.campaign.country.id)
 
     if vaccine_stock_for_vaccine.exists():
+        if not country:
+            vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.filter(country=round.campaign.country.id)
         vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.first()
         calculator = VaccineStockCalculator(vaccine_stock_for_vaccine)
         total_usable_vials_in, total_usable_doses_in = calculator.get_total_of_usable_vials(reference_date)

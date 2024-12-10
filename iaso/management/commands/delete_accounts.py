@@ -14,9 +14,9 @@ from django.db.models import TextField
 from django.db.models.functions import Cast
 
 from hat.audit.models import Modification
-from iaso.models import Account, OrgUnitType, CommentIaso, StoragePassword, StorageDevice, StorageLogEntry
+from iaso.models import Account, OrgUnitType, CommentIaso, StoragePassword, StorageDevice, StorageLogEntry, TenantUser
 from iaso.models import BulkCreateUserCsvFile
-from iaso.models import ExportLog, ExportRequest
+from iaso.models import ExportLog
 from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping, Profile, InstanceFile, InstanceLock
 from iaso.models.base import Task, QUEUED, KILLED
 from iaso.models.entity import Entity, EntityType
@@ -117,6 +117,11 @@ class Command(BaseCommand):
                     f"delete vector_control_apiimport where headers->>'QUERY_STRING' like 'app_id={project.app_id}%'"
                 )
                 forms = Form.objects_include_deleted.filter(projects__in=[project])
+
+                print(
+                    "OrgUnitChangeRequestConfiguration delete",
+                    project.orgunitchangerequestconfiguration_set.all().delete(),
+                )
 
                 print(
                     "OrgUnit remove reference_instance",
@@ -261,6 +266,12 @@ class Command(BaseCommand):
             StorageLogEntry.objects.filter(device__in=StorageDevice.objects.filter(account=account)).delete(),
         )
         print("StorageDevice", StorageDevice.objects.filter(account=account).delete())
+
+        user_ids = profiles.values_list("user_id")
+        print(
+            "TenantUser delete",
+            TenantUser.objects.filter(Q(main_user_id__in=user_ids) | Q(account_user_id__in=user_ids)).delete(),
+        )
 
         print("Users", User.objects.filter(iaso_profile__account=account).delete())
 

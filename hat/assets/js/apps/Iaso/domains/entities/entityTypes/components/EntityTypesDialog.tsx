@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Chip } from '@mui/material';
 import {
     IconButton,
     IntlFormatMessage,
@@ -7,7 +7,13 @@ import {
 } from 'bluesquare-components';
 import { FormikProps, FormikProvider, useFormik } from 'formik';
 import isEqual from 'lodash/isEqual';
-import React, { FunctionComponent, ReactNode, useState } from 'react';
+import React, {
+    FunctionComponent,
+    ReactNode,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import * as yup from 'yup';
 
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -129,6 +135,47 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         formId: values?.reference_form,
         enabled: isOpen,
     });
+
+    const renderTags = useCallback(
+        (tagValue, getTagProps) =>
+            tagValue
+                .sort((a, b) =>
+                    formatLabel(a).localeCompare(formatLabel(b), undefined, {
+                        sensitivity: 'accent',
+                    }),
+                )
+                .map((option, index) => {
+                    const field = possibleFields.find(
+                        f => f.name === option.value,
+                    );
+                    return (
+                        <Chip
+                            color={
+                                field?.is_latest
+                                    ? 'primary'
+                                    : 'secondary'
+                            }
+                            label={option.label}
+                            {...getTagProps({ index })}
+                        />
+                    );
+                }),
+        [possibleFields],
+    );
+
+    const possibleFieldsOptions = useMemo(
+        () =>
+            possibleFields.map(field => ({
+                value: field.name,
+                label: field.is_latest
+                    ? formatLabel(field)
+                    : `${formatLabel(field)} (${formatMessage(
+                          MESSAGES.deprecated,
+                      )})`,
+            })),
+        [formatMessage, possibleFields],
+    );
+
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -212,10 +259,8 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         }
                         value={!isFetchingForm ? values.fields_list_view : []}
                         label={MESSAGES.fieldsListView}
-                        options={possibleFields.map(field => ({
-                            value: field.name,
-                            label: formatLabel(field),
-                        }))}
+                        options={possibleFieldsOptions}
+                        renderTags={renderTags}
                         helperText={
                             isNew && !values.reference_form
                                 ? formatMessage(MESSAGES.selectReferenceForm)
@@ -238,10 +283,8 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                                 : []
                         }
                         label={MESSAGES.fieldsDetailInfoView}
-                        options={possibleFields.map(field => ({
-                            value: field.name,
-                            label: formatLabel(field),
-                        }))}
+                        options={possibleFieldsOptions}
+                        renderTags={renderTags}
                         helperText={
                             isNew && !values.reference_form
                                 ? formatMessage(MESSAGES.selectReferenceForm)
@@ -262,10 +305,8 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                                 : []
                         }
                         label={MESSAGES.fieldsDuplicateSearch}
-                        options={possibleFields.map(field => ({
-                            value: field.name,
-                            label: formatLabel(field),
-                        }))}
+                        renderTags={renderTags}
+                        options={possibleFieldsOptions}
                         helperText={
                             isNew && !values.reference_form
                                 ? formatMessage(MESSAGES.selectReferenceForm)

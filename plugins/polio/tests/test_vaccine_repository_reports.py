@@ -95,7 +95,7 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
         """Test the structure of the reports list response"""
         self.client.force_authenticate(user=self.user)
         response = self.client.get(REPORTS_URL)
-        data = response.json()
+        data = response.json()["results"]
 
         # Check result fields
         result = data[0]
@@ -111,24 +111,24 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
 
         # Test filtering by country
         response = self.client.get(f"{REPORTS_URL}?countries={self.testland.id}")
-        data = response.json()
+        data = response.json()["results"]
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["country_name"], "Testland")
 
         # Test filtering by vaccine name
         response = self.client.get(f"{REPORTS_URL}?vaccine_name={pm.VACCINES[0][0]}")
-        data = response.json()
+        data = response.json()["results"]
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["vaccine"], pm.VACCINES[0][0])
 
         # Test filtering by file type
         response = self.client.get(f"{REPORTS_URL}?file_type=INCIDENT")
-        data = response.json()
+        data = response.json()["results"]
         self.assertEqual(len(data), 1)
         self.assertTrue(len(data[0]["incident_report_data"]) > 0)
 
         response = self.client.get(f"{REPORTS_URL}?file_type=DESTRUCTION")
-        data = response.json()
+        data = response.json()["results"]
         self.assertEqual(len(data), 1)
         self.assertTrue(len(data[0]["destruction_report_data"]) > 0)
 
@@ -136,7 +136,7 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
         country_group = self.testland.groups.first()
         if country_group:
             response = self.client.get(f"{REPORTS_URL}?country_block={country_group.id}")
-            data = response.json()
+            data = response.json()["results"]
             self.assertEqual(len(data), 1)
             self.assertEqual(data[0]["country_name"], "Testland")
 
@@ -161,18 +161,18 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
 
         # Test ordering by country name
         response = self.client.get(f"{REPORTS_URL}?order=country__name")
-        data = response.json()
+        data = response.json()["results"]
         self.assertEqual(data[0]["country_name"], "Testland")
         self.assertEqual(data[1]["country_name"], "Zambia")
 
         # Test reverse ordering by country name
         response = self.client.get(f"{REPORTS_URL}?order=-country__name")
-        data = response.json()
+        data = response.json()["results"]
         self.assertEqual(data[0]["country_name"], "Zambia")
         self.assertEqual(data[1]["country_name"], "Testland")
 
         # Test ordering by vaccine
         response = self.client.get(f"{REPORTS_URL}?order=vaccine")
-        data = response.json()
+        data = response.json()["results"]
         self.assertEqual(data[0]["vaccine"], pm.VACCINES[0][0])
         self.assertEqual(data[1]["vaccine"], pm.VACCINES[1][0])

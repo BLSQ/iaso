@@ -62,6 +62,7 @@
         "@mui/x-date-pickers": "^5.0.0-beta.2",
         "@mui/x-tree-view": "^6.0.0-beta.0",
         "@sentry/browser": "^8.35.0",
+        "@superset-ui/embedded-sdk": "^0.1.2",
         "@terraformer/wkt": "^2.1.2",
         "@types/react": "^17.0.36",
         "@types/react-dom": "^17.0.9",

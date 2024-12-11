@@ -34,6 +34,14 @@ districtSelect.on('change', function () {
     var period = monthSelect.val();
     console.log(orgUnitId, period);
     $.getJSON('/active_list/validation_api/' + orgUnitId + '/' + period, function (data) {
+      console.log(data);
+      data.table_content.forEach(item => {
+        console.log(item);
+        const importId = item.import_id;
+        if (importId != null)
+          item.import_id = `<a href="${importId}" class="validate_link">Validate</a>`;
+        console.log(item);
+      });
       var table = generateTable(data.table_content);
       $("#completeness").text(data.completeness);
       $('#table-container').html(table);
@@ -46,4 +54,25 @@ districtSelect.on('change', function () {
 
 $(document).ready(function () {
   fillSelectWithMonths();
+});
+
+$(document).ready(function() {
+  // Open the popup
+  $("#container").on("click", ".validate_link", function(event) {
+    event.preventDefault();
+    $("#validation_form").show();
+    $(".overlay").show();
+  });
+
+  // Close the popup
+  $("#closePopup").click(function() {
+    $("#validation_form").hide();
+    $(".overlay").hide();
+  });
+
+  // Close the popup when clicking on the overlay
+  $(".overlay").click(function() {
+    $("#validation_form").hide();
+    $(".overlay").hide();
+  });
 });

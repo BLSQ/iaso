@@ -26,6 +26,16 @@
         <option value="A valider">A valider</option>
     </select>
 </div>
+
+    <div id="validation_form">
+        <h2>Validation Form</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <div class="overlay"></div>
 <div id="dataContainer">
     <p>Complétude: <span id="completeness">-</span></p>
     <div id="table-container"></div>

@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 from iaso.models import OrgUnit
+from .forms import ValidationForm
 from .settings import OPENHEXA_USER, OPENHEXA_PASSWORD
 from django.utils.encoding import smart_str
 from .openhexa import *
@@ -89,7 +90,13 @@ def upload(request):
 @login_required
 def validation(request, org_unit_id=None, period=None):
     org_unit = None
-
+    if request.method == "POST":
+        form = ValidationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # return redirect('validation_list') # Replace 'validation_list' with the actual URL name
+    else:
+        form = ValidationForm()
     return render(
         request,
         "validation.html",
@@ -98,6 +105,7 @@ def validation(request, org_unit_id=None, period=None):
             "period": period,
             "statuses": VALIDATION_STATUS_CHOICES,
             "request": request,
+            "form": form,
         },
     )
 
@@ -122,11 +130,14 @@ def validation_api(request, org_unit_id, period):
                 obj["Statut"] = ""
                 obj["Observation"] = ""
             obj["Dernière modification"] = latest_import.creation_date.strftime(("%d/%m/%y %H:%M:%S"))
+            obj["import_id"] = latest_import.id
         else:
             obj["A rapporté"] = "Non"
             obj["Statut"] = ""
             obj["Observation"] = ""
             obj["Dernière modification"] = ""
+            obj["import_id"] = None
+
         table_content.append(obj)
 
     res = {"table_content": table_content, "completeness": "%s/%s" % (report_count, len(org_units))}

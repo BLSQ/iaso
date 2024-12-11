@@ -21,7 +21,8 @@ function submitForm (formData) {
       console.log('File uploaded successfully!', response)
       $('#loader').hide()
       alert(response['message'])
-      window.location.href = '/'
+      console.log("/active_list/patient_list/")
+      window.location.href = '/active_list/patient_list/'
     },
     error: function (xhr, status, error) {
       // Handle errors
@@ -109,7 +110,7 @@ function generateTable (data) {
   $(data).each(function (index, obj) {
     var row = $('<tr></tr>')
     for (var key in obj) {
-      row.append($('<td></td>').text(obj[key]))
+      row.append($('<td></td>').html(obj[key]))
     }
     tbody.append(row)
   })

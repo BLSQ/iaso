@@ -67,6 +67,7 @@ class Import(models.Model):
     hash_key = models.TextField(null=False)
     file_name = models.TextField(unique=True, null=False)
     file_check = models.TextField(null=False)
+    on_time = models.BooleanField(default=False)
 
     class Meta:
         db_table = "import"
@@ -101,7 +102,7 @@ class ActivePatientsList(models.Model):
     # leaving
     transfer_out = models.BooleanField()
     death = models.BooleanField()
-    art_stoppage = models.BooleanField()  # stoppage for ant retro viral therapy
+    art_stoppage = models.BooleanField()  # stoppage for anti retro viral therapy
     served_elsewhere = models.BooleanField()
 
     active = models.BooleanField(default=True)  # denormalized information
@@ -110,7 +111,10 @@ class ActivePatientsList(models.Model):
         max_length=255, null=True, choices=VALIDATION_STATUS_CHOICES, default="WAITING_FOR_VALIDATION"
     )
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
+    received_arv = models.BooleanField(default=False)
+    disappeared = models.BooleanField(default=False)
 
+    # cas aes ou patient mobile: what does it mean?
     class Meta:
         db_table = "active_list"  # Optional: to match the exact table name
 

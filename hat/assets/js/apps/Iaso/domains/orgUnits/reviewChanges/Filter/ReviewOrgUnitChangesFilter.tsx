@@ -6,8 +6,7 @@ import React, {
     useState,
 } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { makeStyles } from '@mui/styles';
+import { useSafeIntl } from 'bluesquare-components';
 import { FilterButton } from '../../../../components/FilterButton';
 import { useFilterState } from '../../../../hooks/useFilterState';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -33,21 +32,20 @@ import { useGetVersionLabel } from '../../hooks/useGetVersionLabel';
 
 const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = { params: ApproveOrgUnitParams };
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
+
+const styles = {
     advancedSettings: {
-        color: theme.palette.primary.main,
+        color: theme => theme.palette.primary.main,
         alignSelf: 'center',
         textAlign: 'right',
         flex: '1',
         cursor: 'pointer',
     },
-}));
+};
+
 export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
-    const classes = useStyles();
-
     const defaultSourceVersion = useDefaultSourceVersion();
 
     const { filters, handleSearch, handleChange, filtersUpdated } =
@@ -218,7 +216,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         <Typography
                             data-test="advanced-settings"
                             variant="overline"
-                            className={classes.advancedSettings}
+                            sx={styles.advancedSettings}
                             onClick={() => setShowAdvancedSettings(true)}
                         >
                             {formatMessage(MESSAGES.showAdvancedSettings)}

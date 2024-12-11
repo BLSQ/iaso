@@ -45,6 +45,7 @@ districtSelect.on('change', function () {
       var table = generateTable(data.table_content);
       $("#completeness").text(data.completeness);
       $('#table-container').html(table);
+       $("#generatedTable").tablesorter();
       dataContainer.show();
     });
 
@@ -60,6 +61,8 @@ $(document).ready(function() {
   // Open the popup
   $("#container").on("click", ".validate_link", function(event) {
     event.preventDefault();
+    var importId = $(this).attr("href");
+    $("#id_source_import").val(importId);
     $("#validation_form").show();
     $(".overlay").show();
   });

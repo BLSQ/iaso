@@ -22,6 +22,7 @@ from .models import (
     Validation,
     PATIENT_LIST_DISPLAY_FIELDS,
 )
+from ..polio.settings import DISTRICT
 
 UPLOAD_FOLDER = "upload"  # Create this folder in your project directory
 
@@ -88,12 +89,15 @@ def upload(request):
 
 
 @login_required
-def validation(request, org_unit_id=None, period=None):
+def validation(request):
     org_unit = None
     if request.method == "POST":
         form = ValidationForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.instance.user_id = request.user.id
+            form.instance.user_name = request.user.username
+            form.instance.level = DISTRICT
+            form.instance.save()
             # return redirect('validation_list') # Replace 'validation_list' with the actual URL name
     else:
         form = ValidationForm()
@@ -102,7 +106,6 @@ def validation(request, org_unit_id=None, period=None):
         "validation.html",
         {
             "org_unit": org_unit,
-            "period": period,
             "statuses": VALIDATION_STATUS_CHOICES,
             "request": request,
             "form": form,
@@ -126,9 +129,11 @@ def validation_api(request, org_unit_id, period):
             if latest_validation:
                 obj["Statut"] = latest_validation.validation_status
                 obj["Observation"] = latest_validation.comment
+                obj["Level"] = latest_validation.level
             else:
                 obj["Statut"] = ""
                 obj["Observation"] = ""
+                obj["Level"] = ""
             obj["Dernière modification"] = latest_import.creation_date.strftime(("%d/%m/%y %H:%M:%S"))
             obj["import_id"] = latest_import.id
         else:
@@ -137,6 +142,7 @@ def validation_api(request, org_unit_id, period):
             obj["Observation"] = ""
             obj["Dernière modification"] = ""
             obj["import_id"] = None
+            obj["Level"] = ""
 
         table_content.append(obj)
 

@@ -6,9 +6,17 @@ VALIDATION_STATUS_DISTRICT_VALIDATED = "DISTRICT_VALIDATED"
 VALIDATION_STATUS_REGION_VALIDATED = "REGION_VALIDATED"
 
 VALIDATION_STATUS_CHOICES = [
-    (VALIDATION_STATUS_WAITING_FOR_VALIDATION, "Waiting For Validation"),
-    (VALIDATION_STATUS_DISTRICT_VALIDATED, "Validated by District"),
-    (VALIDATION_STATUS_REGION_VALIDATED, "Validated by Region"),
+    (VALIDATION_STATUS_WAITING_FOR_VALIDATION, "En attente de Validation"),
+    (VALIDATION_STATUS_DISTRICT_VALIDATED, "Validé par District"),
+    (VALIDATION_STATUS_REGION_VALIDATED, "Validé par la Région"),
+]
+
+VALIDATION_OK = "OK"
+VALIDATION_INVALID = "INVALID"
+
+VALIDATION_CHOICES = [
+    (VALIDATION_OK, "Validé"),
+    (VALIDATION_INVALID, "Invalide"),
 ]
 
 LEVEL_REGION = "REGION"
@@ -155,7 +163,7 @@ class Validation(models.Model):
     user_name = models.CharField(max_length=255, null=False)
     level = models.CharField(max_length=255, null=False, choices=LEVEL_CHOICES)
     comment = models.TextField()
-    validation_status = models.CharField(max_length=255, null=True, choices=VALIDATION_STATUS_CHOICES)
+    validation_status = models.CharField(max_length=255, null=True, choices=VALIDATION_CHOICES)
 
     class Meta:
         db_table = "validation"  # Optional: to match the exact table name

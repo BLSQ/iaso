@@ -85,7 +85,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     );
 
     const [selectedVersionId, setSelectedVersionId] = useState(
-        defaultSourceVersion.version.id,
+        defaultSourceVersion.version.id.toString(),
     );
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
     const [dataSource, setDataSource] = useState(initialDataSource);
@@ -148,13 +148,15 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             const selectedSource = dataSources?.filter(
                 source => source.value === newValue,
             )[0];
-            setSelectedVersionId(selectedSource?.original?.default_version.id);
+            setSelectedVersionId(
+                selectedSource?.original?.default_version.id.toString(),
+            );
             handleChange(
                 'source_version_id',
                 selectedSource?.original?.default_version.id,
             );
         } else {
-            setSelectedVersionId(newValue);
+            setSelectedVersionId(newValue.toString());
             handleChange('source_version_id', newValue);
         }
         filters.groups = [];
@@ -239,11 +241,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                                 disabled={isFetchingDataSources}
                                 keyValue="version"
                                 onChange={handleDataSourceVersionChange}
-                                value={
-                                    selectedVersionId
-                                        ? selectedVersionId?.toString()
-                                        : ''
-                                }
+                                value={selectedVersionId || ''}
                                 label={MESSAGES.sourceVersion}
                                 options={versionsDropDown}
                                 clearable={false}

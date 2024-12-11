@@ -221,6 +221,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.featureDisabled',
         defaultMessage: 'Feature temporarily disabled',
     },
+    showAdvancedSettings: {
+        id: 'iaso.form.label.showAdvancedSettings',
+        defaultMessage: 'Show advanced settings',
+    },
+    hideAdvancedSettings: {
+        id: 'iaso.form.label.hideAdvancedSettings',
+        defaultMessage: 'Hide advanced settings',
+    },
+    source: {
+        defaultMessage: 'Source',
+        id: 'iaso.orgUnits.source',
+    },
+    sourceVersion: {
+        id: 'iaso.form.label.sourceVersion',
+        defaultMessage: 'Source version',
+    },
 });
 
 export default MESSAGES;

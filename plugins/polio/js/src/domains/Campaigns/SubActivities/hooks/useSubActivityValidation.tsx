@@ -5,37 +5,57 @@ import { useMemo } from 'react';
 import { dateFormat } from '../../../Calendar/campaignCalendar/constants';
 import MESSAGES from '../messages';
 
+const dateKeys = {
+    round: { start: 'start_date', end: 'end_date' },
+    lqas: { start: 'lqas_started_at', end: 'lqas_ended_at' },
+    im: { start: 'im_started_at', end: 'im_ended_at' },
+};
+
 yup.addMethod(
     yup.date,
     'validateStartDate',
-    // Add round to args and uncomment code to enable restriction based on round dates
-    function validateStartDate(formatMessage) {
+    function validateStartDate(formatMessage, dateType = 'round') {
         return this.test('validateStartDate', '', (value, context) => {
+            const keys = dateKeys[dateType];
             const { path, createError, parent } = context;
             const newStartDate = moment(value);
             const endDate =
-                parent.end_date && moment(parent.end_date, dateFormat);
+                parent[keys.end] && moment(parent[keys.end], dateFormat);
 
             let errorMessage;
 
             if (endDate?.isBefore(newStartDate)) {
                 errorMessage = formatMessage(MESSAGES.startDateAfterEndDate);
             }
-            // Uncomment to allow restriction of dates based on round dates
-            // else {
-            //     const roundStartDate = moment(round?.started_at, dateFormat);
-            //     const roundEndDate = moment(round?.ended_at, dateFormat);
-            //     if (roundStartDate?.isAfter(newStartDate)) {
-            //         errorMessage = formatMessage(
-            //             MESSAGES.startDateBeforeRoundDate,
-            //         );
-            //     }
-            //     if (roundEndDate?.isSameOrBefore(newStartDate)) {
-            //         errorMessage = formatMessage(
-            //             MESSAGES.startDateAfterRoundEnd,
-            //         );
-            //     }
-            // }
+
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
+
+yup.addMethod(
+    yup.date,
+    'validateLqasImStartDate',
+    function validateLqasImStartDate(formatMessage) {
+        return this.test('validateLqasImStartDate', '', (value, context) => {
+            const keys = dateKeys.round;
+            const { path, createError, parent } = context;
+            const newStartDate = moment(value);
+            const roundEndDate =
+                parent[keys.end] && moment(parent[keys.end], dateFormat);
+
+            let errorMessage;
+
+            if (roundEndDate?.isAfter(newStartDate)) {
+                errorMessage = formatMessage(MESSAGES.mustBeAfterRoundEndDate);
+            }
+
             if (errorMessage) {
                 return createError({
                     path,
@@ -51,32 +71,18 @@ yup.addMethod(
     yup.date,
     'validateEndDate',
     // Add round to args and uncomment code to enable restriction based on round dates
-    function validateEndDate(formatMessage) {
+    function validateEndDate(formatMessage, dateType = 'round') {
         return this.test('validateEndDate', '', (value, context) => {
+            const keys = dateKeys[dateType];
             const { path, createError, parent } = context;
             const newEndDate = moment(value);
             const startDate =
-                parent.start_date && moment(parent.start_date, dateFormat);
+                parent[keys.start] && moment(parent[keys.start], dateFormat);
             let errorMessage;
 
             if (startDate?.isAfter(newEndDate)) {
                 errorMessage = formatMessage(MESSAGES.endDateBeforeStartDate);
             }
-            // Uncomment to restrict dates based on round dates
-            // else {
-            //     const roundStartDate = moment(round?.started_at, dateFormat);
-            //     const roundEndDate = moment(round?.ended_at, dateFormat);
-            //     if (roundEndDate?.isBefore(newEndDate)) {
-            //         errorMessage = formatMessage(
-            //             MESSAGES.endDateAfterRoundDate,
-            //         );
-            //     }
-            //     if (roundStartDate.isSameOrAfter(newEndDate)) {
-            //         errorMessage = formatMessage(
-            //             MESSAGES.endDateBeforeRoundStart,
-            //         );
-            //     }
-            // }
 
             if (errorMessage) {
                 return createError({
@@ -115,6 +121,46 @@ export const useSubActivityValidation = (): yup.ObjectSchema<any> => {
                     // end should not be after round end
                     // @ts-ignore
                     .validateEndDate(formatMessage)
+                    .required(formatMessage(MESSAGES.fieldRequired)),
+                lqas_started_at: yup
+                    .date()
+                    .typeError(formatMessage(MESSAGES.invalidDate))
+                    .nullable()
+                    // start should be before end
+                    // start should not be before round start
+                    // @ts-ignore
+                    .validateStartDate(formatMessage, 'lqas')
+                    // lqas/im cannot start before the round/subactivity has ended
+                    .validateLqasImStartDate(formatMessage)
+                    .required(formatMessage(MESSAGES.fieldRequired)),
+                lqas_ended_at: yup
+                    .date()
+                    .typeError(formatMessage(MESSAGES.invalidDate))
+                    .nullable()
+                    // end should be after start
+                    // end should not be after round end
+                    // @ts-ignore
+                    .validateEndDate(formatMessage, 'lqas')
+                    .required(formatMessage(MESSAGES.fieldRequired)),
+                im_started_at: yup
+                    .date()
+                    .typeError(formatMessage(MESSAGES.invalidDate))
+                    .nullable()
+                    // start should be before end
+                    // start should not be before round start
+                    // @ts-ignore
+                    .validateStartDate(formatMessage, 'im')
+                    // lqas/im cannot start before the round/subactivity has ended
+                    .validateLqasImStartDate(formatMessage)
+                    .required(formatMessage(MESSAGES.fieldRequired)),
+                im_ended_at: yup
+                    .date()
+                    .typeError(formatMessage(MESSAGES.invalidDate))
+                    .nullable()
+                    // end should be after start
+                    // end should not be after round end
+                    // @ts-ignore
+                    .validateEndDate(formatMessage, 'im')
                     .required(formatMessage(MESSAGES.fieldRequired)),
                 age_unit: yup.string().nullable(),
                 age_min: yup.number().nullable(),

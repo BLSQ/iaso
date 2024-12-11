@@ -34,6 +34,10 @@ class SubActivityCreateUpdateSerializer(serializers.ModelSerializer):
             "age_unit",
             "age_min",
             "age_max",
+            "lqas_ended_at",
+            "lqas_started_at",
+            "im_ended_at",
+            "im_started_at",
         ]
 
     def create(self, validated_data):

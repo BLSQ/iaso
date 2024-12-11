@@ -20,22 +20,22 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         cls.data_source = m.DataSource.objects.create(name="Data source")
 
         # Data source versions.
-        cls.source_version_dhis2 = m.SourceVersion.objects.create(
-            data_source=cls.data_source, number=1, description="dhis2"
+        cls.source_version_to_compare_with = m.SourceVersion.objects.create(
+            data_source=cls.data_source, number=1, description="Bar"
         )
-        cls.source_version_iaso = m.SourceVersion.objects.create(
-            data_source=cls.data_source, number=2, description="iaso"
+        cls.source_version_to_update = m.SourceVersion.objects.create(
+            data_source=cls.data_source, number=2, description="Foo"
         )
 
         # Groups
-        cls.group_dhis2 = m.Group.objects.create(
-            name="Group DHIS2", source_ref="group-id", source_version=cls.source_version_dhis2
+        cls.group_a = m.Group.objects.create(
+            name="Group A", source_ref="group-id", source_version=cls.source_version_to_compare_with
         )
-        cls.group_iaso_a = m.Group.objects.create(
-            name="Group IASO A", source_ref="group-id", source_version=cls.source_version_iaso
+        cls.group_b = m.Group.objects.create(
+            name="Group B", source_ref="group-id", source_version=cls.source_version_to_update
         )
-        cls.group_iaso_b = m.Group.objects.create(
-            name="Group IASO B", source_ref="group-id", source_version=cls.source_version_iaso
+        cls.group_c = m.Group.objects.create(
+            name="Group C", source_ref="group-id", source_version=cls.source_version_to_update
         )
 
         # Org unit type.
@@ -43,10 +43,11 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         cls.org_unit_type_region = m.OrgUnitType.objects.create(category="REGION")
         cls.org_unit_type_district = m.OrgUnitType.objects.create(category="DISTRICT")
 
-        # Pyramid in DHIS2.
-        cls.angola_country_dhis2 = m.OrgUnit.objects.create(
+        # Angola pyramid to update (2 org units).
+
+        cls.angola_country_to_update = m.OrgUnit.objects.create(
             parent=None,
-            version=cls.source_version_dhis2,
+            version=cls.source_version_to_update,
             source_ref="id-1",
             name="Angola",
             validation_status=m.OrgUnit.VALIDATION_VALID,
@@ -54,11 +55,11 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
         )
-        cls.angola_country_dhis2.groups.set([cls.group_dhis2])
+        cls.angola_country_to_update.groups.set([cls.group_b, cls.group_c])
 
-        cls.angola_region_dhis2 = m.OrgUnit.objects.create(
-            parent=cls.angola_country_dhis2,
-            version=cls.source_version_dhis2,
+        cls.angola_region_to_update = m.OrgUnit.objects.create(
+            parent=cls.angola_country_to_update,
+            version=cls.source_version_to_update,
             source_ref="id-2",
             name="Huila",
             org_unit_type=cls.org_unit_type_region,
@@ -67,36 +68,37 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             closed_date=datetime.date(2025, 11, 28),
         )
 
-        cls.angola_district_dhis2 = m.OrgUnit.objects.create(
-            parent=cls.angola_region_dhis2,
-            version=cls.source_version_dhis2,
+        # Angola pyramid to compare with (3 org units).
+
+        cls.angola_country_to_compare_with = m.OrgUnit.objects.create(
+            parent=None,
+            version=cls.source_version_to_compare_with,
+            source_ref="id-1",
+            name="Angola",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            org_unit_type=cls.org_unit_type_country,
+            opening_date=datetime.date(2022, 11, 28),
+            closed_date=datetime.date(2025, 11, 28),
+        )
+        cls.angola_country_to_compare_with.groups.set([cls.group_a])
+
+        cls.angola_region_to_compare_with = m.OrgUnit.objects.create(
+            parent=cls.angola_country_to_compare_with,
+            version=cls.source_version_to_compare_with,
+            source_ref="id-2",
+            name="Huila",
+            org_unit_type=cls.org_unit_type_region,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            opening_date=datetime.date(2022, 11, 28),
+            closed_date=datetime.date(2025, 11, 28),
+        )
+
+        cls.angola_district_to_compare_with = m.OrgUnit.objects.create(
+            parent=cls.angola_region_to_compare_with,
+            version=cls.source_version_to_compare_with,
             source_ref="id-3",
             name="Cuvango",
             org_unit_type=cls.org_unit_type_district,
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            opening_date=datetime.date(2022, 11, 28),
-            closed_date=datetime.date(2025, 11, 28),
-        )
-
-        # Pyramid in IASO.
-        cls.angola_country_iaso = m.OrgUnit.objects.create(
-            parent=None,
-            version=cls.source_version_iaso,
-            source_ref="id-1",
-            name="Angola",
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            org_unit_type=cls.org_unit_type_country,
-            opening_date=datetime.date(2022, 11, 28),
-            closed_date=datetime.date(2025, 11, 28),
-        )
-        cls.angola_country_iaso.groups.set([cls.group_iaso_a, cls.group_iaso_b])
-
-        cls.angola_region_iaso = m.OrgUnit.objects.create(
-            parent=cls.angola_country_iaso,
-            version=cls.source_version_iaso,
-            source_ref="id-2",
-            name="Huila",
-            org_unit_type=cls.org_unit_type_region,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
@@ -109,8 +111,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
     def test_create(self):
         kwargs = {
             "name": "New synchronization",
-            "source_version_to_update": self.source_version_iaso,
-            "source_version_to_compare_with": self.source_version_dhis2,
+            "source_version_to_update": self.source_version_to_update,
+            "source_version_to_compare_with": self.source_version_to_compare_with,
             "json_diff": None,
             "sync_task": None,
             "account": self.account,
@@ -135,14 +137,14 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         """
         Test that `create_json_diff()` works as expected.
         """
-        # Change the name in DHIS2.
-        self.angola_country_dhis2.name = "Angola new"
-        self.angola_country_dhis2.save()
+        # Change the name.
+        self.angola_country_to_compare_with.name = "Angola new"
+        self.angola_country_to_compare_with.save()
 
         data_source_sync = m.DataSourceSynchronization.objects.create(
             name="New synchronization",
-            source_version_to_update=self.source_version_iaso,
-            source_version_to_compare_with=self.source_version_dhis2,
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
             json_diff=None,
             sync_task=None,
             account=self.account,
@@ -175,11 +177,11 @@ class DataSourceSynchronizationModelTestCase(TestCase):
 
         expected_diff_config = (
             "{"
-            f"'version': <SourceVersion: {str(self.source_version_iaso)}>, "
+            f"'version': <SourceVersion: {str(self.source_version_to_update)}>, "
             f"'validation_status': '{m.OrgUnit.VALIDATION_VALID}', "
             "'top_org_unit': None, "
             f"'org_unit_types': [<OrgUnitType: {str(self.org_unit_type_country)}>], "
-            f"'version_ref': <SourceVersion: {str(self.source_version_dhis2)}>, "
+            f"'version_ref': <SourceVersion: {str(self.source_version_to_compare_with)}>, "
             f"'validation_status_ref': '{m.OrgUnit.VALIDATION_VALID}', "
             "'top_org_unit_ref': None, "
             f"'org_unit_types_ref': [<OrgUnitType: {str(self.org_unit_type_country)}>], "

@@ -26,34 +26,34 @@ class DifferTestCase(TestCase):
     def setUpTestData(cls):
         cls.data_source = m.DataSource.objects.create(name="Data source")
 
-        cls.source_version_dhis2 = m.SourceVersion.objects.create(
-            data_source=cls.data_source, number=1, description="dhis2"
+        cls.source_version_to_update = m.SourceVersion.objects.create(
+            data_source=cls.data_source, number=1, description="Bar"
         )
-        cls.source_version_iaso = m.SourceVersion.objects.create(
-            data_source=cls.data_source, number=2, description="iaso"
+        cls.source_version_to_compare_with = m.SourceVersion.objects.create(
+            data_source=cls.data_source, number=2, description="Foo"
         )
 
         cls.org_unit_type_country = m.OrgUnitType.objects.create(category="COUNTRY")
         cls.org_unit_type_region = m.OrgUnitType.objects.create(category="REGION")
         cls.org_unit_type_district = m.OrgUnitType.objects.create(category="DISTRICT")
 
-        cls.group_dhis2 = m.Group.objects.create(
-            name="Group DHIS2", source_ref="group-id", source_version=cls.source_version_dhis2
+        cls.group_a = m.Group.objects.create(
+            name="Group A", source_ref="group-id", source_version=cls.source_version_to_compare_with
         )
-        cls.group_iaso_a = m.Group.objects.create(
-            name="Group IASO A", source_ref="group-id", source_version=cls.source_version_iaso
+        cls.group_b = m.Group.objects.create(
+            name="Group B", source_ref="group-id", source_version=cls.source_version_to_update
         )
-        cls.group_iaso_b = m.Group.objects.create(
-            name="Group IASO B", source_ref="group-id", source_version=cls.source_version_iaso
+        cls.group_c = m.Group.objects.create(
+            name="Group C", source_ref="group-id", source_version=cls.source_version_to_update
         )
 
         cls.multi_polygon = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
 
-        # Angola pyramid in DHIS2.
+        # Angola pyramid to update.
 
-        cls.angola_country_dhis2 = m.OrgUnit.objects.create(
+        cls.angola_country_to_update = m.OrgUnit.objects.create(
             parent=None,
-            version=cls.source_version_dhis2,
+            version=cls.source_version_to_update,
             source_ref="id-1",
             name="Angola",
             validation_status=m.OrgUnit.VALIDATION_VALID,
@@ -62,11 +62,11 @@ class DifferTestCase(TestCase):
             closed_date=datetime.date(2025, 11, 28),
             geom=cls.multi_polygon,
         )
-        cls.angola_country_dhis2.groups.set([cls.group_dhis2])
+        cls.angola_country_to_update.groups.set([cls.group_b, cls.group_c])
 
-        cls.angola_region_dhis2 = m.OrgUnit.objects.create(
-            parent=cls.angola_country_dhis2,
-            version=cls.source_version_dhis2,
+        cls.angola_region_to_update = m.OrgUnit.objects.create(
+            parent=cls.angola_country_to_update,
+            version=cls.source_version_to_update,
             source_ref="id-2",
             name="Huila",
             org_unit_type=cls.org_unit_type_region,
@@ -76,9 +76,9 @@ class DifferTestCase(TestCase):
             geom=cls.multi_polygon,
         )
 
-        cls.angola_district_dhis2 = m.OrgUnit.objects.create(
-            parent=cls.angola_region_dhis2,
-            version=cls.source_version_dhis2,
+        cls.angola_district_to_update = m.OrgUnit.objects.create(
+            parent=cls.angola_region_to_update,
+            version=cls.source_version_to_update,
             source_ref="id-3",
             name="Cuvango",
             org_unit_type=cls.org_unit_type_district,
@@ -88,11 +88,11 @@ class DifferTestCase(TestCase):
             geom=cls.multi_polygon,
         )
 
-        # Angola pyramid in IASO.
+        # Angola pyramid to compare with.
 
-        cls.angola_country_iaso = m.OrgUnit.objects.create(
+        cls.angola_country_to_compare_with = m.OrgUnit.objects.create(
             parent=None,
-            version=cls.source_version_iaso,
+            version=cls.source_version_to_compare_with,
             source_ref="id-1",
             name="Angola",
             validation_status=m.OrgUnit.VALIDATION_VALID,
@@ -101,11 +101,11 @@ class DifferTestCase(TestCase):
             closed_date=datetime.date(2025, 11, 28),
             geom=cls.multi_polygon,
         )
-        cls.angola_country_iaso.groups.set([cls.group_iaso_a, cls.group_iaso_b])
+        cls.angola_country_to_compare_with.groups.set([cls.group_a])
 
-        cls.angola_region_iaso = m.OrgUnit.objects.create(
-            parent=cls.angola_country_iaso,
-            version=cls.source_version_iaso,
+        cls.angola_region_to_compare_with = m.OrgUnit.objects.create(
+            parent=cls.angola_country_to_compare_with,
+            version=cls.source_version_to_compare_with,
             source_ref="id-2",
             name="Huila",
             org_unit_type=cls.org_unit_type_region,
@@ -115,9 +115,9 @@ class DifferTestCase(TestCase):
             geom=cls.multi_polygon,
         )
 
-        cls.angola_district_iaso = m.OrgUnit.objects.create(
-            parent=cls.angola_region_iaso,
-            version=cls.source_version_iaso,
+        cls.angola_district_to_compare_with = m.OrgUnit.objects.create(
+            parent=cls.angola_region_to_compare_with,
+            version=cls.source_version_to_compare_with,
             source_ref="id-3",
             name="Cuvango",
             org_unit_type=cls.org_unit_type_district,
@@ -131,19 +131,19 @@ class DifferTestCase(TestCase):
         """
         Test `Dumper.as_json()` for a field update.
         """
-        # Change the name in DHIS2.
-        self.angola_country_dhis2.name = "Angola new"
-        self.angola_country_dhis2.save()
+        # Change the name.
+        self.angola_country_to_compare_with.name = "Angola new"
+        self.angola_country_to_compare_with.save()
 
         # Limit the diff size with restrictions on `field_names` and `org_unit_types_ref`.
         diffs, fields = Differ(test_logger).diff(
-            # Actual version.
-            version=self.source_version_iaso,
+            # Version to update.
+            version=self.source_version_to_update,
             validation_status=None,
             top_org_unit=None,
             org_unit_types=[self.org_unit_type_country],
-            # New version.
-            version_ref=self.source_version_dhis2,
+            # Version to compare with.
+            version_ref=self.source_version_to_compare_with,
             validation_status_ref=None,
             top_org_unit_ref=None,
             org_unit_types_ref=[self.org_unit_type_country],
@@ -159,15 +159,15 @@ class DifferTestCase(TestCase):
         expected_json_diffs = [
             {
                 "org_unit": {
-                    "id": self.angola_country_dhis2.pk,
+                    "id": self.angola_country_to_compare_with.pk,
                     "name": "Angola new",
                     "uuid": None,
                     "custom": False,
                     "validated": True,
                     "validation_status": "VALID",
-                    "version": self.source_version_dhis2.pk,
+                    "version": self.source_version_to_compare_with.pk,
                     "parent": None,
-                    "path": str(self.angola_country_dhis2.path),
+                    "path": str(self.angola_country_to_compare_with.path),
                     "aliases": None,
                     "org_unit_type": self.org_unit_type_country.pk,
                     "sub_source": None,
@@ -187,15 +187,15 @@ class DifferTestCase(TestCase):
                     "reference_instances": [],
                 },
                 "orgunit_ref": {
-                    "id": self.angola_country_dhis2.pk,
+                    "id": self.angola_country_to_compare_with.pk,
                     "name": "Angola new",
                     "uuid": None,
                     "custom": False,
                     "validated": True,
                     "validation_status": "VALID",
-                    "version": self.source_version_dhis2.pk,
+                    "version": self.source_version_to_compare_with.pk,
                     "parent": None,
-                    "path": str(self.angola_country_dhis2.path),
+                    "path": str(self.angola_country_to_compare_with.path),
                     "aliases": None,
                     "org_unit_type": self.org_unit_type_country.pk,
                     "sub_source": None,
@@ -215,15 +215,15 @@ class DifferTestCase(TestCase):
                     "reference_instances": [],
                 },
                 "orgunit_dhis2": {
-                    "id": self.angola_country_iaso.pk,
+                    "id": self.angola_country_to_update.pk,
                     "name": "Angola",
                     "uuid": None,
                     "custom": False,
                     "validated": True,
                     "validation_status": "VALID",
-                    "version": self.source_version_iaso.pk,
+                    "version": self.source_version_to_update.pk,
                     "parent": None,
-                    "path": str(self.angola_country_iaso.path),
+                    "path": str(self.angola_country_to_update.path),
                     "aliases": None,
                     "org_unit_type": self.org_unit_type_country.pk,
                     "sub_source": None,
@@ -257,23 +257,23 @@ class DifferTestCase(TestCase):
 
         self.assertJSONEqual(json_diffs, expected_json_diffs)
 
-    def test_diff_and_dump_as_json_for_a_new_org_unit_in_dhis2(self):
+    def test_diff_and_dump_as_json_for_a_new_org_unit(self):
         """
-        Test `Dumper.as_json()` for a new org unit in DHIS2 that doesn't exist in IASO.
+        Test `Dumper.as_json()` for a new org unit.
         """
 
-        # Delete the IASO org unit to simulate an org unit existing only in DHIS2.
-        self.angola_country_iaso.delete()
+        # Simulate an org unit existing only in one pyramid.
+        self.angola_country_to_update.delete()
 
         # Limit the diff size with restrictions on `field_names` and `org_unit_types_ref`.
         diffs, fields = Differ(test_logger).diff(
-            # Actual version.
-            version=self.source_version_iaso,
+            # Version to update.
+            version=self.source_version_to_update,
             validation_status=None,
             top_org_unit=None,
             org_unit_types=[self.org_unit_type_country],
-            # New version.
-            version_ref=self.source_version_dhis2,
+            # Version to compare with.
+            version_ref=self.source_version_to_compare_with,
             validation_status_ref=None,
             top_org_unit_ref=None,
             org_unit_types_ref=[self.org_unit_type_country],
@@ -289,15 +289,15 @@ class DifferTestCase(TestCase):
         expected_json_diffs = [
             {
                 "org_unit": {
-                    "id": self.angola_country_dhis2.pk,
+                    "id": self.angola_country_to_compare_with.pk,
                     "name": "Angola",
                     "uuid": None,
                     "custom": False,
                     "validated": True,
                     "validation_status": "VALID",
-                    "version": self.source_version_dhis2.pk,
+                    "version": self.source_version_to_compare_with.pk,
                     "parent": None,
-                    "path": str(self.angola_country_dhis2.path),
+                    "path": str(self.angola_country_to_compare_with.path),
                     "aliases": None,
                     "org_unit_type": self.org_unit_type_country.pk,
                     "sub_source": None,
@@ -317,15 +317,15 @@ class DifferTestCase(TestCase):
                     "reference_instances": [],
                 },
                 "orgunit_ref": {
-                    "id": self.angola_country_dhis2.pk,
+                    "id": self.angola_country_to_compare_with.pk,
                     "name": "Angola",
                     "uuid": None,
                     "custom": False,
                     "validated": True,
                     "validation_status": "VALID",
-                    "version": self.source_version_dhis2.pk,
+                    "version": self.source_version_to_compare_with.pk,
                     "parent": None,
-                    "path": str(self.angola_country_dhis2.path),
+                    "path": str(self.angola_country_to_compare_with.path),
                     "aliases": None,
                     "org_unit_type": self.org_unit_type_country.pk,
                     "sub_source": None,
@@ -365,36 +365,35 @@ class DifferTestCase(TestCase):
         Test that the full diff works as expected.
         """
 
-        multi_polygon_dhis2 = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+        new_multi_polygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
 
-        # Changes in DHIS2.
-        self.angola_country_dhis2.name = "Angola new"
-        self.angola_country_dhis2.geom = multi_polygon_dhis2
-        self.angola_country_dhis2.opening_date = datetime.date(2022, 12, 28)
-        self.angola_country_dhis2.closed_date = datetime.date(2025, 12, 28)
-        self.angola_country_dhis2.save()
+        self.angola_country_to_compare_with.name = "Angola new"
+        self.angola_country_to_compare_with.geom = new_multi_polygon
+        self.angola_country_to_compare_with.opening_date = datetime.date(2022, 12, 28)
+        self.angola_country_to_compare_with.closed_date = datetime.date(2025, 12, 28)
+        self.angola_country_to_compare_with.save()
 
-        self.angola_region_dhis2.name = "Huila new"
-        self.angola_region_dhis2.geom = multi_polygon_dhis2
-        self.angola_region_dhis2.opening_date = datetime.date(2022, 12, 28)
-        self.angola_region_dhis2.closed_date = datetime.date(2025, 12, 28)
-        self.angola_region_dhis2.save()
+        self.angola_region_to_compare_with.name = "Huila new"
+        self.angola_region_to_compare_with.geom = new_multi_polygon
+        self.angola_region_to_compare_with.opening_date = datetime.date(2022, 12, 28)
+        self.angola_region_to_compare_with.closed_date = datetime.date(2025, 12, 28)
+        self.angola_region_to_compare_with.save()
 
-        self.angola_district_dhis2.name = "Cuvango new"
-        self.angola_district_dhis2.parent = self.angola_country_dhis2
-        self.angola_district_dhis2.geom = multi_polygon_dhis2
-        self.angola_district_dhis2.opening_date = datetime.date(2022, 12, 28)
-        self.angola_district_dhis2.closed_date = datetime.date(2025, 12, 28)
-        self.angola_district_dhis2.save()
+        self.angola_district_to_compare_with.name = "Cuvango new"
+        self.angola_district_to_compare_with.parent = self.angola_country_to_compare_with
+        self.angola_district_to_compare_with.geom = new_multi_polygon
+        self.angola_district_to_compare_with.opening_date = datetime.date(2022, 12, 28)
+        self.angola_district_to_compare_with.closed_date = datetime.date(2025, 12, 28)
+        self.angola_district_to_compare_with.save()
 
         diffs, fields = Differ(test_logger).diff(
-            # Actual version.
-            version=self.source_version_iaso,
+            # Version to update.
+            version=self.source_version_to_update,
             validation_status=None,
             top_org_unit=None,
             org_unit_types=None,
-            # New version.
-            version_ref=self.source_version_dhis2,
+            # Version to compare with.
+            version_ref=self.source_version_to_compare_with,
             validation_status_ref=None,
             top_org_unit_ref=None,
             org_unit_types_ref=None,
@@ -435,7 +434,7 @@ class DifferTestCase(TestCase):
             {
                 "field": "geometry",
                 "before": self.multi_polygon,
-                "after": multi_polygon_dhis2,
+                "after": new_multi_polygon,
                 "status": "modified",
                 "distance": None,
             },
@@ -463,9 +462,9 @@ class DifferTestCase(TestCase):
         self.assertDictEqual(
             country_diff_comparisons[5],
             {
-                "field": "group:group-id:Group IASO A",
-                "before": [{"id": "group-id", "name": "Group IASO A"}, {"id": "group-id", "name": "Group IASO B"}],
-                "after": [{"id": "group-id", "name": "Group DHIS2"}],
+                "field": "group:group-id:Group B",
+                "before": [{"id": "group-id", "name": "Group B"}, {"id": "group-id", "name": "Group C"}],
+                "after": [{"id": "group-id", "name": "Group A"}],
                 "status": "modified",
                 "distance": None,
             },
@@ -473,9 +472,9 @@ class DifferTestCase(TestCase):
         self.assertDictEqual(
             country_diff_comparisons[6],
             {
-                "field": "group:group-id:Group IASO B",
-                "before": [{"id": "group-id", "name": "Group IASO A"}, {"id": "group-id", "name": "Group IASO B"}],
-                "after": [{"id": "group-id", "name": "Group DHIS2"}],
+                "field": "group:group-id:Group C",
+                "before": [{"id": "group-id", "name": "Group B"}, {"id": "group-id", "name": "Group C"}],
+                "after": [{"id": "group-id", "name": "Group A"}],
                 "status": "modified",
                 "distance": None,
             },
@@ -510,7 +509,7 @@ class DifferTestCase(TestCase):
             {
                 "field": "geometry",
                 "before": self.multi_polygon,
-                "after": multi_polygon_dhis2,
+                "after": new_multi_polygon,
                 "status": "modified",
                 "distance": None,
             },
@@ -538,7 +537,7 @@ class DifferTestCase(TestCase):
         self.assertDictEqual(
             region_diff_comparisons[5],
             {
-                "field": "group:group-id:Group IASO A",
+                "field": "group:group-id:Group B",
                 "before": [],
                 "after": [],
                 "status": "same",
@@ -548,7 +547,7 @@ class DifferTestCase(TestCase):
         self.assertDictEqual(
             region_diff_comparisons[6],
             {
-                "field": "group:group-id:Group IASO B",
+                "field": "group:group-id:Group C",
                 "before": [],
                 "after": [],
                 "status": "same",
@@ -587,7 +586,7 @@ class DifferTestCase(TestCase):
             {
                 "field": "geometry",
                 "before": self.multi_polygon,
-                "after": multi_polygon_dhis2,
+                "after": new_multi_polygon,
                 "status": "modified",
                 "distance": None,
             },
@@ -615,7 +614,7 @@ class DifferTestCase(TestCase):
         self.assertDictEqual(
             district_diff_comparisons[5],
             {
-                "field": "group:group-id:Group IASO A",
+                "field": "group:group-id:Group B",
                 "before": [],
                 "after": [],
                 "status": "same",
@@ -625,7 +624,7 @@ class DifferTestCase(TestCase):
         self.assertDictEqual(
             district_diff_comparisons[6],
             {
-                "field": "group:group-id:Group IASO B",
+                "field": "group:group-id:Group C",
                 "before": [],
                 "after": [],
                 "status": "same",

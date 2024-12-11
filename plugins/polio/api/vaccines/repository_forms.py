@@ -183,7 +183,7 @@ class CustomOrderingFilter(OrderingFilter):
         return queryset
 
 
-class VaccineRepositoryViewSet(GenericViewSet, ListModelMixin):
+class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
     """
     ViewSet for retrieving vaccine repository data.
     """

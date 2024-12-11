@@ -264,9 +264,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             ]
             counts_by_forms = []
             for frm in forms:
-                columns.append({"title": "Total d'instances " + frm.name, "width": 15})
+                columns.append({"title": "Total de soumissions " + frm.name, "width": 15})
                 counts_by_forms.append("form_" + str(frm.id) + "_instances")
-            columns.append({"title": "Total d'instances", "width": 15})
+            columns.append({"title": "Total de soumissions", "width": 15})
 
             for group in groups:
                 group.org_units__ids = list(group.org_units.values_list("id", flat=True))

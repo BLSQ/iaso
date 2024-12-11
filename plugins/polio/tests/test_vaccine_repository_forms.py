@@ -12,7 +12,7 @@ from plugins.polio.tests.api.test import PolioTestCaseMixin
 BASE_URL = "/api/polio/vaccine/repository/"
 
 
-class VaccineRepositoryAPITestCase(APITestCase, PolioTestCaseMixin):
+class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
     @classmethod
     def setUp(cls):
         cls.data_source = m.DataSource.objects.create(name="Default source")

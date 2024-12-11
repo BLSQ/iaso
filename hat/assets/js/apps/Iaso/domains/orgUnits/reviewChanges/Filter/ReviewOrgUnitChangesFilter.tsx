@@ -140,25 +140,28 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         [handleChange],
     );
 
-    const handleDataSourceVersionChange = (key, newValue) => {
-        if (key === 'source') {
-            setDataSource(newValue);
-            const selectedSource = dataSources?.filter(
-                source => source.value === newValue,
-            )[0];
-            setSelectedVersionId(
-                selectedSource?.original?.default_version.id.toString(),
-            );
-            handleChange(
-                'source_version_id',
-                selectedSource?.original?.default_version.id,
-            );
-        } else {
-            setSelectedVersionId(newValue.toString());
-            handleChange('source_version_id', newValue);
-        }
-        filters.groups = [];
-    };
+    const handleDataSourceVersionChange = useCallback(
+        (key, newValue) => {
+            if (key === 'source') {
+                setDataSource(newValue);
+                const selectedSource = dataSources?.filter(
+                    source => source.value === newValue,
+                )[0];
+                setSelectedVersionId(
+                    selectedSource?.original?.default_version.id.toString(),
+                );
+                handleChange(
+                    'source_version_id',
+                    selectedSource?.original?.default_version.id,
+                );
+            } else {
+                setSelectedVersionId(newValue.toString());
+                handleChange('source_version_id', newValue);
+            }
+            filters.groups = [];
+        },
+        [dataSources, filters, handleChange],
+    );
 
     const getVersionLabel = useGetVersionLabel(dataSources);
 

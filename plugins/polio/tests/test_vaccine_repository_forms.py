@@ -43,7 +43,7 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
         cls.campaign_no_vrf.country = cls.testland
         cls.campaign_no_vrf.save()
         cls.campaign_deleted_vrf, cls.campaign_deleted_vrf_round_1, _, _, _, _ = cls.create_campaign(
-            obr_name="No VRF",
+            obr_name="DELETED VRF",
             account=cls.account,
             source_version=cls.source_version_1,
             country_ou_type=cls.org_unit_type_country,
@@ -55,7 +55,7 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
         cls.campaign_deleted_vrf.save()
 
         cls.deleted_vaccine_request_form = pm.VaccineRequestForm.objects.create(
-            campaign=cls.campaign,
+            campaign=cls.campaign_no_vrf,
             vaccine_type=pm.VACCINES[0][0],
             date_vrf_reception=cls.now - datetime.timedelta(days=30),
             date_vrf_signature=cls.now - datetime.timedelta(days=20),

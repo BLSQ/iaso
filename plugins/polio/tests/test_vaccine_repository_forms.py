@@ -61,7 +61,7 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
             date_vrf_signature=cls.now - datetime.timedelta(days=20),
             date_dg_approval=cls.now - datetime.timedelta(days=10),
             quantities_ordered_in_doses=500,
-            deleted_at=cls.now(),
+            deleted_at=cls.now,
         )
         cls.deleted_vaccine_request_form.rounds.set([cls.campaign_deleted_vrf_round_1])
 

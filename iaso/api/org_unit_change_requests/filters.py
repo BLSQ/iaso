@@ -37,7 +37,7 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     potential_payment_ids = django_filters.CharFilter(
         method="filter_potential_payments", label=_("Potential Payment IDs (comma-separated)")
     )
-        source_version_id = django_filters.NumberFilter(field_name="org_unit__version", label=_("Source version ID"))
+    source_version_id = django_filters.NumberFilter(field_name="org_unit__version", label=_("Source version ID"))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

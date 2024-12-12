@@ -42,6 +42,28 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
         # Has same country as cls.campaign, but no vrf. Should not appear in any API payload
         cls.campaign_no_vrf.country = cls.testland
         cls.campaign_no_vrf.save()
+        cls.campaign_deleted_vrf, cls.campaign_deleted_vrf_round_1, _, _, _, _ = cls.create_campaign(
+            obr_name="No VRF",
+            account=cls.account,
+            source_version=cls.source_version_1,
+            country_ou_type=cls.org_unit_type_country,
+            country_name="Testland",
+            district_ou_type=cls.org_unit_type_district,
+        )
+        # Has same country as cls.campaign, but no vrf. Should not appear in any API payload
+        cls.campaign_deleted_vrf.country = cls.testland
+        cls.campaign_deleted_vrf.save()
+
+        cls.deleted_vaccine_request_form = pm.VaccineRequestForm.objects.create(
+            campaign=cls.campaign,
+            vaccine_type=pm.VACCINES[0][0],
+            date_vrf_reception=cls.now - datetime.timedelta(days=30),
+            date_vrf_signature=cls.now - datetime.timedelta(days=20),
+            date_dg_approval=cls.now - datetime.timedelta(days=10),
+            quantities_ordered_in_doses=500,
+            deleted_at=cls.now(),
+        )
+        cls.deleted_vaccine_request_form.rounds.set([cls.campaign_deleted_vrf_round_1])
 
         cls.zambia = m.OrgUnit.objects.create(
             org_unit_type=cls.org_unit_type_country,
@@ -119,6 +141,7 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
         results = data["results"]
         campaign_names = [r["campaign_obr_name"] for r in results]
         self.assertNotIn(self.campaign_no_vrf.obr_name, campaign_names)
+        self.assertNotIn(self.campaign_deleted_vrf.obr_name, campaign_names)
         self.assertIn(forma_campaign.obr_name, campaign_names)
 
     def test_list_response_structure(self):

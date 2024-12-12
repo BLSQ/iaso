@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Import, ActivePatientsList, Validation
+from .models import Import, ActivePatientsList, Validation, Month
 
 
 @admin.register(Import)
@@ -65,3 +65,10 @@ class ValidationAdmin(admin.ModelAdmin):
     list_filter = ("level", "validation_status", "created_at")
     search_fields = ("user_name", "comment")
     raw_id_fields = ("source_import",)
+
+
+@admin.register(Month)
+class ValidationAdmin(admin.ModelAdmin):
+    list_display = (
+        "value",
+    )

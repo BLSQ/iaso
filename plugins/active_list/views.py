@@ -21,6 +21,10 @@ from .models import (
     VALIDATION_STATUS_CHOICES,
     Validation,
     PATIENT_LIST_DISPLAY_FIELDS,
+    HIV_UNKNOWN,
+    HIV_HIV1,
+    HIV_HIV2,
+    HIV_HIV1_AND_2,
 )
 from ..polio.settings import DISTRICT
 
@@ -241,14 +245,16 @@ def import_data(file, the_import):
 
     # Read the CSV file into a DataFrame
     df = pd.read_excel(file, sheet_name=0)
-
+    print(df.columns)
     # Rename columns
     df = df.rename(
         columns={
             "N°": "number",
             "CODE ETS": "code_ets",
+            "CODE": "code_ets",
             "NOM ETABLISSEMENT": "facility_name",
             "Periode": "period",
+            "MOIS DE RAPPORTAGE": "period",
             "CODE IDENTIFIANT": "identifier_code",
             "SEXE": "sex",
             "POIDS": "weight",
@@ -258,6 +264,7 @@ def import_data(file, the_import):
             "TB / VIH": "tb_hiv",
             "Type de VIH": "hiv_type",
             "Ligne therapeuthique": "treatment_line",
+            "Ligne thérapeutique": "treatment_line",
             "Date de la dernière dispensation": "last_dispensation_date",
             "Nombre de jours dispensés": "days_dispensed",
             "STABLE": "stable",
@@ -285,9 +292,29 @@ def import_data(file, the_import):
     df["stable"] = df["stable"].map({"Oui": True, "Non": False})
     df["sex"] = df["sex"].map({"F": "FEMALE", "M": "MALE"})
     df["treatment_line"] = df["treatment_line"].map(
-        {"1er Ligne": "1STLINE", "2e Ligne": "2NDLINE", "3e Ligne": "3RDLINE"}
+        {
+            "1er Ligne": "1STLINE",
+            "2e Ligne": "2NDLINE",
+            "3e Ligne": "3RDLINE",
+            "1": "1STLINE",
+            "2": "2NDLINE",
+            "3": "3RDLINE",
+            1: "1STLINE",
+            2: "2NDLINE",
+            3: "3RDLINE",
+        }
     )
-    df["hiv_type"] = df["hiv_type"].map({"1": "HIV1", "2": "HIV2", "1&2": "HIV 1&2"})
+    df["hiv_type"] = df["hiv_type"].map(
+        {
+            1: HIV_HIV1,
+            2: HIV_HIV2,
+            "1&2": HIV_HIV1_AND_2,
+            math.nan: HIV_UNKNOWN,
+            "VIH 1 + 2": HIV_HIV1_AND_2,
+            "VIH 1": HIV_HIV1,
+            "VIH 2": HIV_HIV2,
+        }
+    )
 
     # Convert `last_dispensation_date` to datetime
     df["last_dispensation_date"] = pd.to_datetime(df["last_dispensation_date"])
@@ -301,7 +328,7 @@ def import_data(file, the_import):
                 "region": row["REGION"],
                 "district": row["DISTRICT"],
                 "code_ets": row["code_ets"],
-                "facility_name": row["facility_name"],
+                "facility_name": row.get("facility_name") if row.get("facility_name") else "",
                 "period": row["period"],
                 "identifier_code": row["identifier_code"],
                 "sex": row["sex"],

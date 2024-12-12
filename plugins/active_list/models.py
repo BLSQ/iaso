@@ -38,11 +38,13 @@ SEX_CHOICES = [
 HIV_HIV1 = "HIV1"
 HIV_HIV2 = "HIV2"
 HIV_HIV1_AND_2 = "HIV 1&2"
+HIV_UNKNOWN = "UNKNOWN"
 
 HIV_CHOICES = [
     (HIV_HIV1, "HIV 1"),
     (HIV_HIV2, "HIV 2"),
     (HIV_HIV1_AND_2, "HIV 1 & 2"),
+    (HIV_UNKNOWN, ""),
 ]
 
 SOURCE_IASO = "IASO"
@@ -167,3 +169,7 @@ class Validation(models.Model):
 
     class Meta:
         db_table = "validation"  # Optional: to match the exact table name
+
+
+class Month(models.Model):
+    value = models.CharField(max_length=10, null=False, blank=False, unique=True)

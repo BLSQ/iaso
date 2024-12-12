@@ -164,11 +164,7 @@ class GroupsViewSet(ModelViewSet):
         if user and user.is_authenticated:
             account = user.iaso_profile.account
             # Filter on version ids (linked to the account)""
-            default_version = (
-                self.request.query_params.get("defaultVersion")
-                if self.request.query_params.get("defaultVersion")
-                else account.default_version.id
-            )
+            default_version = self.request.query_params.get("defaultVersion", account.default_version.id)
             versions = SourceVersion.objects.filter(data_source__projects__account=account, pk=default_version)
 
         else:

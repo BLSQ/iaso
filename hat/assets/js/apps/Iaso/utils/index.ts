@@ -1,3 +1,4 @@
+import { textPlaceholder } from 'bluesquare-components';
 import { createContext } from 'react';
 import pluginsConfigs from '../../../../../../plugins';
 import { Plugin } from '../domains/app/types';
@@ -94,8 +95,6 @@ export const findDescriptorInChildren = (field: any, descriptor: any): any => {
         return undefined;
     }, null);
 };
-
-const textPlaceholder = '--';
 
 export const getDescriptorValue = (
     fieldKey: string,

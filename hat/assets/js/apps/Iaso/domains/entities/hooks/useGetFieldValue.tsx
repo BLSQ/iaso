@@ -1,4 +1,4 @@
-import { useSafeIntl } from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import React from 'react';
 
@@ -12,8 +12,6 @@ import { findDescriptorInChildren, getDescriptorValue } from '../../../utils';
 import { MarkerMap } from '../../../components/maps/MarkerMapComponent';
 import { formatLabel } from '../../instances/utils';
 import MESSAGES from '../messages';
-
-const textPlaceholder = '--';
 
 const getDescriptorListValues = (
     fieldKey: string,

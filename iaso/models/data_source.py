@@ -9,7 +9,6 @@ from django.utils.translation import gettext_lazy as _
 if typing.TYPE_CHECKING:
     from iaso.models import OrgUnit, OrgUnitType
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -292,3 +291,9 @@ class DataSourceSynchronization(models.Model):
         self.json_diff = Dumper(logger_to_use).as_json(diffs)
         self.diff_config = str(differ_params)
         self.save(update_fields=["json_diff", "diff_config"])
+
+    def create_change_requests(self):
+        # Prevent a circular import.
+        from iaso.models import OrgUnitChangeRequest
+
+        OrgUnitChangeRequest.objects.bulk_create_from_data_source_sync(self)

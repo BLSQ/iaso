@@ -195,3 +195,31 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(data_source_sync.count_create, 0)
         self.assertEqual(data_source_sync.count_update, 1)
         self.assertEqual(data_source_sync.total_change_requests, 1)
+
+    def test_create_change_requests(self):
+        # Changes at the country level.
+        self.angola_country_to_compare_with.name = "Angola new"
+        self.angola_country_to_compare_with.opening_date = datetime.date(2025, 11, 28)
+        self.angola_country_to_compare_with.closed_date = datetime.date(2026, 11, 28)
+        self.angola_country_to_compare_with.save()
+        # Changes at the region level.
+        self.angola_region_to_compare_with.parent = None
+        self.angola_region_to_compare_with.opening_date = datetime.date(2025, 11, 28)
+        self.angola_region_to_compare_with.closed_date = datetime.date(2026, 11, 28)
+
+        data_source_sync = m.DataSourceSynchronization.objects.create(
+            name="New synchronization",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            json_diff=None,
+            sync_task=None,
+            account=self.account,
+            created_by=self.user,
+        )
+        data_source_sync.create_json_diff()
+
+        self.assertEqual(m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync).count(), 0)
+        data_source_sync.create_change_requests()
+
+        # TODO: check change requests
+        self.assertEqual(m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync).count(), 1)

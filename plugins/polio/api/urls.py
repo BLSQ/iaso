@@ -3,6 +3,7 @@ from rest_framework import routers
 # TOFIX: Still haven't understood the exact problem but this should be
 # the first import to avoid some 'BudgetProcess' errors in tests:
 # `AttributeError: 'str' object has no attribute '_meta'`
+from plugins.polio.api.dashboards.subactivities import SubActivityDashboardViewSet, SubActivityScopeDashboardViewSet
 from plugins.polio.api.dashboards.vaccine_stock_history import VaccineStockHistoryDashboardViewSet
 from plugins.polio.budget.api import BudgetProcessViewSet, BudgetStepViewSet, WorkflowViewSet
 
@@ -133,4 +134,14 @@ router.register(
     r"polio/dashboards/preparedness_sheets",
     SpreadSheetImportViewSet,
     basename="dashboard_preparedness_sheets",
+)
+router.register(
+    r"polio/dashboards/subactivities",
+    SubActivityDashboardViewSet,
+    basename="dashboard_subactivities",
+)
+router.register(
+    r"polio/dashboards/subactivityscopes",
+    SubActivityScopeDashboardViewSet,
+    basename="dashboard_subactivityscopes",
 )

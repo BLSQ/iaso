@@ -169,14 +169,10 @@ class GroupsViewSet(ModelViewSet):
 
         else:
             # this check if project need auth
-            default_version = (
-                self.request.query_params.get("defaultVersion")
-                if self.request.query_params.get("defaultVersion")
-                else project.account.default_version.id
-            )
-
             project = Project.objects.get_for_user_and_app_id(user, app_id)
+            default_version = self.request.query_params.get("defaultVersion", project.account.default_version.id)
             versions = SourceVersion.objects.filter(data_source__projects=project, pk=default_version)
+
         groups = Group.objects.filter(source_version__in=versions).distinct()
 
         queryset = self.filter_queryset(groups)

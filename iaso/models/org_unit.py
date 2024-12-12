@@ -1,8 +1,11 @@
+import datetime
+import json
 import operator
 import typing
 import uuid
 from copy import deepcopy
 from functools import reduce
+from itertools import islice
 
 import django_cte
 from django.contrib.auth.models import AnonymousUser, User
@@ -637,6 +640,109 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
         )
 
 
+class OrgUnitChangeRequestManager(models.Manager):
+    def bulk_create_from_data_source_sync(self, data_source_sync) -> None:
+        """
+        TODO.
+        """
+        # Cast the list into a generator so we can iterate over it chunk by chunk.
+        json_diff_generator = (
+            diff for diff in json.loads(data_source_sync.json_diff) if diff["status"] in ["new", "modified"]
+        )
+
+        compatible_fields = ["name", "parent", "opening_date", "closed_date"]
+        # new_org_units = []
+        new_change_requests = []
+
+        while True:
+            # Get a subset of a generator.
+            batch_size = 10
+            batch_json_diff = list(islice(json_diff_generator, batch_size))
+
+            if not batch_json_diff:
+                break
+
+            for diff in batch_json_diff:
+                if diff["status"] == "new":
+                    pass
+
+                changes = {
+                    comparison["field"]: comparison["after"]
+                    for comparison in diff["comparisons"]
+                    if comparison["status"] == "modified" and comparison["field"] in compatible_fields
+                }
+
+                group_changes = [
+                    comparison
+                    for comparison in diff["comparisons"]
+                    if comparison["status"] == "modified" and comparison["field"].startswith("group")
+                ]
+
+                if not changes and not group_changes:
+                    continue
+
+                org_unit = diff.get("orgunit_dhis2", {})
+                requested_fields = []
+                new_parent = None
+                new_name = None
+                new_opening_date = None
+                new_closed_date = None
+
+                if changes.get("parent"):
+                    new_parent = changes["parent"]
+                    requested_fields.append("new_parent")
+
+                if changes.get("name"):
+                    new_name = changes["name"]
+                    requested_fields.append("new_name")
+
+                if changes.get("opening_date"):
+                    new_opening_date = datetime.datetime.strptime(changes["opening_date"], "%Y-%m-%d").date()
+                    requested_fields.append("new_opening_date")
+
+                if changes.get("closed_date"):
+                    new_closed_date = datetime.datetime.strptime(changes["closed_date"], "%Y-%m-%d").date()
+                    requested_fields.append("new_closed_date")
+
+                if group_changes:
+                    requested_fields.append("new_groups")
+
+                new_change_requests.append(
+                    OrgUnitChangeRequest(
+                        # Data.
+                        kind=OrgUnitChangeRequest.Kind.ORG_UNIT_CHANGE,
+                        created_by=data_source_sync.created_by,
+                        requested_fields=requested_fields,
+                        data_source_synchronization=data_source_sync,
+                        # Old values.
+                        org_unit_id=org_unit.get("id"),
+                        old_parent_id=org_unit.get("parent"),
+                        old_name=org_unit.get("name"),
+                        old_org_unit_type_id=org_unit.get("org_unit_type"),
+                        old_location=org_unit.get("location"),
+                        old_opening_date=org_unit.get("opening_date"),
+                        old_closed_date=org_unit.get("closed_date"),
+                        # New values.
+                        new_parent=new_parent,
+                        new_name=new_name,
+                        new_opening_date=new_opening_date,
+                        new_closed_date=new_closed_date,
+                    )
+                )
+
+                # TODO: handle m2m
+                # new_groups=None
+
+        # Bulk creation of change requests.
+        batch_size = 100
+        new_change_requests_generator = (item for item in new_change_requests)
+        while True:
+            batch = list(islice(new_change_requests_generator, batch_size))
+            if not batch:
+                break
+            OrgUnitChangeRequest.objects.bulk_create(batch, batch_size)
+
+
 class OrgUnitChangeRequest(models.Model):
     """
     A request to change an OrgUnit.
@@ -722,7 +828,16 @@ class OrgUnitChangeRequest(models.Model):
         "PotentialPayment", on_delete=models.SET_NULL, null=True, blank=True, related_name="change_requests"
     )
 
-    objects = models.Manager.from_queryset(OrgUnitChangeRequestQuerySet)()
+    data_source_synchronization = models.ForeignKey(
+        "DataSourceSynchronization",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="change_requests",
+        help_text="The data source synchronization that generated this change request.",
+    )
+
+    objects = OrgUnitChangeRequestManager.from_queryset(OrgUnitChangeRequestQuerySet)()
 
     class Meta:
         verbose_name = _("Org unit change request")

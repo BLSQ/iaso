@@ -18,9 +18,12 @@ $.getJSON('/api/orgunits/tree/?validation_status=VALID&ignoreEmptyNames=true', f
   regionSelect.show();
 });
 
+$('#period')
+
 regionSelect.on('change', function () {
   districtSelect.hide();
   facilitySelect.hide();
+  dataContainer.hide();
   $.getJSON('/api/orgunits/tree/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
     fillSelect('#districtSelect', data);
 
@@ -29,7 +32,8 @@ regionSelect.on('change', function () {
   });
 });
 districtSelect.on('change', function () {
-  facilitySelect.hide()
+  facilitySelect.hide();
+  dataContainer.hide();
   $.getJSON('/api/orgunits/tree/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
     fillSelect('#facilitySelect', data)
     facilitySelect.show()
@@ -40,10 +44,13 @@ facilitySelect.on('change', function () {
   $.getJSON('/api/orgunits/tree/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
     var orgUnitId = facilitySelect.val();
     var period = monthSelect.val();
-    $.getJSON('/active_list/patient_list_api/' + orgUnitId + '/' + period +'/', function (data) {
+    var url = '/active_list/patient_list_api/' + orgUnitId + '/' + period +'/'
+    $.getJSON(url, function (data) {
       var table = generateTable(data.table_content);
 
       $('#table-container').html(table);
+      console.log(url);
+      $("#excel_link").attr("href",url+"?xls=true");
       $("#generatedTable").tablesorter();
       dataContainer.show();
     });

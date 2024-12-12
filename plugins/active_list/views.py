@@ -3,6 +3,8 @@ import os
 import uuid
 import pandas as pd
 import math
+import openpyxl
+from django.http import HttpResponse
 
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -157,19 +159,42 @@ def validation_api(request, org_unit_id, period):
 def patient_list_api(request, org_unit_id, period):
     last_import = Import.objects.filter(org_unit=org_unit_id).filter(month=period).order_by("-creation_date").first()
     patients = ActivePatientsList.objects.filter(import_source=last_import).order_by("number").all()
+    xls = request.GET.get("xls", None)
+    if xls is None:
+        table_content = []
+        for patient in patients:
+            patient_object = {}
+            for field in PATIENT_LIST_DISPLAY_FIELDS:
+                patient_object[PATIENT_LIST_DISPLAY_FIELDS[field]] = getattr(patient, field)
+            table_content.append(patient_object)
+        print(table_content)
+        res = {
+            "table_content": table_content,
+            # "completeness": "%s/%s" % (report_count, len(org_units))
+        }
+        return JsonResponse(res, status=200, safe=False)
+    else:
+        org_unit = OrgUnit.objects.get(pk=org_unit_id)
+        return export_active_patients_excel(patients, org_unit.name, period)
 
-    table_content = []
-    for patient in patients:
-        patient_object = {}
-        for field in PATIENT_LIST_DISPLAY_FIELDS:
-            patient_object[PATIENT_LIST_DISPLAY_FIELDS[field]] = getattr(patient, field)
-        table_content.append(patient_object)
-    print(table_content)
-    res = {
-        "table_content": table_content,
-        # "completeness": "%s/%s" % (report_count, len(org_units))
-    }
-    return JsonResponse(res, status=200, safe=False)
+
+def export_active_patients_excel(active_patients, name, period):
+    workbook = openpyxl.Workbook()
+    worksheet = workbook.active
+
+    # Add headers using French names from PATIENT_LIST_DISPLAY_FIELDS
+    headers = list(PATIENT_LIST_DISPLAY_FIELDS.values())
+    for col_num, header in enumerate(headers, 1):
+        worksheet.cell(row=1, column=col_num).value = header
+
+    for row_num, patient in enumerate(active_patients, 2):
+        for col_num, field in enumerate(PATIENT_LIST_DISPLAY_FIELDS.keys(), 1):
+            worksheet.cell(row=row_num, column=col_num).value = getattr(patient, field)
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="active_patients-%s-%s.xlsx"' % (name, period)
+    workbook.save(response)
+    return response
 
 
 def check_presence(file_hash, org_unit_id, month):
@@ -310,9 +335,11 @@ def import_data(file, the_import):
             2: HIV_HIV2,
             "1&2": HIV_HIV1_AND_2,
             math.nan: HIV_UNKNOWN,
+            'nan': HIV_UNKNOWN,
             "VIH 1 + 2": HIV_HIV1_AND_2,
             "VIH 1": HIV_HIV1,
             "VIH 2": HIV_HIV2,
+
         }
     )
 

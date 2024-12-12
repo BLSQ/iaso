@@ -61,10 +61,12 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
             if file_type == "VRF":
                 queryset = queryset.filter(
                     campaign__vaccinerequestform__isnull=False,
+                    campaign__vaccinerequestform__deleted_at__isnull=True,
                 )
             elif file_type == "PRE_ALERT":
                 queryset = queryset.filter(
                     campaign__vaccinerequestform__isnull=False,
+                    campaign__vaccinerequestform__deleted_at__isnull=True,
                     campaign__vaccinerequestform__vaccineprealert__isnull=False,
                 ).distinct("id")
             elif file_type == "FORM_A":
@@ -76,7 +78,9 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         vrf_type = request.query_params.get("vrf_type", None)
         if vrf_type:
             queryset = queryset.filter(
-                campaign__vaccinerequestform__isnull=False, campaign__vaccinerequestform__vrf_type=vrf_type
+                campaign__vaccinerequestform__isnull=False,
+                campaign__vaccinerequestform__vrf_type=vrf_type,
+                campaign__vaccinerequestform__deleted_at__isnull=True,
             )
 
         return queryset.distinct()

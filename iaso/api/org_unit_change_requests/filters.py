@@ -130,12 +130,6 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
         else:
             return queryset.filter(payment__status=value)
 
-    def filter_source_version_id(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        source_version = SourceVersion.objects.get(pk=value)
-        if source_version:
-            queryset = queryset.filter(org_unit__version=value)
-        return queryset
-
     # This filter is used when redirecting from potential payments to see related change requests. It is not otherwise visible in the UI
     def filter_potential_payments(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
         potential_payment_ids = parse_comma_separated_numeric_values(value, name)

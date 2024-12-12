@@ -8,7 +8,7 @@ import pytz
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import ProtectedError, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext as _
 from rest_framework import compat, exceptions, filters, pagination, permissions, serializers
@@ -302,6 +302,32 @@ class ModelViewSet(BaseModelViewSet):
                 self.request.method,
                 f"Cannot delete {instance_model_name} as it is linked to one or more {linked_model_name}s",
             )
+
+
+class PaginatedModelViewset(ModelViewSet):
+    """
+    Sub class of ModelViewset that enforces the presence of pagination queryparams for GET requests.
+    Imposes the use of Paginator as pagination class
+    Use case: dashboard endpoints that will try to fetch all instances of a model
+    """
+
+    _pagination_class = Paginator
+
+    def get_pagination_class(self):
+        return self._pagination_class
+
+    def __setattr__(self, name, value):
+        if name == "pagination_class":
+            logging.warning("You cannot override the 'pagination_class' attribute.")
+        super().__setattr__(name, value)
+
+    def list(self, request, *args, **kwargs):
+        limit = request.query_params.get("limit", None)
+        page = request.query_params.get("page", None)
+
+        if not limit or not page:
+            return HttpResponseBadRequest("'page' and 'limit' query parameters are both required.")
+        return super().list(request, *args, **kwargs)
 
 
 class ChoiceEnum(enum.Enum):

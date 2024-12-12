@@ -1,4 +1,5 @@
 var monthSelect = $('#monthSelect')
+var countrySelect = $('#countrySelect');
 var regionSelect = $('#regionSelect')
 var districtSelect = $('#districtSelect')
 var facilitySelect = $('#facilitySelect')
@@ -15,9 +16,21 @@ monthSelect.on('change', function () {
 
 $.getJSON('/api/orgunits/tree/?validation_status=VALID&ignoreEmptyNames=true', function (data) {
 
-  fillSelect('#regionSelect', data)
-  regionSelect.show()
-})
+  fillSelect('#countrySelect', data);
+  countrySelect.show();
+});
+
+countrySelect.on('change', function () {
+  regionSelect.hide();
+  districtSelect.hide();
+  facilitySelect.hide();
+
+  $.getJSON('/api/orgunits/tree/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
+    fillSelect('#regionSelect', data);
+    regionSelect.show();
+
+  });
+});
 
 regionSelect.on('change', function () {
   districtSelect.hide()

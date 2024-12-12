@@ -163,9 +163,9 @@ class Validation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user_id = models.IntegerField(null=False)
     user_name = models.CharField(max_length=255, null=False)
-    level = models.CharField(max_length=255, null=False, choices=LEVEL_CHOICES)
-    comment = models.TextField()
-    validation_status = models.CharField(max_length=255, null=True, choices=VALIDATION_CHOICES)
+    level = models.CharField(max_length=255, null=False, choices=LEVEL_CHOICES, verbose_name='Niveau de Validation')
+    comment = models.TextField(verbose_name='Commentaire')
+    validation_status = models.CharField(max_length=255, null=True, choices=VALIDATION_CHOICES, verbose_name='Statut')
 
     class Meta:
         db_table = "validation"  # Optional: to match the exact table name

@@ -1,4 +1,5 @@
 var monthSelect = $('#monthSelect');
+var countrySelect = $('#countrySelect');
 var regionSelect = $('#regionSelect');
 var districtSelect = $('#districtSelect');
 var facilitySelect = $('#facilitySelect')
@@ -14,11 +15,22 @@ monthSelect.on('change', function () {
 
 $.getJSON('/api/orgunits/tree/?validation_status=VALID&ignoreEmptyNames=true', function (data) {
 
-  fillSelect('#regionSelect', data);
-  regionSelect.show();
+  fillSelect('#countrySelect', data);
+  countrySelect.show();
 });
 
-$('#period')
+countrySelect.on('change', function () {
+  regionSelect.hide();
+  districtSelect.hide();
+  facilitySelect.hide();
+  dataContainer.hide();
+  $.getJSON('/api/orgunits/tree/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
+    fillSelect('#regionSelect', data);
+    regionSelect.show();
+    dataContainer.hide();
+  });
+});
+
 
 regionSelect.on('change', function () {
   districtSelect.hide();
@@ -50,7 +62,16 @@ facilitySelect.on('change', function () {
 
       $('#table-container').html(table);
       console.log(url);
-      $("#excel_link").attr("href",url+"?xls=true");
+      var excel_link = $("#excel_link")
+      if (data.table_content.length === 0)
+      {
+        excel_link.hide();
+        $("#nodata").show()
+      } else {
+        excel_link.attr("href",url+"?xls=true");
+        excel_link.show();
+        $("#nodata").hide()
+      }
       $("#generatedTable").tablesorter();
       dataContainer.show();
     });

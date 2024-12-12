@@ -8,6 +8,10 @@
     <select id="monthSelect"></select>
 </div>
 <div class="selectBox">
+    <label for="countrySelect">Pays</label>
+    <select id="countrySelect"></select>
+</div>
+<div class="selectBox" id="regionSelectBox">
     <label for="regionSelect">Region</label>
     <select id="regionSelect"></select>
 </div>
@@ -28,7 +32,7 @@
 </div>
 
     <div id="validation_form">
-        <h2>Validation Form</h2>
+        <h2>Validation</h2>
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}

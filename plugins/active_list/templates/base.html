@@ -13,7 +13,7 @@
 </head>
 <body>
 <div id="header">
-        <div id="logout">Utilisateur: {{ request.user }} - <a href="{% url 'logout-iaso' %}">Déconnexion</a></div>
+        <div id="logout"><a href="/dashboard/">Admin</a> - Utilisateur: {{ request.user }} - <a href="{% url 'logout-iaso' %}">Déconnexion</a></div>
     <div> <img src="{% static 'logos.png' %}" alt="Logo" height="70px" ></div>
     <div><a href="{% url 'homepage' %}">Page d'accueil</a></div>
 </div>

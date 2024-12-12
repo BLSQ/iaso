@@ -1,11 +1,16 @@
 var monthSelect = $('#monthSelect');
+var countrySelect = $('#countrySelect');
 var regionSelect = $('#regionSelect');
 var districtSelect = $('#districtSelect');
 
 var districtSelectBox = $('#districtSelectBox');
+var regionSelectBox = $('#regionSelectBox');
+
 var dataContainer = $('#dataContainer');
-regionSelect.hide();
+countrySelect.hide()
+regionSelectBox.hide();
 districtSelectBox.hide();
+regionSelectBox.hide();
 dataContainer.hide();
 monthSelect.on('change', function () {
   $('#period').val(this.value);
@@ -13,8 +18,20 @@ monthSelect.on('change', function () {
 
 $.getJSON('/api/orgunits/tree/?validation_status=VALID&ignoreEmptyNames=true', function (data) {
 
-  fillSelect('#regionSelect', data);
-  regionSelect.show();
+  fillSelect('#countrySelect', data);
+  countrySelect.show();
+});
+
+countrySelect.on('change', function () {
+  regionSelectBox.hide();
+  districtSelectBox.hide();
+
+  $.getJSON('/api/orgunits/tree/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
+    fillSelect('#regionSelect', data);
+
+    regionSelectBox.show();
+    dataContainer.hide();
+  });
 });
 
 regionSelect.on('change', function () {
@@ -39,7 +56,7 @@ districtSelect.on('change', function () {
         console.log(item);
         const importId = item.import_id;
         if (importId != null)
-          item.import_id = `<a href="${importId}" class="validate_link">Validate</a>`;
+          item.import_id = `<a href="${importId}" class="validate_link">Valider</a>`;
         console.log(item);
       });
       var table = generateTable(data.table_content);

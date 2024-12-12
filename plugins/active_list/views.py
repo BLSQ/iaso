@@ -135,20 +135,21 @@ def validation_api(request, org_unit_id, period):
             if latest_validation:
                 obj["Statut"] = latest_validation.validation_status
                 obj["Observation"] = latest_validation.comment
-                obj["Level"] = latest_validation.level
+                obj["Niveau Validation"] = latest_validation.level
             else:
                 obj["Statut"] = ""
                 obj["Observation"] = ""
-                obj["Level"] = ""
+                obj["Niveau Validation"] = ""
             obj["Dernière modification"] = latest_import.creation_date.strftime(("%d/%m/%y %H:%M:%S"))
             obj["import_id"] = latest_import.id
         else:
             obj["A rapporté"] = "Non"
             obj["Statut"] = ""
             obj["Observation"] = ""
+            obj["Niveau Validation"] = ""
             obj["Dernière modification"] = ""
             obj["import_id"] = None
-            obj["Level"] = ""
+
 
         table_content.append(obj)
 

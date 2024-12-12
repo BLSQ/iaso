@@ -69,6 +69,4 @@ class ValidationAdmin(admin.ModelAdmin):
 
 @admin.register(Month)
 class MonthAdmin(admin.ModelAdmin):
-    list_display = (
-        "value",
-    )
+    list_display = ("value",)

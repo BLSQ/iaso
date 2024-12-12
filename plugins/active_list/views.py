@@ -150,7 +150,6 @@ def validation_api(request, org_unit_id, period):
             obj["Dernière modification"] = ""
             obj["import_id"] = None
 
-
         table_content.append(obj)
 
     res = {"table_content": table_content, "completeness": "%s/%s" % (report_count, len(org_units))}
@@ -192,8 +191,8 @@ def export_active_patients_excel(active_patients, name, period):
         for col_num, field in enumerate(PATIENT_LIST_DISPLAY_FIELDS.keys(), 1):
             worksheet.cell(row=row_num, column=col_num).value = getattr(patient, field)
 
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="active_patients-%s-%s.xlsx"' % (name, period)
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="active_patients-%s-%s.xlsx"' % (name, period)
     workbook.save(response)
     return response
 
@@ -336,11 +335,10 @@ def import_data(file, the_import):
             2: HIV_HIV2,
             "1&2": HIV_HIV1_AND_2,
             math.nan: HIV_UNKNOWN,
-            'nan': HIV_UNKNOWN,
+            "nan": HIV_UNKNOWN,
             "VIH 1 + 2": HIV_HIV1_AND_2,
             "VIH 1": HIV_HIV1,
             "VIH 2": HIV_HIV2,
-
         }
     )
 

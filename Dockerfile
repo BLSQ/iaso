@@ -1,4 +1,5 @@
-FROM ghcr.io/blsq/iaso:ad4f8be8533b6817619b10a2f0780e79eeb77ef5
+FROM ghcr.io/blsq/iaso:fab1e7cd4f3994f914db9e0665d8cb00671ea73e
+
 EXPOSE 8081
 
 ENTRYPOINT ./entrypoint.sh start_gunicorn

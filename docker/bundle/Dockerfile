@@ -44,13 +44,13 @@ RUN ls ./hat/assets
 ########### Django Builder ########################################################################
 FROM python:3.12 as base
 
-RUN apt-get update && apt-get --yes  --no-install-recommends install \
+RUN apt-get update && apt-get --yes --no-install-recommends install \
     gettext \
     gettext-base \
     postgresql-client \
     binutils libproj-dev gdal-bin \
     locales \
-    &&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Making sure that the right locale is set
 RUN sed -i 's/^# *\(en_GB.UTF-8\)/\1/' /etc/locale.gen && locale-gen

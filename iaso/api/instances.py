@@ -3,7 +3,7 @@ import logging
 import ntpath
 from copy import copy
 from time import gmtime, strftime
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, List
 
 import pandas as pd
 from django.contrib.auth.models import User
@@ -43,7 +43,14 @@ from ..models.forms import CR_MODE_IF_REFERENCE_FORM
 from ..utils.models.common import get_creator_name
 from . import common
 from .comment import UserSerializerForComment
-from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, TimestampField, safe_api_import
+from .common import (
+    CONTENT_TYPE_CSV,
+    CONTENT_TYPE_XLSX,
+    FileFormatEnum,
+    TimestampField,
+    safe_api_import,
+    parse_comma_separated_numeric_values,
+)
 from .instance_filters import get_form_from_instance_filters, parse_instance_filters
 
 logger = logging.getLogger(__name__)
@@ -597,6 +604,104 @@ class InstancesViewSet(viewsets.ViewSet):
             },
             status=201,
         )
+
+    @action(detail=False, methods=["GET"], permission_classes=[permissions.IsAuthenticated, HasInstancePermission])
+    def check_bulk_gps_push(self, request):
+        # first, let's parse all parameters received from the URL
+        select_all, selected_ids, unselected_ids = self._parse_check_bulk_gps_push_parameters(request.GET)
+
+        # then, let's make sure that each ID actually exists and that the user has access to it
+        instances_query = self.get_queryset()
+        for selected_id in selected_ids:
+            get_object_or_404(instances_query, pk=selected_id)
+        for unselected_id in unselected_ids:
+            get_object_or_404(instances_query, pk=unselected_id)
+
+        # let's filter everything
+        filters = parse_instance_filters(request.GET)
+        instances_query = instances_query.select_related("org_unit")
+        instances_query = instances_query.exclude(file="").exclude(device__test_device=True)
+        instances_query = instances_query.for_filters(**filters)
+
+        if not select_all:
+            instances_query = instances_query.filter(pk__in=selected_ids)
+        else:
+            instances_query = instances_query.exclude(pk__in=unselected_ids)
+
+        overwrite_ids = []
+        no_location_ids = []
+        org_units_to_instances_dict = {}
+        set_org_units_ids = set()
+
+        for instance in instances_query:
+            if not instance.location:
+                no_location_ids.append(instance.id)  # there is nothing to push to the OrgUnit
+                continue
+
+            org_unit = instance.org_unit
+            if org_unit.id in org_units_to_instances_dict:
+                # we can't push this instance's location since there was another instance linked to this OrgUnit
+                org_units_to_instances_dict[org_unit.id].append(instance.id)
+                continue
+            else:
+                org_units_to_instances_dict[org_unit.id] = [instance.id]
+
+            set_org_units_ids.add(org_unit.id)
+            if org_unit.location or org_unit.geom:
+                overwrite_ids.append(instance.id)  # if the user proceeds, he will erase existing location
+                continue
+
+        # Before returning, we need to check if we've had multiple hits on an OrgUnit
+        error_same_org_unit_ids = self._check_bulk_gps_repeated_org_units(org_units_to_instances_dict)
+
+        if len(error_same_org_unit_ids):
+            return Response(
+                {"result": "error", "error_ids": error_same_org_unit_ids},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if len(no_location_ids) or len(overwrite_ids):
+            dict_response = {
+                "result": "warnings",
+            }
+            if len(no_location_ids):
+                dict_response["warning_no_location"] = no_location_ids
+            if len(overwrite_ids):
+                dict_response["warning_overwrite"] = overwrite_ids
+
+            return Response(dict_response, status=status.HTTP_200_OK)
+
+        return Response(
+            {
+                "result": "success",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def _parse_check_bulk_gps_push_parameters(self, query_parameters):
+        raw_select_all = query_parameters.get("select_all", True)
+        select_all = raw_select_all not in ["false", "False", "0"]
+
+        raw_selected_ids = query_parameters.get("selected_ids", None)
+        if raw_selected_ids:
+            selected_ids = parse_comma_separated_numeric_values(raw_selected_ids, "selected_ids")
+        else:
+            selected_ids = []
+
+        raw_unselected_ids = query_parameters.get("unselected_ids", None)
+        if raw_unselected_ids:
+            unselected_ids = parse_comma_separated_numeric_values(raw_unselected_ids, "unselected_ids")
+        else:
+            unselected_ids = []
+
+        return select_all, selected_ids, unselected_ids
+
+    def _check_bulk_gps_repeated_org_units(self, org_units_to_instance_ids: Dict[int, List[int]]) -> List[int]:
+        error_instance_ids = []
+        for _, instance_ids in org_units_to_instance_ids.items():
+            if len(instance_ids) >= 2:
+                error_instance_ids.extend(instance_ids)
+        return error_instance_ids
 
     QUERY = """
     select DATE_TRUNC('month', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)) as month,

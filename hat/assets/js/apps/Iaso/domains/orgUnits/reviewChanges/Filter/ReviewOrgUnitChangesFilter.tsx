@@ -34,7 +34,7 @@ const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = {
     params: ApproveOrgUnitParams;
     selectedVersionId: string;
-    setSelectedVersionId: (id: string) => void; // Define setter prop
+    setSelectedVersionId: (id: string) => void;
     dataSource: string;
     setDataSource: (id: string) => void;
 };

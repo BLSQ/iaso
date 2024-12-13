@@ -246,6 +246,11 @@ class Paginator(pagination.PageNumberPagination):
         )
 
 
+class EtlPaginator(Paginator):
+    page_size = 20
+    max_page_size = 1000
+
+
 class ModelViewSet(BaseModelViewSet):
     results_key = "results"
     # FIXME Contrary to name it remove result key if NOT paginated
@@ -304,30 +309,28 @@ class ModelViewSet(BaseModelViewSet):
             )
 
 
-class PaginatedModelViewset(ModelViewSet):
+class EtlModelViewset(ModelViewSet):
     """
     Sub class of ModelViewset that enforces the presence of pagination queryparams for GET requests.
     Imposes the use of Paginator as pagination class
     Use case: dashboard endpoints that will try to fetch all instances of a model
     """
 
-    _pagination_class = Paginator
+    pagination_class = EtlPaginator
 
     def get_pagination_class(self):
-        return self._pagination_class
+        custom_pagination_class = getattr(self, "pagination_class", None)
+        if custom_pagination_class and not issubclass(custom_pagination_class, EtlPaginator):
+            raise TypeError(
+                f"The pagination_class must be a subclass of {EtlPaginator.__name__}. "
+                f"Received: {custom_pagination_class.__name__}."
+            )
+        return custom_pagination_class
 
     def __setattr__(self, name, value):
         if name == "pagination_class":
             logging.warning("You cannot override the 'pagination_class' attribute.")
         super().__setattr__(name, value)
-
-    def list(self, request, *args, **kwargs):
-        limit = request.query_params.get("limit", None)
-        page = request.query_params.get("page", None)
-
-        if not limit or not page:
-            return HttpResponseBadRequest("'page' and 'limit' query parameters are both required.")
-        return super().list(request, *args, **kwargs)
 
 
 class ChoiceEnum(enum.Enum):

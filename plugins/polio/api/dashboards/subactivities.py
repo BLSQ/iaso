@@ -1,4 +1,4 @@
-from iaso.api.common import PaginatedModelViewset
+from iaso.api.common import EtlModelViewset
 from iaso.api.serializers import OrgUnitSerializer
 from plugins.polio.models import OrgUnit
 from plugins.polio.models.base import SubActivity, SubActivityScope
@@ -14,7 +14,7 @@ class SubActivityDashboardSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class SubActivityDashboardViewSet(PaginatedModelViewset):
+class SubActivityDashboardViewSet(EtlModelViewset):
     """
     GET /api/polio/dashboards/subactivities/
     Returns all subactivities for the user's account, excluding those related to deleted campaig ns
@@ -52,7 +52,7 @@ class SubActivityScopeDashboardSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class SubActivityScopeDashboardViewSet(PaginatedModelViewset):
+class SubActivityScopeDashboardViewSet(EtlModelViewset):
     """
     GET /api/polio/dashboards/subactivityscopes/
     Returns all subactivityscopes for the user's account, excluding those related to deleted campaigns

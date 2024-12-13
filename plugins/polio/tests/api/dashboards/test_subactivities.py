@@ -1,11 +1,16 @@
 import datetime
+
+from django.contrib.auth.models import AnonymousUser
+from django.utils.timezone import now
+
 from iaso.models.base import Group
 from iaso.models.org_unit import OrgUnitType
 from iaso.test import APITestCase
 from plugins.polio.models import SubActivity, SubActivityScope
 from plugins.polio.tests.api.test import PolioTestCaseMixin
+from plugins.polio.tests.test_api import PolioAPITestCase
 
-BASE_URL = "/api/polio/dashboards/subactivityscopes"
+BASE_URL = "/api/polio/dashboards/subactivities"
 
 
 class SubactivitiesAPITestCase(APITestCase, PolioTestCaseMixin):
@@ -43,32 +48,16 @@ class SubactivitiesAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get(f"{BASE_URL}/")
         self.assertEqual(response.status_code, 403)
 
-    def test_get_pagination_params_mandatory(self):
+    def test_default_pagination_is_added(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{BASE_URL}/")
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content.decode("utf-8"), "'page' and 'limit' query parameters are both required.")
-        response = self.client.get(f"{BASE_URL}/?limit=20")
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content.decode("utf-8"), "'page' and 'limit' query parameters are both required.")
-        response = self.client.get(f"{BASE_URL}/?page=1")
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.content.decode("utf-8"), "'page' and 'limit' query parameters are both required.")
-        response = self.client.get(f"{BASE_URL}/?limit=20&page=1")
-        self.assertEqual(response.status_code, 200)
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(data["page"], 1)
+        self.assertEqual(data["limit"], 20)
 
-    def test_get_sub_activity_scopes(self):
+    def test_get_sub_activities(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"{BASE_URL}/?limit=20&page=1")
+        response = self.client.get(f"{BASE_URL}/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["results"]), 1)
-        self.assertEqual(response.data["results"][0]["subactivity_name"], self.sub_activity.name)
-        self.assertEqual(response.data["results"][0]["subactivity"], self.sub_activity.pk)
-        self.assertEqual(response.data["results"][0]["id"], self.sub_activity_scope.pk)
-        self.assertEqual(response.data["results"][0]["obr_name"], self.campaign.obr_name)
-        self.assertEqual(response.data["results"][0]["round_number"], self.rnd1.number)
-        self.assertEqual(response.data["results"][0]["vaccine"], self.sub_activity_scope.vaccine)
-        self.assertEqual(response.data["results"][0]["group"], self.sub_activity_scope.group.pk)
-        self.assertEqual(len(response.data["results"][0]["org_units"]), 1)
-        self.assertEqual(response.data["results"][0]["org_units"][0]["name"], self.district.name)
-        self.assertEqual(response.data["results"][0]["org_units"][0]["id"], self.district.pk)
+        self.assertEqual(response.data["results"][0]["name"], "Test SubActivity")

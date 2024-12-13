@@ -164,7 +164,7 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
     ordering = ["-campaign_started_at"]
     search_fields = ["campaign__country__name", "campaign__obr_name"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    default_page_size = 20
+    default_page_size = 50
 
     file_type_param = openapi.Parameter(
         "file_type",

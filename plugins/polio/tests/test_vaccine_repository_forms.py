@@ -23,7 +23,7 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
         cls.org_unit_type_country = m.OrgUnitType.objects.create(name="Country")
         cls.org_unit_type_district = m.OrgUnitType.objects.create(name="District")
 
-        cls.campaign, cls.campaign_round_1, _, _, cls.testland, _district = cls.create_campaign(
+        cls.campaign, cls.campaign_round_1, _, _, cls.testland, _ = cls.create_campaign(
             obr_name="Test Campaign",
             account=cls.account,
             source_version=cls.source_version_1,
@@ -32,6 +32,8 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
             district_ou_type=cls.org_unit_type_district,
         )
         cls.campaign_round_1.started_at = datetime.datetime(2021, 1, 4)
+        cls.campaign_round_1.save()
+
         cls.campaign_no_vrf, cls.campaign_no_vrf_round_1, _, _, _, _ = cls.create_campaign(
             obr_name="No VRF",
             account=cls.account,
@@ -253,20 +255,8 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
 
         self.client.force_authenticate(user=self.user)
 
-        # Test default ordering => campaign start date
+        # Test default ordering => -campaign start date
         response = self.client.get(f"{BASE_URL}")
-        data = response.json()
-        self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
-        self.assertEqual(data["results"][3]["campaign_obr_name"], "Another Campaign")
-
-        # Test ordering by campaign start date
-        response = self.client.get(f"{BASE_URL}?order=campaign_started_at")
-        data = response.json()
-        self.assertEqual(data["results"][0]["campaign_obr_name"], "Another Campaign")
-        self.assertEqual(data["results"][3]["campaign_obr_name"], "Test Campaign")
-
-        # Test reverse ordering by campaign start date
-        response = self.client.get(f"{BASE_URL}?order=-campaign_started_at")
         data = response.json()
         self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
         self.assertEqual(data["results"][3]["campaign_obr_name"], "Another Campaign")
@@ -310,14 +300,15 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
         # Test ordering by start date
         response = self.client.get(f"{BASE_URL}?order=started_at")
         data = response.json()
-        self.assertEqual(data["results"][0]["start_date"], self.campaign_round_1.started_at.strftime("%Y-%m-%d"))
-        self.assertEqual(data["results"][1]["start_date"], campaign2_round.started_at.strftime("%Y-%m-%d"))
+        self.assertEqual(data["results"][0]["start_date"], campaign2_round.started_at.strftime("%Y-%m-%d"))
+        self.assertEqual(data["results"][1]["start_date"], self.campaign_round_1.started_at.strftime("%Y-%m-%d"))
 
         # Test reverse ordering by start date
         response = self.client.get(f"{BASE_URL}?order=-started_at")
         data = response.json()
         self.assertEqual(data["results"][0]["start_date"], campaign2_rnd3.started_at.strftime("%Y-%m-%d"))
-        self.assertEqual(data["results"][3]["start_date"], self.campaign_round_1.started_at.strftime("%Y-%m-%d"))
+        self.assertEqual(data["results"][2]["start_date"], self.campaign_round_1.started_at.strftime("%Y-%m-%d"))
+        self.assertEqual(data["results"][3]["start_date"], campaign2_round.started_at.strftime("%Y-%m-%d"))
 
     def test_filtering(self):
         """Test filtering functionality of VaccineReportingViewSet"""

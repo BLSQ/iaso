@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const OrgUnitTypes: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as OrgUnitTypesParams;
+    const params = useParamsObject(baseUrl) as unknown as OrgUnitTypesParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const columns: Column[] = useGetColumns();

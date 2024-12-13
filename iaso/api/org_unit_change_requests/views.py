@@ -75,6 +75,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 "old_parent",
                 "new_org_unit_type",
                 "old_org_unit_type",
+                "org_unit__version",
             )
             .prefetch_related(
                 "org_unit__groups",
@@ -88,11 +89,6 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             )
             .exclude_soft_deleted_new_reference_instances()
         )
-
-        if not self.request.query_params.get("source_version_id"):
-            org_units_change_requests = org_units_change_requests.filter(
-                org_unit__version=self.request.user.iaso_profile.account.default_version
-            )
 
         return org_units_change_requests.filter(org_unit__in=org_units)
 

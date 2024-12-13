@@ -29,9 +29,16 @@ import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetDataSources } from '../../hooks/requests/useGetDataSources';
 import { useDefaultSourceVersion } from '../../../dataSources/utils';
 import { useGetVersionLabel } from '../../hooks/useGetVersionLabel';
+import { DataSource } from '../../types/dataSources';
 
 const baseUrl = baseUrls.orgUnitsChangeRequest;
-type Props = { params: ApproveOrgUnitParams };
+type Props = {
+    params: ApproveOrgUnitParams;
+    selectedVersionId: string;
+    setSelectedVersionId: (id: string) => void; // Define setter prop
+    dataSource: string;
+    setDataSource: (id: DataSource) => void;
+};
 
 const styles = {
     advancedSettings: {
@@ -45,6 +52,10 @@ const styles = {
 
 export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
+    selectedVersionId,
+    setSelectedVersionId,
+    dataSource,
+    setDataSource,
 }) => {
     const defaultSourceVersion = useDefaultSourceVersion();
 
@@ -82,11 +93,11 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         [dataSources, defaultSourceVersion.source.id],
     );
 
-    const [selectedVersionId, setSelectedVersionId] = useState(
-        defaultSourceVersion.version.id.toString(),
-    );
+    // const [selectedVersionId, setSelectedVersionId] = useState(
+    //     defaultSourceVersion.version.id.toString(),
+    // );
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
-    const [dataSource, setDataSource] = useState(initialDataSource);
+    // const [dataSource, setDataSource] = useState(initialDataSource);
 
     const { formatMessage } = useSafeIntl();
 
@@ -113,7 +124,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         if (updatedDataSource) {
             setDataSource(updatedDataSource);
         }
-    }, [dataSources, defaultSourceVersion.source.id]);
+    }, [dataSources, defaultSourceVersion.source.id, setDataSource]);
 
     const statusOptions: DropdownOptions<string>[] = useMemo(
         () => [
@@ -160,7 +171,13 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             }
             filters.groups = [];
         },
-        [dataSources, filters, handleChange],
+        [
+            dataSources,
+            filters,
+            handleChange,
+            setDataSource,
+            setSelectedVersionId,
+        ],
     );
 
     const getVersionLabel = useGetVersionLabel(dataSources);

@@ -1,7 +1,5 @@
 from django.test import TestCase
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.viewsets import ModelViewSet
-from rest_framework.exceptions import APIException
 
 # Import your custom base paginator and ViewSet
 from iaso.api.common import EtlModelViewset, EtlPaginator

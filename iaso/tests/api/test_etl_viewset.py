@@ -1,7 +1,5 @@
 from django.test import TestCase
 from rest_framework.pagination import LimitOffsetPagination
-
-# Import your custom base paginator and ViewSet
 from iaso.api.common import EtlModelViewset, EtlPaginator
 
 
@@ -10,7 +8,7 @@ class ValidCustomPaginator(EtlPaginator):
     default_limit = 20
 
 
-class InvalidPaginator(LimitOffsetPagination):  # Not inheriting from MyBasePaginator
+class InvalidPaginator(LimitOffsetPagination):  # Not inheriting from EtlPaginator
     pass
 
 

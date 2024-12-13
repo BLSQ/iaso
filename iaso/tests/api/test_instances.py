@@ -2025,6 +2025,44 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(response_json["result"], "warnings")
         self.assertCountEqual(response_json["warning_overwrite"], [i.id for i in non_deleted_instances])
 
+    def test_check_bulk_push_gps_select_all_warning_both(self):
+        # pushing gps data means that we need a mapping of 1 instance to 1 orgunit
+        for instance in [self.instance_2, self.instance_3, self.instance_4]:
+            instance.deleted_at = datetime.datetime.now()
+            instance.deleted = True
+            instance.save()
+            instance.refresh_from_db()
+
+        # instances 1 and 5 will overwrite their org_unit location
+        new_instance_location = Point(4, 5, 6)
+        self.instance_5.org_unit = self.jedi_council_endor
+        self.instance_5.location = new_instance_location
+        self.instance_1.location = new_instance_location
+
+        # instances 6 and 8 will have no location data
+        self.instance_6.org_unit = self.jedi_council_endor_region
+        self.instance_8.org_unit = self.ou_top_1
+
+        new_org_unit_location = Point(1, 2, 3)
+        non_deleted_instances = [self.instance_1, self.instance_5, self.instance_6, self.instance_8]
+        for instance in non_deleted_instances:
+            # setting gps data for org_units whose instance was not deleted
+            org_unit = instance.org_unit
+            org_unit.location = new_org_unit_location
+            org_unit.save()
+            org_unit.refresh_from_db()
+
+            instance.save()
+            instance.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/instances/check_bulk_gps_push/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        self.assertEqual(response_json["result"], "warnings")
+        self.assertCountEqual(response_json["warning_overwrite"], [self.instance_1.id, self.instance_5.id])
+        self.assertCountEqual(response_json["warning_no_location"], [self.instance_6.id, self.instance_8.id])
+
     def test_check_bulk_push_gps_selected_ids_ok(self):
         self.client.force_authenticate(self.yoda)
         new_instance = self.create_form_instance(
@@ -2049,9 +2087,7 @@ class InstancesAPITestCase(APITestCase):
         for instance in [self.instance_1, self.instance_2, self.instance_3]:
             instance.location = Point(5, 6.45, 2.33)
             instance.save()
-        self.instance_1.refresh_from_db()
-        self.instance_2.refresh_from_db()
-        self.instance_3.refresh_from_db()
+            instance.refresh_from_db()
 
         response = self.client.get(
             f"/api/instances/check_bulk_gps_push/?select_all=false&selected_ids={self.instance_1.id},{self.instance_2.id},{self.instance_3.id}"
@@ -2076,9 +2112,13 @@ class InstancesAPITestCase(APITestCase):
 
     def test_check_bulk_push_gps_selected_ids_error_wrong_account(self):
         # Preparing new setup
-        new_account, new_data_source, _, new_project  = self.create_account_datasource_version_project("new source", "new account", "new project")
+        new_account, new_data_source, _, new_project = self.create_account_datasource_version_project(
+            "new source", "new account", "new project"
+        )
         new_user, _, _ = self.create_base_users(new_account, ["iaso_submissions"])
-        new_org_unit = m.OrgUnit.objects.create(name="New Org Unit", source_ref="new org unit", validation_status="VALID")
+        new_org_unit = m.OrgUnit.objects.create(
+            name="New Org Unit", source_ref="new org unit", validation_status="VALID"
+        )
         new_form = m.Form.objects.create(name="new form", period_type=m.MONTH, single_per_period=True)
         new_instance = self.create_form_instance(
             form=new_form,
@@ -2121,13 +2161,101 @@ class InstancesAPITestCase(APITestCase):
         )
 
     def test_check_bulk_push_gps_selected_ids_warning_overwrite(self):
-        pass
+        # no org unit was assigned, so we select some
+        self.instance_1.org_unit = self.jedi_council_endor
+        self.instance_2.org_unit = self.jedi_council_corruscant
+        new_org_unit_location = Point(1, 2, 3)
+        new_instance_location = Point(4, 5, 6)
+        for instance in [self.instance_1, self.instance_2]:
+            # setting gps data for org_units
+            org_unit = instance.org_unit
+            org_unit.location = new_org_unit_location
+            org_unit.save()
+            org_unit.refresh_from_db()
+
+            # setting gps data for these instances as well, since we want to override the org_unit location
+            instance.location = new_instance_location
+            instance.save()
+            instance.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/instances/check_bulk_gps_push/?select_all=false&selected_ids={self.instance_1.id},{self.instance_2.id}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        # All these Instances target the same OrgUnit, so it's impossible to push gps data
+        self.assertEqual(response_json["result"], "warnings")
+        self.assertCountEqual(response_json["warning_overwrite"], [self.instance_1.id, self.instance_2.id])
+
+    def test_check_bulk_push_gps_selected_ids_warning_both(self):
+        # instances 1 and 5 will overwrite their org_unit location
+        new_instance_location = Point(4, 5, 6)
+        self.instance_5.org_unit = self.jedi_council_endor
+        self.instance_5.location = new_instance_location
+        self.instance_1.location = new_instance_location
+
+        # instances 6 and 8 will have no location data
+        self.instance_6.org_unit = self.jedi_council_endor_region
+        self.instance_8.org_unit = self.ou_top_1
+
+        new_org_unit_location = Point(1, 2, 3)
+        for instance in [self.instance_1, self.instance_5, self.instance_6, self.instance_8]:
+            # setting gps data for org_units
+            org_unit = instance.org_unit
+            org_unit.location = new_org_unit_location
+            org_unit.save()
+            org_unit.refresh_from_db()
+
+            instance.save()
+            instance.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/instances/check_bulk_gps_push/?select_all=false&selected_ids={self.instance_1.id},"
+            f"{self.instance_5.id},{self.instance_6.id},{self.instance_8.id}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        # All these Instances target the same OrgUnit, so it's impossible to push gps data
+        self.assertEqual(response_json["result"], "warnings")
+        self.assertCountEqual(response_json["warning_overwrite"], [self.instance_1.id, self.instance_5.id])
+        self.assertCountEqual(response_json["warning_no_location"], [self.instance_6.id, self.instance_8.id])
 
     def test_check_bulk_push_gps_unselected_ids_ok(self):
-        pass
+        self.instance_1.location = Point(1, 2, 3)
+        self.instance_1.save()
+        self.instance_1.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        # only pushing instance_1 GPS
+        response = self.client.get(
+            f"/api/instances/check_bulk_gps_push/?unselected_ids={self.instance_2.id},{self.instance_3.id},"
+            f"{self.instance_4.id},{self.instance_5.id},{self.instance_6.id},{self.instance_8.id},"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        # All these Instances target the same OrgUnit, so it's impossible to push gps data
+        self.assertEqual(response_json["result"], "success")
 
     def test_check_bulk_push_gps_unselected_ids_error(self):
-        pass
+        # no org unit was assigned, so we select some
+        for instance in [self.instance_1, self.instance_2]:
+            instance.org_unit = self.jedi_council_endor
+            instance.location = Point(1, 2, 3)
+            instance.save()
+            instance.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        # only pushing instance_1 & instance_2 GPS
+        response = self.client.get(
+            f"/api/instances/check_bulk_gps_push/?unselected_ids={self.instance_3.id},"
+            f"{self.instance_4.id},{self.instance_5.id},{self.instance_6.id},{self.instance_8.id},"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response_json = response.json()
+        self.assertEqual(response_json["result"], "error")
+        self.assertCountEqual(response_json["error_ids"], [self.instance_1.id, self.instance_2.id])
 
     def test_check_bulk_push_gps_unselected_ids_error_unknown_id(self):
         self.client.force_authenticate(self.yoda)
@@ -2143,9 +2271,13 @@ class InstancesAPITestCase(APITestCase):
 
     def test_check_bulk_push_gps_unselected_ids_error_wrong_account(self):
         # Preparing new setup
-        new_account, new_data_source, _, new_project  = self.create_account_datasource_version_project("new source", "new account", "new project")
+        new_account, new_data_source, _, new_project = self.create_account_datasource_version_project(
+            "new source", "new account", "new project"
+        )
         new_user, _, _ = self.create_base_users(new_account, ["iaso_submissions"])
-        new_org_unit = m.OrgUnit.objects.create(name="New Org Unit", source_ref="new org unit", validation_status="VALID")
+        new_org_unit = m.OrgUnit.objects.create(
+            name="New Org Unit", source_ref="new org unit", validation_status="VALID"
+        )
         new_form = m.Form.objects.create(name="new form", period_type=m.MONTH, single_per_period=True)
         new_instance = self.create_form_instance(
             form=new_form,
@@ -2168,7 +2300,83 @@ class InstancesAPITestCase(APITestCase):
         )
 
     def test_check_bulk_push_gps_unselected_ids_warning_no_location(self):
-        pass
+        # Changing instance_1 org unit in order to be different from instance_2
+        self.instance_1.org_unit = self.jedi_council_endor
+        self.instance_1.save()
+        self.instance_1.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        # only pushing instance_1 & instance_2 GPS
+        response = self.client.get(
+            f"/api/instances/check_bulk_gps_push/?unselected_ids={self.instance_3.id},"
+            f"{self.instance_4.id},{self.instance_5.id},{self.instance_6.id},{self.instance_8.id},"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        # All these Instances target the same OrgUnit, so it's impossible to push gps data
+        self.assertEqual(response_json["result"], "warnings")
+        self.assertCountEqual(response_json["warning_no_location"], [self.instance_1.id, self.instance_2.id])
 
     def test_check_bulk_push_gps_unselected_ids_warning_overwrite(self):
-        pass
+        self.instance_2.org_unit = self.jedi_council_endor
+        self.instance_3.org_unit = self.jedi_council_endor_region
+
+        # no org unit was assigned, so we select some
+        new_org_unit_location = Point(1, 2, 3)
+        new_instance_location = Point(4, 5, 6)
+        for instance in [self.instance_2, self.instance_3]:
+            # setting gps data for org_units
+            org_unit = instance.org_unit
+            org_unit.location = new_org_unit_location
+            org_unit.save()
+            org_unit.refresh_from_db()
+
+            # setting gps data for these instances as well, since we want to override the org_unit location
+            instance.location = new_instance_location
+            instance.save()
+            instance.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        # only pushing instance_3 & instance_2 GPS
+        response = self.client.get(
+            f"/api/instances/check_bulk_gps_push/?unselected_ids={self.instance_1.id},"
+            f"{self.instance_4.id},{self.instance_5.id},{self.instance_6.id},{self.instance_8.id},"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        # All these Instances target the same OrgUnit, so it's impossible to push gps data
+        self.assertEqual(response_json["result"], "warnings")
+        self.assertCountEqual(response_json["warning_overwrite"], [self.instance_3.id, self.instance_2.id])
+
+    def test_check_bulk_push_gps_unselected_ids_warning_both(self):
+        # instances 1 and 5 will overwrite their org_unit location
+        new_instance_location = Point(4, 5, 6)
+        self.instance_5.org_unit = self.jedi_council_endor
+        self.instance_5.location = new_instance_location
+        self.instance_1.location = new_instance_location
+
+        # instances 6 and 8 will have no location data
+        self.instance_6.org_unit = self.jedi_council_endor_region
+        self.instance_8.org_unit = self.ou_top_1
+
+        new_org_unit_location = Point(1, 2, 3)
+        for instance in [self.instance_1, self.instance_5, self.instance_6, self.instance_8]:
+            # setting gps data for org_units
+            org_unit = instance.org_unit
+            org_unit.location = new_org_unit_location
+            org_unit.save()
+            org_unit.refresh_from_db()
+
+            instance.save()
+            instance.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/instances/check_bulk_gps_push/?unselected_ids={self.instance_2.id},{self.instance_3.id},{self.instance_4.id}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_json = response.json()
+        # All these Instances target the same OrgUnit, so it's impossible to push gps data
+        self.assertEqual(response_json["result"], "warnings")
+        self.assertCountEqual(response_json["warning_overwrite"], [self.instance_1.id, self.instance_5.id])
+        self.assertCountEqual(response_json["warning_no_location"], [self.instance_6.id, self.instance_8.id])

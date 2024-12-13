@@ -327,11 +327,6 @@ class EtlModelViewset(ModelViewSet):
             )
         return custom_pagination_class
 
-    def __setattr__(self, name, value):
-        if name == "pagination_class":
-            logging.warning("You cannot override the 'pagination_class' attribute.")
-        super().__setattr__(name, value)
-
 
 class ChoiceEnum(enum.Enum):
     active = "active"

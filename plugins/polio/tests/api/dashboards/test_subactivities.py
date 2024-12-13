@@ -55,6 +55,13 @@ class SubactivitiesAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(data["page"], 1)
         self.assertEqual(data["limit"], 20)
 
+    def test_max_page_size_is_enforced(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{BASE_URL}/?limit=2000&page=1")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(data["page"], 1)
+        self.assertEqual(data["limit"], 1000)
+
     def test_get_sub_activities(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{BASE_URL}/")

@@ -31,6 +31,7 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
             country_name="Testland",
             district_ou_type=cls.org_unit_type_district,
         )
+        cls.campaign_round_1.started_at = datetime.datetime(2021, 1, 4)
         cls.campaign_no_vrf, cls.campaign_no_vrf_round_1, _, _, _, _ = cls.create_campaign(
             obr_name="No VRF",
             account=cls.account,
@@ -251,6 +252,24 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
         vrf2.rounds.set([campaign2_round, campaign2_rnd2, campaign2_rnd3])
 
         self.client.force_authenticate(user=self.user)
+
+        # Test default ordering => campaign start date
+        response = self.client.get(f"{BASE_URL}")
+        data = response.json()
+        self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
+        self.assertEqual(data["results"][3]["campaign_obr_name"], "Another Campaign")
+
+        # Test ordering by campaign start date
+        response = self.client.get(f"{BASE_URL}?order=campaign_started_at")
+        data = response.json()
+        self.assertEqual(data["results"][0]["campaign_obr_name"], "Another Campaign")
+        self.assertEqual(data["results"][3]["campaign_obr_name"], "Test Campaign")
+
+        # Test reverse ordering by campaign start date
+        response = self.client.get(f"{BASE_URL}?order=-campaign_started_at")
+        data = response.json()
+        self.assertEqual(data["results"][0]["campaign_obr_name"], "Test Campaign")
+        self.assertEqual(data["results"][3]["campaign_obr_name"], "Another Campaign")
 
         # Test ordering by campaign name
         response = self.client.get(f"{BASE_URL}?order=campaign__obr_name")

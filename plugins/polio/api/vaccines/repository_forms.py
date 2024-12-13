@@ -159,8 +159,9 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
         "started_at",
         "vaccine_name",
         "number",
+        "campaign_started_at",
     ]
-    ordering = ["-started_at"]
+    ordering = ["-campaign_started_at"]
     search_fields = ["campaign__country__name", "campaign__obr_name"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     default_page_size = 20

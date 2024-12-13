@@ -2198,6 +2198,44 @@ class InstancesAPITestCase(APITestCase):
             status_code=status.HTTP_404_NOT_FOUND,
         )
 
+    def test_check_bulk_push_gps_selected_ids_error_unknown_id(self):
+        self.client.force_authenticate(self.yoda)
+        probably_not_a_valid_id = 1234567980
+        response = self.client.get(
+            f"/api/instances/check_bulk_gps_push/?select_all=false&selected_ids={probably_not_a_valid_id}"
+        )
+        self.assertContains(
+            response,
+            f"Not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    def test_check_bulk_push_gps_selected_ids_error_wrong_account(self):
+        # Preparing new setup
+        new_account, new_data_source, _, new_project  = self.create_account_datasource_version_project("new source", "new account", "new project")
+        new_user, _, _ = self.create_base_users(new_account, ["iaso_submissions"])
+        new_org_unit = m.OrgUnit.objects.create(name="New Org Unit", source_ref="new org unit", validation_status="VALID")
+        new_form = m.Form.objects.create(name="new form", period_type=m.MONTH, single_per_period=True)
+        new_instance = self.create_form_instance(
+            form=new_form,
+            period="202001",
+            org_unit=new_org_unit,
+            project=new_project,
+            created_by=new_user,
+            export_id="Vzhn0nceudr",
+        )
+
+        self.client.force_authenticate(self.yoda)
+        # Checking instance from new account
+        response = self.client.get(
+            f"/api/instances/check_bulk_gps_push/?select_all=false&selected_ids={new_instance.id}"
+        )
+        self.assertContains(
+            response,
+            f"Not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
     def test_check_bulk_push_gps_selected_ids_warning_no_location(self):
         self.client.force_authenticate(self.yoda)
         # Linking these instances to some orgunits
@@ -2336,6 +2374,44 @@ class InstancesAPITestCase(APITestCase):
         new_org_unit = m.OrgUnit.objects.create(
             name="New Org Unit", source_ref="new org unit", validation_status="VALID"
         )
+        new_form = m.Form.objects.create(name="new form", period_type=m.MONTH, single_per_period=True)
+        new_instance = self.create_form_instance(
+            form=new_form,
+            period="202001",
+            org_unit=new_org_unit,
+            project=new_project,
+            created_by=new_user,
+            export_id="Vzhn0nceudr",
+        )
+
+        self.client.force_authenticate(self.yoda)
+        # Checking instance from new account
+        response = self.client.get(
+            f"/api/instances/check_bulk_gps_push/?select_all=false&unselected_ids={new_instance.id}"
+        )
+        self.assertContains(
+            response,
+            f"Not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    def test_check_bulk_push_gps_unselected_ids_error_unknown_id(self):
+        self.client.force_authenticate(self.yoda)
+        probably_not_a_valid_id = 1234567980
+        response = self.client.get(
+            f"/api/instances/check_bulk_gps_push/?select_all=false&unselected_ids={probably_not_a_valid_id}"
+        )
+        self.assertContains(
+            response,
+            f"Not found",
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    def test_check_bulk_push_gps_unselected_ids_error_wrong_account(self):
+        # Preparing new setup
+        new_account, new_data_source, _, new_project  = self.create_account_datasource_version_project("new source", "new account", "new project")
+        new_user, _, _ = self.create_base_users(new_account, ["iaso_submissions"])
+        new_org_unit = m.OrgUnit.objects.create(name="New Org Unit", source_ref="new org unit", validation_status="VALID")
         new_form = m.Form.objects.create(name="new form", period_type=m.MONTH, single_per_period=True)
         new_instance = self.create_form_instance(
             form=new_form,

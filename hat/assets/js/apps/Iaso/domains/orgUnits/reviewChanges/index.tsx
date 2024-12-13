@@ -99,10 +99,10 @@ export const ReviewOrgUnitChanges: FunctionComponent = () => {
 
     const csv_url = getTableUrl(endPointUrl, csv_params);
     const defaultSourceVersion = useDefaultSourceVersion();
-    const [selectedVersionId, setSelectedVersionId] = useState(
+    const [selectedVersionId, setSelectedVersionId] = useState<string>(
         defaultSourceVersion.version.id.toString(),
     );
-    const [dataSource, setDataSource] = useState(
+    const [dataSource, setDataSource] = useState<string>(
         defaultSourceVersion.source.id.toString(),
     );
 
@@ -114,7 +114,7 @@ export const ReviewOrgUnitChanges: FunctionComponent = () => {
                 <ReviewOrgUnitChangesFilter
                     params={params}
                     selectedVersionId={selectedVersionId}
-                    setSelectedVersionId={setSelectedVersionId} // Pass the setter function
+                    setSelectedVersionId={setSelectedVersionId}
                     dataSource={dataSource}
                     setDataSource={setDataSource}
                 />

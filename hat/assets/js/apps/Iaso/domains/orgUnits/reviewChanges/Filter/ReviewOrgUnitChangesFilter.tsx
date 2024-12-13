@@ -29,7 +29,6 @@ import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetDataSources } from '../../hooks/requests/useGetDataSources';
 import { useDefaultSourceVersion } from '../../../dataSources/utils';
 import { useGetVersionLabel } from '../../hooks/useGetVersionLabel';
-import { DataSource } from '../../types/dataSources';
 
 const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = {
@@ -37,7 +36,7 @@ type Props = {
     selectedVersionId: string;
     setSelectedVersionId: (id: string) => void; // Define setter prop
     dataSource: string;
-    setDataSource: (id: DataSource) => void;
+    setDataSource: (id: string) => void;
 };
 
 const styles = {
@@ -93,12 +92,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         [dataSources, defaultSourceVersion.source.id],
     );
 
-    // const [selectedVersionId, setSelectedVersionId] = useState(
-    //     defaultSourceVersion.version.id.toString(),
-    // );
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
-    // const [dataSource, setDataSource] = useState(initialDataSource);
-
     const { formatMessage } = useSafeIntl();
 
     const {
@@ -122,7 +116,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         )?.value;
 
         if (updatedDataSource) {
-            setDataSource(updatedDataSource);
+            setDataSource(updatedDataSource as unknown as string);
         }
     }, [dataSources, defaultSourceVersion.source.id, setDataSource]);
 
@@ -186,7 +180,9 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         if (!dataSources || !dataSource) return [];
         return (
             dataSources
-                .filter(src => src.value === dataSource)[0]
+                .filter(
+                    src => (src.value as unknown as string) === dataSource,
+                )[0]
                 ?.original?.versions.sort((a, b) => a.number - b.number)
                 .map(version => ({
                     label: getVersionLabel(version.id),

@@ -509,6 +509,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'parent_id',
         ],
     },
+    hidden: { url: 'secret', params: [] },
     error401: { url: '401', params: [] },
     error403: { url: '403', params: [] },
     error404: { url: '404', params: [] },
@@ -602,6 +603,7 @@ type IasoBaseUrls = {
     workflowDetail: string;
     potentialPayments: string;
     lotsPayments: string;
+    hidden: string;
     error401: string;
     error403: string;
     error404: string;

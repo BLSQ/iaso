@@ -228,6 +228,16 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.group)}
                 />
                 <Box mt={2}>
+                    <InputComponent
+                        type="select"
+                        disabled={isFetchingDataSources}
+                        keyValue="source"
+                        onChange={handleDataSourceVersionChange}
+                        value={isFetchingDataSources ? '' : dataSource}
+                        label={MESSAGES.source}
+                        options={dataSources}
+                        loading={isFetchingDataSources}
+                    />
                     {!showAdvancedSettings && (
                         <Typography
                             data-test="advanced-settings"
@@ -240,16 +250,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     )}
                     {showAdvancedSettings && (
                         <>
-                            <InputComponent
-                                type="select"
-                                disabled={isFetchingDataSources}
-                                keyValue="source"
-                                onChange={handleDataSourceVersionChange}
-                                value={isFetchingDataSources ? '' : dataSource}
-                                label={MESSAGES.source}
-                                options={dataSources}
-                                loading={isFetchingDataSources}
-                            />
                             <InputComponent
                                 type="select"
                                 disabled={isFetchingDataSources}

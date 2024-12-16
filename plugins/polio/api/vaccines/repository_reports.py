@@ -47,10 +47,20 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         if file_type:
             try:
                 filetypes = [tp.strip().upper() for tp in file_type.split(",")]
-                if "INCIDENT" in filetypes:
+
+                has_incident = "INCIDENT" in filetypes
+                has_destruction = "DESTRUCTION" in filetypes
+
+                if has_incident and has_destruction:
+                    # Both types specified - must have both
+                    queryset = queryset.filter(incidentreport__isnull=False, destructionreport__isnull=False)
+                elif has_incident:
+                    # Only incident reports
                     queryset = queryset.filter(incidentreport__isnull=False)
-                if "DESTRUCTION" in filetypes:
+                elif has_destruction:
+                    # Only destruction reports
                     queryset = queryset.filter(destructionreport__isnull=False)
+                # If no types specified, show all (no filtering needed)
             except ValueError:
                 raise ValidationError("file_type must be a comma-separated list of strings")
 
@@ -65,22 +75,26 @@ class VaccineRepositoryReportSerializer(serializers.Serializer):
     destruction_report_data = serializers.SerializerMethodField()
 
     def get_incident_report_data(self, obj):
-        return [
+        pir = IncidentReport.objects.filter(vaccine_stock=obj.id)
+        data = [
             {
                 "date": ir.date_of_incident_report,
                 "file": ir.document.url if ir.document else None,
             }
-            for ir in obj.prefetched_incident_reports
+            for ir in pir
         ]
+        return data
 
     def get_destruction_report_data(self, obj):
-        return [
+        drs = DestructionReport.objects.filter(vaccine_stock=obj.id)
+        data = [
             {
                 "date": dr.destruction_report_date,
                 "file": dr.document.url if dr.document else None,
             }
-            for dr in obj.prefetched_destruction_reports
+            for dr in drs
         ]
+        return data
 
 
 class VaccineRepositoryReportsViewSet(GenericViewSet, ListModelMixin):
@@ -99,24 +113,10 @@ class VaccineRepositoryReportsViewSet(GenericViewSet, ListModelMixin):
         """Get the queryset for VaccineStock objects."""
         base_qs = VaccineStock.objects.select_related(
             "country",
-        ).filter(Q(incidentreport__isnull=False) | Q(destructionreport__isnull=False))
-
-        incident_qs = IncidentReport.objects.only(
-            "vaccine_stock_id",
-            "date_of_incident_report",
-            "document",
+        ).filter(
+            account=self.request.user.iaso_profile.account,
         )
-
-        destruction_qs = DestructionReport.objects.only(
-            "vaccine_stock_id",
-            "destruction_report_date",
-            "document",
-        )
-
-        return base_qs.prefetch_related(
-            Prefetch("incidentreport_set", queryset=incident_qs, to_attr="prefetched_incident_reports"),
-            Prefetch("destructionreport_set", queryset=destruction_qs, to_attr="prefetched_destruction_reports"),
-        ).distinct()
+        return base_qs
 
     @swagger_auto_schema(
         manual_parameters=[

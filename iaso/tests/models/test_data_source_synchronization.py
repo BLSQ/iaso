@@ -206,6 +206,7 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.angola_region_to_compare_with.parent = None
         self.angola_region_to_compare_with.opening_date = datetime.date(2025, 11, 28)
         self.angola_region_to_compare_with.closed_date = datetime.date(2026, 11, 28)
+        self.angola_region_to_compare_with.save()
 
         data_source_sync = m.DataSourceSynchronization.objects.create(
             name="New synchronization",
@@ -218,8 +219,67 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         )
         data_source_sync.create_json_diff()
 
-        self.assertEqual(m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync).count(), 0)
+        change_requests = m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync)
+        self.assertEqual(change_requests.count(), 0)
         data_source_sync.create_change_requests()
+        self.assertEqual(change_requests.count(), 2)
 
-        # TODO: check change requests
-        self.assertEqual(m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync).count(), 1)
+        angola_country_change_request = m.OrgUnitChangeRequest.objects.get(
+            org_unit=self.angola_country_to_update, data_source_synchronization=data_source_sync
+        )
+        # Data.
+        self.assertEqual(angola_country_change_request.kind, m.OrgUnitChangeRequest.Kind.ORG_UNIT_CHANGE)
+        self.assertEqual(angola_country_change_request.created_by, data_source_sync.created_by)
+        self.assertEqual(
+            angola_country_change_request.requested_fields,
+            ["new_name", "new_opening_date", "new_closed_date", "new_groups"],
+        )
+        # New values.
+        self.assertEqual(angola_country_change_request.new_parent, None)
+        self.assertEqual(angola_country_change_request.new_name, "Angola new")
+        self.assertEqual(angola_country_change_request.new_org_unit_type, None)
+        self.assertEqual(angola_country_change_request.new_groups.count(), 1)
+        self.assertIn(self.group_a, angola_country_change_request.new_groups.all())
+        self.assertEqual(angola_country_change_request.new_location, None)
+        self.assertEqual(angola_country_change_request.new_location_accuracy, None)
+        self.assertEqual(angola_country_change_request.new_opening_date, datetime.date(2025, 11, 28))
+        self.assertEqual(angola_country_change_request.new_closed_date, datetime.date(2026, 11, 28))
+        self.assertEqual(angola_country_change_request.new_reference_instances.count(), 0)
+        # Old values.
+        self.assertEqual(angola_country_change_request.old_parent, None)
+        self.assertEqual(angola_country_change_request.old_name, "Angola")
+        self.assertEqual(angola_country_change_request.old_org_unit_type, self.org_unit_type_country)
+        self.assertEqual(angola_country_change_request.old_groups.count(), 2)
+        self.assertIn(self.group_b, angola_country_change_request.old_groups.all())
+        self.assertIn(self.group_c, angola_country_change_request.old_groups.all())
+        self.assertEqual(angola_country_change_request.old_location, None)
+        self.assertEqual(angola_country_change_request.old_opening_date, datetime.date(2022, 11, 28))
+        self.assertEqual(angola_country_change_request.old_closed_date, datetime.date(2025, 11, 28))
+        self.assertEqual(angola_country_change_request.old_reference_instances.count(), 0)
+
+        angola_region_change_request = m.OrgUnitChangeRequest.objects.get(
+            org_unit=self.angola_region_to_update, data_source_synchronization=data_source_sync
+        )
+        # Data.
+        self.assertEqual(angola_region_change_request.kind, m.OrgUnitChangeRequest.Kind.ORG_UNIT_CHANGE)
+        self.assertEqual(angola_region_change_request.created_by, data_source_sync.created_by)
+        self.assertEqual(angola_region_change_request.requested_fields, ["new_opening_date", "new_closed_date"])
+        # New values.
+        self.assertEqual(angola_region_change_request.new_parent, None)
+        self.assertEqual(angola_region_change_request.new_name, "")
+        self.assertEqual(angola_region_change_request.new_org_unit_type, None)
+        self.assertEqual(angola_region_change_request.new_groups.count(), 0)
+        self.assertEqual(angola_region_change_request.new_location, None)
+        self.assertEqual(angola_region_change_request.new_location_accuracy, None)
+        self.assertEqual(angola_region_change_request.new_opening_date, datetime.date(2025, 11, 28))
+        self.assertEqual(angola_region_change_request.new_closed_date, datetime.date(2026, 11, 28))
+        self.assertEqual(angola_region_change_request.new_reference_instances.count(), 0)
+        # Old values.
+        self.assertEqual(angola_region_change_request.old_parent, self.angola_country_to_update)
+        self.assertEqual(angola_region_change_request.old_name, "Huila")
+        self.assertEqual(angola_region_change_request.old_org_unit_type, self.org_unit_type_region)
+        self.assertEqual(angola_region_change_request.old_groups.count(), 0)
+        self.assertEqual(angola_region_change_request.old_location, None)
+        self.assertEqual(angola_region_change_request.old_opening_date, datetime.date(2022, 11, 28))
+        self.assertEqual(angola_region_change_request.old_closed_date, datetime.date(2025, 11, 28))
+        self.assertEqual(angola_region_change_request.old_reference_instances.count(), 0)

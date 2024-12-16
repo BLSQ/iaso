@@ -10,6 +10,7 @@ import {
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -156,6 +157,21 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         }
         return '';
     }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
+
+    const allUserUserRolesPermissions = useMemo(() => {
+        const allUserPermissions = user.user_permissions.value;
+        const allUserRolesPermissions =
+            user.user_roles_permissions.value.flatMap(role => role.permissions);
+        return [
+            ...new Set([...allUserPermissions, ...allUserRolesPermissions]),
+        ];
+    }, [user.user_permissions.value, user.user_roles_permissions.value]);
+
+    useEffect(() => {
+        setHasNoOrgUnitManagementWrite(
+            !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
+        );
+    }, [allUserUserRolesPermissions]);
     return (
         <>
             <WarningModal

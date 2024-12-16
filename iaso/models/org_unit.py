@@ -650,9 +650,8 @@ class OrgUnitChangeRequestManager(models.Manager):
             diff for diff in json.loads(data_source_sync.json_diff) if diff["status"] in ["new", "modified"]
         )
 
-        compatible_fields = ["name", "parent", "opening_date", "closed_date"]
-        # new_org_units = []
         new_change_requests = []
+        groups_change_requests = []
 
         while True:
             # Get a subset of a generator.
@@ -663,13 +662,15 @@ class OrgUnitChangeRequestManager(models.Manager):
                 break
 
             for diff in batch_json_diff:
-                if diff["status"] == "new":
+                is_new_org_unit = diff["status"] == "new"
+                if is_new_org_unit:
                     pass
 
                 changes = {
                     comparison["field"]: comparison["after"]
                     for comparison in diff["comparisons"]
-                    if comparison["status"] == "modified" and comparison["field"] in compatible_fields
+                    if comparison["status"] == "modified"
+                    and comparison["field"] in ["name", "parent", "opening_date", "closed_date"]
                 }
 
                 group_changes = [
@@ -681,10 +682,10 @@ class OrgUnitChangeRequestManager(models.Manager):
                 if not changes and not group_changes:
                     continue
 
-                org_unit = diff.get("orgunit_dhis2", {})
+                org_unit = diff["orgunit_dhis2"]
                 requested_fields = []
                 new_parent = None
-                new_name = None
+                new_name = ""
                 new_opening_date = None
                 new_closed_date = None
 
@@ -715,9 +716,9 @@ class OrgUnitChangeRequestManager(models.Manager):
                         requested_fields=requested_fields,
                         data_source_synchronization=data_source_sync,
                         # Old values.
-                        org_unit_id=org_unit.get("id"),
+                        org_unit_id=org_unit["id"],
                         old_parent_id=org_unit.get("parent"),
-                        old_name=org_unit.get("name"),
+                        old_name=org_unit.get("name", ""),
                         old_org_unit_type_id=org_unit.get("org_unit_type"),
                         old_location=org_unit.get("location"),
                         old_opening_date=org_unit.get("opening_date"),
@@ -730,8 +731,18 @@ class OrgUnitChangeRequestManager(models.Manager):
                     )
                 )
 
-                # TODO: handle m2m
-                # new_groups=None
+                groups_change_requests.append(
+                    {
+                        "change_request_id": None,  # This doesn't exist yet.
+                        "org_unit_id": org_unit["id"],
+                        "old_groups_ids": {
+                            group["iaso_id"] for group_change in group_changes for group in group_change["before"]
+                        },
+                        "new_groups_ids": {
+                            group["iaso_id"] for group_change in group_changes for group in group_change["after"]
+                        },
+                    }
+                )
 
         # Bulk creation of change requests.
         batch_size = 100
@@ -740,7 +751,34 @@ class OrgUnitChangeRequestManager(models.Manager):
             batch = list(islice(new_change_requests_generator, batch_size))
             if not batch:
                 break
-            OrgUnitChangeRequest.objects.bulk_create(batch, batch_size)
+            change_requests = OrgUnitChangeRequest.objects.bulk_create(batch, batch_size)
+
+            # Assign each group to the correct change request.
+            for change_request in change_requests:
+                groups_change_request = next(
+                    (item for item in groups_change_requests if item["org_unit_id"] == change_request.org_unit_id), None
+                )
+                if groups_change_request:
+                    groups_change_request["change_request_id"] = change_request.id
+
+        # Bulk update old and new groups (m2m).
+        old_groups = []
+        new_groups = []
+        for groups in groups_change_requests:
+            for old_group_id in groups["old_groups_ids"]:
+                old_groups.append(
+                    OrgUnitChangeRequest.old_groups.through(
+                        orgunitchangerequest_id=groups["change_request_id"], group_id=old_group_id
+                    )
+                )
+            for new_group_id in groups["new_groups_ids"]:
+                new_groups.append(
+                    OrgUnitChangeRequest.new_groups.through(
+                        orgunitchangerequest_id=groups["change_request_id"], group_id=new_group_id
+                    )
+                )
+        OrgUnitChangeRequest.old_groups.through.objects.bulk_create(old_groups)
+        OrgUnitChangeRequest.new_groups.through.objects.bulk_create(new_groups)
 
 
 class OrgUnitChangeRequest(models.Model):

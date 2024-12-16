@@ -234,16 +234,14 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                                     </Grid>
                                     <Grid xs={12} md={12} item>
                                         {type === SUPERSET && (
-                                            <>
-                                                <Field
-                                                    label={formatMessage(
-                                                        MESSAGES.superset_dashboard_id,
-                                                    )}
-                                                    name="superset_dashboard_id"
-                                                    component={TextInput}
-                                                    className={classes.input}
-                                                />
-                                            </>
+                                            <Field
+                                                label={formatMessage(
+                                                    MESSAGES.superset_dashboard_id,
+                                                )}
+                                                name="superset_dashboard_id"
+                                                component={TextInput}
+                                                className={classes.input}
+                                            />
                                         )}
                                         {type !== SUPERSET && (
                                             <Field

@@ -1,5 +1,5 @@
-import React, { FunctionComponent } from 'react';
-import { Box, Grid, Typography } from '@mui/material';
+import React, { FunctionComponent, useState } from 'react';
+import { Button, Grid, Typography } from '@mui/material';
 import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../messages';
@@ -17,7 +17,11 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
     renderTrigger,
     selection,
 }) => {
-    const [forceExport, setForceExport] = React.useState(false);
+    const [forceExport, setForceExport] = useState(false);
+    const [approveOrgUnitHasGps, setApproveOrgUnitHasGps] =
+        useState<boolean>(false);
+    const [approveSubmissionNoHasGps, setApproveSubmissionNoHasGps] =
+        useState<boolean>(false);
     const onConfirm = closeDialog => {
         const filterParams = getFilters();
         createExportRequest({ forceExport, ...filterParams }, selection).then(
@@ -26,6 +30,24 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
     };
     const onClosed = () => {
         setForceExport(false);
+    };
+
+    const onApprove = type => {
+        if (type === 'instanceNoGps') {
+            if (approveSubmissionNoHasGps) {
+                setApproveSubmissionNoHasGps(false);
+            } else {
+                setApproveSubmissionNoHasGps(true);
+            }
+        }
+
+        if (type === 'orgUnitHasGps') {
+            if (approveOrgUnitHasGps) {
+                setApproveOrgUnitHasGps(false);
+            } else {
+                setApproveOrgUnitHasGps(true);
+            }
+        }
     };
     let title = MESSAGES.export;
     if (selection) {
@@ -52,13 +74,9 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
             onAdditionalButtonClick={onConfirm}
             allowConfimAdditionalButton
         >
-            <Grid
-                container
-                spacing={4}
-                alignItems="center" // Centers vertically
-            >
+            <Grid container spacing={4} alignItems="center">
                 <Grid item xs={12}>
-                    <Typography variant="h6">
+                    <Typography variant="subtitle1">
                         {formatMessage(MESSAGES.pushGpsWarningMessage, {
                             submissionCount: 5,
                             orgUnitCount: 10,
@@ -73,31 +91,43 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                     alignItems="center"
                     direction="row"
                 >
-                    <Grid item xs={6}>
+                    <Grid item xs={8}>
                         <Typography
-                            variant="subtitle2"
                             component="ul"
-                            sx={{ marginLeft: 2 }}
+                            sx={{ color: 'warning.main' }}
                         >
                             <Typography component="li">
-                                Some instances don't have locations. Nothing
-                                will be applied for those OrgUnits.
+                                {formatMessage(MESSAGES.noGpsForSomeInstaces)}
                             </Typography>
                         </Typography>
                     </Grid>
-                    <Grid item xs={3}>
-                        <Box>
-                            <LinkWithLocation to="url">
-                                See all
-                            </LinkWithLocation>
-                        </Box>
+                    <Grid
+                        item
+                        xs={2}
+                        display="flex"
+                        justifyContent="flex-start"
+                    >
+                        <LinkWithLocation to="url">
+                            {formatMessage(MESSAGES.seeAll)}
+                        </LinkWithLocation>
                     </Grid>
-                    <Grid item xs={3}>
-                        <Box>
-                            <LinkWithLocation to="url">
-                                See all
-                            </LinkWithLocation>
-                        </Box>
+                    <Grid item xs={2} display="flex" justifyContent="flex-end">
+                        <Button
+                            data-test="search-button"
+                            variant="outlined"
+                            color={
+                                approveSubmissionNoHasGps
+                                    ? 'primary'
+                                    : 'warning'
+                            }
+                            onClick={() => onApprove('instanceNoGps')}
+                        >
+                            {formatMessage(
+                                approveSubmissionNoHasGps
+                                    ? MESSAGES.approved
+                                    : MESSAGES.approve,
+                            )}
+                        </Button>
                     </Grid>
                 </Grid>
                 <Grid
@@ -108,27 +138,41 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                     alignItems="center"
                     direction="row"
                 >
-                    <Grid item xs={6}>
-                        <Typography component="ul" sx={{ marginLeft: 2 }}>
+                    <Grid item xs={8}>
+                        <Typography
+                            component="ul"
+                            sx={{ color: 'warning.main' }}
+                        >
                             <Typography component="li">
-                                Some OrgUnits already have GPS coordinates. Do
-                                you want to proceed and overwrite them?
+                                {formatMessage(
+                                    MESSAGES.someOrgUnitsHasAlreadyGps,
+                                )}
                             </Typography>
                         </Typography>
                     </Grid>
-                    <Grid item xs={3}>
-                        <Box>
-                            <LinkWithLocation to="url">
-                                See all
-                            </LinkWithLocation>
-                        </Box>
+                    <Grid
+                        item
+                        xs={2}
+                        display="flex"
+                        justifyContent="flex-start"
+                    >
+                        <LinkWithLocation to="url">
+                            {formatMessage(MESSAGES.seeAll)}
+                        </LinkWithLocation>
                     </Grid>
-                    <Grid item xs={3}>
-                        <Box>
-                            <LinkWithLocation to="url">
-                                See all
-                            </LinkWithLocation>
-                        </Box>
+                    <Grid item xs={2} display="flex" justifyContent="flex-end">
+                        <Button
+                            data-test="search-button"
+                            variant="outlined"
+                            color={approveOrgUnitHasGps ? 'primary' : 'warning'}
+                            onClick={() => onApprove('orgUnitHasGps')}
+                        >
+                            {formatMessage(
+                                approveOrgUnitHasGps
+                                    ? MESSAGES.approved
+                                    : MESSAGES.approve,
+                            )}
+                        </Button>
                     </Grid>
                 </Grid>
             </Grid>

@@ -1,7 +1,4 @@
 """API endpoints and serializers for vaccine repository reports."""
-
-from datetime import datetime, timedelta
-from django.db.models import OuterRef, Subquery, Q, Value, Case, When, CharField, Exists
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, serializers
@@ -9,7 +6,6 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from django.db.models import Prefetch
 
 from iaso.api.common import Paginator
 from plugins.polio.models import VaccineStock, DestructionReport, IncidentReport
@@ -75,7 +71,7 @@ class VaccineRepositoryReportSerializer(serializers.Serializer):
     destruction_report_data = serializers.SerializerMethodField()
 
     def get_incident_report_data(self, obj):
-        pir = IncidentReport.objects.filter(vaccine_stock=obj.id)
+        pir = obj.incidentreport_set.all()
         data = [
             {
                 "date": ir.date_of_incident_report,
@@ -86,7 +82,7 @@ class VaccineRepositoryReportSerializer(serializers.Serializer):
         return data
 
     def get_destruction_report_data(self, obj):
-        drs = DestructionReport.objects.filter(vaccine_stock=obj.id)
+        drs = obj.destructionreport_set.all()
         data = [
             {
                 "date": dr.destruction_report_date,
@@ -111,10 +107,17 @@ class VaccineRepositoryReportsViewSet(GenericViewSet, ListModelMixin):
 
     def get_queryset(self):
         """Get the queryset for VaccineStock objects."""
-        base_qs = VaccineStock.objects.select_related(
-            "country",
-        ).filter(
-            account=self.request.user.iaso_profile.account,
+        base_qs = (
+            VaccineStock.objects.select_related(
+                "country",
+            )
+            .filter(
+                account=self.request.user.iaso_profile.account,
+            )
+            .prefetch_related(
+                "incidentreport_set",
+                "destructionreport_set",
+            )
         )
         return base_qs
 

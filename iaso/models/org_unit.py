@@ -641,6 +641,72 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
 
 
 class OrgUnitChangeRequestManager(models.Manager):
+    def _handle_modified(self, diff, data_source_sync):
+        changes = {
+            comparison["field"]: comparison["after"]
+            for comparison in diff["comparisons"]
+            if comparison["status"] == "modified"
+            and comparison["field"] in ["name", "parent", "opening_date", "closed_date"]
+        }
+
+        group_changes = [
+            comparison
+            for comparison in diff["comparisons"]
+            if comparison["status"] == "modified" and comparison["field"].startswith("group")
+        ]
+
+        org_unit = diff["orgunit_dhis2"]
+        requested_fields = []
+        new_parent = None
+        new_name = ""
+        new_opening_date = None
+        new_closed_date = None
+
+        if changes.get("parent"):
+            new_parent = changes["parent"]
+            requested_fields.append("new_parent")
+
+        if changes.get("name"):
+            new_name = changes["name"]
+            requested_fields.append("new_name")
+
+        if changes.get("opening_date"):
+            new_opening_date = datetime.datetime.strptime(changes["opening_date"], "%Y-%m-%d").date()
+            requested_fields.append("new_opening_date")
+
+        if changes.get("closed_date"):
+            new_closed_date = datetime.datetime.strptime(changes["closed_date"], "%Y-%m-%d").date()
+            requested_fields.append("new_closed_date")
+
+        if group_changes:
+            requested_fields.append("new_groups")
+
+        org_unit_change_request = OrgUnitChangeRequest(
+            # Data.
+            kind=OrgUnitChangeRequest.Kind.ORG_UNIT_CHANGE,
+            created_by=data_source_sync.created_by,
+            requested_fields=requested_fields,
+            data_source_synchronization=data_source_sync,
+            # Old values.
+            org_unit_id=org_unit["id"],
+            old_parent_id=org_unit.get("parent"),
+            old_name=org_unit.get("name", ""),
+            old_org_unit_type_id=org_unit.get("org_unit_type"),
+            old_location=org_unit.get("location"),
+            old_opening_date=org_unit.get("opening_date"),
+            old_closed_date=org_unit.get("closed_date"),
+            # New values.
+            new_parent=new_parent,
+            new_name=new_name,
+            new_opening_date=new_opening_date,
+            new_closed_date=new_closed_date,
+        )
+
+        return (org_unit_change_request, group_changes)
+
+    def _handle_new(self, diff, data_source_sync):
+        return (None, None)
+
     def bulk_create_from_data_source_sync(self, data_source_sync) -> None:
         """
         TODO.
@@ -662,87 +728,25 @@ class OrgUnitChangeRequestManager(models.Manager):
                 break
 
             for diff in batch_json_diff:
-                is_new_org_unit = diff["status"] == "new"
-                if is_new_org_unit:
-                    pass
-
-                changes = {
-                    comparison["field"]: comparison["after"]
-                    for comparison in diff["comparisons"]
-                    if comparison["status"] == "modified"
-                    and comparison["field"] in ["name", "parent", "opening_date", "closed_date"]
-                }
-
-                group_changes = [
-                    comparison
-                    for comparison in diff["comparisons"]
-                    if comparison["status"] == "modified" and comparison["field"].startswith("group")
-                ]
-
-                if not changes and not group_changes:
-                    continue
-
-                org_unit = diff["orgunit_dhis2"]
-                requested_fields = []
-                new_parent = None
-                new_name = ""
-                new_opening_date = None
-                new_closed_date = None
-
-                if changes.get("parent"):
-                    new_parent = changes["parent"]
-                    requested_fields.append("new_parent")
-
-                if changes.get("name"):
-                    new_name = changes["name"]
-                    requested_fields.append("new_name")
-
-                if changes.get("opening_date"):
-                    new_opening_date = datetime.datetime.strptime(changes["opening_date"], "%Y-%m-%d").date()
-                    requested_fields.append("new_opening_date")
-
-                if changes.get("closed_date"):
-                    new_closed_date = datetime.datetime.strptime(changes["closed_date"], "%Y-%m-%d").date()
-                    requested_fields.append("new_closed_date")
+                if diff["status"] == "new":
+                    org_unit_change_request, group_changes = self._handle_new(diff, data_source_sync)
+                else:
+                    org_unit_change_request, group_changes = self._handle_modified(diff, data_source_sync)
+                    new_change_requests.append(org_unit_change_request)
 
                 if group_changes:
-                    requested_fields.append("new_groups")
-
-                new_change_requests.append(
-                    OrgUnitChangeRequest(
-                        # Data.
-                        kind=OrgUnitChangeRequest.Kind.ORG_UNIT_CHANGE,
-                        created_by=data_source_sync.created_by,
-                        requested_fields=requested_fields,
-                        data_source_synchronization=data_source_sync,
-                        # Old values.
-                        org_unit_id=org_unit["id"],
-                        old_parent_id=org_unit.get("parent"),
-                        old_name=org_unit.get("name", ""),
-                        old_org_unit_type_id=org_unit.get("org_unit_type"),
-                        old_location=org_unit.get("location"),
-                        old_opening_date=org_unit.get("opening_date"),
-                        old_closed_date=org_unit.get("closed_date"),
-                        # New values.
-                        new_parent=new_parent,
-                        new_name=new_name,
-                        new_opening_date=new_opening_date,
-                        new_closed_date=new_closed_date,
+                    groups_change_requests.append(
+                        {
+                            "change_request_id": None,  # This doesn't exist yet.
+                            "org_unit_id": org_unit_change_request.org_unit_id,
+                            "old_groups_ids": {
+                                group["iaso_id"] for group_change in group_changes for group in group_change["before"]
+                            },
+                            "new_groups_ids": {
+                                group["iaso_id"] for group_change in group_changes for group in group_change["after"]
+                            },
+                        }
                     )
-                )
-
-                groups_change_requests.append(
-                    {
-                        "change_request_id": None,  # This doesn't exist yet.
-                        "org_unit_id": org_unit["id"],
-                        "old_groups_ids": {
-                            group["iaso_id"] for group_change in group_changes for group in group_change["before"]
-                        },
-                        "new_groups_ids": {
-                            group["iaso_id"] for group_change in group_changes for group in group_change["after"]
-                        },
-                    }
-                )
 
         # Bulk creation of change requests.
         batch_size = 100

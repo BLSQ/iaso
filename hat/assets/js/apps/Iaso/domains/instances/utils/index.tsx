@@ -1,5 +1,6 @@
 import CallMade from '@mui/icons-material/CallMade';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import AddLocationIcon from '@mui/icons-material/AddLocation';
 import { Tooltip } from '@mui/material';
 import {
     Column,
@@ -47,6 +48,7 @@ import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { InstanceMetasField } from '../components/ColumnSelect';
 import { INSTANCE_METAS_FIELDS } from '../constants';
+import PushGpsDialogComponent from '../components/PushGpsDialogComponent';
 
 const NO_VALUE = '/';
 const hasNoValue: (value: string) => boolean = value => !value || value === '';
@@ -427,6 +429,7 @@ export const useInstanceVisibleColumns = ({
             getDefaultCols(
                 formIds,
                 labelKeys,
+                // @ts-ignore
                 instanceMetasFields || INSTANCE_METAS_FIELDS,
                 periodType,
             );
@@ -494,6 +497,32 @@ export const useSelectionActions = (
     );
 
     return useMemo(() => {
+        const pushGpsAction: SelectionAction = {
+            icon: newSelection => (
+                <PushGpsDialogComponent
+                    // @ts-ignore need to refactor this component to TS
+                    selection={newSelection}
+                    getFilters={() => filters}
+                    renderTrigger={openDialog => {
+                        const iconDisabled = newSelection.selectCount === 0;
+                        const iconProps = {
+                            onClick: !iconDisabled ? openDialog : () => null,
+                            disabled: iconDisabled,
+                        };
+
+                        return (
+                            // @ts-ignore
+                            <AddLocationIcon
+                                color={iconDisabled ? 'disabled' : 'inherit'}
+                                {...iconProps}
+                            />
+                        );
+                    }}
+                />
+            ),
+            label: formatMessage(MESSAGES.pushGpsToOrgUnits),
+            disabled: false,
+        };
         const exportAction: SelectionAction = {
             icon: newSelection => (
                 <ExportInstancesDialogComponent
@@ -557,7 +586,7 @@ export const useSelectionActions = (
 
         const actions: SelectionAction[] = [compareAction];
         if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
-            actions.push(exportAction, deleteAction);
+            actions.push(exportAction, deleteAction, pushGpsAction);
         }
         return actions;
     }, [

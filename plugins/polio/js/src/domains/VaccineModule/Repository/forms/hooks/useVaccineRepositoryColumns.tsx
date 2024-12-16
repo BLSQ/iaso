@@ -1,15 +1,20 @@
-import React, { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
-import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import { DocumentsCells } from '../components/DocumentsCell';
-import { FormADocumentsCells } from '../components/FormADocumentCells';
-import { VrfDocumentsCells } from '../components/VrfDocumentsCell';
-import MESSAGES from '../messages';
+import React, { useMemo } from 'react';
+import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { DocumentsCells } from '../../components/DocumentsCell';
+import { FormADocumentsCells } from '../../components/FormADocumentCells';
+import { VrfDocumentsCells } from '../../components/VrfDocumentsCell';
+import MESSAGES from '../../messages';
 
-export const useVaccineRepositoryColumns = (): Column[] => {
+export const useVaccineRepositoryColumns = (
+    params: Record<string, any>,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
-    return useMemo(
-        () => [
+    const { file_type } = params;
+    // wrong typing in our library
+    // @ts-ignore
+    return useMemo(() => {
+        const columns = [
             {
                 Header: formatMessage(MESSAGES.country),
                 id: 'campaign__country__name',
@@ -44,25 +49,52 @@ export const useVaccineRepositoryColumns = (): Column[] => {
                 Cell: DateCell,
                 width: 30,
             },
-            {
+        ];
+        if (
+            !file_type ||
+            file_type === 'VRF' ||
+            file_type === 'VRF,PRE_ALERT,FORM_A'
+        ) {
+            columns.push({
                 Header: 'VRF',
                 accessor: 'vrf_data',
                 Cell: VrfDocumentsCells,
                 width: 30,
-            },
-            {
+                // wrong typing in our library
+                // @ts-ignore
+                sortable: false,
+            });
+        }
+        if (
+            !file_type ||
+            file_type === 'PRE_ALERT' ||
+            file_type === 'VRF,PRE_ALERT,FORM_A'
+        ) {
+            columns.push({
                 Header: 'Pre Alert',
                 accessor: 'pre_alert_data',
                 Cell: DocumentsCells,
                 width: 30,
-            },
-            {
+                // wrong typing in our library
+                // @ts-ignore
+                sortable: false,
+            });
+        }
+        if (
+            !file_type ||
+            file_type === 'FORM_A' ||
+            file_type === 'VRF,PRE_ALERT,FORM_A'
+        ) {
+            columns.push({
                 Header: 'Form A',
                 accessor: 'form_a_data',
                 Cell: FormADocumentsCells,
                 width: 20,
-            },
-        ],
-        [formatMessage],
-    );
+                // wrong typing in our library
+                // @ts-ignore
+                sortable: false,
+            });
+        }
+        return columns;
+    }, [file_type, formatMessage]);
 };

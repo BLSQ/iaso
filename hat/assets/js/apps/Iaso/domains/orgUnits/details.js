@@ -218,7 +218,7 @@ const OrgUnitDetail = () => {
             } = orgUnitRevision.fields;
 
             const coordinates = location
-                ? wktToGeoJSON(location)?.coordinates ?? []
+                ? (wktToGeoJSON(location)?.coordinates ?? [])
                 : [];
             const [longitude, latitude] = coordinates;
             const aliases = revisionAliases

@@ -616,3 +616,59 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(ent1.instances.count() + ent2.instances.count(), 3)
         err_msg = f"Multiple non-deleted entities for UUID {ent1.uuid}, entity_type_id {self.default_entity_type.id}"
         mock_logger.exception.assert_called_once_with(err_msg)
+
+    def test_storage_logs(self, mock_download_file):
+        entity_uuid = "5475bfcf-5a3f-4170-9d88-245d89352362"
+        files_for_zip = [
+            "instances.json",
+            "storageLogs.json",
+            entity_uuid,  # the folder with XML submission
+        ]
+        with zipfile.ZipFile(f"/tmp/{entity_uuid}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir("storage_logs_and_change_requests"), files_for_zip)
+
+        mock_download_file.return_value = f"/tmp/{entity_uuid}.zip"
+
+        self.assertEqual(m.Entity.objects.count(), 0)
+        self.assertEqual(m.Instance.objects.count(), 0)
+        self.assertEqual(m.StorageDevice.objects.count(), 0)
+        self.assertEqual(m.StorageLogEntry.objects.count(), 0)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        mock_download_file.assert_called_once()
+
+        # check Task status and result
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+        self.api_import.refresh_from_db()
+        self.assertEqual(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        # Instances (Submissions) + Entity were created
+        self.assertEqual(m.Entity.objects.count(), 1)
+        entity = m.Entity.objects.get(uuid=entity_uuid)
+        self.assertEqual(m.Instance.objects.count(), 1)
+        instance = m.Instance.objects.get(uuid=entity_uuid)
+
+        # Storage logs
+        self.assertEqual(m.StorageDevice.objects.count(), 1)
+        self.assertEqual(m.StorageLogEntry.objects.count(), 2)
+        storage_device = m.StorageDevice.objects.first()
+        self.assertEqual(storage_device.type, "NFC")
+        self.assertEqual(storage_device.org_unit_id, 1)
+        self.assertEqual(storage_device.entity, entity)
+
+        reset_log = m.StorageLogEntry.objects.get(operation_type="RESET")
+        self.assertEqual(reset_log.org_unit_id, 1)
+        self.assertIsNone(reset_log.entity)
+
+        write_log = m.StorageLogEntry.objects.get(operation_type="WRITE_PROFILE")
+        self.assertEqual(write_log.org_unit_id, 1)
+        self.assertEqual(write_log.entity, entity)
+        self.assertEqual(list(write_log.instances.all()), [instance])

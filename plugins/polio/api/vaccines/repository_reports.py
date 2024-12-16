@@ -107,18 +107,17 @@ class VaccineRepositoryReportsViewSet(GenericViewSet, ListModelMixin):
 
     def get_queryset(self):
         """Get the queryset for VaccineStock objects."""
-        base_qs = (
-            VaccineStock.objects.select_related(
-                "country",
-            )
-            .filter(
-                account=self.request.user.iaso_profile.account,
-            )
-            .prefetch_related(
-                "incidentreport_set",
-                "destructionreport_set",
-            )
+
+        base_qs = VaccineStock.objects.select_related(
+            "country",
+        ).prefetch_related(
+            "incidentreport_set",
+            "destructionreport_set",
         )
+
+        if self.request.user and self.request.user.is_authenticated:
+            base_qs = base_qs.filter(account=self.request.user.iaso_profile.account)
+
         return base_qs
 
     @swagger_auto_schema(

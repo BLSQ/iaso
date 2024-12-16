@@ -463,8 +463,11 @@ class DifferTestCase(TestCase):
             country_diff_comparisons[5],
             {
                 "field": "group:group-id:Group B",
-                "before": [{"id": "group-id", "name": "Group B"}, {"id": "group-id", "name": "Group C"}],
-                "after": [{"id": "group-id", "name": "Group A"}],
+                "before": [
+                    {"id": "group-id", "name": "Group B", "iaso_id": self.group_b.pk},
+                    {"id": "group-id", "name": "Group C", "iaso_id": self.group_c.pk},
+                ],
+                "after": [{"id": "group-id", "name": "Group A", "iaso_id": self.group_a.pk}],
                 "status": "modified",
                 "distance": None,
             },
@@ -473,8 +476,11 @@ class DifferTestCase(TestCase):
             country_diff_comparisons[6],
             {
                 "field": "group:group-id:Group C",
-                "before": [{"id": "group-id", "name": "Group B"}, {"id": "group-id", "name": "Group C"}],
-                "after": [{"id": "group-id", "name": "Group A"}],
+                "before": [
+                    {"id": "group-id", "name": "Group B", "iaso_id": self.group_b.pk},
+                    {"id": "group-id", "name": "Group C", "iaso_id": self.group_c.pk},
+                ],
+                "after": [{"id": "group-id", "name": "Group A", "iaso_id": self.group_a.pk}],
                 "status": "modified",
                 "distance": None,
             },

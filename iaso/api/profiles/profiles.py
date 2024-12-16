@@ -1,5 +1,5 @@
 import copy
-from typing import Any, List, Optional, Union, Set
+from typing import Any, List, Optional, Set, Union
 
 from django.conf import settings
 from django.contrib.auth import login, models, update_session_auth_hash
@@ -28,7 +28,8 @@ from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
-from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
+from iaso.models import (OrgUnit, OrgUnitType, Profile, Project, TenantUser,
+                         UserRole)
 from iaso.utils import is_mobile_request
 from iaso.utils.module_permissions import account_module_permissions
 
@@ -232,9 +233,9 @@ class ProfilesViewSet(viewsets.ViewSet):
                 account_user = request.user.tenant_users.first().account_user
                 account_user.backend = "django.contrib.auth.backends.ModelBackend"
                 login(request, account_user)
-
+            queryset = self.get_queryset()
             try:
-                profile = request.user.iaso_profile
+                profile = queryset.get(user=request.user)
                 profile_dict = profile.as_dict()
                 return Response(profile_dict)
             except Profile.DoesNotExist:

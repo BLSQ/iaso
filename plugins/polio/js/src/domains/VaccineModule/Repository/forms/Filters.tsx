@@ -125,6 +125,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                     onChange={(_key, value) => {
                         setFileType(value);
                     }}
+                    clearable={false}
                     value={fileType}
                     type="select"
                     options={fileTypes}

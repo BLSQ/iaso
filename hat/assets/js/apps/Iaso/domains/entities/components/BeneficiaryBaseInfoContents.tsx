@@ -1,14 +1,18 @@
 /* eslint-disable react/require-default-props */
 import { Box, Table, TableBody } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent } from 'react';
 import { commonStyles } from 'bluesquare-components';
-import { Field } from '../types/fields';
+import React, { FunctionComponent } from 'react';
 import { PaperTableRow } from '../../../components/tables/PaperTableRow';
+import { Field } from '../types/fields';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    infoPaperBox: { minHeight: '100px' },
+    infoPaperBox: {
+        minHeight: '100px',
+        // @ts-ignore
+        borderTop: `1px solid ${theme.palette.ligthGray.border}`,
+    },
 }));
 
 type Props = {
@@ -29,6 +33,7 @@ export const BeneficiaryBaseInfoContents: FunctionComponent<Props> = ({
                             label={field.label}
                             value={field.value}
                             key={field.key}
+                            withoutPadding={field.type === 'geopoint'}
                         />
                     ))}
                 </TableBody>

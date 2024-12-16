@@ -1,6 +1,6 @@
 """API endpoints and serializers for vaccine repository management."""
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.db.models import Max, Min, OuterRef, Subquery
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -9,11 +9,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from django.db.models import OuterRef, Subquery, Q, Value, Case, When, CharField, Exists
+from django.db.models import OuterRef, Subquery, Q, Case, When, CharField, Exists
 
 from iaso.api.common import Paginator
 from plugins.polio.models import (
-    VACCINES,
     CampaignType,
     OutgoingStockMovement,
     Round,
@@ -62,10 +61,12 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
             if file_type == "VRF":
                 queryset = queryset.filter(
                     campaign__vaccinerequestform__isnull=False,
+                    campaign__vaccinerequestform__deleted_at__isnull=True,
                 )
             elif file_type == "PRE_ALERT":
                 queryset = queryset.filter(
                     campaign__vaccinerequestform__isnull=False,
+                    campaign__vaccinerequestform__deleted_at__isnull=True,
                     campaign__vaccinerequestform__vaccineprealert__isnull=False,
                 ).distinct("id")
             elif file_type == "FORM_A":
@@ -77,7 +78,9 @@ class VaccineReportingFilterBackend(filters.BaseFilterBackend):
         vrf_type = request.query_params.get("vrf_type", None)
         if vrf_type:
             queryset = queryset.filter(
-                campaign__vaccinerequestform__isnull=False, campaign__vaccinerequestform__vrf_type=vrf_type
+                campaign__vaccinerequestform__isnull=False,
+                campaign__vaccinerequestform__vrf_type=vrf_type,
+                campaign__vaccinerequestform__deleted_at__isnull=True,
             )
 
         return queryset.distinct()
@@ -150,7 +153,13 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
     serializer_class = VaccineRepositorySerializer
     pagination_class = Paginator
     filter_backends = [OrderingFilter, SearchFilter, VaccineReportingFilterBackend]
-    ordering_fields = ["campaign__country__name", "campaign__obr_name", "started_at", "vaccine_name", "number"]
+    ordering_fields = [
+        "campaign__country__name",
+        "campaign__obr_name",
+        "started_at",
+        "vaccine_name",
+        "number",
+    ]
     ordering = ["-started_at"]
     search_fields = ["campaign__country__name", "campaign__obr_name"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -303,6 +312,7 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
         forma_subquery = OutgoingStockMovement.objects.filter(
             vaccine_stock__vaccine=OuterRef("vaccine_name"), round=OuterRef("id")
         )
-        test_qs = rounds_queryset.filter(Exists(forma_subquery))
+
         rounds_queryset = rounds_queryset.filter(Q(Exists(vrf_subquery)) | Q(Exists(forma_subquery)))
+
         return rounds_queryset

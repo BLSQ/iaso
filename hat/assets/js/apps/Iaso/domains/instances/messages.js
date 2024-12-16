@@ -202,6 +202,24 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Export requests',
         id: 'iaso.label.exportRequests',
     },
+    pushGpsToOrgUnits: {
+        defaultMessage: 'Push GPS from submissions to Org units',
+        id: 'iaso.label.pushGpsToOrgUnits',
+    },
+    pushGpsWarningMessage: {
+        defaultMessage:
+            'You are about to push the locations of {submissionCount} instances to {orgUnitCount} OrgUnits',
+        id: 'iaso.instance.pushGpsWarningMessage',
+    },
+
+    launch: {
+        id: 'iaso.label.launch',
+        defaultMessage: 'Launch',
+    },
+    goToCurrentTask: {
+        id: 'iaso.label.goToCurrentTask',
+        defaultMessage: 'Launch and show task',
+    },
     compare: {
         defaultMessage: 'Compare',
         id: 'iaso.label.compare',

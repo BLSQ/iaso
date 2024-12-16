@@ -211,7 +211,24 @@ const MESSAGES = defineMessages({
             'You are about to push the locations of {submissionCount} instances to {orgUnitCount} OrgUnits',
         id: 'iaso.instance.pushGpsWarningMessage',
     },
-
+    noGpsForSomeInstaces: {
+        defaultMessage:
+            "Some instances don't have locations. Nothing will be applied for those OrgUnits.",
+        id: 'iaso.instance.noGpsForSomeInstaces',
+    },
+    someOrgUnitsHasAlreadyGps: {
+        defaultMessage:
+            'Some OrgUnits already have GPS coordinates. Do you want to proceed and overwrite them?',
+        id: 'iaso.instance.someOrgUnitsHasAlreadyGps',
+    },
+    seeAll: {
+        defaultMessage: 'See all',
+        id: 'iaso.label.seeAll',
+    },
+    approve: {
+        defaultMessage: 'Approve',
+        id: 'iaso.label.approve',
+    },
     launch: {
         id: 'iaso.label.launch',
         defaultMessage: 'Launch',

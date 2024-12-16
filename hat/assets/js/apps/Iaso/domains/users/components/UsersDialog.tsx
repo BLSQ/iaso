@@ -75,9 +75,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
     const [hasNoOrgUnitManagementWrite, setHasNoOrgUnitManagementWrite] =
-        useState<boolean>(
-            !user.permissions.value.includes(Permissions.ORG_UNITS),
-        );
+        useState<boolean>(false);
     const saveUser = useCallback(() => {
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
@@ -158,20 +156,25 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         return '';
     }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
 
+    const allUserRolesPermissions = useMemo(
+        () =>
+            user.user_roles_permissions.value.flatMap(role => role.permissions),
+        [user.user_roles_permissions.value],
+    );
+
     const allUserUserRolesPermissions = useMemo(() => {
         const allUserPermissions = user.user_permissions.value;
-        const allUserRolesPermissions =
-            user.user_roles_permissions.value.flatMap(role => role.permissions);
+
         return [
             ...new Set([...allUserPermissions, ...allUserRolesPermissions]),
         ];
-    }, [user.user_permissions.value, user.user_roles_permissions.value]);
+    }, [allUserRolesPermissions, user.user_permissions.value]);
 
     useEffect(() => {
         setHasNoOrgUnitManagementWrite(
             !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
         );
-    }, [allUserUserRolesPermissions]);
+    }, [allUserRolesPermissions.length, allUserUserRolesPermissions]);
     return (
         <>
             <WarningModal
@@ -270,11 +273,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             currentUser={user}
                             handleChange={permissions => {
                                 setFieldValue('user_permissions', permissions);
-                                setHasNoOrgUnitManagementWrite(
-                                    !permissions.includes(
-                                        Permissions.ORG_UNITS,
-                                    ),
-                                );
                             }}
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)

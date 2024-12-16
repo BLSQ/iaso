@@ -28,8 +28,7 @@ from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
-from iaso.models import (OrgUnit, OrgUnitType, Profile, Project, TenantUser,
-                         UserRole)
+from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
 from iaso.utils import is_mobile_request
 from iaso.utils.module_permissions import account_module_permissions
 

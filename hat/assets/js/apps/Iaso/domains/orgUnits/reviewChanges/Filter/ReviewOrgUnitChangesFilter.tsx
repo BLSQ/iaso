@@ -191,6 +191,8 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 setSelectedVersionId(newValue.toString());
                 handleChange('source_version_id', newValue);
             }
+            // Reset the group filter state
+            handleChange('groups', []);
             // Reset the parent_id and groups params
             delete newParams.parent_id;
             delete newParams.groups;

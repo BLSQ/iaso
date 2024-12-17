@@ -502,7 +502,6 @@ export const useSelectionActions = (
                 <PushGpsDialogComponent
                     // @ts-ignore need to refactor this component to TS
                     selection={newSelection}
-                    getFilters={() => filters}
                     renderTrigger={openDialog => {
                         const iconDisabled = newSelection.selectCount === 0;
                         const iconProps = {

@@ -40,7 +40,7 @@ export const ScopeMapLegend: FunctionComponent<Props> = ({
     return (
         <MapLegend
             titleMessage={MESSAGES.vaccine}
-            width={175}
+            width={190}
             content={
                 <FormControl id="vaccine">
                     <List>
@@ -72,7 +72,7 @@ export const ScopeMapLegend: FunctionComponent<Props> = ({
                                         {vaccine.value}
                                     </span>
 
-                                    <span>
+                                    <span className={classes.vaccineCount}>
                                         {`: ${
                                             vaccineCount[vaccine.value] ?? 0
                                         } ${formatMessage(MESSAGES.districts)}`}

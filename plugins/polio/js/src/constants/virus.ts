@@ -34,6 +34,10 @@ const polioViruses = [
     },
     {
         value: 'PV1 & cVDPV2',
+        label: 'PV1 & cVDPV2',
+    },
+    {
+        value: 'cVDPV1 & cVDPV2',
         label: 'cVDPV1 & cVDPV2',
     },
 ];
@@ -62,7 +66,7 @@ const polioVaccines: PolioVaccine[] = [
     {
         value: 'nOPV & bOPV',
         label: 'nOPV & bOPV',
-        color: '#00ff00',
+        color: '#800080',
     },
 ];
 

@@ -7,7 +7,7 @@ import MESSAGES from '../../../../constants/messages';
 import { polioVaccines, useMapLegend } from '../../../../constants/virus';
 
 // eslint-disable-next-line prettier/prettier
-type Vaccine = typeof polioVaccines[number];
+type Vaccine = (typeof polioVaccines)[number];
 
 export const VaccinesLegend: FunctionComponent = () => {
     const classes = useStyles();

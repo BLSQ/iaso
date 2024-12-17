@@ -4,7 +4,7 @@ import math
 import os
 from collections import defaultdict
 from datetime import date
-from typing import Any, Tuple, Union, Optional
+from typing import Any, Optional, Tuple, Union
 from uuid import uuid4
 
 import django.db.models.manager
@@ -43,12 +43,14 @@ VIRUSES = [
     ("cVDPV2", _("cVDPV2")),
     ("WPV1", _("WPV1")),
     ("PV1 & cVDPV2", _("PV1 & cVDPV2")),
+    ("cVDPV1 & cVDPV2", _("cVDPV1 & cVDPV2")),
 ]
 
 VACCINES = [
     ("mOPV2", _("mOPV2")),
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
+    ("nOPV & bOPV", _("nOPV & bOPV")),
 ]
 
 DOSES_PER_VIAL = {
@@ -134,7 +136,7 @@ class RoundScope(models.Model):
     )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="scopes")
 
-    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
+    vaccine = models.CharField(max_length=11, choices=VACCINES, blank=True)
 
     class Meta:
         unique_together = [("round", "vaccine")]
@@ -152,7 +154,7 @@ class CampaignScope(models.Model):
         Group, on_delete=models.CASCADE, related_name="campaignScope", default=make_group_campaign_scope
     )
     campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE, related_name="scopes")
-    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
+    vaccine = models.CharField(max_length=11, choices=VACCINES, blank=True)
 
     class Meta:
         unique_together = [("campaign", "vaccine")]
@@ -265,7 +267,7 @@ class SubActivityScope(models.Model):
     )
     subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, related_name="scopes")
 
-    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
+    vaccine = models.CharField(max_length=11, choices=VACCINES, blank=True)
 
 
 AGE_UNITS = [
@@ -525,7 +527,7 @@ class Campaign(SoftDeletableModel):
         verbose_name=_("PV2 Notification"),
     )
 
-    virus = models.CharField(max_length=12, choices=VIRUSES, null=True, blank=True)
+    virus = models.CharField(max_length=15, choices=VIRUSES, null=True, blank=True)
 
     # Detection.
     detection_status = models.CharField(default="PENDING", max_length=10, choices=STATUS)
@@ -1037,7 +1039,7 @@ class VaccineRequestFormType(models.TextChoices):
 
 class VaccineRequestForm(SoftDeletableModel):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
-    vaccine_type = models.CharField(max_length=5, choices=VACCINES)
+    vaccine_type = models.CharField(max_length=11, choices=VACCINES)
     rounds = models.ManyToManyField(Round)
     date_vrf_signature = models.DateField(null=True, blank=True)
     date_vrf_reception = models.DateField(null=True, blank=True)
@@ -1163,7 +1165,7 @@ class VaccineStock(models.Model):
         related_name="vaccine_stocks",
         help_text="Unique (Country, Vaccine) pair",
     )
-    vaccine = models.CharField(max_length=5, choices=VACCINES)
+    vaccine = models.CharField(max_length=11, choices=VACCINES)
 
     class Meta:
         unique_together = ("country", "vaccine")

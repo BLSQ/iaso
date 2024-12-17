@@ -108,6 +108,7 @@ export type CheckBulkGpsPushResult = {
     result: string;
     warning_no_location?: number[];
     warning_overwrite?: number[];
+    error_ids?: number[];
 };
 export type MimeType =
     // Text

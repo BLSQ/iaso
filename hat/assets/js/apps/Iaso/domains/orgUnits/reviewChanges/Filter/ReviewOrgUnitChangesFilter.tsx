@@ -3,6 +3,7 @@ import React, {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
@@ -83,9 +84,11 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 : undefined,
         [dataSources, newParams.source_version_id],
     );
+
     const [dataSource, setDataSource] = useState<string>(
         sourceParam || defaultSourceVersion.source.id.toString(),
     );
+
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
         useGetOrgUnitTypesDropdownOptions();
@@ -185,15 +188,12 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 setSelectedVersionId(newValue.toString());
                 handleChange('source_version_id', newValue);
             }
-            filters.groups = [];
+
+            delete newParams.parent_id;
+            delete newParams.groups;
+            redirectToReplace(baseUrl, newParams);
         },
-        [
-            dataSources,
-            filters,
-            handleChange,
-            setDataSource,
-            setSelectedVersionId,
-        ],
+        [dataSources, handleChange, newParams, redirectToReplace],
     );
 
     const getVersionLabel = useGetVersionLabel(dataSources);
@@ -212,6 +212,13 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 })) ?? []
         );
     }, [dataSource, dataSources, getVersionLabel]);
+
+    const sourceTreeviewResetControl = useRef(selectedVersionId);
+    useEffect(() => {
+        if (sourceTreeviewResetControl.current !== selectedVersionId) {
+            sourceTreeviewResetControl.current = selectedVersionId;
+        }
+    }, [selectedVersionId]);
 
     return (
         <Grid container spacing={2}>
@@ -316,6 +323,10 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                             handleChange('parent_id', orgUnit?.id);
                         }}
                         initialSelection={initialOrgUnit}
+                        resetTrigger={
+                            sourceTreeviewResetControl.current !==
+                            selectedVersionId
+                        }
                     />
                 </Box>
                 <InputComponent

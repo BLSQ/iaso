@@ -102,19 +102,10 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
     const { formatMessage } = useSafeIntl();
 
-    const {
-        data: groupOptions,
-        isLoading: isLoadingGroups,
-        refetch: refetchGroups,
-    } = useGetGroupDropdown(
-        selectedVersionId ? { defaultVersion: selectedVersionId } : {},
-    );
-
-    useEffect(() => {
-        if (selectedVersionId) {
-            refetchGroups();
-        }
-    }, [selectedVersionId, refetchGroups]);
+    const { data: groupOptions, isLoading: isLoadingGroups } =
+        useGetGroupDropdown(
+            selectedVersionId ? { defaultVersion: selectedVersionId } : {},
+        );
 
     useEffect(() => {
         const updatedDataSource = dataSources?.find(

@@ -1,5 +1,5 @@
 import copy
-from typing import Any, List, Optional, Union, Set
+from typing import Any, List, Optional, Set, Union
 
 from django.conf import settings
 from django.contrib.auth import login, models, update_session_auth_hash
@@ -232,9 +232,9 @@ class ProfilesViewSet(viewsets.ViewSet):
                 account_user = request.user.tenant_users.first().account_user
                 account_user.backend = "django.contrib.auth.backends.ModelBackend"
                 login(request, account_user)
-
+            queryset = self.get_queryset()
             try:
-                profile = request.user.iaso_profile
+                profile = queryset.get(user=request.user)
                 profile_dict = profile.as_dict()
                 return Response(profile_dict)
             except Profile.DoesNotExist:

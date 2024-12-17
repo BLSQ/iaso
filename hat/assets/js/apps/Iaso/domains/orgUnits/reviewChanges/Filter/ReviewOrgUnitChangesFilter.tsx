@@ -6,7 +6,7 @@ import React, {
     useState,
 } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
 import { FilterButton } from '../../../../components/FilterButton';
 import { useFilterState } from '../../../../hooks/useFilterState';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -33,10 +33,6 @@ import { useGetVersionLabel } from '../../hooks/useGetVersionLabel';
 const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = {
     params: ApproveOrgUnitParams;
-    selectedVersionId: string;
-    setSelectedVersionId: (id: string) => void;
-    dataSource: string;
-    setDataSource: (id: string) => void;
 };
 
 const styles = {
@@ -51,12 +47,23 @@ const styles = {
 
 export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
-    selectedVersionId,
-    setSelectedVersionId,
-    dataSource,
-    setDataSource,
 }) => {
     const defaultSourceVersion = useDefaultSourceVersion();
+    const [selectedVersionId, setSelectedVersionId] = useState<string>(
+        defaultSourceVersion.version.id.toString(),
+    );
+    const [dataSource, setDataSource] = useState<string>(
+        defaultSourceVersion.source.id.toString(),
+    );
+
+    const redirectToReplace = useRedirectToReplace();
+    const newParams = {
+        ...params,
+    };
+    if (!newParams.source_version_id) {
+        newParams.source_version_id = selectedVersionId;
+        redirectToReplace(baseUrl, newParams);
+    }
 
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });

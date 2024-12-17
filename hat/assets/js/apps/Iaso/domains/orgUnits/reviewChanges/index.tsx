@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, getTableUrl, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { ReviewOrgUnitChangesFilter } from './Filter/ReviewOrgUnitChangesFilter';
@@ -11,7 +11,6 @@ import MESSAGES from './messages';
 import { ApproveOrgUnitParams } from './types';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { baseUrls } from '../../../constants/urls';
-import { useDefaultSourceVersion } from '../../dataSources/utils';
 /*
 # Org Unit Change Request
 
@@ -98,26 +97,12 @@ export const ReviewOrgUnitChanges: FunctionComponent = () => {
     );
 
     const csv_url = getTableUrl(endPointUrl, csv_params);
-    const defaultSourceVersion = useDefaultSourceVersion();
-    const [selectedVersionId, setSelectedVersionId] = useState<string>(
-        defaultSourceVersion.version.id.toString(),
-    );
-    const [dataSource, setDataSource] = useState<string>(
-        defaultSourceVersion.source.id.toString(),
-    );
 
-    params.source_version_id = selectedVersionId;
     return (
         <div>
             <TopBar title={formatMessage(MESSAGES.reviewChangeProposals)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <ReviewOrgUnitChangesFilter
-                    params={params}
-                    selectedVersionId={selectedVersionId}
-                    setSelectedVersionId={setSelectedVersionId}
-                    dataSource={dataSource}
-                    setDataSource={setDataSource}
-                />
+                <ReviewOrgUnitChangesFilter params={params} />
                 <Box mb={2} display="flex" justifyContent="flex-end">
                     <DownloadButtonsComponent csvUrl={csv_url} />
                 </Box>

@@ -155,7 +155,7 @@ export const useStyles = makeStyles(() => ({
         fontSize: 12,
         position: 'relative',
         width: '160px',
-        height: theme.spacing(2),
+        height: theme.spacing(3),
         paddingTop: theme.spacing(1),
         paddingBottom: theme.spacing(1),
         display: 'inline-flex',

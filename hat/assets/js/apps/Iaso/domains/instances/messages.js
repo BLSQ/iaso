@@ -221,6 +221,10 @@ const MESSAGES = defineMessages({
             'Some OrgUnits already have GPS coordinates. Do you want to proceed and overwrite them?',
         id: 'iaso.instance.someOrgUnitsHasAlreadyGps',
     },
+    multipleInstancesOneOrgUnitWarningMessage: {
+        defaultMessage: 'Multiple submissions are using the same org unit',
+        id: 'iaso.instance.multipleInstancesOneOrgUnitWarningMessage',
+    },
     seeAll: {
         defaultMessage: 'See all',
         id: 'iaso.label.seeAll',

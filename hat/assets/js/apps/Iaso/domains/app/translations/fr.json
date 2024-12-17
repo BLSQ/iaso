@@ -385,6 +385,7 @@
     "iaso.instance.logs.versionB": "Version B",
     "iaso.instance.missingFile": "Aucun fichier trouvé",
     "iaso.instance.missingGeolocation": "Aucune soumission trouvée avec une localisation",
+    "iaso.instance.multipleInstancesOneOrgUnitWarningMessage": "Plusieurs soumissions utilisent la même unité d'org.",
     "iaso.instance.noGpsForSomeInstaces": "Certaines soumissions n'ont pas de GPS. Rien ne sera appliqué pour ces unités d'organisation.",
     "iaso.instance.NoLocksHistory": "Il n'y a pas d'historique",
     "iaso.instance.org_unit": "Unités d'organisation",

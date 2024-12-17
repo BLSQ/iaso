@@ -49,9 +49,9 @@ const styles = {
 export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
-    const newParams = {
-        ...params,
-    };
+    const redirectToReplace = useRedirectToReplace();
+    const newParams = useMemo(() => params, [params]);
+
     const defaultSourceVersion = useDefaultSourceVersion();
     const [selectedVersionId, setSelectedVersionId] = useState<string>(
         newParams.source_version_id
@@ -59,18 +59,32 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             : defaultSourceVersion.version.id.toString(),
     );
 
-    const redirectToReplace = useRedirectToReplace();
-
-    if (!newParams.source_version_id) {
-        newParams.source_version_id = selectedVersionId;
-        redirectToReplace(baseUrl, newParams);
-    }
-
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources(true);
+    const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
+    const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
+        useGetOrgUnitTypesDropdownOptions();
+    const { data: forms, isFetching: isLoadingForms } = useGetForms();
+    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
+    const { data: userRoles, isFetching: isFetchingUserRoles } =
+        useGetUserRolesDropDown();
 
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
+    const { data: paymentStatuses, isFetching: isFetchingPaymentStatuses } =
+        usePaymentStatusOptions();
+
+    // Redirect to default version
+    useEffect(() => {
+        if (!newParams.source_version_id) {
+            newParams.source_version_id = selectedVersionId;
+            redirectToReplace(baseUrl, newParams);
+        }
+    }, [newParams, selectedVersionId, redirectToReplace]);
+
+    // Get the source when the source_version_id exists
     const sourceParam = useMemo(
         () =>
             newParams.source_version_id
@@ -88,20 +102,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const [dataSource, setDataSource] = useState<string>(
         sourceParam || defaultSourceVersion.source.id.toString(),
     );
-
-    const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
-    const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
-        useGetOrgUnitTypesDropdownOptions();
-    const { data: forms, isFetching: isLoadingForms } = useGetForms();
-    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
-    const { data: userRoles, isFetching: isFetchingUserRoles } =
-        useGetUserRolesDropDown();
-
-    const { data: allProjects, isFetching: isFetchingProjects } =
-        useGetProjectsDropdownOptions();
-    const { data: paymentStatuses, isFetching: isFetchingPaymentStatuses } =
-        usePaymentStatusOptions();
-
     const formOptions = useMemo(
         () =>
             forms?.map(form => ({
@@ -110,6 +110,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             })) || [],
         [forms],
     );
+    // Get the initial data source id
     const initialDataSource = useMemo(
         () =>
             dataSources?.find(
@@ -127,6 +128,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             selectedVersionId ? { defaultVersion: selectedVersionId } : {},
         );
 
+    // Change the selected dataSource
     useEffect(() => {
         const updatedDataSource =
             sourceParam ||
@@ -170,6 +172,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         [handleChange],
     );
 
+    // handle dataSource and sourceVersion change
     const handleDataSourceVersionChange = useCallback(
         (key, newValue) => {
             if (key === 'source') {
@@ -188,7 +191,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 setSelectedVersionId(newValue.toString());
                 handleChange('source_version_id', newValue);
             }
-
+            // Reset the parent_id and groups params
             delete newParams.parent_id;
             delete newParams.groups;
             redirectToReplace(baseUrl, newParams);
@@ -197,7 +200,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     );
 
     const getVersionLabel = useGetVersionLabel(dataSources);
-
+    // Get the versions dropdown options based on the selected dataSource
     const versionsDropDown = useMemo(() => {
         if (!dataSources || !dataSource) return [];
         return (
@@ -212,7 +215,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 })) ?? []
         );
     }, [dataSource, dataSources, getVersionLabel]);
-
+    // Reset the OrgUnitTreeviewModal when the sourceVersion changed
     const sourceTreeviewResetControl = useRef(selectedVersionId);
     useEffect(() => {
         if (sourceTreeviewResetControl.current !== selectedVersionId) {

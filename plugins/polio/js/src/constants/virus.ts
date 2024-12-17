@@ -46,7 +46,10 @@ export type PolioVaccine = {
     value: Vaccine | 'other';
     label: string;
     color: string;
+    fillColor?: string;
 };
+export const HASHED_MAP_PATTERN_N_OPV2_B_OPV = 'colorStripes-nOPV2&bOPV';
+
 const polioVaccines: PolioVaccine[] = [
     {
         value: 'nOPV2',
@@ -64,9 +67,10 @@ const polioVaccines: PolioVaccine[] = [
         color: '#ffff00',
     },
     {
-        value: 'nOPV & bOPV',
-        label: 'nOPV & bOPV',
+        value: 'nOPV2 & bOPV',
+        label: 'nOPV2 & bOPV',
         color: '#800080',
+        fillColor: `url(#${HASHED_MAP_PATTERN_N_OPV2_B_OPV})`,
     },
 ];
 

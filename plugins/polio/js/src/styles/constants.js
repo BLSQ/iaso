@@ -5,7 +5,6 @@ export const POOR_COLOR = 'red';
 export const WARNING_COLOR = '#FFD835';
 export const NO_DATA_COLOR = 'grey';
 export const NO_DATA_COLOR_2 = 'lightgrey';
-
 // Scope map values
 export const selectedPathOptions = {
     color: 'lime',
@@ -13,6 +12,7 @@ export const selectedPathOptions = {
     opacity: '1',
     zIndex: '1',
     fillOpacity: '0.5',
+    fillColor: 'transparent',
 };
 export const unselectedPathOptions = {
     color: 'gray',

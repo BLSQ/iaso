@@ -79,9 +79,6 @@ export const MapScope: FunctionComponent<Props> = ({
                     ...selectedPathOptions,
                     color: vaccine?.color || OTHER_VACCINE_COLOR,
                 };
-                if (vaccine?.fillColor) {
-                    styles.fillColor = vaccine.fillColor;
-                }
                 return styles;
             }
             if (values.org_unit?.id === shape.id) return initialDistrict;

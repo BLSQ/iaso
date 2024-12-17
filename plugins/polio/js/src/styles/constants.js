@@ -12,7 +12,6 @@ export const selectedPathOptions = {
     opacity: '1',
     zIndex: '1',
     fillOpacity: '0.5',
-    fillColor: 'transparent',
 };
 export const unselectedPathOptions = {
     color: 'gray',

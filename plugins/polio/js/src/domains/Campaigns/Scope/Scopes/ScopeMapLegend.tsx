@@ -36,7 +36,6 @@ export const ScopeMapLegend: FunctionComponent<Props> = ({
             ),
         [scopes],
     );
-
     return (
         <MapLegend
             titleMessage={MESSAGES.vaccine}
@@ -55,9 +54,17 @@ export const ScopeMapLegend: FunctionComponent<Props> = ({
                             >
                                 <Box className={classes.vaccinesSelect}>
                                     <span
-                                        style={{
-                                            backgroundColor: vaccine.color,
-                                        }}
+                                        style={
+                                            vaccine.legendColor
+                                                ? {
+                                                      background:
+                                                          vaccine.legendColor,
+                                                  }
+                                                : {
+                                                      backgroundColor:
+                                                          vaccine.color,
+                                                  }
+                                        }
                                         className={classes.roundColor}
                                     >
                                         {selectedVaccine === vaccine.value && (

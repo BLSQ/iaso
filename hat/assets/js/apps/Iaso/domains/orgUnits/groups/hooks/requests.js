@@ -17,6 +17,16 @@ export const useGetGroups = params => {
     if (params.search) {
         newParams.search = params.search;
     }
+    if (params.projectId) {
+        newParams.projectId = params.projectId;
+        if (params.dataSource) {
+            newParams.dataSource = params.dataSource;
+            if (params.version) {
+                newParams.version = params.version;
+            }
+        }
+    }
+
     const searchParams = new URLSearchParams(newParams);
     return useSnackQuery(
         ['groups', newParams],

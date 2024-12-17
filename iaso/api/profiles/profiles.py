@@ -232,8 +232,8 @@ class ProfilesViewSet(viewsets.ViewSet):
                 account_user = request.user.tenant_users.first().account_user
                 account_user.backend = "django.contrib.auth.backends.ModelBackend"
                 login(request, account_user)
-            queryset = self.get_queryset()
             try:
+                queryset = self.get_queryset()
                 profile = queryset.get(user=request.user)
                 profile_dict = profile.as_dict()
                 return Response(profile_dict)

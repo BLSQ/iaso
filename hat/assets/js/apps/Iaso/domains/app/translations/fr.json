@@ -953,6 +953,8 @@
     "iaso.pages.errors.text": "Le contenu est requis",
     "iaso.pages.errors.url": "L'url est un champ requis",
     "iaso.pages.errors.urlNotValid": "L'url n'est pas valide",
+    "iaso.pages.superset": "Superset",
+    "iaso.pages.superset_dashboard_id": "Identifiant du tableau de bord",
     "iaso.pages.title": "Liens intégrés",
     "iaso.payments.createLot": "Créer un nouveau lot de paiements",
     "iaso.payments.download_payments": "Télécharger les paiements",

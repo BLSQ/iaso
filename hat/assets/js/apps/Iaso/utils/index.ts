@@ -1,6 +1,13 @@
+import { textPlaceholder } from 'bluesquare-components';
 import { createContext } from 'react';
 import pluginsConfigs from '../../../../../../plugins';
 import { Plugin } from '../domains/app/types';
+import {
+    Beneficiary,
+    FileContent,
+} from '../domains/entities/types/beneficiary';
+import { FormDescriptor } from '../domains/forms/types/forms';
+import { formatLabel } from '../domains/instances/utils';
 
 export const getYears = (
     yearsCount: number,
@@ -87,4 +94,29 @@ export const findDescriptorInChildren = (field: any, descriptor: any): any => {
         if (child.children) return findDescriptorInChildren(field, child);
         return undefined;
     }, null);
+};
+
+export const getDescriptorValue = (
+    fieldKey: string,
+    fileContent: FileContent | Beneficiary,
+    formDescriptors?: FormDescriptor[],
+): string => {
+    let value = textPlaceholder;
+    if (fileContent[fieldKey]) {
+        formDescriptors?.forEach(formDescriptor => {
+            const descriptor = findDescriptorInChildren(
+                fieldKey,
+                formDescriptor,
+            );
+            if (descriptor?.children) {
+                const descriptorValue = descriptor.children.find(
+                    child => fileContent[fieldKey] === child.name,
+                );
+                if (descriptorValue) {
+                    value = formatLabel(descriptorValue);
+                }
+            }
+        });
+    }
+    return value;
 };

@@ -50,4 +50,5 @@ export interface PaginatedOrgUnitTypes extends Pagination {
 export type OrgUnitTypesParams = UrlParams & {
     accountId?: string;
     search?: string;
+    with_units_count?: boolean;
 };

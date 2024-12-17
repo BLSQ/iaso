@@ -6,8 +6,10 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+
 if typing.TYPE_CHECKING:
     from iaso.models import OrgUnit, OrgUnitType
+
 
 logger = logging.getLogger(__name__)
 
@@ -180,6 +182,10 @@ class DataSourceSynchronization(models.Model):
 
         diff = Differ().diff()
         json_diff = Dumper().as_json(diff)
+
+    Fields that can be synchronized:
+
+        ["name", "parent", "opening_date", "closed_date", "groups"]
 
     Basic business use case:
 

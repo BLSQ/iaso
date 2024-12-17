@@ -539,7 +539,7 @@ describe('Organisations changes', () => {
                     'have.attr',
                     'href',
                     // `/api/orgunits/changes/export_to_csv/?&groups=2,3&status=new`,
-                    `/api/orgunits/changes/export_to_csv/?&status=new`,
+                    `/api/orgunits/changes/export_to_csv/?&status=new&source_version_id=3`,
                 );
             });
         });

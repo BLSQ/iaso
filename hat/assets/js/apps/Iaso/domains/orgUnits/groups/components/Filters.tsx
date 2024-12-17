@@ -20,7 +20,7 @@ type Params = {
     search?: string;
     dataSource?: string;
     version?: string;
-    projectId?: string;
+    project_ids?: string;
     accountId: string;
 };
 
@@ -64,14 +64,18 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         useFilterState({ baseUrl, params, withPagination: true });
 
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
+
     const { data: projects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
+
     const { data: dataSources, isLoading: areSourcesLoading } =
         useGetDataSources(params);
+
     const { data: sourceVersions, isLoading: areSourceVersionsLoading } =
         useDataSourceVersions();
-    const [projectId, setProjectId] = useState<string | undefined>(
-        filters?.projectId
+
+    const [projectIds, setProjectIds] = useState<string | undefined>(
+        filters?.project_ids
     );
     const [dataSource, setDataSource] = useState<string | undefined>(
         filters?.dataSource
@@ -79,8 +83,8 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const [version, setVersion] = useState<string | undefined>(filters?.version);
 
     const dataSourceDropDown = useMemo(
-        () => dataSourceByProjectId(dataSources?.sources, filters?.projectId),
-        [dataSources, filters?.projectId]
+        () => dataSourceByProjectId(dataSources?.sources, filters?.project_ids),
+        [dataSources, filters?.project_ids]
     );
 
     const sourceVersionsDropDown = useMemo(
@@ -90,39 +94,47 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     const handleChangeSelect = useCallback(
         (key, newValue) => {
-            if (key === "projectId") {
-                setProjectId(newValue);
+            let value = newValue;
+            if (newValue === null) {
+                value = undefined
+            }
+            if (key === "project_ids") {
+                if (newValue === null) {
+                    filters.dataSource = undefined;
+                    filters.version = undefined;
+                }
+                setProjectIds(value);
                 setDataSource(undefined);
                 setVersion(undefined);
-                handleChange("version", undefined);
             } else {
                 if (key === "dataSource") {
-                    setDataSource(newValue);
-                    setVersion(undefined);
-                    handleChange("version", undefined);
+                    if (newValue === null) {
+                        filters.version = undefined;
+                        setVersion(undefined);
+                    }
+                    setDataSource(value);
                 } else {
                     if (key === "version") {
-                        setVersion(newValue);
+                        setVersion(value);
                     }
                 }
             }
-            handleChange(key, newValue);
+            handleChange(key, value);
         },
         [
             filters,
             filtersUpdated,
-            projectId,
+            projectIds,
             dataSource,
             version,
             handleChange,
             handleSearch,
-            setProjectId,
+            setProjectIds,
             setDataSource,
             setVersion,
         ]
     );
     const { formatMessage } = useSafeIntl();
-
 
     return (
         <Grid container spacing={2}>
@@ -140,9 +152,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Grid item xs={12} md={3}>
                 <InputComponent
-                    keyValue="projectId"
+                    keyValue="project_ids"
                     onChange={handleChangeSelect}
-                    value={projectId}
+                    value={projectIds}
                     type="select"
                     label={MESSAGES.projects}
                     options={projects}

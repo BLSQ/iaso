@@ -104,6 +104,11 @@ export interface PaginatedInstances extends Pagination {
     instances: Instance[];
 }
 
+export type CheckBulkGpsPushResult = {
+    result: string;
+    warning_no_location?: number[];
+    warning_overwrite?: number[];
+};
 export type MimeType =
     // Text
     | 'text/plain'

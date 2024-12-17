@@ -131,8 +131,7 @@ export const useSubActivityValidation = (): yup.ObjectSchema<any> => {
                     // @ts-ignore
                     .validateStartDate(formatMessage, 'lqas')
                     // lqas/im cannot start before the round/subactivity has ended
-                    .validateLqasImStartDate(formatMessage)
-                    .required(formatMessage(MESSAGES.fieldRequired)),
+                    .validateLqasImStartDate(formatMessage),
                 lqas_ended_at: yup
                     .date()
                     .typeError(formatMessage(MESSAGES.invalidDate))
@@ -140,8 +139,7 @@ export const useSubActivityValidation = (): yup.ObjectSchema<any> => {
                     // end should be after start
                     // end should not be after round end
                     // @ts-ignore
-                    .validateEndDate(formatMessage, 'lqas')
-                    .required(formatMessage(MESSAGES.fieldRequired)),
+                    .validateEndDate(formatMessage, 'lqas'),
                 im_started_at: yup
                     .date()
                     .typeError(formatMessage(MESSAGES.invalidDate))
@@ -151,8 +149,7 @@ export const useSubActivityValidation = (): yup.ObjectSchema<any> => {
                     // @ts-ignore
                     .validateStartDate(formatMessage, 'im')
                     // lqas/im cannot start before the round/subactivity has ended
-                    .validateLqasImStartDate(formatMessage)
-                    .required(formatMessage(MESSAGES.fieldRequired)),
+                    .validateLqasImStartDate(formatMessage),
                 im_ended_at: yup
                     .date()
                     .typeError(formatMessage(MESSAGES.invalidDate))
@@ -160,8 +157,7 @@ export const useSubActivityValidation = (): yup.ObjectSchema<any> => {
                     // end should be after start
                     // end should not be after round end
                     // @ts-ignore
-                    .validateEndDate(formatMessage, 'im')
-                    .required(formatMessage(MESSAGES.fieldRequired)),
+                    .validateEndDate(formatMessage, 'im'),
                 age_unit: yup.string().nullable(),
                 age_min: yup.number().nullable(),
                 age_max: yup.number().nullable(),

@@ -3,6 +3,7 @@ from rest_framework import routers
 # TOFIX: Still haven't understood the exact problem but this should be
 # the first import to avoid some 'BudgetProcess' errors in tests:
 # `AttributeError: 'str' object has no attribute '_meta'`
+from plugins.polio.api.dashboards.subactivities import SubActivityDashboardViewSet, SubActivityScopeDashboardViewSet
 from plugins.polio.api.dashboards.vaccine_stock_history import VaccineStockHistoryDashboardViewSet
 from plugins.polio.budget.api import BudgetProcessViewSet, BudgetStepViewSet, WorkflowViewSet
 
@@ -36,7 +37,8 @@ from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryVie
 from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizationViewSet
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 from plugins.polio.api.vaccines.supply_chain import VaccineRequestFormViewSet
-from plugins.polio.api.vaccines.repository import VaccineRepositoryViewSet
+from plugins.polio.api.vaccines.repository_forms import VaccineRepositoryFormsViewSet
+from plugins.polio.api.vaccines.repository_reports import VaccineRepositoryReportsViewSet
 from plugins.polio.api.vaccines.stock_management import (
     VaccineStockManagementViewSet,
     OutgoingStockMovementViewSet,
@@ -88,7 +90,11 @@ router.register(r"polio/tasks/refreshim/ohh", RefreshIMOutOfHouseholdDataViewset
 router.register(r"polio/tasks/refreshim/hh_ohh", RefreshIMAllDataViewset, basename="refreshimhhohh")
 router.register(r"polio/vaccine/request_forms", VaccineRequestFormViewSet, basename="vaccine_request_forms")
 router.register(r"polio/vaccine/vaccine_stock", VaccineStockManagementViewSet, basename="vaccine_stocks")
-router.register(r"polio/vaccine/repository", VaccineRepositoryViewSet, basename="vaccine_repository")
+router.register(r"polio/vaccine/repository", VaccineRepositoryFormsViewSet, basename="vaccine_repository")
+router.register(
+    r"polio/vaccine/repository_reports", VaccineRepositoryReportsViewSet, basename="vaccine_repository_reports"
+)
+
 router.register(
     r"polio/vaccine/stock/outgoing_stock_movement", OutgoingStockMovementViewSet, basename="outgoing_stock_movement"
 )
@@ -128,4 +134,14 @@ router.register(
     r"polio/dashboards/preparedness_sheets",
     SpreadSheetImportViewSet,
     basename="dashboard_preparedness_sheets",
+)
+router.register(
+    r"polio/dashboards/subactivities",
+    SubActivityDashboardViewSet,
+    basename="dashboard_subactivities",
+)
+router.register(
+    r"polio/dashboards/subactivityscopes",
+    SubActivityScopeDashboardViewSet,
+    basename="dashboard_subactivityscopes",
 )

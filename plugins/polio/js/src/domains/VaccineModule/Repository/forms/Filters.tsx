@@ -8,15 +8,15 @@ import React, {
     useState,
 } from 'react';
 import { FormattedMessage } from 'react-intl';
-import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { useGetGroupDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
-import MESSAGES from '../../../constants/messages';
-import { useGetCountries } from '../../../hooks/useGetCountries';
+import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import MESSAGES from '../../../../constants/messages';
+import { useGetCountries } from '../../../../hooks/useGetCountries';
 
-import { appId } from '../../../constants/app';
-import { useGetFileTypes } from './hooks/useGetFileTypes';
-import { VaccineRepositoryParams } from './types';
-import { defaultVaccineOptions } from '../SupplyChain/constants';
+import { appId } from '../../../../constants/app';
+import { defaultVaccineOptions } from '../../SupplyChain/constants';
+import { useGetFileTypes } from '../hooks/useGetFileTypes';
+import { VaccineRepositoryParams } from '../types';
 
 type Props = {
     params: VaccineRepositoryParams;
@@ -24,10 +24,7 @@ type Props = {
     redirectUrl: string;
 };
 
-export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
-    params,
-    redirectUrl,
-}) => {
+export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
     const redirectToReplace = useRedirectToReplace();
 
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -128,6 +125,7 @@ export const VaccineRepositoryFilters: FunctionComponent<Props> = ({
                     onChange={(_key, value) => {
                         setFileType(value);
                     }}
+                    clearable={false}
                     value={fileType}
                     type="select"
                     options={fileTypes}

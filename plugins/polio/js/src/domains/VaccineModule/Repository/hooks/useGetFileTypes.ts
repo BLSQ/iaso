@@ -28,3 +28,24 @@ export const useGetFileTypes = (): DropdownOptions<string>[] => {
         [formatMessage],
     );
 };
+
+export const useGetReportFileTypes = (): DropdownOptions<string>[] => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(
+        () => [
+            {
+                value: 'INCIDENT,DESTRUCTION',
+                label: formatMessage(MESSAGES.all),
+            },
+            {
+                value: 'INCIDENT',
+                label: formatMessage(MESSAGES.incidentReports),
+            },
+            {
+                value: 'DESTRUCTION',
+                label: formatMessage(MESSAGES.destructionReports),
+            },
+        ],
+        [formatMessage],
+    );
+};

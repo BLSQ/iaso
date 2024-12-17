@@ -48,18 +48,18 @@ const styles = {
 export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
-    const defaultSourceVersion = useDefaultSourceVersion();
-    const [selectedVersionId, setSelectedVersionId] = useState<string>(
-        defaultSourceVersion.version.id.toString(),
-    );
-    const [dataSource, setDataSource] = useState<string>(
-        defaultSourceVersion.source.id.toString(),
-    );
-
-    const redirectToReplace = useRedirectToReplace();
     const newParams = {
         ...params,
     };
+    const defaultSourceVersion = useDefaultSourceVersion();
+    const [selectedVersionId, setSelectedVersionId] = useState<string>(
+        newParams.source_version_id
+            ? newParams.source_version_id
+            : defaultSourceVersion.version.id.toString(),
+    );
+
+    const redirectToReplace = useRedirectToReplace();
+
     if (!newParams.source_version_id) {
         newParams.source_version_id = selectedVersionId;
         redirectToReplace(baseUrl, newParams);
@@ -69,6 +69,23 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         useFilterState({ baseUrl, params });
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources(true);
+
+    const sourceParam = useMemo(
+        () =>
+            newParams.source_version_id
+                ? dataSources?.filter(source =>
+                      source.original.versions.some(
+                          version =>
+                              version.id.toString() ===
+                              newParams.source_version_id,
+                      ),
+                  )[0].value
+                : undefined,
+        [dataSources, newParams.source_version_id],
+    );
+    const [dataSource, setDataSource] = useState<string>(
+        sourceParam || defaultSourceVersion.source.id.toString(),
+    );
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
         useGetOrgUnitTypesDropdownOptions();
@@ -108,15 +125,22 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         );
 
     useEffect(() => {
-        const updatedDataSource = dataSources?.find(
-            source =>
-                source.value === defaultSourceVersion.source.id.toString(),
-        )?.value;
+        const updatedDataSource =
+            sourceParam ||
+            dataSources?.find(
+                source =>
+                    source.value === defaultSourceVersion.source.id.toString(),
+            )?.value;
 
         if (updatedDataSource) {
             setDataSource(updatedDataSource as unknown as string);
         }
-    }, [dataSources, defaultSourceVersion.source.id, setDataSource]);
+    }, [
+        dataSources,
+        defaultSourceVersion.source.id,
+        setDataSource,
+        sourceParam,
+    ]);
 
     const statusOptions: DropdownOptions<string>[] = useMemo(
         () => [

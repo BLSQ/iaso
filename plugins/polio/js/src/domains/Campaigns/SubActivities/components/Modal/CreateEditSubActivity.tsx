@@ -54,6 +54,10 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
             name: subActivity?.name,
             start_date: subActivity?.start_date,
             end_date: subActivity?.end_date,
+            lqas_started_at: subActivity?.lqas_started_at,
+            lqas_ended_at: subActivity?.lqas_ended_at,
+            im_started_at: subActivity?.im_started_at,
+            im_ended_at: subActivity?.im_ended_at,
             age_unit: subActivity?.age_unit,
             age_min: subActivity?.age_min,
             age_max: subActivity?.age_max,
@@ -172,6 +176,46 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                                 name="end_date"
                                 label={formatMessage(MESSAGES.endDate)}
                                 required
+                            />
+                        </Grid>
+                        <Grid item xs={3}>
+                            <Box mr={2}>
+                                <Field
+                                    component={DateInput}
+                                    name="lqas_started_at"
+                                    label={formatMessage(
+                                        MESSAGES.lqas_started_at,
+                                    )}
+                                />
+                            </Box>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <Box mr={2}>
+                                <Field
+                                    component={DateInput}
+                                    name="lqas_ended_at"
+                                    label={formatMessage(
+                                        MESSAGES.lqas_ended_at,
+                                    )}
+                                />
+                            </Box>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <Box mr={2}>
+                                <Field
+                                    component={DateInput}
+                                    name="im_started_at"
+                                    label={formatMessage(
+                                        MESSAGES.im_started_at,
+                                    )}
+                                />
+                            </Box>
+                        </Grid>
+                        <Grid item xs={3}>
+                            <Field
+                                component={DateInput}
+                                name="im_ended_at"
+                                label={formatMessage(MESSAGES.im_ended_at)}
                             />
                         </Grid>
                         <Grid item xs={12}>

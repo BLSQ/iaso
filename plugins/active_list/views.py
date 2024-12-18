@@ -4,8 +4,9 @@ import uuid
 import pandas as pd
 import math
 import openpyxl
+from django.core.exceptions import FieldDoesNotExist
 from django.http import HttpResponse
-
+from django.db import models
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -156,6 +157,31 @@ def validation_api(request, org_unit_id, period):
     return JsonResponse(res, status=200, safe=False)
 
 
+def get_human_readable_value(model_instance, field_name):
+    """
+  Returns the human-readable value of a choice field in a Django model.
+
+  Args:
+    model_instance: An instance of a Django model.
+    field_name: The name of the choice field.
+
+  Returns:
+    The human-readable value of the field, or None if the field is not a choice field
+    or does not exist.
+  """
+    try:
+        field = model_instance._meta.get_field(field_name)
+        if field.choices:
+            method_name = f"get_{field_name}_display"
+            return getattr(model_instance, method_name)()
+        elif isinstance(field, models.BooleanField):
+            return "Oui" if getattr(model_instance, field_name) else "Non"
+    except FieldDoesNotExist:
+        return None
+
+    return getattr(model_instance, field_name)
+
+
 def patient_list_api(request, org_unit_id, period):
     last_import = Import.objects.filter(org_unit=org_unit_id).filter(month=period).order_by("-creation_date").first()
     patients = ActivePatientsList.objects.filter(import_source=last_import).order_by("number").all()
@@ -165,12 +191,10 @@ def patient_list_api(request, org_unit_id, period):
         for patient in patients:
             patient_object = {}
             for field in PATIENT_LIST_DISPLAY_FIELDS:
-                patient_object[PATIENT_LIST_DISPLAY_FIELDS[field]] = getattr(patient, field)
+                patient_object[PATIENT_LIST_DISPLAY_FIELDS[field]] = get_human_readable_value(patient, field)
             table_content.append(patient_object)
-        print(table_content)
         res = {
             "table_content": table_content,
-            # "completeness": "%s/%s" % (report_count, len(org_units))
         }
         return JsonResponse(res, status=200, safe=False)
     else:
@@ -189,7 +213,7 @@ def export_active_patients_excel(active_patients, name, period):
 
     for row_num, patient in enumerate(active_patients, 2):
         for col_num, field in enumerate(PATIENT_LIST_DISPLAY_FIELDS.keys(), 1):
-            worksheet.cell(row=row_num, column=col_num).value = getattr(patient, field)
+            worksheet.cell(row=row_num, column=col_num).value = get_human_readable_value(patient, field)
 
     response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response["Content-Disposition"] = 'attachment; filename="active_patients-%s-%s.xlsx"' % (name, period)
@@ -257,6 +281,16 @@ def upload_to_openhexa(file_name, file, org_unit_id, month, bypass=False):
         i.save()
         import_data(content, i)
     return result
+
+
+def check_file(file):
+    # To implement
+    # warning on multiple sheets
+    # needed columns are not there -> refuse file
+    # unrecognized value in column
+    # wrong value in column (wrong type, wrong choice in a selection
+    # name of facility does not match with the one that was picked
+    pass
 
 
 def allowed_file(filename):

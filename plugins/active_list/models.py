@@ -31,8 +31,8 @@ SEX_MALE = "MALE"
 SEX_FEMALE = "FEMALE"
 
 SEX_CHOICES = [
-    (SEX_MALE, "Homme"),
-    (SEX_FEMALE, "Femme"),
+    (SEX_MALE, "H"),
+    (SEX_FEMALE, "F"),
 ]
 
 HIV_HIV1 = "HIV1"
@@ -41,9 +41,9 @@ HIV_HIV1_AND_2 = "HIV 1&2"
 HIV_UNKNOWN = "UNKNOWN"
 
 HIV_CHOICES = [
-    (HIV_HIV1, "HIV 1"),
-    (HIV_HIV2, "HIV 2"),
-    (HIV_HIV1_AND_2, "HIV 1 & 2"),
+    (HIV_HIV1, "VIH 1"),
+    (HIV_HIV2, "VIH 2"),
+    (HIV_HIV1_AND_2, "VIH 1+ VIH 2"),
     (HIV_UNKNOWN, ""),
 ]
 

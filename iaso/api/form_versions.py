@@ -9,7 +9,7 @@ from rest_framework import serializers, parsers, exceptions
 from rest_framework.fields import Field
 
 from iaso.models import Form, FormVersion, FeatureFlag, Project
-from iaso.odk import parsing
+from iaso.odk import parsing, validate_xls_form
 from iaso.api.query_params import APP_ID
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
 from .forms import HasFormPermission
@@ -98,6 +98,13 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         if self.context["request"].method == "PUT":
             # if update skip the rest of check
             return data
+
+        validation_errors = validate_xls_form(data["xls_file"])
+
+        if len(validation_errors):
+            raise serializers.ValidationError(
+                {"xls_file": "Form id is invalid.", "xls_file_validation_errors": validation_errors}
+            )
 
         # handle xls to xml conversion
         try:

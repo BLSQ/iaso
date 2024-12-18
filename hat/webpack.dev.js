@@ -183,13 +183,28 @@ module.exports = {
         },
         host: '0.0.0.0',
         port: 3000,
-
+        hot: true,
         devMiddleware: {
             writeToDisk: true,
+        },
+        static: {
+            directory: path.join(__dirname, 'assets'),
+            publicPath: '/',
+        },
+        client: {
+            overlay: true,
+            progress: true,
+        },
+        watchFiles: {
+            paths: ['src/**/*', 'assets/**/*'],
+            options: {
+                usePolling: true,
+            },
         },
     },
 
     plugins: [
+        new webpack.HotModuleReplacementPlugin(),
         new CleanWebpackPlugin(),
         new webpack.NormalModuleReplacementPlugin(
             /^__intl\/messages\/en$/,

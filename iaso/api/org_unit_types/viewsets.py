@@ -47,7 +47,7 @@ class OrgUnitTypeViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['view_action'] = self.action
+        context["view_action"] = self.action
         return context
 
 
@@ -109,5 +109,5 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['view_action'] = self.action
+        context["view_action"] = self.action
         return context

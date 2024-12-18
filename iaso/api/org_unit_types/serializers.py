@@ -81,7 +81,9 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
     # Fixme make this directly in db !
     def get_units_count(self, obj: OrgUnitType):
         # Show count if it's a detail view OR if with_units_count parameter is present
-        if self.context.get('view_action') == 'retrieve' or self.context["request"].query_params.get("with_units_count"):
+        if self.context.get("view_action") == "retrieve" or self.context["request"].query_params.get(
+            "with_units_count"
+        ):
             orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
                 self.context["request"].user, self.context["request"].query_params.get("app_id")
             ).filter(Q(validated=True) & Q(org_unit_type__id=obj.id))
@@ -189,7 +191,9 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
     # Fixme make this directly in db !
     def get_units_count(self, obj: OrgUnitType):
         # Show count if it's a detail view OR if with_units_count parameter is present
-        if self.context.get('view_action') == 'retrieve' or self.context["request"].query_params.get("with_units_count"):
+        if self.context.get("view_action") == "retrieve" or self.context["request"].query_params.get(
+            "with_units_count"
+        ):
             orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
                 self.context["request"].user, self.context["request"].query_params.get("app_id")
             ).filter(Q(validation_status=OrgUnit.VALIDATION_VALID) & Q(org_unit_type__id=obj.id))
@@ -257,7 +261,9 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
 
     def to_representation(self, instance):
         # Remove units_count from fields if not requested
-        if  not self.context.get('view_action') == 'retrieve' and not self.context["request"].query_params.get("with_units_count"):
+        if not self.context.get("view_action") == "retrieve" and not self.context["request"].query_params.get(
+            "with_units_count"
+        ):
             self.fields.pop("units_count", None)
         return super().to_representation(instance)
 

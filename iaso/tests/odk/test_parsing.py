@@ -9,7 +9,7 @@ from iaso.odk import parse_xls_form, Survey, ParsingError, to_questions_by_name
 
 class ParsingTestCase(SimpleTestCase):
     def test_parse_xls_form_valid(self):
-        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xlsx", "rb") as xls_file:
             survey = parse_xls_form(xls_file)
 
         self.assertIsInstance(survey, Survey)
@@ -23,7 +23,7 @@ class ParsingTestCase(SimpleTestCase):
         self.assertEqual(survey.version, "2020022401")
 
     def test_parse_xls_form_valid_no_settings(self):
-        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
             survey = parse_xls_form(xls_file)
 
         self.assertIsInstance(survey, Survey)
@@ -40,7 +40,7 @@ class ParsingTestCase(SimpleTestCase):
             self.assertEqual(str(cm.exception), "Invalid XLS file: Invalid version (must be a string of 1-10 numbers).")
 
     def test_parse_xls_form_invalid_version_inferior_to_previous(self):
-        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xlsx", "rb") as xls_file:
             with self.assertRaises(ParsingError) as cm:
                 parse_xls_form(xls_file, previous_version="2020022501")
             self.assertEqual(
@@ -48,7 +48,7 @@ class ParsingTestCase(SimpleTestCase):
             )
 
     def test_parse_xls_form_invalid_version_same_as_previous(self):
-        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xlsx", "rb") as xls_file:
             with self.assertRaises(ParsingError) as cm:
                 parse_xls_form(xls_file, previous_version="2020022401")
             self.assertEqual(

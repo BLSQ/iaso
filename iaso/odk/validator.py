@@ -55,21 +55,31 @@ def is_repeat_group(question):
     return question.get("type") == "begin repeat" or question.get("type") == "begin_repeat"
 
 
-def get_list_name(question):
+def get_list_name_from_select(question):
     q_type = question.get("type")
+    if "select one from " in q_type:
+        return q_type.split("select one from ")[1]
     if "select_one" in q_type:
         return q_type.split("select_one ")[1]
     if "select one" in q_type:
+        import pdb
+
+        pdb.set_trace()
         return q_type.split("select one ")[1]
     return None
 
 
-def index_by_field(collection, field_name):
+def get_list_name_from_choice(choice):
+    return choice.get("list_name") or choice.get("list name")
+
+
+def group_by_lambda(collection, field_name_lambda):
     collection_by_name = {}
 
     for q in collection:
-        if q.get(field_name):
-            collection_by_name.setdefault(q[field_name], []).append(q)
+        field_value = field_name_lambda(q)
+        if field_value:
+            collection_by_name.setdefault(field_value, []).append(q)
 
     return collection_by_name
 
@@ -82,13 +92,13 @@ def validate_xls_form(xls_file):
     choices_rows = parse_sheet(excel_file, "choices")
 
     questions = [q for q in question_rows if q.get("type") and not is_end_group(q) and not is_end_repeat(q)]
-    choices = [c for c in choices_rows if c.get("list_name")]
+    choices = [c for c in choices_rows if get_list_name_from_choice(c)]
 
     validation_errors = []
 
-    questions_by_name = index_by_field(questions, "name")
+    questions_by_name = group_by_lambda(questions, lambda x: x.get("name"))
 
-    choices_by_list_name = index_by_field(choices, "list_name")
+    choices_by_list_name = group_by_lambda(choices, lambda x: get_list_name_from_choice(x))
 
     has_some_repeat_groups = len([q for q in question_rows if is_repeat_group(q)]) > 0
 
@@ -119,7 +129,7 @@ def validate_xls_form(xls_file):
     select_one_questions = [q for q in questions if is_select_one(q)]
 
     for select_one_q in select_one_questions:
-        list_name = get_list_name(select_one_q)
+        list_name = get_list_name_from_select(select_one_q)
         if list_name not in choices_by_list_name:
             validation_errors.append(
                 {

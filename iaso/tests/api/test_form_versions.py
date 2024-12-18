@@ -52,7 +52,7 @@ class FormsVersionAPITestCase(APITestCase):
         cls.form_1.save()
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = "test.xml"
-        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
             cls.form_2.form_versions.create(
                 file=form_2_file_mock, xls_file=UploadedFile(xls_file), version_id="2020022401"
             )
@@ -197,7 +197,7 @@ class FormsVersionAPITestCase(APITestCase):
         """POST /form-versions/ happy path (first version)"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xlsx", "rb") as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
@@ -217,7 +217,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertRegex(created_version.file.name, r"forms/new_land_speeder_concept_2020022401(.*).xml")
         self.assertIsInstance(created_version.xls_file, File)
         self.assertGreater(created_version.xls_file.size, 100)
-        self.assertEqual(created_version.xls_file.name, "forms/new_land_speeder_concept_2020022401.xls")
+        self.assertEqual(created_version.xls_file.name, "forms/new_land_speeder_concept_2020022401.xlsx")
 
         version_form = created_version.form
         self.assertEqual("sample1", version_form.form_id)
@@ -226,7 +226,7 @@ class FormsVersionAPITestCase(APITestCase):
         """POST /form-versions/ happy path (second version)"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xlsx", "rb") as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
@@ -271,7 +271,7 @@ class FormsVersionAPITestCase(APITestCase):
             },
         )
 
-        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xlsx", "rb") as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
@@ -300,7 +300,7 @@ class FormsVersionAPITestCase(APITestCase):
         """POST /form-versions/ with a form_id that already exists within the account (for a different form)"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022401.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022401.xlsx", "rb") as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
@@ -314,7 +314,7 @@ class FormsVersionAPITestCase(APITestCase):
         """POST /form-versions/ attempt to create a second version with a different form_id"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022402.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022402.xlsx", "rb") as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
@@ -328,7 +328,7 @@ class FormsVersionAPITestCase(APITestCase):
         """POST /form-versions/ attempt to create a second version with a version inferior to the previous one"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022301.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022301.xlsx", "rb") as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
@@ -344,7 +344,7 @@ class FormsVersionAPITestCase(APITestCase):
         """POST /form-versions/ with invalid XLS file"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_blatantly_invalid.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_blatantly_invalid.xlsx", "rb") as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
@@ -372,7 +372,7 @@ class FormsVersionAPITestCase(APITestCase):
     def test_form_versions_create_no_auth(self):
         """POST /form-versions/ , without auth -> we expect a 401 error"""
 
-        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},

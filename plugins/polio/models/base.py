@@ -1047,7 +1047,7 @@ class VaccineRequestForm(SoftDeletableModel):
         ]
 
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, db_index=True)
-    vaccine_type = models.CharField(max_length=5, choices=VACCINES)
+    vaccine_type = models.CharField(max_length=30, choices=VACCINES)
     rounds = models.ManyToManyField(Round, db_index=True)
     date_vrf_signature = models.DateField(null=True, blank=True)
     date_vrf_reception = models.DateField(null=True, blank=True)

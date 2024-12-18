@@ -13,6 +13,12 @@
     <select id="regionSelect"></select><br/><br/>
     <select id="districtSelect"></select><br/><br/>
     <select id="facilitySelect"></select><br/><br/>
+    <select id="modeSelect">
+      <option value="default" selected=>Dernier import pour le mois</option>
+      <option value="expected">Patients attendus durant le mois</option>
+      <option value="lost">Patients perdus (date de rupture dépassée aujourd'hui)</option>
+      <option value="active">File active</option>
+    </select>
 </div>
 <div id="dataContainer">
     <a href="" id="excel_link">Télécharger en Excel</a>

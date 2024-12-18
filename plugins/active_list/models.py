@@ -103,6 +103,7 @@ class ActivePatientsList(models.Model):
 
     last_dispensation_date = models.DateField(null=True)
     days_dispensed = models.IntegerField(null=True)
+    next_dispensation_date = models.DateField(null=True)
     regimen = models.TextField(null=True)
     stable = models.IntegerField(null=True)  # Needs further clarification for better naming
 

@@ -1,10 +1,14 @@
+import calendar
 import hashlib
 import os
 import uuid
+from datetime import timedelta
+from datetime import date
 import pandas as pd
 import math
 import openpyxl
 from django.core.exceptions import FieldDoesNotExist
+from django.db.models import Max
 from django.http import HttpResponse
 from django.db import models
 from django.contrib.auth.decorators import login_required
@@ -159,16 +163,16 @@ def validation_api(request, org_unit_id, period):
 
 def get_human_readable_value(model_instance, field_name):
     """
-  Returns the human-readable value of a choice field in a Django model.
+    Returns the human-readable value of a choice field in a Django model.
 
-  Args:
-    model_instance: An instance of a Django model.
-    field_name: The name of the choice field.
+    Args:
+      model_instance: An instance of a Django model.
+      field_name: The name of the choice field.
 
-  Returns:
-    The human-readable value of the field, or None if the field is not a choice field
-    or does not exist.
-  """
+    Returns:
+      The human-readable value of the field, or None if the field is not a choice field
+      or does not exist.
+    """
     try:
         field = model_instance._meta.get_field(field_name)
         if field.choices:
@@ -182,16 +186,68 @@ def get_human_readable_value(model_instance, field_name):
     return getattr(model_instance, field_name)
 
 
+def get_first_and_last_day(date_str):
+    """
+    Calculates the first and last day of the month given a date string in the format "YYYY-MM".
+
+    Args:
+      date_str: A string representing the year and month in the format "YYYY-MM".
+
+    Returns:
+      A tuple containing two strings:
+        - The first day of the month in the format "YYYY-MM-DD".
+        - The last day of the month in the format "YYYY-MM-DD".
+    """
+    year, month = map(int, date_str.split("-"))
+
+    # Get the number of days in the month
+    _, last_day = calendar.monthrange(year, month)
+
+    # Format the first and last days
+    first_day_str = f"{year}-{month:02d}-01"
+    last_day_str = f"{year}-{month:02d}-{last_day}"
+
+    return first_day_str, last_day_str
+
+
 def patient_list_api(request, org_unit_id, period):
-    last_import = Import.objects.filter(org_unit=org_unit_id).filter(month=period).order_by("-creation_date").first()
-    patients = ActivePatientsList.objects.filter(import_source=last_import).order_by("number").all()
     xls = request.GET.get("xls", None)
+    mode = request.GET.get("mode", "default")
+    latest_ids = ActivePatientsList.objects.filter(org_unit_id=org_unit_id).values('identifier_code').annotate(latest_id=Max('id'))
+    print("latest_ids", latest_ids)
+    patients = ActivePatientsList.objects.filter(id__in=[item['latest_id'] for item in latest_ids])
+    print(patients.query)
+    if mode == 'default':
+        last_import = Import.objects.filter(org_unit=org_unit_id)
+        last_import = last_import.filter(month=period).order_by("-creation_date").first()
+        patients = ActivePatientsList.objects.filter(import_source=last_import).order_by("number")
+    elif mode == 'expected':
+        first_day_str, last_day_str = get_first_and_last_day(period)
+        patients = (
+            patients.filter(active=True)
+            .filter(next_dispensation_date__gte=first_day_str)
+            .filter(next_dispensation_date__lte=last_day_str)
+            .filter(org_unit_id=org_unit_id).order_by("next_dispensation_date")
+        )
+    elif mode == 'active':
+        patients = patients.filter(active=True).filter(org_unit_id=org_unit_id)
+    elif mode == 'lost':
+        today = date.today()
+        patients = (
+            patients.filter(active=True)
+            .filter(next_dispensation_date__lte=today)
+            .filter(org_unit_id=org_unit_id)
+        )
+
     if xls is None:
         table_content = []
         for patient in patients:
             patient_object = {}
             for field in PATIENT_LIST_DISPLAY_FIELDS:
                 patient_object[PATIENT_LIST_DISPLAY_FIELDS[field]] = get_human_readable_value(patient, field)
+                if mode in ('expected', 'lost', 'active'):
+                    if field == 'days_dispensed':
+                        patient_object['Date de rupture'] = get_human_readable_value(patient, 'next_dispensation_date')
             table_content.append(patient_object)
         res = {
             "table_content": table_content,
@@ -304,7 +360,7 @@ def import_data(file, the_import):
 
     # Read the CSV file into a DataFrame
     df = pd.read_excel(file, sheet_name=0)
-    print(df.columns)
+
     # Rename columns
     df = df.rename(
         columns={
@@ -415,6 +471,8 @@ def import_data(file, the_import):
     active_patients_list = []
 
     for row in data:
+        active = not (row["transfer_out"] or row["art_stoppage"] or row["death"] or row["served_elsewhere"])
+        next_dispensation_date = row["last_dispensation_date"] + timedelta(days=row["days_dispensed"])
         active_patients_list.append(
             ActivePatientsList(
                 number=row["number"],
@@ -435,13 +493,14 @@ def import_data(file, the_import):
                 treatment_line=row["treatment_line"],
                 last_dispensation_date=row["last_dispensation_date"],
                 days_dispensed=row["days_dispensed"],
+                next_dispensation_date=next_dispensation_date,
                 regimen=row["regimen"],
                 stable=row["stable"],
                 transfer_out=row["transfer_out"],
                 death=row["death"],
                 art_stoppage=row["art_stoppage"],
                 served_elsewhere=row["served_elsewhere"],
-                active=True,
+                active=active,
                 import_source=the_import,
                 validation_status="waiting_for_validation",
                 org_unit=the_import.org_unit,

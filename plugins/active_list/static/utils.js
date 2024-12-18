@@ -1,5 +1,4 @@
 function fillSelect (select, data) {
-  console.log("fillselect", data);
   $(select).empty()
   $(select).append('<option disabled selected value> -- Choisissez -- </option>')
   $(data).each(function () {

@@ -7,7 +7,7 @@ from django.utils.dateparse import parse_datetime
 from iaso.odk import validate_xls_form
 
 
-class ParsingTestCase(SimpleTestCase):
+class ValidatorTestCase(SimpleTestCase):
     def test_parse_xls_form_valid(self):
         with open("iaso/tests/fixtures/odk_instance_repeat_group_form.xlsx", "rb") as xls_file:
             errors = validate_xls_form(xls_file)

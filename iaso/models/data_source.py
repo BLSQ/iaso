@@ -298,8 +298,9 @@ class DataSourceSynchronization(models.Model):
         self.diff_config = str(differ_params)
         self.save(update_fields=["json_diff", "diff_config"])
 
-    def create_change_requests(self):
+    def synchronize_source_versions(self):
         # Prevent a circular import.
-        from iaso.models import OrgUnitChangeRequest
+        from iaso.diffing import Synchronizer
 
-        OrgUnitChangeRequest.objects.bulk_create_from_data_source_sync(self)
+        synchronizer = Synchronizer(data_source_sync=self)
+        synchronizer.synchronize()

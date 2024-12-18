@@ -26,26 +26,32 @@ type Props = {
     params: ApiParams;
     callback?: () => void;
     isSearchActive: boolean;
+    enabled?: boolean;
+    resetPageToOne: string;
 };
 
 type PropsLocation = {
     params: ApiParams;
     searches: Search[];
     isSearchActive: boolean;
+    enabled?: boolean;
+    resetPageToOne: string;
 };
 
 export const useGetOrgUnits = ({
     params,
     isSearchActive,
     callback = () => null,
+    enabled = false,
+    resetPageToOne,
 }: Props): UseQueryResult<Result, Error> => {
     const onSuccess = () => callback();
     const queryString = new URLSearchParams(params);
     return useSnackQuery({
-        queryKey: ['orgunits'],
+        queryKey: ['orgunits', resetPageToOne],
         queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
         options: {
-            enabled: false,
+            enabled,
             staleTime: Infinity,
             keepPreviousData: true,
             onSuccess,
@@ -63,13 +69,15 @@ export const useGetOrgUnitsLocations = ({
     params,
     searches,
     isSearchActive,
+    enabled = false,
+    resetPageToOne,
 }: PropsLocation): UseQueryResult<Locations | undefined, Error> => {
     const queryString = new URLSearchParams(params);
     return useSnackQuery({
-        queryKey: ['orgunitslocations'],
+        queryKey: ['orgunitslocations', resetPageToOne],
         queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
         options: {
-            enabled: false,
+            enabled,
             staleTime: Infinity,
             select: data => {
                 if (isSearchActive) {

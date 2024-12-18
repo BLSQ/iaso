@@ -19,6 +19,7 @@ export type ApproveOrgUnitParams = UrlParams & {
     paymentStatus?: 'pending' | 'sent' | 'rejected' | 'paid';
     paymentIds?: string; // comma separated ids
     potentialPaymentIds?: string; // comma separated ids
+    source_version_id?: string;
 };
 
 export type OrgUnitChangeRequestDetailParams = UrlParams & {

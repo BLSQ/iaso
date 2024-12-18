@@ -1,22 +1,38 @@
 import { PaginationParams } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
-import { CampaignCategory } from '../../Campaigns/hooks/api/useGetCampaigns';
+import { Vaccine } from '../../../constants/types';
 
-export type VaccineRepositoryParams = PaginationParams & {
+export type ReportParams = {
+    reportCountries?: string;
+    reportCountryBlock?: string;
+    reportFileType?: string;
+    reportVaccineName?: string;
+    reportPageSize?: string;
+    reportOrder?: string;
+    reportPage?: string;
+};
+
+export type FormsParams = {
     countries?: string;
     campaignType?: string;
-    campaignCategory?: CampaignCategory;
     country_block?: string;
     campaignGroups?: string;
     file_type?: string;
-    campaignStatus?: string;
+    vaccine_name?: Vaccine;
 };
+
+export type VaccineRepositoryParams = PaginationParams &
+    ReportParams &
+    FormsParams & {
+        tab?: string;
+        accountId?: string;
+    };
 
 export type DocumentData = {
     date?: string;
     file?: string;
 };
 
-export type VaccineReporting = {
+export type VaccineRepositotyForms = {
     country_name: string;
     campaign_obr_name: string;
     rounds_count: string;
@@ -26,4 +42,11 @@ export type VaccineReporting = {
     form_a_data: DocumentData[];
     incident_reports: DocumentData[];
     destruction_reports: DocumentData[];
+};
+
+export type VaccineRepositoryReports = {
+    country_name: string;
+    vaccine: string;
+    incident_report_data: DocumentData[];
+    destruction_report_data: DocumentData[];
 };

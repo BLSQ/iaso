@@ -6,16 +6,12 @@ from django.db import migrations
 def remove_softdeleted_prealerts(apps, schema_editor):
     VaccinePreAlert = apps.get_model("polio", "VaccinePreAlert")
     the_items = VaccinePreAlert.objects.filter(deleted_at__isnull=False)
-
-    print(f"Removing {the_items.count()} softdeleted prealerts")
     the_items.delete()
 
 
 def remove_softdeleted_arrival_reports(apps, schema_editor):
     VaccineArrivalReport = apps.get_model("polio", "VaccineArrivalReport")
     the_items = VaccineArrivalReport.objects.filter(deleted_at__isnull=False)
-
-    print(f"Removing {the_items.count()} softdeleted arrival reports")
     the_items.delete()
 
 
@@ -41,7 +37,6 @@ def rename_po_number_if_not_unique(apps, schema_editor):
                 and prealert.vials_shipped == first_prealert.vials_shipped
                 and prealert.request_form_id == first_prealert.request_form_id
             ):
-                print(f"Deleting duplicate prealert with PO number {prealert.po_number} as its a duplicate")
                 prealert.delete()
 
             else:
@@ -50,7 +45,6 @@ def rename_po_number_if_not_unique(apps, schema_editor):
                 original_po_number = prealert.po_number
                 prealert.po_number = f"{prealert.po_number}_{suffix}"
                 seen_po_numbers[original_po_number].append(prealert)
-                print(f"Renaming prealert {original_po_number} to {prealert.po_number} as its different")
                 prealert.save()
         else:
             seen_po_numbers[prealert.po_number] = [prealert]
@@ -75,14 +69,12 @@ def rename_po_number_if_not_unique(apps, schema_editor):
                 and report.vials_received == first_report.vials_received
                 and report.request_form_id == first_report.request_form_id
             ):
-                print(f"Deleting duplicate arrival report with PO number {report.po_number} as its a duplicate")
                 report.delete()
             else:
                 suffix_index = len(seen_po_numbers[report.po_number]) - 1
                 suffix = chr(ord("a") + suffix_index)
                 original_po_number = report.po_number
                 report.po_number = f"{report.po_number}_{suffix}"
-                print(f"Renaming arrival report {original_po_number} to {report.po_number} as its different")
                 seen_po_numbers[original_po_number].append(report)
                 report.save()
         else:

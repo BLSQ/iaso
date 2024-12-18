@@ -15,7 +15,6 @@ class Migration(migrations.Migration):
         users = User.objects.filter(user_permissions=perm)
 
         for user in users:
-            print(f"Removing  perms {perm} to {user}")
             user.user_permissions.remove(perm)
 
     dependencies = [

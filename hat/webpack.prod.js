@@ -15,6 +15,7 @@ module.exports = {
     entry: {
         common: ['react', 'react-dom', 'react-intl', 'typescript'],
         iaso: './assets/js/apps/Iaso/index',
+        superset: './assets/js/supersetSDK',
     },
 
     stats: {

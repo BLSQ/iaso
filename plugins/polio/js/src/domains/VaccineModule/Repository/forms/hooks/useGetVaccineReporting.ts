@@ -1,8 +1,8 @@
 import { UseQueryResult } from 'react-query';
-import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
-import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { VaccineReporting } from '../types';
+import { useApiParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
+import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { VaccineRepositotyForms } from '../../types';
 
 const getVaccineReporting = params => {
     const apiParams = params.campaignStatus
@@ -15,15 +15,15 @@ const getVaccineReporting = params => {
     return getRequest(`/api/polio/vaccine/repository/?${queryString}`);
 };
 export const tableDefaults = {
-    order: 'started_at',
-    limit: 10,
+    order: '-campaign_started_at',
+    limit: 50,
     page: 1,
 };
 
 type Response = {
     limit: number;
     count: number;
-    results: VaccineReporting[];
+    results: VaccineRepositotyForms[];
     has_previous: boolean;
     has_next: boolean;
     page: number;

@@ -61,8 +61,7 @@ export const AccountSwitch: FunctionComponent<Props> = ({
         prevOpen.current = open;
     }, [open]);
     const menuListKeyDownHandler = React.useCallback(handleListKeyDown, []);
-
-    if (currentUser.other_accounts.length === 0) {
+    if (currentUser.other_accounts?.length === 0) {
         return (
             <Typography
                 variant="body2"

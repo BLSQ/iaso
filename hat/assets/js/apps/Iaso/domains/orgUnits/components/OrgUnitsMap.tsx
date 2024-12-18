@@ -37,8 +37,8 @@ import { MapToggleCluster } from '../../../components/maps/tools/MapToggleCluste
 import { InnerDrawer } from '../../../components/nav/InnerDrawer/Index';
 import tiles from '../../../constants/mapTiles';
 import MESSAGES from '../messages';
-import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
 import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
 
 type OrgUnitWithSearchIndex = Omit<OrgUnit, 'search_index'> & {
     search_index: number;
@@ -89,6 +89,13 @@ const getOrgUnitsBounds = (orgUnits: Locations): Bounds | undefined => {
     }
     return undefined;
 };
+
+const computeTriggerFitToBoundsId = (bounds: Bounds | undefined): string => {
+    return bounds
+        ? `${bounds._northEast.lat},${bounds._northEast.lng},${bounds._southWest.lat},${bounds._southWest.lng}`
+        : '';
+};
+
 export const OrgUnitsMap: FunctionComponent<Props> = ({
     getSearchColor,
     orgUnits,
@@ -103,10 +110,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
     >();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-
     const bounds: Bounds | undefined = getOrgUnitsBounds(orgUnits);
+    const triggerFitToBoundsId: string = computeTriggerFitToBoundsId(bounds);
     const orgUnitsTotal = getFullOrgUnits(orgUnits.locations);
-    console.log('OUTYPES', orgUnitTypes);
     const locations = useMemo(() => {
         if (isClusterActive) {
             return orgUnits.locations.map((orgUnitsBySearch, searchIndex) => {
@@ -234,6 +240,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                             bounds={bounds}
                             boundsOptions={boundsOptions}
                             fitOnLoad
+                            triggerFitToBoundsId={triggerFitToBoundsId}
                         />
                         {orgUnits.shapes
                             .filter(o => !o.org_unit_type_id)

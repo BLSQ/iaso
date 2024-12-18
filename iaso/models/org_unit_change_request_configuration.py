@@ -33,7 +33,7 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
     or restrict the list of possible values for each field.
     """
 
-    project = models.ForeignKey("Project", on_delete=models.PROTECT)
+    project = models.ForeignKey("Project", on_delete=models.CASCADE)
     org_unit_type = models.ForeignKey("OrgUnitType", on_delete=models.PROTECT)
     org_units_editable = models.BooleanField(default=True)  # = is it possible to edit org units of that type
     editable_fields = ArrayField(

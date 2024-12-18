@@ -4,7 +4,7 @@ import math
 import os
 from collections import defaultdict
 from datetime import date
-from typing import Any, Tuple, Union
+from typing import Any, Tuple, Union, Optional
 from uuid import uuid4
 
 import django.db.models.manager
@@ -13,7 +13,6 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.files.base import File
-from django.core.files.storage import FileSystemStorage
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
@@ -30,6 +29,7 @@ from translated_fields import TranslatedField
 from beanstalk_worker import task_decorator
 from iaso.models import Group, OrgUnit
 from iaso.models.base import Account, Task
+from iaso.models.entity import UserNotAuthError
 from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
@@ -241,6 +241,16 @@ class RoundQuerySet(models.QuerySet):
         data["countries"] = data["countries"].values()
         data["campaigns"] = data["campaigns"].values()
         return data
+
+    def filter_by_vaccine_name(self, vaccine_name):
+        return (
+            self.select_related("campaign")
+            .prefetch_related("scopes", "campaign__scopes")
+            .filter(
+                (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vaccine_name))
+                | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vaccine_name))
+            )
+        )
 
 
 def make_group_subactivity_scope():
@@ -556,6 +566,8 @@ class Campaign(SoftDeletableModel):
     )
     verification_score = models.IntegerField(null=True, blank=True)
     # END OF Risk assessment field
+
+    # Unusable vials leftover 14 days after the last round ends
 
     # ----------------------------------------------------------------------------------------
     # START fields moved to the `Budget` model. **********************************************
@@ -1024,9 +1036,17 @@ class VaccineRequestFormType(models.TextChoices):
 
 
 class VaccineRequestForm(SoftDeletableModel):
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    class Meta:
+        indexes = [
+            models.Index(fields=["campaign", "vaccine_type"]),  # Frequently filtered together
+            models.Index(fields=["vrf_type"]),  # Filtered in repository_forms.py
+            models.Index(fields=["created_at"]),  # Used for ordering
+            models.Index(fields=["updated_at"]),  # Used for ordering
+        ]
+
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, db_index=True)
     vaccine_type = models.CharField(max_length=5, choices=VACCINES)
-    rounds = models.ManyToManyField(Round)
+    rounds = models.ManyToManyField(Round, db_index=True)
     date_vrf_signature = models.DateField(null=True, blank=True)
     date_vrf_reception = models.DateField(null=True, blank=True)
     date_dg_approval = models.DateField(null=True, blank=True)
@@ -1105,6 +1125,13 @@ class VaccinePreAlert(models.Model):
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["request_form", "estimated_arrival_time"]),  # Used together in queries
+            models.Index(fields=["po_number"]),  # Unique field that's queried
+            models.Index(fields=["date_pre_alert_reception"]),  # Used for filtering/ordering
+        ]
+
 
 class VaccineArrivalReport(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
@@ -1140,6 +1167,13 @@ class VaccineArrivalReport(models.Model):
 
         super().save(*args, **kwargs)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["request_form", "arrival_report_date"]),  # Frequently queried together
+            models.Index(fields=["po_number"]),  # Unique field that's queried
+            models.Index(fields=["doses_received"]),  # Used in aggregations
+        ]
+
 
 class VaccineStock(models.Model):
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="vaccine_stocks")
@@ -1155,13 +1189,54 @@ class VaccineStock(models.Model):
 
     class Meta:
         unique_together = ("country", "vaccine")
+        indexes = [
+            models.Index(fields=["country", "vaccine"]),  # Already unique_together, but used in many queries
+            models.Index(fields=["account"]),  # Frequently filtered by account
+        ]
 
     def __str__(self):
         return f"{self.country} - {self.vaccine}"
 
 
+class VaccineStockHistoryQuerySet(models.QuerySet):
+    def filter_for_user(self, user: Optional[Union[User, AnonymousUser]]):
+        if not user or not user.is_authenticated:
+            raise UserNotAuthError(f"User not Authenticated")
+
+        profile = user.iaso_profile
+        self = self.filter(vaccine_stock__account=profile.account)
+
+        return self
+
+
+class VaccineStockHistory(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="history")
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name="stock_on_closing")
+    unusable_vials_in = models.IntegerField(null=True)
+    unusable_vials_out = models.IntegerField(null=True)
+    unusable_doses_in = models.IntegerField(null=True)
+    unusable_doses_out = models.IntegerField(null=True)
+    usable_vials_in = models.IntegerField(null=True)
+    usable_vials_out = models.IntegerField(null=True)
+    usable_doses_in = models.IntegerField(null=True)
+    usable_doses_out = models.IntegerField(null=True)
+
+    objects = models.Manager.from_queryset(VaccineStockHistoryQuerySet)()
+
+    class Meta:
+        unique_together = ("round", "vaccine_stock")
+
+
 # Form A
 class OutgoingStockMovement(models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "campaign"]),  # Frequently queried together
+            models.Index(fields=["form_a_reception_date"]),  # Used in ordering
+            models.Index(fields=["report_date"]),  # Used in filtering/ordering
+        ]
+
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
     vaccine_stock = models.ForeignKey(
@@ -1192,6 +1267,12 @@ class DestructionReport(models.Model):
         storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/", null=True, blank=True
     )
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "destruction_report_date"]),  # Used together in queries
+            models.Index(fields=["rrt_destruction_report_reception_date"]),  # Used in filtering
+        ]
+
 
 class IncidentReport(models.Model):
     class StockCorrectionChoices(models.TextChoices):
@@ -1219,6 +1300,12 @@ class IncidentReport(models.Model):
     document = models.FileField(
         storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/", null=True, blank=True
     )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "date_of_incident_report"]),  # Frequently queried together
+            models.Index(fields=["incident_report_received_by_rrt"]),  # Used in filtering
+        ]
 
 
 class Notification(models.Model):

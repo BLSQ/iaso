@@ -11,9 +11,10 @@ from iaso.models import Account
 from iaso.test import APITestCase
 from plugins.polio.models import CampaignType, Round
 from plugins.polio.preparedness.spreadsheet_manager import *
+from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
-class PolioAPITestCase(APITestCase):
+class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
     data_source: m.DataSource
     source_version_1: m.SourceVersion
     org_unit: m.OrgUnit
@@ -26,6 +27,9 @@ class PolioAPITestCase(APITestCase):
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.account = polio_account = Account.objects.create(name="polio", default_version=cls.source_version_1)
         cls.yoda = cls.create_user_with_profile(username="yoda", account=polio_account, permissions=["iaso_forms"])
+
+        cls.country_type = m.OrgUnitType.objects.create(name="COUNTRY", short_name="country")
+        cls.district_type = m.OrgUnitType.objects.create(name="DISTRICT", short_name="district")
 
         cls.org_unit = m.OrgUnit.objects.create(
             org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
@@ -538,6 +542,55 @@ class PolioAPITestCase(APITestCase):
                 },
             ],
         )
+
+    def test_changing_scope_type_deletes_old_scopes(self):
+        # Create a new campaign with scope per campaign
+        test_campaign, _, _, _, _, _ = self.create_campaign(
+            obr_name="TEST_CAMPAIGN",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+
+        # Test that separate_scopes_per_round is False and campaign has scope
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/polio/campaigns/{test_campaign.id}/")
+        data = self.assertJSONResponse(response, 200)
+        self.assertFalse(data["separate_scopes_per_round"])
+        self.assertEqual(len(data["scopes"]), 1)
+        self.assertEqual(len(data["scopes"][0]["group"]["org_units"]), 1)
+        for r in data["rounds"]:
+            self.assertEqual(len(r["scopes"]), 0)
+
+        old_payload = {**data}
+
+        # Format payload for campaign with round level scope (only on round 1)
+        new_round_1 = data["rounds"][0]
+        new_round_1["scopes"] = data["scopes"]
+        new_rounds = [new_round_1, data["rounds"][1], data["rounds"][2]]
+        payload = {**data, "separate_scopes_per_round": True, "rounds": new_rounds, "description": "Yabadabadoo"}
+
+        # Test that scope is on round and not on campaign
+        response = self.client.put(f"/api/polio/campaigns/{test_campaign.id}/", payload, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertTrue(data["separate_scopes_per_round"])
+        self.assertEqual(len(data["scopes"]), 0)
+        self.assertEqual(len(data["rounds"][0]["scopes"]), 1)
+        self.assertEqual(len(data["rounds"][0]["scopes"][0]["group"]["org_units"]), 1)
+        self.assertEqual(data["description"], "Yabadabadoo")
+        for index, r in enumerate(data["rounds"]):
+            if index > 0:
+                self.assertEqual(len(r["scopes"]), 0)
+
+        # Switch scope back to campaign level
+        response = self.client.put(f"/api/polio/campaigns/{test_campaign.id}/", old_payload, format="json")
+        data = self.assertJSONResponse(response, 200)
+        self.assertFalse(data["separate_scopes_per_round"])
+        self.assertEqual(len(data["scopes"]), 1)
+        self.assertEqual(len(data["scopes"][0]["group"]["org_units"]), 1)
+        for r in data["rounds"]:
+            self.assertEqual(len(r["scopes"]), 0)
 
     @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_update_campaign_with_vaccine_data(self):

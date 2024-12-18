@@ -13,10 +13,13 @@ class PBWG:
         entity_type = ETL(["pbwg_1"])
         account = entity_type.account_related_to_entity_type()
         beneficiaries = entity_type.retrieve_entities()
-        logger.info(f"Instances linked to PBWG program: {beneficiaries.count()}")
+        logger.info(f"Instances linked to PBWG program: {beneficiaries.count()} for {account}")
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()
         instances = self.group_visit_by_entity(entities)
+
+        # Cleaning monthly statistics then update the table with fresh data
+        MonthlyStatistics.objects.all().filter(account=account, programme_type="PLW").delete()
 
         for index, instance in enumerate(instances):
             logger.info(

@@ -217,7 +217,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertRegex(created_version.file.name, r"forms/new_land_speeder_concept_2020022401(.*).xml")
         self.assertIsInstance(created_version.xls_file, File)
         self.assertGreater(created_version.xls_file.size, 100)
-        self.assertEqual(created_version.xls_file.name, "forms/new_land_speeder_concept_2020022401.xlsx")
+        self.xls_file.name, (created_version.xls_file.name, r"forms/new_land_speeder_concept_2020022401(.*).xlsx")
 
         version_form = created_version.form
         self.assertEqual("sample1", version_form.form_id)

@@ -56,7 +56,7 @@ class ParsingTestCase(SimpleTestCase):
             )
 
     def test_parse_xls_form_blatantly_invalid(self):
-        with open("iaso/tests/fixtures/odk_form_blatantly_invalid.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_blatantly_invalid.xlsx", "rb") as xls_file:
             with self.assertRaises(ParsingError) as cm:
                 parse_xls_form(xls_file)
             self.assertEqual(

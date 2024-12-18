@@ -1,5 +1,3 @@
-import datetime
-import json
 import logging
 import operator
 import typing
@@ -7,7 +5,6 @@ import uuid
 
 from copy import deepcopy
 from functools import reduce
-from itertools import islice
 
 import django_cte
 from django.contrib.auth.models import AnonymousUser, User
@@ -640,220 +637,6 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
         )
 
 
-class OrgUnitChangeRequestManager(models.Manager):
-    def bulk_create_from_data_source_sync(self, data_source_sync) -> None:
-        # Cast the list into a generator so we can iterate over it chunk by chunk.
-        json_diff_generator = (
-            diff for diff in json.loads(data_source_sync.json_diff) if diff["status"] in ["new", "modified"]
-        )
-
-        new_change_requests = []
-        groups_change_requests = []
-
-        while True:
-            # Get a subset of a generator.
-            batch_size = 10
-            batch_json_diff = list(islice(json_diff_generator, batch_size))
-
-            if not batch_json_diff:
-                break
-
-            for diff in batch_json_diff:
-                if diff["status"] == "new":
-                    org_unit_change_request, group_changes = self._handle_new(diff, data_source_sync)
-                else:
-                    org_unit_change_request, group_changes = self._handle_modified(diff, data_source_sync)
-
-                if not org_unit_change_request:
-                    continue
-
-                new_change_requests.append(org_unit_change_request)
-
-                if group_changes:
-                    groups_change_requests.append(
-                        {
-                            "change_request_id": None,  # This doesn't exist yet.
-                            "org_unit_id": org_unit_change_request.org_unit_id,
-                            "old_groups_ids": {
-                                group["iaso_id"] for group_change in group_changes for group in group_change["before"]
-                            },
-                            "new_groups_ids": {
-                                group["iaso_id"] for group_change in group_changes for group in group_change["after"]
-                            },
-                        }
-                    )
-
-        # Bulk creation of change requests.
-        batch_size = 100
-        new_change_requests_generator = (item for item in new_change_requests)
-        while True:
-            batch = list(islice(new_change_requests_generator, batch_size))
-            if not batch:
-                break
-            change_requests = OrgUnitChangeRequest.objects.bulk_create(batch, batch_size)
-
-            # Assign each group to the correct change request.
-            for change_request in change_requests:
-                groups_change_request = next(
-                    (item for item in groups_change_requests if item["org_unit_id"] == change_request.org_unit_id), None
-                )
-                if groups_change_request:
-                    groups_change_request["change_request_id"] = change_request.id
-
-        # Bulk update old and new groups (m2m).
-        old_groups = []
-        new_groups = []
-        for groups in groups_change_requests:
-            for old_group_id in groups["old_groups_ids"]:
-                old_groups.append(
-                    OrgUnitChangeRequest.old_groups.through(
-                        orgunitchangerequest_id=groups["change_request_id"], group_id=old_group_id
-                    )
-                )
-            for new_group_id in groups["new_groups_ids"]:
-                new_groups.append(
-                    OrgUnitChangeRequest.new_groups.through(
-                        orgunitchangerequest_id=groups["change_request_id"], group_id=new_group_id
-                    )
-                )
-        OrgUnitChangeRequest.old_groups.through.objects.bulk_create(old_groups)
-        OrgUnitChangeRequest.new_groups.through.objects.bulk_create(new_groups)
-
-    def _handle_new(self, diff, data_source_sync):
-        """
-        TODO.
-        """
-
-        # TODO: groups.
-        group_changes = None
-
-        org_unit = diff["orgunit_ref"]
-        requested_fields = [
-            f"new_{field}" for field in ["name", "parent", "opening_date", "closed_date"] if org_unit.get(field)
-        ]
-        if not requested_fields:
-            logger.error("Empty `requested_fields`", extra={"diff": diff, "data_source_sync": data_source_sync})
-            return None, None
-
-        org_unit = OrgUnit.objects.select_related("parent").filter(pk=diff["orgunit_ref"]["id"]).first()
-
-        # Find the corresponding parent in the hierarchy to update.
-        new_parent = None
-        if org_unit.parent:
-            kwargs = {
-                "source_ref": org_unit.parent.source_ref,
-                "version": data_source_sync.source_version_to_update,
-            }
-            new_parent = OrgUnit.objects.filter(**kwargs).first()
-            if not new_parent:
-                logger.error(
-                    "Cannot find the corresponding parent",
-                    extra={"diff": diff, "data_source_sync": data_source_sync, "org_unit": org_unit},
-                )
-                return None, None
-
-        # Duplicate the `OrgUnit` and link it to the new source.
-        org_unit.pk = None
-        org_unit.parent = new_parent
-        org_unit.version = data_source_sync.source_version_to_update
-        org_unit.validation_status = org_unit.VALIDATION_NEW
-        org_unit.uuid = uuid.uuid4()
-        org_unit.creator = data_source_sync.created_by
-        # We *must* use `save()` to recompute `path` without triggering an integrity error.
-        # This means it won't be easy to use a bulk create operation here.
-        org_unit.path = None
-        org_unit.save()
-
-        org_unit_change_request = OrgUnitChangeRequest(
-            # Data.
-            kind=OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION,
-            created_by=data_source_sync.created_by,
-            requested_fields=requested_fields,
-            data_source_synchronization=data_source_sync,
-            org_unit_id=org_unit.pk,
-            # Old values.
-            old_parent_id=None,
-            old_name="",
-            old_org_unit_type_id=None,
-            old_location=None,
-            old_opening_date=None,
-            old_closed_date=None,
-            # New values.
-            new_parent=new_parent,
-            new_name=org_unit.name,
-            new_opening_date=org_unit.opening_date,
-            new_closed_date=org_unit.closed_date,
-        )
-
-        return org_unit_change_request, group_changes
-
-    def _handle_modified(self, diff, data_source_sync):
-        """
-        TODO.
-        """
-        changes = {
-            comparison["field"]: comparison["after"]
-            for comparison in diff["comparisons"]
-            if comparison["status"] == "modified"
-            and comparison["field"] in ["name", "parent", "opening_date", "closed_date"]
-        }
-
-        group_changes = [
-            comparison
-            for comparison in diff["comparisons"]
-            if comparison["status"] == "modified" and comparison["field"].startswith("group")
-        ]
-
-        org_unit = diff["orgunit_dhis2"]
-        requested_fields = []
-        new_parent = None
-        new_name = ""
-        new_opening_date = None
-        new_closed_date = None
-
-        if changes.get("parent"):
-            new_parent = changes["parent"]
-            requested_fields.append("new_parent")
-
-        if changes.get("name"):
-            new_name = changes["name"]
-            requested_fields.append("new_name")
-
-        if changes.get("opening_date"):
-            new_opening_date = datetime.datetime.strptime(changes["opening_date"], "%Y-%m-%d").date()
-            requested_fields.append("new_opening_date")
-
-        if changes.get("closed_date"):
-            new_closed_date = datetime.datetime.strptime(changes["closed_date"], "%Y-%m-%d").date()
-            requested_fields.append("new_closed_date")
-
-        if group_changes:
-            requested_fields.append("new_groups")
-
-        org_unit_change_request = OrgUnitChangeRequest(
-            # Data.
-            kind=OrgUnitChangeRequest.Kind.ORG_UNIT_CHANGE,
-            created_by=data_source_sync.created_by,
-            requested_fields=requested_fields,
-            data_source_synchronization=data_source_sync,
-            org_unit_id=org_unit["id"],
-            # Old values.
-            old_parent_id=org_unit.get("parent"),
-            old_name=org_unit.get("name", ""),
-            old_org_unit_type_id=org_unit.get("org_unit_type"),
-            old_location=org_unit.get("location"),
-            old_opening_date=org_unit.get("opening_date"),
-            old_closed_date=org_unit.get("closed_date"),
-            # New values.
-            new_parent=new_parent,
-            new_name=new_name,
-            new_opening_date=new_opening_date,
-            new_closed_date=new_closed_date,
-        )
-
-        return org_unit_change_request, group_changes
-
-
 class OrgUnitChangeRequest(models.Model):
     """
     A request to change an OrgUnit.
@@ -948,7 +731,7 @@ class OrgUnitChangeRequest(models.Model):
         help_text="The data source synchronization that generated this change request.",
     )
 
-    objects = OrgUnitChangeRequestManager.from_queryset(OrgUnitChangeRequestQuerySet)()
+    objects = models.Manager.from_queryset(OrgUnitChangeRequestQuerySet)()
 
     class Meta:
         verbose_name = _("Org unit change request")

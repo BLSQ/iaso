@@ -327,7 +327,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
     def create_form_version(self):
-        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xlsx", "rb") as xls_file:
             self.client.post(
                 f"/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},

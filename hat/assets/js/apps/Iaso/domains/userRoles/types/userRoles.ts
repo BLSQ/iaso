@@ -6,6 +6,7 @@ export type UserRole = {
     created_at: string;
     updated_at?: string;
     editable_org_unit_type_ids?: number[];
+    permissions?: string[];
 };
 export type UserRolesFilterParams = {
     name?: string;

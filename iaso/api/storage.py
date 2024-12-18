@@ -356,61 +356,63 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
         This will also create a new StorageDevice if the storage_id / storage_type / account combination is not found
         """
-        user = request.user
-
-        for log_data in request.data:
-            # We receive an array of logs, we'll process them one by one
-            log_id = log_data["id"]
-
-            try:
-                StorageLogEntry.objects.get(id=log_id)
-                # That log entry already exists, skip it
-            except StorageLogEntry.DoesNotExist:
-                # New log entry, we continue
-                storage_id = log_data["storage_id"]
-                storage_type = log_data["storage_type"]
-                operation_type = log_data["operation_type"]
-
-                if storage_type not in [c[1] for c in StorageDevice.STORAGE_TYPE_CHOICES]:
-                    raise ValueError(f"Invalid storage type: {storage_type}")
-
-                if operation_type not in [c[1] for c in StorageLogEntry.OPERATION_TYPE_CHOICES]:
-                    raise ValueError(f"Invalid operation type: {operation_type}")
-
-                performed_at = timestamp_to_utc_datetime(int(log_data["performed_at"]))
-
-                concerned_instances = Instance.objects.none()
-                if "instances" in log_data:
-                    concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
-
-                concerned_orgunit = None
-                if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:
-                    concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
-
-                concerned_entity = None
-                entity_id = log_data.get("entity_id") or log_data.get("entity_uuid")
-                if entity_id:
-                    concerned_entity = Entity.objects.get(uuid=entity_id)
-
-                account = user.iaso_profile.account
-
-                # 1. Create the storage device, if needed
-                device, _ = StorageDevice.objects.get_or_create(
-                    account=account, customer_chosen_id=storage_id, type=storage_type
-                )
-
-                StorageLogEntry.objects.create_and_update_device(
-                    log_id=log_id,
-                    device=device,
-                    operation_type=operation_type,
-                    performed_at=performed_at,
-                    user=user,
-                    concerned_orgunit=concerned_orgunit,
-                    concerned_entity=concerned_entity,
-                    concerned_instances=concerned_instances,
-                )
+        import_storage_logs(request.data, request.user)
 
         return Response("", status=status.HTTP_201_CREATED)
+
+
+def import_storage_logs(data, user):
+    for log_data in data:
+        # We receive an array of logs, we'll process them one by one
+        log_id = log_data["id"]
+
+        try:
+            StorageLogEntry.objects.get(id=log_id)
+            # That log entry already exists, skip it
+        except StorageLogEntry.DoesNotExist:
+            # New log entry, we continue
+            storage_id = log_data["storage_id"]
+            storage_type = log_data["storage_type"]
+            operation_type = log_data["operation_type"]
+
+            if storage_type not in [c[1] for c in StorageDevice.STORAGE_TYPE_CHOICES]:
+                raise ValueError(f"Invalid storage type: {storage_type}")
+
+            if operation_type not in [c[1] for c in StorageLogEntry.OPERATION_TYPE_CHOICES]:
+                raise ValueError(f"Invalid operation type: {operation_type}")
+
+            performed_at = timestamp_to_utc_datetime(int(log_data["performed_at"]))
+
+            concerned_instances = Instance.objects.none()
+            if "instances" in log_data:
+                concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
+
+            concerned_orgunit = None
+            if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:
+                concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
+
+            concerned_entity = None
+            entity_id = log_data.get("entity_id") or log_data.get("entity_uuid")
+            if entity_id:
+                concerned_entity = Entity.objects.get(uuid=entity_id)
+
+            account = user.iaso_profile.account
+
+            # 1. Create the storage device, if needed
+            device, _ = StorageDevice.objects.get_or_create(
+                account=account, customer_chosen_id=storage_id, type=storage_type
+            )
+
+            StorageLogEntry.objects.create_and_update_device(
+                log_id=log_id,
+                device=device,
+                operation_type=operation_type,
+                performed_at=performed_at,
+                user=user,
+                concerned_orgunit=concerned_orgunit,
+                concerned_entity=concerned_entity,
+                concerned_instances=concerned_instances,
+            )
 
 
 def logs_for_device_generate_export(

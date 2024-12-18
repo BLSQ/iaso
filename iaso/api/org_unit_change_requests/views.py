@@ -75,6 +75,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 "old_parent",
                 "new_org_unit_type",
                 "old_org_unit_type",
+                "org_unit__version",
             )
             .prefetch_related(
                 "org_unit__groups",
@@ -88,6 +89,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             )
             .exclude_soft_deleted_new_reference_instances()
         )
+
         return org_units_change_requests.filter(org_unit__in=org_units)
 
     def has_org_unit_permission(self, org_unit_to_change: OrgUnit) -> None:

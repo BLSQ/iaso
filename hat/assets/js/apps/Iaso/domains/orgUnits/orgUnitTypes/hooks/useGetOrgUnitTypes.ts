@@ -3,12 +3,12 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import {
-    PaginatedOrgUnitTypes,
     OrgUnitTypesParams,
+    PaginatedOrgUnitTypes,
 } from '../../types/orgunitTypes';
 
 const queryParamsMap = new Map([['projectIds', 'project_ids']]);
-const apiParamsKeys = ['order', 'page', 'limit', 'search'];
+const apiParamsKeys = ['order', 'page', 'limit', 'search', 'with_units_count'];
 
 const getParams = (params: OrgUnitTypesParams) => {
     const { pageSize, ...urlParams } = params;

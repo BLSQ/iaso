@@ -37,6 +37,7 @@ def etl_ssd():
     ETL().journey_with_visit_and_steps_per_visit(child_account, "U5")
 
     pbwg_account = ETL(["pbwg_1"]).account_related_to_entity_type()
+    Beneficiary.objects.all().filter(account=pbwg_account).delete()
     PBWG().run()
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"

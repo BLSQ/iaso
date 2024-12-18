@@ -4,22 +4,40 @@ import logging
 import uuid
 
 from itertools import islice
+from typing import Optional
+from dataclasses import dataclass
+
 
 from iaso.models import OrgUnit, OrgUnitChangeRequest, DataSourceSynchronization
 
 logger = logging.getLogger(__name__)
 
 
+@dataclass
+class ChangeRequestGroupsInfo:
+    change_request_id: Optional[int]
+    org_unit_id: int
+    old_groups_ids: set[int]
+    new_groups_ids: set[int]
+
+
+@dataclass
+class OrgUnitSourceVersionMatching:
+    old_id: int
+    new_id: Optional[int]
+    new_parent_id: Optional[int]
+
+
 class Synchronizer:
     def __init__(self, data_source_sync: DataSourceSynchronization):
         self.data_source_sync = data_source_sync
         self.diffs = json.loads(data_source_sync.json_diff)
+        self.change_requests_to_bulk_create = []
+        self.org_units_to_bulk_create = []
+        self.change_requests_groups_to_bulk_create = {}
+        self.org_units_source_version_matching = {}
         self.insert_batch_size = 100
         self.json_batch_size = 10
-        self.groups_for_change_requests = []
-        self.change_requests = []
-        self.org_units = []
-        self.org_units_matching = {}
 
     def synchronize(self) -> None:
         self._prepare_missing_org_units()
@@ -47,8 +65,8 @@ class Synchronizer:
                 break
 
             for diff in batch_diff:
-                org_unit = diff["orgunit_ref"]
-                org_unit = OrgUnit.objects.select_related("parent").get(pk=org_unit["id"])
+                org_unit_id = diff["orgunit_ref"]["id"]
+                org_unit = OrgUnit.objects.select_related("parent").get(pk=org_unit_id)
 
                 new_parent = None
                 if org_unit.parent:
@@ -56,26 +74,26 @@ class Synchronizer:
                         source_ref=org_unit.parent.source_ref, version=self.data_source_sync.source_version_to_update
                     )
 
-                self.org_units_matching[org_unit.source_ref] = {
-                    "new_id": None,  # This doesn't exist yet.
-                    "new_parent": new_parent,
-                    "old_id": org_unit.pk,
-                }
+                self.org_units_source_version_matching[org_unit.source_ref] = OrgUnitSourceVersionMatching(
+                    new_id=None,  # This will be populated after the bulk creation.
+                    new_parent_id=new_parent.pk if new_parent else None,
+                    old_id=org_unit_id,
+                )
 
                 # Duplicate the `OrgUnit` in the source version to update.
                 org_unit.pk = None
+                org_unit.validation_status = org_unit.VALIDATION_NEW
                 org_unit.parent = new_parent
                 org_unit.version = self.data_source_sync.source_version_to_update
-                org_unit.validation_status = org_unit.VALIDATION_NEW
                 org_unit.uuid = uuid.uuid4()
                 org_unit.creator = self.data_source_sync.created_by
-                org_unit.path = None
+                org_unit.path = None  # This will be calculated if the change request is approved.
 
-                self.org_units.append(org_unit)
+                self.org_units_to_bulk_create.append(org_unit)
 
     def _bulk_create_missing_org_units(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
-        new_org_units_generator = (item for item in self.org_units)
+        new_org_units_generator = (item for item in self.org_units_to_bulk_create)
 
         while True:
             batch = list(islice(new_org_units_generator, self.insert_batch_size))
@@ -85,7 +103,7 @@ class Synchronizer:
 
             new_org_units = OrgUnit.objects.bulk_create(batch, self.insert_batch_size)
             for new_org_unit in new_org_units:
-                self.org_units_matching[new_org_unit.source_ref]["new_id"] = new_org_unit.pk
+                self.org_units_source_version_matching[new_org_unit.source_ref].new_id = new_org_unit.pk
 
     def _prepare_change_requests(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
@@ -107,25 +125,23 @@ class Synchronizer:
                 if not change_request:
                     continue
 
-                self.change_requests.append(change_request)
+                self.change_requests_to_bulk_create.append(change_request)
 
                 if group_changes:
-                    self.groups_for_change_requests.append(
-                        {
-                            "change_request_id": None,  # This doesn't exist yet.
-                            "org_unit_id": change_request.org_unit_id,
-                            "old_groups_ids": {
-                                group["iaso_id"] for group_change in group_changes for group in group_change["before"]
-                            },
-                            "new_groups_ids": {
-                                group["iaso_id"] for group_change in group_changes for group in group_change["after"]
-                            },
-                        }
+                    self.change_requests_groups_to_bulk_create[change_request.org_unit_id] = ChangeRequestGroupsInfo(
+                        change_request_id=None,  # This will be populated after the bulk creation.
+                        org_unit_id=change_request.org_unit_id,
+                        old_groups_ids={
+                            group["iaso_id"] for group_change in group_changes for group in group_change["before"]
+                        },
+                        new_groups_ids={
+                            group["iaso_id"] for group_change in group_changes for group in group_change["after"]
+                        },
                     )
 
-    def _prepare_new_change_requests(self, diff):
+    def _prepare_new_change_requests(self, diff: dict) -> tuple[Optional[OrgUnitChangeRequest], Optional[list]]:
         # TODO: groups.
-        group_changes = None
+        group_changes = []
 
         org_unit = diff["orgunit_ref"]
         requested_fields = [
@@ -135,7 +151,10 @@ class Synchronizer:
         ]
 
         if not requested_fields:
-            logger.error("Empty `requested_fields`", extra={"diff": diff, "data_source_sync": self.data_source_sync})
+            logger.error(
+                "Empty `requested_fields`. This shouldn't",
+                extra={"diff": diff, "data_source_sync": self.data_source_sync},
+            )
             return None, None
 
         new_name = ""
@@ -153,14 +172,16 @@ class Synchronizer:
         if group_changes:
             requested_fields.append("new_groups")
 
+        matching = self.org_units_source_version_matching[org_unit["source_ref"]]
+
         org_unit_change_request = OrgUnitChangeRequest(
             # Data.
             kind=OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION,
             created_by=self.data_source_sync.created_by,
             requested_fields=requested_fields,
             data_source_synchronization=self.data_source_sync,
-            org_unit_id=self.org_units_matching[org_unit["source_ref"]]["new_id"],
-            # Old values.
+            org_unit_id=matching.new_id,
+            # No old values because we are creating a new org unit.
             old_parent_id=None,
             old_name="",
             old_org_unit_type_id=None,
@@ -168,7 +189,7 @@ class Synchronizer:
             old_opening_date=None,
             old_closed_date=None,
             # New values.
-            new_parent=self.org_units_matching[org_unit["source_ref"]]["new_parent"],
+            new_parent_id=matching.new_parent_id,
             new_name=new_name,
             new_opening_date=new_opening_date,
             new_closed_date=new_closed_date,
@@ -176,7 +197,7 @@ class Synchronizer:
 
         return org_unit_change_request, group_changes
 
-    def _prepare_modified_change_requests(self, diff):
+    def _prepare_modified_change_requests(self, diff: dict) -> tuple[OrgUnitChangeRequest, list]:
         changes = {
             comparison["field"]: comparison["after"]
             for comparison in diff["comparisons"]
@@ -241,7 +262,7 @@ class Synchronizer:
 
     def _bulk_create_change_requests(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
-        new_change_requests_generator = (item for item in self.change_requests)
+        new_change_requests_generator = (item for item in self.change_requests_to_bulk_create)
 
         while True:
             batch = list(islice(new_change_requests_generator, self.insert_batch_size))
@@ -251,30 +272,27 @@ class Synchronizer:
 
             change_requests = OrgUnitChangeRequest.objects.bulk_create(batch, self.insert_batch_size)
 
-            # Assign each group to the correct change request.
             for change_request in change_requests:
-                groups_change_request = next(
-                    (cr for cr in self.groups_for_change_requests if cr["org_unit_id"] == change_request.org_unit_id),
-                    None,
-                )
-                if groups_change_request:
-                    groups_change_request["change_request_id"] = change_request.id
+                groups_to_bulk_create = self.change_requests_groups_to_bulk_create.get(change_request.org_unit_id)
+                if groups_to_bulk_create:
+                    # Link groups to the new change request.
+                    groups_to_bulk_create.change_request_id = change_request.pk
 
     def _bulk_create_change_request_groups(self) -> None:
         old_groups = []
         new_groups = []
 
-        for groups in self.groups_for_change_requests:
-            for old_group_id in groups["old_groups_ids"]:
+        for groups_info in self.change_requests_groups_to_bulk_create.values():
+            for old_group_id in groups_info.old_groups_ids:
                 old_groups.append(
                     OrgUnitChangeRequest.old_groups.through(
-                        orgunitchangerequest_id=groups["change_request_id"], group_id=old_group_id
+                        orgunitchangerequest_id=groups_info.change_request_id, group_id=old_group_id
                     )
                 )
-            for new_group_id in groups["new_groups_ids"]:
+            for new_group_id in groups_info.new_groups_ids:
                 new_groups.append(
                     OrgUnitChangeRequest.new_groups.through(
-                        orgunitchangerequest_id=groups["change_request_id"], group_id=new_group_id
+                        orgunitchangerequest_id=groups_info.change_request_id, group_id=new_group_id
                     )
                 )
 

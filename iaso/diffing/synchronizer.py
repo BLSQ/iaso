@@ -8,7 +8,8 @@ from typing import Optional
 from dataclasses import dataclass
 
 
-from iaso.models import OrgUnit, OrgUnitChangeRequest, DataSourceSynchronization
+from iaso.models import Group, OrgUnit, OrgUnitChangeRequest, DataSourceSynchronization
+
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +35,16 @@ class Synchronizer:
         self.diffs = json.loads(data_source_sync.json_diff)
         self.change_requests_to_bulk_create = []
         self.org_units_to_bulk_create = []
+        self.groups_to_bulk_create = []
         self.change_requests_groups_to_bulk_create = {}
         self.org_units_source_version_matching = {}
         self.insert_batch_size = 100
         self.json_batch_size = 10
 
     def synchronize(self) -> None:
-        self._prepare_missing_org_units()
+        self._prepare_missing_org_units_and_groups()
         self._bulk_create_missing_org_units()
+        self._bulk_create_missing_groups()
         self._prepare_change_requests()
         self._bulk_create_change_requests()
         self._bulk_create_change_request_groups()
@@ -53,7 +56,7 @@ class Synchronizer:
     def _parse_date(self, date_str: str) -> datetime.date:
         return datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
 
-    def _prepare_missing_org_units(self) -> None:
+    def _prepare_missing_org_units_and_groups(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
         missing_org_units_diff_generator = (diff for diff in self._sort_by_path(self.diffs) if diff["status"] == "new")
 
@@ -64,12 +67,16 @@ class Synchronizer:
             if not batch_diff:
                 break
 
+            org_unit_ids = [diff["orgunit_ref"]["id"] for diff in batch_diff]
+            org_units = OrgUnit.objects.filter(pk__in=org_unit_ids).select_related("parent").prefetch_related("groups")
+
             for diff in batch_diff:
                 org_unit_id = diff["orgunit_ref"]["id"]
-                org_unit = OrgUnit.objects.select_related("parent").get(pk=org_unit_id)
+                org_unit = next(org_unit for org_unit in org_units if org_unit.id == org_unit_id)
 
                 new_parent = None
                 if org_unit.parent:
+                    # Find the corresponding parent in the source version to update.
                     new_parent = OrgUnit.objects.get(
                         source_ref=org_unit.parent.source_ref, version=self.data_source_sync.source_version_to_update
                     )
@@ -79,6 +86,12 @@ class Synchronizer:
                     new_parent_id=new_parent.pk if new_parent else None,
                     old_id=org_unit_id,
                 )
+
+                # TODO: ensure uniqueness of groups.
+                for group in org_unit.groups.all():
+                    group.pk = None
+                    group.source_version = self.data_source_sync.source_version_to_update
+                    self.groups_to_bulk_create.append(group)
 
                 # Duplicate the `OrgUnit` in the source version to update.
                 org_unit.pk = None
@@ -96,14 +109,26 @@ class Synchronizer:
         new_org_units_generator = (item for item in self.org_units_to_bulk_create)
 
         while True:
-            batch = list(islice(new_org_units_generator, self.insert_batch_size))
+            batch_subset = list(islice(new_org_units_generator, self.insert_batch_size))
 
-            if not batch:
+            if not batch_subset:
                 break
 
-            new_org_units = OrgUnit.objects.bulk_create(batch, self.insert_batch_size)
+            new_org_units = OrgUnit.objects.bulk_create(batch_subset, self.insert_batch_size)
             for new_org_unit in new_org_units:
                 self.org_units_source_version_matching[new_org_unit.source_ref].new_id = new_org_unit.pk
+
+    def _bulk_create_missing_groups(self) -> None:
+        # Cast the list into a generator to be able to iterate over it chunk by chunk.
+        new_groups_generator = (item for item in self.groups_to_bulk_create)
+
+        while True:
+            batch_subset = list(islice(new_groups_generator, self.json_batch_size))
+
+            if not batch_subset:
+                break
+
+            Group.objects.bulk_create(batch_subset, self.insert_batch_size)
 
     def _prepare_change_requests(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
@@ -265,12 +290,12 @@ class Synchronizer:
         new_change_requests_generator = (item for item in self.change_requests_to_bulk_create)
 
         while True:
-            batch = list(islice(new_change_requests_generator, self.insert_batch_size))
+            batch_subset = list(islice(new_change_requests_generator, self.insert_batch_size))
 
-            if not batch:
+            if not batch_subset:
                 break
 
-            change_requests = OrgUnitChangeRequest.objects.bulk_create(batch, self.insert_batch_size)
+            change_requests = OrgUnitChangeRequest.objects.bulk_create(batch_subset, self.insert_batch_size)
 
             for change_request in change_requests:
                 groups_to_bulk_create = self.change_requests_groups_to_bulk_create.get(change_request.org_unit_id)

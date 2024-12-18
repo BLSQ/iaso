@@ -55,7 +55,6 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
         )
-        cls.angola_country_to_update.calculate_paths()
         cls.angola_country_to_update.groups.set([cls.group_b, cls.group_c])
 
         cls.angola_region_to_update = m.OrgUnit.objects.create(
@@ -82,7 +81,6 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
         )
-        cls.angola_country_to_compare_with.calculate_paths()
         cls.angola_country_to_compare_with.groups.set([cls.group_a])
 
         cls.angola_region_to_compare_with = m.OrgUnit.objects.create(
@@ -95,7 +93,6 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
         )
-        cls.angola_region_to_compare_with.calculate_paths()
 
         cls.angola_district_to_compare_with = m.OrgUnit.objects.create(
             parent=cls.angola_region_to_compare_with,
@@ -107,10 +104,14 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
         )
-        cls.angola_district_to_compare_with.calculate_paths()
+        cls.angola_district_to_compare_with.groups.set([cls.group_a])
 
         cls.account = m.Account.objects.create(name="Account")
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
+
+        # Calculate paths.
+        cls.angola_country_to_update.calculate_paths()
+        cls.angola_country_to_compare_with.calculate_paths()
 
     @time_machine.travel(DT, tick=False)
     def test_create(self):
@@ -333,3 +334,6 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(new_org_unit.parent.version, data_source_sync.source_version_to_update)
         self.assertEqual(new_org_unit.creator, data_source_sync.created_by)
         self.assertEqual(new_org_unit.validation_status, new_org_unit.VALIDATION_NEW)
+
+        new_group = m.Group.objects.get(name="Group A", source_version=data_source_sync.source_version_to_update)
+        self.assertEqual(new_group.org_units.count(), 0)

@@ -14,21 +14,22 @@ logger = logging.getLogger(__name__)
 def archive_stock_for_round(round, vaccine_stock, reference_date, country=None):
     vaccine_stock_for_vaccine = vaccine_stock
 
-    if vaccine_stock_for_vaccine.exists():
+    if vaccine_stock_for_vaccine:
         if not country:
-            vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.filter(country=round.campaign.country.id)
-        vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.first()
-        calculator = VaccineStockCalculator(vaccine_stock_for_vaccine)
-        total_usable_vials_in, total_usable_doses_in = calculator.get_total_of_usable_vials(reference_date)
-        total_unusable_vials_in, total_unusable_doses_in = calculator.get_total_of_unusable_vials(reference_date)
-        VaccineStockHistory.objects.create(
-            vaccine_stock=vaccine_stock_for_vaccine,
-            round=round,
-            usable_vials_in=total_usable_vials_in,
-            usable_doses_in=total_usable_doses_in,
-            unusable_vials_in=total_unusable_vials_in,
-            unusable_doses_in=total_unusable_doses_in,
-        )
+            vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.filter(country=round.campaign.country)
+        if vaccine_stock_for_vaccine:
+            vaccine_stock_for_vaccine = vaccine_stock_for_vaccine.first()
+            calculator = VaccineStockCalculator(vaccine_stock_for_vaccine)
+            total_usable_vials_in, total_usable_doses_in = calculator.get_total_of_usable_vials(reference_date)
+            total_unusable_vials_in, total_unusable_doses_in = calculator.get_total_of_unusable_vials(reference_date)
+            VaccineStockHistory.objects.create(
+                vaccine_stock=vaccine_stock_for_vaccine,
+                round=round,
+                usable_vials_in=total_usable_vials_in,
+                usable_doses_in=total_usable_doses_in,
+                unusable_vials_in=total_unusable_vials_in,
+                unusable_doses_in=total_unusable_doses_in,
+            )
 
 
 @task_decorator(task_name="archive_vaccine_stock")
@@ -38,7 +39,9 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
     reference_date = datetime.strptime(date, "%Y-%m-%d") if date else task_start
     round_end_date = reference_date - timedelta(days=14)
 
-    rounds_qs = Round.objects.filter(ended_at__lte=round_end_date, campaign__account=account)
+    rounds_qs = Round.objects.filter(ended_at__lte=round_end_date, campaign__account=account).select_related(
+        "campaign__country"
+    )
 
     if country:
         rounds_qs = rounds_qs.filter(campaign__country__id=country)
@@ -69,20 +72,21 @@ def archive_vaccine_stock_for_rounds(date=None, country=None, campaign=None, vac
     i = 0
     for vax in vaccines:
         qs = vax_dict[vax]
-        vaccine_stock = VaccineStock.objects.filter(vaccine=vax)
 
         for r in qs:
             i += 1
-            try:
-                archive_stock_for_round(round=r, reference_date=reference_date, vaccine_stock=vaccine_stock)
-                task.report_progress_and_stop_if_killed(
-                    progress_value=i,
-                    end_value=count,
-                    progress_message=f"Stock history added for {r.pk} and vaccine {vax}",
-                )
-            except IntegrityError:
-                task.report_progress_and_stop_if_killed(
-                    progress_value=i,
-                    end_value=count,
-                    progress_message=f"Could not add stock history for round {r.pk} vaccine {vax}. History already exists",
-                )
+            vaccine_stock = VaccineStock.objects.filter(vaccine=vax)
+            if vaccine_stock:
+                try:
+                    archive_stock_for_round(round=r, reference_date=reference_date, vaccine_stock=vaccine_stock)
+                    task.report_progress_and_stop_if_killed(
+                        progress_value=i,
+                        end_value=count,
+                        progress_message=f"Stock history added for {r.pk} and vaccine {vax}",
+                    )
+                except IntegrityError:
+                    task.report_progress_and_stop_if_killed(
+                        progress_value=i,
+                        end_value=count,
+                        progress_message=f"Could not add stock history for round {r.pk} vaccine {vax}. History already exists",
+                    )

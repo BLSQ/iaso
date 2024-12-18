@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 def etl_ng():
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     logger.info("Starting ETL for Nigeria")
-    account = ETL(["ng_-_tsfp_child_3", "ng_-_otp_child_3"]).account_related_to_entity_type()
+    account = ETL(["child_under_5_3"]).account_related_to_entity_type()
+    Beneficiary.objects.all().filter(account=account).delete()
     NG_Under5().run()
 
     logger.info(
@@ -27,6 +28,7 @@ def etl_ng():
 def etl_ssd():
     logger.info("Starting ETL for South Sudan")
     child_account = ETL(["child_under_5_1"]).account_related_to_entity_type()
+    Beneficiary.objects.all().filter(account=child_account).delete()
     Under5().run()
 
     logger.info(
@@ -35,6 +37,7 @@ def etl_ssd():
     ETL().journey_with_visit_and_steps_per_visit(child_account, "U5")
 
     pbwg_account = ETL(["pbwg_1"]).account_related_to_entity_type()
+    Beneficiary.objects.all().filter(account=pbwg_account).delete()
     PBWG().run()
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"

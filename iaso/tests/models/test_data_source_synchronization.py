@@ -55,6 +55,7 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
         )
+        cls.angola_country_to_update.calculate_paths()
         cls.angola_country_to_update.groups.set([cls.group_b, cls.group_c])
 
         cls.angola_region_to_update = m.OrgUnit.objects.create(
@@ -67,6 +68,7 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
         )
+        cls.angola_region_to_update.calculate_paths()
 
         # Angola pyramid to compare with (3 org units).
 
@@ -80,6 +82,7 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
         )
+        cls.angola_country_to_compare_with.calculate_paths()
         cls.angola_country_to_compare_with.groups.set([cls.group_a])
 
         cls.angola_region_to_compare_with = m.OrgUnit.objects.create(
@@ -92,6 +95,7 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
         )
+        cls.angola_region_to_compare_with.calculate_paths()
 
         cls.angola_district_to_compare_with = m.OrgUnit.objects.create(
             parent=cls.angola_region_to_compare_with,
@@ -103,6 +107,7 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
         )
+        cls.angola_district_to_compare_with.calculate_paths()
 
         cls.account = m.Account.objects.create(name="Account")
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
@@ -224,10 +229,10 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         )
         data_source_sync.create_json_diff()
 
-        # Create change requests.
+        # Synchronize source versions.
         change_requests = m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync)
         self.assertEqual(change_requests.count(), 0)
-        data_source_sync.create_change_requests()
+        data_source_sync.synchronize_source_versions()
         self.assertEqual(change_requests.count(), 3)
 
         # Change request #1 to update an existing OrgUnit.

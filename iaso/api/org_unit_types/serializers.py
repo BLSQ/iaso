@@ -80,15 +80,13 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
 
     # Fixme make this directly in db !
     def get_units_count(self, obj: OrgUnitType):
-        # Skip computation if the parameter is not present
-        if not self.context["request"].query_params.get("with_units_count"):
-            return None
-
-        orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
-            self.context["request"].user, self.context["request"].query_params.get("app_id")
-        ).filter(Q(validated=True) & Q(org_unit_type__id=obj.id))
-        orgunits_count = orgUnits.count()
-        return orgunits_count
+        # Show count if it's a detail view OR if with_units_count parameter is present
+        if self.context.get('view_action') == 'retrieve' or self.context["request"].query_params.get("with_units_count"):
+            orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
+                self.context["request"].user, self.context["request"].query_params.get("app_id")
+            ).filter(Q(validated=True) & Q(org_unit_type__id=obj.id))
+            return orgUnits.count()
+        return None
 
     def get_sub_unit_types(self, obj: OrgUnitType):
         # Filter sub unit types to show only visible items for the current app id
@@ -190,15 +188,13 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
 
     # Fixme make this directly in db !
     def get_units_count(self, obj: OrgUnitType):
-        # Skip computation if the parameter is not present
-        if not self.context["request"].query_params.get("with_units_count"):
-            return None
-
-        orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
-            self.context["request"].user, self.context["request"].query_params.get("app_id")
-        ).filter(Q(validation_status=OrgUnit.VALIDATION_VALID) & Q(org_unit_type__id=obj.id))
-        orgunits_count = orgUnits.count()
-        return orgunits_count
+        # Show count if it's a detail view OR if with_units_count parameter is present
+        if self.context.get('view_action') == 'retrieve' or self.context["request"].query_params.get("with_units_count"):
+            orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
+                self.context["request"].user, self.context["request"].query_params.get("app_id")
+            ).filter(Q(validation_status=OrgUnit.VALIDATION_VALID) & Q(org_unit_type__id=obj.id))
+            return orgUnits.count()
+        return None
 
     def get_reference_forms(self, obj: OrgUnitType):
         return FormSerializer(
@@ -261,7 +257,7 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
 
     def to_representation(self, instance):
         # Remove units_count from fields if not requested
-        if not self.context["request"].query_params.get("with_units_count"):
+        if  not self.context.get('view_action') == 'retrieve' and not self.context["request"].query_params.get("with_units_count"):
             self.fields.pop("units_count", None)
         return super().to_representation(instance)
 

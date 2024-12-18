@@ -2,7 +2,7 @@ import random
 
 
 def associate_favorite_picture(iaso_client):
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?with_units_count=true")["orgUnitTypes"]
 
     for org_unit_type in org_unit_types:
         orgunits = iaso_client.get(

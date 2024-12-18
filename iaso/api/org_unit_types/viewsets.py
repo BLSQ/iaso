@@ -45,6 +45,11 @@ class OrgUnitTypeViewSet(ModelViewSet):
 
         return queryset.order_by("depth").distinct().order_by(*orders)
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['view_action'] = self.action
+        return context
+
 
 class OrgUnitTypeViewSetV2(ModelViewSet):
     """Org unit types API
@@ -101,3 +106,8 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['view_action'] = self.action
+        return context

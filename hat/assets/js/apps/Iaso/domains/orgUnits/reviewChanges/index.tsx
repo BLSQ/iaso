@@ -79,6 +79,7 @@ export const ReviewOrgUnitChanges: FunctionComponent = () => {
             users: params.userIds,
             user_roles: params.userRoles,
             with_location: params.withLocation,
+            source_version_id: params.source_version_id,
         }),
         [
             params.created_at_after,
@@ -87,6 +88,7 @@ export const ReviewOrgUnitChanges: FunctionComponent = () => {
             params.groups,
             params.org_unit_type_id,
             params.parent_id,
+            params.source_version_id,
             params.status,
             params.userIds,
             params.userRoles,

@@ -1038,9 +1038,17 @@ class VaccineRequestFormType(models.TextChoices):
 
 
 class VaccineRequestForm(SoftDeletableModel):
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
-    vaccine_type = models.CharField(max_length=12, choices=VACCINES)
-    rounds = models.ManyToManyField(Round)
+    class Meta:
+        indexes = [
+            models.Index(fields=["campaign", "vaccine_type"]),  # Frequently filtered together
+            models.Index(fields=["vrf_type"]),  # Filtered in repository_forms.py
+            models.Index(fields=["created_at"]),  # Used for ordering
+            models.Index(fields=["updated_at"]),  # Used for ordering
+        ]
+
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, db_index=True)
+    vaccine_type = models.CharField(max_length=5, choices=VACCINES)
+    rounds = models.ManyToManyField(Round, db_index=True)
     date_vrf_signature = models.DateField(null=True, blank=True)
     date_vrf_reception = models.DateField(null=True, blank=True)
     date_dg_approval = models.DateField(null=True, blank=True)
@@ -1119,6 +1127,13 @@ class VaccinePreAlert(models.Model):
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["request_form", "estimated_arrival_time"]),  # Used together in queries
+            models.Index(fields=["po_number"]),  # Unique field that's queried
+            models.Index(fields=["date_pre_alert_reception"]),  # Used for filtering/ordering
+        ]
+
 
 class VaccineArrivalReport(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
@@ -1154,6 +1169,13 @@ class VaccineArrivalReport(models.Model):
 
         super().save(*args, **kwargs)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["request_form", "arrival_report_date"]),  # Frequently queried together
+            models.Index(fields=["po_number"]),  # Unique field that's queried
+            models.Index(fields=["doses_received"]),  # Used in aggregations
+        ]
+
 
 class VaccineStock(models.Model):
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="vaccine_stocks")
@@ -1169,6 +1191,10 @@ class VaccineStock(models.Model):
 
     class Meta:
         unique_together = ("country", "vaccine")
+        indexes = [
+            models.Index(fields=["country", "vaccine"]),  # Already unique_together, but used in many queries
+            models.Index(fields=["account"]),  # Frequently filtered by account
+        ]
 
     def __str__(self):
         return f"{self.country} - {self.vaccine}"
@@ -1206,6 +1232,13 @@ class VaccineStockHistory(models.Model):
 
 # Form A
 class OutgoingStockMovement(models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "campaign"]),  # Frequently queried together
+            models.Index(fields=["form_a_reception_date"]),  # Used in ordering
+            models.Index(fields=["report_date"]),  # Used in filtering/ordering
+        ]
+
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
     vaccine_stock = models.ForeignKey(
@@ -1236,6 +1269,12 @@ class DestructionReport(models.Model):
         storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/", null=True, blank=True
     )
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "destruction_report_date"]),  # Used together in queries
+            models.Index(fields=["rrt_destruction_report_reception_date"]),  # Used in filtering
+        ]
+
 
 class IncidentReport(models.Model):
     class StockCorrectionChoices(models.TextChoices):
@@ -1263,6 +1302,12 @@ class IncidentReport(models.Model):
     document = models.FileField(
         storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/", null=True, blank=True
     )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "date_of_incident_report"]),  # Frequently queried together
+            models.Index(fields=["incident_report_received_by_rrt"]),  # Used in filtering
+        ]
 
 
 class Notification(models.Model):

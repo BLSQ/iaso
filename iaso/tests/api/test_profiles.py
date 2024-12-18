@@ -3,11 +3,13 @@ import typing
 import jsonschema
 import numpy as np
 import pandas as pd
+from django.contrib.auth import get_user_model
 
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
 from django.test import override_settings
 from django.utils.translation import gettext as _
+from rest_framework import status
 
 from hat.menupermissions import models as permission
 from hat.menupermissions.constants import MODULES
@@ -273,6 +275,28 @@ class ProfileAPITestCase(APITestCase):
         self.assertHasField(response_data, "permissions", list)
         self.assertHasField(response_data, "is_superuser", bool)
         self.assertHasField(response_data, "org_units", list)
+
+    def test_profile_me_no_profile(self):
+        """GET /profiles/me/ with auth, but without profile
+        The goal is to know that this call doesn't result in a 500 error
+        """
+        User = get_user_model()
+        username = "I don't have a profile, i'm sad :("
+        user_without_profile = User.objects.create(username=username)
+        self.client.force_authenticate(user_without_profile)
+        response = self.client.get("/api/profiles/me/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertEqual(response_data["user_name"], username)
+        self.assertEqual(response_data["first_name"], "")
+        self.assertEqual(response_data["last_name"], "")
+        self.assertEqual(response_data["user_id"], user_without_profile.id)
+        self.assertEqual(response_data["email"], "")
+        self.assertEqual(response_data["projects"], [])
+        self.assertFalse(response_data["is_staff"])
+        self.assertFalse(response_data["is_superuser"])
+        self.assertIsNone(response_data["account"])
 
     def test_profile_me_superuser_ok(self):
         """GET /profiles/me/ with auth (superuser)"""

@@ -213,30 +213,32 @@ def get_first_and_last_day(date_str):
 def patient_list_api(request, org_unit_id, period):
     xls = request.GET.get("xls", None)
     mode = request.GET.get("mode", "default")
-    latest_ids = ActivePatientsList.objects.filter(org_unit_id=org_unit_id).values('identifier_code').annotate(latest_id=Max('id'))
-    print("latest_ids", latest_ids)
-    patients = ActivePatientsList.objects.filter(id__in=[item['latest_id'] for item in latest_ids])
-    print(patients.query)
-    if mode == 'default':
+    latest_ids = (
+        ActivePatientsList.objects.filter(org_unit_id=org_unit_id)
+        .values("identifier_code")
+        .annotate(latest_id=Max("id"))
+    )
+
+    patients = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids])
+    if mode == "default":
         last_import = Import.objects.filter(org_unit=org_unit_id)
         last_import = last_import.filter(month=period).order_by("-creation_date").first()
         patients = ActivePatientsList.objects.filter(import_source=last_import).order_by("number")
-    elif mode == 'expected':
+    elif mode == "expected":
         first_day_str, last_day_str = get_first_and_last_day(period)
         patients = (
             patients.filter(active=True)
             .filter(next_dispensation_date__gte=first_day_str)
             .filter(next_dispensation_date__lte=last_day_str)
-            .filter(org_unit_id=org_unit_id).order_by("next_dispensation_date")
+            .filter(org_unit_id=org_unit_id)
+            .order_by("next_dispensation_date")
         )
-    elif mode == 'active':
+    elif mode == "active":
         patients = patients.filter(active=True).filter(org_unit_id=org_unit_id)
-    elif mode == 'lost':
+    elif mode == "lost":
         today = date.today()
         patients = (
-            patients.filter(active=True)
-            .filter(next_dispensation_date__lte=today)
-            .filter(org_unit_id=org_unit_id)
+            patients.filter(active=True).filter(next_dispensation_date__lte=today).filter(org_unit_id=org_unit_id)
         )
 
     if xls is None:
@@ -245,9 +247,9 @@ def patient_list_api(request, org_unit_id, period):
             patient_object = {}
             for field in PATIENT_LIST_DISPLAY_FIELDS:
                 patient_object[PATIENT_LIST_DISPLAY_FIELDS[field]] = get_human_readable_value(patient, field)
-                if mode in ('expected', 'lost', 'active'):
-                    if field == 'days_dispensed':
-                        patient_object['Date de rupture'] = get_human_readable_value(patient, 'next_dispensation_date')
+                if mode in ("expected", "lost", "active"):
+                    if field == "days_dispensed":
+                        patient_object["Date de rupture"] = get_human_readable_value(patient, "next_dispensation_date")
             table_content.append(patient_object)
         res = {
             "table_content": table_content,
@@ -360,7 +362,7 @@ def import_data(file, the_import):
 
     # Read the CSV file into a DataFrame
     df = pd.read_excel(file, sheet_name=0)
-
+    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)  # trimming all white spaces
     # Rename columns
     df = df.rename(
         columns={
@@ -378,6 +380,9 @@ def import_data(file, the_import):
             "Retour dans les soins": "return_to_care",
             "TB / VIH": "tb_hiv",
             "Type de VIH": "hiv_type",
+            "Régime": "REGIME",
+            "régime": "REGIME",
+            "regime": "REGIME",
             "Ligne therapeuthique": "treatment_line",
             "Ligne thérapeutique": "treatment_line",
             "Date de la dernière dispensation": "last_dispensation_date",
@@ -404,9 +409,9 @@ def import_data(file, the_import):
         df[col] = df[col].apply(lambda x: True if x == 1 else False)
 
     # Map values in column `stable`
-    df["stable"] = df["stable"].map({"Oui": True, "Non": False})
-    df["sex"] = df["sex"].map({"F": "FEMALE", "M": "MALE"})
-    df["treatment_line"] = df["treatment_line"].map(
+    df["stable"] = df["stable"].replace({"Oui": True, "Non": False})
+    df["sex"] = df["sex"].replace({"F": "FEMALE", "M": "MALE"})
+    df["treatment_line"] = df["treatment_line"].replace(
         {
             "1er Ligne": "1STLINE",
             "2e Ligne": "2NDLINE",
@@ -419,7 +424,28 @@ def import_data(file, the_import):
             3: "3RDLINE",
         }
     )
-    df["hiv_type"] = df["hiv_type"].map(
+
+    df["REGIME"] = df["REGIME"].replace(
+        {
+            "TDF 3TC DTG": "TDF/3TC/DTG",
+            "ABC 3TC DTG": "ABC/3TC/DTG",
+            "ABC 3TC ATV-r": "ABC/3TC/ATV-r",
+            "ABC 3TC EFV": "ABC/3TC/EFV",
+            "ABC 3TC LPV-r": "ABC/3TC/LPV-r",
+            "ABC 3TC NVP": "ABC/3TC/NVP",
+            "AZT 3TC ABC": "AZT/3TC/ABC",
+            "AZT 3TC ATV-r": "AZT/3TC/ATV-r",
+            "AZT 3TC DTG": "AZT/3TC/DTG",
+            "AZT 3TC EFV": "AZT/3TC/EFV",
+            "AZT 3TC LPV-r": "AZT/3TC/LPV-r",
+            "AZT 3TC TDF": "AZT/3TC/TDF",
+            "TDF 3TC ATV-r": "TDF/3TC/ATV-r",
+            "TDF 3TC EFV": "TDF/3TC/EFV",
+            "TDF 3TC LPV-r": "TDF/3TC/LPV-r",
+        }
+    )
+
+    df["hiv_type"] = df["hiv_type"].replace(
         {
             1: HIV_HIV1,
             2: HIV_HIV2,

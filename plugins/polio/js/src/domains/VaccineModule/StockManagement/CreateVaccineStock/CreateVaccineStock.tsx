@@ -12,7 +12,7 @@ import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 import MESSAGES from '../messages';
 import { useSaveVaccineStock } from '../hooks/api';
 import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
-import { defaultVaccineOptions } from '../../SupplyChain/constants';
+import { singleVaccinesList } from '../../SupplyChain/constants';
 
 type Props = {
     isOpen: boolean;
@@ -71,7 +71,7 @@ const CreateVaccineStock: FunctionComponent<Props> = ({
                     name="vaccine"
                     component={SingleSelect}
                     required
-                    options={defaultVaccineOptions}
+                    options={singleVaccinesList}
                     withMarginTop
                     // isLoading={isFetchingCountries}
                 />

@@ -6,10 +6,10 @@ import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/co
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import MESSAGES from '../messages';
-import { polioVaccines } from '../../../../constants/virus';
 import { apiDateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import { useGetCountriesOptions } from '../hooks/api/vrf';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import { singleVaccinesList } from '../constants';
 
 type Props = { params: any };
 
@@ -83,10 +83,7 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                     keyValue="vaccine_type"
                     value={filters.vaccine_type}
                     onChange={handleChange}
-                    options={polioVaccines.map(vaccine => ({
-                        label: vaccine.label,
-                        value: vaccine.value,
-                    }))}
+                    options={singleVaccinesList}
                     labelString={formatMessage(MESSAGES.vaccine)}
                 />
                 <InputComponent

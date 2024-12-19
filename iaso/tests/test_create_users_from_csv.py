@@ -355,7 +355,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(
             response.data,
             {
-                "error": "Operation aborted. Invalid OrgUnit None chiloe 10244 at row : 2. You don't have access to this orgunit"
+                "error": "Operation aborted. Invalid OrgUnit #10244 chiloe at row : 2. You don't have access to this orgunit"
             },
         )
 

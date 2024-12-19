@@ -55,7 +55,7 @@ export const VaccineRepository: FunctionComponent = () => {
             ...params,
             tab: newTab,
         };
-        redirectTo(baseUrl, newParams);
+        redirectTo(redirectUrl, newParams);
     };
 
     return (

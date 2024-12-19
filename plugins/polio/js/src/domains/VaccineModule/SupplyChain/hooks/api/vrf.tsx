@@ -135,8 +135,8 @@ export const useCampaignDropDowns = (
         }));
         const vaccines = selectedCampaign?.single_vaccines
             ? selectedCampaign.single_vaccines.split(',').map(vaccineName => ({
-                  label: vaccineName,
-                  value: vaccineName,
+                  label: vaccineName.trim(),
+                  value: vaccineName.trim(),
               }))
             : singleVaccinesList;
         const rounds = vaccine

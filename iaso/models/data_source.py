@@ -1,7 +1,17 @@
+import logging
+import typing
+
+from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.contrib.auth.models import AnonymousUser, User
-import typing
+from django.utils.translation import gettext_lazy as _
+
+
+if typing.TYPE_CHECKING:
+    from iaso.models import OrgUnit, OrgUnitType
+
+
+logger = logging.getLogger(__name__)
 
 
 class DataSource(models.Model):
@@ -31,7 +41,7 @@ class DataSource(models.Model):
     public = models.BooleanField(default=False)
 
     def __str__(self):
-        return "%s " % (self.name,)
+        return f"#{self.pk} {self.name}"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -161,3 +171,139 @@ class SourceVersion(models.Model):
             group_report[name] = self.orgunit_set.filter(groups__id=ident).count()
         report["groups"] = group_report
         return report
+
+
+class DataSourceSynchronization(models.Model):
+    """
+    This table allows to synchronize two pyramids by creating "change requests"
+    based on their diff.
+
+    Fields that can be synchronized:
+
+        ["name", "parent", "opening_date", "closed_date", "groups"]
+
+    Basic business use case:
+
+    - often, a pyramid of org units is created in DHIS2 and imported in IASO
+    - IASO is then used to update the pyramid
+    - but meanwhile, people may continue to make changes in DHIS2
+    - as a consequence, the two pyramids diverge
+    - so we need to synchronize the changes in the two pyramids
+
+    The logic is tightly coupled with the `iaso.diffing` module:
+
+        diff = Differ().diff()
+        json_diff = Dumper().as_json(diff)
+        Synchronizer(data_source_synchronization).synchronize()
+
+    """
+
+    name = models.CharField(
+        max_length=255,
+        help_text=_("Used in the UI e.g. to filter Change Requests by Data Source Synchronization operations."),
+    )
+    source_version_to_update = models.ForeignKey(
+        SourceVersion,
+        on_delete=models.CASCADE,
+        related_name="synchronized_as_source_version_to_update",
+        help_text=_("The pyramid for which we want to generate change requests."),
+    )
+    source_version_to_compare_with = models.ForeignKey(
+        SourceVersion,
+        on_delete=models.CASCADE,
+        related_name="synchronized_as_source_version_to_compare_with",
+        help_text=_("The pyramid as a comparison."),
+    )
+
+    # The exact JSON format is defined in `iaso.diffing.dumper.DataSourceSynchronizationEncoder`.
+    json_diff = models.JSONField(null=True, blank=True, help_text=_("The diff used to create change requests."))
+    diff_config = models.TextField(
+        blank=True, help_text=_("A string representation of the parameters used for the diff.")
+    )
+    count_create = models.PositiveIntegerField(
+        default=0, help_text=_("The number of change requests that will be generated to create an org unit.")
+    )
+    count_update = models.PositiveIntegerField(
+        default=0, help_text=_("The number of change requests that will be generated to update an org unit.")
+    )
+
+    sync_task = models.OneToOneField(
+        "Task",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text=_("The background task that used the diff to create change requests."),
+    )
+
+    # Metadata.
+    account = models.ForeignKey("Account", on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        User, null=True, on_delete=models.SET_NULL, related_name="created_data_source_synchronizations"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("Data source synchronization")
+
+    def __str__(self) -> str:
+        return self.name
+
+    @property
+    def total_change_requests(self):
+        return self.count_create + self.count_update
+
+    def create_json_diff(
+        self,
+        logger_to_use: logging.Logger = None,
+        source_version_to_update_validation_status: typing.Union[str, None] = None,
+        source_version_to_update_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
+        source_version_to_update_org_unit_types: typing.Optional[list["OrgUnitType"]] = None,
+        source_version_to_compare_with_validation_status: typing.Union[str, None] = None,
+        source_version_to_compare_with_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
+        source_version_to_compare_with_org_unit_types: typing.Optional[list["OrgUnitType"]] = None,
+        ignore_groups: typing.Optional[bool] = False,
+        show_deleted_org_units: typing.Optional[bool] = False,
+        field_names: typing.Optional[list[str]] = None,
+    ) -> None:
+        # Prevent a circular import.
+        from iaso.diffing import Differ, Dumper
+
+        differ_params = {
+            # Version to update.
+            "version": self.source_version_to_update,
+            "validation_status": source_version_to_update_validation_status,
+            "top_org_unit": source_version_to_update_top_org_unit,
+            "org_unit_types": source_version_to_update_org_unit_types,
+            # Version to compare with.
+            "version_ref": self.source_version_to_compare_with,
+            "validation_status_ref": source_version_to_compare_with_validation_status,
+            "top_org_unit_ref": source_version_to_compare_with_top_org_unit,
+            "org_unit_types_ref": source_version_to_compare_with_org_unit_types,
+            # Options.
+            "ignore_groups": ignore_groups,
+            "show_deleted_org_units": show_deleted_org_units,
+            "field_names": field_names,
+        }
+        diffs, fields = Differ(logger_to_use or logger).diff(**differ_params)
+
+        coun_status = {
+            "new": 0,
+            "modified": 0,
+        }
+        for diff in diffs:
+            if diff.status in coun_status:
+                coun_status[diff.status] += 1
+
+        self.count_create = coun_status["new"]
+        self.count_update = coun_status["modified"]
+        self.json_diff = Dumper(logger_to_use).as_json(diffs)
+        self.diff_config = str(differ_params)
+        self.save(update_fields=["json_diff", "diff_config"])
+
+    def synchronize_source_versions(self):
+        # Prevent a circular import.
+        from iaso.diffing import Synchronizer
+
+        synchronizer = Synchronizer(data_source_sync=self)
+        synchronizer.synchronize()

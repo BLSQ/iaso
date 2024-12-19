@@ -11,6 +11,54 @@ type Props = {
     renderTrigger: (openDialog: boolean) => void;
     selection: Selection<Instance>;
 };
+
+const WarningSection = ({
+    condition,
+    message,
+    linkTo,
+    approveCondition,
+    onApproveClick,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    if (!condition) return null;
+
+    return (
+        <Grid
+            item
+            xs={12}
+            container
+            spacing={2}
+            alignItems="center"
+            direction="row"
+        >
+            <Grid item xs={8}>
+                <Typography component="ul" sx={{ color: 'warning.main' }}>
+                    <Typography component="li">
+                        {formatMessage(message)}
+                    </Typography>
+                </Typography>
+            </Grid>
+            <Grid item xs={2} display="flex" justifyContent="flex-start">
+                <LinkWithLocation to={linkTo}>
+                    {formatMessage(MESSAGES.seeAll)}
+                </LinkWithLocation>
+            </Grid>
+            <Grid item xs={2} display="flex" justifyContent="flex-end">
+                <Button
+                    data-test="search-button"
+                    variant="outlined"
+                    color={approveCondition ? 'primary' : 'warning'}
+                    onClick={onApproveClick}
+                >
+                    {formatMessage(
+                        approveCondition ? MESSAGES.approved : MESSAGES.approve,
+                    )}
+                </Button>
+            </Grid>
+        </Grid>
+    );
+};
+
 const PushGpsDialogComponent: FunctionComponent<Props> = ({
     renderTrigger,
     selection,
@@ -23,16 +71,13 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         return null;
     };
 
-    const { data: checkBulkGpsPush, isFetching: isLoadingCheckBulkGpsPush } =
-        useGetCheckBulkGpsPush({
-            selected_ids: selection.selectedItems
-                .map(item => item.id)
-                .join(','),
-            select_all: selection.selectAll,
-            unselected_ids: selection.unSelectedItems
-                .map(item => item.id)
-                .join(','),
-        });
+    const { data: checkBulkGpsPush, isError } = useGetCheckBulkGpsPush({
+        selected_ids: selection.selectedItems.map(item => item.id).join(','),
+        select_all: selection.selectAll,
+        unselected_ids: selection.unSelectedItems
+            .map(item => item.id)
+            .join(','),
+    });
 
     const onClosed = () => {
         return null;
@@ -59,9 +104,6 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
     if (selection) {
         title = {
             ...MESSAGES.pushGpsToOrgUnits,
-            values: {
-                count: selection.selectCount,
-            },
         };
     }
     const { formatMessage } = useSafeIntl();
@@ -83,130 +125,36 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
             <Grid container spacing={4} alignItems="center">
                 <Grid item xs={12}>
                     <Typography variant="subtitle1">
-                        {(checkBulkGpsPush?.error_ids?.length ?? 0) <= 0
-                            ? formatMessage(MESSAGES.pushGpsWarningMessage, {
+                        {isError
+                            ? formatMessage(
+                                  MESSAGES.multipleInstancesOneOrgUnitWarningMessage,
+                              )
+                            : formatMessage(MESSAGES.pushGpsWarningMessage, {
                                   submissionCount: selection.selectCount,
                                   orgUnitCount: selection.selectCount,
-                              })
-                            : formatMessage(
-                                  MESSAGES.multipleInstancesOneOrgUnitWarningMessage,
-                              )}
+                              })}
                     </Typography>
                 </Grid>
-                {(checkBulkGpsPush?.warning_no_location?.length ?? 0) > 0 &&
-                    (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0 && (
-                        <Grid
-                            item
-                            xs={12}
-                            container
-                            spacing={2}
-                            alignItems="center"
-                            direction="row"
-                        >
-                            <Grid item xs={8}>
-                                <Typography
-                                    component="ul"
-                                    sx={{ color: 'warning.main' }}
-                                >
-                                    <Typography component="li">
-                                        {formatMessage(
-                                            MESSAGES.noGpsForSomeInstaces,
-                                        )}
-                                    </Typography>
-                                </Typography>
-                            </Grid>
-                            <Grid
-                                item
-                                xs={2}
-                                display="flex"
-                                justifyContent="flex-start"
-                            >
-                                <LinkWithLocation to="url">
-                                    {formatMessage(MESSAGES.seeAll)}
-                                </LinkWithLocation>
-                            </Grid>
-                            <Grid
-                                item
-                                xs={2}
-                                display="flex"
-                                justifyContent="flex-end"
-                            >
-                                <Button
-                                    data-test="search-button"
-                                    variant="outlined"
-                                    color={
-                                        approveSubmissionNoHasGps
-                                            ? 'primary'
-                                            : 'warning'
-                                    }
-                                    onClick={() => onApprove('instanceNoGps')}
-                                >
-                                    {formatMessage(
-                                        approveSubmissionNoHasGps
-                                            ? MESSAGES.approved
-                                            : MESSAGES.approve,
-                                    )}
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    )}
-                {(checkBulkGpsPush?.warning_overwrite?.length ?? 0) > 0 &&
-                    (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0 && (
-                        <Grid
-                            item
-                            xs={12}
-                            container
-                            spacing={2}
-                            alignItems="center"
-                            direction="row"
-                        >
-                            <Grid item xs={8}>
-                                <Typography
-                                    component="ul"
-                                    sx={{ color: 'warning.main' }}
-                                >
-                                    <Typography component="li">
-                                        {formatMessage(
-                                            MESSAGES.someOrgUnitsHasAlreadyGps,
-                                        )}
-                                    </Typography>
-                                </Typography>
-                            </Grid>
-                            <Grid
-                                item
-                                xs={2}
-                                display="flex"
-                                justifyContent="flex-start"
-                            >
-                                <LinkWithLocation to="url">
-                                    {formatMessage(MESSAGES.seeAll)}
-                                </LinkWithLocation>
-                            </Grid>
-                            <Grid
-                                item
-                                xs={2}
-                                display="flex"
-                                justifyContent="flex-end"
-                            >
-                                <Button
-                                    data-test="search-button"
-                                    variant="outlined"
-                                    color={
-                                        approveOrgUnitHasGps
-                                            ? 'primary'
-                                            : 'warning'
-                                    }
-                                    onClick={() => onApprove('orgUnitHasGps')}
-                                >
-                                    {formatMessage(
-                                        approveOrgUnitHasGps
-                                            ? MESSAGES.approved
-                                            : MESSAGES.approve,
-                                    )}
-                                </Button>
-                            </Grid>
-                        </Grid>
-                    )}
+                <WarningSection
+                    condition={
+                        (checkBulkGpsPush?.warning_no_location?.length ?? 0) >
+                            0 && (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0
+                    }
+                    message={MESSAGES.noGpsForSomeInstaces}
+                    linkTo="url"
+                    approveCondition={approveSubmissionNoHasGps}
+                    onApproveClick={() => onApprove('instanceNoGps')}
+                />
+                <WarningSection
+                    condition={
+                        (checkBulkGpsPush?.warning_overwrite?.length ?? 0) >
+                            0 && (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0
+                    }
+                    message={MESSAGES.someOrgUnitsHasAlreadyGps}
+                    linkTo="url"
+                    approveCondition={approveOrgUnitHasGps}
+                    onApproveClick={() => onApprove('orgUnitHasGps')}
+                />
             </Grid>
         </ConfirmCancelDialogComponent>
     );

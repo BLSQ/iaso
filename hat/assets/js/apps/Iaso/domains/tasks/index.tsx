@@ -4,18 +4,20 @@ import { makeStyles } from '@mui/styles';
 import Autorenew from '@mui/icons-material/Autorenew';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { getRequest, patchRequest } from 'Iaso/libs/Api.ts';
-import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
+import { getRequest, patchRequest } from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
-import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink.tsx';
-import { TaskDetails } from 'Iaso/domains/tasks/components/TaskDetails.tsx';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { TaskDetails } from 'Iaso/domains/tasks/components/TaskDetails';
+// import { TaskFilters } from './components/Filters';
 import MESSAGES from './messages';
-import { POLIO_NOTIFICATIONS } from '../../utils/permissions.ts';
+import { POLIO_NOTIFICATIONS } from '../../utils/permissions';
 import { userHasPermission } from '../users/utils';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { useTasksTableColumns } from './config.tsx';
+import { useCurrentUser } from '../../utils/usersUtils';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useTasksTableColumns } from './config';
+import { TaskParams } from './types';
 
 const baseUrl = baseUrls.tasks;
 
@@ -31,6 +33,7 @@ const useStyles = makeStyles(theme => ({
  */
 const getRequestParams = (url, params) => {
     const urlSearchParams = new URLSearchParams();
+    console.log('urlSearchParams ', urlSearchParams);
 
     Object.entries(params).forEach(([k, v]) => {
         if (Array.isArray(v)) {
@@ -47,8 +50,9 @@ const defaultOrder = 'created_at';
 
 const Tasks = () => {
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
-    const params = useParamsObject(baseUrl);
+    const classes: Record<string, string> = useStyles();
+    const params = useParamsObject(baseUrl) as unknown as TaskParams;
+    console.log('params', params);
 
     const { mutateAsync: killTaskAction } = useSnackMutation(
         task => patchRequest(`/api/tasks/${task.id}/`, task),
@@ -97,6 +101,7 @@ const Tasks = () => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
+                {/* <TaskFilters params={params} /> */}
                 <Box display="flex" justifyContent="flex-end">
                     <Button
                         id="refresh-button"

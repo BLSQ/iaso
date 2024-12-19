@@ -1367,7 +1367,7 @@
     "iaso.tasks.killed": "Killed",
     "iaso.tasks.killSignalSent": "Kill signal sent",
     "iaso.tasks.killTask": "Stop the task",
-    "iaso.tasks.launcher": "User",
+    "iaso.tasks.user": "User",
     "iaso.tasks.message": "Message",
     "iaso.tasks.name": "Name",
     "iaso.tasks.polioNotificationImport.details": "Polio Notifications Import Details",

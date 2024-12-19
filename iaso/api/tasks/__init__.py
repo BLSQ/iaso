@@ -36,6 +36,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "ended_at",
             "progress_value",
             "end_value",
+            "created_by",
             "launcher",
             "result",
             "status",
@@ -47,6 +48,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
         read_only_fields = ["launcher_name"]
 
+    created_by = UserSerializer(read_only=True)
     launcher = UserSerializer(read_only=True)
     ended_at = TimestampField(read_only=True)
     created_at = TimestampField(read_only=True)
@@ -86,7 +88,7 @@ class TaskSourceViewSet(ModelViewSet):
     def get_queryset(self):
         profile = self.request.user.iaso_profile
         order = self.request.query_params.get("order", "created_at").split(",")
-        return Task.objects.select_related("launcher").filter(account=profile.account).order_by(*order)
+        return Task.objects.select_related("created_by", "launcher").filter(account=profile.account).order_by(*order)
 
     def get_permissions(self):
         if self.action in ["retrieve", "relaunch"]:
@@ -98,7 +100,7 @@ class TaskSourceViewSet(ModelViewSet):
         task = self.get_object()
         current_user = request.user
 
-        if current_user.has_perm(permission.DATA_TASKS) or task.launcher == request.user:
+        if current_user.has_perm(permission.DATA_TASKS) or task.created_by == request.user:
             serializer = self.get_serializer(task)
             return Response(serializer.data)
         else:
@@ -127,7 +129,7 @@ class TaskSourceViewSet(ModelViewSet):
         task = get_object_or_404(Task, pk=pk)
         current_user = request.user
 
-        if current_user.has_perm(permission.DATA_TASKS) or task.launcher == request.user:
+        if current_user.has_perm(permission.DATA_TASKS) or task.created_by == request.user:
             if task.status != ERRORED:
                 raise serializers.ValidationError({"status": f"You cannot relaunch a task with status {task.status}."})
 
@@ -217,6 +219,7 @@ class ExternalTaskPostSerializer(serializers.Serializer):
             else f'{validated_data["slug"]}'
         )
         task = Task.objects.create(
+            created_by=user,
             launcher=user,
             account=user.iaso_profile.account,
             name=name,

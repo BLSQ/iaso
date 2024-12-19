@@ -329,7 +329,14 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     tasks: {
         url: 'settings/tasks',
-        params: ['accountId', ...paginationPathParams],
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'after',
+            'before',
+            'status',
+            'users',
+        ],
     },
     devices: {
         url: 'settings/devices',

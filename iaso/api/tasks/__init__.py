@@ -2,12 +2,13 @@ from datetime import datetime
 from typing import Union
 import logging
 
+import django_filters
 from django.utils.text import slugify
 from django.shortcuts import get_object_or_404
 from gql.transport.requests import RequestsHTTPTransport
 from gql import Client, gql
 from lazy_services import LazyService  # type: ignore
-from rest_framework import permissions, serializers, status
+from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -16,6 +17,7 @@ from ..common import ModelViewSet, TimestampField, UserSerializer, HasPermission
 from hat.menupermissions import models as permission
 from iaso.models.base import ERRORED, RUNNING, SKIPPED, KILLED, SUCCESS, QUEUED, Task
 from iaso.utils.s3_client import generate_presigned_url_from_s3
+from iaso.api.tasks.filters import UsersFilterBackend
 
 
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
@@ -80,6 +82,22 @@ class TaskSourceViewSet(ModelViewSet):
         permissions.IsAuthenticated,
         HasPermission(permission.DATA_TASKS),
     ]  # type: ignore
+    filter_backends = [
+        filters.OrderingFilter,
+        django_filters.rest_framework.DjangoFilterBackend,
+        UsersFilterBackend,
+    ]
+    ordering_fields = [
+        "name",
+        "status",
+        "created_by__username",
+        "user__iaso_profile__phone_number",
+        "created_at",
+        "started_at",
+        "ended_at",
+    ]
+    ordering = ["-created_at"]
+
     serializer_class = TaskSerializer
     results_key = "tasks"
     queryset = Task.objects.all()
@@ -87,8 +105,7 @@ class TaskSourceViewSet(ModelViewSet):
 
     def get_queryset(self):
         profile = self.request.user.iaso_profile
-        order = self.request.query_params.get("order", "created_at").split(",")
-        return Task.objects.select_related("created_by", "launcher").filter(account=profile.account).order_by(*order)
+        return Task.objects.select_related("created_by", "launcher").filter(account=profile.account)
 
     def get_permissions(self):
         if self.action in ["retrieve", "relaunch"]:

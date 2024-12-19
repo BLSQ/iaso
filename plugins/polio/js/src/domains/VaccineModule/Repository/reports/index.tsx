@@ -40,7 +40,7 @@ export const Reports: FunctionComponent<Props> = ({ params }) => {
     const redirectUrl = isEmbedded ? embeddedVaccineRepositoryUrl : baseUrl;
 
     const { data, isFetching } = useGetVaccineRepositoryReports(reportParams);
-    const columns = useVaccineRepositoryReportsColumns();
+    const columns = useVaccineRepositoryReportsColumns(reportParams);
     return (
         <>
             <Filters params={params} redirectUrl={redirectUrl} />
@@ -59,6 +59,7 @@ export const Reports: FunctionComponent<Props> = ({ params }) => {
                 extraProps={{
                     loading: isFetching,
                     defaultPageSize: tableDefaults.limit,
+                    columns,
                 }}
             />
         </>

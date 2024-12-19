@@ -381,6 +381,32 @@ class Round(models.Model):
             return ",".join(scope.vaccine for scope in scopes_with_orgunits)
 
     @property
+    def vaccine_names_extended(self):
+        vaccines = set()
+        subactivity_vaccines = [
+            subactivity["scopes__vaccine"]
+            for subactivity in list(self.sub_activities.filter(scopes__isnull=False).values("scopes__vaccine"))
+        ]
+        for subactivity_vaccine in subactivity_vaccines:
+            vaccines.add(subactivity_vaccine)
+        if self.campaign.separate_scopes_per_round:
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
+            )
+        else:
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.campaign.scopes.all()
+            )
+        for scope in scopes_with_orgunits:
+            vaccines.add(scope.vaccine)
+
+        if VACCINES[3][0] in vaccines:
+            vaccines.remove(VACCINES[3][0])
+            vaccines.add(VACCINES[1][0])
+            vaccines.add(VACCINES[2][0])
+        return ", ".join(sorted(vaccines))
+
+    @property
     def districts_count_calculated(self):
         return len(self.campaign.get_districts_for_round(self))
 
@@ -780,6 +806,32 @@ class Campaign(SoftDeletableModel):
 
         vaccine_names = sorted({scope.vaccine for scope in scopes_with_orgunits_and_vaccine})
         return ", ".join(vaccine_names)
+
+    @property
+    def vaccines_extended(self):
+        vaccines = set()
+        for round in self.rounds.all():
+            subactivity_vaccines = [
+                subactivity["scopes__vaccine"]
+                for subactivity in list(round.sub_activities.filter(scopes__isnull=False).values("scopes__vaccine"))
+            ]
+            for subactivity_vaccine in subactivity_vaccines:
+                vaccines.add(subactivity_vaccine)
+            if self.separate_scopes_per_round:
+                scopes_with_orgunits = filter(
+                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, round.scopes.all()
+                )
+            else:
+                scopes_with_orgunits = filter(
+                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
+                )
+            for scope in scopes_with_orgunits:
+                vaccines.add(scope.vaccine)
+            if VACCINES[3][0] in vaccines:
+                vaccines.remove(VACCINES[3][0])
+                vaccines.add(VACCINES[1][0])
+                vaccines.add(VACCINES[2][0])
+            return ", ".join(sorted(vaccines))
 
     def update_geojson_field(self):
         "Update the geojson field on the campaign DO NOT TRIGGER the save() you have to do it manually"

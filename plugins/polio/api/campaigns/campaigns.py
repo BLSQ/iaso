@@ -141,6 +141,17 @@ class CampaignSerializer(serializers.ModelSerializer):
     account: Field = serializers.PrimaryKeyRelatedField(default=CurrentAccountDefault(), read_only=True)
     has_data_in_budget_tool = serializers.SerializerMethodField(read_only=True)
     campaign_types = serializers.PrimaryKeyRelatedField(many=True, queryset=CampaignType.objects.all(), required=False)
+    # Vaccines with real scope
+    vaccines = serializers.SerializerMethodField(read_only=True)
+    single_vaccines = serializers.SerializerMethodField(read_only=True)
+
+    def get_vaccines(self, obj):
+        if obj.vaccines:
+            return ",".join([vaccine.strip() for vaccine in obj.vaccines.split(",")])
+        return ""
+
+    def get_single_vaccines(self, obj):
+        return obj.vaccines_extended
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:
@@ -409,14 +420,6 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
         return campaign
-
-    # Vaccines with real scope
-    vaccines = serializers.SerializerMethodField(read_only=True)
-
-    def get_vaccines(self, obj):
-        if obj.vaccines:
-            return ",".join([vaccine.strip() for vaccine in obj.vaccines.split(",")])
-        return ""
 
     class Meta:
         model = Campaign

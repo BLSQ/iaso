@@ -260,6 +260,7 @@ export type RoundDateHistoryEntry = {
 
 export type Round = {
     id: number;
+    vaccine_names_extended:string;
     started_at: Nullable<string>;
     ended_at: Nullable<string>;
     mop_up_started_at: Nullable<string>; // date
@@ -308,6 +309,7 @@ export type Campaign = {
     created_at: string;
     updated_at: string;
     deleted_at: Nullable<string>;
+    single_vaccines?: string;
     rounds: Round[];
     org_unit: {
         id: number;

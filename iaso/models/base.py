@@ -262,6 +262,7 @@ class Task(models.Model):
     progress_value = models.IntegerField(default=0)
     end_value = models.IntegerField(default=0)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name="created_tasks")
     launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     result = models.JSONField(null=True, blank=True)
     status = models.CharField(choices=STATUS_TYPE_CHOICES, max_length=40, default=QUEUED)
@@ -274,11 +275,18 @@ class Task(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["account"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["created_by"]),
+            models.Index(fields=["name"]),
+            models.Index(fields=["status"]),
+        ]
 
     def __str__(self):
         return "%s - %s - %s -%s" % (
             self.name,
-            self.launcher,
+            self.created_by,
             self.status,
             self.created_at,
         )
@@ -292,6 +300,11 @@ class Task(models.Model):
             "params": self.params,
             "result": self.result,
             "status": self.status,
+            "created_by": (
+                self.created_by.iaso_profile.as_short_dict()
+                if self.created_by and self.created_by.iaso_profile
+                else None
+            ),
             "launcher": (
                 self.launcher.iaso_profile.as_short_dict() if self.launcher and self.launcher.iaso_profile else None
             ),

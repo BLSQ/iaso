@@ -3,6 +3,8 @@ import json
 
 import time_machine
 
+from django.contrib.gis.geos import MultiPolygon, Polygon
+
 from iaso import models as m
 from iaso.test import TestCase
 
@@ -16,6 +18,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        cls.multi_polygon = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
+
         # Data source.
         cls.data_source = m.DataSource.objects.create(name="Data source")
 
@@ -61,6 +65,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             org_unit_type=cls.org_unit_type_country,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
+            geom=cls.multi_polygon,
+            simplified_geom=cls.multi_polygon,
         )
         cls.angola_country_to_update.groups.set([cls.group_a1, cls.group_b])
 
@@ -73,6 +79,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
+            geom=cls.multi_polygon,
+            simplified_geom=cls.multi_polygon,
         )
         cls.angola_region_to_update.calculate_paths()
 
@@ -87,6 +95,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             org_unit_type=cls.org_unit_type_country,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
+            geom=cls.multi_polygon,
+            simplified_geom=cls.multi_polygon,
         )
         # TODO: `group_c` should be taken into account in the pyramid to update.
         cls.angola_country_to_compare_with.groups.set([cls.group_a2, cls.group_c])
@@ -100,6 +110,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
+            geom=cls.multi_polygon,
+            simplified_geom=cls.multi_polygon,
         )
 
         cls.angola_district_to_compare_with = m.OrgUnit.objects.create(
@@ -111,6 +123,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
+            geom=cls.multi_polygon,
+            simplified_geom=cls.multi_polygon,
         )
         cls.angola_district_to_compare_with.groups.set([cls.group_a2, cls.group_c])
 
@@ -340,6 +354,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(new_org_unit.parent.version, data_source_sync.source_version_to_update)
         self.assertEqual(new_org_unit.creator, data_source_sync.created_by)
         self.assertEqual(new_org_unit.validation_status, new_org_unit.VALIDATION_NEW)
+        self.assertEqual(new_org_unit.geom, self.multi_polygon)
+        self.assertEqual(new_org_unit.simplified_geom, self.multi_polygon)
 
         new_group = m.Group.objects.get(name="Group C", source_version=data_source_sync.source_version_to_update)
         self.assertEqual(new_group.org_units.count(), 0)

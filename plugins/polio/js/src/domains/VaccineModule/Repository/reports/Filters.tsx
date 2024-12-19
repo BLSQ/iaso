@@ -30,7 +30,9 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
 
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.reportCountries);
-    const [fileType, setFileType] = useState(params.reportFileType || 'INCIDENT,DESTRUCTION');
+    const [fileType, setFileType] = useState(
+        params.reportFileType || 'INCIDENT,DESTRUCTION',
+    );
     const [vaccineName, setVaccineName] = useState(params.reportVaccineName);
     const [countryBlocks, setCountryBlocks] = useState(
         params.reportCountryBlock,

@@ -7,7 +7,6 @@ from itertools import islice
 from typing import Optional
 from dataclasses import dataclass
 
-
 from iaso.models import Group, OrgUnit, OrgUnitChangeRequest, DataSourceSynchronization
 
 
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class ChangeRequestGroupsInfo:
+class ChangeRequestGroups:
     change_request_id: Optional[int]
     org_unit_id: int
     old_groups_ids: set[int]
@@ -32,12 +31,17 @@ class OrgUnitSourceVersionMatching:
 class Synchronizer:
     def __init__(self, data_source_sync: DataSourceSynchronization):
         self.data_source_sync = data_source_sync
+
+        # The JSON that we deserialized is assumed to have been serialized
+        # by `iaso.diffing.dumper.DataSourceSynchronizationEncoder`.
         self.diffs = json.loads(data_source_sync.json_diff)
+
         self.change_requests_to_bulk_create = []
         self.org_units_to_bulk_create = []
-        self.groups_to_bulk_create = []
+        self.groups_to_bulk_create = {}
         self.change_requests_groups_to_bulk_create = {}
         self.org_units_source_version_matching = {}
+
         self.insert_batch_size = 100
         self.json_batch_size = 10
 
@@ -60,6 +64,10 @@ class Synchronizer:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
         missing_org_units_diff_generator = (diff for diff in self._sort_by_path(self.diffs) if diff["status"] == "new")
 
+        existing_group_source_refs = Group.objects.filter(
+            source_version=self.data_source_sync.source_version_to_update
+        ).values_list("source_ref", flat=True)
+
         while True:
             # Get a subset of the generator.
             batch_diff = list(islice(missing_org_units_diff_generator, self.json_batch_size))
@@ -77,6 +85,7 @@ class Synchronizer:
                 new_parent = None
                 if org_unit.parent:
                     # Find the corresponding parent in the source version to update.
+                    # Because `_sort_by_path()` is applied to the diff, `get()` should always work.
                     new_parent = OrgUnit.objects.get(
                         source_ref=org_unit.parent.source_ref, version=self.data_source_sync.source_version_to_update
                     )
@@ -87,11 +96,16 @@ class Synchronizer:
                     old_id=org_unit_id,
                 )
 
-                # TODO: ensure uniqueness of groups.
                 for group in org_unit.groups.all():
-                    group.pk = None
-                    group.source_version = self.data_source_sync.source_version_to_update
-                    self.groups_to_bulk_create.append(group)
+                    old_pk = group.pk
+                    if (
+                        group.source_ref not in existing_group_source_refs
+                        and old_pk not in self.groups_to_bulk_create.keys()
+                    ):
+                        # Duplicate the `Group` in the source version to update.
+                        group.pk = None
+                        group.source_version = self.data_source_sync.source_version_to_update
+                        self.groups_to_bulk_create[old_pk] = group
 
                 # Duplicate the `OrgUnit` in the source version to update.
                 org_unit.pk = None
@@ -120,7 +134,7 @@ class Synchronizer:
 
     def _bulk_create_missing_groups(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
-        new_groups_generator = (item for item in self.groups_to_bulk_create)
+        new_groups_generator = (item for item in self.groups_to_bulk_create.values())
 
         while True:
             batch_subset = list(islice(new_groups_generator, self.json_batch_size))
@@ -153,7 +167,7 @@ class Synchronizer:
                 self.change_requests_to_bulk_create.append(change_request)
 
                 if group_changes:
-                    self.change_requests_groups_to_bulk_create[change_request.org_unit_id] = ChangeRequestGroupsInfo(
+                    self.change_requests_groups_to_bulk_create[change_request.org_unit_id] = ChangeRequestGroups(
                         change_request_id=None,  # This will be populated after the bulk creation.
                         org_unit_id=change_request.org_unit_id,
                         old_groups_ids={

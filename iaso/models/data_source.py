@@ -178,11 +178,6 @@ class DataSourceSynchronization(models.Model):
     This table allows to synchronize two pyramids by creating "change requests"
     based on their diff.
 
-    The diff is stored in JSON and generated using the `diffing` module:
-
-        diff = Differ().diff()
-        json_diff = Dumper().as_json(diff)
-
     Fields that can be synchronized:
 
         ["name", "parent", "opening_date", "closed_date", "groups"]
@@ -194,6 +189,13 @@ class DataSourceSynchronization(models.Model):
     - but meanwhile, people may continue to make changes in DHIS2
     - as a consequence, the two pyramids diverge
     - so we need to synchronize the changes in the two pyramids
+
+    The logic is tightly coupled with the `iaso.diffing` module:
+
+        diff = Differ().diff()
+        json_diff = Dumper().as_json(diff)
+        Synchronizer(data_source_synchronization).synchronize()
+
     """
 
     name = models.CharField(
@@ -213,6 +215,7 @@ class DataSourceSynchronization(models.Model):
         help_text=_("The pyramid as a comparison."),
     )
 
+    # The exact JSON format is defined in `iaso.diffing.dumper.DataSourceSynchronizationEncoder`.
     json_diff = models.JSONField(null=True, blank=True, help_text=_("The diff used to create change requests."))
     diff_config = models.TextField(
         blank=True, help_text=_("A string representation of the parameters used for the diff.")

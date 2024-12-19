@@ -110,6 +110,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Relaunch the task',
         id: 'iaso.tasks.relaunch',
     },
+    last_launched_by: {
+        defaultMessage: 'Last launch:',
+        id: 'iaso.tasks.last_launch_by',
+    },
 });
 
 export default MESSAGES;

@@ -37,14 +37,24 @@ class DifferTestCase(TestCase):
         cls.org_unit_type_region = m.OrgUnitType.objects.create(category="REGION")
         cls.org_unit_type_district = m.OrgUnitType.objects.create(category="DISTRICT")
 
-        cls.group_a = m.Group.objects.create(
-            name="Group A", source_ref="group-id", source_version=cls.source_version_to_compare_with
+        # Groups in the pyramid to update.
+
+        cls.group_a1 = m.Group.objects.create(
+            name="Group A", source_ref="group-a", source_version=cls.source_version_to_update
         )
         cls.group_b = m.Group.objects.create(
-            name="Group B", source_ref="group-id", source_version=cls.source_version_to_update
+            name="Group B", source_ref="group-b", source_version=cls.source_version_to_update
         )
+
+        # Groups in the pyramid to compare with.
+
+        cls.group_a2 = m.Group.objects.create(
+            name="Group A", source_ref="group-a", source_version=cls.source_version_to_compare_with
+        )
+        # TODO: `group_c` doesn't exist in the pyramid to update but is not taken into account by `Differ.diff()`.
+        # Is this a bug?
         cls.group_c = m.Group.objects.create(
-            name="Group C", source_ref="group-id", source_version=cls.source_version_to_update
+            name="Group C", source_ref="group-c", source_version=cls.source_version_to_compare_with
         )
 
         cls.multi_polygon = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
@@ -62,7 +72,7 @@ class DifferTestCase(TestCase):
             closed_date=datetime.date(2025, 11, 28),
             geom=cls.multi_polygon,
         )
-        cls.angola_country_to_update.groups.set([cls.group_b, cls.group_c])
+        cls.angola_country_to_update.groups.set([cls.group_a1, cls.group_b])
 
         cls.angola_region_to_update = m.OrgUnit.objects.create(
             parent=cls.angola_country_to_update,
@@ -101,7 +111,7 @@ class DifferTestCase(TestCase):
             closed_date=datetime.date(2025, 11, 28),
             geom=cls.multi_polygon,
         )
-        cls.angola_country_to_compare_with.groups.set([cls.group_a])
+        cls.angola_country_to_compare_with.groups.set([cls.group_a2, cls.group_c])
 
         cls.angola_region_to_compare_with = m.OrgUnit.objects.create(
             parent=cls.angola_country_to_compare_with,
@@ -462,26 +472,20 @@ class DifferTestCase(TestCase):
         self.assertDictEqual(
             country_diff_comparisons[5],
             {
-                "field": "group:group-id:Group B",
-                "before": [
-                    {"id": "group-id", "name": "Group B", "iaso_id": self.group_b.pk},
-                    {"id": "group-id", "name": "Group C", "iaso_id": self.group_c.pk},
-                ],
-                "after": [{"id": "group-id", "name": "Group A", "iaso_id": self.group_a.pk}],
-                "status": "modified",
-                "distance": None,
+                "field": "group:group-a:Group A",
+                "before": [{"id": "group-a", "name": "Group A", "iaso_id": self.group_a1.pk}],
+                "after": [{"id": "group-a", "name": "Group A", "iaso_id": self.group_a2.pk}],
+                "status": "same",
+                "distance": 0,
             },
         )
         self.assertDictEqual(
             country_diff_comparisons[6],
             {
-                "field": "group:group-id:Group C",
-                "before": [
-                    {"id": "group-id", "name": "Group B", "iaso_id": self.group_b.pk},
-                    {"id": "group-id", "name": "Group C", "iaso_id": self.group_c.pk},
-                ],
-                "after": [{"id": "group-id", "name": "Group A", "iaso_id": self.group_a.pk}],
-                "status": "modified",
+                "field": "group:group-b:Group B",
+                "before": [{"id": "group-b", "name": "Group B", "iaso_id": self.group_b.pk}],
+                "after": [],
+                "status": "deleted",
                 "distance": None,
             },
         )
@@ -543,7 +547,7 @@ class DifferTestCase(TestCase):
         self.assertDictEqual(
             region_diff_comparisons[5],
             {
-                "field": "group:group-id:Group B",
+                "field": "group:group-a:Group A",
                 "before": [],
                 "after": [],
                 "status": "same",
@@ -553,7 +557,7 @@ class DifferTestCase(TestCase):
         self.assertDictEqual(
             region_diff_comparisons[6],
             {
-                "field": "group:group-id:Group C",
+                "field": "group:group-b:Group B",
                 "before": [],
                 "after": [],
                 "status": "same",
@@ -620,7 +624,7 @@ class DifferTestCase(TestCase):
         self.assertDictEqual(
             district_diff_comparisons[5],
             {
-                "field": "group:group-id:Group B",
+                "field": "group:group-a:Group A",
                 "before": [],
                 "after": [],
                 "status": "same",
@@ -630,7 +634,7 @@ class DifferTestCase(TestCase):
         self.assertDictEqual(
             district_diff_comparisons[6],
             {
-                "field": "group:group-id:Group C",
+                "field": "group:group-b:Group B",
                 "before": [],
                 "after": [],
                 "status": "same",

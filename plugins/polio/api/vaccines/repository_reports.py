@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from django.db.models import sQ
+from django.db.models import Q
 from iaso.api.common import Paginator
 from plugins.polio.models import VaccineStock
 

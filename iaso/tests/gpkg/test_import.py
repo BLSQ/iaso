@@ -84,7 +84,7 @@ class GPKGImport(TestCase):
         source = DataSource.objects.create(name=source_name)
         version = SourceVersion.objects.create(number=version_number, data_source=source)
         ou = OrgUnit.objects.create(name="bla", source_ref="cdd3e94c-3c2a-4ab1-8900-be97f82347de", version=version)
-        g = Group.objects.create(source_version=version, source_ref="group_b", name="Previous name of group B")
+        g = Group.objects.create(source_version=version, source_ref="group_a1", name="Previous name of group B")
         ou.groups.set([g])
         self.assertEqual(ou.groups.count(), 1)
         self.assertEqual(ou.groups.first().name, "Previous name of group B")
@@ -164,8 +164,8 @@ class GPKGImport(TestCase):
         ou2 = OrgUnit.objects.create(
             name="bla2", source_ref="cdd3e94c-3c2a-4ab1-8900-be97f82347de", version=other_version
         )
-        Group.objects.create(source_version=version, source_ref="group_b", name="Group B")
-        Group.objects.create(source_version=other_version, source_ref="group_b", name="Group B")
+        Group.objects.create(source_version=version, source_ref="group_a1", name="Group B")
+        Group.objects.create(source_version=other_version, source_ref="group_a1", name="Group B")
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
             project_id=self.project.id,

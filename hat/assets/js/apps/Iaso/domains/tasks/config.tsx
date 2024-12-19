@@ -110,14 +110,16 @@ export const useTasksTableColumns = (
             {
                 Header: formatMessage(MESSAGES.user),
                 sortable: true,
-                accessor: 'created_by',
+                accessor: 'created_by__username',
                 Cell: settings => {
-                    const created_by_id = settings.value?.id;
+                    const created_by_id = settings.row.original?.created_by?.id;
                     const launcher_id = settings.row.original?.launcher?.id;
 
                     let created_by: string;
                     if (created_by_id) {
-                        created_by = getDisplayName(settings.value);
+                        created_by = getDisplayName(
+                            settings.row.original.created_by,
+                        );
                     } else {
                         created_by = '--';
                     }

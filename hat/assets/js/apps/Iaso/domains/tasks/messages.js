@@ -114,6 +114,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Last launch:',
         id: 'iaso.tasks.last_launch_by',
     },
+    dateFrom: {
+        defaultMessage: 'Start date',
+        id: 'iaso.label.dateFrom',
+    },
+    dateTo: {
+        defaultMessage: 'End date',
+        id: 'iaso.label.dateTo',
+    },
 });
 
 export default MESSAGES;

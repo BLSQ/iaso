@@ -332,10 +332,11 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         params: [
             'accountId',
             ...paginationPathParams,
-            'after',
-            'before',
+            'startDate',
+            'endDate',
             'status',
             'users',
+            'type',
         ],
     },
     devices: {

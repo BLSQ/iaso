@@ -51,6 +51,8 @@ const Tasks = () => {
         order: params.order,
         page: params.page ? params.page : 1,
         users: params.users,
+        start_date: params.startDate,
+        end_date: params.endDate,
     };
 
     const {

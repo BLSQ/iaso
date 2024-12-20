@@ -1,7 +1,9 @@
-from datetime import datetime
-
 from django.db.models import Q
+from django.db.models.functions import Greatest, Least
+
 from rest_framework import filters
+
+from iaso.utils.date_and_time import date_string_to_start_of_day, date_string_to_end_of_day
 
 
 class UsersFilterBackend(filters.BaseFilterBackend):
@@ -10,4 +12,42 @@ class UsersFilterBackend(filters.BaseFilterBackend):
         if users:
             users_ids = [int(val) for val in users.split(",") if val.isnumeric()]
             return queryset.filter(Q(created_by_id__in=users_ids) | Q(launcher_id__in=users_ids))
+        return queryset
+
+
+class StartEndDateFilterBackend(filters.BaseFilterBackend):
+    """
+    Task filtering on date: we consider all three timestamps: created_at,
+    started_at and ended_at. If any of these falls in the interval, we return
+    the task.
+    """
+
+    def filter_queryset(self, request, queryset, view):
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+
+        if start_date:
+            try:
+                queryset = queryset.annotate(
+                    date_to_check=Greatest(
+                        "ended_at",
+                        "started_at",
+                        "created_at",
+                    )
+                ).filter(date_to_check__gte=date_string_to_start_of_day(start_date))
+            except ValueError:
+                pass
+
+        if end_date:
+            try:
+                queryset = queryset.annotate(
+                    date_to_check=Least(
+                        "ended_at",
+                        "started_at",
+                        "created_at",
+                    )
+                ).filter(date_to_check__lte=date_string_to_end_of_day(end_date))
+            except ValueError:
+                pass
+
         return queryset

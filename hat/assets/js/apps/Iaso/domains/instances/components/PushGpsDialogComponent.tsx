@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { Grid, Typography } from '@mui/material';
 import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -27,13 +32,49 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
     const select_all = selection.selectAll;
     const selected_ids = selection.selectedItems;
     const unselected_ids = selection.unSelectedItems;
+
+    const { data: checkBulkGpsPush, isError } = useGetCheckBulkGpsPush({
+        selected_ids: selected_ids.map(item => item.id).join(','),
+        select_all,
+        unselected_ids: unselected_ids.map(item => item.id).join(','),
+    });
+
+    const selected_ids_params = useMemo(() => {
+        let instances = selected_ids;
+        if (!approveOrgUnitHasGps) {
+            instances = instances.filter(
+                instance =>
+                    !checkBulkGpsPush?.warning_overwrite?.includes(instance.id),
+            );
+        }
+        if (!approveSubmissionNoHasGps) {
+            instances = instances.filter(
+                instance =>
+                    !checkBulkGpsPush?.warning_no_location?.includes(
+                        instance.id,
+                    ),
+            );
+        }
+        return instances;
+    }, [
+        approveOrgUnitHasGps,
+        approveSubmissionNoHasGps,
+        checkBulkGpsPush?.warning_no_location,
+        checkBulkGpsPush?.warning_overwrite,
+        selected_ids,
+    ]);
+
+    const unselected_ids_param = useMemo(() => {
+        return unselected_ids;
+    }, [unselected_ids]);
+
     const instancebulkgpspush = useCallback(async () => {
         await bulkgpspush({
             select_all,
-            selected_ids: selected_ids.map(item => item.id),
-            unselected_ids: unselected_ids.map(item => item.id),
+            selected_ids: selected_ids_params.map(item => item.id),
+            unselected_ids: unselected_ids_param.map(item => item.id),
         });
-    }, [bulkgpspush, select_all, selected_ids, unselected_ids]);
+    }, [bulkgpspush, select_all, selected_ids_params, unselected_ids_param]);
 
     const onConfirm = useCallback(
         async closeDialog => {
@@ -53,12 +94,6 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         },
         [instancebulkgpspush, redirectTo],
     );
-
-    const { data: checkBulkGpsPush, isError } = useGetCheckBulkGpsPush({
-        selected_ids: selected_ids.map(item => item.id).join(','),
-        select_all,
-        unselected_ids: unselected_ids.map(item => item.id).join(','),
-    });
 
     const onClosed = () => {
         return null;
@@ -124,7 +159,6 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                             0 && (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0
                     }
                     message={MESSAGES.noGpsForSomeInstaces}
-                    linkTo="url"
                     approveCondition={approveSubmissionNoHasGps}
                     onApproveClick={() => onApprove('instanceNoGps')}
                 />
@@ -134,7 +168,6 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                             0 && (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0
                     }
                     message={MESSAGES.someOrgUnitsHasAlreadyGps}
-                    linkTo="url"
                     approveCondition={approveOrgUnitHasGps}
                     onApproveClick={() => onApprove('orgUnitHasGps')}
                 />

@@ -1,6 +1,5 @@
 import { UseQueryResult } from 'react-query';
 import { useSnackQuery } from '../../../libs/apiHooks';
-import MESSAGES from '../messages';
 import { getRequest } from '../../../libs/Api';
 import { makeUrlWithParams } from '../../../libs/utils';
 import { CheckBulkGpsPushResult } from '../types/instance';
@@ -18,7 +17,7 @@ export const useGetCheckBulkGpsPush = (
                 ),
             );
         },
-        snackErrorMsg: MESSAGES.error,
+
         options: {
             select: data => {
                 return data;

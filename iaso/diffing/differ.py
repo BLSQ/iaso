@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from iaso.models import OrgUnit, GroupSet, Group
 from .comparisons import as_field_types, Diff, Comparison
 
@@ -62,7 +64,9 @@ class Differ:
                     field_names.append("groupset:" + group_set.source_ref + ":" + group_set.name)
                     for group in group_set.groups.all():
                         groups_with_with_groupset.append(group.id)
-            for group in Group.objects.filter(source_version=version):
+            for group in Group.objects.filter(Q(source_version=version) | Q(source_version=version_ref)).distinct(
+                "source_ref"
+            ):
                 if group.id not in groups_with_with_groupset and group.source_ref:
                     field_names.append("group:" + group.source_ref + ":" + group.name)
 
@@ -140,13 +144,16 @@ class Differ:
             dhis2_value = field.access(orgunit_dhis2)
             ref_value = field.access(orgunit_ref)
 
+            if field.field_name.startswith("group:") and not any([ref_value, dhis2_value]):
+                continue
+
             same = field.is_same(dhis2_value, ref_value)
             if same:
                 status = "same"
             else:
                 status = "modified"
 
-            if dhis2_value is None and ref_value is not None:
+            if not dhis2_value and ref_value:
                 status = "new"
             if not same and dhis2_value is not None and (ref_value is None or ref_value == []):
                 status = "deleted"

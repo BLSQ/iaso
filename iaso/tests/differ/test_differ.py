@@ -51,8 +51,6 @@ class DifferTestCase(TestCase):
         cls.group_a2 = m.Group.objects.create(
             name="Group A", source_ref="group-a", source_version=cls.source_version_to_compare_with
         )
-        # TODO: `group_c` doesn't exist in the pyramid to update but is not taken into account by `Differ.diff()`.
-        # Is this a bug?
         cls.group_c = m.Group.objects.create(
             name="Group C", source_ref="group-c", source_version=cls.source_version_to_compare_with
         )
@@ -418,7 +416,7 @@ class DifferTestCase(TestCase):
         country_diff = next((diff for diff in diffs if diff.org_unit.org_unit_type == self.org_unit_type_country), None)
         self.assertEqual(country_diff.status, "modified")
         country_diff_comparisons = [comparison.as_dict() for comparison in country_diff.comparisons]
-        self.assertEqual(7, len(country_diff_comparisons))
+        self.assertEqual(8, len(country_diff_comparisons))
         self.assertDictEqual(
             country_diff_comparisons[0],
             {
@@ -489,11 +487,21 @@ class DifferTestCase(TestCase):
                 "distance": None,
             },
         )
+        self.assertDictEqual(
+            country_diff_comparisons[7],
+            {
+                "field": "group:group-c:Group C",
+                "before": [],
+                "after": [{"id": "group-c", "name": "Group C", "iaso_id": self.group_c.pk}],
+                "status": "new",
+                "distance": None,
+            },
+        )
 
         region_diff = next((diff for diff in diffs if diff.org_unit.org_unit_type == self.org_unit_type_region), None)
         self.assertEqual(region_diff.status, "modified")
         region_diff_comparisons = [comparison.as_dict() for comparison in region_diff.comparisons]
-        self.assertEqual(7, len(region_diff_comparisons))
+        self.assertEqual(5, len(region_diff_comparisons))
         self.assertDictEqual(
             region_diff_comparisons[0],
             {
@@ -544,33 +552,13 @@ class DifferTestCase(TestCase):
                 "distance": None,
             },
         )
-        self.assertDictEqual(
-            region_diff_comparisons[5],
-            {
-                "field": "group:group-a:Group A",
-                "before": [],
-                "after": [],
-                "status": "same",
-                "distance": 0,
-            },
-        )
-        self.assertDictEqual(
-            region_diff_comparisons[6],
-            {
-                "field": "group:group-b:Group B",
-                "before": [],
-                "after": [],
-                "status": "same",
-                "distance": 0,
-            },
-        )
 
         district_diff = next(
             (diff for diff in diffs if diff.org_unit.org_unit_type == self.org_unit_type_district), None
         )
         self.assertEqual(district_diff.status, "modified")
         district_diff_comparisons = [comparison.as_dict() for comparison in district_diff.comparisons]
-        self.assertEqual(7, len(district_diff_comparisons))
+        self.assertEqual(5, len(district_diff_comparisons))
         self.assertDictEqual(
             district_diff_comparisons[0],
             {
@@ -619,25 +607,5 @@ class DifferTestCase(TestCase):
                 "after": datetime.date(2025, 12, 28),
                 "status": "modified",
                 "distance": None,
-            },
-        )
-        self.assertDictEqual(
-            district_diff_comparisons[5],
-            {
-                "field": "group:group-a:Group A",
-                "before": [],
-                "after": [],
-                "status": "same",
-                "distance": 0,
-            },
-        )
-        self.assertDictEqual(
-            district_diff_comparisons[6],
-            {
-                "field": "group:group-b:Group B",
-                "before": [],
-                "after": [],
-                "status": "same",
-                "distance": 0,
             },
         )

@@ -110,13 +110,11 @@ class NG_Under5:
         )
 
     def run(self):
-        children_type = ["ng_-_tsfp_child_3", "ng_-_otp_child_3"]
-        entity_type = ETL(children_type)
-        type = EntityType.objects.get(code="ng_-_tsfp_child_3")
+        entity_type = ETL(["child_under_5_3"])
         account = entity_type.account_related_to_entity_type()
         beneficiaries = entity_type.retrieve_entities()
 
-        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()} for {type.name} on {account}")
+        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()} for {account}")
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()
         instances = self.group_visit_by_entity(entities)

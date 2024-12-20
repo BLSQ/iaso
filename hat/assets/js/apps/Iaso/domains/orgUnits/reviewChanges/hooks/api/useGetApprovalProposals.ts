@@ -34,6 +34,7 @@ export const useGetApprovalProposals = (
         projects: params.projectIds,
         payment_status: params.paymentStatus,
         payment_ids: params.paymentIds,
+        source_version_id: params.source_version_id,
         potential_payment_ids: params.potentialPaymentIds,
     };
 

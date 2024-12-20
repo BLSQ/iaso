@@ -45,9 +45,10 @@ export const RoundCell: FunctionComponent<Props> = ({
         if (!hasScope(campaign)) {
             return DEFAULT_CELL_COLOR;
         }
-        const vaccineColor = polioVaccines.find(
+        const vaccineConfig = polioVaccines.find(
             polioVaccine => polioVaccine.value === vaccine,
-        )?.color;
+        );
+        const vaccineColor = vaccineConfig?.legendColor || vaccineConfig?.color;
         return vaccineColor || OTHER_VACCINE_COLOR;
     };
     const handleClick = useCallback(
@@ -74,8 +75,8 @@ export const RoundCell: FunctionComponent<Props> = ({
     const isLogged = useIsLoggedIn();
     const vaccinesList = useMemo(() => {
         const list = campaign.separateScopesPerRound
-            ? round.vaccine_names?.split(',') ?? []
-            : campaign.original.vaccines?.split(',') ?? [];
+            ? (round.vaccine_names?.split(',') ?? [])
+            : (campaign.original.vaccines?.split(',') ?? []);
         return list.map((vaccineName: string) => vaccineName.trim());
     }, [
         campaign.original.vaccines,
@@ -97,7 +98,7 @@ export const RoundCell: FunctionComponent<Props> = ({
                     <span
                         key={`${campaign.id}-${round.number}-${vaccine}`}
                         style={{
-                            backgroundColor: getCellColor(vaccine),
+                            background: getCellColor(vaccine),
                             opacity: vaccineOpacity,
                             display: 'block',
                             height: `${100 / vaccinesList.length}%`,

@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from iaso.models import Account, Entity, Instance, InstanceFile, StorageDevice, StorageLogEntry
+from iaso.models import Account, Entity, EntityType, Instance, InstanceFile, StorageDevice, StorageLogEntry
 
 
 class Command(BaseCommand):
@@ -15,6 +15,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--account", type=int, dest="account_id")
+        parser.add_argument("--entity_type_id", type=int, dest="entity_type_id")
         parser.add_argument(
             "--dry-run",
             action="store_true",
@@ -43,15 +44,26 @@ class Command(BaseCommand):
         account = Account.objects.get(pk=account_id)
         project_ids = list(account.project_set.values_list("id", flat=True))
 
+        entity_type_id = options.get("entity_type_id")
+        if entity_type_id:
+            entity_type = EntityType.objects.get(pk=entity_type_id, account=account)
+            self.stdout.write(f"NOTE: Deleting only for entity type {entity_type}")
+
         with transaction.atomic():
             self.stdout.write("--------------")
-            self.stdout.write(f"Deleting all form submissions and entities for account {account.name}")
+            self.stdout.write(f"Deleting form submissions and entities for account {account.name}")
+            if entity_type_id:
+                self.stdout.write(f"and entity type {entity_type}")
             self.stdout.write("--------------")
             self.stdout.write()
 
             self.stdout.write("Deleting form submissions...")
-            instances_to_delete = Instance.objects.filter(form__projects__id__in=project_ids)
-            entities_to_delete = Entity.objects_include_deleted.filter(account=account)
+            if entity_type_id:
+                instances_to_delete = Instance.objects.filter(entity__entity_type=entity_type)
+                entities_to_delete = Entity.objects_include_deleted.filter(account=account, entity_type=entity_type)
+            else:
+                instances_to_delete = Instance.objects.filter(form__projects__id__in=project_ids)
+                entities_to_delete = Entity.objects_include_deleted.filter(account=account)
 
             self.delete_resources(
                 "\tfile instances",
@@ -73,7 +85,10 @@ class Command(BaseCommand):
             self.stdout.write("DONE.")
 
             self.stdout.write("Deleting storages...")
-            storages_to_delete = StorageDevice.objects.filter(account=account)
+            if entity_type_id:
+                storages_to_delete = StorageDevice.objects.filter(account=account, entity__entity_type=entity_type)
+            else:
+                storages_to_delete = StorageDevice.objects.filter(account=account)
             self.delete_resources(
                 "\tStorageLogEntry",
                 StorageLogEntry.objects.filter(device__in=storages_to_delete),

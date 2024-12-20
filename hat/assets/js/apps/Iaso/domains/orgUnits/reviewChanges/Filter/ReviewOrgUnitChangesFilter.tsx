@@ -1,6 +1,13 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Box, Grid } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
+import { Box, Grid, Typography } from '@mui/material';
+import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
 import { FilterButton } from '../../../../components/FilterButton';
 import { useFilterState } from '../../../../hooks/useFilterState';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -8,8 +15,6 @@ import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../components/TreeView/requests';
-// IA-3641 uncomment when UI has been refactored to limlit size of API call
-// import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { DropdownOptions } from '../../../../types/utils';
 import DatesRange from '../../../../components/filters/DatesRange';
@@ -21,23 +26,44 @@ import { useGetProfilesDropdown } from '../../../instances/hooks/useGetProfilesD
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { usePaymentStatusOptions } from '../hooks/api/useGetPaymentStatusOptions';
+import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
+import { useGetDataSources } from '../../hooks/requests/useGetDataSources';
+import { useDefaultSourceVersion } from '../../../dataSources/utils';
+import { useGetVersionLabel } from '../../hooks/useGetVersionLabel';
 
 const baseUrl = baseUrls.orgUnitsChangeRequest;
-type Props = { params: ApproveOrgUnitParams };
+type Props = {
+    params: ApproveOrgUnitParams;
+};
+
+const styles = {
+    advancedSettings: {
+        color: theme => theme.palette.primary.main,
+        alignSelf: 'center',
+        textAlign: 'right',
+        flex: '1',
+        cursor: 'pointer',
+    },
+};
 
 export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
-    const { formatMessage } = useSafeIntl();
+    const redirectToReplace = useRedirectToReplace();
+    const newParams = useMemo(() => params, [params]);
+
+    const defaultSourceVersion = useDefaultSourceVersion();
+    const [selectedVersionId, setSelectedVersionId] = useState<string>(
+        newParams.source_version_id
+            ? newParams.source_version_id
+            : defaultSourceVersion.version.id.toString(),
+    );
+
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
+    const { data: dataSources, isFetching: isFetchingDataSources } =
+        useGetDataSources(true);
     const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
-    // IA-3641 hard coding values fro groups dropdown until refactor
-    // const { data: groupOptions, isLoading: isLoadingGroups } =
-    //     useGetGroupDropdown({});
-    const groupOptions = [];
-    const isLoadingGroups = false;
-    // IA-3641 -----END
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: forms, isFetching: isLoadingForms } = useGetForms();
@@ -49,6 +75,33 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         useGetProjectsDropdownOptions();
     const { data: paymentStatuses, isFetching: isFetchingPaymentStatuses } =
         usePaymentStatusOptions();
+
+    // Redirect to default version
+    useEffect(() => {
+        if (!newParams.source_version_id) {
+            newParams.source_version_id = selectedVersionId;
+            redirectToReplace(baseUrl, newParams);
+        }
+    }, [newParams, selectedVersionId, redirectToReplace]);
+
+    // Get the source when the source_version_id exists
+    const sourceParam = useMemo(
+        () =>
+            newParams.source_version_id
+                ? dataSources?.filter(source =>
+                      source.original.versions.some(
+                          version =>
+                              version.id.toString() ===
+                              newParams.source_version_id,
+                      ),
+                  )[0].value
+                : undefined,
+        [dataSources, newParams.source_version_id],
+    );
+
+    const [dataSource, setDataSource] = useState<string>(
+        sourceParam || defaultSourceVersion.source.id.toString(),
+    );
     const formOptions = useMemo(
         () =>
             forms?.map(form => ({
@@ -57,6 +110,43 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             })) || [],
         [forms],
     );
+    // Get the initial data source id
+    const initialDataSource = useMemo(
+        () =>
+            dataSources?.find(
+                source =>
+                    source.value === defaultSourceVersion.source.id.toString(),
+            )?.value || '',
+        [dataSources, defaultSourceVersion.source.id],
+    );
+
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+    const { formatMessage } = useSafeIntl();
+
+    const { data: groupOptions, isLoading: isLoadingGroups } =
+        useGetGroupDropdown(
+            selectedVersionId ? { defaultVersion: selectedVersionId } : {},
+        );
+
+    // Change the selected dataSource
+    useEffect(() => {
+        const updatedDataSource =
+            sourceParam ||
+            dataSources?.find(
+                source =>
+                    source.value === defaultSourceVersion.source.id.toString(),
+            )?.value;
+
+        if (updatedDataSource) {
+            setDataSource(updatedDataSource as unknown as string);
+        }
+    }, [
+        dataSources,
+        defaultSourceVersion.source.id,
+        setDataSource,
+        sourceParam,
+    ]);
+
     const statusOptions: DropdownOptions<string>[] = useMemo(
         () => [
             {
@@ -81,6 +171,59 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         },
         [handleChange],
     );
+
+    // handle dataSource and sourceVersion change
+    const handleDataSourceVersionChange = useCallback(
+        (key, newValue) => {
+            if (key === 'source') {
+                setDataSource(newValue);
+                const selectedSource = dataSources?.filter(
+                    source => source.value === newValue,
+                )[0];
+                setSelectedVersionId(
+                    selectedSource?.original?.default_version.id.toString(),
+                );
+                handleChange(
+                    'source_version_id',
+                    selectedSource?.original?.default_version.id,
+                );
+            } else {
+                setSelectedVersionId(newValue.toString());
+                handleChange('source_version_id', newValue);
+            }
+            // Reset the group filter state
+            handleChange('groups', []);
+            // Reset the parent_id and groups params
+            delete newParams.parent_id;
+            delete newParams.groups;
+            redirectToReplace(baseUrl, newParams);
+        },
+        [dataSources, handleChange, newParams, redirectToReplace],
+    );
+
+    const getVersionLabel = useGetVersionLabel(dataSources);
+    // Get the versions dropdown options based on the selected dataSource
+    const versionsDropDown = useMemo(() => {
+        if (!dataSources || !dataSource) return [];
+        return (
+            dataSources
+                .filter(
+                    src => (src.value as unknown as string) === dataSource,
+                )[0]
+                ?.original?.versions.sort((a, b) => a.number - b.number)
+                .map(version => ({
+                    label: getVersionLabel(version.id),
+                    value: version.id.toString(),
+                })) ?? []
+        );
+    }, [dataSource, dataSources, getVersionLabel]);
+    // Reset the OrgUnitTreeviewModal when the sourceVersion changed
+    const sourceTreeviewResetControl = useRef(selectedVersionId);
+    useEffect(() => {
+        if (sourceTreeviewResetControl.current !== selectedVersionId) {
+            sourceTreeviewResetControl.current = selectedVersionId;
+        }
+    }, [selectedVersionId]);
 
     return (
         <Grid container spacing={2}>
@@ -117,19 +260,78 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     options={groupOptions}
                     loading={isLoadingGroups}
                     labelString={formatMessage(MESSAGES.group)}
-                    disabled
-                    helperText={formatMessage(MESSAGES.featureDisabled)}
                 />
+                <Box mt={2}>
+                    <InputComponent
+                        type="select"
+                        disabled={isFetchingDataSources}
+                        keyValue="source"
+                        onChange={handleDataSourceVersionChange}
+                        value={isFetchingDataSources ? '' : dataSource}
+                        label={MESSAGES.source}
+                        options={dataSources}
+                        loading={isFetchingDataSources}
+                    />
+                    {!showAdvancedSettings && (
+                        <Typography
+                            data-test="advanced-settings"
+                            variant="overline"
+                            sx={styles.advancedSettings}
+                            onClick={() => setShowAdvancedSettings(true)}
+                        >
+                            {formatMessage(MESSAGES.showAdvancedSettings)}
+                        </Typography>
+                    )}
+                    {showAdvancedSettings && (
+                        <>
+                            <InputComponent
+                                type="select"
+                                disabled={isFetchingDataSources}
+                                keyValue="version"
+                                onChange={handleDataSourceVersionChange}
+                                value={selectedVersionId || ''}
+                                label={MESSAGES.sourceVersion}
+                                options={versionsDropDown}
+                                clearable={false}
+                                loading={isFetchingDataSources}
+                            />
+
+                            <Box ml={1}>
+                                <Typography
+                                    data-test="advanced-settings"
+                                    variant="overline"
+                                    onClick={() =>
+                                        setShowAdvancedSettings(false)
+                                    }
+                                >
+                                    {formatMessage(
+                                        MESSAGES.hideAdvancedSettings,
+                                    )}
+                                </Typography>
+                            </Box>
+                        </>
+                    )}
+                </Box>
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
                 <Box id="ou-tree-input">
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}
                         titleMessage={MESSAGES.parent}
+                        source={
+                            dataSource
+                                ? dataSource.toString()
+                                : initialDataSource.toString()
+                        }
+                        version={selectedVersionId}
                         onConfirm={orgUnit => {
                             handleChange('parent_id', orgUnit?.id);
                         }}
                         initialSelection={initialOrgUnit}
+                        resetTrigger={
+                            sourceTreeviewResetControl.current !==
+                            selectedVersionId
+                        }
                     />
                 </Box>
                 <InputComponent

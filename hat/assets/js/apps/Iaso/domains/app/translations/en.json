@@ -1221,7 +1221,7 @@
     "iaso.snackBar.copyVersionSuccessMessage": "The task has been created",
     "iaso.snackBar.createDataSourceError": "Error occurred while saving the data source.",
     "iaso.snackBar.createExportRequestError": "An error occured while creating export request",
-    "iaso.snackBar.createExportRequestErrorNoFormMappingError": "The form doesn't a form mapping to export to dhis2",
+    "iaso.snackBar.createExportRequestErrorNoFormMappingError": "The form is not configured for DHIS2 export",
     "iaso.snackBar.createExportRequestErrorNothingToExportError": "We found nothing to export, change your filter or force the re-export",
     "iaso.snackBar.createExportRequestErrorNotSupportedError": "Forcing export isn't supported for event tracker",
     "iaso.snackBar.createExportRequestErrorNoVersionError": "One of the instance had no version specified",

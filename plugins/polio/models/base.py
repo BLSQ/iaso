@@ -4,7 +4,7 @@ import math
 import os
 from collections import defaultdict
 from datetime import date
-from typing import Any, Tuple, Union, Optional
+from typing import Any, Optional, Tuple, Union
 from uuid import uuid4
 
 import django.db.models.manager
@@ -43,9 +43,17 @@ VIRUSES = [
     ("cVDPV2", _("cVDPV2")),
     ("WPV1", _("WPV1")),
     ("PV1 & cVDPV2", _("PV1 & cVDPV2")),
+    ("cVDPV1 & cVDPV2", _("cVDPV1 & cVDPV2")),
 ]
 
 VACCINES = [
+    ("mOPV2", _("mOPV2")),
+    ("nOPV2", _("nOPV2")),
+    ("bOPV", _("bOPV")),
+    ("nOPV2 & bOPV", _("nOPV2 & bOPV")),
+]
+
+INDIVIDUAL_VACCINES = [
     ("mOPV2", _("mOPV2")),
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
@@ -134,7 +142,7 @@ class RoundScope(models.Model):
     )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="scopes")
 
-    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
+    vaccine = models.CharField(max_length=12, choices=VACCINES, blank=True)
 
     class Meta:
         unique_together = [("round", "vaccine")]
@@ -152,7 +160,7 @@ class CampaignScope(models.Model):
         Group, on_delete=models.CASCADE, related_name="campaignScope", default=make_group_campaign_scope
     )
     campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE, related_name="scopes")
-    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
+    vaccine = models.CharField(max_length=12, choices=VACCINES, blank=True)
 
     class Meta:
         unique_together = [("campaign", "vaccine")]
@@ -265,7 +273,7 @@ class SubActivityScope(models.Model):
     )
     subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, related_name="scopes")
 
-    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
+    vaccine = models.CharField(max_length=12, choices=VACCINES, blank=True)
 
 
 AGE_UNITS = [
@@ -377,6 +385,32 @@ class Round(models.Model):
                 lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.campaign.scopes.all()
             )
             return ",".join(scope.vaccine for scope in scopes_with_orgunits)
+
+    @property
+    def vaccine_names_extended(self):
+        vaccines = set()
+        subactivity_vaccines = [
+            subactivity["scopes__vaccine"]
+            for subactivity in list(self.sub_activities.filter(scopes__isnull=False).values("scopes__vaccine"))
+        ]
+        for subactivity_vaccine in subactivity_vaccines:
+            vaccines.add(subactivity_vaccine)
+        if self.campaign.separate_scopes_per_round:
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
+            )
+        else:
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.campaign.scopes.all()
+            )
+        for scope in scopes_with_orgunits:
+            vaccines.add(scope.vaccine)
+
+        if VACCINES[3][0] in vaccines:
+            vaccines.remove(VACCINES[3][0])
+            vaccines.add(VACCINES[1][0])
+            vaccines.add(VACCINES[2][0])
+        return ", ".join(sorted(vaccines))
 
     @property
     def districts_count_calculated(self):
@@ -525,7 +559,7 @@ class Campaign(SoftDeletableModel):
         verbose_name=_("PV2 Notification"),
     )
 
-    virus = models.CharField(max_length=12, choices=VIRUSES, null=True, blank=True)
+    virus = models.CharField(max_length=15, choices=VIRUSES, null=True, blank=True)
 
     # Detection.
     detection_status = models.CharField(default="PENDING", max_length=10, choices=STATUS)
@@ -778,6 +812,32 @@ class Campaign(SoftDeletableModel):
 
         vaccine_names = sorted({scope.vaccine for scope in scopes_with_orgunits_and_vaccine})
         return ", ".join(vaccine_names)
+
+    @property
+    def vaccines_extended(self):
+        vaccines = set()
+        for round in self.rounds.all():
+            subactivity_vaccines = [
+                subactivity["scopes__vaccine"]
+                for subactivity in list(round.sub_activities.filter(scopes__isnull=False).values("scopes__vaccine"))
+            ]
+            for subactivity_vaccine in subactivity_vaccines:
+                vaccines.add(subactivity_vaccine)
+            if self.separate_scopes_per_round:
+                scopes_with_orgunits = filter(
+                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, round.scopes.all()
+                )
+            else:
+                scopes_with_orgunits = filter(
+                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
+                )
+            for scope in scopes_with_orgunits:
+                vaccines.add(scope.vaccine)
+            if VACCINES[3][0] in vaccines:
+                vaccines.remove(VACCINES[3][0])
+                vaccines.add(VACCINES[1][0])
+                vaccines.add(VACCINES[2][0])
+            return ", ".join(sorted(vaccines))
 
     def update_geojson_field(self):
         "Update the geojson field on the campaign DO NOT TRIGGER the save() you have to do it manually"
@@ -1036,9 +1096,17 @@ class VaccineRequestFormType(models.TextChoices):
 
 
 class VaccineRequestForm(SoftDeletableModel):
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
-    vaccine_type = models.CharField(max_length=5, choices=VACCINES)
-    rounds = models.ManyToManyField(Round)
+    class Meta:
+        indexes = [
+            models.Index(fields=["campaign", "vaccine_type"]),  # Frequently filtered together
+            models.Index(fields=["vrf_type"]),  # Filtered in repository_forms.py
+            models.Index(fields=["created_at"]),  # Used for ordering
+            models.Index(fields=["updated_at"]),  # Used for ordering
+        ]
+
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, db_index=True)
+    vaccine_type = models.CharField(max_length=30, choices=INDIVIDUAL_VACCINES)
+    rounds = models.ManyToManyField(Round, db_index=True)
     date_vrf_signature = models.DateField(null=True, blank=True)
     date_vrf_reception = models.DateField(null=True, blank=True)
     date_dg_approval = models.DateField(null=True, blank=True)
@@ -1117,6 +1185,13 @@ class VaccinePreAlert(models.Model):
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["request_form", "estimated_arrival_time"]),  # Used together in queries
+            models.Index(fields=["po_number"]),  # Unique field that's queried
+            models.Index(fields=["date_pre_alert_reception"]),  # Used for filtering/ordering
+        ]
+
 
 class VaccineArrivalReport(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
@@ -1152,6 +1227,13 @@ class VaccineArrivalReport(models.Model):
 
         super().save(*args, **kwargs)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["request_form", "arrival_report_date"]),  # Frequently queried together
+            models.Index(fields=["po_number"]),  # Unique field that's queried
+            models.Index(fields=["doses_received"]),  # Used in aggregations
+        ]
+
 
 class VaccineStock(models.Model):
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="vaccine_stocks")
@@ -1163,10 +1245,14 @@ class VaccineStock(models.Model):
         related_name="vaccine_stocks",
         help_text="Unique (Country, Vaccine) pair",
     )
-    vaccine = models.CharField(max_length=5, choices=VACCINES)
+    vaccine = models.CharField(max_length=12, choices=VACCINES)
 
     class Meta:
         unique_together = ("country", "vaccine")
+        indexes = [
+            models.Index(fields=["country", "vaccine"]),  # Already unique_together, but used in many queries
+            models.Index(fields=["account"]),  # Frequently filtered by account
+        ]
 
     def __str__(self):
         return f"{self.country} - {self.vaccine}"
@@ -1204,6 +1290,13 @@ class VaccineStockHistory(models.Model):
 
 # Form A
 class OutgoingStockMovement(models.Model):
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "campaign"]),  # Frequently queried together
+            models.Index(fields=["form_a_reception_date"]),  # Used in ordering
+            models.Index(fields=["report_date"]),  # Used in filtering/ordering
+        ]
+
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
     vaccine_stock = models.ForeignKey(
@@ -1234,6 +1327,12 @@ class DestructionReport(models.Model):
         storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/", null=True, blank=True
     )
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "destruction_report_date"]),  # Used together in queries
+            models.Index(fields=["rrt_destruction_report_reception_date"]),  # Used in filtering
+        ]
+
 
 class IncidentReport(models.Model):
     class StockCorrectionChoices(models.TextChoices):
@@ -1261,6 +1360,12 @@ class IncidentReport(models.Model):
     document = models.FileField(
         storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/", null=True, blank=True
     )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "date_of_incident_report"]),  # Frequently queried together
+            models.Index(fields=["incident_report_received_by_rrt"]),  # Used in filtering
+        ]
 
 
 class Notification(models.Model):

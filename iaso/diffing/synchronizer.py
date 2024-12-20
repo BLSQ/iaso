@@ -256,7 +256,7 @@ class Synchronizer:
             [
                 comparison["status"] in ["new", "deleted"]
                 for comparison in diff["comparisons"]
-                if comparison["field"].startswith("group")
+                if comparison["field"].startswith("group:")
             ]
         )
 
@@ -286,7 +286,7 @@ class Synchronizer:
         if has_group_changes:
             requested_fields.append("new_groups")
             group_changes = [
-                comparison for comparison in diff["comparisons"] if comparison["field"].startswith("group")
+                comparison for comparison in diff["comparisons"] if comparison["field"].startswith("group:")
             ]
 
         org_unit_change_request = OrgUnitChangeRequest(

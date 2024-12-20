@@ -98,7 +98,6 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             geom=cls.multi_polygon,
             simplified_geom=cls.multi_polygon,
         )
-        # TODO: `group_c` should be taken into account in the pyramid to update.
         cls.angola_country_to_compare_with.groups.set([cls.group_a2, cls.group_c])
 
         cls.angola_region_to_compare_with = m.OrgUnit.objects.create(
@@ -273,9 +272,9 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(angola_country_change_request.new_parent, None)
         self.assertEqual(angola_country_change_request.new_name, "Angola new")
         self.assertEqual(angola_country_change_request.new_org_unit_type, None)
-        # TODO: `group_c` should be added to the pyramid to update.
-        self.assertEqual(angola_country_change_request.new_groups.count(), 1)
+        self.assertEqual(angola_country_change_request.new_groups.count(), 2)
         self.assertIn(self.group_a2, angola_country_change_request.new_groups.all())
+        self.assertIn(self.group_c, angola_country_change_request.new_groups.all())
         self.assertEqual(angola_country_change_request.new_location, None)
         self.assertEqual(angola_country_change_request.new_location_accuracy, None)
         self.assertEqual(angola_country_change_request.new_opening_date, datetime.date(2025, 11, 28))

@@ -1,19 +1,17 @@
 import { Button, Grid, Typography } from '@mui/material';
-import { LinkWithLocation, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import MESSAGES from '../messages';
 
 type Props = {
     condition: boolean;
     message: { defaultMessage: string; id: string };
-    linkTo: string;
     approveCondition: boolean;
     onApproveClick: () => void;
 };
 const PushBulkGpsWarning: FunctionComponent<Props> = ({
     condition,
     message,
-    linkTo,
     approveCondition,
     onApproveClick,
 }) => {
@@ -36,11 +34,11 @@ const PushBulkGpsWarning: FunctionComponent<Props> = ({
                     </Typography>
                 </Typography>
             </Grid>
-            <Grid item xs={2} display="flex" justifyContent="flex-start">
+            {/* <Grid item xs={2} display="flex" justifyContent="flex-start">
                 <LinkWithLocation to={linkTo}>
                     {formatMessage(MESSAGES.seeAll)}
                 </LinkWithLocation>
-            </Grid>
+            </Grid> */}
             <Grid item xs={2} display="flex" justifyContent="flex-end">
                 <Button
                     data-test="search-button"

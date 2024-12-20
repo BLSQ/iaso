@@ -17,7 +17,7 @@ from ..common import ModelViewSet, TimestampField, UserSerializer, HasPermission
 from hat.menupermissions import models as permission
 from iaso.models.base import ERRORED, RUNNING, SKIPPED, KILLED, SUCCESS, QUEUED, Task
 from iaso.utils.s3_client import generate_presigned_url_from_s3
-from iaso.api.tasks.filters import StartEndDateFilterBackend, UsersFilterBackend
+from iaso.api.tasks.filters import StatusFilterBackend, StartEndDateFilterBackend, UsersFilterBackend
 
 
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
@@ -87,6 +87,7 @@ class TaskSourceViewSet(ModelViewSet):
         django_filters.rest_framework.DjangoFilterBackend,
         UsersFilterBackend,
         StartEndDateFilterBackend,
+        StatusFilterBackend,
     ]
     ordering_fields = [
         "name",

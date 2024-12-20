@@ -51,3 +51,12 @@ class StartEndDateFilterBackend(filters.BaseFilterBackend):
                 pass
 
         return queryset
+
+
+class StatusFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        status = request.GET.get("status", None)
+        if status:
+            status_list = status.split(",")
+            return queryset.filter(status__in=status_list)
+        return queryset

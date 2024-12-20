@@ -38,9 +38,10 @@ from iaso.models import (
 )
 from iaso.utils import timestamp_to_datetime
 from iaso.utils.file_utils import get_file_type
+from .org_units import HasCreateOrgUnitPermission
 
 from ..models.forms import CR_MODE_IF_REFERENCE_FORM
-from ..utils.models.common import get_creator_name
+from ..utils.models.common import get_creator_name, check_instance_bulk_gps_push
 from . import common
 from .comment import UserSerializerForComment
 from .common import (
@@ -91,7 +92,7 @@ class InstanceSerializer(serializers.ModelSerializer):
 
 class HasInstancePermission(permissions.BasePermission):
     def has_permission(self, request: Request, view):
-        if request.method == "POST":
+        if request.method == "POST":  # to handle anonymous submissions sent by mobile
             return True
 
         return request.user.is_authenticated and (
@@ -110,6 +111,20 @@ class HasInstancePermission(permissions.BasePermission):
         if obj.can_user_modify(request.user):
             return True
         return False
+
+
+class HasInstanceBulkPermission(permissions.BasePermission):
+    """
+    Designed for POST endpoints that are not designed to receive new submissions.
+    """
+
+    def has_permission(self, request: Request, view):
+        return request.user.is_authenticated and (
+            request.user.has_perm(permission.FORMS)
+            or request.user.has_perm(permission.SUBMISSIONS)
+            or request.user.has_perm(permission.REGISTRY_WRITE)
+            or request.user.has_perm(permission.REGISTRY_READ)
+        )
 
 
 class InstanceFileSerializer(serializers.Serializer):
@@ -605,7 +620,11 @@ class InstancesViewSet(viewsets.ViewSet):
             status=201,
         )
 
-    @action(detail=False, methods=["GET"], permission_classes=[permissions.IsAuthenticated, HasInstancePermission])
+    @action(
+        detail=False,
+        methods=["GET"],
+        permission_classes=[permissions.IsAuthenticated, HasInstanceBulkPermission, HasCreateOrgUnitPermission],
+    )
     def check_bulk_gps_push(self, request):
         # first, let's parse all parameters received from the URL
         select_all, selected_ids, unselected_ids = self._parse_check_bulk_gps_push_parameters(request.GET)
@@ -628,48 +647,15 @@ class InstancesViewSet(viewsets.ViewSet):
         else:
             instances_query = instances_query.exclude(pk__in=unselected_ids)
 
-        overwrite_ids = []
-        no_location_ids = []
-        org_units_to_instances_dict = {}
-        set_org_units_ids = set()
+        success, errors, warnings = check_instance_bulk_gps_push(instances_query)
 
-        for instance in instances_query:
-            if not instance.location:
-                no_location_ids.append(instance.id)  # there is nothing to push to the OrgUnit
-                continue
+        if not success:
+            errors["result"] = "errors"
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
-            org_unit = instance.org_unit
-            if org_unit.id in org_units_to_instances_dict:
-                # we can't push this instance's location since there was another instance linked to this OrgUnit
-                org_units_to_instances_dict[org_unit.id].append(instance.id)
-                continue
-            else:
-                org_units_to_instances_dict[org_unit.id] = [instance.id]
-
-            set_org_units_ids.add(org_unit.id)
-            if org_unit.location or org_unit.geom:
-                overwrite_ids.append(instance.id)  # if the user proceeds, he will erase existing location
-                continue
-
-        # Before returning, we need to check if we've had multiple hits on an OrgUnit
-        error_same_org_unit_ids = self._check_bulk_gps_repeated_org_units(org_units_to_instances_dict)
-
-        if len(error_same_org_unit_ids):
-            return Response(
-                {"result": "error", "error_ids": error_same_org_unit_ids},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if len(no_location_ids) or len(overwrite_ids):
-            dict_response = {
-                "result": "warnings",
-            }
-            if len(no_location_ids):
-                dict_response["warning_no_location"] = no_location_ids
-            if len(overwrite_ids):
-                dict_response["warning_overwrite"] = overwrite_ids
-
-            return Response(dict_response, status=status.HTTP_200_OK)
+        if warnings:
+            warnings["result"] = "warnings"
+            return Response(warnings, status=status.HTTP_200_OK)
 
         return Response(
             {
@@ -680,7 +666,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def _parse_check_bulk_gps_push_parameters(self, query_parameters):
         raw_select_all = query_parameters.get("select_all", True)
-        select_all = raw_select_all not in ["false", "False", "0"]
+        select_all = raw_select_all not in ["false", "False", "0", 0, False]
 
         raw_selected_ids = query_parameters.get("selected_ids", None)
         if raw_selected_ids:
@@ -695,13 +681,6 @@ class InstancesViewSet(viewsets.ViewSet):
             unselected_ids = []
 
         return select_all, selected_ids, unselected_ids
-
-    def _check_bulk_gps_repeated_org_units(self, org_units_to_instance_ids: Dict[int, List[int]]) -> List[int]:
-        error_instance_ids = []
-        for _, instance_ids in org_units_to_instance_ids.items():
-            if len(instance_ids) >= 2:
-                error_instance_ids.extend(instance_ids)
-        return error_instance_ids
 
     QUERY = """
     select DATE_TRUNC('month', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)) as month,

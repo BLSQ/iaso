@@ -144,9 +144,6 @@ class Differ:
             dhis2_value = field.access(orgunit_dhis2)
             ref_value = field.access(orgunit_ref)
 
-            if field.field_name.startswith("group:") and not any([ref_value, dhis2_value]):
-                continue
-
             same = field.is_same(dhis2_value, ref_value)
             if same:
                 status = "same"

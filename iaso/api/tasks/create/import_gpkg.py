@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.api.common import HasPermission
-from iaso.api.tasks import TaskSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import DataSource, Task
 from iaso.models.import_gpkg import ImportGPKG
 from iaso.tasks.import_gpkg_task import import_gpkg_task

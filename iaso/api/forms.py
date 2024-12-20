@@ -15,7 +15,7 @@ from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
 from hat.menupermissions import models as permission
 from iaso.models import Form, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
-from iaso.utils import timestamp_to_datetime
+from iaso.utils.date_and_time import timestamp_to_datetime
 
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo

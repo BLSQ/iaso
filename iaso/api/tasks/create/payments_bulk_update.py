@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 from iaso.api.common import HasPermission
 from hat.menupermissions import models as permission
-from iaso.api.tasks import TaskSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models.payments import PaymentLot
 from iaso.tasks.payments_bulk_update import payments_bulk_update
 

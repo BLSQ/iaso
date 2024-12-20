@@ -50,16 +50,16 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.tasks',
     },
     status: {
-        defaultMessage: 'Nom & Status',
+        defaultMessage: 'Status',
         id: 'iaso.tasks.status',
     },
     name: {
         defaultMessage: 'Name',
         id: 'iaso.tasks.name',
     },
-    launcher: {
+    user: {
         defaultMessage: 'User',
-        id: 'iaso.tasks.launcher',
+        id: 'iaso.tasks.user',
     },
     progress: {
         defaultMessage: 'Progress',
@@ -109,6 +109,22 @@ const MESSAGES = defineMessages({
     relaunch: {
         defaultMessage: 'Relaunch the task',
         id: 'iaso.tasks.relaunch',
+    },
+    last_launched_by: {
+        defaultMessage: 'Last launch:',
+        id: 'iaso.tasks.last_launch_by',
+    },
+    dateFrom: {
+        defaultMessage: 'Start date',
+        id: 'iaso.label.dateFrom',
+    },
+    dateTo: {
+        defaultMessage: 'End date',
+        id: 'iaso.label.dateTo',
+    },
+    taskType: {
+        defaultMessage: 'Type',
+        id: 'iaso.tasks.type',
     },
 });
 

@@ -1,6 +1,6 @@
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
-from iaso.api.tasks import TaskSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.api.common import HasPermission
 from plugins.polio.tasks.archive_vaccine_stock_for_rounds import archive_vaccine_stock_for_rounds
 from hat.menupermissions import models as permission

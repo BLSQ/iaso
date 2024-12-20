@@ -35,6 +35,10 @@ class RoundSerializer(serializers.ModelSerializer):
 
     # Vaccines from real scopes, from property, separated by ,
     vaccine_names = serializers.CharField(read_only=True)
+    vaccine_names_extended = serializers.SerializerMethodField(read_only=True)
+
+    def get_vaccine_names_extended(self, obj):
+        return obj.vaccine_names_extended
 
     @atomic
     def create(self, validated_data):

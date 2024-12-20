@@ -1214,7 +1214,7 @@
     "iaso.snackBar.copyVersionSuccessMessage": "La tâche a été créé avec succès",
     "iaso.snackBar.createDataSourceError": "Une erreur est survenue en sauvant la source de donnée",
     "iaso.snackBar.createExportRequestError": "Une erreur est survenue en créant une demande d'export",
-    "iaso.snackBar.createExportRequestErrorNoFormMappingError": "Le formulaire n'est pas encore configuré pour l'export vers dhis2",
+    "iaso.snackBar.createExportRequestErrorNoFormMappingError": "Le formulaire n'est pas encore configuré pour l'export vers DHIS2",
     "iaso.snackBar.createExportRequestErrorNothingToExportError": "Nous n'avons trouvé aucune soumission à exporter, vous pouvez modifier vos critères ou forcer le re-export",
     "iaso.snackBar.createExportRequestErrorNotSupportedError": "L'exportation forcée n'est pas prise en charge pour le suivi des événements",
     "iaso.snackBar.createExportRequestErrorNoVersionError": "L'export ne peut être créé, une des soumission ne spécifie pas la version du form",

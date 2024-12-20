@@ -1378,7 +1378,7 @@
     "iaso.tasks.relaunch": "Relaunch the task",
     "iaso.tasks.running": "Running",
     "iaso.tasks.skipped": "Skipped",
-    "iaso.tasks.status": "Name & status",
+    "iaso.tasks.status": "Status",
     "iaso.tasks.success": "Success",
     "iaso.tasks.timeCreated": "Time created",
     "iaso.tasks.timeEnd": "Time ended",

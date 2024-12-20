@@ -50,7 +50,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.tasks',
     },
     status: {
-        defaultMessage: 'Nom & Status',
+        defaultMessage: 'Status',
         id: 'iaso.tasks.status',
     },
     name: {

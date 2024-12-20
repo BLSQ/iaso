@@ -7,7 +7,7 @@ import MESSAGES from '../../../../constants/messages';
 import { polioVaccines, useMapLegend } from '../../../../constants/virus';
 
 // eslint-disable-next-line prettier/prettier
-type Vaccine = typeof polioVaccines[number];
+type Vaccine = (typeof polioVaccines)[number];
 
 export const VaccinesLegend: FunctionComponent = () => {
     const classes = useStyles();
@@ -27,18 +27,22 @@ export const VaccinesLegend: FunctionComponent = () => {
                         <Grid container spacing={1}>
                             <Grid
                                 item
-                                sm={6}
+                                sm={4}
                                 container
                                 justifyContent="flex-start"
                             >
                                 <span
                                     className={classes.roundColor}
-                                    style={{ backgroundColor: vaccine.color }}
+                                    style={{
+                                        background:
+                                            vaccine.legendColor ||
+                                            vaccine.color,
+                                    }}
                                 />
                             </Grid>
                             <Grid
                                 item
-                                sm={6}
+                                sm={8}
                                 container
                                 justifyContent="flex-end"
                                 alignItems="center"

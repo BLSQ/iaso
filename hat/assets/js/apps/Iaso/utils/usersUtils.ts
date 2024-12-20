@@ -1,4 +1,4 @@
-import { LangOptions } from 'bluesquare-components';
+import { LangOptions, textPlaceholder } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';
 import { Project } from '../domains/projects/types/project';
@@ -89,6 +89,9 @@ export type User = {
 export const getDisplayName = (
     user: Partial<User> | Partial<Profile>,
 ): string => {
+    if(!user){
+        return textPlaceholder
+    }
     // Some endpoint have user_name and some username (without the _, fun)
     const userName = user.user_name ?? user?.username;
     if (!user.first_name && !user.last_name) {

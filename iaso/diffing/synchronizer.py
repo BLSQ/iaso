@@ -166,17 +166,24 @@ class Synchronizer:
 
                 self.change_requests_to_bulk_create.append(change_request)
 
-                if group_changes:
-                    self.change_requests_groups_to_bulk_create[change_request.org_unit_id] = ChangeRequestGroups(
-                        change_request_id=None,  # This will be populated after the bulk creation.
-                        org_unit_id=change_request.org_unit_id,
-                        old_groups_ids={
-                            group["iaso_id"] for group_change in group_changes for group in group_change["before"]
-                        },
-                        new_groups_ids={
-                            group["iaso_id"] for group_change in group_changes for group in group_change["after"]
-                        },
-                    )
+                old_groups_ids = set()
+                new_groups_ids = set()
+
+                for group_change in group_changes:
+                    if group_change["status"] == "same":
+                        old_groups_ids.update([group["iaso_id"] for group in group_change["before"]])
+                        new_groups_ids.update([group["iaso_id"] for group in group_change["after"]])
+                    if group_change["status"] == "deleted":
+                        old_groups_ids.update([group["iaso_id"] for group in group_change["before"]])
+                    if group_change["status"] == "new":
+                        new_groups_ids.update([group["iaso_id"] for group in group_change["after"]])
+
+                self.change_requests_groups_to_bulk_create[change_request.org_unit_id] = ChangeRequestGroups(
+                    change_request_id=None,  # This will be populated after the bulk creation.
+                    org_unit_id=change_request.org_unit_id,
+                    old_groups_ids=old_groups_ids,
+                    new_groups_ids=new_groups_ids,
+                )
 
     def _prepare_new_change_requests(self, diff: dict) -> tuple[Optional[OrgUnitChangeRequest], Optional[list]]:
         # TODO: groups.
@@ -244,11 +251,14 @@ class Synchronizer:
             and comparison["field"] in ["name", "parent", "opening_date", "closed_date"]
         }
 
-        group_changes = [
-            comparison
-            for comparison in diff["comparisons"]
-            if comparison["status"] == "modified" and comparison["field"].startswith("group")
-        ]
+        group_changes = []
+        has_group_changes = any(
+            [
+                comparison["status"] in ["new", "deleted"]
+                for comparison in diff["comparisons"]
+                if comparison["field"].startswith("group")
+            ]
+        )
 
         org_unit = diff["orgunit_dhis2"]
         requested_fields = []
@@ -273,8 +283,11 @@ class Synchronizer:
             new_closed_date = self._parse_date(changes["closed_date"])
             requested_fields.append("new_closed_date")
 
-        if group_changes:
+        if has_group_changes:
             requested_fields.append("new_groups")
+            group_changes = [
+                comparison for comparison in diff["comparisons"] if comparison["field"].startswith("group")
+            ]
 
         org_unit_change_request = OrgUnitChangeRequest(
             # Data.

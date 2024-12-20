@@ -267,14 +267,15 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(angola_country_change_request.created_by, data_source_sync.created_by)
         self.assertEqual(
             angola_country_change_request.requested_fields,
-            ["new_name", "new_opening_date", "new_closed_date"],
+            ["new_name", "new_opening_date", "new_closed_date", "new_groups"],
         )
         # New values.
         self.assertEqual(angola_country_change_request.new_parent, None)
         self.assertEqual(angola_country_change_request.new_name, "Angola new")
         self.assertEqual(angola_country_change_request.new_org_unit_type, None)
         # TODO: `group_c` should be added to the pyramid to update.
-        self.assertEqual(angola_country_change_request.new_groups.count(), 0)
+        self.assertEqual(angola_country_change_request.new_groups.count(), 1)
+        self.assertIn(self.group_a2, angola_country_change_request.new_groups.all())
         self.assertEqual(angola_country_change_request.new_location, None)
         self.assertEqual(angola_country_change_request.new_location_accuracy, None)
         self.assertEqual(angola_country_change_request.new_opening_date, datetime.date(2025, 11, 28))
@@ -284,7 +285,9 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(angola_country_change_request.old_parent, None)
         self.assertEqual(angola_country_change_request.old_name, "Angola")
         self.assertEqual(angola_country_change_request.old_org_unit_type, self.org_unit_type_country)
-        self.assertEqual(angola_country_change_request.old_groups.count(), 0)
+        self.assertEqual(angola_country_change_request.old_groups.count(), 2)
+        self.assertIn(self.group_a1, angola_country_change_request.old_groups.all())
+        self.assertIn(self.group_b, angola_country_change_request.old_groups.all())
         self.assertEqual(angola_country_change_request.old_location, None)
         self.assertEqual(angola_country_change_request.old_opening_date, datetime.date(2022, 11, 28))
         self.assertEqual(angola_country_change_request.old_closed_date, datetime.date(2025, 11, 28))

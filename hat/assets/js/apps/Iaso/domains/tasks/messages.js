@@ -122,6 +122,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'End date',
         id: 'iaso.label.dateTo',
     },
+    taskType: {
+        defaultMessage: 'Type',
+        id: 'iaso.tasks.type',
+    },
 });
 
 export default MESSAGES;

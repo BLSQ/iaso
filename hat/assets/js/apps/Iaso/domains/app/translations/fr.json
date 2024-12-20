@@ -1383,6 +1383,7 @@
     "iaso.tasks.timeCreated": "Date de création",
     "iaso.tasks.timeEnd": "Date de fin",
     "iaso.tasks.timeStart": "Date de début",
+    "iaso.tasks.type": "Type",
     "iaso.tasks.unknown": "Etat inconnu",
     "iaso.teams.create": "Créer une équipe",
     "iaso.teams.delete": "Etes-vous sûr(e) de vouloir effacer cette équipe?",

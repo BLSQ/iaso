@@ -336,7 +336,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'endDate',
             'status',
             'users',
-            'type',
+            'taskType',
         ],
     },
     devices: {

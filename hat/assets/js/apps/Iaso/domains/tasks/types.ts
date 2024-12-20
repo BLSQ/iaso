@@ -52,4 +52,5 @@ export type TaskParams = UrlParams & {
     endDate?: string;
     status?: TaskStatus;
     users?: string;
+    taskType?: string;
 };

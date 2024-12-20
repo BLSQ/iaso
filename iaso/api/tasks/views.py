@@ -11,7 +11,12 @@ from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, HasPermission
-from iaso.api.tasks.filters import StatusFilterBackend, StartEndDateFilterBackend, UsersFilterBackend
+from iaso.api.tasks.filters import (
+    StatusFilterBackend,
+    StartEndDateFilterBackend,
+    TaskTypeFilterBackend,
+    UsersFilterBackend,
+)
 from iaso.models.base import ERRORED, RUNNING, SKIPPED, QUEUED, Task
 from iaso.models.json_config import Config
 from iaso.utils.s3_client import generate_presigned_url_from_s3
@@ -28,7 +33,10 @@ class TaskSourceViewSet(ModelViewSet):
 
     GET /api/tasks/
     GET /api/tasks/<id>
+    GET /api/tasks/<id>/presigned-url/
+    GET /api/tasks/types/
     PATCH /api/tasks/<id>
+    PATCH /api/tasks/<id>/relaunch/
     """
 
     permission_classes = [
@@ -38,6 +46,7 @@ class TaskSourceViewSet(ModelViewSet):
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
+        TaskTypeFilterBackend,
         UsersFilterBackend,
         StartEndDateFilterBackend,
         StatusFilterBackend,
@@ -121,6 +130,12 @@ class TaskSourceViewSet(ModelViewSet):
             return Response(serializer.data)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=False, methods=["get"], url_path="types")
+    def types(self, _request):
+        available_types = Task.objects.order_by("name").values_list("name", flat=True).distinct("name")
+
+        return Response(available_types)
 
 
 class ExternalTaskModelViewSet(ModelViewSet):

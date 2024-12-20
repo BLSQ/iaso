@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from iaso import models as m
 from iaso.models.base import ERRORED, QUEUED
-from iaso.api.tasks import TaskSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.test import APITestCase, TestCase
 
 

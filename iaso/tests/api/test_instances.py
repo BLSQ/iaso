@@ -39,7 +39,11 @@ class InstancesAPITestCase(APITestCase):
         cls.sw_version = sw_version
 
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", last_name="Da", first_name="Yo", account=star_wars, permissions=["iaso_submissions"]
+            username="yoda",
+            last_name="Da",
+            first_name="Yo",
+            account=star_wars,
+            permissions=["iaso_submissions", "iaso_org_units"],
         )
         cls.guest = cls.create_user_with_profile(username="guest", account=star_wars, permissions=["iaso_submissions"])
         cls.supervisor = cls.create_user_with_profile(
@@ -72,10 +76,15 @@ class InstancesAPITestCase(APITestCase):
             version=sw_version,
         )
         cls.jedi_council_endor = m.OrgUnit.objects.create(
-            name="Endor Jedi Council", source_ref="jedi_council_endor_ref"
+            name="Endor Jedi Council",
+            source_ref="jedi_council_endor_ref",
+            version=sw_version,
         )
         cls.jedi_council_endor_region = m.OrgUnit.objects.create(
-            name="Endor Region Jedi Council", parent=cls.jedi_council_endor, source_ref="jedi_council_endor_region_ref"
+            name="Endor Region Jedi Council",
+            parent=cls.jedi_council_endor,
+            source_ref="jedi_council_endor_region_ref",
+            version=sw_version,
         )
 
         cls.project = m.Project.objects.create(
@@ -1963,8 +1972,8 @@ class InstancesAPITestCase(APITestCase):
         response_json = response.json()
         self.assertEqual(response_json["result"], "success")
 
-    def test_check_bulk_push_gps_select_all_error(self):
-        # setting gps data for instances that were not deleted
+    def test_check_bulk_push_gps_select_all_error_same_org_unit(self):
+        # changing location for some instances to have multiple hits on multiple org_units
         self.instance_1.org_unit = self.jedi_council_endor
         self.instance_2.org_unit = self.jedi_council_endor
         new_location = Point(1, 2, 3)
@@ -1973,14 +1982,61 @@ class InstancesAPITestCase(APITestCase):
             instance.save()
             instance.refresh_from_db()
 
+        # Let's delete some instances, the result will be the same
+        for instance in [self.instance_6, self.instance_8]:
+            instance.deleted_at = datetime.datetime.now()
+            instance.deleted = True
+            instance.save()
+
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/instances/check_bulk_gps_push/")  # by default, select_all = True
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         response_json = response.json()
-        self.assertEqual(response_json["result"], "error")
-        self.assertCountEqual(response_json["error_ids"], [self.instance_1.id, self.instance_2.id])
+        self.assertEqual(response_json["result"], "errors")
+        self.assertCountEqual(
+            response_json["error_same_org_unit"],
+            [self.instance_1.id, self.instance_2.id, self.instance_3.id, self.instance_4.id, self.instance_5.id],
+        )
+
+    def test_check_bulk_push_gps_select_all_error_read_only_source(self):
+        # Making the source read only
+        self.sw_source.read_only = True
+        self.sw_source.save()
+
+        # Changing some instance.org_unit so that all the results don't appear only in "error_same_org_unit"
+        self.instance_2.org_unit = self.jedi_council_endor
+        self.instance_3.org_unit = self.jedi_council_endor_region
+        self.instance_8.org_unit = self.ou_top_1
+        for instance in [self.instance_2, self.instance_3, self.instance_8]:
+            instance.save()
+            instance.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/instances/check_bulk_gps_push/")  # by default, select_all = True
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        response_json = response.json()
+        self.assertEqual(response_json["result"], "errors")
+        # instance_6 included because it's the first one with the remaining org_unit and the queryset has a default order of "-id"
+        self.assertCountEqual(
+            response_json["error_read_only_source"],
+            [self.instance_8.id, self.instance_2.id, self.instance_3.id, self.instance_6.id],
+        )
 
     def test_check_bulk_push_gps_select_all_warning_no_location(self):
+        # Changing some instance.org_unit so that all the results don't appear only in "error_same_org_unit"
+        self.instance_2.org_unit = self.jedi_council_endor
+        self.instance_3.org_unit = self.jedi_council_endor_region
+        self.instance_8.org_unit = self.ou_top_1
+        for instance in [self.instance_2, self.instance_3, self.instance_8]:
+            instance.save()
+            instance.refresh_from_db()
+
+        # Let's delete some instances to avoid getting "error_same_org-unit"
+        for instance in [self.instance_4, self.instance_5, self.instance_6, self.instance_8]:
+            instance.deleted_at = datetime.datetime.now()
+            instance.deleted = True
+            instance.save()
+
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/instances/check_bulk_gps_push/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -2095,8 +2151,10 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         response_json = response.json()
         # All these Instances target the same OrgUnit, so it's impossible to push gps data
-        self.assertEqual(response_json["result"], "error")
-        self.assertCountEqual(response_json["error_ids"], [self.instance_1.id, self.instance_2.id, self.instance_3.id])
+        self.assertEqual(response_json["result"], "errors")
+        self.assertCountEqual(
+            response_json["error_same_org_unit"], [self.instance_1.id, self.instance_2.id, self.instance_3.id]
+        )
 
     def test_check_bulk_push_gps_selected_ids_error_unknown_id(self):
         self.client.force_authenticate(self.yoda)
@@ -2254,8 +2312,8 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         response_json = response.json()
-        self.assertEqual(response_json["result"], "error")
-        self.assertCountEqual(response_json["error_ids"], [self.instance_1.id, self.instance_2.id])
+        self.assertEqual(response_json["result"], "errors")
+        self.assertCountEqual(response_json["error_same_org_unit"], [self.instance_1.id, self.instance_2.id])
 
     def test_check_bulk_push_gps_unselected_ids_error_unknown_id(self):
         self.client.force_authenticate(self.yoda)

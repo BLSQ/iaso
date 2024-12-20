@@ -1,4 +1,9 @@
-import { getRequest, postRequest, putRequest } from 'Iaso/libs/Api.ts';
+import {
+    getRequest,
+    patchRequest,
+    postRequest,
+    putRequest,
+} from 'Iaso/libs/Api.ts';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { openSnackBar } from '../components/snackBars/EventDispatcher.ts';
 import { errorSnackBar } from '../constants/snackBars';
@@ -66,16 +71,25 @@ export const createFormVersion = formVersionData => {
     const fileData = { xls_file: formVersionData.xls_file };
 
     return postRequest('/api/formversions/', data, fileData).catch(error => {
+        console.error(
+            'Error details:',
+            error.details,
+            'Error message:',
+            error.message,
+            'Error body:',
+            error.body,
+        );
         openSnackBar(errorSnackBar('createFormVersionError', null, error));
+        throw error;
     });
 };
 
-export const updateFormVersion = formVersion =>
-    putRequest(`/api/formversions/${formVersion.id}/`, formVersion).catch(
-        error => {
-            openSnackBar(errorSnackBar('updateFormVersionError', null, error));
-        },
-    );
+export const updateFormVersion = data => {
+    return patchRequest(`/api/formversions/${data.id}/`, data).catch(error => {
+        openSnackBar(errorSnackBar('updateFormVersionError', null, error));
+        throw error;
+    });
+};
 
 export const useGetComments = params => {
     const { orgUnitId, offset, limit } = params;

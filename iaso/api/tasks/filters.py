@@ -60,3 +60,11 @@ class StatusFilterBackend(filters.BaseFilterBackend):
             status_list = status.split(",")
             return queryset.filter(status__in=status_list)
         return queryset
+
+
+class TaskTypeFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        task_type = request.GET.get("task_type", None)
+        if task_type:
+            return queryset.filter(name=task_type)
+        return queryset

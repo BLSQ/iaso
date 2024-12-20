@@ -53,6 +53,7 @@ const Tasks = () => {
         users: params.users,
         start_date: params.startDate,
         end_date: params.endDate,
+        task_type: params.taskType,
         status: params.status,
     };
 

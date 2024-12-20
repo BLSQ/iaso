@@ -14,6 +14,7 @@ import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDrop
 
 import MESSAGES from '../messages';
 import { TaskParams } from '../types';
+import { useGetTaskTypes } from '../hooks/api';
 
 const baseUrl = baseUrls.tasks;
 type Props = { params: TaskParams };
@@ -22,6 +23,8 @@ export const TaskFilters: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
+
+    const { data: taskTypes, isLoading: loadingTaskTypes } = useGetTaskTypes();
     const { data: selectedUsers } = useGetProfilesDropdown(filters.users);
     const handleChangeUsers = useCallback(
         (keyValue, newValue) => {
@@ -49,17 +52,15 @@ export const TaskFilters: FunctionComponent<Props> = ({ params }) => {
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={4} lg={3}>
-                <Box mt={2}>
-                    <AsyncSelect
-                        keyValue="users"
-                        label={MESSAGES.user}
-                        value={selectedUsers ?? ''}
-                        onChange={handleChangeUsers}
-                        debounceTime={500}
-                        multi
-                        fetchOptions={input => getUsersDropDown(input)}
-                    />
-                </Box>
+                <InputComponent
+                    type="select"
+                    keyValue="taskType"
+                    value={filters.taskType}
+                    onChange={handleChange}
+                    options={taskTypes}
+                    labelString={formatMessage(MESSAGES.taskType)}
+                    loading={loadingTaskTypes}
+                />
                 <InputComponent
                     type="select"
                     multi
@@ -87,6 +88,19 @@ export const TaskFilters: FunctionComponent<Props> = ({ params }) => {
                 />
             </Grid>
 
+            <Grid item xs={12} md={4} lg={3}>
+                <Box mt={2}>
+                    <AsyncSelect
+                        keyValue="users"
+                        label={MESSAGES.user}
+                        value={selectedUsers ?? ''}
+                        onChange={handleChangeUsers}
+                        debounceTime={500}
+                        multi
+                        fetchOptions={input => getUsersDropDown(input)}
+                    />
+                </Box>
+            </Grid>
             <Grid item xs={12} md={4} lg={3}>
                 <Box mt={2} display="flex" justifyContent="flex-end">
                     <FilterButton

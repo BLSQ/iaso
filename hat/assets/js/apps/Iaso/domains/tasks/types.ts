@@ -48,8 +48,8 @@ export type PolioNotificationImport = {
 
 export type TaskParams = UrlParams & {
     accountId: number;
-    after?: string;
-    before?: string;
+    startDate?: string;
+    endDate?: string;
     status?: TaskStatus;
     users?: string;
 };

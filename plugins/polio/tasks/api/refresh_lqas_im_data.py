@@ -1,4 +1,5 @@
-from iaso.api.tasks import ExternalTaskModelViewSet, ExternalTaskPostSerializer, ExternalTaskSerializer, TaskSerializer
+from iaso.api.tasks.serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskSerializer
+from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import RUNNING, ERRORED, SUCCESS, Task
 from iaso.models.org_unit import OrgUnit
 from rest_framework import permissions, serializers, filters

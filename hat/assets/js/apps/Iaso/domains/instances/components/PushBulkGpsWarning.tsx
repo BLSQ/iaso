@@ -9,6 +9,7 @@ type Props = {
     approveCondition: boolean;
     onApproveClick: () => void;
 };
+
 const PushBulkGpsWarning: FunctionComponent<Props> = ({
     condition,
     message,
@@ -34,14 +35,13 @@ const PushBulkGpsWarning: FunctionComponent<Props> = ({
                     </Typography>
                 </Typography>
             </Grid>
-            {/* <Grid item xs={2} display="flex" justifyContent="flex-start">
-                <LinkWithLocation to={linkTo}>
+            <Grid item xs={1} display="flex" justifyContent="flex-start">
+                {/* <LinkWithLocation to={linkTo}>
                     {formatMessage(MESSAGES.seeAll)}
-                </LinkWithLocation>
-            </Grid> */}
-            <Grid item xs={2} display="flex" justifyContent="flex-end">
+                </LinkWithLocation> */}
+            </Grid>
+            <Grid item xs={3} display="flex" justifyContent="flex-end">
                 <Button
-                    data-test="search-button"
                     variant="outlined"
                     color={approveCondition ? 'primary' : 'warning'}
                     onClick={onApproveClick}

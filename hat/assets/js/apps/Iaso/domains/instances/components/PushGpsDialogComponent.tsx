@@ -140,25 +140,49 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         Permission.DATA_TASKS,
         currentUser,
     );
+    const displayWarningOverWriteGps = useMemo(
+        () =>
+            (checkBulkGpsPush?.warning_overwrite?.length ?? 0) > 0 &&
+            (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0,
+        [
+            checkBulkGpsPush?.error_ids?.length,
+            checkBulkGpsPush?.warning_overwrite?.length,
+        ],
+    );
+    const displayWarningSubmissionsNoGps = useMemo(
+        () =>
+            (checkBulkGpsPush?.warning_no_location?.length ?? 0) > 0 &&
+            (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0,
+        [
+            checkBulkGpsPush?.error_ids?.length,
+            checkBulkGpsPush?.warning_no_location?.length,
+        ],
+    );
 
+    const noLoadinAndNoError = useMemo(
+        () => !isLoadingCheckResult && !isError,
+        [isError, isLoadingCheckResult],
+    );
     return (
         // @ts-ignore
         <ConfirmCancelDialogComponent
             renderTrigger={({ openDialog }) => renderTrigger(openDialog)}
-            titleMessage={title}
-            allowConfirm={!isLoadingCheckResult}
+            titleMessage={noLoadinAndNoError ? title : ''}
+            allowConfirm={noLoadinAndNoError}
             onConfirm={closeDialog => onConfirm(closeDialog)}
             confirmMessage={MESSAGES.launch}
             onClosed={onClosed}
-            cancelMessage={MESSAGES.cancel}
+            cancelMessage={
+                noLoadinAndNoError ? MESSAGES.cancel : MESSAGES.close
+            }
             maxWidth="sm"
-            additionalButton={!isError}
+            additionalButton
             additionalMessage={MESSAGES.goToCurrentTask}
             onAdditionalButtonClick={closeDialog =>
                 onConfirmAndSeeTask(closeDialog)
             }
             allowConfimAdditionalButton={
-                hasTaskPermission && !isLoadingCheckResult
+                hasTaskPermission && noLoadinAndNoError
             }
             id="bulk-push-gps"
             dataTestId="bulk-push-gps"
@@ -198,21 +222,13 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                         </Typography>
                     </Grid>
                     <PushBulkGpsWarning
-                        condition={
-                            (checkBulkGpsPush?.warning_no_location?.length ??
-                                0) > 0 &&
-                            (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0
-                        }
+                        condition={displayWarningSubmissionsNoGps}
                         message={MESSAGES.noGpsForSomeInstaces}
                         approveCondition={approveSubmissionNoHasGps}
                         onApproveClick={() => onApprove('instanceNoGps')}
                     />
                     <PushBulkGpsWarning
-                        condition={
-                            (checkBulkGpsPush?.warning_overwrite?.length ?? 0) >
-                                0 &&
-                            (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0
-                        }
+                        condition={displayWarningOverWriteGps}
                         message={MESSAGES.someOrgUnitsHasAlreadyGps}
                         approveCondition={approveOrgUnitHasGps}
                         onApproveClick={() => onApprove('orgUnitHasGps')}

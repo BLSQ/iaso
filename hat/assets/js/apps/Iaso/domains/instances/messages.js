@@ -695,6 +695,10 @@ const MESSAGES = defineMessages({
             'Change request is not available as submission is deleted',
         id: 'iaso.instances.disabledReason',
     },
+    close: {
+        defaultMessage: 'Close',
+        id: 'blsq.buttons.label.close',
+    },
 });
 
 export default MESSAGES;

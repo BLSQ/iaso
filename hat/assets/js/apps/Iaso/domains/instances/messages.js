@@ -202,6 +202,45 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Export requests',
         id: 'iaso.label.exportRequests',
     },
+    pushGpsToOrgUnits: {
+        defaultMessage: 'Push GPS from submissions to Org units',
+        id: 'iaso.label.pushGpsToOrgUnits',
+    },
+    pushGpsWarningMessage: {
+        defaultMessage:
+            'You are about to push the locations of {submissionCount} instances to {orgUnitCount} OrgUnits',
+        id: 'iaso.instance.pushGpsWarningMessage',
+    },
+    noGpsForSomeInstaces: {
+        defaultMessage:
+            "Some instances don't have locations. Nothing will be applied for those OrgUnits.",
+        id: 'iaso.instance.noGpsForSomeInstaces',
+    },
+    someOrgUnitsHasAlreadyGps: {
+        defaultMessage:
+            'Some OrgUnits already have GPS coordinates. Do you want to proceed and overwrite them?',
+        id: 'iaso.instance.someOrgUnitsHasAlreadyGps',
+    },
+    multipleInstancesOneOrgUnitWarningMessage: {
+        defaultMessage: 'Multiple submissions are using the same org unit',
+        id: 'iaso.instance.multipleInstancesOneOrgUnitWarningMessage',
+    },
+    seeAll: {
+        defaultMessage: 'See all',
+        id: 'iaso.label.seeAll',
+    },
+    approve: {
+        defaultMessage: 'Approve',
+        id: 'iaso.label.approve',
+    },
+    launch: {
+        id: 'iaso.label.launch',
+        defaultMessage: 'Launch',
+    },
+    goToCurrentTask: {
+        id: 'iaso.label.goToCurrentTask',
+        defaultMessage: 'Launch and show task',
+    },
     compare: {
         defaultMessage: 'Compare',
         id: 'iaso.label.compare',
@@ -655,6 +694,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Change request is not available as submission is deleted',
         id: 'iaso.instances.disabledReason',
+    },
+    close: {
+        defaultMessage: 'Close',
+        id: 'blsq.buttons.label.close',
     },
 });
 

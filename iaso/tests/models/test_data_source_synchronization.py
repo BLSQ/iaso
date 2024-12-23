@@ -25,10 +25,10 @@ class DataSourceSynchronizationModelTestCase(TestCase):
 
         # Data source versions.
         cls.source_version_to_compare_with = m.SourceVersion.objects.create(
-            data_source=cls.data_source, number=1, description="Bar"
+            data_source=cls.data_source, number=1, description="Source version to compare with"
         )
         cls.source_version_to_update = m.SourceVersion.objects.create(
-            data_source=cls.data_source, number=2, description="Foo"
+            data_source=cls.data_source, number=2, description="Source version to update"
         )
 
         # Groups in the pyramid to update.
@@ -321,6 +321,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(angola_region_change_request.old_reference_instances.count(), 0)
 
         # Change request #3 to create a new OrgUnit.
+        new_group_c = m.Group.objects.get(name="Group C", source_version=data_source_sync.source_version_to_update)
+        new_group_a2 = m.Group.objects.get(name="Group A", source_version=data_source_sync.source_version_to_update)
         angola_district_change_request = m.OrgUnitChangeRequest.objects.get(
             org_unit__source_ref="id-3", data_source_synchronization=data_source_sync
         )
@@ -329,13 +331,16 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(angola_district_change_request.created_by, data_source_sync.created_by)
         self.assertEqual(
             angola_district_change_request.requested_fields,
-            ["new_name", "new_parent", "new_opening_date", "new_closed_date"],
+            ["new_name", "new_parent", "new_opening_date", "new_closed_date", "new_groups"],
         )
         # New values.
         self.assertEqual(angola_district_change_request.new_parent, self.angola_region_to_update)
         self.assertEqual(angola_district_change_request.new_name, "Cuvango")
         self.assertEqual(angola_district_change_request.new_org_unit_type, None)
-        self.assertEqual(angola_district_change_request.new_groups.count(), 0)
+        self.assertEqual(angola_district_change_request.new_groups.count(), 2)
+        self.assertIn(new_group_c, angola_district_change_request.new_groups.all())
+        self.assertIn(new_group_a2, angola_district_change_request.new_groups.all())
+
         self.assertEqual(angola_district_change_request.new_location, None)
         self.assertEqual(angola_district_change_request.new_location_accuracy, None)
         self.assertEqual(angola_district_change_request.new_opening_date, datetime.date(2022, 11, 28))
@@ -358,6 +363,3 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.assertEqual(new_org_unit.validation_status, new_org_unit.VALIDATION_NEW)
         self.assertEqual(new_org_unit.geom, self.multi_polygon)
         self.assertEqual(new_org_unit.simplified_geom, self.multi_polygon)
-
-        new_group = m.Group.objects.get(name="Group C", source_version=data_source_sync.source_version_to_update)
-        self.assertEqual(new_group.org_units.count(), 0)

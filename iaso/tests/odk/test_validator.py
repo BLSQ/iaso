@@ -4,7 +4,7 @@ from unittest.mock import patch
 from django.test import SimpleTestCase
 from django.utils.dateparse import parse_datetime
 
-from iaso.odk import validate_xls_form
+from iaso.odk.validator import validate_xls_form, get_list_name_from_select
 
 
 class ValidatorTestCase(SimpleTestCase):
@@ -21,3 +21,16 @@ class ValidatorTestCase(SimpleTestCase):
             errors = validate_xls_form(xls_file)
             # print(json.dumps(errors, indent=4))
             self.assertEqual(errors, expected_errors)
+
+    def test_get_list_name_from_select_options(self):
+        self.assertEqual(get_list_name_from_select({"type": "select_one demo_choices or_other"}), "demo_choices")
+
+        self.assertEqual(get_list_name_from_select({"type": "select_one demo_choices "}), "demo_choices")
+
+        self.assertEqual(get_list_name_from_select({"type": "select_one  demo_choices "}), "demo_choices")
+
+        self.assertEqual(get_list_name_from_select({"type": "select one  demo_choices "}), "demo_choices")
+
+        self.assertEqual(get_list_name_from_select({"type": "select one demo_choices"}), "demo_choices")
+
+        self.assertEqual(get_list_name_from_select({"type": "select one demo_choices or_other "}), "demo_choices")

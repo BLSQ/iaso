@@ -1006,18 +1006,18 @@
         "severity": "error"
     },
     {
-        "message": "choices not for 'nonexistingchoices' and list_name 'doenst_exist'",
+        "message": "choices not found for 'nonexistingchoices' and list_name 'doenst_exist'",
         "question": {
-            "line_number": 98,
-            "type": "calculate",
-            "name": "without_known_ref",
-            "label": "",
+            "line_number": 53,
+            "type": "select_one doenst_exist",
+            "name": "nonexistingchoices",
+            "label": "This should throw a warning there\u2019s no associated choice",
             "hint": "",
             "appearance": "",
             "image": "",
             "audio": "",
             "video": "",
-            "relevant": "${test_unknown_ref}",
+            "relevant": "",
             "calculation": "",
             "constraint": "",
             "constraint_message": ""
@@ -1026,18 +1026,18 @@
         "severity": "error"
     },
     {
-        "message": "choices not for 'nonexistingchoices' and list_name 'doenst_exist'",
+        "message": "choices not found for 'nonexistingchoices' and list_name 'doenst_exist'",
         "question": {
-            "line_number": 98,
-            "type": "calculate",
-            "name": "without_known_ref",
-            "label": "",
+            "line_number": 81,
+            "type": "select_one doenst_exist",
+            "name": "nonexistingchoices",
+            "label": "This should throw a warning there\u2019s no associated choice",
             "hint": "",
             "appearance": "",
             "image": "",
             "audio": "",
             "video": "",
-            "relevant": "${test_unknown_ref}",
+            "relevant": "",
             "calculation": "",
             "constraint": "",
             "constraint_message": ""

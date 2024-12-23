@@ -37,7 +37,7 @@ def parse_sheet(excel_file, sheet_name):
     cleanable_columns = ["name", "list_name", "list name"]
     for column_name in cleanable_columns:
         if column_name in excel_data.columns:
-            excel_data[column_name] = excel_data[column_name].apply(lambda x: x.rstrip() if isinstance(x, str) else x)
+            excel_data[column_name] = excel_data[column_name].apply(lambda x: x.strip() if isinstance(x, str) else x)
 
     rows = excel_data.to_dict(orient="records")
 
@@ -53,9 +53,8 @@ def is_end_repeat(question):
 
 
 def is_select_one(question):
-    return question.get("type") and (
-        question.get("type").startswith("select_one ") or question.get("type").startswith("select one ")
-    )
+    question_type = question.get("type")
+    return question_type and (question_type.startswith("select_one ") or question_type.startswith("select one "))
 
 
 def is_repeat_group(question):
@@ -64,13 +63,23 @@ def is_repeat_group(question):
 
 def get_list_name_from_select(question):
     q_type = question.get("type")
+    list_name = None
     if "select one from " in q_type:
-        return q_type.split("select one from ")[1]
-    if "select_one" in q_type:
-        return q_type.split("select_one ")[1]
-    if "select one" in q_type:
-        return q_type.split("select one ")[1]
-    return None
+        list_name = q_type.split("select one from ")[1]
+    elif "select_one" in q_type:
+        list_name = q_type.split("select_one ")[1]
+    elif "select one" in q_type:
+        list_name = q_type.split("select one ")[1]
+
+    if list_name is not None:
+        list_name = list_name.strip()
+
+        if list_name.endswith(" or_other"):
+            list_name = list_name.replace(" or_other", "")
+
+        list_name = list_name.strip()
+
+    return list_name
 
 
 def get_list_name_from_choice(choice):
@@ -140,8 +149,8 @@ def validate_xls_form(xls_file):
         if list_name not in choices_by_list_name:
             validation_errors.append(
                 {
-                    "message": "choices not for '" + select_one_q["name"] + "' and list_name '" + list_name + "'",
-                    "question": questions_list[0],
+                    "message": "choices not found for '" + select_one_q["name"] + "' and list_name '" + list_name + "'",
+                    "question": select_one_q,
                     "sheet": "survey",
                     "severity": "error",
                 }

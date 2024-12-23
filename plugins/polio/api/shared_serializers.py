@@ -55,7 +55,6 @@ class RoundDateHistoryEntrySerializer(serializers.ModelSerializer):
         model = RoundDateHistoryEntry
         fields = [
             "created_at",
-            "reason",
             "reason_for_delay",
             "ended_at",
             "started_at",
@@ -88,7 +87,6 @@ class RoundDateHistoryEntryForRoundSerializer(serializers.ModelSerializer):
         model = RoundDateHistoryEntry
         fields = [
             "created_at",
-            "reason",
             "reason_for_delay",
             "ended_at",
             "started_at",
@@ -101,12 +99,8 @@ class RoundDateHistoryEntryForRoundSerializer(serializers.ModelSerializer):
     modified_by = UserSerializer(required=False, read_only=True)
     round: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
     reason_for_delay = ReasonForDelayFieldSerializer()
-    reason = serializers.SerializerMethodField()
 
-    @staticmethod
-    def get_reason(obj: RoundDateHistoryEntry):
-        return obj.reason_for_delay.key_name if obj.reason_for_delay else None
-
+ 
     def validate(self, data):
         if data.get("reason_for_delay", None) is None:
             raise serializers.ValidationError("No reason provided")

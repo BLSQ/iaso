@@ -11,6 +11,7 @@ import {
     Radio,
     SearchInput,
     Select,
+    TextArea,
     TextInput,
     translateOptions,
     useSafeIntl,
@@ -36,6 +37,7 @@ export type InputComponentType =
     | 'number'
     | 'search'
     | 'select'
+    | 'textarea'
     | 'text';
 
 export type NumberInputOptions = {
@@ -104,6 +106,7 @@ export type InputComponentProps = {
     returnFullObject?: boolean;
     dataTestId?: string;
     placeholder?: string;
+    debounceTime?: number;
 };
 
 const useLocalizedNumberInputOptions = (
@@ -158,6 +161,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
     phoneInputOptions = {},
     freeSolo = false,
     returnFullObject = false,
+    debounceTime = 0,
     dataTestId,
     placeholder,
 }) => {
@@ -191,6 +195,21 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         onChange={input => {
                             onChange(keyValue, input);
                         }}
+                        dataTestId={dataTestId}
+                    />
+                );
+            case 'textarea':
+                return (
+                    <TextArea
+                        value={inputValue}
+                        label={labelText}
+                        errors={errors}
+                        required={required}
+                        disabled={disabled}
+                        onChange={input => {
+                            onChange(keyValue, input);
+                        }}
+                        debounceTime={debounceTime}
                         dataTestId={dataTestId}
                     />
                 );

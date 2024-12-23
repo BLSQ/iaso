@@ -1,6 +1,7 @@
 import { Box, Divider, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
+    InputWithInfos,
     IntlFormatMessage,
     commonStyles,
     useSafeIntl,
@@ -28,7 +29,6 @@ import { useGetDataSources } from '../hooks/requests/useGetDataSources';
 import { useGetGroups } from '../hooks/requests/useGetGroups';
 import { useGetOrgUnit } from './TreeView/requests';
 
-import { InputWithInfos } from '../../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../../types/utils';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetVersionLabel } from '../hooks/useGetVersionLabel';

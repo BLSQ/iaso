@@ -4,13 +4,13 @@ import {
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
+    InputWithInfos,
 } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import React, { FunctionComponent, useCallback } from 'react';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
 import { APP_LOCALES } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/constants';
 import {
     useApiErrorValidation,
@@ -177,6 +177,5 @@ const editReasonForDelay = makeFullModal(
 
 export {
     createReasonForDelay as CreateReasonForDelay,
-    editReasonForDelay as EditReasonForDelay
+    editReasonForDelay as EditReasonForDelay,
 };
-

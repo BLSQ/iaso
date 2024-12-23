@@ -100,7 +100,6 @@ class RoundDateHistoryEntryForRoundSerializer(serializers.ModelSerializer):
     round: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
     reason_for_delay = ReasonForDelayFieldSerializer()
 
- 
     def validate(self, data):
         if data.get("reason_for_delay", None) is None:
             raise serializers.ValidationError("No reason provided")

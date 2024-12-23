@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+import os
 
 
 #
@@ -32,6 +33,12 @@ def parse_sheet(excel_file, sheet_name):
     excel_data = excel_file.parse(sheet_name=sheet_name, keep_default_na=False)
     excel_data = excel_data.reset_index()
     excel_data.rename(columns={"index": "line_number"}, inplace=True)
+
+    cleanable_columns = ["name", "list_name", "list name"]
+    for column_name in cleanable_columns:
+        if column_name in excel_data.columns:
+            excel_data[column_name] = excel_data[column_name].apply(lambda x: x.rstrip() if isinstance(x, str) else x)
+
     rows = excel_data.to_dict(orient="records")
 
     return rows
@@ -62,9 +69,6 @@ def get_list_name_from_select(question):
     if "select_one" in q_type:
         return q_type.split("select_one ")[1]
     if "select one" in q_type:
-        import pdb
-
-        pdb.set_trace()
         return q_type.split("select one ")[1]
     return None
 
@@ -85,7 +89,10 @@ def group_by_lambda(collection, field_name_lambda):
 
 
 def validate_xls_form(xls_file):
-    excel_file = pd.ExcelFile(xls_file, engine="openpyxl")
+    file_extension = os.path.splitext(xls_file.name)[1].lower()
+    engine = "xlrd" if file_extension == ".xls" else "openpyxl"
+
+    excel_file = pd.ExcelFile(xls_file, engine=engine)
 
     question_rows = parse_sheet(excel_file, "survey")
 

@@ -106,6 +106,8 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             # keep xls_file empty to highlight the input in the UI
             raise serializers.ValidationError({"xls_file": "", "xls_file_validation_errors": validation_errors})
 
+        data["xls_file"].seek(0)
+
         # handle xls to xml conversion
         try:
             previous_form_version = FormVersion.objects.latest_version(form)

@@ -1,31 +1,61 @@
 import { Box, Grid, Typography } from '@mui/material';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import PropTypes from 'prop-types';
-import React, { useCallback, useMemo, useState } from 'react';
+import {
+    IntlMessage,
+    LoadingSpinner,
+    useSafeIntl,
+} from 'bluesquare-components';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { useQueryClient } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
-import { openSnackBar } from '../../../components/snackBars/EventDispatcher.ts';
+import { openSnackBar } from '../../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../../constants/snackBars';
 import { useFormState } from '../../../hooks/form';
-import { createFormVersion, updateFormVersion } from '../../../utils/requests';
-import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
+import PeriodPicker from '../../periods/components/PeriodPicker';
 import { errorTypes, getPeriodsErrors } from '../../periods/utils';
 import MESSAGES from '../messages';
+import { createFormVersion, updateFormVersion } from '../requests';
+import { Nullable, Optional } from '../../../types/utils';
 
-const emptyVersion = (id = null) => ({
+const emptyVersion = {
+    id: null,
+    start_period: null,
+    end_period: null,
+    xls_file: null,
+};
+
+const emptyVersionFromId = (id = null) => ({
     id,
     start_period: null,
     end_period: null,
     xls_file: null,
 });
 
-const FormVersionsDialogComponent = ({
-    formVersion,
+type Props = {
+    formVersion?: {
+        id: Nullable<Optional<number>>;
+        start_period: Nullable<any>;
+        end_period: Nullable<any>;
+        xls_file: Nullable<any>;
+    };
+    periodType?: string;
+    formId?: number;
+    titleMessage: IntlMessage;
+    onConfirmed: () => any;
+    renderTrigger: any;
+};
+
+const FormVersionsDialogComponent: FunctionComponent<Props> = ({
+    formVersion = emptyVersion,
+    formId = 0,
+    onConfirmed = () => null,
+    periodType = '',
     titleMessage,
-    onConfirmed,
-    formId,
-    periodType,
     ...dialogProps
 }) => {
     const intl = useSafeIntl();
@@ -39,7 +69,7 @@ const FormVersionsDialogComponent = ({
             xls_file: formVersion.xls_file,
         });
 
-    const periodsErrors = useMemo(
+    const periodsErrors: any = useMemo(
         () =>
             getPeriodsErrors(
                 formState.start_period.value,
@@ -54,7 +84,7 @@ const FormVersionsDialogComponent = ({
             if (!isLoading) {
                 setIsLoading(true);
                 let savePromise;
-                const data = {
+                const data: Record<string, any> = {
                     form_id: formId,
                 };
                 if (formState.start_period.value) {
@@ -76,7 +106,8 @@ const FormVersionsDialogComponent = ({
                     await savePromise;
                     closeDialog();
                     setIsLoading(false);
-                    setFormState(emptyVersion(formVersion.id));
+                    // FIXME TS seems to think formVersion.id is always either null or undefined
+                    setFormState(emptyVersionFromId(formVersion.id));
                     onConfirmed();
                     openSnackBar(succesfullSnackBar());
                     queryClient.invalidateQueries(['formVersions', formId]);
@@ -246,19 +277,4 @@ const FormVersionsDialogComponent = ({
     );
 };
 
-FormVersionsDialogComponent.defaultProps = {
-    formVersion: emptyVersion(),
-    periodType: '',
-    formId: 0,
-    onConfirmed: () => null,
-};
-
-FormVersionsDialogComponent.propTypes = {
-    periodType: PropTypes.string,
-    formVersion: PropTypes.object,
-    formId: PropTypes.number,
-    titleMessage: PropTypes.object.isRequired,
-    renderTrigger: PropTypes.func.isRequired,
-    onConfirmed: PropTypes.func,
-};
 export default FormVersionsDialogComponent;

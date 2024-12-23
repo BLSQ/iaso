@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 
 import time_machine
 
@@ -15,6 +16,12 @@ class DataSourceSynchronizationModelTestCase(TestCase):
     """
 
     DT = datetime.datetime(2024, 12, 4, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+
+    def setUp(self):
+        logging.disable(logging.NOTSET)
+
+    def tearDown(self):
+        logging.disable(logging.CRITICAL)
 
     @classmethod
     def setUpTestData(cls):

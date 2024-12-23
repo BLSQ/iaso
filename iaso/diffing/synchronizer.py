@@ -46,7 +46,7 @@ class DataSourceSynchronizer:
         self.json_batch_size = 10
 
     def synchronize(self) -> None:
-        self._get_groups_matching()
+        self._prepare_groups_matching()
         self._prepare_missing_org_units_and_groups()
         self._bulk_create_missing_org_units()
         self._bulk_create_missing_groups()
@@ -73,14 +73,22 @@ class DataSourceSynchronizer:
             ]
         )
 
-    def _get_groups_matching(self) -> None:
+    def _prepare_groups_matching(self) -> None:
         """
-        A dict used to match `Group`s between pyramids based on the common `source_ref`.
-        It will be completed later with the newly created groups.
+        Populate the `self.groups_matching` dict.
+        It's used to match `Group`s between pyramids based on the common `source_ref`.
+        It will be completed later with potential new groups.
         """
-        source_version = self.data_source_sync.source_version_to_update
-        groups = Group.objects.filter(source_version=source_version).only("pk", "source_ref")
-        for group in groups:
+        existing_groups = Group.objects.filter(source_version=self.data_source_sync.source_version_to_update).only(
+            "pk", "source_ref"
+        )
+        for group in existing_groups:
+            if not group.source_ref:
+                logger.error(
+                    f"Ignoring Group ID #{group.pk} because it has no `source_ref` attribute.",
+                    extra={"group": group, "data_source_sync": self.data_source_sync},
+                )
+                continue
             self.groups_matching[group.source_ref] = group.pk
 
     def _prepare_missing_org_units_and_groups(self) -> None:
@@ -106,13 +114,28 @@ class DataSourceSynchronizer:
                 org_unit_id = diff["orgunit_ref"]["id"]
                 org_unit = next(org_unit for org_unit in org_units if org_unit.id == org_unit_id)
 
+                if not org_unit.source_ref:
+                    logger.error(
+                        f"Ignoring OrgUnit ID #{org_unit.pk} because it has no `source_ref` attribute.",
+                        extra={"org_unit": org_unit, "data_source_sync": self.data_source_sync},
+                    )
+                    continue
+
                 corresponding_parent = None
                 if org_unit.parent:
                     # Find the corresponding parent in the pyramid to update.
                     # `get()` should always work here because `_sort_by_path()` is applied to the diff.
-                    corresponding_parent = OrgUnit.objects.get(
-                        source_ref=org_unit.parent.source_ref, version=self.data_source_sync.source_version_to_update
-                    )
+                    try:
+                        corresponding_parent = OrgUnit.objects.get(
+                            source_ref=org_unit.parent.source_ref,
+                            version=self.data_source_sync.source_version_to_update,
+                        )
+                    except OrgUnit.DoesNotExist:
+                        logger.error(
+                            f"Ignoring OrgUnit ID #{org_unit.pk} because its corresponding parent could not be found in the pyramid to update.",
+                            extra={"org_unit": org_unit, "data_source_sync": self.data_source_sync},
+                        )
+                        continue
 
                 self.org_units_matching[org_unit.source_ref] = OrgUnitMatching(
                     corresponding_id=None,  # This will be populated after the bulk creation.
@@ -122,7 +145,8 @@ class DataSourceSynchronizer:
                 for group in org_unit.groups.all():
                     old_pk = group.pk
                     if (
-                        group.source_ref not in self.groups_matching.keys()
+                        group.source_ref
+                        and group.source_ref not in self.groups_matching.keys()
                         and old_pk not in self.groups_to_bulk_create.keys()
                     ):
                         # Duplicate the `Group` in the pyramid to update.
@@ -220,7 +244,10 @@ class DataSourceSynchronizer:
         ]
 
         if not requested_fields:
-            logger.error("Empty `requested_fields`.", extra={"diff": diff, "data_source_sync": self.data_source_sync})
+            logger.error(
+                f"Ignoring OrgUnit ID #{diff['orgunit_ref']['id']} because `requested_fields` is empty.",
+                extra={"diff": diff, "data_source_sync": self.data_source_sync},
+            )
             return None, None
 
         new_name = ""
@@ -246,7 +273,14 @@ class DataSourceSynchronizer:
                 # Find the corresponding `Group` ID in the pyramid to update.
                 for new_group in new_groups:
                     source_ref = new_group["id"]
-                    new_group["iaso_id"] = self.groups_matching[source_ref]
+                    matching_iaso_id = self.groups_matching.get(source_ref)
+                    if matching_iaso_id:
+                        new_group["iaso_id"] = matching_iaso_id
+                    else:
+                        logger.error(
+                            f"Unable to find a corresponding `Group` with `source_ref={source_ref}` in the pyramid to update.",
+                            extra={"new_group": new_group, "data_source_sync": self.data_source_sync},
+                        )
 
         matching = self.org_units_matching[org_unit["source_ref"]]
 

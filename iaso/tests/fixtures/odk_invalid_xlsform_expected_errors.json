@@ -543,7 +543,7 @@
         "message": "duplicated question name 'nonexistingchoices'",
         "question": {
             "line_number": 53,
-            "type": "select_one doenst_exist",
+            "type": "select_one doesnt_exist",
             "name": "nonexistingchoices",
             "label": "This should throw a warning there\u2019s no associated choice",
             "hint": "",
@@ -559,7 +559,7 @@
         "questions_list": [
             {
                 "line_number": 53,
-                "type": "select_one doenst_exist",
+                "type": "select_one doesnt_exist",
                 "name": "nonexistingchoices",
                 "label": "This should throw a warning there\u2019s no associated choice",
                 "hint": "",
@@ -574,7 +574,7 @@
             },
             {
                 "line_number": 81,
-                "type": "select_one doenst_exist",
+                "type": "select_one doesnt_exist",
                 "name": "nonexistingchoices",
                 "label": "This should throw a warning there\u2019s no associated choice",
                 "hint": "",
@@ -1006,10 +1006,10 @@
         "severity": "error"
     },
     {
-        "message": "choices not found for 'nonexistingchoices' and list_name 'doenst_exist'",
+        "message": "choices not found for 'nonexistingchoices' and list_name 'doesnt_exist'",
         "question": {
             "line_number": 53,
-            "type": "select_one doenst_exist",
+            "type": "select_one doesnt_exist",
             "name": "nonexistingchoices",
             "label": "This should throw a warning there\u2019s no associated choice",
             "hint": "",
@@ -1026,10 +1026,10 @@
         "severity": "error"
     },
     {
-        "message": "choices not found for 'nonexistingchoices' and list_name 'doenst_exist'",
+        "message": "choices not found for 'nonexistingchoices' and list_name 'doesnt_exist'",
         "question": {
             "line_number": 81,
-            "type": "select_one doenst_exist",
+            "type": "select_one doesnt_exist",
             "name": "nonexistingchoices",
             "label": "This should throw a warning there\u2019s no associated choice",
             "hint": "",

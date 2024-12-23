@@ -3,9 +3,9 @@ import json
 import logging
 import uuid
 
+from dataclasses import dataclass
 from itertools import islice
 from typing import Optional
-from dataclasses import dataclass
 
 from iaso.models import Group, OrgUnit, OrgUnitChangeRequest, DataSourceSynchronization
 
@@ -27,7 +27,7 @@ class OrgUnitMatching:
     corresponding_parent_id: Optional[int]
 
 
-class Synchronizer:
+class DataSourceSynchronizer:
     def __init__(self, data_source_sync: DataSourceSynchronization):
         self.data_source_sync = data_source_sync
 
@@ -54,18 +54,21 @@ class Synchronizer:
         self._bulk_create_change_requests()
         self._bulk_create_change_request_groups()
 
-    def _sort_by_path(self, diffs: list[dict]) -> list:
-        sorted_list = sorted(diffs, key=lambda d: str(d["org_unit"]["path"]), reverse=True)
+    @staticmethod
+    def sort_by_path(diffs: list[dict]) -> list:
+        sorted_list = sorted(diffs, key=lambda d: str(d["org_unit"]["path"]))
         return sorted_list
 
-    def _parse_date_str(self, date_str: str) -> datetime.date:
+    @staticmethod
+    def parse_date_str(date_str: str) -> datetime.date:
         return datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
 
-    def _has_group_changes(self, diff: dict) -> bool:
+    @staticmethod
+    def has_group_changes(comparisons: list[dict]) -> bool:
         return any(
             [
                 comparison["status"] in ["new", "deleted"]
-                for comparison in diff["comparisons"]
+                for comparison in comparisons
                 if comparison["field"].startswith("group:")
             ]
         )
@@ -86,7 +89,7 @@ class Synchronizer:
         used as a basis for comparison but not in the pyramid to update.
         """
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
-        missing_org_units_diff_generator = (diff for diff in self._sort_by_path(self.diffs) if diff["status"] == "new")
+        missing_org_units_diff_generator = (diff for diff in self.sort_by_path(self.diffs) if diff["status"] == "new")
 
         while True:
             # Get a subset of the generator.
@@ -226,14 +229,14 @@ class Synchronizer:
 
         new_opening_date = None
         if "new_opening_date" in requested_fields:
-            new_opening_date = self._parse_date_str(org_unit["opening_date"])
+            new_opening_date = self.parse_date_str(org_unit["opening_date"])
 
         new_closed_date = None
         if "new_closed_date" in requested_fields:
-            new_closed_date = self._parse_date_str(org_unit["closed_date"])
+            new_closed_date = self.parse_date_str(org_unit["closed_date"])
 
         group_changes = []
-        if self._has_group_changes(diff):
+        if self.has_group_changes(diff["comparisons"]):
             requested_fields.append("new_groups")
             group_changes = [
                 comparison for comparison in diff["comparisons"] if comparison["field"].startswith("group:")
@@ -294,15 +297,15 @@ class Synchronizer:
             requested_fields.append("new_name")
 
         if changes.get("opening_date"):
-            new_opening_date = self._parse_date_str(changes["opening_date"])
+            new_opening_date = self.parse_date_str(changes["opening_date"])
             requested_fields.append("new_opening_date")
 
         if changes.get("closed_date"):
-            new_closed_date = self._parse_date_str(changes["closed_date"])
+            new_closed_date = self.parse_date_str(changes["closed_date"])
             requested_fields.append("new_closed_date")
 
         group_changes = []
-        if self._has_group_changes(diff):
+        if self.has_group_changes(diff["comparisons"]):
             requested_fields.append("new_groups")
             group_changes = [
                 comparison for comparison in diff["comparisons"] if comparison["field"].startswith("group:")

@@ -194,7 +194,7 @@ class DataSourceSynchronization(models.Model):
 
         diff = Differ().diff()
         json_diff = Dumper().as_json(diff)
-        Synchronizer(data_source_synchronization).synchronize()
+        DataSourceSynchronizer(data_source_synchronization).synchronize()
 
     """
 
@@ -303,7 +303,7 @@ class DataSourceSynchronization(models.Model):
 
     def synchronize_source_versions(self):
         # Prevent a circular import.
-        from iaso.diffing import Synchronizer
+        from iaso.diffing import DataSourceSynchronizer
 
-        synchronizer = Synchronizer(data_source_sync=self)
+        synchronizer = DataSourceSynchronizer(data_source_sync=self)
         synchronizer.synchronize()

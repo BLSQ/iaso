@@ -21,7 +21,7 @@ class Differ:
         self.iaso_logger = logger
 
     def load_pyramid(self, version, validation_status=None, top_org_unit=None, org_unit_types=None):
-        self.iaso_logger.info("loading pyramid ", version.data_source, version, top_org_unit, org_unit_types)
+        self.iaso_logger.info(f"loading pyramid {version.data_source} {version} {top_org_unit} {org_unit_types}")
         queryset = (
             OrgUnit.objects.prefetch_related("groups")
             .prefetch_related("groups__group_sets")
@@ -70,7 +70,7 @@ class Differ:
                 if group.id not in groups_with_with_groupset and group.source_ref:
                     field_names.append("group:" + group.source_ref + ":" + group.name)
 
-        self.iaso_logger.info("will compare the following fields ", field_names)
+        self.iaso_logger.info(f"will compare the following fields {field_names}")
         field_types = as_field_types(field_names)
 
         orgunits_dhis2 = self.load_pyramid(
@@ -82,9 +82,7 @@ class Differ:
             top_org_unit=top_org_unit_ref,
             org_unit_types=org_unit_types_ref,
         )
-        self.iaso_logger.info(
-            "comparing ", version_ref, "(", len(orgunits_dhis2), ")", " and ", version, "(", len(orgunit_refs), ")"
-        )
+        self.iaso_logger.info(f"comparing {version_ref} ({len(orgunits_dhis2)}) and {version} ({len(orgunit_refs)})")
         # speed how to index_by(&:source_ref)
         diffs = []
         index = 0

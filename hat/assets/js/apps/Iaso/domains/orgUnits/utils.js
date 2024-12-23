@@ -7,7 +7,7 @@ import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils.ts';
 import { useGetOrgUnitValidationStatus } from './hooks/utils/useGetOrgUnitValidationStatus.ts';
 import MESSAGES from './messages.ts';
 
-export const fetchLatestOrgUnitLevelId = levels => {
+export const getLatestOrgUnitLevelId = levels => {
     if (levels) {
         const levelsIds = levels.split(',');
         const latestId = parseInt(levelsIds[levelsIds.length - 1], 10);

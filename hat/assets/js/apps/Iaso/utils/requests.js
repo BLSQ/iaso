@@ -14,14 +14,6 @@ export const fetchSubOrgUnitsByType = (params, orgUnitType) =>
             console.error('Error while fetching org unit list:', error);
         });
 
-export const fetchOrgUnitsTypes = () =>
-    getRequest('/api/v2/orgunittypes/')
-        .then(res => res.orgUnitTypes)
-        .catch(error => {
-            openSnackBar(errorSnackBar('fetchOrgUnitTypesError', null, error));
-            console.error('Error while fetching org unit types list:', error);
-        });
-
 export const fetchAssociatedOrgUnits = (
     source,
     orgUnit,

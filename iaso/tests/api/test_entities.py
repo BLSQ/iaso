@@ -1,10 +1,10 @@
 import datetime
 import json
-import pytz
 import time
 import uuid
 from unittest import mock
 
+import pytz
 from django.contrib.auth.models import AnonymousUser
 from django.core.files import File
 
@@ -68,6 +68,8 @@ class EntityAPITestCase(APITestCase):
         cls.create_form_instance(
             form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project, uuid=uuid.uuid4
         )
+
+        cls.form_1.projects.add(cls.project)
 
         cls.entity_type = EntityType.objects.create(
             name="Type 1",

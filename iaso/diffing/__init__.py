@@ -2,4 +2,4 @@ from .comparisons import Comparison
 from .differ import Differ
 from .dumper import Dumper
 from .exporter import Exporter
-from .synchronizer import Synchronizer
+from .synchronizer import DataSourceSynchronizer

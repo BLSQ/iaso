@@ -190,7 +190,7 @@ class DataSourceSynchronization(models.Model):
     - as a consequence, the two pyramids diverge
     - so we need to synchronize the changes in the two pyramids
 
-    The logic is tightly coupled with the `iaso.diffing` module:
+    The logic is tightly coupled to the `iaso.diffing` module:
 
         diff = Differ().diff()
         json_diff = Dumper().as_json(diff)

@@ -181,8 +181,6 @@ class RoundDateHistoryEntry(models.Model):
     previous_ended_at = models.DateField(null=True, blank=True)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
-    # Deprecated. Cannot be deleted until the PowerBI dashboards are updated to use reason_for_delay instead
-    reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
     reason_for_delay = models.ForeignKey(
         "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="round_history_entries"
     )

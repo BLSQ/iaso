@@ -4,7 +4,6 @@ import {
     Nullable,
 } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { ReasonForDelay } from '../domains/Campaigns/Rounds/ReasonForDelayModal/hooks/reasons';
 import { SubActivityFormValues } from '../domains/Campaigns/SubActivities/types';
 
 export type FormatForNFMArgs<T> = {
@@ -252,7 +251,6 @@ export type RoundDateHistoryEntry = {
     previous_ended_at: string; // DATE
     started_at: string; // DATE
     ended_at: string; // DATE
-    reason?: ReasonForDelay;
     reason_for_delay: number; // an id
     user: { first_name: string; last_name: string; username: string };
     created_at: string; // DATE
@@ -260,7 +258,7 @@ export type RoundDateHistoryEntry = {
 
 export type Round = {
     id: number;
-    vaccine_names_extended:string;
+    vaccine_names_extended: string;
     started_at: Nullable<string>;
     ended_at: Nullable<string>;
     mop_up_started_at: Nullable<string>; // date

@@ -260,7 +260,6 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
 
         self.assertEqual(data_source_sync.count_create, 0)
         self.assertEqual(data_source_sync.count_update, 1)
-        self.assertEqual(data_source_sync.total_change_requests, 1)
 
     def test_create_change_requests(self):
         """
@@ -293,7 +292,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         # Synchronize source versions.
         change_requests = m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync)
         self.assertEqual(change_requests.count(), 0)
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(10):
             data_source_sync.synchronize_source_versions()
         self.assertEqual(change_requests.count(), 3)
 

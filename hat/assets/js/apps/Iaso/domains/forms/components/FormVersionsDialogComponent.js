@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import { ErrorsPopper } from '../../../components/forms/ErrorsPopper';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
 import { openSnackBar } from '../../../components/snackBars/EventDispatcher.ts';
 import { succesfullSnackBar } from '../../../constants/snackBars';
@@ -31,6 +32,7 @@ const FormVersionsDialogComponent = ({
     const intl = useSafeIntl();
     const queryClient = useQueryClient();
     const [isLoading, setIsLoading] = useState(false);
+    const [xlsFileErrors, setXlsFileErrors] = useState([]);
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState({
             id: formVersion.id,
@@ -38,6 +40,8 @@ const FormVersionsDialogComponent = ({
             end_period: formVersion.end_period,
             xls_file: formVersion.xls_file,
         });
+
+    const { formatMessage } = useSafeIntl();
 
     const periodsErrors = useMemo(
         () =>
@@ -83,9 +87,17 @@ const FormVersionsDialogComponent = ({
                 } catch (error) {
                     setIsLoading(false);
                     if (error.status === 400) {
-                        Object.entries(error.details).forEach(entry =>
-                            setFieldErrors(entry[0], entry[1]),
-                        );
+                        Object.entries(error.details).forEach(entry => {
+                            const entryKey = entry[0];
+                            const entryValue = entry[1];
+                            if (entryKey === 'xls_file_validation_errors') {
+                                setXlsFileErrors(
+                                    entryValue.map(err => err.message),
+                                );
+                            } else {
+                                setFieldErrors(entryKey, entryValue);
+                            }
+                        });
                     }
                 }
             }
@@ -103,7 +115,6 @@ const FormVersionsDialogComponent = ({
             setFieldErrors,
         ],
     );
-
     const handleCancel = closeDialog => {
         setFormState({
             id: formVersion.id,
@@ -147,14 +158,27 @@ const FormVersionsDialogComponent = ({
                             <Box mt={1} mb="4px">
                                 <FileInputComponent
                                     keyValue="xls_file"
-                                    onChange={setFieldValue}
+                                    onChange={(key, value) => {
+                                        setXlsFileErrors([]);
+                                        setFieldValue(key, value);
+                                    }}
                                     value={formState.xls_file.value}
                                     label={MESSAGES.xls_form_file}
                                     errors={formState.xls_file.errors}
                                     required
                                 />
+                                <ErrorsPopper
+                                    errors={xlsFileErrors}
+                                    errorCountMessage={formatMessage(
+                                        MESSAGES.validationErrorCount,
+                                        {
+                                            count: xlsFileErrors.length,
+                                        },
+                                    )}
+                                />
                             </Box>
                         )}
+
                         {!formState.id.value && (
                             <span>
                                 {intl.formatMessage(MESSAGES.validateXlsForm)}

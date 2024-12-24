@@ -131,6 +131,7 @@ type PeriodType =
     | 'NO_PERIOD'
     | 'MONTH'
     | 'QUARTER'
+    | 'QUARTER_NOV'
     | 'SIX_MONTH'
     | 'YEAR'
     | null;

@@ -4,6 +4,7 @@ from datetime import date
 PERIOD_TYPE_DAY = "DAY"
 PERIOD_TYPE_MONTH = "MONTH"
 PERIOD_TYPE_QUARTER = "QUARTER"
+PERIOD_TYPE_QUARTER_NOV = "QUARTER_NOV"
 PERIOD_TYPE_SIX_MONTH = "SIX_MONTH"
 PERIOD_TYPE_YEAR = "YEAR"
 
@@ -11,6 +12,9 @@ PERIOD_TYPE_YEAR = "YEAR"
 def detect(dhis2_period: str):
     if len(dhis2_period) == 4:
         return PERIOD_TYPE_YEAR
+
+    if "NovQ" in dhis2_period:
+        return PERIOD_TYPE_QUARTER_NOV
 
     if "Q" in dhis2_period:
         return PERIOD_TYPE_QUARTER
@@ -38,6 +42,8 @@ class Period:
             return MonthPeriod(period_string)
         elif period_type == PERIOD_TYPE_QUARTER:
             return QuarterPeriod(period_string)
+        elif period_type == PERIOD_TYPE_QUARTER_NOV:
+            return QuarterNovPeriod(period_string)
         elif period_type == PERIOD_TYPE_SIX_MONTH:
             return SemesterPeriod(period_string)
         elif period_type == PERIOD_TYPE_DAY:
@@ -125,6 +131,8 @@ class Period:
 
 QUARTER_TO_MONTHS = {1: [1, 2, 3], 2: [4, 5, 6], 3: [7, 8, 9], 4: [10, 11, 12]}
 
+QUARTER_NOV_TO_MONTHS = {1: [11, 12, 1], 2: [2, 3, 4], 3: [5, 6, 7], 4: [8, 9, 10]}
+
 
 class QuarterPeriod(Period):
     LOWER_BOUND = "2000Q1"
@@ -158,6 +166,43 @@ class QuarterPeriod(Period):
     def start_date(self):
         year, quarter = self.parts
         month = QUARTER_TO_MONTHS[quarter][0]
+        return date(year=year, month=month, day=1)
+
+
+class QuarterNovPeriod(Period):
+    LOWER_BOUND = "2000NovQ1"
+    HIGHER_BOUND = "2030NovQ4"
+
+    @staticmethod
+    def from_parts(year, quarter):
+        return QuarterNovPeriod(f"{year:04}NovQ{quarter}")
+
+    @property
+    def parts(self):
+        year, quarter = self.value.split("NovQ")
+        quarter = int(quarter)
+        year = int(year)
+        return year, quarter
+
+    def next_period(self):
+        year, quarter = self.parts
+        if quarter >= 4:
+            n_year = year + 1
+            n_quarter = 1
+        else:
+            n_quarter = quarter + 1
+            n_year = year
+        return QuarterNovPeriod.from_parts(n_year, n_quarter)
+
+    def gen_sub_periods(self):
+        year, quarter = self.parts
+        return [MonthPeriod.from_parts(year, month) for month in QUARTER_NOV_TO_MONTHS[quarter]]
+
+    def start_date(self):
+        year, quarter = self.parts
+        month = QUARTER_NOV_TO_MONTHS[quarter][0]
+        if quarter == 1:
+            year = year - 1
         return date(year=year, month=month, day=1)
 
 

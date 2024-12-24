@@ -3,6 +3,7 @@ import typing
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -206,13 +207,13 @@ class DataSourceVersionsSynchronization(models.Model):
         SourceVersion,
         on_delete=models.CASCADE,
         related_name="synchronized_as_source_version_to_update",
-        help_text=_("The pyramid for which we want to generate change requests."),
+        help_text=_("The version of the pyramid for which we want to generate change requests."),
     )
     source_version_to_compare_with = models.ForeignKey(
         SourceVersion,
         on_delete=models.CASCADE,
         related_name="synchronized_as_source_version_to_compare_with",
-        help_text=_("The pyramid as a comparison."),
+        help_text=_("The version of the pyramid to use as a comparison."),
     )
 
     # The exact JSON format is defined in `iaso.diffing.dumper.DataSourceVersionsSynchronizationEncoder`.
@@ -248,6 +249,20 @@ class DataSourceVersionsSynchronization(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def clean(self, *args, **kwargs):
+        super().clean()
+        self.clean_data_source_versions()
+
+    def clean_data_source_versions(self) -> None:
+        if self.source_version_to_update.data_source_id != self.source_version_to_compare_with.data_source_id:
+            raise ValidationError({"__all__": "The two versions to compare must be linked to the same data source."})
+        if self.source_version_to_update.pk == self.source_version_to_compare_with.pk:
+            raise ValidationError({"__all__": "The two versions to compare must be different."})
 
     @property
     def total_change_requests(self):

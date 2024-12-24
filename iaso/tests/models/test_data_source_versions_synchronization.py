@@ -5,6 +5,7 @@ import logging
 import time_machine
 
 from django.contrib.gis.geos import MultiPolygon, Polygon
+from django.core.exceptions import ValidationError
 
 from iaso import models as m
 from iaso.test import TestCase
@@ -166,6 +167,37 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(data_source_sync.created_by, kwargs["created_by"])
         self.assertEqual(data_source_sync.created_at, self.DT)
         self.assertEqual(data_source_sync.updated_at, self.DT)
+
+    def test_clean_data_source_versions(self):
+        other_data_source = m.DataSource.objects.create(name="Other data source")
+        other_source_version = m.SourceVersion.objects.create(
+            data_source=other_data_source, number=1, description="Other data source version"
+        )
+        kwargs = {
+            "name": "Foo",
+            "source_version_to_update": self.source_version_to_update,
+            "source_version_to_compare_with": other_source_version,
+            "account": self.account,
+            "created_by": self.user,
+        }
+        data_source_sync = m.DataSourceVersionsSynchronization(**kwargs)
+
+        with self.assertRaises(ValidationError) as error:
+            data_source_sync.clean_data_source_versions()
+        self.assertIn("The two versions to compare must be linked to the same data source.", error.exception.messages)
+
+        kwargs = {
+            "name": "Foo",
+            "source_version_to_update": self.source_version_to_update,
+            "source_version_to_compare_with": self.source_version_to_update,
+            "account": self.account,
+            "created_by": self.user,
+        }
+        data_source_sync = m.DataSourceVersionsSynchronization(**kwargs)
+
+        with self.assertRaises(ValidationError) as error:
+            data_source_sync.clean_data_source_versions()
+        self.assertIn("The two versions to compare must be different.", error.exception.messages)
 
     def test_create_json_diff(self):
         """

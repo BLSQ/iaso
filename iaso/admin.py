@@ -27,6 +27,7 @@ from .models import (
     AlgorithmRun,
     BulkCreateUserCsvFile,
     DataSource,
+    DataSourceVersionsSynchronization,
     Device,
     DeviceOwnership,
     DevicePosition,
@@ -508,6 +509,7 @@ class TaskAdmin(admin.ModelAdmin):
     list_filter = ("account", "status", "name")
     readonly_fields = ("stacktrace", "created_at", "result")
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    search_fields = ("name",)
 
     def result_message(self, task):
         return task.result and task.result.get("message", "")
@@ -1075,6 +1077,18 @@ class TenantUserAdmin(admin.ModelAdmin):
         css = {
             "all": ("admin/css/vendor/select2/select2.min.css",),
         }
+
+
+@admin.register(DataSourceVersionsSynchronization)
+class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
+    autocomplete_fields = ("account", "created_by", "source_version_to_update", "source_version_to_compare_with")
+    readonly_fields = ("created_at", "updated_at", "sync_task")
+    formfield_overrides = {
+        ArrayField: {
+            "form_class": ArrayFieldMultipleChoiceField,
+            "widget": forms.CheckboxSelectMultiple,
+        }
+    }
 
 
 admin.site.register(AccountFeatureFlag)

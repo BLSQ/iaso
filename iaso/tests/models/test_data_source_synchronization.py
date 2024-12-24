@@ -10,9 +10,9 @@ from iaso import models as m
 from iaso.test import TestCase
 
 
-class DataSourceSynchronizationModelTestCase(TestCase):
+class DataSourceVersionsSynchronizationModelTestCase(TestCase):
     """
-    Test DataSourceSynchronization model.
+    Test DataSourceVersionsSynchronization model.
     """
 
     DT = datetime.datetime(2024, 12, 4, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -152,7 +152,7 @@ class DataSourceSynchronizationModelTestCase(TestCase):
             "account": self.account,
             "created_by": self.user,
         }
-        data_source_sync = m.DataSourceSynchronization(**kwargs)
+        data_source_sync = m.DataSourceVersionsSynchronization(**kwargs)
         data_source_sync.full_clean()
         data_source_sync.save()
         data_source_sync.refresh_from_db()
@@ -175,7 +175,7 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.angola_country_to_compare_with.name = "Angola new"
         self.angola_country_to_compare_with.save()
 
-        data_source_sync = m.DataSourceSynchronization.objects.create(
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
             name="New synchronization",
             source_version_to_update=self.source_version_to_update,
             source_version_to_compare_with=self.source_version_to_compare_with,
@@ -247,7 +247,7 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         self.angola_region_to_compare_with.closed_date = datetime.date(2026, 11, 28)
         self.angola_region_to_compare_with.save()
 
-        data_source_sync = m.DataSourceSynchronization.objects.create(
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
             name="New synchronization",
             source_version_to_update=self.source_version_to_update,
             source_version_to_compare_with=self.source_version_to_compare_with,

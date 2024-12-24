@@ -261,7 +261,8 @@ class DataSourceSynchronizationModelTestCase(TestCase):
         # Synchronize source versions.
         change_requests = m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync)
         self.assertEqual(change_requests.count(), 0)
-        data_source_sync.synchronize_source_versions()
+        with self.assertNumQueries(9):
+            data_source_sync.synchronize_source_versions()
         self.assertEqual(change_requests.count(), 3)
 
         # Change request #1 to update an existing OrgUnit.

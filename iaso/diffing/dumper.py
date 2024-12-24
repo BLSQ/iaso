@@ -20,12 +20,12 @@ def color(status):
     return CommandLogger.END
 
 
-class DataSourceSynchronizationEncoder(DjangoJSONEncoder):
+class DataSourceVersionsSynchronizationEncoder(DjangoJSONEncoder):
     """
     The format of this JSONEncoder is tightly coupled with:
 
-    - the `DataSourceSynchronization` model
-    - the `iaso.diffing.Synchronizer` class
+    - the `iaso.models.DataSourceVersionsSynchronization` model
+    - the `iaso.diffing.DataSourceVersionsSynchronizer` class
 
     So if you need to modify it, you'd probably better create a new one.
     """
@@ -37,7 +37,7 @@ class DataSourceSynchronizationEncoder(DjangoJSONEncoder):
             return model_to_dict(obj)
         if obj.__class__.__name__ == "PathValue":
             # See django_ltree.fields
-            # https://github.com/mariocesar/django-ltree/blob/154c7e31dc004a753c5f6387680464a23510a8ce/django_ltree/fields.py#L27-L28
+            # https://github.com/mariocesar/django-ltree/blob/154c7e/django_ltree/fields.py#L27-L28
             return str(obj)
         if obj.__class__.__name__ == "MultiPolygon":
             return obj.wkt
@@ -77,7 +77,7 @@ class Dumper:
         return stats
 
     def as_json(self, diffs):
-        return json.dumps(diffs, indent=4, cls=DataSourceSynchronizationEncoder)
+        return json.dumps(diffs, indent=4, cls=DataSourceVersionsSynchronizationEncoder)
 
     def dump_as_json(self, diffs):
         self.iaso_logger.info(self.as_json(diffs))

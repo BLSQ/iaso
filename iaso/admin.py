@@ -27,7 +27,7 @@ from .models import (
     AlgorithmRun,
     BulkCreateUserCsvFile,
     DataSource,
-    DataSourceSynchronization,
+    DataSourceVersionsSynchronization,
     Device,
     DeviceOwnership,
     DevicePosition,
@@ -1079,8 +1079,8 @@ class TenantUserAdmin(admin.ModelAdmin):
         }
 
 
-@admin.register(DataSourceSynchronization)
-class DataSourceSynchronizationAdmin(admin.ModelAdmin):
+@admin.register(DataSourceVersionsSynchronization)
+class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
     autocomplete_fields = ("account", "created_by", "source_version_to_update", "source_version_to_compare_with")
     readonly_fields = ("created_at", "updated_at", "sync_task")
     formfield_overrides = {

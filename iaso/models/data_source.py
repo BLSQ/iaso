@@ -260,13 +260,9 @@ class DataSourceVersionsSynchronization(models.Model):
 
     def clean_data_source_versions(self) -> None:
         if self.source_version_to_update.data_source_id != self.source_version_to_compare_with.data_source_id:
-            raise ValidationError({"__all__": "The two versions to compare must be linked to the same data source."})
+            raise ValidationError("The two versions to compare must be linked to the same data source.")
         if self.source_version_to_update.pk == self.source_version_to_compare_with.pk:
-            raise ValidationError({"__all__": "The two versions to compare must be different."})
-
-    @property
-    def total_change_requests(self):
-        return self.count_create + self.count_update
+            raise ValidationError("The two versions to compare must be different.")
 
     def create_json_diff(
         self,
@@ -283,6 +279,9 @@ class DataSourceVersionsSynchronization(models.Model):
     ) -> None:
         # Prevent a circular import.
         from iaso.diffing import Differ, Dumper
+
+        if self.change_requests.exists():
+            raise ValidationError("Change requests have already been created.")
 
         differ_params = {
             # Version to update.
@@ -319,6 +318,9 @@ class DataSourceVersionsSynchronization(models.Model):
     def synchronize_source_versions(self):
         # Prevent a circular import.
         from iaso.diffing import DataSourceVersionsSynchronizer
+
+        if self.change_requests.exists():
+            raise ValidationError("Change requests have already been created.")
 
         synchronizer = DataSourceVersionsSynchronizer(data_source_sync=self)
         synchronizer.synchronize()

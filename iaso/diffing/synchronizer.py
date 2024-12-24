@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from itertools import islice
 from typing import Optional
 
-from iaso.models import Group, OrgUnit, OrgUnitChangeRequest, DataSourceSynchronization
+from iaso.models import Group, OrgUnit, OrgUnitChangeRequest, DataSourceVersionsSynchronization
 
 
 logger = logging.getLogger(__name__)
@@ -27,16 +27,16 @@ class OrgUnitMatching:
     corresponding_parent_id: Optional[int]
 
 
-class DataSourceSynchronizer:
+class DataSourceVersionsSynchronizer:
     """
-    The synchronization mechanism for the `DataSourceSynchronization` model.
+    The synchronization mechanism for the `DataSourceVersionsSynchronization` model.
     """
 
-    def __init__(self, data_source_sync: DataSourceSynchronization):
+    def __init__(self, data_source_sync: DataSourceVersionsSynchronization):
         self.data_source_sync = data_source_sync
 
         # The JSON that we deserialized is assumed to have been serialized
-        # by `iaso.diffing.dumper.DataSourceSynchronizationEncoder`.
+        # by `iaso.diffing.dumper.DataSourceVersionsSynchronizationEncoder`.
         self.diffs = json.loads(data_source_sync.json_diff)
 
         self.change_requests_groups_to_bulk_create = {}

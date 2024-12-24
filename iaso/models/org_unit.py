@@ -723,7 +723,7 @@ class OrgUnitChangeRequest(models.Model):
     )
 
     data_source_synchronization = models.ForeignKey(
-        "DataSourceSynchronization",
+        "DataSourceVersionsSynchronization",
         null=True,
         blank=True,
         on_delete=models.CASCADE,

@@ -17,6 +17,13 @@ export type PeriodObject = {
     day: number;
 };
 
+const QUARTER_NOV_MONTHS = {
+    1: [11,12,1],
+    2: [2,3,4],
+    3: [5,6,7],
+    4: [8,9,10]
+}
+
 export class Period {
     private readonly periodType: string;
 
@@ -86,8 +93,8 @@ export class Period {
                 throw new Error(`Invalid period type ${this.periodType}`);
             case PERIOD_TYPE_MONTH:
                 return [this.month];
-            case PERIOD_TYPE_QUARTER_NOV:
-                return _.range(this.month - 2, this.month + 1);
+            case PERIOD_TYPE_QUARTER_NOV:                
+                return QUARTER_NOV_MONTHS[this.quarter];
             case PERIOD_TYPE_QUARTER:
                 return _.range(this.month - 2, this.month + 1);
             case PERIOD_TYPE_SIX_MONTH:
@@ -196,9 +203,9 @@ export class Period {
 
     static parseQuarterNovString(quarterString: string): PeriodObject {
         const [year, quarter] = quarterString.split('NovQ').map(Number);
-        debugger;
+        const month = QUARTER_NOV_MONTHS[quarter].at(-1)
         return {
-            month: quarter * 3,
+            month: month,
             quarter,
             semester: Math.ceil(quarter / 2),
             year,

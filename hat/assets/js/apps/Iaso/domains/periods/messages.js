@@ -10,7 +10,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Quarter',
     },
     quarter_nov: {
-        id: 'iaso.label.quater_nov',
+        id: 'iaso.label.quarter_nov',
         defaultMessage: 'Quarter November',
     },    
     month: {

@@ -155,6 +155,13 @@ export const getPrettyPeriod = (period, formatMessage, currentUser) => {
             );
             return `${prettyPeriod} (${monthRangeString})`;
         }
+        case PERIOD_TYPE_QUARTER_NOV: {
+            const monthRangeString = getMonthRangeString(
+                periodClass.monthRange,
+                formatMessage,
+            );
+            return `${period} (${monthRangeString})`;
+        }
         case PERIOD_TYPE_QUARTER: {
             const monthRangeString = getMonthRangeString(
                 periodClass.monthRange,

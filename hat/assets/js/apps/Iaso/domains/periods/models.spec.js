@@ -339,7 +339,7 @@ describe('Periods model', () => {
             period = new Period(periodString);
             expectedPeriod = {
                 periodType: PERIOD_TYPE_QUARTER_NOV,
-                month: 3,
+                month: 1,
                 day: 1,
                 quarter: 1,
                 semester: 1,
@@ -356,7 +356,7 @@ describe('Periods model', () => {
             );
         });
         it('monthRange should return correct month range', () => {
-            expect(period.monthRange).to.eql(getMonthRange(month));
+            expect(period.monthRange).to.eql([11,12,1]);
         });
         it('toCode should return correct code', () => {
             expect(period.toCode()).to.eql('NovQ1/2018');

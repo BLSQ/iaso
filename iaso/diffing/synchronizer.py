@@ -28,6 +28,10 @@ class OrgUnitMatching:
 
 
 class DataSourceSynchronizer:
+    """
+    The synchronization mechanism for the `DataSourceSynchronization` model.
+    """
+
     def __init__(self, data_source_sync: DataSourceSynchronization):
         self.data_source_sync = data_source_sync
 
@@ -170,12 +174,12 @@ class DataSourceSynchronizer:
         new_org_units_generator = (item for item in self.org_units_to_bulk_create)
 
         while True:
-            batch_subset = list(islice(new_org_units_generator, self.insert_batch_size))
+            new_org_units_batch = list(islice(new_org_units_generator, self.insert_batch_size))
 
-            if not batch_subset:
+            if not new_org_units_batch:
                 break
 
-            new_org_units = OrgUnit.objects.bulk_create(batch_subset, self.insert_batch_size)
+            new_org_units = OrgUnit.objects.bulk_create(new_org_units_batch, self.insert_batch_size)
             for new_org_unit in new_org_units:
                 self.org_units_matching[new_org_unit.source_ref].corresponding_id = new_org_unit.pk
 
@@ -184,12 +188,12 @@ class DataSourceSynchronizer:
         new_groups_generator = (item for item in self.groups_to_bulk_create.values())
 
         while True:
-            batch_subset = list(islice(new_groups_generator, self.json_batch_size))
+            new_groups_batch = list(islice(new_groups_generator, self.json_batch_size))
 
-            if not batch_subset:
+            if not new_groups_batch:
                 break
 
-            new_groups = Group.objects.bulk_create(batch_subset, self.insert_batch_size)
+            new_groups = Group.objects.bulk_create(new_groups_batch, self.insert_batch_size)
             for new_group in new_groups:
                 self.groups_matching[new_group.source_ref] = new_group.pk
 
@@ -370,23 +374,26 @@ class DataSourceSynchronizer:
 
     def _bulk_create_change_requests(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
-        new_change_requests_generator = (item for item in self.change_requests_to_bulk_create)
+        change_requests_generator = (item for item in self.change_requests_to_bulk_create)
 
         while True:
-            batch_subset = list(islice(new_change_requests_generator, self.insert_batch_size))
+            change_requests_batch = list(islice(change_requests_generator, self.insert_batch_size))
 
-            if not batch_subset:
+            if not change_requests_batch:
                 break
 
-            change_requests = OrgUnitChangeRequest.objects.bulk_create(batch_subset, self.insert_batch_size)
+            change_requests = OrgUnitChangeRequest.objects.bulk_create(change_requests_batch, self.insert_batch_size)
 
             for change_request in change_requests:
                 groups_to_bulk_create = self.change_requests_groups_to_bulk_create.get(change_request.org_unit_id)
                 if groups_to_bulk_create:
-                    # Link groups to the new change request.
+                    # Link groups related to the newly created change request.
                     groups_to_bulk_create.change_request_id = change_request.pk
 
     def _bulk_create_change_request_groups(self) -> None:
+        """
+        Use the "through" table to bulk update old and new groups (m2m).
+        """
         old_groups = []
         new_groups = []
 
@@ -404,6 +411,16 @@ class DataSourceSynchronizer:
                     )
                 )
 
-        # Use the through table to bulk update old and new groups (m2m).
-        OrgUnitChangeRequest.old_groups.through.objects.bulk_create(old_groups)
-        OrgUnitChangeRequest.new_groups.through.objects.bulk_create(new_groups)
+        old_groups_generator = (group for group in old_groups)
+        while True:
+            old_groups_batch = list(islice(old_groups_generator, self.insert_batch_size))
+            if not old_groups_batch:
+                break
+            OrgUnitChangeRequest.old_groups.through.objects.bulk_create(old_groups_batch, self.insert_batch_size)
+
+        new_groups_generator = (group for group in new_groups)
+        while True:
+            new_groups_batch = list(islice(new_groups_generator, self.insert_batch_size))
+            if not new_groups_batch:
+                break
+            OrgUnitChangeRequest.new_groups.through.objects.bulk_create(new_groups_batch, self.insert_batch_size)

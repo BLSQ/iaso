@@ -328,6 +328,7 @@
     "iaso.groupsets.groupBelonging": "Groups belonging",
     "iaso.groupsets.validation.field_required": "Ce champ est obligatoire",
     "iaso.hospital": "Hospital",
+    "iaso.instance.approveAllWarningsMessage": "All warnings must be approved before launching the locations push.",
     "iaso.instance.coordinate": "Coordinates",
     "iaso.instance.created_at": "Created in Iaso",
     "iaso.instance.delete": "Delete instance(s)",

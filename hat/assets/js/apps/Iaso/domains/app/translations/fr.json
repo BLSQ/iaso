@@ -329,6 +329,7 @@
     "iaso.groupsets.groupBelonging": "Appartenance aux groupes",
     "iaso.groupsets.validation.field_required": "Ce champ est obligatoire",
     "iaso.hospital": "Hôpital",
+    "iaso.instance.approveAllWarningsMessage": "Tous les avertissements doivent être approuvés avant de lancer la génération des localisations.",
     "iaso.instance.coordinate": "Coordonnées",
     "iaso.instance.created_at": "Création dans Iaso",
     "iaso.instance.delete": "Effacer une(des) soumission(s)",

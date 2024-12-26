@@ -34,9 +34,9 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
 }) => {
     const currentUser = useCurrentUser();
     const [approveOrgUnitHasGps, setApproveOrgUnitHasGps] =
-        useState<boolean>(false);
+        useState<boolean>(true);
     const [approveSubmissionNoHasGps, setApproveSubmissionNoHasGps] =
-        useState<boolean>(false);
+        useState<boolean>(true);
     const { mutateAsync: bulkgpspush } = useInstanceBulkgpspush();
     const select_all = selection.selectAll;
     const selected_ids = selection.selectedItems;
@@ -114,24 +114,37 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         Permission.DATA_TASKS,
         currentUser,
     );
-    const displayWarningOverWriteGps = useMemo(
-        () =>
+    const displayWarningOverWriteGps = useMemo(() => {
+        const isWarning =
             (checkBulkGpsPush?.warning_overwrite?.length ?? 0) > 0 &&
-            (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0,
-        [
-            checkBulkGpsPush?.error_ids?.length,
-            checkBulkGpsPush?.warning_overwrite?.length,
-        ],
-    );
-    const displayWarningSubmissionsNoGps = useMemo(
-        () =>
+            (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0;
+        if (isWarning) {
+            setApproveOrgUnitHasGps(false);
+        } else {
+            setApproveOrgUnitHasGps(true);
+        }
+
+        return isWarning;
+    }, [
+        checkBulkGpsPush?.error_ids?.length,
+        checkBulkGpsPush?.warning_overwrite?.length,
+    ]);
+
+    const displayWarningSubmissionsNoGps = useMemo(() => {
+        const isWarning =
             (checkBulkGpsPush?.warning_no_location?.length ?? 0) > 0 &&
-            (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0,
-        [
-            checkBulkGpsPush?.error_ids?.length,
-            checkBulkGpsPush?.warning_no_location?.length,
-        ],
-    );
+            (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0;
+        if (isWarning) {
+            setApproveOrgUnitHasGps(false);
+        } else {
+            setApproveOrgUnitHasGps(true);
+        }
+
+        return isWarning;
+    }, [
+        checkBulkGpsPush?.error_ids?.length,
+        checkBulkGpsPush?.warning_no_location?.length,
+    ]);
 
     const noLoadingAndNoError = useMemo(
         () => !isLoadingCheckResult && !isError,

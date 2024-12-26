@@ -52,42 +52,13 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         unselected_ids: unselected_ids.map(item => item.id).join(','),
     });
 
-    const selected_ids_params = useMemo(() => {
-        let instances = selected_ids;
-        if (!approveOrgUnitHasGps) {
-            instances = instances.filter(
-                instance =>
-                    !checkBulkGpsPush?.warning_overwrite?.includes(instance.id),
-            );
-        }
-        if (!approveSubmissionNoHasGps) {
-            instances = instances.filter(
-                instance =>
-                    !checkBulkGpsPush?.warning_no_location?.includes(
-                        instance.id,
-                    ),
-            );
-        }
-        return instances;
-    }, [
-        approveOrgUnitHasGps,
-        approveSubmissionNoHasGps,
-        checkBulkGpsPush?.warning_no_location,
-        checkBulkGpsPush?.warning_overwrite,
-        selected_ids,
-    ]);
-
-    const unselected_ids_param = useMemo(() => {
-        return unselected_ids;
-    }, [unselected_ids]);
-
     const instancebulkgpspush = useCallback(async () => {
         await bulkgpspush({
             select_all,
-            selected_ids: selected_ids_params.map(item => item.id),
-            unselected_ids: unselected_ids_param.map(item => item.id),
+            selected_ids: selected_ids.map(item => item.id),
+            unselected_ids: unselected_ids.map(item => item.id),
         });
-    }, [bulkgpspush, select_all, selected_ids_params, unselected_ids_param]);
+    }, [bulkgpspush, select_all, selected_ids, unselected_ids]);
 
     const onConfirm = useCallback(
         async closeDialog => {
@@ -159,21 +130,24 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         ],
     );
 
-    const noLoadinAndNoError = useMemo(
+    const noLoadingAndNoError = useMemo(
         () => !isLoadingCheckResult && !isError,
         [isError, isLoadingCheckResult],
     );
+
+    const approved = approveOrgUnitHasGps && approveSubmissionNoHasGps;
+
     return (
         // @ts-ignore
         <ConfirmCancelDialogComponent
             renderTrigger={({ openDialog }) => renderTrigger(openDialog)}
-            titleMessage={noLoadinAndNoError ? title : ''}
-            allowConfirm={noLoadinAndNoError}
+            titleMessage={noLoadingAndNoError ? title : ''}
+            allowConfirm={noLoadingAndNoError && approved}
             onConfirm={closeDialog => onConfirm(closeDialog)}
             confirmMessage={MESSAGES.launch}
             onClosed={onClosed}
             cancelMessage={
-                noLoadinAndNoError ? MESSAGES.cancel : MESSAGES.close
+                noLoadingAndNoError ? MESSAGES.cancel : MESSAGES.close
             }
             maxWidth="sm"
             additionalButton
@@ -182,7 +156,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                 onConfirmAndSeeTask(closeDialog)
             }
             allowConfimAdditionalButton={
-                hasTaskPermission && noLoadinAndNoError
+                hasTaskPermission && noLoadingAndNoError && approved
             }
             id="bulk-push-gps"
             dataTestId="bulk-push-gps"

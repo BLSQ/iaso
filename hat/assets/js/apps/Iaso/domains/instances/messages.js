@@ -225,6 +225,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Multiple submissions are using the same org unit',
         id: 'iaso.instance.multipleInstancesOneOrgUnitWarningMessage',
     },
+    approveAllWarningsMessage: {
+        defaultMessage:
+            'All warnings must be approved before launching the locations push.',
+        id: 'iaso.instance.approveAllWarningsMessage',
+    },
     seeAll: {
         defaultMessage: 'See all',
         id: 'iaso.label.seeAll',

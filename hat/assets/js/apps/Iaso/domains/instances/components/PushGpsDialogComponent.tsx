@@ -83,23 +83,26 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         return null;
     };
 
-    const onApprove = type => {
-        if (type === 'instanceNoGps') {
-            if (approveSubmissionNoHasGps) {
-                setApproveSubmissionNoHasGps(false);
-            } else {
-                setApproveSubmissionNoHasGps(true);
+    const onApprove = useCallback(
+        type => {
+            if (type === 'instanceNoGps') {
+                if (approveSubmissionNoHasGps) {
+                    setApproveSubmissionNoHasGps(false);
+                } else {
+                    setApproveSubmissionNoHasGps(true);
+                }
             }
-        }
 
-        if (type === 'orgUnitHasGps') {
-            if (approveOrgUnitHasGps) {
-                setApproveOrgUnitHasGps(false);
-            } else {
-                setApproveOrgUnitHasGps(true);
+            if (type === 'orgUnitHasGps') {
+                if (approveOrgUnitHasGps) {
+                    setApproveOrgUnitHasGps(false);
+                } else {
+                    setApproveOrgUnitHasGps(true);
+                }
             }
-        }
-    };
+        },
+        [approveOrgUnitHasGps, approveSubmissionNoHasGps],
+    );
     let title = MESSAGES.export;
     if (selection) {
         title = {
@@ -207,6 +210,28 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                         approveCondition={approveOrgUnitHasGps}
                         onApproveClick={() => onApprove('orgUnitHasGps')}
                     />
+                    {!approved && (
+                        <Grid item xs={12}>
+                            <Typography variant="subtitle1">
+                                <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    alignItems="center"
+                                    sx={{
+                                        color: theme =>
+                                            theme.palette.warning.main,
+                                    }}
+                                >
+                                    <WarningAmberIcon />
+                                    <Typography>
+                                        {formatMessage(
+                                            MESSAGES.approveAllWarningsMessage,
+                                        )}
+                                    </Typography>
+                                </Stack>
+                            </Typography>
+                        </Grid>
+                    )}
                 </Grid>
             )}
         </ConfirmCancelDialogComponent>

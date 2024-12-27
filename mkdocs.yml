@@ -66,6 +66,7 @@ plugins:
               - En savoir plus sur IASO:
                 - Demander une démo: https://www.openiaso.com/ 
                 - Bluesquare: https://www.bluesquarehub.com/
+                - Digital Public Goods Registry: https://www.digitalpublicgoods.net/r/iaso
 
   - search #built-in search input in the theme
   - mermaid2 #enables rendering mermaid diagrams
@@ -137,6 +138,7 @@ nav: # nav configures the side bar menu
   - More about IASO:
     - Get a demo: https://www.openiaso.com/ 
     - Bluesquare: https://www.bluesquarehub.com/
+    - Digital Public Goods Registry: https://www.digitalpublicgoods.net/r/iaso
 
 
 

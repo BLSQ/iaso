@@ -13,6 +13,7 @@ Key tip before testing / using the App - **Make sure you have refreshed data bef
 IASO Mobile application has to be configured on the web part before using (see the part “Project”).
 
 Then you can:
+
 - Download [IASO App](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&pcampaignid=web_share) on Google Play
 - Insert the server url : https://iaso.bluesquare.org
 - Then, enter the App ID 

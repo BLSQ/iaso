@@ -1,66 +1,62 @@
-# Application mobile
+# Mobile Application
 
-L'application mobile IASO est disponible sur le Google Play Store (uniquement pour les téléphones Android).
+IASO mobile application is available on Google Play Store (Android phones only).
 
-Elle peut fonctionner entièrement hors ligne - une fois que l'utilisateur final a saisi les données nécessaires, il/elle peut télécharger toutes les données collectées hors ligne d'un seul coup lorsque le réseau est disponible.
+It can work completely offline - once the end user has encoded the data needed, he/she can upload the data collected offline all at once when network is available.
 
-Les mises à jour effectuées depuis le web (versions des formulaires, pyramide sanitaire) seront reflétées dans l'application uniquement après actualisation des données de l'application, ce qui nécessite une connexion Internet.
+Updates made from the web (forms versions, health pyramid) will be reflected in the App only **after the App data has been refreshed** and this requires network connectivity.
 
-Astuce importante avant de tester/utiliser l'application : **Assurez-vous d'avoir actualisé les données au préalable**.
+Key tip before testing / using the App - **Make sure you have refreshed data beforehand**
 
-## Lancer l'application mobile pour la première fois
+## Run the mobile application for the first time
 
-L'application mobile IASO doit être configurée sur la partie web avant utilisation (voir la section “Projet”).
+IASO Mobile application has to be configured on the web part before using (see the part “Project”).
 
-Ensuite, vous pouvez :
+Then you can:
+- Download [IASO App](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&pcampaignid=web_share) on Google Play
+- Insert the server url : https://iaso.bluesquare.org
+- Then, enter the App ID 
 
-- Télécharger [IASO App](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&pcampaignid=web_share) sur Google Play Store
-- Insérer l'URL du serveur : https://iaso.bluesquare.org
-- Puis, entrer l'App ID.
 
-Vous pouvez également configurer l'application mobile en scanning le QR code du projet correspondant sur le web. 
 
 ![](attachments/iasomobileapplicationsetup.png)
 
 
-## Aperçu des boutons
+## Overview of buttons
 
-Voir ci-dessous un aperçu des principaux boutons que vous pouvez trouver sur l'écran principal en mode collecte de données. 
+See below an overview of the main buttons that you can find on the main screen in data collection mode. 
 
 ![](attachments/mobileappbuttons.png)
 
-Dans la section "Plus d'options", vous pouvez effectuer les actions suivantes :
+In the More Options part, you can take the below actions:
+- Refresh data: you need to have internet connectivity to do so. It will synchronize the mobile application with IASO web data. In order to avoid that it takes too long in low-connectivity settings, you can choose to refresh only sub-parts such as Forms, Organization Units, or other. 
+- Change the App ID: you can switch Project by entering another App ID. In order to make sure that there is no data from the former App ID left on the IASO mobile application, please access your parameters and erase storage and cache data from IASO beforehand. 
+- Change the URL of the server: this can be handy if you need to switch from Production to Staging server
+- Logout: your user can logout. This does not prevent data consultation of local data (data available on IASO on the user's device)
+- About: gives the version of the IASO mobile application. It can be good to have to debug.
 
-- Actualiser les données : vous devez avoir une connexion Internet pour le faire. Cela synchronisera l'application mobile avec les données IASO web. Pour éviter que cela ne prenne trop de temps dans les environnements à faible connectivité, vous pouvez choisir d'actualiser uniquement certaines parties comme les formulaires, les unités d'organisation, ou autres.
-- Changer l'App ID : vous pouvez changer de projet en entrant un autre App ID. Pour éviter que des données de l'ancien App ID ne restent dans l'application mobile IASO, accédez à vos paramètres et effacez les données de stockage et de cache de l'application IASO au préalable.
-- Changer l'URL du serveur : ceci peut être utile si vous devez passer du serveur de production au serveur de test.
-- Se déconnecter : votre utilisateur peut se déconnecter. Cela n'empêche pas la consultation des données locales (données disponibles sur l'appareil de l'utilisateur IASO).
-- À propos : affiche la version de l'application mobile IASO. 
+## Collect data
 
-
-## Collecter des données
-
-Une fois connecté à l'application mobile IASO, vous pouvez procéder à la collecte de données. Voici les différents écrans que vous verrez lors d'une simple collecte de données.
+Once you are connected to the IASO mobile application, you can then proceed with your data collection. Here below are the different screens that you would see for a simple data collection.
 
 ![alt text](attachments/datacollection.png)
 
-Le formulaire de collecte de données sélectionné s'ouvrira alors. Vous pouvez répondre aux différentes questions et appuyer sur "Suivant" jusqu'à la fin du formulaire.
+You will then have data collection form chosen opening. You can proceed with answering the different questions and press "Next" until the end of the Form.
 
-Si vous souhaitez interrompre la collecte de données pendant la saisie, vous pouvez appuyer sur le bouton retour de la tablette ou du smartphone.
+If you wish to interrupt data collection during input, you can press the back button on the tablet or smartphone.
 
-Une fois que vous appuyez sur le bouton, deux options s'offrent à vous :
+Once you click on the button, you have 2 options:
+- Save Changes: to save all data already filled and the form with unfinalized status. With this option you can, come back and continue enter data 
+- Ignore Changes: to delete data filled and the form
 
-- Enregistrer les modifications : pour enregistrer toutes les données déjà saisies et laisser le formulaire en statut non finalisé. Avec cette option, vous pouvez revenir plus tard pour continuer la saisie des données.
-- Ignorer les modifications : pour supprimer les données saisies et le formulaire.
+**Upload collected data**
 
-**Télécharger les données collectées**
+If you collect data with your mobile device, they are stored in your device. You need to upload data to the server to make them visible at central level. *Keep in mind that you need internet connection in order to be able to upload data*.
 
-Les données collectées sur votre appareil mobile sont stockées localement. Vous devez les télécharger sur le serveur pour qu'elles soient visibles au niveau central. Gardez à l'esprit qu'une connexion Internet est nécessaire pour télécharger les données.
-
-Cliquez sur l'icône **"Envoyer les formulaires finalisés"** sur la page d'accueil de l'application mobile, dans le coin supérieur droit.
+Click on the "Send Finalized Forms" icon on the mobile application home page on the top right corner.
 
 ![alt text](attachments/uploaddata.png)
 
-Une page spécifique s'ouvrira pour vous indiquer si les données ont été correctement téléchargées. Finalisez l'opération en cliquant sur **"Envoyer au serveur"**.
+Then, a specific page will open to let you know if the data has been correctly uploaded. Finalize the operation by clicking on "Send to server".
 
 ![alt text](attachments/sendserver.png)

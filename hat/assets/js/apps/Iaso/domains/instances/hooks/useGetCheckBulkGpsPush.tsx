@@ -9,15 +9,13 @@ export const useGetCheckBulkGpsPush = (
 ): UseQueryResult<CheckBulkGpsPushResult> => {
     return useSnackQuery({
         queryKey: ['bulkGpsCheck', params],
-        queryFn: () => {
-            return getRequest(
+        queryFn: () =>
+            getRequest(
                 makeUrlWithParams(
                     '/api/instances/check_bulk_gps_push/',
                     params,
                 ),
-            );
-        },
-
+            ),
         options: {
             select: data => {
                 return data;

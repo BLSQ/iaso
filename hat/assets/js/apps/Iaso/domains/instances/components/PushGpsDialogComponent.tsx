@@ -4,13 +4,12 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Grid, Stack, Typography } from '@mui/material';
+import { Grid, Typography } from '@mui/material';
 import {
     LoadingSpinner,
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
@@ -22,6 +21,7 @@ import { baseUrls } from '../../../constants/urls';
 import { userHasPermission } from '../../users/utils';
 import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import PushGpsWarningMessage from './PushGpsWarningMessage';
 
 type Props = {
     renderTrigger: (openDialog: boolean) => void;
@@ -32,12 +32,17 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
     renderTrigger,
     selection,
 }) => {
+    const INSTANCE_HAS_NO_GPS = 'instanceHasNoGPS';
+    const ORG_UNIT_HAS_ALREADY_GPS = 'orgUnitHasAlreadyGps';
+
     const currentUser = useCurrentUser();
     const [approveOrgUnitHasGps, setApproveOrgUnitHasGps] =
         useState<boolean>(true);
     const [approveSubmissionNoHasGps, setApproveSubmissionNoHasGps] =
         useState<boolean>(true);
+
     const { mutateAsync: bulkgpspush } = useInstanceBulkgpspush();
+
     const select_all = selection.selectAll;
     const selected_ids = selection.selectedItems;
     const unselected_ids = selection.unSelectedItems;
@@ -67,6 +72,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         },
         [instancebulkgpspush],
     );
+
     const redirectTo = useRedirectTo();
     const onConfirmAndSeeTask = useCallback(
         async closeDialog => {
@@ -85,66 +91,66 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
 
     const onApprove = useCallback(
         type => {
-            if (type === 'instanceNoGps') {
-                if (approveSubmissionNoHasGps) {
-                    setApproveSubmissionNoHasGps(false);
-                } else {
-                    setApproveSubmissionNoHasGps(true);
-                }
-            }
+            const toggleApproval = (currentValue, setFunction) => {
+                setFunction(!currentValue);
+            };
 
-            if (type === 'orgUnitHasGps') {
-                if (approveOrgUnitHasGps) {
-                    setApproveOrgUnitHasGps(false);
-                } else {
-                    setApproveOrgUnitHasGps(true);
-                }
+            if (type === INSTANCE_HAS_NO_GPS) {
+                toggleApproval(
+                    approveSubmissionNoHasGps,
+                    setApproveSubmissionNoHasGps,
+                );
+            } else if (type === ORG_UNIT_HAS_ALREADY_GPS) {
+                toggleApproval(approveOrgUnitHasGps, setApproveOrgUnitHasGps);
             }
         },
         [approveOrgUnitHasGps, approveSubmissionNoHasGps],
     );
+
     let title = MESSAGES.export;
     if (selection) {
         title = {
             ...MESSAGES.pushGpsToOrgUnits,
         };
     }
+
     const { formatMessage } = useSafeIntl();
     const hasTaskPermission = userHasPermission(
         Permission.DATA_TASKS,
         currentUser,
     );
-    const displayWarningOverWriteGps = useMemo(() => {
+
+    const evaluateWarning = (
+        warningCondition,
+        errorCondition,
+        setApproveFunction,
+    ) => {
         const isWarning =
-            (checkBulkGpsPush?.warning_overwrite?.length ?? 0) > 0 &&
-            (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0;
-        if (isWarning) {
-            setApproveOrgUnitHasGps(false);
-        } else {
-            setApproveOrgUnitHasGps(true);
-        }
-
+            (warningCondition?.length ?? 0) > 0 &&
+            (errorCondition?.length ?? 0) <= 0;
+        setApproveFunction(!isWarning);
         return isWarning;
-    }, [
-        checkBulkGpsPush?.error_ids?.length,
-        checkBulkGpsPush?.warning_overwrite?.length,
-    ]);
+    };
 
-    const displayWarningSubmissionsNoGps = useMemo(() => {
-        const isWarning =
-            (checkBulkGpsPush?.warning_no_location?.length ?? 0) > 0 &&
-            (checkBulkGpsPush?.error_ids?.length ?? 0) <= 0;
-        if (isWarning) {
-            setApproveOrgUnitHasGps(false);
-        } else {
-            setApproveOrgUnitHasGps(true);
-        }
+    const displayWarningOverWriteGps = useMemo(
+        () =>
+            evaluateWarning(
+                checkBulkGpsPush?.warning_overwrite,
+                checkBulkGpsPush?.error_ids,
+                setApproveOrgUnitHasGps,
+            ),
+        [checkBulkGpsPush?.warning_overwrite, checkBulkGpsPush?.error_ids],
+    );
 
-        return isWarning;
-    }, [
-        checkBulkGpsPush?.error_ids?.length,
-        checkBulkGpsPush?.warning_no_location?.length,
-    ]);
+    const displayWarningSubmissionsNoGps = useMemo(
+        () =>
+            evaluateWarning(
+                checkBulkGpsPush?.warning_no_location,
+                checkBulkGpsPush?.error_ids,
+                setApproveSubmissionNoHasGps,
+            ),
+        [checkBulkGpsPush?.warning_no_location, checkBulkGpsPush?.error_ids],
+    );
 
     const noLoadingAndNoError = useMemo(
         () => !isLoadingCheckResult && !isError,
@@ -184,25 +190,14 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                     <Grid item xs={12}>
                         <Typography variant="subtitle1">
                             {isError ? (
-                                <Stack
-                                    direction="row"
-                                    spacing={1}
-                                    alignItems="center"
-                                    sx={{
-                                        paddingLeft: '15px',
-                                        paddingTop: '20px',
-                                        marginRight: '100px',
-                                        color: theme =>
-                                            theme.palette.warning.main,
-                                    }}
-                                >
-                                    <WarningAmberIcon />
-                                    <Typography>
-                                        {formatMessage(
-                                            MESSAGES.multipleInstancesOneOrgUnitWarningMessage,
-                                        )}
-                                    </Typography>
-                                </Stack>
+                                <PushGpsWarningMessage
+                                    message={formatMessage(
+                                        MESSAGES.multipleInstancesOneOrgUnitWarningMessage,
+                                    )}
+                                    paddingLeft="15px"
+                                    paddingTop="20px"
+                                    marginRight="100px"
+                                />
                             ) : (
                                 formatMessage(MESSAGES.pushGpsWarningMessage, {
                                     submissionCount: selection.selectCount,
@@ -215,33 +210,24 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                         condition={displayWarningSubmissionsNoGps}
                         message={MESSAGES.noGpsForSomeInstaces}
                         approveCondition={approveSubmissionNoHasGps}
-                        onApproveClick={() => onApprove('instanceNoGps')}
+                        onApproveClick={() => onApprove(INSTANCE_HAS_NO_GPS)}
                     />
                     <PushBulkGpsWarning
                         condition={displayWarningOverWriteGps}
                         message={MESSAGES.someOrgUnitsHasAlreadyGps}
                         approveCondition={approveOrgUnitHasGps}
-                        onApproveClick={() => onApprove('orgUnitHasGps')}
+                        onApproveClick={() =>
+                            onApprove(ORG_UNIT_HAS_ALREADY_GPS)
+                        }
                     />
                     {!approved && (
                         <Grid item xs={12}>
                             <Typography variant="subtitle1">
-                                <Stack
-                                    direction="row"
-                                    spacing={1}
-                                    alignItems="center"
-                                    sx={{
-                                        color: theme =>
-                                            theme.palette.warning.main,
-                                    }}
-                                >
-                                    <WarningAmberIcon />
-                                    <Typography>
-                                        {formatMessage(
-                                            MESSAGES.approveAllWarningsMessage,
-                                        )}
-                                    </Typography>
-                                </Stack>
+                                <PushGpsWarningMessage
+                                    message={formatMessage(
+                                        MESSAGES.approveAllWarningsMessage,
+                                    )}
+                                />
                             </Typography>
                         </Grid>
                     )}

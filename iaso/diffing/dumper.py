@@ -20,16 +20,7 @@ def color(status):
     return CommandLogger.END
 
 
-class DataSourceVersionsSynchronizationEncoder(DjangoJSONEncoder):
-    """
-    The format of this JSONEncoder is tightly coupled with:
-
-    - the `iaso.models.DataSourceVersionsSynchronization` model
-    - the `iaso.diffing.DataSourceVersionsSynchronizer` class
-
-    So if you need to modify it, you'd probably better create a new one.
-    """
-
+class DiffJSONEncoder(DjangoJSONEncoder):
     def default(self, obj):
         if obj.__class__.__name__ in ["Diff", "Comparison"]:
             return obj.as_dict()
@@ -77,7 +68,7 @@ class Dumper:
         return stats
 
     def as_json(self, diffs):
-        return json.dumps(diffs, indent=4, cls=DataSourceVersionsSynchronizationEncoder)
+        return json.dumps(diffs, indent=4, cls=DiffJSONEncoder)
 
     def dump_as_json(self, diffs):
         self.iaso_logger.info(self.as_json(diffs))

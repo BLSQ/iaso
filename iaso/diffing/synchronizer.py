@@ -7,10 +7,19 @@ from dataclasses import dataclass
 from itertools import islice
 from typing import Optional
 
+from rest_framework.renderers import JSONRenderer
+
 from iaso.models import Group, OrgUnit, OrgUnitChangeRequest, DataSourceVersionsSynchronization
+from .synchronizer_serializers import DataSourceVersionsSynchronizerDiffSerializer
 
 
 logger = logging.getLogger(__name__)
+
+
+def diffs_to_json(diffs) -> str:
+    serializer = DataSourceVersionsSynchronizerDiffSerializer(diffs, many=True)
+    json_data = JSONRenderer().render(serializer.data).decode("utf-8")
+    return json_data
 
 
 @dataclass

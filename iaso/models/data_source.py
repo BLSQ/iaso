@@ -179,6 +179,8 @@ class DataSourceVersionsSynchronization(models.Model):
     This table allows to synchronize two pyramids by creating "change requests"
     based on their diff.
 
+    The logic is tightly coupled to the `iaso.diffing` module.
+
     Fields that can be synchronized:
 
         ["name", "parent", "opening_date", "closed_date", "groups"]
@@ -190,13 +192,6 @@ class DataSourceVersionsSynchronization(models.Model):
     - but meanwhile, people may continue to make changes in DHIS2
     - as a consequence, the two pyramids diverge
     - so we need to synchronize the changes in the two pyramids
-
-    The logic is tightly coupled to the `iaso.diffing` module:
-
-        diff = Differ().diff()
-        json_diff = Dumper().as_json(diff)
-        DataSourceVersionsSynchronizer(data_source_synchronization).synchronize()
-
     """
 
     name = models.CharField(
@@ -278,7 +273,7 @@ class DataSourceVersionsSynchronization(models.Model):
         field_names: typing.Optional[list[str]] = None,
     ) -> None:
         # Prevent a circular import.
-        from iaso.diffing import Differ, Dumper
+        from iaso.diffing import Differ, diffs_to_json
 
         if self.change_requests.exists():
             raise ValidationError("Change requests have already been created.")
@@ -311,7 +306,7 @@ class DataSourceVersionsSynchronization(models.Model):
 
         self.count_create = coun_status["new"]
         self.count_update = coun_status["modified"]
-        self.json_diff = Dumper(logger_to_use).as_json(diffs)
+        self.json_diff = diffs_to_json(diffs)
         self.diff_config = str(differ_params)
         self.save(update_fields=["json_diff", "diff_config"])
 

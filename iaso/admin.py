@@ -528,7 +528,7 @@ class TaskAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class SourceVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
-    list_display = ["__str__", "data_source", "number", "created_at", "updated_at"]
+    list_display = ["id", "data_source", "number", "created_at", "updated_at"]
     list_filter = ["data_source", "created_at", "updated_at"]
     search_fields = ["data_source__name", "number", "description"]
     autocomplete_fields = ["data_source"]
@@ -826,7 +826,7 @@ class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
 class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
     list_display = ("pk", "org_unit", "created_at", "status")
     list_display_links = ("pk", "org_unit")
-    list_filter = ("status", "kind")
+    list_filter = ("status", "kind", "data_source_synchronization")
     readonly_fields = (
         "uuid",
         "created_at",
@@ -851,6 +851,7 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
         "new_reference_instances",
         "payment",
         "potential_payment",
+        "data_source_synchronization",
     )
     fieldsets = (
         (
@@ -900,6 +901,7 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
                     "updated_at",
                     "updated_by",
                     "rejection_comment",
+                    "data_source_synchronization",
                 )
             },
         ),
@@ -921,7 +923,7 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
     )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("org_unit__org_unit_type")
+        return super().get_queryset(request).select_related("org_unit__org_unit_type", "data_source_synchronization")
 
 
 @admin.register(Config)
@@ -1081,14 +1083,29 @@ class TenantUserAdmin(admin.ModelAdmin):
 
 @admin.register(DataSourceVersionsSynchronization)
 class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
+    list_display = (
+        "pk",
+        "name",
+        "account",
+        "created_by",
+        "count_create",
+        "count_update",
+    )
+    list_display_links = ("pk", "name")
     autocomplete_fields = ("account", "created_by", "source_version_to_update", "source_version_to_compare_with")
-    readonly_fields = ("created_at", "updated_at", "sync_task")
-    formfield_overrides = {
-        ArrayField: {
-            "form_class": ArrayFieldMultipleChoiceField,
-            "widget": forms.CheckboxSelectMultiple,
-        }
-    }
+    readonly_fields = ("json_diff", "count_create", "count_update", "created_at", "updated_at", "sync_task")
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related(
+                "source_version_to_update__data_source",
+                "source_version_to_compare_with__data_source",
+                "account",
+                "created_by",
+            )
+        )
 
 
 admin.site.register(AccountFeatureFlag)

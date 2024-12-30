@@ -211,7 +211,7 @@ class DataSourceVersionsSynchronization(models.Model):
         help_text=_("The version of the pyramid to use as a comparison."),
     )
 
-    # The exact JSON format is defined in `iaso.diffing.dumper.DataSourceVersionsSynchronizationEncoder`.
+    # The JSON format is defined in `iaso.diffing.synchronizer_serializers.DataSourceVersionsSynchronizerDiffSerializer`.
     json_diff = models.JSONField(null=True, blank=True, help_text=_("The diff used to create change requests."))
     diff_config = models.TextField(
         blank=True, help_text=_("A string representation of the parameters used for the diff.")

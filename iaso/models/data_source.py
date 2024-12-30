@@ -115,7 +115,7 @@ class SourceVersion(models.Model):
         ]
 
     def __str__(self):
-        return "%s %d" % (self.data_source, self.number)
+        return f"#{self.pk} n°{self.number} - Data source: {self.data_source}"
 
     def as_dict(self):
         return {
@@ -294,21 +294,22 @@ class DataSourceVersionsSynchronization(models.Model):
             "show_deleted_org_units": show_deleted_org_units,
             "field_names": field_names,
         }
-        diffs, fields = Differ(logger_to_use or logger).diff(**differ_params)
+        diffs, _ = Differ(logger_to_use or logger).diff(**differ_params)
+        diffs = [diff for diff in diffs if diff.status != "same"]
 
-        coun_status = {
+        count_status = {
             "new": 0,
             "modified": 0,
         }
         for diff in diffs:
-            if diff.status in coun_status:
-                coun_status[diff.status] += 1
+            if diff.status in count_status:
+                count_status[diff.status] += 1
 
-        self.count_create = coun_status["new"]
-        self.count_update = coun_status["modified"]
+        self.count_create = count_status["new"]
+        self.count_update = count_status["modified"]
         self.json_diff = diffs_to_json(diffs)
         self.diff_config = str(differ_params)
-        self.save(update_fields=["json_diff", "diff_config"])
+        self.save()
 
     def synchronize_source_versions(self):
         # Prevent a circular import.

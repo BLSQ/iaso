@@ -227,6 +227,8 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
             ignore_groups=True,
             field_names=["name"],
         )
+        data_source_sync.refresh_from_db()
+
         json_diff = json.loads(data_source_sync.json_diff)
 
         comparisons = json_diff[0]["comparisons"]

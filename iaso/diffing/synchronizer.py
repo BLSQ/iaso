@@ -18,8 +18,7 @@ logger = logging.getLogger(__name__)
 
 def diffs_to_json(diffs) -> str:
     serializer = DataSourceVersionsSynchronizerDiffSerializer(diffs, many=True)
-    json_data = JSONRenderer().render(serializer.data).decode("utf-8")
-    return json_data
+    return json.dumps(serializer.data)
 
 
 @dataclass

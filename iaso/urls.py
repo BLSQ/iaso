@@ -26,6 +26,7 @@ from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.api_tokens import APITokenViewSet
 from .api.apps import AppsViewSet
+from .api.data_source_versions_synchronization.views import DataSourceVersionsSynchronizationViewSet
 from .api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.comment import CommentViewSet
@@ -139,6 +140,7 @@ router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")
 router.register(r"devicesownerships", DevicesOwnershipViewSet, basename="devicesownership")
 router.register(r"devicespositions?", DevicesPositionViewSet, basename="devicesposition")
+router.register(r"datasources/sync", DataSourceVersionsSynchronizationViewSet, basename="datasources_snchronization")
 router.register(r"datasources", DataSourceViewSet, basename="datasources")
 router.register(r"accounts", AccountViewSet, basename="accounts")
 router.register(r"apitoken", APITokenViewSet, basename="apitoken")

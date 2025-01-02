@@ -11,6 +11,7 @@ import {
     useSkipEffectOnMount,
     UrlParams,
     useRedirectToReplace,
+    InputWithInfos,
 } from 'bluesquare-components';
 import uniq from 'lodash/uniq';
 import intersection from 'lodash/intersection';
@@ -29,7 +30,6 @@ import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
 import { NO_PERIOD, PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
 import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
-import { InputWithInfos } from '../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../types/utils';
 import { useGetTeamsDropdown } from '../teams/hooks/requests/useGetTeams';
 import { AsyncSelect } from '../../components/forms/AsyncSelect';

@@ -11,6 +11,7 @@ import {
     useHumanReadableJsonLogic,
     useSafeIntl,
     useSkipEffectOnMount,
+    InputWithInfos,
 } from 'bluesquare-components';
 
 import DatesRange from '../../../components/filters/DatesRange';
@@ -35,7 +36,6 @@ import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
 import MESSAGES from '../messages';
 
 import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
-import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction.tsx';
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';

@@ -1,9 +1,8 @@
 import { Box, Stack, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import InputComponent from '../../../components/forms/InputComponent';
-import { InputWithInfos } from '../../../components/InputWithInfos';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import MESSAGES from '../messages';

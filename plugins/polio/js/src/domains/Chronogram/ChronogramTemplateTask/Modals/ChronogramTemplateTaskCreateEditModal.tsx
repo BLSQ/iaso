@@ -4,6 +4,7 @@ import {
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
+    InputWithInfos,
 } from 'bluesquare-components';
 import { Box, Divider } from '@mui/material';
 import { Field, FormikProvider, useFormik } from 'formik';
@@ -11,7 +12,6 @@ import { isEqual } from 'lodash';
 
 import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
-import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
 import { NumberInput } from '../../../../components/Inputs/NumberInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 

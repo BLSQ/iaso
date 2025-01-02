@@ -1,8 +1,7 @@
 import { Box } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { InputWithInfos, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import InputComponent from '../../../components/forms/InputComponent';
-import { InputWithInfos } from '../../../components/InputWithInfos';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { SaveUserRoleQuery } from '../hooks/requests/useSaveUserRole';

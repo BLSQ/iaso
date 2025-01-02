@@ -59,8 +59,7 @@ class DataSourceVersionsSynchronizer:
 
     def synchronize(self) -> None:
         self._prepare_groups_matching()
-        self._prepare_missing_org_units_and_groups()
-        self._bulk_create_missing_org_units()
+        self._create_missing_org_units_and_prepare_missing_groups()
         self._bulk_create_missing_groups()
         self._prepare_change_requests()
         self._bulk_create_change_requests()
@@ -103,10 +102,12 @@ class DataSourceVersionsSynchronizer:
                 continue
             self.groups_matching[group.source_ref] = group.pk
 
-    def _prepare_missing_org_units_and_groups(self) -> None:
+    def _create_missing_org_units_and_prepare_missing_groups(self) -> None:
         """
-        Prepare the list of `OrgUnit`s and `Group`s existing in the pyramid
-        used as a basis for comparison but not in the pyramid to update.
+        Create missing `OrgUnit`s and groups prepare the list of missing `Group`s.
+
+        Because of the tree structure of the `OrgUnit` model, it's hard to bulk create them.
+        So we sacrifice performance for the sake of simplicity by creating the missing `OrgUnit`s in a loop.
         """
         # Cast the list into a generator to be able to iterate over it chunk by chunk.
         missing_org_units_diff_generator = (diff for diff in self.sort_by_path(self.diffs) if diff["status"] == "new")
@@ -135,19 +136,11 @@ class DataSourceVersionsSynchronizer:
 
                 corresponding_parent = None
                 if org_unit.parent:
-                    # Find the corresponding parent in the pyramid to update.
-                    # `get()` should always work here because `_sort_by_path()` is applied to the diff.
-                    try:
-                        corresponding_parent = OrgUnit.objects.get(
-                            source_ref=org_unit.parent.source_ref,
-                            version=self.data_source_sync.source_version_to_update,
-                        )
-                    except OrgUnit.DoesNotExist:
-                        logger.error(
-                            f"Ignoring OrgUnit ID #{org_unit.pk} because its corresponding parent could not be found in the pyramid to update.",
-                            extra={"org_unit": org_unit, "data_source_sync": self.data_source_sync},
-                        )
-                        continue
+                    # `get()` will always work here because `_sort_by_path()` is applied to the diff.
+                    corresponding_parent = OrgUnit.objects.get(
+                        source_ref=org_unit.parent.source_ref,
+                        version=self.data_source_sync.source_version_to_update,
+                    )
 
                 self.org_units_matching[org_unit.source_ref] = OrgUnitMatching(
                     corresponding_id=None,  # This will be populated after the bulk creation.
@@ -174,22 +167,9 @@ class DataSourceVersionsSynchronizer:
                 org_unit.uuid = uuid.uuid4()
                 org_unit.creator = self.data_source_sync.created_by
                 org_unit.path = None  # This will be calculated if the change request is approved.
+                org_unit.save(skip_calculate_path=True)
 
-                self.org_units_to_bulk_create.append(org_unit)
-
-    def _bulk_create_missing_org_units(self) -> None:
-        # Cast the list into a generator to be able to iterate over it chunk by chunk.
-        new_org_units_generator = (item for item in self.org_units_to_bulk_create)
-
-        while True:
-            new_org_units_batch = list(islice(new_org_units_generator, self.insert_batch_size))
-
-            if not new_org_units_batch:
-                break
-
-            new_org_units = OrgUnit.objects.bulk_create(new_org_units_batch, self.insert_batch_size)
-            for new_org_unit in new_org_units:
-                self.org_units_matching[new_org_unit.source_ref].corresponding_id = new_org_unit.pk
+                self.org_units_matching[org_unit.source_ref].corresponding_id = org_unit.pk
 
     def _bulk_create_missing_groups(self) -> None:
         # Cast the list into a generator to be able to iterate over it chunk by chunk.

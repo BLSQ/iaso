@@ -61,6 +61,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         cls.org_unit_type_country = m.OrgUnitType.objects.create(category="COUNTRY")
         cls.org_unit_type_region = m.OrgUnitType.objects.create(category="REGION")
         cls.org_unit_type_district = m.OrgUnitType.objects.create(category="DISTRICT")
+        cls.org_unit_type_facility = m.OrgUnitType.objects.create(category="FACILITY")
 
         # Angola pyramid to update (2 org units).
 
@@ -134,6 +135,19 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
             simplified_geom=cls.multi_polygon,
         )
         cls.angola_district_to_compare_with.groups.set([cls.group_a2, cls.group_c])
+
+        cls.angola_facility_to_compare_with = m.OrgUnit.objects.create(
+            parent=cls.angola_district_to_compare_with,
+            version=cls.source_version_to_compare_with,
+            source_ref="id-4",
+            name="Facility",
+            org_unit_type=cls.org_unit_type_facility,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            opening_date=datetime.date(2024, 11, 28),
+            closed_date=datetime.date(2026, 11, 28),
+            geom=cls.multi_polygon,
+            simplified_geom=cls.multi_polygon,
+        )
 
         cls.account = m.Account.objects.create(name="Account")
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
@@ -294,9 +308,13 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         # Synchronize source versions.
         change_requests = m.OrgUnitChangeRequest.objects.filter(data_source_synchronization=data_source_sync)
         self.assertEqual(change_requests.count(), 0)
-        with self.assertNumQueries(10):
+        self.assertEqual(m.OrgUnit.objects.filter(version=self.source_version_to_update).count(), 2)
+
+        with self.assertNumQueries(12):
             data_source_sync.synchronize_source_versions()
-        self.assertEqual(change_requests.count(), 3)
+
+        self.assertEqual(change_requests.count(), 4)
+        self.assertEqual(m.OrgUnit.objects.filter(version=self.source_version_to_update).count(), 4)
 
         # Change request #1 to update an existing OrgUnit.
         angola_country_change_request = m.OrgUnitChangeRequest.objects.get(
@@ -361,7 +379,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(angola_region_change_request.old_closed_date, datetime.date(2025, 11, 28))
         self.assertEqual(angola_region_change_request.old_reference_instances.count(), 0)
 
-        # Change request #3 to create a new OrgUnit.
+        # Change request #3 to create a new OrgUnit whose corresponding parent DID exist.
         new_group_c = m.Group.objects.get(name="Group C", source_version=data_source_sync.source_version_to_update)
         new_group_a2 = m.Group.objects.get(name="Group A", source_version=data_source_sync.source_version_to_update)
         angola_district_change_request = m.OrgUnitChangeRequest.objects.get(
@@ -381,7 +399,6 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(angola_district_change_request.new_groups.count(), 2)
         self.assertIn(new_group_c, angola_district_change_request.new_groups.all())
         self.assertIn(new_group_a2, angola_district_change_request.new_groups.all())
-
         self.assertEqual(angola_district_change_request.new_location, None)
         self.assertEqual(angola_district_change_request.new_location_accuracy, None)
         self.assertEqual(angola_district_change_request.new_opening_date, datetime.date(2022, 11, 28))
@@ -397,10 +414,53 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(angola_district_change_request.old_closed_date, None)
         self.assertEqual(angola_district_change_request.old_reference_instances.count(), 0)
 
-        new_org_unit = m.OrgUnit.objects.get(pk=angola_district_change_request.org_unit.pk)
-        self.assertEqual(new_org_unit.version, data_source_sync.source_version_to_update)
-        self.assertEqual(new_org_unit.parent.version, data_source_sync.source_version_to_update)
-        self.assertEqual(new_org_unit.creator, data_source_sync.created_by)
-        self.assertEqual(new_org_unit.validation_status, new_org_unit.VALIDATION_NEW)
-        self.assertEqual(new_org_unit.geom, self.multi_polygon)
-        self.assertEqual(new_org_unit.simplified_geom, self.multi_polygon)
+        new_angola_district_org_unit = m.OrgUnit.objects.get(pk=angola_district_change_request.org_unit.pk)
+        self.assertEqual(new_angola_district_org_unit.version, data_source_sync.source_version_to_update)
+        self.assertEqual(new_angola_district_org_unit.parent.version, data_source_sync.source_version_to_update)
+        self.assertEqual(new_angola_district_org_unit.creator, data_source_sync.created_by)
+        self.assertEqual(new_angola_district_org_unit.validation_status, new_angola_district_org_unit.VALIDATION_NEW)
+        self.assertEqual(new_angola_district_org_unit.org_unit_type, self.org_unit_type_district)
+        self.assertEqual(new_angola_district_org_unit.source_ref, "id-3")
+        self.assertEqual(new_angola_district_org_unit.geom, self.multi_polygon)
+        self.assertEqual(new_angola_district_org_unit.simplified_geom, self.multi_polygon)
+
+        # Change request #4 to create a new OrgUnit whose corresponding parent DID NOT exist.
+        angola_facility_change_request = m.OrgUnitChangeRequest.objects.get(
+            org_unit__source_ref="id-4", data_source_synchronization=data_source_sync
+        )
+        # Data.
+        self.assertEqual(angola_facility_change_request.kind, m.OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION)
+        self.assertEqual(angola_facility_change_request.created_by, data_source_sync.created_by)
+        self.assertEqual(
+            angola_facility_change_request.requested_fields,
+            ["new_name", "new_parent", "new_opening_date", "new_closed_date"],
+        )
+        # New values.
+        self.assertEqual(angola_facility_change_request.new_parent, new_angola_district_org_unit)
+        self.assertEqual(angola_facility_change_request.new_name, "Facility")
+        self.assertEqual(angola_facility_change_request.new_org_unit_type, None)
+        self.assertEqual(angola_facility_change_request.new_groups.count(), 0)
+        self.assertEqual(angola_facility_change_request.new_location, None)
+        self.assertEqual(angola_facility_change_request.new_location_accuracy, None)
+        self.assertEqual(angola_facility_change_request.new_opening_date, datetime.date(2024, 11, 28))
+        self.assertEqual(angola_facility_change_request.new_closed_date, datetime.date(2026, 11, 28))
+        self.assertEqual(angola_facility_change_request.new_reference_instances.count(), 0)
+        # Old values.
+        self.assertEqual(angola_facility_change_request.old_parent, None)
+        self.assertEqual(angola_facility_change_request.old_name, "")
+        self.assertEqual(angola_facility_change_request.old_org_unit_type, None)
+        self.assertEqual(angola_facility_change_request.old_groups.count(), 0)
+        self.assertEqual(angola_facility_change_request.old_location, None)
+        self.assertEqual(angola_facility_change_request.old_opening_date, None)
+        self.assertEqual(angola_facility_change_request.old_closed_date, None)
+        self.assertEqual(angola_facility_change_request.old_reference_instances.count(), 0)
+
+        new_angola_facility_org_unit = m.OrgUnit.objects.get(pk=angola_facility_change_request.org_unit.pk)
+        self.assertEqual(new_angola_facility_org_unit.version, data_source_sync.source_version_to_update)
+        self.assertEqual(new_angola_facility_org_unit.parent.version, data_source_sync.source_version_to_update)
+        self.assertEqual(new_angola_facility_org_unit.creator, data_source_sync.created_by)
+        self.assertEqual(new_angola_facility_org_unit.validation_status, new_angola_facility_org_unit.VALIDATION_NEW)
+        self.assertEqual(new_angola_facility_org_unit.org_unit_type, self.org_unit_type_facility)
+        self.assertEqual(new_angola_facility_org_unit.source_ref, "id-4")
+        self.assertEqual(new_angola_facility_org_unit.geom, self.multi_polygon)
+        self.assertEqual(new_angola_facility_org_unit.simplified_geom, self.multi_polygon)

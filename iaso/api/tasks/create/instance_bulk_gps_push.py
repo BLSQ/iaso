@@ -11,7 +11,6 @@ class InstanceBulkGpsPushViewSet(viewsets.ViewSet):
     """Bulk push gps location from Instances to their related OrgUnit.
 
     This task will override existing location on OrgUnits and might set `None` if the Instance doesn't have any location.
-    Calling this endpoint implies that the InstanceViewSet.check_bulk_gps_push() method has been called before and has returned no error.
     """
 
     permission_classes = [permissions.IsAuthenticated, HasInstanceBulkPermission, HasCreateOrgUnitPermission]

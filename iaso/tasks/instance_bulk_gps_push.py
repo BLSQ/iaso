@@ -36,10 +36,8 @@ def instance_bulk_gps_push(
     unselected_ids: List[int],
     task: Task,
 ):
-    """Background Task to bulk push instance gps to org units.
-
-    /!\ Danger: calling this task without having received a successful response from the check_bulk_gps_push
-    endpoint will have unexpected results that might cause data loss.
+    """
+    Background task to bulk push instance gps to org units.
     """
     start = time()
     task.report_progress_and_stop_if_killed(progress_message="Searching for Instances for pushing gps data")

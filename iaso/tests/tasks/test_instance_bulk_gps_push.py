@@ -297,7 +297,7 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
             self.instance_with_other_location,
             self.instance_with_default_location,
         ]:
-            self.assertIn(str(instance.id), result)
+            self.assertIn(str(instance.org_unit_id), result)
 
     def test_read_only_data_source(self):
         """POST /api/tasks/create/instancebulkgpspush/ with instances that target orgunits which are part of a read-only data source"""
@@ -324,7 +324,7 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
             self.instance_with_other_location,
             self.instance_with_default_location,
         ]:
-            self.assertIn(str(instance.id), result)
+            self.assertIn(str(instance.org_unit_id), result)
 
     def test_all_errors(self):
         """POST /api/tasks/create/instancebulkgpspush/ all errors are triggered"""
@@ -371,8 +371,10 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
         self.assertIn("error_read_only_source", result)
         self.assertIn("error_same_org_unit", result)
         for instance in [self.instance_without_location, self.instance_with_other_location, new_instance]:
-            self.assertIn(str(instance.id), result)  # Instead, we should probably check in which error they end up
-        self.assertNotIn(str(self.instance_with_default_location.id), result)
+            self.assertIn(
+                str(instance.org_unit_id), result
+            )  # Instead, we should probably check in which error they end up
+        self.assertNotIn(str(self.instance_with_default_location.org_unit_id), result)
 
     def test_task_kill(self):
         """Launch the task and then kill it

@@ -1298,6 +1298,8 @@
     "iaso.snackBar.paymentLotTaskLaunched": "The creation of the payment lot may take a few moments. Try refreshing the Payment Lots page if it doesn't appear",
     "iaso.snackBar.paymentsBulkUpdateLaunched": "The modifications to the payments will take a few moments to take effect",
     "iaso.snackBar.permissionError": "You don't have permission to perform this action",
+    "iaso.snackBar.pushGpsTaskError": "An error occurred while pushing GPS from submissions to Org units",
+    "iaso.snackBar.pushGpsTaskPlanned": "Push GPS from submissions to Org units was planned with success",
     "iaso.snackBar.reload": "Reload",
     "iaso.snackBar.reloadPage": "A new version is available! Refresh the page.",
     "iaso.snackBar.restoreInstanceError": "An error occured while restoring the instance",

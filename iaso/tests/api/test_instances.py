@@ -1995,7 +1995,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(response_json["result"], "errors")
         self.assertCountEqual(
             response_json["error_same_org_unit"],
-            [self.instance_1.id, self.instance_2.id, self.instance_3.id, self.instance_4.id, self.instance_5.id],
+            [self.instance_1.org_unit_id, self.instance_3.org_unit_id],
         )
 
     def test_check_bulk_push_gps_select_all_error_read_only_source(self):
@@ -2016,10 +2016,14 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         response_json = response.json()
         self.assertEqual(response_json["result"], "errors")
-        # instance_6 included because it's the first one with the remaining org_unit and the queryset has a default order of "-id"
         self.assertCountEqual(
             response_json["error_read_only_source"],
-            [self.instance_8.id, self.instance_2.id, self.instance_3.id, self.instance_6.id],
+            [
+                self.instance_1.org_unit_id,
+                self.instance_2.org_unit_id,
+                self.instance_3.org_unit_id,
+                self.instance_8.org_unit_id,
+            ],
         )
 
     def test_check_bulk_push_gps_select_all_warning_no_location(self):
@@ -2031,8 +2035,8 @@ class InstancesAPITestCase(APITestCase):
             instance.save()
             instance.refresh_from_db()
 
-        # Let's delete some instances to avoid getting "error_same_org-unit"
-        for instance in [self.instance_4, self.instance_5, self.instance_6, self.instance_8]:
+        # Let's delete some instances to avoid getting "error_same_org_unit"
+        for instance in [self.instance_4, self.instance_5, self.instance_6]:
             instance.deleted_at = datetime.datetime.now()
             instance.deleted = True
             instance.save()
@@ -2040,11 +2044,17 @@ class InstancesAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/instances/check_bulk_gps_push/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         response_json = response.json()
-        # Since all instances in the setup don't have location data, they will show up in warnings
         self.assertEqual(response_json["result"], "warnings")
         self.assertCountEqual(
-            response_json["warning_no_location"], m.Instance.non_deleted_objects.values_list("id", flat=True)
+            response_json["warning_no_location"],
+            [
+                self.instance_1.org_unit_id,
+                self.instance_2.org_unit_id,
+                self.instance_3.org_unit_id,
+                self.instance_8.org_unit_id,
+            ],
         )
 
     def test_check_bulk_push_gps_select_all_warning_overwrite(self):
@@ -2079,7 +2089,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
         self.assertEqual(response_json["result"], "warnings")
-        self.assertCountEqual(response_json["warning_overwrite"], [i.id for i in non_deleted_instances])
+        self.assertCountEqual(response_json["warning_overwrite"], [i.org_unit_id for i in non_deleted_instances])
 
     def test_check_bulk_push_gps_select_all_warning_both(self):
         # pushing gps data means that we need a mapping of 1 instance to 1 orgunit
@@ -2116,8 +2126,12 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
         self.assertEqual(response_json["result"], "warnings")
-        self.assertCountEqual(response_json["warning_overwrite"], [self.instance_1.id, self.instance_5.id])
-        self.assertCountEqual(response_json["warning_no_location"], [self.instance_6.id, self.instance_8.id])
+        self.assertCountEqual(
+            response_json["warning_overwrite"], [self.instance_1.org_unit_id, self.instance_5.org_unit_id]
+        )
+        self.assertCountEqual(
+            response_json["warning_no_location"], [self.instance_6.org_unit_id, self.instance_8.org_unit_id]
+        )
 
     def test_check_bulk_push_gps_selected_ids_ok(self):
         self.client.force_authenticate(self.yoda)
@@ -2150,11 +2164,8 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         response_json = response.json()
-        # All these Instances target the same OrgUnit, so it's impossible to push gps data
         self.assertEqual(response_json["result"], "errors")
-        self.assertCountEqual(
-            response_json["error_same_org_unit"], [self.instance_1.id, self.instance_2.id, self.instance_3.id]
-        )
+        self.assertCountEqual(response_json["error_same_org_unit"], [self.instance_1.org_unit_id])
 
     def test_check_bulk_push_gps_selected_ids_error_unknown_id(self):
         self.client.force_authenticate(self.yoda)
@@ -2212,10 +2223,10 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
-        # All these Instances target the same OrgUnit, so it's impossible to push gps data
         self.assertEqual(response_json["result"], "warnings")
         self.assertCountEqual(
-            response_json["warning_no_location"], [self.instance_1.id, self.instance_2.id, self.instance_3.id]
+            response_json["warning_no_location"],
+            [self.instance_1.org_unit_id, self.instance_2.org_unit_id, self.instance_3.org_unit_id],
         )
 
     def test_check_bulk_push_gps_selected_ids_warning_overwrite(self):
@@ -2242,9 +2253,10 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
-        # All these Instances target the same OrgUnit, so it's impossible to push gps data
         self.assertEqual(response_json["result"], "warnings")
-        self.assertCountEqual(response_json["warning_overwrite"], [self.instance_1.id, self.instance_2.id])
+        self.assertCountEqual(
+            response_json["warning_overwrite"], [self.instance_1.org_unit_id, self.instance_2.org_unit_id]
+        )
 
     def test_check_bulk_push_gps_selected_ids_warning_both(self):
         # instances 1 and 5 will overwrite their org_unit location
@@ -2275,10 +2287,13 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
-        # All these Instances target the same OrgUnit, so it's impossible to push gps data
         self.assertEqual(response_json["result"], "warnings")
-        self.assertCountEqual(response_json["warning_overwrite"], [self.instance_1.id, self.instance_5.id])
-        self.assertCountEqual(response_json["warning_no_location"], [self.instance_6.id, self.instance_8.id])
+        self.assertCountEqual(
+            response_json["warning_overwrite"], [self.instance_1.org_unit_id, self.instance_5.org_unit_id]
+        )
+        self.assertCountEqual(
+            response_json["warning_no_location"], [self.instance_6.org_unit_id, self.instance_8.org_unit_id]
+        )
 
     def test_check_bulk_push_gps_unselected_ids_ok(self):
         self.instance_1.location = Point(1, 2, 3)
@@ -2293,7 +2308,6 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
-        # All these Instances target the same OrgUnit, so it's impossible to push gps data
         self.assertEqual(response_json["result"], "success")
 
     def test_check_bulk_push_gps_unselected_ids_error(self):
@@ -2313,7 +2327,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         response_json = response.json()
         self.assertEqual(response_json["result"], "errors")
-        self.assertCountEqual(response_json["error_same_org_unit"], [self.instance_1.id, self.instance_2.id])
+        self.assertCountEqual(response_json["error_same_org_unit"], [self.instance_1.org_unit_id])
 
     def test_check_bulk_push_gps_unselected_ids_error_unknown_id(self):
         self.client.force_authenticate(self.yoda)
@@ -2371,9 +2385,10 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
-        # All these Instances target the same OrgUnit, so it's impossible to push gps data
         self.assertEqual(response_json["result"], "warnings")
-        self.assertCountEqual(response_json["warning_no_location"], [self.instance_1.id, self.instance_2.id])
+        self.assertCountEqual(
+            response_json["warning_no_location"], [self.instance_1.org_unit_id, self.instance_2.org_unit_id]
+        )
 
     def test_check_bulk_push_gps_unselected_ids_warning_overwrite(self):
         self.instance_2.org_unit = self.jedi_council_endor
@@ -2402,9 +2417,10 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
-        # All these Instances target the same OrgUnit, so it's impossible to push gps data
         self.assertEqual(response_json["result"], "warnings")
-        self.assertCountEqual(response_json["warning_overwrite"], [self.instance_3.id, self.instance_2.id])
+        self.assertCountEqual(
+            response_json["warning_overwrite"], [self.instance_3.org_unit_id, self.instance_2.org_unit_id]
+        )
 
     def test_check_bulk_push_gps_unselected_ids_warning_both(self):
         # instances 1 and 5 will overwrite their org_unit location
@@ -2434,7 +2450,10 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
-        # All these Instances target the same OrgUnit, so it's impossible to push gps data
         self.assertEqual(response_json["result"], "warnings")
-        self.assertCountEqual(response_json["warning_overwrite"], [self.instance_1.id, self.instance_5.id])
-        self.assertCountEqual(response_json["warning_no_location"], [self.instance_6.id, self.instance_8.id])
+        self.assertCountEqual(
+            response_json["warning_overwrite"], [self.instance_1.org_unit_id, self.instance_5.org_unit_id]
+        )
+        self.assertCountEqual(
+            response_json["warning_no_location"], [self.instance_6.org_unit_id, self.instance_8.org_unit_id]
+        )

@@ -221,6 +221,16 @@ const MESSAGES = defineMessages({
             'Some OrgUnits already have GPS coordinates. Do you want to proceed and overwrite them?',
         id: 'iaso.instance.someOrgUnitsHasAlreadyGps',
     },
+    pushGpsTaskPlanned: {
+        defaultMessage:
+            'Push GPS from submissions to Org units was planned with success',
+        id: 'iaso.snackBar.pushGpsTaskPlanned',
+    },
+    pushGpsTaskError: {
+        defaultMessage:
+            'An error occurred while pushing GPS from submissions to Org units',
+        id: 'iaso.snackBar.pushGpsTaskError',
+    },
     multipleInstancesOneOrgUnitWarningMessage: {
         defaultMessage: 'Multiple submissions are using the same org unit',
         id: 'iaso.instance.multipleInstancesOneOrgUnitWarningMessage',

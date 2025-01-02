@@ -1297,6 +1297,8 @@
     "iaso.snackBar.paymentLotTaskLaunched": "La création du lot de paiements peut prendre un instant. Essayez de rafraîchir la page Lots de Paiements s'il n'apparaît pas",
     "iaso.snackBar.paymentsBulkUpdateLaunched": "Les modifications peuvent prendre un moment avant d'être visibles",
     "iaso.snackBar.permissionError": "Vous n'avez pas la permission d'effectuer cette action",
+    "iaso.snackBar.pushGpsTaskError": "Une erreur s'est produite lors de l'envoi des GPS des soumissions aux unités d'org.",
+    "iaso.snackBar.pushGpsTaskPlanned": "Le transfert des GPS des soumissions aux unités d'org. a été planifié avec succès.",
     "iaso.snackBar.reload": "Recharger",
     "iaso.snackBar.reloadPage": "Une nouvelle version est disponible! Rafraichissez la page.",
     "iaso.snackBar.restoreInstanceError": "Une erreur s'est produite lors de la récupération de l'instance",

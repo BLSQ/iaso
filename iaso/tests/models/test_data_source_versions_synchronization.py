@@ -259,14 +259,14 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
 
         expected_diff_config = (
             "{"
-            f"'version': <SourceVersion: {str(self.source_version_to_update)}>, "
+            f"'version': {self.source_version_to_update.pk}, "
             f"'validation_status': '{m.OrgUnit.VALIDATION_VALID}', "
             "'top_org_unit': None, "
-            f"'org_unit_types': [<OrgUnitType: {str(self.org_unit_type_country)}>], "
-            f"'version_ref': <SourceVersion: {str(self.source_version_to_compare_with)}>, "
+            f"'org_unit_types': [{self.org_unit_type_country.pk}], "
+            f"'version_ref': {self.source_version_to_compare_with.pk}, "
             f"'validation_status_ref': '{m.OrgUnit.VALIDATION_VALID}', "
             "'top_org_unit_ref': None, "
-            f"'org_unit_types_ref': [<OrgUnitType: {str(self.org_unit_type_country)}>], "
+            f"'org_unit_types_ref': [{self.org_unit_type_country.pk}], "
             "'ignore_groups': True, "
             "'show_deleted_org_units': False, "
             "'field_names': ['name']"

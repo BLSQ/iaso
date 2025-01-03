@@ -262,15 +262,15 @@ class DataSourceVersionsSynchronization(models.Model):
     def create_json_diff(
         self,
         logger_to_use: logging.Logger = None,
-        source_version_to_update_validation_status: typing.Union[str, None] = None,
-        source_version_to_update_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
-        source_version_to_update_org_unit_types: typing.Optional[list["OrgUnitType"]] = None,
-        source_version_to_compare_with_validation_status: typing.Union[str, None] = None,
-        source_version_to_compare_with_top_org_unit: typing.Union[int, "OrgUnit", None] = None,
-        source_version_to_compare_with_org_unit_types: typing.Optional[list["OrgUnitType"]] = None,
-        ignore_groups: typing.Optional[bool] = False,
-        show_deleted_org_units: typing.Optional[bool] = False,
-        field_names: typing.Optional[list[str]] = None,
+        source_version_to_update_validation_status: str = None,
+        source_version_to_update_top_org_unit: "OrgUnit" = None,
+        source_version_to_update_org_unit_types: list["OrgUnitType"] = None,
+        source_version_to_compare_with_validation_status: str = None,
+        source_version_to_compare_with_top_org_unit: "OrgUnit" = None,
+        source_version_to_compare_with_org_unit_types: list["OrgUnitType"] = None,
+        ignore_groups: bool = False,
+        show_deleted_org_units: bool = False,
+        field_names: list[str] = None,
     ) -> None:
         # Prevent a circular import.
         from iaso.diffing import Differ, diffs_to_json
@@ -307,10 +307,34 @@ class DataSourceVersionsSynchronization(models.Model):
             if diff.status in count_status:
                 count_status[diff.status] += 1
 
+        # Keep track of the parameters used for the diff.
+        differ_config = {
+            # Version to update.
+            "version": self.source_version_to_update.pk,
+            "validation_status": source_version_to_update_validation_status,
+            "top_org_unit": source_version_to_update_top_org_unit.pk if source_version_to_update_top_org_unit else None,
+            "org_unit_types": [out.pk for out in source_version_to_update_org_unit_types]
+            if source_version_to_update_org_unit_types
+            else None,
+            # Version to compare with.
+            "version_ref": self.source_version_to_compare_with.pk,
+            "validation_status_ref": source_version_to_compare_with_validation_status,
+            "top_org_unit_ref": source_version_to_compare_with_top_org_unit.pk
+            if source_version_to_compare_with_top_org_unit
+            else None,
+            "org_unit_types_ref": [out.pk for out in source_version_to_compare_with_org_unit_types]
+            if source_version_to_compare_with_org_unit_types
+            else None,
+            # Options.
+            "ignore_groups": ignore_groups,
+            "show_deleted_org_units": show_deleted_org_units,
+            "field_names": field_names,
+        }
+
         self.count_create = count_status["new"]
         self.count_update = count_status["modified"]
         self.json_diff = diffs_to_json(diffs)
-        self.diff_config = str(differ_params)
+        self.diff_config = str(differ_config)
         self.save()
 
     def synchronize_source_versions(self):

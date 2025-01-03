@@ -1,6 +1,10 @@
 import django_filters
 
 from rest_framework import filters, viewsets
+from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
+from rest_framework.request import Request
 
 from iaso.api.data_source_versions_synchronization.filters import DataSourceVersionsSynchronizationFilter
 from iaso.api.data_source_versions_synchronization.pagination import DataSourceVersionsSynchronizationPagination
@@ -39,3 +43,27 @@ class DataSourceVersionsSynchronizationViewSet(viewsets.ModelViewSet):
             .filter(account=account)
             .order_by("-id")
         )
+
+    def perform_create(self, serializer: DataSourceVersionsSynchronizationSerializer) -> None:
+        """
+        Steps to synchronize data source versions:
+
+        1. use a POST request on this (default) endpoint to create a new `DataSourceVersionsSynchronization`
+        2. use a POST request on the `create_json_diff` endpoint to compute the differences
+        3. use a POST request on the `synchronize_source_versions` endpoint to create change requests
+        """
+        serializer.validated_data["account"] = self.request.user.iaso_profile.account
+        serializer.validated_data["created_by"] = self.request.user
+        serializer.save()
+
+    @action(detail=True, methods=["POST"])
+    def create_json_diff(self, request: Request, pk: int) -> Response:
+        data_source_versions_synchronization = get_object_or_404(self.get_queryset(), pk=pk)
+        data_source_versions_synchronization.create_json_diff()
+        return Response(self.get_serializer(data_source_versions_synchronization).data)
+
+    @action(detail=True, methods=["POST"])
+    def synchronize_source_versions(self, request: Request, pk: int) -> Response:
+        data_source_versions_synchronization = get_object_or_404(self.get_queryset(), pk=pk)
+        data_source_versions_synchronization.synchronize_source_versions()
+        return Response(self.get_serializer(data_source_versions_synchronization).data)

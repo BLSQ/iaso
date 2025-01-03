@@ -34,8 +34,6 @@ class DataSourceVersionsSynchronizationSerializerTestCase(TestCase):
             name="New synchronization",
             source_version_to_update=cls.source_version_to_update,
             source_version_to_compare_with=cls.source_version_to_compare_with,
-            json_diff=None,
-            sync_task=None,
             account=cls.account,
             created_by=cls.user,
         )

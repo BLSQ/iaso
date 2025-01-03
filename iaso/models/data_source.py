@@ -192,6 +192,16 @@ class DataSourceVersionsSynchronization(models.Model):
     - but meanwhile, people may continue to make changes in DHIS2
     - as a consequence, the two pyramids diverge
     - so we need to synchronize the changes in the two pyramids
+
+    The synchronization is done in two steps:
+
+    1. `self.create_json_diff()`
+        - this will compute the diff between the two pyramids
+        - the user will now how many change requests will be created
+        - he still has the choice of giving up if there are too many differences
+    2. `self.synchronize_source_versions()`
+        - if the user is OK, this will synchronize the changes by creating change requests
+
     """
 
     name = models.CharField(

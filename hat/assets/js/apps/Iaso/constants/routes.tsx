@@ -51,6 +51,7 @@ import { Details as WorkflowDetails } from '../domains/workflows/details';
 import { SHOW_PAGES } from '../utils/featureFlags';
 import * as Permission from '../utils/permissions';
 import { baseUrls } from './urls';
+import { Welcome } from '../domains/home/components/ExtraGrid/Welcome';
 
 export type RoutePath = {
     baseUrl: string;
@@ -414,6 +415,13 @@ export const page401 = {
     permissions: [],
 };
 
+export const bonusPath = {
+    baseUrl: baseUrls.hidden,
+    routerUrl: `${baseUrls.hidden}/*`,
+    permissions: [...Object.values(Permission)],
+    element: <Welcome />,
+};
+
 export const page403 = {
     baseUrl: baseUrls.error403,
     routerUrl: baseUrls.error403,
@@ -487,4 +495,5 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     modulesPath,
     potentialPaymentsPath,
     lotsPaymentsPath,
+    bonusPath,
 ];

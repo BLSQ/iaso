@@ -1093,7 +1093,15 @@ class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
     )
     list_display_links = ("pk", "name")
     autocomplete_fields = ("account", "created_by", "source_version_to_update", "source_version_to_compare_with")
-    readonly_fields = ("json_diff", "count_create", "count_update", "created_at", "updated_at", "sync_task")
+    readonly_fields = (
+        "json_diff",
+        "count_create",
+        "count_update",
+        "created_at",
+        "updated_at",
+        "json_diff_task",
+        "sync_task",
+    )
 
     def get_queryset(self, request):
         return (

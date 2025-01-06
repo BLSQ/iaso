@@ -38,7 +38,7 @@ import { InnerDrawer } from '../../../components/nav/InnerDrawer/Index';
 import tiles from '../../../constants/mapTiles';
 import MESSAGES from '../messages';
 import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
+import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitComments/OrgUnitsMapComments';
 
 type OrgUnitWithSearchIndex = Omit<OrgUnit, 'search_index'> & {
     search_index: number;

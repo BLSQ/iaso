@@ -1,6 +1,7 @@
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -41,6 +42,8 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
     const [approveSubmissionNoHasGps, setApproveSubmissionNoHasGps] =
         useState<boolean>(true);
 
+    const [approved, setApproved] = useState<boolean>(true);
+
     const { mutateAsync: bulkgpspush } = useInstanceBulkgpspush();
 
     const select_all = selection.selectAll;
@@ -65,27 +68,48 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         });
     }, [bulkgpspush, select_all, selected_ids, unselected_ids]);
 
+    const initializeWarningApproval = useCallback(() => {
+        setApproved(false);
+        evaluateWarning(
+            checkBulkGpsPush?.warning_overwrite,
+            checkBulkGpsPush?.error_ids,
+            setApproveOrgUnitHasGps,
+        );
+        evaluateWarning(
+            checkBulkGpsPush?.warning_no_location,
+            checkBulkGpsPush?.error_ids,
+            setApproveSubmissionNoHasGps,
+        );
+    }, [
+        checkBulkGpsPush?.error_ids,
+        checkBulkGpsPush?.warning_no_location,
+        checkBulkGpsPush?.warning_overwrite,
+    ]);
+
     const onConfirm = useCallback(
         async closeDialog => {
             await instancebulkgpspush();
+            initializeWarningApproval();
             closeDialog();
         },
-        [instancebulkgpspush],
+        [initializeWarningApproval, instancebulkgpspush],
     );
 
     const redirectTo = useRedirectTo();
     const onConfirmAndSeeTask = useCallback(
         async closeDialog => {
             await instancebulkgpspush();
+            initializeWarningApproval();
             closeDialog();
             redirectTo(baseUrls.tasks, {
                 order: '-created_at',
             });
         },
-        [instancebulkgpspush, redirectTo],
+        [initializeWarningApproval, instancebulkgpspush, redirectTo],
     );
 
     const onClosed = () => {
+        initializeWarningApproval();
         return null;
     };
 
@@ -157,7 +181,9 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         [isError, isLoadingCheckResult],
     );
 
-    const approved = approveOrgUnitHasGps && approveSubmissionNoHasGps;
+    useEffect(() => {
+        setApproved(approveOrgUnitHasGps && approveSubmissionNoHasGps);
+    }, [approveOrgUnitHasGps, approveSubmissionNoHasGps]);
 
     return (
         // @ts-ignore

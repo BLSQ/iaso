@@ -48,7 +48,7 @@ class DataSourceVersionsSynchronizationViewSet(viewsets.ModelViewSet):
         """
         Steps to synchronize data source versions:
 
-        1. use a POST request on this (default) endpoint to create a new `DataSourceVersionsSynchronization`
+        1. use a POST request on this endpoint to create a new `DataSourceVersionsSynchronization`
         2. use a POST request on the `create_json_diff` endpoint to compute the differences
         3. use a POST request on the `synchronize_source_versions` endpoint to create change requests
         """

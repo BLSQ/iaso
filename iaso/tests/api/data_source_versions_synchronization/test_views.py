@@ -81,6 +81,17 @@ class DataSourceVersionsSynchronizationViewSetTestCase(APITestCase):
         response = self.client.get(f"/api/datasources/sync/{self.data_source_sync_1.id}/")
         self.assertJSONResponse(response, 200)
 
+    def test_create_without_perms(self):
+        self.client.force_authenticate(self.user)
+        self.user.user_permissions.clear()
+        data = {
+            "name": "Foo synchronization",
+            "source_version_to_update": self.source_1.pk,
+            "source_version_to_compare_with": self.source_3.pk,
+        }
+        response = self.client.post("/api/datasources/sync/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+
     def test_create_ok(self):
         self.client.force_authenticate(self.user)
         data = {

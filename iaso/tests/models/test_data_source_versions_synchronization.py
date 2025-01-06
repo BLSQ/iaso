@@ -163,7 +163,6 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
             "source_version_to_update": self.source_version_to_update,
             "source_version_to_compare_with": self.source_version_to_compare_with,
             "json_diff": None,
-            "sync_task": None,
             "account": self.account,
             "created_by": self.user,
         }
@@ -176,7 +175,8 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(data_source_sync.source_version_to_update, kwargs["source_version_to_update"])
         self.assertEqual(data_source_sync.source_version_to_compare_with, kwargs["source_version_to_compare_with"])
         self.assertEqual(data_source_sync.json_diff, kwargs["json_diff"])
-        self.assertEqual(data_source_sync.sync_task, kwargs["sync_task"])
+        self.assertIsNone(data_source_sync.json_diff_task)
+        self.assertIsNone(data_source_sync.sync_task)
         self.assertEqual(data_source_sync.account, kwargs["account"])
         self.assertEqual(data_source_sync.created_by, kwargs["created_by"])
         self.assertEqual(data_source_sync.created_at, self.DT)
@@ -226,7 +226,6 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
             source_version_to_update=self.source_version_to_update,
             source_version_to_compare_with=self.source_version_to_compare_with,
             json_diff=None,
-            sync_task=None,
             account=self.account,
             created_by=self.user,
         )
@@ -299,7 +298,6 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
             source_version_to_update=self.source_version_to_update,
             source_version_to_compare_with=self.source_version_to_compare_with,
             json_diff=None,
-            sync_task=None,
             account=self.account,
             created_by=self.user,
         )

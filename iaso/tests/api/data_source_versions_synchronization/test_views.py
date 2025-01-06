@@ -1,7 +1,9 @@
 import datetime
 
 import time_machine
+from django.contrib.auth.models import Permission
 
+from hat.menupermissions import models as iaso_permission
 from iaso.test import APITestCase
 from iaso import models as m
 
@@ -19,7 +21,15 @@ class DataSourceVersionsSynchronizationViewSetTestCase(APITestCase):
     def setUpTestData(cls):
         cls.account = m.Account.objects.create(name="Account")
         cls.user = cls.create_user_with_profile(
-            username="user", first_name="Foo", last_name="Bar", account=cls.account, permissions=["iaso_write_sources"]
+            username="user",
+            first_name="Foo",
+            last_name="Bar",
+            account=cls.account,
+            permissions=[
+                iaso_permission._SOURCE_WRITE,
+                iaso_permission._ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS,
+                iaso_permission._ORG_UNITS,
+            ],
         )
 
         cls.data_source = m.DataSource.objects.create(name="Data source")
@@ -48,8 +58,14 @@ class DataSourceVersionsSynchronizationViewSetTestCase(APITestCase):
         self.assertJSONResponse(response, 401)
 
     def test_list_without_perms(self):
+        # No perms.
         self.client.force_authenticate(self.user)
         self.user.user_permissions.clear()
+        response = self.client.get("/api/datasources/sync/")
+        self.assertJSONResponse(response, 403)
+
+        # Not enough perms.
+        self.user.user_permissions.add(Permission.objects.get(codename=iaso_permission._SOURCE_WRITE))
         response = self.client.get("/api/datasources/sync/")
         self.assertJSONResponse(response, 403)
 

@@ -16,7 +16,8 @@ def create_json_diff_async(data_source_versions_synchronization_id: int, task: T
 
     data_source_versions_synchronization.create_json_diff()
 
-    # task
+    data_source_versions_synchronization.json_diff_task = task
+    data_source_versions_synchronization.save()
 
     task.report_success(message="Created JSON diff.")
 
@@ -34,6 +35,7 @@ def synchronize_source_versions_async(data_source_versions_synchronization_id: i
 
     data_source_versions_synchronization.synchronize_source_versions()
 
-    # task
+    data_source_versions_synchronization.sync_task = task
+    data_source_versions_synchronization.save()
 
     task.report_success(message="Synchronized source versions.")

@@ -4,15 +4,15 @@ import time_machine
 from django.contrib.auth.models import Permission
 
 from hat.menupermissions import models as iaso_permission
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
 DT = datetime.datetime(2025, 1, 3, 16, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
 
 @time_machine.travel(DT, tick=False)
-class DataSourceVersionsSynchronizationViewSetTestCase(APITestCase):
+class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
     """
     Test DataSourceVersionsSynchronizationViewSet.
     """
@@ -115,6 +115,25 @@ class DataSourceVersionsSynchronizationViewSetTestCase(APITestCase):
         response = self.client.patch(f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff_async/")
         self.assertJSONResponse(response, 403)
 
+    def test_create_json_diff_async(self):
+        self.assertIsNone(self.data_source_sync_1.json_diff)
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff_async/")
+
+        self.assertJSONResponse(response, 200)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_json_diff_task")
+
+        self.assertEqual(task.launcher, self.user)
+        self.assertEqual(task.params["kwargs"]["data_source_versions_synchronization_id"], self.data_source_sync_1.id)
+
+        self.runAndValidateTask(task, "SUCCESS")
+
+        self.data_source_sync_1.refresh_from_db()
+        self.assertEqual(self.data_source_sync_1.json_diff_task, task)
+        self.assertIsNotNone(self.data_source_sync_1.json_diff)
+
     def test_synchronize_source_versions_async_without_perms(self):
         self.client.force_authenticate(self.user)
         self.user.user_permissions.clear()
@@ -122,3 +141,27 @@ class DataSourceVersionsSynchronizationViewSetTestCase(APITestCase):
             f"/api/datasources/sync/{self.data_source_sync_1.id}/synchronize_source_versions_async/"
         )
         self.assertJSONResponse(response, 403)
+
+    def test_synchronize_source_versions_async(self):
+        # We use an empty `json_diff` here because `synchronize_source_versions()` (which
+        # is called in the background task) is already fully tested in the model tests.
+        # We're just interested to check that the background task works as expected.
+        self.data_source_sync_1.json_diff = "[]"
+        self.data_source_sync_1.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(
+            f"/api/datasources/sync/{self.data_source_sync_1.id}/synchronize_source_versions_async/"
+        )
+
+        self.assertJSONResponse(response, 200)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="synchronize_source_versions_task")
+
+        self.assertEqual(task.launcher, self.user)
+        self.assertEqual(task.params["kwargs"]["data_source_versions_synchronization_id"], self.data_source_sync_1.id)
+
+        self.runAndValidateTask(task, "SUCCESS")
+
+        self.data_source_sync_1.refresh_from_db()
+        self.assertEqual(self.data_source_sync_1.sync_task, task)

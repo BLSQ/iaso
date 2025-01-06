@@ -109,14 +109,16 @@ class DataSourceVersionsSynchronizationViewSetTestCase(APITestCase):
         self.assertEqual(data_source_sync.created_by, self.user)
         self.assertEqual(data_source_sync.account, self.account)
 
-    def test_create_json_diff_without_perms(self):
+    def test_create_json_diff_async_without_perms(self):
         self.client.force_authenticate(self.user)
         self.user.user_permissions.clear()
-        response = self.client.post(f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/")
+        response = self.client.patch(f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff_async/")
         self.assertJSONResponse(response, 403)
 
-    def test_synchronize_source_versions_without_perms(self):
+    def test_synchronize_source_versions_async_without_perms(self):
         self.client.force_authenticate(self.user)
         self.user.user_permissions.clear()
-        response = self.client.post(f"/api/datasources/sync/{self.data_source_sync_1.id}/synchronize_source_versions/")
+        response = self.client.patch(
+            f"/api/datasources/sync/{self.data_source_sync_1.id}/synchronize_source_versions_async/"
+        )
         self.assertJSONResponse(response, 403)

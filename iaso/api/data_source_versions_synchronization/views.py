@@ -10,7 +10,9 @@ from iaso.api.data_source_versions_synchronization.filters import DataSourceVers
 from iaso.api.data_source_versions_synchronization.pagination import DataSourceVersionsSynchronizationPagination
 from iaso.api.data_source_versions_synchronization.permissions import DataSourceVersionsSynchronizationPermission
 from iaso.api.data_source_versions_synchronization.serializers import DataSourceVersionsSynchronizationSerializer
+from iaso.api.tasks import TaskSerializer
 from iaso.models import DataSourceVersionsSynchronization
+from iaso.tasks.data_source_versions_synchronization import create_json_diff_async, synchronize_source_versions_async
 
 
 class DataSourceVersionsSynchronizationViewSet(viewsets.ModelViewSet):
@@ -48,22 +50,26 @@ class DataSourceVersionsSynchronizationViewSet(viewsets.ModelViewSet):
         """
         Steps to synchronize data source versions:
 
-        1. use a POST request on this endpoint to create a new `DataSourceVersionsSynchronization`
-        2. use a POST request on the `create_json_diff` endpoint to compute the differences
-        3. use a POST request on the `synchronize_source_versions` endpoint to create change requests
+        1. POST on this endpoint to create a new `DataSourceVersionsSynchronization`
+        2. PATCH on the `create_json_diff_async` endpoint to compute the differences asynchronously
+        3. PATCH on the `synchronize_source_versions_async` endpoint to create change requests asynchronously
         """
         serializer.validated_data["account"] = self.request.user.iaso_profile.account
         serializer.validated_data["created_by"] = self.request.user
         serializer.save()
 
-    @action(detail=True, methods=["POST"])
-    def create_json_diff(self, request: Request, pk: int) -> Response:
+    @action(detail=True, methods=["PATCH"])
+    def create_json_diff_async(self, request: Request, pk: int) -> Response:
         data_source_versions_synchronization = get_object_or_404(self.get_queryset(), pk=pk)
-        data_source_versions_synchronization.create_json_diff()
-        return Response(self.get_serializer(data_source_versions_synchronization).data)
+        task = create_json_diff_async(
+            data_source_versions_synchronization_id=data_source_versions_synchronization.pk, user=request.user
+        )
+        return Response({"task": TaskSerializer(instance=task).data})
 
-    @action(detail=True, methods=["POST"])
-    def synchronize_source_versions(self, request: Request, pk: int) -> Response:
+    @action(detail=True, methods=["PATCH"])
+    def synchronize_source_versions_async(self, request: Request, pk: int) -> Response:
         data_source_versions_synchronization = get_object_or_404(self.get_queryset(), pk=pk)
-        data_source_versions_synchronization.synchronize_source_versions()
-        return Response(self.get_serializer(data_source_versions_synchronization).data)
+        task = synchronize_source_versions_async(
+            data_source_versions_synchronization_id=data_source_versions_synchronization.pk, user=request.user
+        )
+        return Response({"task": TaskSerializer(instance=task).data})

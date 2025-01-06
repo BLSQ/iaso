@@ -117,7 +117,7 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                         <Divider />
                     </Box>
                     {formik.isSubmitting && <LoadingSpinner />}
-                    <Box maxWidth="1500px">
+                    <Box>
                         <Grid container>
                             <Grid item xs={6}>
                                 <Box mr={2}>

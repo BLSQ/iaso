@@ -21,5 +21,6 @@ export const useGetCheckBulkGpsPush = (
                 return data;
             },
         },
+        ignoreErrorCodes: [400],
     });
 };

@@ -107,13 +107,6 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         [approveOrgUnitHasGps, approveSubmissionNoHasGps],
     );
 
-    let title = MESSAGES.export;
-    if (selection) {
-        title = {
-            ...MESSAGES.pushGpsToOrgUnits,
-        };
-    }
-
     const hasTaskPermission = userHasPermission(
         Permission.DATA_TASKS,
         currentUser,
@@ -163,7 +156,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
     return (
         <ConfirmCancelModal
             allowConfirm={noLoadingAndNoError && approved}
-            titleMessage={noLoadingAndNoError ? title : ''}
+            titleMessage={noLoadingAndNoError ? MESSAGES.pushGpsToOrgUnits : ''}
             onConfirm={onConfirm}
             onCancel={() => {
                 closeDialog();
@@ -201,7 +194,10 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                             ) : (
                                 formatMessage(MESSAGES.pushGpsWarningMessage, {
                                     submissionCount: selection.selectCount,
-                                    orgUnitCount: selection.selectCount,
+                                    orgUnitCount:
+                                        selection.selectCount -
+                                        (checkBulkGpsPush?.warning_no_location
+                                            ?.length ?? 0),
                                 })
                             )}
                         </Typography>

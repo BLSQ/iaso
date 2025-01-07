@@ -37,7 +37,7 @@ export const Forms: FunctionComponent<Props> = ({ params }) => {
     const isEmbedded = location.pathname.includes(embeddedVaccineRepositoryUrl);
     const redirectUrl = isEmbedded ? embeddedVaccineRepositoryUrl : baseUrl;
     const { data, isFetching } = useGetVaccineReporting(formsParams);
-    const columns = useVaccineRepositoryColumns();
+    const columns = useVaccineRepositoryColumns(formsParams);
 
     return (
         <>

@@ -15,7 +15,7 @@ import FormVersionsDialogComponent from './FormVersionsDialogComponent';
 
 let connectedWrapper;
 
-const requestsStub = require('../../../utils/requests');
+const requestsStub = require('../requests');
 
 const fakeFormVersion = formVersionFixture.form_versions[0];
 const formId = 69;

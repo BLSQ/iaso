@@ -14,7 +14,7 @@ import MESSAGES from '../../../../constants/messages';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
 
 import { appId } from '../../../../constants/app';
-import { defaultVaccineOptions } from '../../SupplyChain/constants';
+import { singleVaccinesList } from '../../SupplyChain/constants';
 import { useGetFileTypes } from '../hooks/useGetFileTypes';
 import { VaccineRepositoryParams } from '../types';
 
@@ -101,7 +101,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                     }}
                     value={vaccineName}
                     type="select"
-                    options={defaultVaccineOptions}
+                    options={singleVaccinesList}
                     label={MESSAGES.vaccine}
                 />
             </Grid>
@@ -125,6 +125,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
                     onChange={(_key, value) => {
                         setFileType(value);
                     }}
+                    clearable={false}
                     value={fileType}
                     type="select"
                     options={fileTypes}

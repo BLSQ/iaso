@@ -8,12 +8,20 @@
         <form method="post">
             {% csrf_token %}
 
-            <label for="dry_run">Dry Run:</label><br />
-            <input type="checkbox" id="dry_run" name="dry_run" /><br />
-
-            <label for="account">Account:</label><br />
-            <input type="text" id="account" name="account" /><br />
-
+            <label for="dry_run">Dry Run:</label>
+            <input type="checkbox" id="dry_run" name="dry_run" />
+            <br />
+            <br />
+            <label for="account">Account ID:</label>
+            <input type="text" id="account" name="account" />
+            <br />
+            <br />
+            <label for="entity_type_id">
+                [Optional] only delete entities for a specific entity type:
+            </label>
+            <input type="text" id="entity_type_id" name="entity_type_id" />
+            <br />
+            <br />
             <input type="submit" value="DELETE EVERYTHING!" />
         </form>
     </body>

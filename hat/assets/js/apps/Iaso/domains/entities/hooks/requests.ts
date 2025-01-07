@@ -1,29 +1,29 @@
-import { UseMutationResult, UseQueryResult } from 'react-query';
 import moment from 'moment';
+import { UseMutationResult, UseQueryResult } from 'react-query';
 
 // @ts-ignore
 import { apiDateFormat } from 'Iaso/utils/dates.ts';
 import { Pagination, UrlParams } from 'bluesquare-components';
-import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
 import {
     deleteRequest,
     getRequest,
-    postRequest,
     patchRequest,
+    postRequest,
 } from '../../../libs/Api';
+import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
 import MESSAGES from '../messages';
 
-import { Location } from '../components/ListMap';
-import getDisplayName, { Profile } from '../../../utils/usersUtils';
 import { makeUrlWithParams } from '../../../libs/utils';
+import getDisplayName, { Profile } from '../../../utils/usersUtils';
+import { Location } from '../components/ListMap';
 
-import { Beneficiary } from '../types/beneficiary';
-import { DisplayedLocation } from '../types/locations';
 import { DropdownOptions } from '../../../types/utils';
-import { DropdownTeamsOptions, Team } from '../../teams/types/team';
-import { ExtraColumn } from '../types/fields';
 import { PaginatedInstances } from '../../instances/types/instance';
+import { DropdownTeamsOptions, Team } from '../../teams/types/team';
+import { Beneficiary } from '../types/beneficiary';
+import { ExtraColumn } from '../types/fields';
 import { Params } from '../types/filters';
+import { DisplayedLocation } from '../types/locations';
 
 export interface PaginatedBeneficiaries extends Pagination {
     result: Array<Beneficiary>;
@@ -210,8 +210,8 @@ const getSubmissions = (
 };
 
 export const useGetSubmissions = (
-    params: Partial<UrlParams>,
-    entityId?: number,
+    params: Partial<UrlParams> & ParamsWithAccountId,
+    entityId: number,
 ): UseQueryResult<PaginatedInstances, Error> => {
     return useSnackQuery({
         queryKey: ['submissionsForEntity', entityId, params],

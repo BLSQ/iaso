@@ -77,7 +77,9 @@ export const useOrgUnitDetailData = (
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
                 select: data => data.groups,
-                enabled: tab === 'children' || tab === 'infos',
+                enabled:
+                    (tab === 'children' || tab === 'infos') &&
+                    (Boolean(originalOrgUnit) || isNewOrgunit),
                 ...cacheOptions,
             },
         },

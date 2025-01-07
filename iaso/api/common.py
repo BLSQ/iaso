@@ -8,7 +8,7 @@ import pytz
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import ProtectedError, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext as _
 from rest_framework import compat, exceptions, filters, pagination, permissions, serializers
@@ -246,6 +246,11 @@ class Paginator(pagination.PageNumberPagination):
         )
 
 
+class EtlPaginator(Paginator):
+    page_size = 20
+    max_page_size = 1000
+
+
 class ModelViewSet(BaseModelViewSet):
     results_key = "results"
     # FIXME Contrary to name it remove result key if NOT paginated
@@ -302,6 +307,25 @@ class ModelViewSet(BaseModelViewSet):
                 self.request.method,
                 f"Cannot delete {instance_model_name} as it is linked to one or more {linked_model_name}s",
             )
+
+
+class EtlModelViewset(ModelViewSet):
+    """
+    Sub class of ModelViewset that enforces the presence of pagination queryparams for GET requests.
+    Imposes the use of Paginator as pagination class
+    Use case: dashboard endpoints that will try to fetch all instances of a model
+    """
+
+    pagination_class = EtlPaginator
+
+    def get_pagination_class(self):
+        custom_pagination_class = getattr(self, "pagination_class", None)
+        if custom_pagination_class and not issubclass(custom_pagination_class, EtlPaginator):
+            raise TypeError(
+                f"The pagination_class must be a subclass of {EtlPaginator.__name__}. "
+                f"Received: {custom_pagination_class.__name__}."
+            )
+        return custom_pagination_class
 
 
 class ChoiceEnum(enum.Enum):

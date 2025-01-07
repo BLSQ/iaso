@@ -352,6 +352,9 @@ class DataSourceVersionsSynchronization(models.Model):
         # Prevent a circular import.
         from iaso.diffing import DataSourceVersionsSynchronizer
 
+        if self.json_diff is None:
+            raise ValidationError("`create_json_diff()` must be called before synchronizing.")
+
         if self.change_requests.exists():
             raise ValidationError("Change requests have already been created.")
 

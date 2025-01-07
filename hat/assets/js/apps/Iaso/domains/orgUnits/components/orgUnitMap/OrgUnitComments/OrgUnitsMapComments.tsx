@@ -1,3 +1,4 @@
+import React, { useCallback, useState, FunctionComponent } from 'react';
 import { Pagination } from '@mui/lab';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -6,13 +7,13 @@ import {
     CommentWithThread,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { useCallback, useState } from 'react';
 
-import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
-import PropTypes from 'prop-types';
-import { sendComment, useGetComments } from '../../../../utils/requests';
+import { useSnackMutation } from '../../../../../libs/apiHooks';
+import { sendComment, useGetComments } from './requests';
+import { adaptComment, calculateOffset, adaptComments } from './utils';
 
-import MESSAGES from '../../messages.ts';
+import MESSAGES from '../../../messages';
+import { OrgUnit } from '../../../types/orgUnit';
 
 const styles = {
     commentsBlock: { marginBottom: '7px' },
@@ -20,43 +21,22 @@ const styles = {
 };
 const useStyles = makeStyles(styles);
 
-const adaptComment = comment => {
-    const author =
-        comment.user.first_name && comment.user.last_name
-            ? `${comment.user.first_name} ${comment.user.last_name}`
-            : comment.user.username ?? 'Unknown';
-    const result = {
-        author,
-        comment: comment.comment,
-        dateTime: comment.submit_date,
-        id: comment.id,
-        authorId: comment.user.id,
-        parentId: comment.parent_comment_id,
-    };
-    return result;
+type Props = {
+    orgUnit?: OrgUnit;
+    className?: string;
+    maxPages?: number;
+    inlineTextAreaButton?: boolean;
 };
 
-const adaptComments = comments => {
-    if (!comments) return [];
-    return comments.map(comment => {
-        return adaptComment(comment);
-    });
-};
-
-const calculateOffset = (page, pageSize) => {
-    const multiplier = page - 1 > 0 ? page - 1 : 0;
-    return pageSize * multiplier;
-};
-
-const OrgUnitsMapComments = ({
+export const OrgUnitsMapComments: FunctionComponent<Props> = ({
     orgUnit,
     className,
-    maxPages,
-    inlineTextAreaButton,
+    maxPages = 5,
+    inlineTextAreaButton = true,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const [offset, setOffset] = useState(null);
+    const [offset, setOffset] = useState<number | null>(null);
     const [pageSize] = useState(maxPages);
     const commentsParams = {
         orgUnitId: orgUnit?.id,
@@ -64,7 +44,7 @@ const OrgUnitsMapComments = ({
         limit: pageSize,
     };
     const { data: comments } = useGetComments(commentsParams);
-    const { mutateAsync: postComment } = useSnackMutation(
+    const { mutateAsync: postComment } = useSnackMutation<any, any, any, any>(
         sendComment,
         undefined,
         undefined,
@@ -148,18 +128,3 @@ const OrgUnitsMapComments = ({
         </>
     );
 };
-
-OrgUnitsMapComments.propTypes = {
-    orgUnit: PropTypes.object,
-    className: PropTypes.string,
-    maxPages: PropTypes.number,
-    inlineTextAreaButton: PropTypes.bool,
-};
-OrgUnitsMapComments.defaultProps = {
-    orgUnit: null,
-    className: '',
-    maxPages: 5,
-    inlineTextAreaButton: true,
-};
-
-export { OrgUnitsMapComments };

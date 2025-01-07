@@ -194,6 +194,7 @@
     "iaso.polio.form.label.mainReasonForNonVaccination": "Raison principale de non-vaccination",
     "iaso.polio.form.label.mopUpEnd": "Date de fin phase ratissage",
     "iaso.polio.form.label.mopUpStart": "Date de début phase ratissage",
+    "iaso.polio.form.label.mustBeAfterRoundEndDate": "Doit être après la date de fin de round",
     "iaso.polio.form.label.newBudgetState": "Nouvel état du budget",
     "iaso.polio.form.label.noRegretFund": "Fonds \"No regret\"",
     "iaso.polio.form.label.noRounds": "Aucun round sélectionné",

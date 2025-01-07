@@ -38,7 +38,7 @@ import DeleteDialog from '../components/DeleteInstanceDialog';
 import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
 
 import { baseUrls } from '../../../constants/urls';
-import { fetchLatestOrgUnitLevelId } from '../../orgUnits/utils';
+import { getLatestOrgUnitLevelId } from '../../orgUnits/utils';
 
 import { Selection } from '../../orgUnits/types/selection';
 
@@ -606,7 +606,7 @@ export const getFilters = (
         status: asBackendStatus(params.status),
         deviceOwnershipId: params.deviceOwnershipId,
         search: params.search,
-        orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
+        orgUnitParentId: getLatestOrgUnitLevelId(params.levels),
         dateFrom: getFromDateString(params.dateFrom, false),
         dateTo: getToDateString(params.dateTo, false),
         showDeleted: params.showDeleted,

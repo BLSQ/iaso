@@ -40,7 +40,11 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
     const INSTANCE_HAS_NO_GPS = 'instanceHasNoGPS';
     const ORG_UNIT_HAS_ALREADY_GPS = 'orgUnitHasAlreadyGps';
 
+    const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+
+    const redirectTo = useRedirectTo();
+
     const [approveOrgUnitHasGps, setApproveOrgUnitHasGps] =
         useState<boolean>(true);
     const [approveSubmissionNoHasGps, setApproveSubmissionNoHasGps] =
@@ -72,44 +76,18 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         });
     }, [bulkgpspush, select_all, selected_ids, unselected_ids]);
 
-    const initializeWarningApproval = useCallback(() => {
-        setApproved(false);
-        evaluateWarning(
-            checkBulkGpsPush?.warning_overwrite,
-            checkBulkGpsPush?.error_ids,
-            setApproveOrgUnitHasGps,
-        );
-        evaluateWarning(
-            checkBulkGpsPush?.warning_no_location,
-            checkBulkGpsPush?.error_ids,
-            setApproveSubmissionNoHasGps,
-        );
-    }, [
-        checkBulkGpsPush?.error_ids,
-        checkBulkGpsPush?.warning_no_location,
-        checkBulkGpsPush?.warning_overwrite,
-    ]);
-
     const onConfirm = useCallback(async () => {
         await instancebulkgpspush();
-        initializeWarningApproval();
         closeDialog();
-    }, [closeDialog, initializeWarningApproval, instancebulkgpspush]);
+    }, [closeDialog, instancebulkgpspush]);
 
-    const redirectTo = useRedirectTo();
     const onConfirmAndSeeTask = useCallback(async () => {
         await instancebulkgpspush();
-        initializeWarningApproval();
         closeDialog();
         redirectTo(baseUrls.tasks, {
             order: '-created_at',
         });
-    }, [
-        closeDialog,
-        initializeWarningApproval,
-        instancebulkgpspush,
-        redirectTo,
-    ]);
+    }, [closeDialog, instancebulkgpspush, redirectTo]);
 
     const onApprove = useCallback(
         type => {
@@ -136,7 +114,6 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         };
     }
 
-    const { formatMessage } = useSafeIntl();
     const hasTaskPermission = userHasPermission(
         Permission.DATA_TASKS,
         currentUser,

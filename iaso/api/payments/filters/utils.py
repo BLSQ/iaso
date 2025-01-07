@@ -19,10 +19,12 @@ def filter_by_forms(request, queryset, key=None):
 
 
 def filter_by_dates(request, queryset, start_date=None, end_date=None, key=None):
+    date_format = "%Y-%m-%d"
+
     if start_date:
         try:
             filter_key = f"{key}__created_at__gte" if key else "created_at__gte"
-            filter_params = {filter_key: date_string_to_start_of_day(start_date)}
+            filter_params = {filter_key: date_string_to_start_of_day(start_date, date_format)}
             queryset = queryset.filter(**filter_params)
         except ValueError:
             pass
@@ -30,7 +32,7 @@ def filter_by_dates(request, queryset, start_date=None, end_date=None, key=None)
     if end_date:
         try:
             filter_key = f"{key}__created_at__lte" if key else "created_at__lte"
-            filter_params = {filter_key: date_string_to_end_of_day(end_date)}
+            filter_params = {filter_key: date_string_to_end_of_day(end_date, date_format)}
             queryset = queryset.filter(**filter_params)
         except ValueError:
             pass

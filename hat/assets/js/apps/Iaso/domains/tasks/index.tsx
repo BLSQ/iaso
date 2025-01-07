@@ -13,11 +13,11 @@ import { TaskDetails } from 'Iaso/domains/tasks/components/TaskDetails';
 import { TaskFilters } from './components/Filters';
 import MESSAGES from './messages';
 import { POLIO_NOTIFICATIONS } from '../../utils/permissions';
-import { userHasPermission } from '../users/utils';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { userHasPermission } from '../users/utils';
 import { useTasksTableColumns } from './config';
-import { TaskParams } from './types';
+import { Task, TaskParams } from './types';
 import { makeUrlWithParams } from '../../libs/utils';
 
 const baseUrl = baseUrls.tasks;
@@ -30,17 +30,17 @@ const Tasks = () => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const params = useParamsObject(baseUrl) as unknown as TaskParams;
-    console.log('params', params);
 
     const { mutateAsync: killTaskAction } = useSnackMutation(
-        task => patchRequest(`/api/tasks/${task.id}/`, task),
+        (task: Task<any>) => patchRequest(`/api/tasks/${task.id}/`, task),
         MESSAGES.patchTaskSuccess,
         MESSAGES.patchTaskError,
         ['tasks'],
     );
 
     const { mutateAsync: relaunchTaskAction } = useSnackMutation(
-        task => patchRequest(`/api/tasks/${task.id}/relaunch/`, task),
+        (task: Task<any>) =>
+            patchRequest(`/api/tasks/${task.id}/relaunch/`, task),
         MESSAGES.patchTaskSuccess,
         MESSAGES.patchTaskError,
         ['tasks'],
@@ -106,7 +106,7 @@ const Tasks = () => {
                     baseUrl={baseUrl}
                     extraProps={{
                         loading: isLoading,
-                        SubComponent: task => {
+                        SubComponent: (task: Task<any>) => {
                             return task ? <TaskDetails task={task} /> : null;
                         },
                     }}

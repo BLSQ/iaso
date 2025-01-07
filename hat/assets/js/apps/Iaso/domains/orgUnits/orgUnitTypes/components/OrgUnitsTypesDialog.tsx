@@ -3,6 +3,7 @@ import {
     IntlMessage,
     useSafeIntl,
     useSkipEffectOnMount,
+    InputWithInfos,
 } from 'bluesquare-components';
 import { isUndefined, mapValues } from 'lodash';
 import intersection from 'lodash/intersection';
@@ -21,7 +22,6 @@ import { Stack, Typography } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { InputWithInfos } from '../../../../components/InputWithInfos';
 import { useFormState } from '../../../../hooks/form';
 import { DropdownOptions } from '../../../../types/utils';
 import {

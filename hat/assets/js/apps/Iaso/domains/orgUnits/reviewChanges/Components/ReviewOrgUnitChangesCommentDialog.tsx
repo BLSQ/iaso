@@ -6,9 +6,9 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { TextArea } from '../../../../components/forms/TextArea';
 import { UseSaveChangeRequestQueryData } from '../hooks/api/useSaveChangeRequest';
 import { ReviewOrgUnitChangesCommentDialogButtons } from './ReviewOrgUnitChangesCommentDialogButtons';
+import InputComponent from '../../../../components/forms/InputComponent';
 
 type SubmitChangeRequest = (variables: UseSaveChangeRequestQueryData) => void;
 
@@ -76,11 +76,13 @@ export const ReviewOrgUnitChangesCommentDialog: FunctionComponent<Props> = ({
             closeDialog={() => setIsCommentDialogOpen(false)}
             buttons={() => reviewOrgUnitChangesCommentDialogButtons}
         >
-            <TextArea
-                label=""
+            <InputComponent
+                type="textarea"
+                keyValue=""
                 value={comment}
-                onChange={newComment => setComment(newComment)}
+                onChange={(_, newComment) => setComment(newComment)}
                 debounceTime={0}
+                withMarginTop={false}
             />
         </SimpleModal>
     );

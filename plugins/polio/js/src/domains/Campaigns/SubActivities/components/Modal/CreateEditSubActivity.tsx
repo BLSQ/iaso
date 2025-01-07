@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import { Box, Divider, Grid } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -8,21 +8,20 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import { isEqual } from 'lodash';
-import { Box, Divider, Grid } from '@mui/material';
+import React, { FunctionComponent, useCallback } from 'react';
+import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import {
     DateInput,
     NumberInput,
     TextInput,
 } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
-import MESSAGES from '../../messages';
-import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
-import { useAgeRangeOptions } from '../../hooks/useAgeRangeOptions';
 import { CampaignFormValues, Round } from '../../../../../constants/types';
-import { SubActivityScopeField } from '../SubActivityScopeField';
+import { useAgeRangeOptions } from '../../hooks/useAgeRangeOptions';
 import { useSubActivityValidation } from '../../hooks/useSubActivityValidation';
+import MESSAGES from '../../messages';
 import { SubActivityFormValues } from '../../types';
-import { MuiWidth } from 'bluesquare-components/dist/types/components/Modal/SimpleModal';
+import { SubActivityScopeField } from '../SubActivityScopeField';
 
 type Props = {
     closeDialog: () => void;
@@ -55,6 +54,10 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
             name: subActivity?.name,
             start_date: subActivity?.start_date,
             end_date: subActivity?.end_date,
+            lqas_started_at: subActivity?.lqas_started_at,
+            lqas_ended_at: subActivity?.lqas_ended_at,
+            im_started_at: subActivity?.im_started_at,
+            im_ended_at: subActivity?.im_ended_at,
             age_unit: subActivity?.age_unit,
             age_min: subActivity?.age_min,
             age_max: subActivity?.age_max,
@@ -145,7 +148,9 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                                             component={SingleSelect}
                                             name="age_unit"
                                             options={ageRangeOptions}
-                                            label={formatMessage(MESSAGES.ageUnit)}
+                                            label={formatMessage(
+                                                MESSAGES.ageUnit,
+                                            )}
                                         />
                                     </Box>
                                 </Grid>
@@ -154,7 +159,9 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                                         <Field
                                             component={NumberInput}
                                             name="age_min"
-                                            label={formatMessage(MESSAGES.ageMin)}
+                                            label={formatMessage(
+                                                MESSAGES.ageMin,
+                                            )}
                                         />
                                     </Box>
                                 </Grid>
@@ -163,7 +170,9 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                                         <Field
                                             component={NumberInput}
                                             name="age_max"
-                                            label={formatMessage(MESSAGES.ageMax)}
+                                            label={formatMessage(
+                                                MESSAGES.ageMax,
+                                            )}
                                         />
                                     </Box>
                                 </Grid>
@@ -174,6 +183,47 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                                     name="end_date"
                                     label={formatMessage(MESSAGES.endDate)}
                                     required
+                                />
+                            </Grid>
+
+                            <Grid item xs={3}>
+                                <Box mr={2}>
+                                    <Field
+                                        component={DateInput}
+                                        name="lqas_started_at"
+                                        label={formatMessage(
+                                            MESSAGES.lqas_started_at,
+                                        )}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={3}>
+                                <Box mr={2}>
+                                    <Field
+                                        component={DateInput}
+                                        name="lqas_ended_at"
+                                        label={formatMessage(
+                                            MESSAGES.lqas_ended_at,
+                                        )}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={3}>
+                                <Box mr={2}>
+                                    <Field
+                                        component={DateInput}
+                                        name="im_started_at"
+                                        label={formatMessage(
+                                            MESSAGES.im_started_at,
+                                        )}
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={3}>
+                                <Field
+                                    component={DateInput}
+                                    name="im_ended_at"
+                                    label={formatMessage(MESSAGES.im_ended_at)}
                                 />
                             </Grid>
                             <Grid item xs={12}>

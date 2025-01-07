@@ -1,3 +1,5 @@
+from django.db import transaction
+
 from beanstalk_worker import task_decorator
 
 from iaso.models import DataSourceVersionsSynchronization, Task
@@ -14,10 +16,10 @@ def create_json_diff_async(data_source_versions_synchronization_id: int, task: T
         account=user.iaso_profile.account,
     )
 
-    data_source_versions_synchronization.create_json_diff()
-
-    data_source_versions_synchronization.json_diff_task = task
-    data_source_versions_synchronization.save()
+    with transaction.atomic():
+        data_source_versions_synchronization.create_json_diff()
+        data_source_versions_synchronization.json_diff_task = task
+        data_source_versions_synchronization.save()
 
     task.report_success(message="Created JSON diff.")
 
@@ -33,9 +35,9 @@ def synchronize_source_versions_async(data_source_versions_synchronization_id: i
         account=user.iaso_profile.account,
     )
 
-    data_source_versions_synchronization.synchronize_source_versions()
-
-    data_source_versions_synchronization.sync_task = task
-    data_source_versions_synchronization.save()
+    with transaction.atomic():
+        data_source_versions_synchronization.synchronize_source_versions()
+        data_source_versions_synchronization.sync_task = task
+        data_source_versions_synchronization.save()
 
     task.report_success(message="Synchronized source versions.")

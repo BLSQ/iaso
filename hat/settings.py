@@ -656,6 +656,11 @@ DRF_NESTED_MULTIPART_PARSER = {
     "querydict": False,
 }
 
+# Superset dashboard/chart embedding configuration
+SUPERSET_URL = os.environ.get("SUPERSET_URL", None)
+SUPERSET_ADMIN_USERNAME = os.environ.get("SUPERSET_ADMIN_USERNAME", None)
+SUPERSET_ADMIN_PASSWORD = os.environ.get("SUPERSET_ADMIN_PASSWORD", None)
+
 # Plugin config
 print("Enabled plugins:", PLUGINS)
 for plugin_name in PLUGINS:

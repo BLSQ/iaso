@@ -183,6 +183,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'userRoles',
             'withLocation',
             'projectIds',
+            'source_version_id',
             'paymentStatus',
             ...paginationPathParams,
             'paymentIds',

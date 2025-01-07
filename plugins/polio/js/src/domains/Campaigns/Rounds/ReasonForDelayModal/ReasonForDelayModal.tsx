@@ -28,8 +28,9 @@ const ReasonForDelayModal: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { handleSubmit, resetForm } = useFormikContext();
     const { locale: activeLocale } = useLocale();
-    const { data: reasonsForDelayOptions } =
-        useReasonsDelayOptions(activeLocale);
+    const { data: reasonsForDelayOptions } = useReasonsDelayOptions(
+        activeLocale as 'fr' | 'en',
+    );
     return (
         <ConfirmCancelModal
             id="reasonForDelay-Modal"

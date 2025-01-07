@@ -670,6 +670,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.downloadXLSandXML',
         defaultMessage: 'Download XLS/XML',
     },
+    validationErrorCount: {
+        id: 'iaso.form.validationErrorCount',
+        defaultMessage: '{count} validation error(s) found',
+    },
 });
 
 export default MESSAGES;

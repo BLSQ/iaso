@@ -1,6 +1,6 @@
 import CallMade from '@mui/icons-material/CallMade';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import AddLocationIcon from '@mui/icons-material/AddLocation';
+// import AddLocationIcon from '@mui/icons-material/AddLocation';
 import { Tooltip } from '@mui/material';
 import {
     Column,
@@ -48,7 +48,7 @@ import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { InstanceMetasField } from '../components/ColumnSelect';
 import { INSTANCE_METAS_FIELDS } from '../constants';
-import PushGpsDialogComponent from '../components/PushGpsDialogComponent';
+import { PushGpsModalComponent } from '../components/PushInstanceGps/PushGpsDialogComponent';
 
 const NO_VALUE = '/';
 const hasNoValue: (value: string) => boolean = value => !value || value === '';
@@ -499,24 +499,9 @@ export const useSelectionActions = (
     return useMemo(() => {
         const pushGpsAction: SelectionAction = {
             icon: newSelection => (
-                <PushGpsDialogComponent
-                    // @ts-ignore need to refactor this component to TS
+                <PushGpsModalComponent
                     selection={newSelection}
-                    renderTrigger={openDialog => {
-                        const iconDisabled = newSelection.selectCount === 0;
-                        const iconProps = {
-                            onClick: !iconDisabled ? openDialog : () => null,
-                            disabled: iconDisabled,
-                        };
-
-                        return (
-                            // @ts-ignore
-                            <AddLocationIcon
-                                color={iconDisabled ? 'disabled' : 'inherit'}
-                                {...iconProps}
-                            />
-                        );
-                    }}
+                    iconProps={{ iconDisabled: newSelection.selectCount === 0 }}
                 />
             ),
             label: formatMessage(MESSAGES.pushGpsToOrgUnits),

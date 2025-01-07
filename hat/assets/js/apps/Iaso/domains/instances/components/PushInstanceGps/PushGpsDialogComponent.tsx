@@ -7,31 +7,35 @@ import React, {
 } from 'react';
 import { Grid, Typography } from '@mui/material';
 import {
+    ConfirmCancelModal,
     LoadingSpinner,
+    makeFullModal,
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import MESSAGES from '../messages';
-import { Instance } from '../types/instance';
-import { Selection } from '../../orgUnits/types/selection';
-import { useGetCheckBulkGpsPush } from '../hooks/useGetCheckBulkGpsPush';
+import MESSAGES from '../../messages';
+import { Instance } from '../../types/instance';
+import { Selection } from '../../../orgUnits/types/selection';
+import { useGetCheckBulkGpsPush } from '../../hooks/useGetCheckBulkGpsPush';
 import PushBulkGpsWarning from './PushBulkGpsWarning';
-import { useInstanceBulkgpspush } from '../hooks/useInstanceBulkgpspush';
-import { baseUrls } from '../../../constants/urls';
-import { userHasPermission } from '../../users/utils';
-import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { useInstanceBulkgpspush } from '../../hooks/useInstanceBulkgpspush';
+import { baseUrls } from '../../../../constants/urls';
+import { userHasPermission } from '../../../users/utils';
+import * as Permission from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 import PushGpsWarningMessage from './PushGpsWarningMessage';
+import { PushGpsModalButton } from './PushGpsModalButton';
 
 type Props = {
-    renderTrigger: (openDialog: boolean) => void;
     selection: Selection<Instance>;
+    isOpen: boolean;
+    closeDialog: () => void;
 };
 
 const PushGpsDialogComponent: FunctionComponent<Props> = ({
-    renderTrigger,
     selection,
+    isOpen,
+    closeDialog,
 }) => {
     const INSTANCE_HAS_NO_GPS = 'instanceHasNoGPS';
     const ORG_UNIT_HAS_ALREADY_GPS = 'orgUnitHasAlreadyGps';
@@ -86,32 +90,26 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         checkBulkGpsPush?.warning_overwrite,
     ]);
 
-    const onConfirm = useCallback(
-        async closeDialog => {
-            await instancebulkgpspush();
-            initializeWarningApproval();
-            closeDialog();
-        },
-        [initializeWarningApproval, instancebulkgpspush],
-    );
+    const onConfirm = useCallback(async () => {
+        await instancebulkgpspush();
+        initializeWarningApproval();
+        closeDialog();
+    }, [closeDialog, initializeWarningApproval, instancebulkgpspush]);
 
     const redirectTo = useRedirectTo();
-    const onConfirmAndSeeTask = useCallback(
-        async closeDialog => {
-            await instancebulkgpspush();
-            initializeWarningApproval();
-            closeDialog();
-            redirectTo(baseUrls.tasks, {
-                order: '-created_at',
-            });
-        },
-        [initializeWarningApproval, instancebulkgpspush, redirectTo],
-    );
-
-    const onClosed = () => {
+    const onConfirmAndSeeTask = useCallback(async () => {
+        await instancebulkgpspush();
         initializeWarningApproval();
-        return null;
-    };
+        closeDialog();
+        redirectTo(baseUrls.tasks, {
+            order: '-created_at',
+        });
+    }, [
+        closeDialog,
+        initializeWarningApproval,
+        instancebulkgpspush,
+        redirectTo,
+    ]);
 
     const onApprove = useCallback(
         type => {
@@ -186,28 +184,27 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
     }, [approveOrgUnitHasGps, approveSubmissionNoHasGps]);
 
     return (
-        // @ts-ignore
-        <ConfirmCancelDialogComponent
-            renderTrigger={({ openDialog }) => renderTrigger(openDialog)}
-            titleMessage={noLoadingAndNoError ? title : ''}
+        <ConfirmCancelModal
             allowConfirm={noLoadingAndNoError && approved}
-            onConfirm={closeDialog => onConfirm(closeDialog)}
-            confirmMessage={MESSAGES.launch}
-            onClosed={onClosed}
-            cancelMessage={
-                noLoadingAndNoError ? MESSAGES.cancel : MESSAGES.close
-            }
+            titleMessage={noLoadingAndNoError ? title : ''}
+            onConfirm={onConfirm}
+            onCancel={() => {
+                closeDialog();
+            }}
             maxWidth="sm"
-            additionalButton
-            additionalMessage={MESSAGES.goToCurrentTask}
-            onAdditionalButtonClick={closeDialog =>
-                onConfirmAndSeeTask(closeDialog)
-            }
-            allowConfimAdditionalButton={
+            cancelMessage={MESSAGES.cancel}
+            confirmMessage={MESSAGES.launch}
+            open={isOpen}
+            closeDialog={closeDialog}
+            id="bulk-push-gps"
+            onClose={() => null}
+            dataTestId="bulk-push-gps"
+            allowConfirmAdditionalButton={
                 hasTaskPermission && noLoadingAndNoError && approved
             }
-            id="bulk-push-gps"
-            dataTestId="bulk-push-gps"
+            additionalButton
+            additionalMessage={MESSAGES.goToCurrentTask}
+            onAdditionalButtonClick={onConfirmAndSeeTask}
         >
             {isLoadingCheckResult ? (
                 <LoadingSpinner absolute />
@@ -259,7 +256,10 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                     )}
                 </Grid>
             )}
-        </ConfirmCancelDialogComponent>
+        </ConfirmCancelModal>
     );
 };
-export default PushGpsDialogComponent;
+
+const pushGpsModal = makeFullModal(PushGpsDialogComponent, PushGpsModalButton);
+
+export { pushGpsModal as PushGpsModalComponent };

@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { Grid } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo } from 'react';
@@ -9,7 +9,6 @@ import { APP_LOCALES } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
-import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import MESSAGES from '../messages.ts';
 import { userHasPermission } from '../utils.js';

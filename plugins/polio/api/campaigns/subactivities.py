@@ -34,6 +34,10 @@ class SubActivityCreateUpdateSerializer(serializers.ModelSerializer):
             "age_unit",
             "age_min",
             "age_max",
+            "lqas_ended_at",
+            "lqas_started_at",
+            "im_ended_at",
+            "im_started_at",
         ]
 
     def create(self, validated_data):
@@ -97,7 +101,21 @@ class SubActivityListDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SubActivity
-        fields = ["id", "round_id", "name", "start_date", "end_date", "scopes", "age_unit", "age_min", "age_max"]
+        fields = [
+            "id",
+            "round_id",
+            "name",
+            "start_date",
+            "end_date",
+            "scopes",
+            "age_unit",
+            "age_min",
+            "age_max",
+            "lqas_ended_at",
+            "lqas_started_at",
+            "im_ended_at",
+            "im_started_at",
+        ]
 
 
 class SubActivityViewSet(ModelViewSet):

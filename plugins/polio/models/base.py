@@ -288,6 +288,10 @@ class SubActivity(models.Model):
     age_max = models.IntegerField(null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
+    im_started_at = models.DateField(null=True, blank=True)
+    im_ended_at = models.DateField(null=True, blank=True)
+    lqas_started_at = models.DateField(null=True, blank=True)
+    lqas_ended_at = models.DateField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "subactivities"

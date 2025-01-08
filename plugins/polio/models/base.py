@@ -22,6 +22,8 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext as _
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from gspread.utils import extract_id_from_url  # type: ignore
 from storages.backends.s3boto3 import S3Boto3Storage
 from translated_fields import TranslatedField
@@ -147,6 +149,17 @@ class RoundScope(models.Model):
     class Meta:
         unique_together = [("round", "vaccine")]
         ordering = ["round", "vaccine"]
+
+
+# Signal to delete the Group when the Round is deleted
+@receiver(post_delete, sender=RoundScope)
+def delete_group_on_round_delete(sender, instance, **kwargs):
+    """
+    Delete the associated Group when the RoundScope instance is deleted,
+    which happens when a Round is deleted.
+    """
+    if instance.group:
+        instance.group.delete()
 
 
 def make_group_campaign_scope():

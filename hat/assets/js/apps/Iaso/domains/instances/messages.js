@@ -208,7 +208,7 @@ const MESSAGES = defineMessages({
     },
     pushGpsWarningMessage: {
         defaultMessage:
-            'You are about to push the locations of {submissionCount} instances to {orgUnitCount} OrgUnits',
+            'You are about to push the locations of {submissionCount} submission(s) to {orgUnitCount} Org unit(s)',
         id: 'iaso.instance.pushGpsWarningMessage',
     },
     noGpsForSomeInstaces: {

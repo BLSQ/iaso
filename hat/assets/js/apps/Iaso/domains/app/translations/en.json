@@ -393,7 +393,7 @@
     "iaso.instance.patchInstanceError": "An error occurred while saving submission",
     "iaso.instance.patchInstanceSuccesfull": "Submission saved successfully",
     "iaso.instance.period": "Period",
-    "iaso.instance.pushGpsWarningMessage": "You are about to push the locations of {submissionCount} instances to {orgUnitCount} OrgUnits",
+    "iaso.instance.pushGpsWarningMessage": "You are about to push the locations of {submissionCount} submission(s) to {orgUnitCount} Org unit(s)",
     "iaso.instance.queryBuilder": "Search in submitted fields",
     "iaso.instance.removeLockAction": "Unlock the submission",
     "iaso.instance.selectedOrgUnit": "Selected Org unit",

@@ -18,11 +18,9 @@ class CampaignDashboardViewSet(EtlModelViewset):
     """
 
     http_method_names = ["get"]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     model = Campaign
     serializer_class = CampaignDashboardSerializer
 
     def get_queryset(self):
-        return Campaign.objects.filter(
-            account=self.request.user.iaso_profile.account, deleted_at__isnull=True
-        )
+        return Campaign.objects.filter(account=self.request.user.iaso_profile.account, deleted_at__isnull=True)

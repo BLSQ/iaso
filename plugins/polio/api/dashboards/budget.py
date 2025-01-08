@@ -44,8 +44,13 @@ class BudgetDashboardViewSet(EtlModelViewset):
     serializer_class = BudgetDashboardSerializer
 
     def get_queryset(self):
-        return BudgetProcess.objects.filter(
-            deleted_at__isnull=True,
-            rounds__campaign__deleted_at__isnull=True,
-            rounds__campaign__account=self.request.user.iaso_profile.account,
-        ).prefetch_related("rounds", "rounds__campaign").order_by("id")
+        return (
+            BudgetProcess.objects.filter(
+                deleted_at__isnull=True,
+                rounds__campaign__deleted_at__isnull=True,
+                rounds__campaign__account=self.request.user.iaso_profile.account,
+            )
+            .prefetch_related("rounds", "rounds__campaign")
+            .distinct()
+            .order_by("id")
+        )

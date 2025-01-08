@@ -5,7 +5,7 @@ from django.db import migrations
 
 def delete_rounds_without_campaign(apps, schema_editor):
     Round = apps.get_model("polio", "Round")
-    Round.objects.filter(campaign__isnull=True, budget_process__isnull=False).delete()
+    Round.objects.filter(campaign__isnull=True, budget_process__isnull=True).delete()
 
 
 class Migration(migrations.Migration):

@@ -81,6 +81,10 @@ class DataSourceVersionsSynchronizationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["PATCH"])
     def synchronize_source_versions_async(self, request: Request, pk: int) -> Response:
         data_source_versions_synchronization = get_object_or_404(self.get_queryset(), pk=pk)
+
+        if not data_source_versions_synchronization.json_diff:
+            raise ValidationError("Cannot synchronize data source versions because JSON diff is empty.")
+
         if data_source_versions_synchronization.change_requests.exists():
             raise ValidationError("Change requests have already been created.")
 

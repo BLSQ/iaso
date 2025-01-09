@@ -175,7 +175,6 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(data_source_sync.source_version_to_update, kwargs["source_version_to_update"])
         self.assertEqual(data_source_sync.source_version_to_compare_with, kwargs["source_version_to_compare_with"])
         self.assertEqual(data_source_sync.json_diff, kwargs["json_diff"])
-        self.assertIsNone(data_source_sync.json_diff_task)
         self.assertIsNone(data_source_sync.sync_task)
         self.assertEqual(data_source_sync.account, kwargs["account"])
         self.assertEqual(data_source_sync.created_by, kwargs["created_by"])

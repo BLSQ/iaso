@@ -1099,7 +1099,6 @@ class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
         "count_update",
         "created_at",
         "updated_at",
-        "json_diff_task",
         "sync_task",
     )
 

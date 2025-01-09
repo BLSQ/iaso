@@ -233,14 +233,6 @@ class DataSourceVersionsSynchronization(models.Model):
         default=0, help_text=_("The number of change requests that will be generated to update an org unit.")
     )
 
-    json_diff_task = models.OneToOneField(
-        "Task",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="+",
-        help_text=_("The background task that created the JSON diff."),
-    )
     sync_task = models.OneToOneField(
         "Task",
         null=True,

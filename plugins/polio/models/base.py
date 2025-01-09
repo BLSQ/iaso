@@ -842,7 +842,7 @@ class Campaign(SoftDeletableModel):
             return ", ".join(sorted(vaccines))
 
     def update_geojson_field(self):
-        "Update the geojson field on the campaign DO NOT TRIGGER the save() you have to do it manually"
+        "Update the geojson field on the campaign DOES NOT TRIGGER the save() you have to do it manually"
         campaign = self
         features = []
         if not self.separate_scopes_per_round:

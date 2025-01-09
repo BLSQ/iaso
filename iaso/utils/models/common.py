@@ -60,7 +60,6 @@ def check_instance_bulk_gps_push(queryset: QuerySet) -> (bool, Dict[str, List[in
         if org_unit.id in set_org_units_ids:
             # we can't push this instance's location since there was another instance linked to this OrgUnit
             repeated_org_units.add(org_unit.id)
-            set_org_units_ids.add(org_unit.id)
             continue
 
         set_org_units_ids.add(org_unit.id)

@@ -11,7 +11,7 @@ from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.db.models import Count, F, Func, Prefetch, Q, QuerySet
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse, StreamingHttpResponse, Http404
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
@@ -631,10 +631,10 @@ class InstancesViewSet(viewsets.ViewSet):
 
         # then, let's make sure that each ID actually exists and that the user has access to it
         instances_query = self.get_queryset()
-        for selected_id in selected_ids:
-            get_object_or_404(instances_query, pk=selected_id)
-        for unselected_id in unselected_ids:
-            get_object_or_404(instances_query, pk=unselected_id)
+        if instances_query.filter(pk__in=selected_ids).count() != len(selected_ids):
+            raise Http404
+        if instances_query.filter(pk__in=unselected_ids).count() != len(unselected_ids):
+            raise Http404
 
         # let's filter everything
         filters = parse_instance_filters(request.GET)

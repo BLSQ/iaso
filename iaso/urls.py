@@ -94,6 +94,7 @@ from .api.superset import SupersetTokenViewSet
 from .api.tasks import TaskSourceViewSet
 from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
+from .api.tasks.create.instance_bulk_gps_push import InstanceBulkGpsPushViewSet
 from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.user_roles import UserRolesViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
@@ -169,6 +170,7 @@ router.register(r"tasks/create/profilesbulkupdate", ProfilesBulkUpdate, basename
 router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet, basename="orgunitsbulklocationset")
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks/create/exportmobilesetup", ExportMobileSetupViewSet, basename="exportmobilesetup")
+router.register(r"tasks/create/instancebulkgpspush", InstanceBulkGpsPushViewSet, basename="instancebulkgpspush")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entities", EntityViewSet, basename="entity")

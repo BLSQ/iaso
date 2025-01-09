@@ -47,6 +47,7 @@ import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { InstanceMetasField } from '../components/ColumnSelect';
 import { INSTANCE_METAS_FIELDS } from '../constants';
+import { PushGpsModalComponent } from '../components/PushInstanceGps/PushGpsDialogComponent';
 
 const NO_VALUE = '/';
 const hasNoValue: (value: string) => boolean = value => !value || value === '';
@@ -427,6 +428,7 @@ export const useInstanceVisibleColumns = ({
             getDefaultCols(
                 formIds,
                 labelKeys,
+                // @ts-ignore
                 instanceMetasFields || INSTANCE_METAS_FIELDS,
                 periodType,
             );
@@ -494,6 +496,16 @@ export const useSelectionActions = (
     );
 
     return useMemo(() => {
+        const pushGpsAction: SelectionAction = {
+            icon: newSelection => (
+                <PushGpsModalComponent
+                    selection={newSelection}
+                    iconProps={{ iconDisabled: newSelection.selectCount === 0 }}
+                />
+            ),
+            label: formatMessage(MESSAGES.pushGpsToOrgUnits),
+            disabled: false,
+        };
         const exportAction: SelectionAction = {
             icon: newSelection => (
                 <ExportInstancesDialogComponent
@@ -557,7 +569,7 @@ export const useSelectionActions = (
 
         const actions: SelectionAction[] = [compareAction];
         if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
-            actions.push(exportAction, deleteAction);
+            actions.push(exportAction, deleteAction, pushGpsAction);
         }
         return actions;
     }, [

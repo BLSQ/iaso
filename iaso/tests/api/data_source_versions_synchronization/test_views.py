@@ -109,29 +109,20 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         self.assertEqual(data_source_sync.created_by, self.user)
         self.assertEqual(data_source_sync.account, self.account)
 
-    def test_create_json_diff_async_without_perms(self):
+    def test_create_json_diff_without_perms(self):
         self.client.force_authenticate(self.user)
         self.user.user_permissions.clear()
-        response = self.client.patch(f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff_async/")
+        response = self.client.patch(f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/")
         self.assertJSONResponse(response, 403)
 
-    def test_create_json_diff_async(self):
+    def test_create_json_diff(self):
         self.assertIsNone(self.data_source_sync_1.json_diff)
 
         self.client.force_authenticate(self.user)
-        response = self.client.patch(f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff_async/")
-
+        response = self.client.patch(f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/")
         self.assertJSONResponse(response, 200)
-        data = response.json()
-        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_json_diff_task")
-
-        self.assertEqual(task.launcher, self.user)
-        self.assertEqual(task.params["kwargs"]["data_source_versions_synchronization_id"], self.data_source_sync_1.id)
-
-        self.runAndValidateTask(task, "SUCCESS")
 
         self.data_source_sync_1.refresh_from_db()
-        self.assertEqual(self.data_source_sync_1.json_diff_task, task)
         self.assertIsNotNone(self.data_source_sync_1.json_diff)
 
     def test_synchronize_source_versions_async_without_perms(self):

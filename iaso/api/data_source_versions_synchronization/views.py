@@ -12,7 +12,7 @@ from iaso.api.data_source_versions_synchronization.permissions import DataSource
 from iaso.api.data_source_versions_synchronization.serializers import DataSourceVersionsSynchronizationSerializer
 from iaso.api.tasks import TaskSerializer
 from iaso.models import DataSourceVersionsSynchronization
-from iaso.tasks.data_source_versions_synchronization import create_json_diff_async, synchronize_source_versions_async
+from iaso.tasks.data_source_versions_synchronization import synchronize_source_versions_async
 
 
 class DataSourceVersionsSynchronizationViewSet(viewsets.ModelViewSet):
@@ -59,12 +59,11 @@ class DataSourceVersionsSynchronizationViewSet(viewsets.ModelViewSet):
         serializer.save()
 
     @action(detail=True, methods=["PATCH"])
-    def create_json_diff_async(self, request: Request, pk: int) -> Response:
+    def create_json_diff(self, request: Request, pk: int) -> Response:
         data_source_versions_synchronization = get_object_or_404(self.get_queryset(), pk=pk)
-        task = create_json_diff_async(
-            data_source_versions_synchronization_id=data_source_versions_synchronization.pk, user=request.user
-        )
-        return Response({"task": TaskSerializer(instance=task).data})
+        # TODO: allow to pass the params of the diff!
+        data_source_versions_synchronization.create_json_diff()
+        return Response(self.serializer_class(instance=data_source_versions_synchronization).data)
 
     @action(detail=True, methods=["PATCH"])
     def synchronize_source_versions_async(self, request: Request, pk: int) -> Response:

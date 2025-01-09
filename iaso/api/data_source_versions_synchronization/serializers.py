@@ -2,11 +2,12 @@ from django.contrib.auth.models import User
 
 from rest_framework import serializers
 
-from iaso.api.common import TimestampField
 from iaso.models import (
     DataSourceVersionsSynchronization,
     SourceVersion,
     Account,
+    OrgUnit,
+    OrgUnitType,
 )
 
 
@@ -79,3 +80,54 @@ class DataSourceVersionsSynchronizationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("The two versions to compare must be different.")
 
         return validated_data
+
+
+class CreateJsonDiffParametersSerializer(serializers.Serializer):
+    """
+    Validate the parameters of DataSourceVersionsSynchronization.create_json_diff().
+    """
+
+    # Version to update.
+    source_version_to_update_validation_status = serializers.ChoiceField(
+        choices=OrgUnit.VALIDATION_STATUS_CHOICES, required=False, default=None
+    )
+    source_version_to_update_top_org_unit = serializers.PrimaryKeyRelatedField(
+        queryset=OrgUnit.objects.all(), required=False, default=None
+    )
+    source_version_to_update_org_unit_types = serializers.PrimaryKeyRelatedField(
+        queryset=OrgUnitType.objects.all(), many=True, required=False, default=None
+    )
+    # Version to compare with.
+    source_version_to_compare_with_validation_status = serializers.ChoiceField(
+        choices=OrgUnit.VALIDATION_STATUS_CHOICES, required=False, default=None
+    )
+    source_version_to_compare_with_top_org_unit = serializers.PrimaryKeyRelatedField(
+        queryset=OrgUnit.objects.all(), required=False, default=None
+    )
+    source_version_to_compare_with_org_unit_types = serializers.PrimaryKeyRelatedField(
+        queryset=OrgUnitType.objects.all(), many=True, required=False, default=None
+    )
+    # Options.
+    ignore_groups = serializers.BooleanField(required=False, default=False)
+    show_deleted_org_units = serializers.BooleanField(required=False, default=False)
+    field_names = serializers.MultipleChoiceField(
+        choices=DataSourceVersionsSynchronization.SYNCHRONIZABLE_FIELDS, required=False, default=None
+    )
+
+    def validate_source_version_to_update_top_org_unit(self, top_org_unit: OrgUnit) -> OrgUnit:
+        if top_org_unit:
+            source_version = self.context["data_source_versions_synchronization"].source_version_to_update
+            if top_org_unit.version != source_version:
+                raise serializers.ValidationError(
+                    f"The version of this org unit is different from the version to update."
+                )
+        return top_org_unit
+
+    def validate_source_version_to_compare_with_top_org_unit(self, top_org_unit: OrgUnit) -> OrgUnit:
+        if top_org_unit:
+            source_version = self.context["data_source_versions_synchronization"].source_version_to_compare_with
+            if top_org_unit.version != source_version:
+                raise serializers.ValidationError(
+                    f"The version of this org unit is different from the version to update."
+                )
+        return top_org_unit

@@ -116,14 +116,41 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_create_json_diff(self):
+        self.client.force_authenticate(self.user)
+
         self.assertIsNone(self.data_source_sync_1.json_diff)
 
-        self.client.force_authenticate(self.user)
-        response = self.client.patch(f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/")
+        json_diff_params = {
+            "source_version_to_update_validation_status": m.OrgUnit.VALIDATION_NEW,
+            "source_version_to_compare_with_validation_status": m.OrgUnit.VALIDATION_NEW,
+            "ignore_groups": True,
+            "show_deleted_org_units": False,
+            "field_names": ["name"],
+        }
+        response = self.client.patch(
+            f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/", data=json_diff_params
+        )
         self.assertJSONResponse(response, 200)
 
         self.data_source_sync_1.refresh_from_db()
         self.assertIsNotNone(self.data_source_sync_1.json_diff)
+
+        expected_diff_config_str = (
+            "{"
+            f"'version': {self.source_1.pk}, "
+            "'validation_status': 'NEW', "
+            "'top_org_unit': None, "
+            "'org_unit_types': None, "
+            f"'version_ref': {self.source_2.pk}, "
+            "'validation_status_ref': 'NEW', "
+            "'top_org_unit_ref': None, "
+            "'org_unit_types_ref': None, "
+            "'ignore_groups': True, "
+            "'show_deleted_org_units': False, "
+            "'field_names': {'name'}"
+            "}"
+        )
+        self.assertEqual(self.data_source_sync_1.diff_config, expected_diff_config_str)
 
     def test_synchronize_source_versions_async_without_perms(self):
         self.client.force_authenticate(self.user)

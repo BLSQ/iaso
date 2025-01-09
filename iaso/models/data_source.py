@@ -204,6 +204,8 @@ class DataSourceVersionsSynchronization(models.Model):
 
     """
 
+    SYNCHRONIZABLE_FIELDS = ["name", "parent", "opening_date", "closed_date", "groups"]
+
     name = models.CharField(
         max_length=255,
         help_text=_("Used in the UI e.g. to filter Change Requests by Data Source Synchronization operations."),

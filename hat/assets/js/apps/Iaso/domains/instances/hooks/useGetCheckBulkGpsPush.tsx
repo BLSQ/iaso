@@ -5,7 +5,7 @@ import { makeUrlWithParams } from '../../../libs/utils';
 import { CheckBulkGpsPushResult } from '../types/instance';
 
 export const useGetCheckBulkGpsPush = (
-    params,
+    params: Record<string, any>,
 ): UseQueryResult<CheckBulkGpsPushResult> => {
     return useSnackQuery({
         queryKey: ['bulkGpsCheck', params],

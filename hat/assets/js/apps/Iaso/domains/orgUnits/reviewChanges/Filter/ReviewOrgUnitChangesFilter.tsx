@@ -50,12 +50,11 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
     const redirectToReplace = useRedirectToReplace();
-    const newParams = useMemo(() => params, [params]);
 
     const defaultSourceVersion = useDefaultSourceVersion();
     const [selectedVersionId, setSelectedVersionId] = useState<string>(
-        newParams.source_version_id
-            ? newParams.source_version_id
+        params.source_version_id
+            ? params.source_version_id
             : defaultSourceVersion.version.id.toString(),
     );
 
@@ -76,27 +75,35 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const { data: paymentStatuses, isFetching: isFetchingPaymentStatuses } =
         usePaymentStatusOptions();
 
+    const updateParams = (paramsToUpdate, selectedVersion) => {
+        const newParams = {
+            ...paramsToUpdate,
+            source_version_id: selectedVersion,
+        };
+        return newParams;
+    };
+
     // Redirect to default version
     useEffect(() => {
-        if (!newParams.source_version_id) {
-            newParams.source_version_id = selectedVersionId;
-            redirectToReplace(baseUrl, newParams);
+        if (!params.source_version_id) {
+            const updatedParams = updateParams(params, selectedVersionId);
+            redirectToReplace(baseUrl, updatedParams);
         }
-    }, [newParams, selectedVersionId, redirectToReplace]);
+    }, [selectedVersionId, redirectToReplace, params]);
 
     // Get the source when the source_version_id exists
     const sourceParam = useMemo(
         () =>
-            newParams.source_version_id
+            params.source_version_id
                 ? dataSources?.filter(source =>
                       source.original.versions.some(
                           version =>
                               version.id.toString() ===
-                              newParams.source_version_id,
+                              params.source_version_id,
                       ),
                   )[0].value
                 : undefined,
-        [dataSources, newParams.source_version_id],
+        [dataSources, params.source_version_id],
     );
 
     const [dataSource, setDataSource] = useState<string>(
@@ -190,22 +197,16 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             // Reset the group filter state
             handleChange('groups', null);
             filters.groups = null;
+
             // Reset selected version
             setSelectedVersionId(selectedVersion || '');
             if (selectedVersion) {
                 handleChange('source_version_id', selectedVersion);
             }
-            // Reset the parent_id and groups params
-            delete newParams.parent_id;
-            delete newParams.groups;
+            // Reset the parent_id
+            filters.parent_id = null;
         },
-        [
-            dataSources,
-            filters,
-            handleChange,
-            newParams.groups,
-            newParams.parent_id,
-        ],
+        [dataSources, filters, handleChange],
     );
 
     const getVersionLabel = useGetVersionLabel(dataSources);

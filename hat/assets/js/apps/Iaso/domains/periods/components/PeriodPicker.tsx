@@ -117,8 +117,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
         }
         setCurrentPeriod(newPeriod);
         onChange(getPeriodPickerString(periodType, newPeriod, value));
-    };    
-
+    };
 
     const handleChangeDay = useCallback(
         date => {
@@ -136,7 +135,6 @@ const PeriodPicker: FunctionComponent<Props> = ({
     );
 
     const getQuarterOptionLabel = (value, label) => {
-
         if (periodType === PERIOD_TYPE_QUARTER_NOV) {
             return `${label} (${formatMessage(
                 QUARTERS_NOV_RANGE[value][0],
@@ -221,7 +219,8 @@ const PeriodPicker: FunctionComponent<Props> = ({
                         )}
 
                         {(periodType === PERIOD_TYPE_MONTH ||
-                            periodType === PERIOD_TYPE_QUARTER || periodType === PERIOD_TYPE_QUARTER_NOV ||
+                            periodType === PERIOD_TYPE_QUARTER ||
+                            periodType === PERIOD_TYPE_QUARTER_NOV ||
                             periodType === PERIOD_TYPE_SIX_MONTH) && (
                             <Grid item sm={6}>
                                 {periodType === PERIOD_TYPE_MONTH && (
@@ -247,7 +246,8 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                         label={MESSAGES.month}
                                     />
                                 )}
-                                {periodType === PERIOD_TYPE_QUARTER || periodType === PERIOD_TYPE_QUARTER_NOV && (
+                                {(periodType === PERIOD_TYPE_QUARTER ||
+                                    periodType === PERIOD_TYPE_QUARTER_NOV) && (
                                     <InputComponent
                                         keyValue="quarter"
                                         onChange={handleChange}

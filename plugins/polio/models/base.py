@@ -17,7 +17,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import Q, QuerySet, Sum
-from django.db.models.expressions import RawSQL
+from django.db.models.expressions import RawSQL, Subquery
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -298,6 +298,14 @@ class SubActivity(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def vaccines(self):
+        all_vaccines = self.scopes.all().values_list("vaccine", flat=True)
+        vaccines = set()
+        for vaccine in all_vaccines:
+            vaccines.add(vaccine)
+        return list(vaccines)
 
 
 class Round(models.Model):
@@ -788,53 +796,70 @@ class Campaign(SoftDeletableModel):
 
         super().save(*args, **kwargs)
 
+    # deprecated
     @property
     def vaccines(self):
-        # only take into account scope which have orgunit attached
+        vaccines = set()
+        rnds = self.rounds.all().values("id")
+
         if self.separate_scopes_per_round:
-            vaccines = set()
-            for round in self.rounds.all():
-                scopes_with_orgunits = filter(
-                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, round.scopes.all()
-                )
-                for scope in scopes_with_orgunits:
-                    vaccines.add(scope.vaccine)
-            return ", ".join(sorted(vaccines))
+            round_vaccines = RoundScope.objects.filter(
+                round__id__in=Subquery(rnds), group__org_units__isnull=False, vaccine__isnull=False
+            ).values_list("vaccine", flat=True)
+
+            for vaccine in round_vaccines:
+                vaccines.add(vaccine)
         else:
-            scopes_with_orgunits = filter(
-                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
-            )
-            return ",".join(sorted({scope.vaccine for scope in scopes_with_orgunits}))
+            campaign_vaccines = CampaignScope.objects.filter(
+                campaign=self, group__org_units__isnull=False, vaccine__isnull=False
+            ).values_list("vaccine", flat=True)
+
+            for vaccine in campaign_vaccines:
+                vaccines.add(vaccine)
+            if VACCINES[3][0] in vaccines:
+                vaccines.remove(VACCINES[3][0])
+                vaccines.add(VACCINES[1][0])
+                vaccines.add(VACCINES[2][0])
+            return ", ".join(sorted(vaccines))
 
     def vaccine_names(self):
-        # only take into account scope which have orgunit attached and vaccine is not None
-        scopes_with_orgunits_and_vaccine = filter(
-            lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
-        )
-
-        vaccine_names = sorted({scope.vaccine for scope in scopes_with_orgunits_and_vaccine})
-        return ", ".join(vaccine_names)
+        vaccines = set()
+        campaign_vaccines = CampaignScope.objects.filter(
+            campaign=self, group__org_units__isnull=False, vaccine__isnull=False
+        ).values_list("vaccine", flat=True)
+        for vaccine in campaign_vaccines:
+            vaccines.add(vaccine)
+            if VACCINES[3][0] in vaccines:
+                vaccines.remove(VACCINES[3][0])
+                vaccines.add(VACCINES[1][0])
+                vaccines.add(VACCINES[2][0])
+        return ", ".join(sorted(vaccines))
 
     @property
     def vaccines_extended(self):
         vaccines = set()
-        for round in self.rounds.all():
-            subactivity_vaccines = [
-                subactivity["scopes__vaccine"]
-                for subactivity in list(round.sub_activities.filter(scopes__isnull=False).values("scopes__vaccine"))
-            ]
-            for subactivity_vaccine in subactivity_vaccines:
-                vaccines.add(subactivity_vaccine)
-            if self.separate_scopes_per_round:
-                scopes_with_orgunits = filter(
-                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, round.scopes.all()
-                )
-            else:
-                scopes_with_orgunits = filter(
-                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
-                )
-            for scope in scopes_with_orgunits:
-                vaccines.add(scope.vaccine)
+        rnds = self.rounds.all().values("id")
+        subactivity_vaccines = SubActivityScope.objects.filter(
+            subactivity__round__id__in=Subquery(rnds), group__org_units__isnull=False, vaccine__isnull=False
+        ).values_list("vaccine", flat=True)
+
+        for vaccine in subactivity_vaccines:
+            vaccines.add(vaccine)
+
+        if self.separate_scopes_per_round:
+            round_vaccines = RoundScope.objects.filter(
+                round__id__in=Subquery(rnds), group__org_units__isnull=False, vaccine__isnull=False
+            ).values_list("vaccine", flat=True)
+
+            for vaccine in round_vaccines:
+                vaccines.add(vaccine)
+        else:
+            campaign_vaccines = CampaignScope.objects.filter(
+                campaign=self, group__org_units__isnull=False, vaccine__isnull=False
+            ).values_list("vaccine", flat=True)
+
+            for vaccine in campaign_vaccines:
+                vaccines.add(vaccine)
             if VACCINES[3][0] in vaccines:
                 vaccines.remove(VACCINES[3][0])
                 vaccines.add(VACCINES[1][0])

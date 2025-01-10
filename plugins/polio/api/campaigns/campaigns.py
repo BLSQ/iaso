@@ -617,7 +617,6 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "epid",
             "obr_name",
             "account",
-            "cvdpv2_notified_at",
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "rounds",
@@ -627,9 +626,9 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "separate_scopes_per_round",
             "scopes",
             # displayed in RoundPopper
-            "risk_assessment_status",
-            "budget_status",
+            # To deprecate in front-end code as it doesn't have subactivities
             "vaccines",
+            "single_vaccines",
             "campaign_types",
             "description",
             "is_test",

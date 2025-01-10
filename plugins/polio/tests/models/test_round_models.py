@@ -60,5 +60,5 @@ class RoundModelTestCase(APITestCase, PolioTestCaseMixin):
 
         self.rnd3.delete()
 
-        self.assertEqual(m.Group.objects.count(), 3)
         self.assertEqual(pm.RoundScope.objects.count(), 2)
+        self.assertEqual(m.Group.objects.count(), 3)

@@ -3,17 +3,17 @@ import React, {
     useState,
     useMemo,
     useCallback,
-} from "react";
-import { Grid, Button } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import { useSafeIntl } from "bluesquare-components";
-import { useGetProjectsDropdownOptions } from "../../../projects/hooks/requests";
-import { useDataSourceVersions } from "../../../dataSources/requests";
-import { useGetDataSources } from "../../../dataSources/useGetDataSources";
-import { useFilterState } from "../../../../hooks/useFilterState";
-import InputComponent from "../../../../components/forms/InputComponent";
-import { baseUrl } from "../config";
-import MESSAGES from "../messages";
+} from 'react';
+import { Grid, Button } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import { useSafeIntl } from 'bluesquare-components';
+import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
+import { useDataSourceVersions } from '../../../dataSources/requests';
+import { useGetDataSources } from '../../../dataSources/useGetDataSources';
+import { useFilterState } from '../../../../hooks/useFilterState';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { baseUrl } from '../config';
+import MESSAGES from '../messages';
 
 type Params = {
     page?: string;
@@ -28,30 +28,28 @@ type Props = {
     params: Params;
 };
 
-const dataSourceByProjectId = (
-    dataSources: any[],
-    projectId: string
-) => {
-    return dataSources?.map((source: { projects: any[][]; name: any; id: any }) => {
-        const projectIds = source?.projects[0].map((project: { id: string }) =>
-            project?.id.toString()
-        );
-        return {
-            label: source?.name,
-            value: `${source?.id}`,
-            projectIds: projectIds,
-        };
-    })
+const dataSourceByProjectId = (dataSources: any[], projectId: string) => {
+    return dataSources
+        ?.map((source: { projects: any[][]; name: any; id: any }) => {
+            const projectIds = source?.projects[0].map(
+                (project: { id: string }) => project?.id.toString(),
+            );
+            return {
+                label: source?.name,
+                value: `${source?.id}`,
+                projectIds,
+            };
+        })
         .filter((source: { projectIds: string[] }) =>
-            source.projectIds?.includes(projectId)
+            source.projectIds?.includes(projectId),
         );
 };
 
 const versionsBySource = (sourceVersions: any[], source: string) => {
-    let versions = sourceVersions?.filter(
-        (version) => version?.data_source.toString() === source
+    const versions = sourceVersions?.filter(
+        version => version?.data_source.toString() === source,
     );
-    return versions?.map((version) => {
+    return versions?.map(version => {
         return {
             label: `${version?.data_source_name}-${version?.number}`,
             value: `${version?.id}`,
@@ -75,30 +73,32 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         useDataSourceVersions();
 
     const [projectIds, setProjectIds] = useState<string | undefined>(
-        filters?.project_ids
+        filters?.project_ids,
     );
     const [dataSource, setDataSource] = useState<string | undefined>(
-        filters?.dataSource
+        filters?.dataSource,
     );
-    const [version, setVersion] = useState<string | undefined>(filters?.version);
+    const [version, setVersion] = useState<string | undefined>(
+        filters?.version,
+    );
 
     const dataSourceDropDown = useMemo(
         () => dataSourceByProjectId(dataSources?.sources, filters?.project_ids),
-        [dataSources, filters?.project_ids]
+        [dataSources, filters?.project_ids],
     );
 
     const sourceVersionsDropDown = useMemo(
         () => versionsBySource(sourceVersions, filters?.dataSource),
-        [dataSources, filters?.dataSource]
+        [filters?.dataSource, sourceVersions],
     );
 
     const handleChangeSelect = useCallback(
         (key, newValue) => {
             let value = newValue;
             if (newValue === null) {
-                value = undefined
+                value = undefined;
             }
-            if (key === "project_ids") {
+            if (key === 'project_ids') {
                 if (newValue === null) {
                     filters.dataSource = undefined;
                     filters.version = undefined;
@@ -106,33 +106,18 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 setProjectIds(value);
                 setDataSource(undefined);
                 setVersion(undefined);
-            } else {
-                if (key === "dataSource") {
-                    if (newValue === null) {
-                        filters.version = undefined;
-                        setVersion(undefined);
-                    }
-                    setDataSource(value);
-                } else {
-                    if (key === "version") {
-                        setVersion(value);
-                    }
+            } else if (key === 'dataSource') {
+                if (newValue === null) {
+                    filters.version = undefined;
+                    setVersion(undefined);
                 }
+                setDataSource(value);
+            } else if (key === 'version') {
+                setVersion(value);
             }
             handleChange(key, value);
         },
-        [
-            filters,
-            filtersUpdated,
-            projectIds,
-            dataSource,
-            version,
-            handleChange,
-            handleSearch,
-            setProjectIds,
-            setDataSource,
-            setVersion,
-        ]
+        [filters, handleChange, setProjectIds, setDataSource, setVersion],
     );
     const { formatMessage } = useSafeIntl();
 
@@ -196,7 +181,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
 
             <Grid container item xs={12} md={12} justifyContent="flex-end">
-
                 <Button
                     data-test="search-button"
                     disabled={!filtersUpdated || textSearchError}
@@ -207,7 +191,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     <SearchIcon />
                     {formatMessage(MESSAGES.search)}
                 </Button>
-
             </Grid>
         </Grid>
     );

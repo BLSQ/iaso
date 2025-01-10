@@ -64,7 +64,11 @@ class NG_Under5:
                         ),
                     )
 
-                    if form_id in ["Anthropometric visit child", "anthropometric_admission_otp"]:
+                    if form_id in [
+                        "anthropometric_admission",
+                        "Anthropometric visit child",
+                        "anthropometric_admission_otp",
+                    ]:
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
                         visit_date = visit.get(
@@ -127,7 +131,8 @@ class NG_Under5:
                 f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
             )
             instance["journey"] = self.journeyMapper(
-                instance["visits"], ["Anthropometric visit child", "anthropometric_admission_otp"]
+                instance["visits"],
+                ["Anthropometric visit child", "anthropometric_admission", "anthropometric_admission_otp"],
             )
             beneficiary = Beneficiary()
             if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
@@ -170,9 +175,9 @@ class NG_Under5:
 
         if len(visit_nutrition_program) > 0:
             nutrition_programme = ETL().program_mapper(visit_nutrition_program[0])
-            if nutrition_programme == "TSFP-MAM":
+            if nutrition_programme in ["TSFP_MAM", "TSFP-MAM", "TSFP"]:
                 current_journey["nutrition_programme"] = "TSFP"
-            elif nutrition_programme == "OTP-SAM":
+            elif nutrition_programme in ["OTP_SAM", "OTP-SAM", "OTP"]:
                 current_journey["nutrition_programme"] = "OTP"
             else:
                 current_journey["nutrition_programme"] = nutrition_programme

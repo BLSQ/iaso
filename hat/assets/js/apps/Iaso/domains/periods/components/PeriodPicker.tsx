@@ -137,7 +137,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
 
     const getQuarterOptionLabel = (value, label) => {
 
-        if (periodType == PERIOD_TYPE_QUARTER_NOV) {
+        if (periodType === PERIOD_TYPE_QUARTER_NOV) {
             return `${label} (${formatMessage(
                 QUARTERS_NOV_RANGE[value][0],
             )}-${formatMessage(QUARTERS_NOV_RANGE[value][1])})`;

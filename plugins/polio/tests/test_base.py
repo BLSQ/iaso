@@ -689,7 +689,7 @@ class PolioAPITestCase(APITestCase):
             + " - "
             + ended_at
             + "\n"
-            + round.vaccine_names()
+            + round.vaccine_names
             + "\n"
         )
 

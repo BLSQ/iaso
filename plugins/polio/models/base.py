@@ -402,7 +402,7 @@ class Round(models.Model):
         vaccines = set()
         if self.campaign.separate_scopes_per_round:
             round_vaccines = RoundScope.objects.filter(
-                round=Subquery(self), group__org_units__isnull=False, vaccine__isnull=False
+                round=self, group__org_units__isnull=False, vaccine__isnull=False
             ).values_list("vaccine", flat=True)
 
             vaccines.update(round_vaccines)
@@ -428,7 +428,7 @@ class Round(models.Model):
         vaccines = set()
 
         subactivity_vaccines = SubActivityScope.objects.filter(
-            subactivity__round=Subquery(self), group__org_units__isnull=False, vaccine__isnull=False
+            subactivity__round=self, group__org_units__isnull=False, vaccine__isnull=False
         ).values_list("vaccine", flat=True)
 
         vaccines.update(subactivity_vaccines)
@@ -836,7 +836,8 @@ class Campaign(SoftDeletableModel):
 
     @property
     def campaign_level_vaccines_list(self):
-        """Vaccines from campaign level scopes"""
+        """Vaccine types from campaign level scopes.
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
 
         if self.separate_scopes_per_round:
             return []
@@ -848,12 +849,22 @@ class Campaign(SoftDeletableModel):
         ).values_list("vaccine", flat=True)
 
         vaccines.update(campaign_vaccines)
-        vaccines = self.split_combined_vaccines(vaccines)
         return sorted(list(vaccines))
 
     @property
+    def campaign_level_single_vaccines_list(self):
+        """Same as self.campaign_level_vaccines_list, but the vaccine type nOPV2&bOPV2 is split.
+        So a campaign with nOPV2 and nOPV2&bOPV2 in its scopes will only have 2 elements in the list.
+        Useful when dealing with actual vaccines, eg: vaccine stocks
+
+        """
+        vaccines = set(self.campaign_level_vaccines_list)
+        return sorted(list(self.split_combined_vaccines(vaccines)))
+
+    @property
     def round_level_vaccines_list(self):
-        """vaccines from round level scopes, excluding subactivities"""
+        """vaccines from round level scopes, excluding subactivities
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
         if not self.separate_scopes_per_round:
             return []
 
@@ -865,13 +876,21 @@ class Campaign(SoftDeletableModel):
         ).values_list("vaccine", flat=True)
 
         vaccines.update(round_vaccines)
-        vaccines = self.split_combined_vaccines(vaccines)
-
         return sorted(list(vaccines))
 
     @property
+    def round_level_single_vaccines_list(self):
+        """Same as self.round_level_vaccines_list, but the vaccine type nOPV2&bOPV2 is split.
+        So a campaign with nOPV2 and nOPV2&bOPV2 in its scopes will only have 2 elements in the list.
+        Useful when dealing with actual vaccines, eg: vaccine stocks
+        """
+        vaccines = set(self.round_level_vaccines_list)
+        return sorted(list(self.split_combined_vaccines(vaccines)))
+
+    @property
     def sub_activity_level_vaccines_list(self):
-        """List of vaccines from sub-activities scopes (excluding parent round scopes)"""
+        """List of vaccines from sub-activities scopes (excluding parent round scopes)
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
         vaccines = set()
         rnds = self.rounds.all().values("id")
 
@@ -880,8 +899,18 @@ class Campaign(SoftDeletableModel):
         ).values_list("vaccine", flat=True)
 
         vaccines.update(subactivity_vaccines)
-        vaccines = self.split_combined_vaccines(vaccines)
+        # vaccines = self.split_combined_vaccines(vaccines)
         return sorted(list(vaccines))
+
+    @property
+    def sub_activity_level_single_vaccines_list(self):
+        """Same as self.sub_activity_level_vaccines_list, but the vaccine type nOPV2&bOPV2 is split.
+        So a campaign with nOPV2 and nOPV2&bOPV2 in its scopes will only have 2 elements in the list.
+        Useful when dealing with actual vaccines, eg: vaccine stocks
+
+        """
+        vaccines = set(self.sub_activity_level_vaccines_list)
+        return sorted(list(self.split_combined_vaccines(vaccines)))
 
     # deprecated
     @property
@@ -894,9 +923,16 @@ class Campaign(SoftDeletableModel):
         vaccines.update(self.campaign_level_vaccines_list)
         vaccines.update(self.round_level_vaccines_list)
         vaccines.update(self.sub_activity_level_vaccines_list)
-        vaccines = self.split_combined_vaccines(vaccines)
-
         return sorted(list(vaccines))
+
+    @property
+    def single_vaccines_extended_list(self):
+        """Same as self.vaccines_extended_list, but the vaccine type nOPV2&bOPV2 is split.
+        So a campaign with nOPV2 and nOPV2&bOPV2 in its scopes will only have 2 elements in the list.
+        Useful when dealing with actual vaccines, eg: vaccine stocks
+        """
+        vaccines = set(self.vaccines_extended_list)
+        return sorted(list(self.split_combined_vaccines(vaccines)))
 
     @property
     def vaccines_extended(self):

@@ -1368,7 +1368,7 @@
     "iaso.tasks.killSignalSent": "Signal d'arrêt envoyé",
     "iaso.tasks.killTask": "Arrêter la tâche",
     "iaso.tasks.user": "Utilisateur",
-    "iaso.tasks.last_launch_by": "Dernière execution :",
+    "iaso.tasks.last_launch_by": "Dernière exécution :",
     "iaso.tasks.message": "Message",
     "iaso.tasks.name": "Nom",
     "iaso.tasks.polioNotificationImport.details": "Détails de l'importation des notifications Polio",

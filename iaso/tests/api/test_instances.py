@@ -1749,6 +1749,46 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(self.instance_8.id, instances[2].get("id"))
         self.assertEqual(self.instance_2.id, instances[4].get("id"))
 
+    def test_instances_list_search_by_ids(self):
+        self.client.force_authenticate(self.yoda)
+        orgunit = m.OrgUnit.objects.create(name="Org Unit 1")
+        instance_1 = self.create_form_instance(
+            form=self.form_1, period="202001", org_unit=orgunit, project=self.project
+        )
+        instance_2 = self.create_form_instance(
+            form=self.form_1, period="202002", org_unit=orgunit, project=self.project
+        )
+        instance_3 = self.create_form_instance(
+            form=self.form_1, period="202003", org_unit=orgunit, project=self.project
+        )
+        # ids without coma
+        response_without_coma = self.client.get(
+            "/api/instances/",
+            {"search": "ids: " + str(instance_2.id) + " " + str(instance_1.id)},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response_without_coma, 200)
+        instances_without_coma = response_without_coma.json()["instances"]
+
+        self.assertEqual(2, len(instances_without_coma))
+        self.assertListEqual(
+            sorted([instance["id"] for instance in instances_without_coma]), sorted([instance_1.id, instance_2.id])
+        )
+
+        # ids with coma
+        response_with_coma = self.client.get(
+            "/api/instances/",
+            {"search": "ids: " + str(instance_2.id) + ", " + str(instance_3.id)},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response_with_coma, 200)
+        instances_with_coma = response_with_coma.json()["instances"]
+
+        self.assertEqual(2, len(instances_with_coma))
+        self.assertListEqual(
+            sorted([instance["id"] for instance in instances_with_coma]), sorted([instance_2.id, instance_3.id])
+        )
+
     def test_instances_bad_sent_date_from(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(

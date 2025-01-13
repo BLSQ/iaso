@@ -36,11 +36,11 @@ import {
     CampaignsFilters,
     getRedirectUrl,
 } from './campaignCalendar/CampaignsFilters';
+import { HasSubActivityLegend } from './campaignCalendar/HasSubActivityLegend';
 import { IsTestLegend } from './campaignCalendar/IsTestLegend';
 import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 import { TogglePeriod } from './campaignCalendar/TogglePeriod';
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
-import { HasSubActivityLegend } from './campaignCalendar/hasSubActivityLegend';
 import { CalendarParams, MappedCampaign } from './campaignCalendar/types';
 
 const useStyles = makeStyles(theme => ({

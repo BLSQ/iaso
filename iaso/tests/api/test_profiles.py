@@ -1677,6 +1677,10 @@ class ProfileAPITestCase(APITestCase):
             parent=child_of_child,
         )
 
+        # Clear existing org units first to avoid interference
+        for profile in m.Profile.objects.all():
+            profile.org_units.clear()
+
         # Assign users to different levels of the hierarchy
         self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])  # Root
         self.jim.iaso_profile.org_units.set([self.child_org_unit])  # Child
@@ -1699,6 +1703,10 @@ class ProfileAPITestCase(APITestCase):
 
     def test_profile_list_search_by_parent_and_children_ou(self):
         """Test that searching with both parent and children flags returns the complete hierarchy"""
+        # Clear existing org units first
+        for profile in m.Profile.objects.all():
+            profile.org_units.clear()
+
         # Setup hierarchy
         parent_of_root = m.OrgUnit.objects.create(
             org_unit_type=self.parent_org_unit_type,
@@ -1731,6 +1739,10 @@ class ProfileAPITestCase(APITestCase):
     def test_profile_list_search_by_children_ou_no_duplicates(self):
         """Test that searching by children org units doesn't return duplicate profiles
         when a user is assigned to multiple levels"""
+        # Clear existing org units first
+        for profile in m.Profile.objects.all():
+            profile.org_units.clear()
+
         # Assign a user to multiple levels in the hierarchy
         self.jane.iaso_profile.org_units.set(
             [

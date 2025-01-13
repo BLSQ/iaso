@@ -417,6 +417,7 @@
     "iaso.instances.label.created_by__username": "Created by",
     "iaso.instances.modificationDateFrom": "Modification date from",
     "iaso.instances.modificationDateTo": "Modification date to",
+    "iaso.instances.searchParams": "Use prefix “ids:” for internal submissions ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or ids: 123456 654321”",
     "iaso.instances.sentDateFrom": "Sent date From",
     "iaso.instances.sentDateTo": "Sent date to",
     "iaso.instances.showDeleted": "Show only deleted",

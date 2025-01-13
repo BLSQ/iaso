@@ -885,7 +885,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
             if search.startswith("ids:"):
                 ids_str = search.replace("ids:", "")
                 try:
-                    ids = [int(i.strip()) for i in ids_str.split(",")]
+                    ids = re.findall("[A-Za-z0-9_-]+", ids_str)
                     queryset = queryset.filter(id__in=ids)
                 except:
                     queryset = queryset.filter(id__in=[])

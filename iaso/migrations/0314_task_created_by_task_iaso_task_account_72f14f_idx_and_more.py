@@ -29,15 +29,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="task",
-            index=models.Index(fields=["account"], name="iaso_task_account_72f14f_idx"),
-        ),
-        migrations.AddIndex(
-            model_name="task",
             index=models.Index(fields=["created_at"], name="iaso_task_created_25fae0_idx"),
-        ),
-        migrations.AddIndex(
-            model_name="task",
-            index=models.Index(fields=["created_by"], name="iaso_task_created_573360_idx"),
         ),
         migrations.AddIndex(
             model_name="task",

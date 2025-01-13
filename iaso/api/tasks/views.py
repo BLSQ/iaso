@@ -69,7 +69,7 @@ class TaskSourceViewSet(ModelViewSet):
 
     def get_queryset(self):
         profile = self.request.user.iaso_profile
-        return Task.objects.select_related("created_by", "launcher").filter(account=profile.account)
+        return Task.objects.select_related("created_by", "launcher", "user__iaso_profile").filter(account=profile.account)
 
     def get_permissions(self):
         if self.action in ["retrieve", "relaunch"]:

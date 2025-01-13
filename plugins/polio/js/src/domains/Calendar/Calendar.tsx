@@ -40,6 +40,7 @@ import { IsTestLegend } from './campaignCalendar/IsTestLegend';
 import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 import { TogglePeriod } from './campaignCalendar/TogglePeriod';
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
+import { HasSubActivityLegend } from './campaignCalendar/hasSubActivityLegend';
 import { CalendarParams, MappedCampaign } from './campaignCalendar/types';
 
 const useStyles = makeStyles(theme => ({
@@ -273,6 +274,9 @@ export const Calendar: FunctionComponent = () => {
                                         <IsTestLegend />
                                     </Box>
                                 )}
+                                <Box mr={2}>
+                                    <HasSubActivityLegend />
+                                </Box>
                                 {!isPdf && (
                                     <TogglePeriod
                                         params={params}

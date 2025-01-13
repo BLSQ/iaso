@@ -1214,6 +1214,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.testCampaign',
         defaultMessage: 'Test campaign/On hold',
     },
+    hasSubActivities: {
+        id: 'iaso.polio.label.hasSubActivities',
+        defaultMessage: 'Round with sub-activities',
+    },
     round: {
         id: 'iaso.polio.label.round',
         defaultMessage: 'Round',

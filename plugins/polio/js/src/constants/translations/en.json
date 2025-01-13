@@ -457,6 +457,7 @@
     "iaso.polio.label.group": "Group",
     "iaso.polio.label.groupedCampaigns": "EPID Blocks",
     "iaso.polio.label.H2H_Mobilizer": "Social Mobilizer / CBV",
+    "iaso.polio.label.hasSubActivities": "Round with sub-activities",
     "iaso.polio.label.Health_worker": "Health worker",
     "iaso.polio.label.healthCentreToDistrict": "Health centers to district",
     "iaso.polio.label.helpTextEditVaccineViaScope": "The list of vaccines comes from the scope",

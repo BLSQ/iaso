@@ -32,7 +32,7 @@ from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 # noinspection PyMethodMayBeStatic
 
 
-class HasCreateOrUnitPermission(permissions.BasePermission):
+class HasCreateOrgUnitPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
@@ -614,7 +614,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 pass
         return None
 
-    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasCreateOrUnitPermission])
+    @action(
+        detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasCreateOrgUnitPermission]
+    )
     def create_org_unit(self, request):
         """This endpoint is used by the React frontend"""
         errors = []

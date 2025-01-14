@@ -195,6 +195,7 @@
     "iaso.polio.form.label.mainReasonForNonVaccination": "Main reason for non-vaccination",
     "iaso.polio.form.label.mopUpEnd": "Mop Up End",
     "iaso.polio.form.label.mopUpStart": "Mop Up Start",
+    "iaso.polio.form.label.mustBeAfterRoundEndDate": "Must be after round end date",
     "iaso.polio.form.label.newBudgetState": "New budget state",
     "iaso.polio.form.label.noRegretFund": "No Regret Fund",
     "iaso.polio.form.label.noRounds": "No rounds selected",

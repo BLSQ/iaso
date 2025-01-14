@@ -7,9 +7,9 @@ import React, {
     useEffect,
     useMemo,
 } from 'react';
+import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
-import { TextArea } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 import { NumberInput } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
@@ -64,7 +64,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     }, [setFieldValue, values?.vrf?.vrf_type]);
 
     const onCommentChange = useCallback(
-        value => {
+        (_, value) => {
             // this condition is to avoid marking the field as touched when setting the value to the API response
             if (
                 values?.vrf?.comment !== undefined &&
@@ -338,25 +338,16 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                             </Grid>
                             <Grid container item xs={12} spacing={2}>
                                 <Grid item xs={12} lg={6}>
-                                    {/* With MUI 5, the spacing isn't taken into account if there's only one <Grid> item
-                                      so the <Box> is used to compensate and align the TextArea with the other fields
-                                    */}
-                                    <Box mr={1}>
-                                        <TextArea
-                                            value={values?.vrf?.comment ?? ''}
-                                            // errors={errors.comment ? errors.comment : []}
-                                            label={formatMessage(
-                                                MESSAGES.comments,
-                                            )}
-                                            onChange={onCommentChange}
-                                            debounceTime={0}
-                                        />
-                                    </Box>
+                                    <InputComponent
+                                        type="textarea"
+                                        keyValue="vrf.comment"
+                                        value={values?.vrf?.comment ?? ''}
+                                        // errors={errors.comment ? errors.comment : []}
+                                        label={MESSAGES.comments}
+                                        onChange={onCommentChange}
+                                        withMarginTop={false}
+                                    />
                                 </Grid>
-
-                                {/* <Grid item xs={12} lg={6}>
-                           
-                                </Grid> */}
                             </Grid>
                         </>
                     )}

@@ -4,9 +4,8 @@ import math
 import os
 from collections import defaultdict
 from datetime import date
-from typing import Any, Tuple, Union, Optional
+from typing import Any, Optional, Tuple, Union
 from uuid import uuid4
-
 import django.db.models.manager
 import pandas as pd
 from django.conf import settings
@@ -16,7 +15,7 @@ from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Q, QuerySet, Sum
+from django.db.models import Q, QuerySet, Sum, Subquery
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Coalesce
 from django.utils import timezone
@@ -43,9 +42,17 @@ VIRUSES = [
     ("cVDPV2", _("cVDPV2")),
     ("WPV1", _("WPV1")),
     ("PV1 & cVDPV2", _("PV1 & cVDPV2")),
+    ("cVDPV1 & cVDPV2", _("cVDPV1 & cVDPV2")),
 ]
 
 VACCINES = [
+    ("mOPV2", _("mOPV2")),
+    ("nOPV2", _("nOPV2")),
+    ("bOPV", _("bOPV")),
+    ("nOPV2 & bOPV", _("nOPV2 & bOPV")),
+]
+
+INDIVIDUAL_VACCINES = [
     ("mOPV2", _("mOPV2")),
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
@@ -134,11 +141,22 @@ class RoundScope(models.Model):
     )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="scopes")
 
-    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
+    vaccine = models.CharField(max_length=12, choices=VACCINES, blank=True)
 
     class Meta:
         unique_together = [("round", "vaccine")]
         ordering = ["round", "vaccine"]
+
+
+# # Signal to delete the Group when the Round is deleted
+# @receiver(post_delete, sender=RoundScope)
+# def delete_group_on_round_delete(sender, instance, **kwargs):
+#     """
+#     Delete the associated Group when the RoundScope instance is deleted,
+#     which happens when a Round is deleted.
+#     """
+#     if instance.group:
+#         instance.group.delete()
 
 
 def make_group_campaign_scope():
@@ -152,7 +170,7 @@ class CampaignScope(models.Model):
         Group, on_delete=models.CASCADE, related_name="campaignScope", default=make_group_campaign_scope
     )
     campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE, related_name="scopes")
-    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
+    vaccine = models.CharField(max_length=12, choices=VACCINES, blank=True)
 
     class Meta:
         unique_together = [("campaign", "vaccine")]
@@ -173,8 +191,6 @@ class RoundDateHistoryEntry(models.Model):
     previous_ended_at = models.DateField(null=True, blank=True)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
-    # Deprecated. Cannot be deleted until the PowerBI dashboards are updated to use reason_for_delay instead
-    reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
     reason_for_delay = models.ForeignKey(
         "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="round_history_entries"
     )
@@ -265,7 +281,7 @@ class SubActivityScope(models.Model):
     )
     subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, related_name="scopes")
 
-    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
+    vaccine = models.CharField(max_length=12, choices=VACCINES, blank=True)
 
 
 AGE_UNITS = [
@@ -282,6 +298,10 @@ class SubActivity(models.Model):
     age_max = models.IntegerField(null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
+    im_started_at = models.DateField(null=True, blank=True)
+    im_ended_at = models.DateField(null=True, blank=True)
+    lqas_started_at = models.DateField(null=True, blank=True)
+    lqas_ended_at = models.DateField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "subactivities"
@@ -354,6 +374,16 @@ class Round(models.Model):
 
     objects = models.Manager.from_queryset(RoundQuerySet)()
 
+    def delete(self, *args, **kwargs):
+        # Explicitly delete groups related to the round's scopes, because the cascade deletion won't work reliably
+        Group.objects.filter(roundScope__isnull=False).filter(
+            roundScope__id__in=Subquery(self.scopes.all().values_list("id", flat=True))
+        ).delete()
+
+        # Call the parent class's delete() method to proceed with deleting the Round
+        # The scope will be deleted by Django's cascading
+        super().delete(*args, **kwargs)
+
     def get_item_by_key(self, key):
         return getattr(self, key)
 
@@ -377,6 +407,32 @@ class Round(models.Model):
                 lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.campaign.scopes.all()
             )
             return ",".join(scope.vaccine for scope in scopes_with_orgunits)
+
+    @property
+    def vaccine_names_extended(self):
+        vaccines = set()
+        subactivity_vaccines = [
+            subactivity["scopes__vaccine"]
+            for subactivity in list(self.sub_activities.filter(scopes__isnull=False).values("scopes__vaccine"))
+        ]
+        for subactivity_vaccine in subactivity_vaccines:
+            vaccines.add(subactivity_vaccine)
+        if self.campaign.separate_scopes_per_round:
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
+            )
+        else:
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.campaign.scopes.all()
+            )
+        for scope in scopes_with_orgunits:
+            vaccines.add(scope.vaccine)
+
+        if VACCINES[3][0] in vaccines:
+            vaccines.remove(VACCINES[3][0])
+            vaccines.add(VACCINES[1][0])
+            vaccines.add(VACCINES[2][0])
+        return ", ".join(sorted(vaccines))
 
     @property
     def districts_count_calculated(self):
@@ -525,7 +581,7 @@ class Campaign(SoftDeletableModel):
         verbose_name=_("PV2 Notification"),
     )
 
-    virus = models.CharField(max_length=12, choices=VIRUSES, null=True, blank=True)
+    virus = models.CharField(max_length=15, choices=VIRUSES, null=True, blank=True)
 
     # Detection.
     detection_status = models.CharField(default="PENDING", max_length=10, choices=STATUS)
@@ -778,6 +834,32 @@ class Campaign(SoftDeletableModel):
 
         vaccine_names = sorted({scope.vaccine for scope in scopes_with_orgunits_and_vaccine})
         return ", ".join(vaccine_names)
+
+    @property
+    def vaccines_extended(self):
+        vaccines = set()
+        for round in self.rounds.all():
+            subactivity_vaccines = [
+                subactivity["scopes__vaccine"]
+                for subactivity in list(round.sub_activities.filter(scopes__isnull=False).values("scopes__vaccine"))
+            ]
+            for subactivity_vaccine in subactivity_vaccines:
+                vaccines.add(subactivity_vaccine)
+            if self.separate_scopes_per_round:
+                scopes_with_orgunits = filter(
+                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, round.scopes.all()
+                )
+            else:
+                scopes_with_orgunits = filter(
+                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
+                )
+            for scope in scopes_with_orgunits:
+                vaccines.add(scope.vaccine)
+            if VACCINES[3][0] in vaccines:
+                vaccines.remove(VACCINES[3][0])
+                vaccines.add(VACCINES[1][0])
+                vaccines.add(VACCINES[2][0])
+            return ", ".join(sorted(vaccines))
 
     def update_geojson_field(self):
         "Update the geojson field on the campaign DO NOT TRIGGER the save() you have to do it manually"
@@ -1045,7 +1127,7 @@ class VaccineRequestForm(SoftDeletableModel):
         ]
 
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, db_index=True)
-    vaccine_type = models.CharField(max_length=5, choices=VACCINES)
+    vaccine_type = models.CharField(max_length=30, choices=INDIVIDUAL_VACCINES)
     rounds = models.ManyToManyField(Round, db_index=True)
     date_vrf_signature = models.DateField(null=True, blank=True)
     date_vrf_reception = models.DateField(null=True, blank=True)
@@ -1185,7 +1267,7 @@ class VaccineStock(models.Model):
         related_name="vaccine_stocks",
         help_text="Unique (Country, Vaccine) pair",
     )
-    vaccine = models.CharField(max_length=5, choices=VACCINES)
+    vaccine = models.CharField(max_length=12, choices=VACCINES)
 
     class Meta:
         unique_together = ("country", "vaccine")

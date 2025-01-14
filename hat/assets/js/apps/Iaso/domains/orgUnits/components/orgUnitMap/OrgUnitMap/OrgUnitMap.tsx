@@ -21,13 +21,13 @@ import {
     orderOrgUnitTypeByDepth,
 } from '../../../../../utils/map/mapUtils';
 import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
-import OrgUnitTypeFilterComponent from '../../../../forms/components/OrgUnitTypeFilterComponent';
+import OrgUnitTypeFilterComponent from '../OrgUnitTypeFilterComponent';
 import MESSAGES from '../../../messages';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
 import SourcesFilterComponent from '../../SourcesFilterComponent';
 import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
-import { OrgUnitsMapComments } from '../OrgUnitsMapComments';
+import { OrgUnitsMapComments } from '../OrgUnitComments/OrgUnitsMapComments';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';

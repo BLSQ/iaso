@@ -35,6 +35,10 @@ class RoundSerializer(serializers.ModelSerializer):
 
     # Vaccines from real scopes, from property, separated by ,
     vaccine_names = serializers.CharField(read_only=True)
+    vaccine_names_extended = serializers.SerializerMethodField(read_only=True)
+
+    def get_vaccine_names_extended(self, obj):
+        return obj.vaccine_names_extended
 
     @atomic
     def create(self, validated_data):
@@ -49,7 +53,7 @@ class RoundSerializer(serializers.ModelSerializer):
         if started_at is not None or ended_at is not None:
             reason_for_delay = ReasonForDelay.objects.filter(key_name="INITIAL_DATA").first()
             datelog = RoundDateHistoryEntry.objects.create(
-                round=round, reason="INITIAL_DATA", reason_for_delay=reason_for_delay, modified_by=user
+                round=round, reason_for_delay=reason_for_delay, modified_by=user
             )
             if started_at is not None:
                 datelog.started_at = started_at
@@ -91,7 +95,7 @@ class RoundSerializer(serializers.ModelSerializer):
                     # Fallback on first reason available for account
                     reason_for_delay = ReasonForDelay.filter(account=account).first()
                 datelog = RoundDateHistoryEntry.objects.create(
-                    round=instance, reason="INITIAL_DATA", reason_for_delay=reason_for_delay, modified_by=user
+                    round=instance, reason_for_delay=reason_for_delay, modified_by=user
                 )
             if datelog is not None:
                 # Replace instance with key_name to avoid validation error

@@ -161,7 +161,7 @@ def polio_vaccines(vaccine: str) -> Optional[str]:
         returns:
             None when the color vaccine doesn't exist or the matching color when the vaccine exists
     """
-    vaccine_color = {"nOPV2": "00b0f0", "mOPV2": "66ff66", "bOPV": "ffff00"}
+    vaccine_color = {"nOPV2": "00b0f0", "mOPV2": "66ff66", "bOPV": "ffff00", "nOPV2 & bOPV": "b04ccf"}
     if vaccine not in vaccine_color.keys():
         return None
 

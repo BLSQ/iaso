@@ -261,7 +261,7 @@ class DataSourceViewSet(ModelViewSet):
         if filter_empty_versions:
             sources = sources.annotate(version_count=Count("versions")).filter(version_count__gt=0)
         if name:
-            sources = sources.filter(name__contains=name)
+            sources = sources.filter(name__icontains=name)
         if project_ids:
             sources = sources.filter(projects__in=project_ids.split(","))
         if linked_to:

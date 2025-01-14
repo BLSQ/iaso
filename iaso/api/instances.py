@@ -36,7 +36,7 @@ from iaso.models import (
     OrgUnitChangeRequest,
     Project,
 )
-from iaso.utils import timestamp_to_datetime
+from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.file_utils import get_file_type
 from .org_units import HasCreateOrgUnitPermission
 

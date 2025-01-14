@@ -19,7 +19,7 @@ from hat.menupermissions import models as permission
 from iaso.api.common import DropdownOptionsListViewSet, DropdownOptionsSerializer, HasPermission, ModelViewSet
 from iaso.api.payments.filters import payments_lots as payments_lots_filters
 from iaso.api.payments.filters import potential_payments as potential_payments_filters
-from iaso.api.tasks import TaskSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.models.org_unit import OrgUnit
 from iaso.models.payments import PaymentStatuses

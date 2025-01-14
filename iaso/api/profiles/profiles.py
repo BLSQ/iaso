@@ -160,10 +160,10 @@ def get_filtered_profiles(
             queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
 
     if projects:
-        queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects)
+        queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects).distinct()
 
     if user_roles:
-        queryset = queryset.filter(user__iaso_profile__user_roles__pk__in=user_roles)
+        queryset = queryset.filter(user__iaso_profile__user_roles__pk__in=user_roles).distinct()
 
     if teams:
         queryset = queryset.filter(user__teams__id__in=teams).distinct()

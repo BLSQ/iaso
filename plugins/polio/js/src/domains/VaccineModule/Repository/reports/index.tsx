@@ -1,4 +1,4 @@
-import { Column } from 'bluesquare-components';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
@@ -11,6 +11,9 @@ import {
     useGetVaccineRepositoryReports,
 } from './hooks/useGetVaccineRepositoryReports';
 import { useVaccineRepositoryReportsColumns } from './hooks/useVaccineRepositoryReportsColumns';
+import ColorLegend from '../components/ColorLegend';
+import { MESSAGES as REPOSITORY_MESSAGES } from '../messages';
+import { NOPDFCOLOR, WITHPDFCOLOR } from '../constants';
 
 type Props = {
     params: VaccineRepositoryParams;
@@ -41,9 +44,23 @@ export const Reports: FunctionComponent<Props> = ({ params }) => {
 
     const { data, isFetching } = useGetVaccineRepositoryReports(reportParams);
     const columns = useVaccineRepositoryReportsColumns(reportParams);
+
+    const { formatMessage } = useSafeIntl();
+    const legendItems = [
+        {
+            label: formatMessage(REPOSITORY_MESSAGES.noPdf),
+            color: NOPDFCOLOR,
+        },
+        {
+            label: formatMessage(REPOSITORY_MESSAGES.withPdf),
+            color: WITHPDFCOLOR,
+        },
+    ];
+
     return (
         <>
             <Filters params={params} redirectUrl={redirectUrl} />
+            <ColorLegend legendItems={legendItems} />
             <TableWithDeepLink
                 marginTop={false}
                 data={data?.results ?? []}

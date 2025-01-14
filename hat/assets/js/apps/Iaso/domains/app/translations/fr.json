@@ -417,6 +417,7 @@
     "iaso.instances.label.created_by__username": "Crée par",
     "iaso.instances.modificationDateFrom": "Date de modification à partir de",
     "iaso.instances.modificationDateTo": "Date de modification jusqu'à",
+    "iaso.instances.searchParams": "Utilisez le préfixe “ids:” pour rechercher des ID de soumissions internes. Vous pouvez également rechercher plusieurs ID à la fois, séparés par une virgule ou un espace. Par exemple : “ids: 123456, 654321” or “ids: 123456 654321”",
     "iaso.instances.sentDateFrom": "Date d'envoi à partir de",
     "iaso.instances.sentDateTo": "Date d'envoi jusqu'à",
     "iaso.instances.showDeleted": "Montrer seulement les soumissions effacées",

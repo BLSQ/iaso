@@ -118,7 +118,6 @@ def get_filtered_profiles(
 
             if not parent:
                 queryset = queryset_current
-
             else:
                 queryset = (
                     original_queryset.filter(
@@ -130,11 +129,9 @@ def get_filtered_profiles(
 
         if children_ou and not parent_ou:
             queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
-            children_ous = OrgUnit.objects.filter(parent__pk=location)
-            queryset = (
-                original_queryset.filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ous])
-                | queryset_current
-            )
+            # Get all descendants in hierarchy instead of just direct children
+            descendant_ous = OrgUnit.objects.hierarchy(ou).exclude(id=ou.id)
+            queryset = original_queryset.filter(user__iaso_profile__org_units__in=descendant_ous) | queryset_current
 
         if parent_ou and children_ou:
             if not parent:
@@ -146,10 +143,9 @@ def get_filtered_profiles(
 
             queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
 
-            children_ous = OrgUnit.objects.filter(parent__pk=location)
-            queryset_children = original_queryset.filter(
-                user__iaso_profile__org_units__in=children_ous.values_list("id", flat=True)
-            )
+            # Get all descendants in hierarchy instead of just direct children
+            descendant_ous = OrgUnit.objects.hierarchy(ou).exclude(id=ou.id)
+            queryset_children = original_queryset.filter(user__iaso_profile__org_units__in=descendant_ous)
 
             queryset = queryset_current | queryset_parent | queryset_children
 

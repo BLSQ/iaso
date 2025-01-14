@@ -36,7 +36,6 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
         setFieldValue,
     } = useFormikContext<CampaignFormValues>();
     const roundIndex = rounds.findIndex(r => r.number === roundNumber);
-
     return (
         <Grid container spacing={2}>
             <Grid xs={12} md={6} item>

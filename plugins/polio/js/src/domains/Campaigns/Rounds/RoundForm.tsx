@@ -2,11 +2,15 @@ import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent, useMemo } from 'react';
-import { DateInput, NumberInput } from '../../../components/Inputs';
+import {
+    BooleanInput,
+    DateInput,
+    NumberInput,
+} from '../../../components/Inputs';
+import { DependentSingleSelect } from '../../../components/Inputs/DependentSingleSelect';
 import MESSAGES from '../../../constants/messages';
 import { CampaignFormValues } from '../../../constants/types';
 import { RoundDates } from './RoundDates/RoundDates';
-import { DependentSingleSelect } from '../../../components/Inputs/DependentSingleSelect';
 
 export const MONTHS = 'MONTHS';
 export const YEARS = 'YEARS';
@@ -56,6 +60,13 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                         label={formatMessage(MESSAGES.targetPopulation)}
                         name={`rounds[${roundIndex}].target_population`}
                         component={NumberInput}
+                    />
+                </Box>
+                <Box mt={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.testRound)}
+                        name={`rounds[${roundIndex}].is_test`}
+                        component={BooleanInput}
                     />
                 </Box>
             </Grid>

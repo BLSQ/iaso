@@ -2434,6 +2434,10 @@ const MESSAGES = defineMessages({
         id: 'blsq.dialog.unsavedDataWillBeLost',
         defaultMessage: 'Unsaved data will be lost',
     },
+    testRound: {
+        id: 'iaso.polio.label.testRound',
+        defaultMessage: 'Test round / On hold',
+    },
 });
 
 export default MESSAGES;

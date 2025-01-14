@@ -56,6 +56,7 @@ def task_decorator(task_name=""):
                 task = Task()
                 user = kwargs.pop("user")
                 task.account = user.iaso_profile.account
+                task.created_by = user
                 task.launcher = user
                 task.name = task_name
                 task.params = {"args": args, "kwargs": kwargs, "module": func.__module__, "method": func.__name__}

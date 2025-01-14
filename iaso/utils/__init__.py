@@ -1,15 +1,9 @@
 """This module provides various utils and helpers for IASO"""
 
-from datetime import datetime
-from typing import Dict, Any, TextIO, List, Optional, Iterable
+from typing import Dict, Any, List, Optional, Iterable
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.utils.text import slugify
-
-
-def timestamp_to_datetime(timestamp):
-    date = datetime.fromtimestamp(timestamp)
-    return date.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def get_flat_children_tree(current_path, el, flat_xml_dict, repeat_groups, allowed_paths, skipped_path):

@@ -249,6 +249,7 @@ class DataSourceViewSet(ModelViewSet):
         order = self.request.GET.get("order", "name").split(",")
         filter_empty_versions = self.request.GET.get("filter_empty_versions", "false").lower() == "true"
         project_ids = self.request.GET.get("project_ids")
+        name = self.request.GET.get("name", None)
 
         sources = (
             DataSource.objects.select_related("default_version", "credentials")
@@ -259,6 +260,8 @@ class DataSourceViewSet(ModelViewSet):
 
         if filter_empty_versions:
             sources = sources.annotate(version_count=Count("versions")).filter(version_count__gt=0)
+        if name:
+            sources = sources.filter(name__icontains=name)
         if project_ids:
             sources = sources.filter(projects__in=project_ids.split(","))
         if linked_to:

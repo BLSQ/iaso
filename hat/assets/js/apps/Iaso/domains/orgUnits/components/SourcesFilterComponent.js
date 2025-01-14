@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 
 import { Select, renderTags, useSafeIntl } from 'bluesquare-components';
 
-import { fetchAssociatedOrgUnits } from '../../../utils/requests';
+import { fetchAssociatedOrgUnits } from '../requests';
 
 import { getSourcesWithoutCurrentSource } from '../utils';
 

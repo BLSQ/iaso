@@ -26,7 +26,6 @@ import { baseUrls } from '../../constants/urls';
 import { useFormState } from '../../hooks/form.js';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { isFieldValid, isFormValid } from '../../utils/forms';
-import { createForm, updateForm } from '../../utils/requests';
 import { NO_PERIOD } from '../periods/constants';
 import { FormAttachments } from './components/FormAttachments';
 import FormForm from './components/FormFormComponent';
@@ -34,7 +33,7 @@ import FormVersions from './components/FormVersionsComponent';
 import { requiredFields } from './config/index';
 import { CR_MODE_NONE } from './constants';
 import MESSAGES from './messages';
-import { useGetForm } from './requests';
+import { createForm, updateForm, useGetForm } from './requests';
 import { FormParams } from './types/forms';
 
 const useStyles = makeStyles(theme => ({

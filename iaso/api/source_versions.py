@@ -8,7 +8,7 @@ from iaso.models import DataSource, SourceVersion
 
 from .common import CONTENT_TYPE_CSV, HasPermission, ModelViewSet
 from .source_versions_serializers import DiffSerializer, ExportSerializer
-from .tasks import TaskSerializer
+from .tasks.serializers import TaskSerializer
 
 
 class SourceVersionSerializer(serializers.ModelSerializer):

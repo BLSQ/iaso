@@ -39,7 +39,7 @@ import {
     CampaignCategory,
     useGetCampaigns,
 } from '../../../../Campaigns/hooks/api/useGetCampaigns';
-import { apiUrl, defaultVaccineOptions } from '../../constants';
+import { apiUrl, defaultVaccineOptions, singleVaccinesList } from '../../constants';
 import MESSAGES from '../../messages';
 import {
     CampaignDropdowns,
@@ -133,15 +133,15 @@ export const useCampaignDropDowns = (
             label: c.obr_name,
             value: c.obr_name,
         }));
-        const vaccines = selectedCampaign?.vaccines
-            ? selectedCampaign.vaccines.split(',').map(vaccineName => ({
-                  label: vaccineName,
-                  value: vaccineName,
+        const vaccines = selectedCampaign?.single_vaccines
+            ? selectedCampaign.single_vaccines.split(',').map(vaccineName => ({
+                  label: vaccineName.trim(),
+                  value: vaccineName.trim(),
               }))
-            : defaultVaccineOptions;
+            : singleVaccinesList;
         const rounds = vaccine
             ? (selectedCampaign?.rounds ?? [])
-                  .filter(round => round.vaccine_names.includes(vaccine))
+                  .filter(round => round.vaccine_names_extended.includes(vaccine))
                   .map(round => ({
                       label: `Round ${round.number}`,
                       value: `${round.number}`,

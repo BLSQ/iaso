@@ -1,17 +1,17 @@
 import typing
 from typing import Optional
 
-from django.db.models import BooleanField
-from django.db.models import Value, Count, TextField
+from django.db.models import BooleanField, Count, TextField, Value
 from django.db.models.expressions import Case, When
 from django.db.models.functions import Concat
-from rest_framework import serializers, parsers, exceptions
+from rest_framework import exceptions, parsers, serializers
 from rest_framework.fields import Field
 
-from iaso.models import Form, FormVersion, FeatureFlag, Project
-from iaso.odk import parsing
 from iaso.api.query_params import APP_ID
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
+from iaso.models import FeatureFlag, Form, FormVersion, Project
+from iaso.odk import parsing, validate_xls_form
+
+from .common import DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .forms import HasFormPermission
 from .serializers import AppIdSerializer
 
@@ -98,6 +98,15 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         if self.context["request"].method == "PUT":
             # if update skip the rest of check
             return data
+
+        validation_errors = validate_xls_form(data["xls_file"])
+
+        if len(validation_errors):
+            # TODO: translate the error message
+            # keep xls_file empty to highlight the input in the UI
+            raise serializers.ValidationError({"xls_file": "", "xls_file_validation_errors": validation_errors})
+
+        data["xls_file"].seek(0)
 
         # handle xls to xml conversion
         try:

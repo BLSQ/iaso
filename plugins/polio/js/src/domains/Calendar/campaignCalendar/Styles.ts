@@ -167,7 +167,7 @@ export const useStyles = makeStyles(theme => {
             right: theme.spacing(2),
         },
         mapLegendVaccine: {
-            width: 100,
+            width: 150,
             marginTop: theme.spacing(2),
         },
         mapLegendCampaigns: {

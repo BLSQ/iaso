@@ -1,49 +1,49 @@
 import React, {
+    Dispatch,
     FunctionComponent,
+    SetStateAction,
     useCallback,
     useState,
-    Dispatch,
-    SetStateAction,
 } from 'react';
 
+import ReportIcon from '@mui/icons-material/Report';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
     Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
     formatThousand,
-    useSafeIntl,
     selectionInitialState,
+    useSafeIntl,
 } from 'bluesquare-components';
-import ReportIcon from '@mui/icons-material/Report';
 import { UseMutateAsyncFunction } from 'react-query';
 
 import { isEqual } from 'lodash';
-import MESSAGES from '../messages';
-import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
+import InputComponent from '../../../components/forms/InputComponent';
+import MESSAGES from '../messages';
 
 import { APP_LOCALES } from '../../app/constants';
 
 import { Selection } from '../../orgUnits/types/selection';
 import { Profile } from '../../teams/types/profile';
 
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { userHasPermission } from '../utils';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import * as Permission from '../../../utils/permissions';
-import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { TeamType } from '../../teams/constants';
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
+import { userHasPermission } from '../utils';
 
 type Props = {
     open: boolean;

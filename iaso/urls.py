@@ -91,7 +91,7 @@ from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.storage import StorageBlacklistedViewSet, StorageLogViewSet, StorageViewSet, logs_per_device
 from .api.superset import SupersetTokenViewSet
-from .api.tasks import TaskSourceViewSet
+from .api.tasks.views import TaskSourceViewSet
 from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .api.tasks.create.instance_bulk_gps_push import InstanceBulkGpsPushViewSet

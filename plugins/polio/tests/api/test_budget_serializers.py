@@ -82,13 +82,13 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
             serializer.data,
             {
                 "id": self.budget_process.pk,
-                "created_by": OrderedDict(
-                    {
-                        "first_name": "",
-                        "last_name": "",
-                        "username": "username",
-                    }
-                ),
+                "created_by": {
+                    "first_name": "",
+                    "full_name": "",
+                    "id": self.user.pk,
+                    "last_name": "",
+                    "username": "username",
+                },
                 "created_at": "2024-02-07T11:00:00Z",
                 "rounds": [],
                 "ra_completed_at_WFEDITABLE": "2024-02-07",

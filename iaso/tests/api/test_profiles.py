@@ -4,7 +4,6 @@ import jsonschema
 import numpy as np
 import pandas as pd
 from django.contrib.auth import get_user_model
-
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
 from django.test import override_settings
@@ -1660,3 +1659,104 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(new_value["first_name"], "")
         self.assertEqual(new_value["language"], "fr")
         self.assertNotIn("password", new_value.keys())
+
+    def test_profile_list_search_by_children_ou_deep_hierarchy(self):
+        """Test that searching by children org units returns profiles from all levels of the hierarchy"""
+        # Create a deeper hierarchy
+        child_of_child = m.OrgUnit.objects.create(
+            org_unit_type=self.parent_org_unit_type,
+            version=self.account.default_version,
+            name="Child of child org unit",
+            parent=self.child_org_unit,
+        )
+
+        grand_child = m.OrgUnit.objects.create(
+            org_unit_type=self.parent_org_unit_type,
+            version=self.account.default_version,
+            name="Grand child org unit",
+            parent=child_of_child,
+        )
+
+        # Clear existing org units first to avoid interference
+        for profile in m.Profile.objects.all():
+            profile.org_units.clear()
+
+        # Assign users to different levels of the hierarchy
+        self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])  # Root
+        self.jim.iaso_profile.org_units.set([self.child_org_unit])  # Child
+        self.jam.iaso_profile.org_units.set([child_of_child])  # Child of child
+        self.jom.iaso_profile.org_units.set([grand_child])  # Grand child
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/profiles/?location={self.org_unit_from_parent_type.pk}&ouChildren=true")
+
+        self.assertEqual(response.status_code, 200)
+        profiles = response.json()["profiles"]
+        usernames = [p["user_name"] for p in profiles]
+
+        # Should include users from all levels
+        self.assertEqual(len(profiles), 4)
+        self.assertIn("janedoe", usernames)  # Root level
+        self.assertIn("jim", usernames)  # Child level
+        self.assertIn("jam", usernames)  # Child of child level
+        self.assertIn("jom", usernames)  # Grand child level
+
+    def test_profile_list_search_by_parent_and_children_ou(self):
+        """Test that searching with both parent and children flags returns the complete hierarchy"""
+        # Clear existing org units first
+        for profile in m.Profile.objects.all():
+            profile.org_units.clear()
+
+        # Setup hierarchy
+        parent_of_root = m.OrgUnit.objects.create(
+            org_unit_type=self.parent_org_unit_type,
+            version=self.account.default_version,
+            name="Parent of root",
+        )
+        self.org_unit_from_parent_type.parent = parent_of_root
+        self.org_unit_from_parent_type.save()
+
+        # Assign users to different levels
+        self.jane.iaso_profile.org_units.set([parent_of_root])  # Parent
+        self.jim.iaso_profile.org_units.set([self.org_unit_from_parent_type])  # Current
+        self.jam.iaso_profile.org_units.set([self.child_org_unit])  # Child
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(
+            f"/api/profiles/?location={self.org_unit_from_parent_type.pk}&ouParent=true&ouChildren=true"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        profiles = response.json()["profiles"]
+        usernames = [p["user_name"] for p in profiles]
+
+        # Should include users from parent, current and child levels
+        self.assertEqual(len(profiles), 3)
+        self.assertIn("janedoe", usernames)  # Parent level
+        self.assertIn("jim", usernames)  # Current level
+        self.assertIn("jam", usernames)  # Child level
+
+    def test_profile_list_search_by_children_ou_no_duplicates(self):
+        """Test that searching by children org units doesn't return duplicate profiles
+        when a user is assigned to multiple levels"""
+        # Clear existing org units first
+        for profile in m.Profile.objects.all():
+            profile.org_units.clear()
+
+        # Assign a user to multiple levels in the hierarchy
+        self.jane.iaso_profile.org_units.set(
+            [
+                self.org_unit_from_parent_type,  # Root
+                self.child_org_unit,  # Child
+            ]
+        )
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/profiles/?location={self.org_unit_from_parent_type.pk}&ouChildren=true")
+
+        self.assertEqual(response.status_code, 200)
+        profiles = response.json()["profiles"]
+
+        # Should only include the user once despite being in multiple levels
+        self.assertEqual(len(profiles), 1)
+        self.assertEqual(profiles[0]["user_name"], "janedoe")

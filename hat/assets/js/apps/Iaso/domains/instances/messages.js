@@ -714,6 +714,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Close',
         id: 'blsq.buttons.label.close',
     },
+    searchParams: {
+        defaultMessage:
+            'Use prefix “ids:” for internal submissions ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or “ids: 123456 654321”',
+        id: 'iaso.instances.searchParams',
+    },
 });
 
 export default MESSAGES;

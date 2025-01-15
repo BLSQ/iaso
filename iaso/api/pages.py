@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django_filters.rest_framework import FilterSet, CharFilter
 from rest_framework import serializers, permissions
 
 from iaso.api.common import ModelViewSet
@@ -31,11 +32,20 @@ class PagesPermission(permissions.BasePermission):
         return request.user and request.user.has_perm(write_perm)
 
 
+class PageFilter(FilterSet):
+    search = CharFilter(field_name="name", lookup_expr="icontains")
+
+    class Meta:
+        model = Page
+        fields = ["search"]
+
+
 class PagesViewSet(ModelViewSet):
     permission_classes = [PagesPermission]
     serializer_class = PagesSerializer
     results_key = "results"
     lookup_url_kwarg = "pk"
+    filterset_class = PageFilter
 
     def get_object(self):
         # Allow finding by either pk or slug

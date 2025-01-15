@@ -10,6 +10,10 @@ export const useGetPages = options => {
         params.order = options.order;
     }
 
+    if (options.search && options.search !== '') {
+        params.search = options.search;
+    }
+
     const getURL = urlParams => {
         const filteredParams = Object.entries(urlParams).filter(
             ([_key, value]) => value !== undefined,

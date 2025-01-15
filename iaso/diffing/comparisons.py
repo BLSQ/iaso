@@ -92,7 +92,7 @@ class GroupFieldType(FieldType):
         groups = []
         for group in org_unit.groups.all():
             if group.source_ref == self.group_ref:
-                groups.append({"id": group.source_ref, "name": group.name})
+                groups.append({"id": group.source_ref, "name": group.name, "iaso_id": group.pk})
 
         return groups
 

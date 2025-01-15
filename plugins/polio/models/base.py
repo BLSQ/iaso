@@ -6,7 +6,6 @@ from collections import defaultdict
 from datetime import date
 from typing import Any, Optional, Tuple, Union
 from uuid import uuid4
-
 import django.db.models.manager
 import pandas as pd
 from django.conf import settings
@@ -16,8 +15,8 @@ from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Q, QuerySet, Sum
-from django.db.models.expressions import RawSQL, Subquery
+from django.db.models.expressions import RawSQL
+from django.db.models import Q, QuerySet, Sum, Subquery
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -147,6 +146,17 @@ class RoundScope(models.Model):
     class Meta:
         unique_together = [("round", "vaccine")]
         ordering = ["round", "vaccine"]
+
+
+# # Signal to delete the Group when the Round is deleted
+# @receiver(post_delete, sender=RoundScope)
+# def delete_group_on_round_delete(sender, instance, **kwargs):
+#     """
+#     Delete the associated Group when the RoundScope instance is deleted,
+#     which happens when a Round is deleted.
+#     """
+#     if instance.group:
+#         instance.group.delete()
 
 
 def make_group_campaign_scope():
@@ -374,6 +384,16 @@ class Round(models.Model):
     # End of vaccine management
 
     objects = models.Manager.from_queryset(RoundQuerySet)()
+
+    def delete(self, *args, **kwargs):
+        # Explicitly delete groups related to the round's scopes, because the cascade deletion won't work reliably
+        Group.objects.filter(roundScope__isnull=False).filter(
+            roundScope__id__in=Subquery(self.scopes.all().values_list("id", flat=True))
+        ).delete()
+
+        # Call the parent class's delete() method to proceed with deleting the Round
+        # The scope will be deleted by Django's cascading
+        super().delete(*args, **kwargs)
 
     def get_item_by_key(self, key):
         return getattr(self, key)

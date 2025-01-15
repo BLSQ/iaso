@@ -321,7 +321,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     sources: {
         url: 'settings/sources/list',
-        params: ['accountId', 'projectIds', ...paginationPathParams],
+        params: ['accountId', 'projectIds', 'name', ...paginationPathParams],
     },
     sourceDetails: {
         url: 'settings/source/details',

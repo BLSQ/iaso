@@ -246,12 +246,12 @@ READ_EDIT_PERMISSIONS = {
         "write": "iaso_polio_chronogram",
     },
     "iaso_polio_vaccine_supply_chain_permissions": {
-        "read": "iaso_polio_vaccine_supply_chain_read",
-        "write": "iaso_polio_vaccine_supply_chain_write",
+        "no_admin": "iaso_polio_vaccine_supply_chain_read",
+        "admin": "iaso_polio_vaccine_supply_chain_write",
     },
     "iaso_polio_vaccine_stock_management_permissions": {
-        "read": "iaso_polio_vaccine_stock_management_read",
-        "write": "iaso_polio_vaccine_stock_management_write",
+        "no_admin": "iaso_polio_vaccine_stock_management_read",
+        "admin": "iaso_polio_vaccine_stock_management_write",
     },
     "iaso_polio_vaccine_authorization_permissions": {
         "no_admin": "iaso_polio_vaccine_authorizations_read_only",

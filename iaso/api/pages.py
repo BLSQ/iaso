@@ -33,11 +33,14 @@ class PagesPermission(permissions.BasePermission):
 
 
 class PageFilter(FilterSet):
-    search = CharFilter(field_name="name", lookup_expr="icontains")
+    search = CharFilter(method="filter_by_name_or_slug")
 
     class Meta:
         model = Page
         fields = ["search"]
+
+    def filter_by_name_or_slug(self, queryset, _, value):
+        return queryset.filter(name__icontains=value) | queryset.filter(slug__icontains=value)
 
 
 class PagesViewSet(ModelViewSet):

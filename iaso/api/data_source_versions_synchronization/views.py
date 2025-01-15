@@ -14,7 +14,7 @@ from iaso.api.data_source_versions_synchronization.serializers import (
     DataSourceVersionsSynchronizationSerializer,
     CreateJsonDiffParametersSerializer,
 )
-from iaso.api.tasks import TaskSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import DataSourceVersionsSynchronization
 from iaso.tasks.data_source_versions_synchronization import synchronize_source_versions_async
 

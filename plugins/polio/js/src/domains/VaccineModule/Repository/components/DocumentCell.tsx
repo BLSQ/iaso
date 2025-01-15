@@ -7,7 +7,7 @@ import { PdfPreview } from '../../../../../../../../hat/assets/js/apps/Iaso/comp
 import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { DocumentData } from '../types';
 import { OpenButtonComponent } from './OpenButton';
-import { NOPDFCOLOR, WITHPDFCOLOR } from '../constants';
+import { NO_PDF_COLOR, WITH_PDF_COLOR } from '../constants';
 
 export const CELL_HEIGHT = '40px';
 
@@ -24,7 +24,7 @@ const commonStyles = {
 export const defaultStyles: SxStyles = {
     noPdf: {
         ...commonStyles,
-        backgroundColor: NOPDFCOLOR,
+        backgroundColor: NO_PDF_COLOR,
         cursor: 'default',
         color: 'white',
         '&:last-child': {
@@ -33,7 +33,7 @@ export const defaultStyles: SxStyles = {
     },
     withPdf: {
         ...commonStyles,
-        backgroundColor: WITHPDFCOLOR,
+        backgroundColor: WITH_PDF_COLOR,
         cursor: 'pointer',
         color: 'white',
         '&:last-child': {

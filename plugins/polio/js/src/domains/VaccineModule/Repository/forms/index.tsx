@@ -13,7 +13,11 @@ import {
 import { useVaccineRepositoryColumns } from './hooks/useVaccineRepositoryColumns';
 import ColorLegend from '../components/ColorLegend';
 import { MESSAGES as REPOSITORY_MESSAGES } from '../messages';
-import { FORMAISLATECOLOR, NOPDFCOLOR, WITHPDFCOLOR } from '../constants';
+import {
+    FORM_A_IS_LATE_COLOR,
+    NO_PDF_COLOR,
+    WITH_PDF_COLOR,
+} from '../constants';
 
 type Props = {
     params: VaccineRepositoryParams;
@@ -46,15 +50,15 @@ export const Forms: FunctionComponent<Props> = ({ params }) => {
     const legendItems = [
         {
             label: formatMessage(REPOSITORY_MESSAGES.noPdf),
-            color: NOPDFCOLOR,
+            color: NO_PDF_COLOR,
         },
         {
             label: formatMessage(REPOSITORY_MESSAGES.withPdf),
-            color: WITHPDFCOLOR,
+            color: WITH_PDF_COLOR,
         },
         {
             label: formatMessage(REPOSITORY_MESSAGES.formAisLate),
-            color: FORMAISLATECOLOR,
+            color: FORM_A_IS_LATE_COLOR,
         },
     ];
     return (

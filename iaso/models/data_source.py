@@ -204,6 +204,8 @@ class DataSourceVersionsSynchronization(models.Model):
 
     """
 
+    SYNCHRONIZABLE_FIELDS = ["name", "parent", "opening_date", "closed_date", "groups"]
+
     name = models.CharField(
         max_length=255,
         help_text=_("Used in the UI e.g. to filter Change Requests by Data Source Synchronization operations."),
@@ -351,6 +353,9 @@ class DataSourceVersionsSynchronization(models.Model):
     def synchronize_source_versions(self):
         # Prevent a circular import.
         from iaso.diffing import DataSourceVersionsSynchronizer
+
+        if self.json_diff is None:
+            raise ValidationError("`create_json_diff()` must be called before synchronizing.")
 
         if self.change_requests.exists():
             raise ValidationError("Change requests have already been created.")

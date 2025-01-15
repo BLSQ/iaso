@@ -300,6 +300,11 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
             account=self.account,
             created_by=self.user,
         )
+
+        with self.assertRaises(ValidationError) as error:
+            data_source_sync.synchronize_source_versions()
+        self.assertIn("`create_json_diff()` must be called before synchronizing.", error.exception.messages)
+
         data_source_sync.create_json_diff()
 
         # Synchronize source versions.

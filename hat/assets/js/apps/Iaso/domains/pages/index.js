@@ -1,10 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-    useSafeIntl,
-    commonStyles,
-    IconButton,
-    ExternalLinkIconButton,
-} from 'bluesquare-components';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -16,13 +11,11 @@ import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 import CreateEditDialog from './components/CreateEditDialog';
 import PageActions from './components/PageActions';
 import PageAction from './components/PageAction';
-import { PAGES_TYPES } from './constants';
-import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell.tsx';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
-import * as Permission from '../../utils/permissions.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { baseUrls } from '../../constants/urls.ts';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
+import Filters from './components/Filters';
+import { usePagesColumns } from './config';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -58,14 +51,6 @@ const Pages = () => {
         openCreateEditDialog();
     };
 
-    const handleClickEditRow = useCallback(
-        slug => {
-            setSelectedPageSlug(slug);
-            openCreateEditDialog();
-        },
-        [setSelectedPageSlug, openCreateEditDialog],
-    );
-
     const closeCreateEditDialog = () => {
         setSelectedPageSlug(undefined);
         setIsCreateEditDialogOpen(false);
@@ -76,18 +61,6 @@ const Pages = () => {
     };
 
     const { mutate: removePage } = useRemovePage();
-
-    const openDeleteConfirmDialog = useCallback(() => {
-        setIsConfirmDeleteDialogOpen(true);
-    }, [setIsConfirmDeleteDialogOpen]);
-
-    const handleClickDeleteRow = useCallback(
-        slug => {
-            setSelectedPageSlug(slug);
-            openDeleteConfirmDialog();
-        },
-        [setSelectedPageSlug, openDeleteConfirmDialog],
-    );
 
     const { data: pages, isFetching } = useGetPages(tableParams);
 
@@ -103,77 +76,10 @@ const Pages = () => {
         });
     };
 
-    const columns = useMemo(
-        () => [
-            {
-                Header: formatMessage(MESSAGES.name),
-                accessor: 'name',
-            },
-            {
-                Header: formatMessage(MESSAGES.type),
-                accessor: 'type',
-                Cell: settings => {
-                    const pageType = PAGES_TYPES.find(
-                        pt => pt.value === settings.row.original.type,
-                    );
-                    if (!pageType) {
-                        return settings.row.original.type;
-                    }
-                    return <span>{formatMessage(pageType.label)}</span>;
-                },
-            },
-            {
-                Header: formatMessage(MESSAGES.address),
-                accessor: 'slug',
-            },
-            {
-                Header: formatMessage(MESSAGES.updatedAt),
-                accessor: 'updated_at',
-                Cell: DateTimeCellRfc,
-            },
-            {
-                Header: formatMessage(MESSAGES.actions),
-                sortable: false,
-                accessor: 'actions',
-                Cell: settings => {
-                    return (
-                        <>
-                            <ExternalLinkIconButton
-                                url={`/pages/${settings.row.original.slug}`}
-                                icon="remove-red-eye"
-                                tooltipMessage={{
-                                    ...MESSAGES.viewPage,
-                                    values: { linebreak: <br /> },
-                                }}
-                            />
-                            <DisplayIfUserHasPerm
-                                permissions={[Permission.PAGE_WRITE]}
-                            >
-                                <IconButton
-                                    icon="edit"
-                                    tooltipMessage={MESSAGES.edit}
-                                    onClick={() =>
-                                        handleClickEditRow(
-                                            settings.row.original.slug,
-                                        )
-                                    }
-                                />
-                                <IconButton
-                                    icon="delete"
-                                    tooltipMessage={MESSAGES.delete}
-                                    onClick={() =>
-                                        handleClickDeleteRow(
-                                            settings.row.original.slug,
-                                        )
-                                    }
-                                />
-                            </DisplayIfUserHasPerm>
-                        </>
-                    );
-                },
-            },
-        ],
-        [formatMessage, handleClickDeleteRow, handleClickEditRow],
+    const columns = usePagesColumns(
+        setSelectedPageSlug,
+        setIsCreateEditDialogOpen,
+        setIsConfirmDeleteDialogOpen,
     );
 
     return (
@@ -190,14 +96,18 @@ const Pages = () => {
             />
             <TopBar title={formatMessage(MESSAGES.pages)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <PageActions>
-                    <PageAction
-                        icon={AddIcon}
-                        onClick={handleClickCreateButton}
-                    >
-                        {formatMessage(MESSAGES.create)}
-                    </PageAction>
-                </PageActions>
+                <Filters params={params} />
+                <Box mt={4}>
+                    <PageActions>
+                        <PageAction
+                            icon={AddIcon}
+                            onClick={handleClickCreateButton}
+                        >
+                            {formatMessage(MESSAGES.create)}
+                        </PageAction>
+                    </PageActions>
+                </Box>
+
                 <TableWithDeepLink
                     data={pages?.results ?? []}
                     pages={pages?.pages}

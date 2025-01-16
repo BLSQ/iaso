@@ -43,7 +43,7 @@ investigating malaria cases.
 The tool has been used in multiple data collection efforts, notably in the domain of Performance Based Financing
 of health services in D.R. Congo, Niger, Cameroon and Nigeria and is more and more used to compare multiple
 versions of official organisational hierarchies when a canonical one needs to be rebuilt (for example
- to rebuild a school map for DRC). To help for this type of project,
+ to rebuild a school map for DRC). To help with this type of project,
 we provide location selection interfaces, multiple levels of audits and an API open to data scientists for analysis
 and mass edits.
 
@@ -52,7 +52,7 @@ for public health, and has become open source under the MIT License in November 
 
 Iaso is made of a white labeled Android application using Java/Kotlin, reusing large parts of the ODK projects,
 and a web platform programmed using Python/GeoDjango on top of PostGIS. Frontend is mainly React/Leaflet.
-One of the aims is the ease of integration with other platforms. We already have csv and geopackage imports and
+One of the main aims is to make integration easy on other platforms. We already have csv and geopackage imports and
 exports and target easy integration with OSM.
 
 Structure

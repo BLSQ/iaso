@@ -32,8 +32,7 @@ from iaso.models.base import Account, Task
 from iaso.models.entity import UserNotAuthError
 from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
-from iaso.utils.models.soft_deletable import (DefaultSoftDeletableManager,
-                                              SoftDeletableModel)
+from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -376,7 +375,6 @@ class Round(models.Model):
     # End of vaccine management
 
     objects = models.Manager.from_queryset(RoundQuerySet)()
-
 
     def delete(self, *args, **kwargs):
         # Explicitly delete groups related to the round's scopes, because the cascade deletion won't work reliably

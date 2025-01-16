@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('polio', '0216_delete_rounds_without_campaign'),
+        ("polio", "0216_delete_rounds_without_campaign"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='round',
-            name='is_test',
+            model_name="round",
+            name="is_test",
             field=models.BooleanField(default=False),
         ),
     ]

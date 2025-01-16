@@ -654,6 +654,7 @@
     "iaso.polio.label.targetPopulationMessage": "Target population can be edited in \"Campaigns\" > \"Rounds\" tab",
     "iaso.polio.label.Teachers_Student": "Teachers",
     "iaso.polio.label.testCampaign": "Test campaign/On hold",
+    "iaso.polio.label.testRound": "Test round / On hold",
     "iaso.polio.label.timesSelected": "Times selected",
     "iaso.polio.label.title": "Title",
     "iaso.polio.label.toSubmit": "To submit",

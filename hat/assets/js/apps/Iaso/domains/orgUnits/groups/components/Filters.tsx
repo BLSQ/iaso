@@ -29,8 +29,8 @@ type Props = {
 };
 
 const dataSourceByProjectId = (dataSources: any[], projectId: string) => {
-    return dataSources
-        ?.map((source: { projects: any[][]; name: any; id: any }) => {
+    const allDataSource: any[] = dataSources?.map(
+        (source: { projects: any[][]; name: any; id: any }) => {
             const projectIds = source?.projects[0].map(
                 (project: { id: string }) => project?.id.toString(),
             );
@@ -39,10 +39,14 @@ const dataSourceByProjectId = (dataSources: any[], projectId: string) => {
                 value: `${source?.id}`,
                 projectIds,
             };
-        })
-        .filter((source: { projectIds: string[] }) =>
+        },
+    );
+    if (projectId) {
+        return allDataSource?.filter((source: { projectIds: string[] }) =>
             source.projectIds?.includes(projectId),
         );
+    }
+    return allDataSource;
 };
 
 const versionsBySource = (sourceVersions: any[], source: string) => {
@@ -106,7 +110,8 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 setProjectIds(value);
                 setDataSource(undefined);
                 setVersion(undefined);
-            } else if (key === 'dataSource') {
+            }
+            if (key === 'dataSource') {
                 if (newValue === null) {
                     filters.version = undefined;
                     setVersion(undefined);

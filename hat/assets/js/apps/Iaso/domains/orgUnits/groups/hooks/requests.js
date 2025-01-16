@@ -19,11 +19,11 @@ export const useGetGroups = params => {
     }
     if (params.project_ids) {
         newParams.projectIds = params.project_ids;
-        if (params.dataSource) {
-            newParams.dataSource = params.dataSource;
-            if (params.version) {
-                newParams.version = params.version;
-            }
+    }
+    if (params.dataSource) {
+        newParams.dataSource = params.dataSource;
+        if (params.version) {
+            newParams.version = params.version;
         }
     }
 

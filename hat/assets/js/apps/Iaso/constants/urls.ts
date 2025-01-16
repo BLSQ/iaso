@@ -418,7 +418,12 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     pages: {
         url: 'pages',
-        params: ['accountId', 'search', ...paginationPathParams],
+        params: [
+            'accountId',
+            'search',
+            'needs_authentication',
+            ...paginationPathParams,
+        ],
     },
     planning: {
         url: 'planning/list',

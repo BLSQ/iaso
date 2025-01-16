@@ -1,4 +1,4 @@
-import { Button, Grid } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -43,26 +43,33 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 />
             </Grid>
 
-            <Grid
-                item
-                xs={12}
-                sm={6}
-                md={9}
-                container
-                justifyContent="flex-end"
-                alignItems="center"
-            >
-                <Button
-                    data-test="search-button"
-                    disabled={textSearchError || !filtersUpdated}
-                    variant="contained"
-                    className={classes.button}
-                    color="primary"
-                    onClick={() => handleSearch()}
-                >
-                    <SearchIcon className={classes.buttonIcon} />
-                    {formatMessage(MESSAGES.search)}
-                </Button>
+            <Grid item xs={12} sm={6} md={3}>
+                <InputComponent
+                    keyValue="needs_authentication"
+                    label={MESSAGES.needsAuthentication}
+                    type="select"
+                    value={filters.needs_authentication}
+                    onChange={handleChange}
+                    options={[
+                        { label: MESSAGES.yes, value: 'true' },
+                        { label: MESSAGES.no, value: 'false' },
+                    ]}
+                />
+            </Grid>
+            <Grid container item xs={12} md={6} justifyContent="flex-end">
+                <Box mt={2}>
+                    <Button
+                        data-test="search-button"
+                        disabled={textSearchError || !filtersUpdated}
+                        variant="contained"
+                        className={classes.button}
+                        color="primary"
+                        onClick={() => handleSearch()}
+                    >
+                        <SearchIcon className={classes.buttonIcon} />
+                        {formatMessage(MESSAGES.search)}
+                    </Button>
+                </Box>
             </Grid>
         </Grid>
     );

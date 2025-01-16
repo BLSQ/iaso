@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
-from django_filters.rest_framework import FilterSet, CharFilter
+from django_filters.rest_framework import FilterSet, CharFilter, BooleanFilter
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, permissions
-
 from iaso.api.common import ModelViewSet
 from iaso.models import Page
 from hat.menupermissions import models as permission
@@ -33,11 +33,14 @@ class PagesPermission(permissions.BasePermission):
 
 
 class PageFilter(FilterSet):
-    search = CharFilter(method="filter_by_name_or_slug")
+    search = CharFilter(method="filter_by_name_or_slug", label=_("Limit result by name or slug"))
+    needs_authentication = BooleanFilter(
+        field_name="needs_authentication", label=_("Limit on authentication required or not")
+    )
 
     class Meta:
         model = Page
-        fields = ["search"]
+        fields = ["search", "needs_authentication"]
 
     def filter_by_name_or_slug(self, queryset, _, value):
         return queryset.filter(name__icontains=value) | queryset.filter(slug__icontains=value)

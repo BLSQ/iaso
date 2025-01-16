@@ -5,6 +5,7 @@ export const useGetPages = options => {
     const params = {
         limit: options.pageSize,
         page: options.page,
+        needs_authentication: options.needs_authentication,
     };
     if (options.order && options.order !== '') {
         params.order = options.order;

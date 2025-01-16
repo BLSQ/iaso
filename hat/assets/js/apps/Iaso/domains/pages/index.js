@@ -40,6 +40,7 @@ const Pages = () => {
             pageSize: params.pageSize ?? DEFAULT_PAGE_SIZE,
             page: params.page ?? DEFAULT_PAGE,
             search: params.search,
+            needs_authentication: params.needs_authentication,
         };
     }, [params]);
 

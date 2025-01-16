@@ -39,6 +39,65 @@ class PagesAPITestCase(APITestCase):
         response = self.client.get("/api/pages/")
         self.assertJSONResponse(response, 403)
 
+    def test_pages_list_search_by_name_or_by_slug(self):
+        """GET /pages/?search='search string'"""
+        self.client.force_login(self.goku)
+        page1 = Page.objects.create(
+            type="RAW",
+            needs_authentication=False,
+            name="TEST1",
+            slug="test_1",
+            content="test",
+        )
+
+        page1.users.set([self.kefla.pk])
+
+        page2 = Page.objects.create(
+            type="RAW",
+            needs_authentication=True,
+            name="TEST2",
+            slug="test_2",
+            content="test",
+        )
+        page2.users.set([self.kefla.pk])
+
+        response = self.client.get("/api/pages/?search=Test1")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 1)
+        self.assertEqual(page1.name, "TEST1")
+
+        response = self.client.get("/api/pages/?search=Test_2")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 1)
+        self.assertEqual(response.json()["results"][0]["name"], page2.name)
+
+    def test_pages_list_filter_by_needs_authentication(self):
+        """GET /pages/?needs_authentication=boolean"""
+        self.client.force_login(self.goku)
+        page1 = Page.objects.create(
+            type="RAW",
+            needs_authentication=False,
+            name="TEST1",
+            slug="test_1",
+            content="test",
+        )
+
+        page1.users.set([self.kefla.pk])
+
+        page2 = Page.objects.create(
+            type="RAW",
+            needs_authentication=True,
+            name="TEST2",
+            slug="test_2",
+            content="test",
+        )
+        page2.users.set([self.kefla.pk])
+
+        response = self.client.get("/api/pages/?needs_authentication=false")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 1)
+        self.assertEqual(response.json()["results"][0]["name"], page1.name)
+
     def test_create_page_with_no_write_permission(self):
         """POST /pages/ without write page permission should result in a 403"""
         self.client.force_login(self.userNoWritePermission)

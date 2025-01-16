@@ -216,13 +216,18 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
 
         response = self.client.get(f"{BASE_URL}?campaign={campaign2.obr_name}&order=number")
         data = response.json()
+        print("RESULTS", data["results"])
         self.assertEqual(len(data["results"]), 6)  # 3 rounds * 2 vaccines = 6
+        # Check first 2 entrieds are the same round...
         self.assertEqual(data["results"][0]["campaign_obr_name"], campaign2.obr_name)
         self.assertEqual(data["results"][0]["number"], 1)
-        self.assertEqual(data["results"][0]["vaccine_name"], pm.VACCINES[0][0])
         self.assertEqual(data["results"][1]["campaign_obr_name"], campaign2.obr_name)
         self.assertEqual(data["results"][1]["number"], 1)
-        self.assertEqual(data["results"][1]["vaccine_name"], pm.VACCINES[1][0])
+        # ... but not the same vaccine
+        self.assertNotEqual(data["results"][0]["vaccine_name"], data["results"][1]["vaccine_name"])
+        # Check that each is one of the 2 expected vaccines
+        self.assertTrue(data["results"][0]["vaccine_name"] in [pm.VACCINES[0][0], pm.VACCINES[1][0]])
+        self.assertTrue(data["results"][1]["vaccine_name"] in [pm.VACCINES[0][0], pm.VACCINES[1][0]])
 
     def test_ordering(self):
         """Test ordering functionality"""

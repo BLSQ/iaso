@@ -21,7 +21,10 @@ import { CampaignsLegend } from './CampaignsLegend';
 import { VaccinesLegend } from './VaccinesLegend';
 import { boundariesZoomLimit } from './constants';
 
+import { ColorsHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/ColorsHashedPattern';
+import { PaneWithPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/PaneWithPattern/PaneWithPattern';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { HASHED_MAP_PATTERN_N_OPV2_B_OPV } from '../../../../constants/virus';
 import { MapRoundSelector } from './MapRoundSelector';
 
 type Props = {
@@ -35,7 +38,13 @@ type Props = {
     options: DropdownOptions<string>[];
     campaigns: MappedCampaign[];
 };
-
+const ScopeHashedPattern = () => (
+    <ColorsHashedPattern
+        id={HASHED_MAP_PATTERN_N_OPV2_B_OPV}
+        strokeColor="#00b0f0"
+        fillColor="#ffff00"
+    />
+);
 export const CalendarMapContainer: FunctionComponent<Props> = ({
     campaignsShapes,
     mergedShapes,
@@ -75,18 +84,27 @@ export const CalendarMapContainer: FunctionComponent<Props> = ({
                     <VaccinesLegend />
                 </Box>
             </div>
-            {zoom > 6 && (
-                <CalendarMapPanesRegular
-                    campaignsShapes={campaignsShapes}
-                    zoom={zoom}
-                />
-            )}
-            {zoom <= 6 && (
-                <CalendarMapPanesMerged
-                    mergedShapes={mergedShapes}
-                    zoom={zoom}
-                />
-            )}
+
+            <PaneWithPattern
+                name="CalendarMap"
+                patterns={[ScopeHashedPattern]}
+                patternIds={[HASHED_MAP_PATTERN_N_OPV2_B_OPV]}
+            >
+                <>
+                    {zoom > 6 && (
+                        <CalendarMapPanesRegular
+                            campaignsShapes={campaignsShapes}
+                            zoom={zoom}
+                        />
+                    )}
+                    {zoom <= 6 && (
+                        <CalendarMapPanesMerged
+                            mergedShapes={mergedShapes}
+                            zoom={zoom}
+                        />
+                    )}
+                </>
+            </PaneWithPattern>
         </>
     );
 };

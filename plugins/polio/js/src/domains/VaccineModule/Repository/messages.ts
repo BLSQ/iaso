@@ -1,6 +1,6 @@
 import { defineMessages } from 'react-intl';
 
-const MESSAGES = defineMessages({
+export const MESSAGES = defineMessages({
     title: {
         id: 'iaso.polio.repository.title',
         defaultMessage: 'Vaccine Management Repository',
@@ -80,6 +80,18 @@ const MESSAGES = defineMessages({
     reports: {
         id: 'iaso.polio.reports',
         defaultMessage: 'Reports',
+    },
+    noPdf: {
+        id: 'iaso.polio.repository.noPdf',
+        defaultMessage: 'No pdf',
+    },
+    withPdf: {
+        id: 'iaso.polio.repository.withPdf',
+        defaultMessage: 'With pdf',
+    },
+    formAisLate: {
+        id: 'iaso.polio.repository.formAisLate',
+        defaultMessage: 'Form A is late',
     },
 });
 

@@ -44,7 +44,7 @@ export const Dashboard: FunctionComponent = () => {
             campaigns: rawCampaigns.campaigns.map(campaign => ({
                 ...campaign,
                 grouped_campaigns:
-                    campaign.grouped_campaigns.length > 0
+                    (campaign.grouped_campaigns?.length ?? 0) > 0
                         ? campaign.grouped_campaigns
                         : null,
             })),

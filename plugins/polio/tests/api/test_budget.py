@@ -24,6 +24,8 @@ class BudgetProcessViewSetTestCase(APITestCase):
     Test actions on `BudgetProcessViewSet`.
     """
 
+    maxDiff = None
+
     def jsonListContains(self, actual: List[Dict], expected: List[Dict]):
         """
         Check that each dict in the expect list is contained as a subset of a dict in actual.
@@ -91,7 +93,13 @@ class BudgetProcessViewSetTestCase(APITestCase):
             response_data,
             {
                 "id": new_budget_process.pk,
-                "created_by": {"first_name": "test", "last_name": "test", "username": "test"},
+                "created_by": {
+                    "first_name": "test",
+                    "full_name": "test test",
+                    "id": self.user.pk,
+                    "last_name": "test",
+                    "username": "test",
+                },
                 "created_at": new_budget_process.created_at.isoformat().replace("+00:00", "Z"),
                 "rounds": [{"id": self.round_4.pk, "cost": "0.00"}],
                 "ra_completed_at_WFEDITABLE": None,
@@ -579,7 +587,13 @@ class BudgetProcessViewSetTestCase(APITestCase):
                     "items": [
                         {
                             "label": "Budget submitted",
-                            "performed_by": {"first_name": "test", "last_name": "test", "username": "test"},
+                            "performed_by": {
+                                "first_name": "test",
+                                "full_name": "test test",
+                                "id": self.user.pk,
+                                "last_name": "test",
+                                "username": "test",
+                            },
                             "performed_at": budget_step_1.created_at.isoformat().replace("+00:00", "Z"),
                             "step_id": budget_step_1.pk,
                         }
@@ -594,7 +608,13 @@ class BudgetProcessViewSetTestCase(APITestCase):
                     "items": [
                         {
                             "label": "Budget accepted",
-                            "performed_by": {"first_name": "test", "last_name": "test", "username": "test"},
+                            "performed_by": {
+                                "first_name": "test",
+                                "full_name": "test test",
+                                "id": self.user.pk,
+                                "last_name": "test",
+                                "username": "test",
+                            },
                             "performed_at": budget_step_2.created_at.isoformat().replace("+00:00", "Z"),
                             "step_id": budget_step_2.pk,
                         }

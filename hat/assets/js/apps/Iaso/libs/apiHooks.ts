@@ -273,11 +273,12 @@ const useBaseSnackQuery = <
     options: UseQueryOptions<QueryFnData, Error, Data, QueryKeyExtended> = {},
     // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
     dispatchOnError = true,
+    ignoreErrorCodes: number[] = [],
 ): UseQueryResult<Data, Error> => {
     const newOptions = {
         ...options,
         onError: error => {
-            if (dispatchOnError) {
+            if (dispatchOnError && !ignoreErrorCodes.includes(error.status)) {
                 openSnackBar(errorSnackBar(undefined, snackErrorMsg, error));
             }
             if (options.onError) {
@@ -296,6 +297,7 @@ type SnackQueryDict<QueryFnData, Data, QueryKeyExtended extends QueryKey> = {
     options?: UseQueryOptions<QueryFnData, Error, Data, QueryKeyExtended>;
     // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
     dispatchOnError?: boolean;
+    ignoreErrorCodes?: number[];
 };
 
 export const useSnackQuery = <
@@ -310,12 +312,14 @@ export const useSnackQuery = <
     options?: UseQueryOptions<QueryFnData, Error, Data, QueryKeyExtended>,
     // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
     dispatchOnError?: boolean,
+    ignoreErrorCodes: number[] = [],
 ): UseQueryResult<Data, Error> => {
     let arg1;
     let arg2;
     let arg3;
     let arg4;
     let arg5;
+    let arg6;
     // QueryKey is either a string a readonly Array. In this case, we just pass all arguments in order
     if (typeof queryArg === 'string' || Array.isArray(queryArg)) {
         arg1 = queryArg;
@@ -323,6 +327,7 @@ export const useSnackQuery = <
         arg3 = snackErrorMsg;
         arg4 = options;
         arg5 = dispatchOnError;
+        arg6 = ignoreErrorCodes;
     } else {
         arg1 = (queryArg as SnackQueryDict<QueryFnData, Data, QueryKeyExtended>)
             .queryKey;
@@ -334,6 +339,8 @@ export const useSnackQuery = <
             .options;
         arg5 = (queryArg as SnackQueryDict<QueryFnData, Data, QueryKeyExtended>)
             .dispatchOnError;
+        arg6 = (queryArg as SnackQueryDict<QueryFnData, Data, QueryKeyExtended>)
+            .ignoreErrorCodes;
     }
     return useBaseSnackQuery<QueryFnData, Error, Data, QueryKeyExtended>(
         arg1,
@@ -341,6 +348,7 @@ export const useSnackQuery = <
         arg3,
         arg4,
         arg5,
+        arg6,
     );
 };
 

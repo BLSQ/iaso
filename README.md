@@ -32,7 +32,7 @@ The main tasks it allows accomplishing are:
 Long Intro
 ----------
 Iaso is a platform created to support geo-rich data collection efforts, mainly in public health in
-emerging countries. The key feature that it supports is that any survey is linked to an organizational
+emerging countries. The key feature is that it supports any survey which is linked to an organizational
 unit that is part of a canonical hierarchy. Each one of these org. units can have a location and a
 territory. The mobile data collection tool can be used to enrich this hierarchy with additional GPS
 coordinates, names corrections, etc ... which can then be validated by officials of the organizations

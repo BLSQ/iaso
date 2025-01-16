@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import date
 from typing import Any, Optional, Tuple, Union
 from uuid import uuid4
+
 import django.db.models.manager
 import pandas as pd
 from django.conf import settings
@@ -15,7 +16,7 @@ from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Q, QuerySet, Sum, Subquery
+from django.db.models import Q, QuerySet, Subquery, Sum
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Coalesce
 from django.utils import timezone
@@ -31,7 +32,8 @@ from iaso.models.base import Account, Task
 from iaso.models.entity import UserNotAuthError
 from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
-from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
+from iaso.utils.models.soft_deletable import (DefaultSoftDeletableManager,
+                                              SoftDeletableModel)
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -352,6 +354,7 @@ class Round(models.Model):
     main_awareness_problem = models.CharField(max_length=255, null=True, blank=True)
     lqas_district_passing = models.IntegerField(null=True, blank=True)
     lqas_district_failing = models.IntegerField(null=True, blank=True)
+    is_test = models.BooleanField(default=False)
 
     # Preparedness
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
@@ -373,6 +376,7 @@ class Round(models.Model):
     # End of vaccine management
 
     objects = models.Manager.from_queryset(RoundQuerySet)()
+
 
     def delete(self, *args, **kwargs):
         # Explicitly delete groups related to the round's scopes, because the cascade deletion won't work reliably

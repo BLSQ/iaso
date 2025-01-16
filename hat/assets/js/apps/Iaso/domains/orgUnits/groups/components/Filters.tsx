@@ -112,10 +112,8 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 setVersion(undefined);
             }
             if (key === 'dataSource') {
-                if (newValue === null) {
-                    filters.version = undefined;
-                    setVersion(undefined);
-                }
+                filters.version = undefined;
+                setVersion(undefined);
                 setDataSource(value);
             } else if (key === 'version') {
                 setVersion(value);

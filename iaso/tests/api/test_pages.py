@@ -16,7 +16,12 @@ class PagesAPITestCase(APITestCase):
         cls.goku = cls.create_user_with_profile(username="Goku", account=kame_house, permissions=["iaso_page_write"])
         cls.kefla = cls.create_user_with_profile(username="Kefla", account=kame_house, permissions=["iaso_page_write"])
         cls.kakashin = cls.create_user_with_profile(username="Kakashi", account=konoa, permissions=["iaso_page_write"])
-
+        cls.fourth_user = cls.create_user_with_profile(
+            username="fourth user", account=kame_house, permissions=["iaso_page_write"]
+        )
+        cls.fifth_user = cls.create_user_with_profile(
+            username="fifth user", account=kame_house, permissions=["iaso_page_write"]
+        )
         cls.userNoWritePermission = cls.create_user_with_profile(
             username="NoWritePermission", account=kame_house, permissions=["iaso_pages"]
         )
@@ -25,6 +30,19 @@ class PagesAPITestCase(APITestCase):
         )
 
         cls.sayen = m.OrgUnitType.objects.create(name="Sayen", short_name="Sy")
+
+    def create_page(self, name, slug, needs_authentication, users=None):
+        """Helper method to create a Page and associate it with users."""
+        page = Page.objects.create(
+            type="RAW",
+            needs_authentication=needs_authentication,
+            name=name,
+            slug=slug,
+            content="test",
+        )
+        if users:
+            page.users.set(users)
+        return page
 
     def test_pages_list_without_auth(self):
         """GET /pages/ without auth should result in a 401"""
@@ -42,24 +60,8 @@ class PagesAPITestCase(APITestCase):
     def test_pages_list_search_by_name_or_by_slug(self):
         """GET /pages/?search='search string'"""
         self.client.force_login(self.goku)
-        page1 = Page.objects.create(
-            type="RAW",
-            needs_authentication=False,
-            name="TEST1",
-            slug="test_1",
-            content="test",
-        )
-
-        page1.users.set([self.kefla.pk])
-
-        page2 = Page.objects.create(
-            type="RAW",
-            needs_authentication=True,
-            name="TEST2",
-            slug="test_2",
-            content="test",
-        )
-        page2.users.set([self.kefla.pk])
+        page1 = self.create_page(name="TEST1", slug="test_1", needs_authentication=False, users=[self.kefla.pk])
+        page2 = self.create_page(name="TEST2", slug="test_2", needs_authentication=True, users=[self.kefla.pk])
 
         response = self.client.get("/api/pages/?search=Test1")
         self.assertJSONResponse(response, 200)
@@ -74,29 +76,28 @@ class PagesAPITestCase(APITestCase):
     def test_pages_list_filter_by_needs_authentication(self):
         """GET /pages/?needs_authentication=boolean"""
         self.client.force_login(self.goku)
-        page1 = Page.objects.create(
-            type="RAW",
-            needs_authentication=False,
-            name="TEST1",
-            slug="test_1",
-            content="test",
-        )
-
-        page1.users.set([self.kefla.pk])
-
-        page2 = Page.objects.create(
-            type="RAW",
-            needs_authentication=True,
-            name="TEST2",
-            slug="test_2",
-            content="test",
-        )
-        page2.users.set([self.kefla.pk])
+        page1 = self.create_page(name="TEST1", slug="test_1", needs_authentication=False, users=[self.kefla.pk])
+        self.create_page(name="TEST2", slug="test_2", needs_authentication=True, users=[self.fourth_user.pk])
 
         response = self.client.get("/api/pages/?needs_authentication=false")
         self.assertJSONResponse(response, 200)
         self.assertEqual(len(response.json()["results"]), 1)
         self.assertEqual(response.json()["results"][0]["name"], page1.name)
+
+    def test_pages_list_filter_by_users(self):
+        """GET /pages/?userIds=coma separate userIds"""
+        self.client.force_login(self.goku)
+
+        self.create_page(name="TEST1", slug="test_1", needs_authentication=False, users=[self.kefla.pk])
+        page2 = self.create_page(
+            name="TEST2", slug="test_2", needs_authentication=True, users=[self.kefla.pk, self.fifth_user.pk]
+        )
+        page3 = self.create_page(name="TEST3", slug="test_3", needs_authentication=True, users=[self.fourth_user.pk])
+
+        response = self.client.get("/api/pages/?userIds=" + str(self.fifth_user.pk) + "," + str(self.fourth_user.pk))
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 2)
+        self.assertEqual(sorted([page["id"] for page in response.json()["results"]]), sorted([page2.id, page3.id]))
 
     def test_create_page_with_no_write_permission(self):
         """POST /pages/ without write page permission should result in a 403"""

@@ -1,5 +1,5 @@
 import { Box, Button, Grid } from '@mui/material';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
@@ -7,6 +7,9 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
 import MESSAGES from '../messages';
 import { baseUrl } from '../config';
+import { AsyncSelect } from '../../../components/forms/AsyncSelect';
+import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
+import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDropdown';
 
 type Params = {
     order: string;
@@ -28,6 +31,15 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             baseUrl,
             params,
         });
+    const handleChangeUsers = useCallback(
+        (keyValue, newValue) => {
+            const joined = newValue?.map(r => r.value)?.join(',');
+            handleChange(keyValue, joined);
+        },
+        [handleChange],
+    );
+    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
+
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={3}>
@@ -56,7 +68,20 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     ]}
                 />
             </Grid>
-            <Grid container item xs={12} md={6} justifyContent="flex-end">
+            <Grid item xs={12} sm={6} md={3}>
+                <Box mt={2}>
+                    <AsyncSelect
+                        keyValue="userIds"
+                        label={MESSAGES.users}
+                        value={selectedUsers ?? ''}
+                        onChange={handleChangeUsers}
+                        debounceTime={500}
+                        multi
+                        fetchOptions={input => getUsersDropDown(input)}
+                    />
+                </Box>
+            </Grid>
+            <Grid container item xs={12} md={3} justifyContent="flex-end">
                 <Box mt={2}>
                     <Button
                         data-test="search-button"

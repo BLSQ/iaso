@@ -41,6 +41,7 @@ const Pages = () => {
             page: params.page ?? DEFAULT_PAGE,
             search: params.search,
             needs_authentication: params.needs_authentication,
+            userIds: params.userIds,
         };
     }, [params]);
 

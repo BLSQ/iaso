@@ -1,9 +1,11 @@
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django_filters.rest_framework import FilterSet, CharFilter, BooleanFilter
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, permissions
-from iaso.api.common import ModelViewSet
+from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import Page
+
 from hat.menupermissions import models as permission
 
 
@@ -37,13 +39,18 @@ class PageFilter(FilterSet):
     needs_authentication = BooleanFilter(
         field_name="needs_authentication", label=_("Limit on authentication required or not")
     )
+    userIds = CharFilter(method="filter_users", label=_("Users IDs (comma-separated)"))
 
     class Meta:
         model = Page
-        fields = ["search", "needs_authentication"]
+        fields = []
 
     def filter_by_name_or_slug(self, queryset, _, value):
         return queryset.filter(name__icontains=value) | queryset.filter(slug__icontains=value)
+
+    def filter_users(self, queryset, name, value):
+        users_ids = parse_comma_separated_numeric_values(value, name)
+        return queryset.filter(users__id__in=users_ids)
 
 
 class PagesViewSet(ModelViewSet):

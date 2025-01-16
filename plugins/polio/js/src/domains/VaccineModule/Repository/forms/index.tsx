@@ -1,4 +1,4 @@
-import { Column } from 'bluesquare-components';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
@@ -11,6 +11,13 @@ import {
     useGetVaccineReporting,
 } from './hooks/useGetVaccineReporting';
 import { useVaccineRepositoryColumns } from './hooks/useVaccineRepositoryColumns';
+import ColorLegend from '../components/ColorLegend';
+import { MESSAGES as REPOSITORY_MESSAGES } from '../messages';
+import {
+    FORM_A_IS_LATE_COLOR,
+    NO_PDF_COLOR,
+    WITH_PDF_COLOR,
+} from '../constants';
 
 type Props = {
     params: VaccineRepositoryParams;
@@ -38,10 +45,26 @@ export const Forms: FunctionComponent<Props> = ({ params }) => {
     const redirectUrl = isEmbedded ? embeddedVaccineRepositoryUrl : baseUrl;
     const { data, isFetching } = useGetVaccineReporting(formsParams);
     const columns = useVaccineRepositoryColumns(formsParams);
+    const { formatMessage } = useSafeIntl();
 
+    const legendItems = [
+        {
+            label: formatMessage(REPOSITORY_MESSAGES.noPdf),
+            color: NO_PDF_COLOR,
+        },
+        {
+            label: formatMessage(REPOSITORY_MESSAGES.withPdf),
+            color: WITH_PDF_COLOR,
+        },
+        {
+            label: formatMessage(REPOSITORY_MESSAGES.formAisLate),
+            color: FORM_A_IS_LATE_COLOR,
+        },
+    ];
     return (
         <>
             <Filters params={params} redirectUrl={redirectUrl} />
+            <ColorLegend legendItems={legendItems} />
             <TableWithDeepLink
                 marginTop={false}
                 data={data?.results ?? []}

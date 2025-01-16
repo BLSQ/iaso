@@ -813,11 +813,10 @@ class OrgUnitAPITestCase(APITestCase):
             }
         )
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerySetEqual(
-            ou.groups.all().order_by("name"),
-            ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"],
-            transform=repr,
-        )
+        ou_groups = ou.groups.all().order_by("name")
+        self.assertEqual(len(ou_groups), 2)
+        self.assertEqual(ou_groups[0].name, group_1.name)
+        self.assertEqual(ou_groups[1].name, group_2.name)
 
     def test_create_org_unit_with_reference_instance(self):
         self.client.force_authenticate(self.yoda)
@@ -892,9 +891,10 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.data["reference_instances"], [])
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerySetEqual(
-            ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"], transform=repr
-        )
+        ou_groups = ou.groups.all().order_by("name")
+        self.assertEqual(ou_groups.count(), 1)
+        self.assertEqual(ou_groups.first().name, self.elite_group.name)
+        self.assertEqual(ou_groups.first().source_version, self.sw_version_1)
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, old_ou.name)
         self.assertEqual(ou.parent, old_ou.parent)
@@ -1118,10 +1118,16 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=old_ou.id)
+
         # Verify group was not modified but the rest was modified
-        self.assertQuerySetEqual(
-            ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"], transform=repr
-        )
+        ou_groups = ou.groups.all().order_by("name")
+        self.assertEqual(ou_groups.count(), 2)
+        self.assertEqual(ou_groups[0].name, "")
+        self.assertEqual(ou_groups[0].source_version.data_source.name, "Evil Empire")
+        self.assertEqual(ou_groups[0].source_version.number, 1)
+        self.assertEqual(ou_groups[1].name, "bad")
+        self.assertEqual(ou_groups[1].source_version, None)
+
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, "new name")
         self.assertEqual(ou.parent, old_ou.parent)

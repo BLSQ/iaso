@@ -310,7 +310,7 @@ class SubActivity(models.Model):
         return self.name
 
     @property
-    def vaccines(self):
+    def vaccine_list(self):
         all_vaccines = self.scopes.all().values_list("vaccine", flat=True)
         vaccines = set()
         vaccines.update(all_vaccines)
@@ -318,7 +318,16 @@ class SubActivity(models.Model):
 
     @property
     def vaccine_names(self):
-        return ", ".join(self.vaccines)
+        return ", ".join(self.vaccine_list)
+
+    @property
+    def single_vaccine_list(self):
+        vaccines = set(self.vaccine_list)
+        return sorted(list(Campaign.split_combined_vaccines(vaccines)))
+
+    @property
+    def single_vaccine_names(self):
+        return ", ".join(self.single_vaccine_list)
 
 
 class Round(models.Model):
@@ -417,7 +426,7 @@ class Round(models.Model):
             return self.campaign.scopes
 
     @property
-    def vaccines_list(self):
+    def vaccine_list(self):
         """Vaccines used for the round. Not including sub-activities"""
         vaccines = set()
         if self.campaign.separate_scopes_per_round:
@@ -434,14 +443,24 @@ class Round(models.Model):
 
             vaccines.update(campaign_vaccines)
 
-        vaccines = self.split_combined_vaccines(vaccines)
-
         return sorted(list(vaccines))
+
+    @property
+    def single_vaccine_list(self):
+        vaccines = set(self.vaccine_list)
+        return sorted(list(Campaign.split_combined_vaccines(vaccines)))
 
     @property
     def vaccine_names(self):
         """Vaccines used for the round, in string form for easy use in API. Not including sub-activities"""
-        return ", ".join(sorted(list(self.vaccines_list)))
+        return ", ".join(sorted(list(self.vaccine_list)))
+
+    @property
+    def single_vaccine_names(self):
+        """Vaccines used for the round, splitting type bOPV & nOPV2 into it's component vaccines.
+        In string form for easy use in API.
+        Not including sub-activities"""
+        return ", ".join(sorted(list(self.single_vaccine_list)))
 
     @property
     def subactivities_vaccine_list(self):
@@ -452,37 +471,43 @@ class Round(models.Model):
         ).values_list("vaccine", flat=True)
 
         vaccines.update(subactivity_vaccines)
-        vaccines = self.split_combined_vaccines(vaccines)
         return sorted(list(vaccines))
+
+    @property
+    def subactivities_single_vaccine_list(self):
+        return sorted(list(Campaign.split_combined_vaccines(set(self.subactivities_vaccine_list))))
 
     @property
     def subactivities_vaccine_names(self):
         return ", ".join(self.subactivities_vaccine_list)
 
     @property
-    def vaccines_list_extended(self):
+    def subactivities_single_vaccine_names(self):
+        return ", ".join(self.subactivities_single_vaccine_list)
+
+    @property
+    def vaccine_list_extended(self):
         """list of vaccines including from sub-activities"""
         vaccines = set()
-        vaccines.update(self.vaccines_list)
+        vaccines.update(self.vaccine_list)
         vaccines.update(self.subactivities_vaccine_list)
-        vaccines = self.split_combined_vaccines(vaccines)
         return sorted(list(vaccines))
 
     @property
+    def single_vaccine_list_extended(self):
+        return sorted(list(Campaign.split_combined_vaccines(set(self.vaccine_list_extended))))
+
+    @property
     def vaccine_names_extended(self):
-        return ", ".join(self.vaccines_list_extended)
+        return ", ".join(self.vaccine_list_extended)
+
+    @property
+    def single_vaccine_names_extended(self):
+        return ", ".join(self.single_vaccine_list_extended)
 
     @property
     def districts_count_calculated(self):
         return len(self.campaign.get_districts_for_round(self))
-
-    @staticmethod
-    def split_combined_vaccines(vaccines):
-        if VACCINES[3][0] in vaccines:
-            vaccines.remove(VACCINES[3][0])
-            vaccines.add(VACCINES[1][0])
-            vaccines.add(VACCINES[2][0])
-        return vaccines
 
 
 class CampaignType(models.Model):

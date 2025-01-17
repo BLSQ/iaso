@@ -919,7 +919,6 @@ class Campaign(SoftDeletableModel):
         ).values_list("vaccine", flat=True)
 
         vaccines.update(subactivity_vaccines)
-        # vaccines = self.split_combined_vaccines(vaccines)
         return sorted(list(vaccines))
 
     @property
@@ -932,13 +931,15 @@ class Campaign(SoftDeletableModel):
         vaccines = set(self.sub_activity_level_vaccines_list)
         return sorted(list(self.split_combined_vaccines(vaccines)))
 
-    # deprecated
-    @property
-    def vaccines(self):
-        return ", ".join(self.campaign_level_vaccines_list)
-
     @property
     def vaccines_extended_list(self):
+        vaccines = set()
+        vaccines.update(self.campaign_level_vaccines_list)
+        vaccines.update(self.round_level_vaccines_list)
+        return sorted(list(vaccines))
+
+    @property
+    def vaccines_full_list(self):
         vaccines = set()
         vaccines.update(self.campaign_level_vaccines_list)
         vaccines.update(self.round_level_vaccines_list)
@@ -955,8 +956,33 @@ class Campaign(SoftDeletableModel):
         return sorted(list(self.split_combined_vaccines(vaccines)))
 
     @property
+    def single_vaccines_full_list(self):
+        """Same as self.single_vaccines_full_list, but includes sub_activities"""
+        vaccines = set(self.vaccines_full_list)
+        return sorted(list(self.split_combined_vaccines(vaccines)))
+
+    # deprecated
+    # equivalent to vaccines_extended
+    # currently used in preparedness
+    @property
+    def vaccines(self):
+        return ", ".join(self.vaccines_extended_list)
+
+    @property
     def vaccines_extended(self):
         return ", ".join(self.vaccines_extended_list)
+
+    @property
+    def vaccines_full(self):
+        return ", ".join(self.vaccines_full_list)
+
+    @property
+    def single_vaccines_extended(self):
+        return ", ".join(self.single_vaccines_extended_list)
+
+    @property
+    def single_vaccines_full(self):
+        return ", ".join(self.single_vaccines_full_list)
 
     @staticmethod
     def split_combined_vaccines(vaccines):

@@ -147,8 +147,8 @@ class CampaignSerializer(serializers.ModelSerializer):
     single_vaccines = serializers.SerializerMethodField(read_only=True)
 
     def get_vaccines(self, obj):
-        if obj.vaccines:
-            return ",".join([vaccine.strip() for vaccine in obj.vaccines.split(",")])
+        if obj.vaccines_extended_list:
+            return ",".join(obj.vaccines_extended_list)
         return ""
 
     def get_single_vaccines(self, obj):
@@ -1017,7 +1017,7 @@ class CampaignViewSet(ModelViewSet):
             campaign = campaigns.get(pk=round.campaign_id)
             country = campaign.country.name if campaign.country else ""
             obr_name = campaign.obr_name
-            vaccine_types = campaign.vaccines
+            vaccine_types = campaign.vaccines_extended
             onset_date = campaign.onset_at
             round_number = round.number
             item["country"] = country

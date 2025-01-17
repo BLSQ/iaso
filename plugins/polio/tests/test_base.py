@@ -785,7 +785,7 @@ class PolioAPICampaignCsvTestCase(APITestCase):
         return [
             campaign.country.name if campaign.country else "",
             campaign.obr_name,
-            campaign.vaccines,
+            campaign.vaccines_extended,
             campaign.onset_at.strftime("%Y-%m-%d"),
             campaign.cvdpv2_notified_at.strftime("%Y-%m-%d"),
             str(round.number),

@@ -6,6 +6,7 @@ The general logic is that we copy a template Spreadsheet file stored in Google S
 and we adapt the value for the particular campaign we are generating to.
 We copy the Regional worksheet for each region in the Campaign scope, then add a column for each district.
 """
+
 import copy
 from logging import getLogger
 from typing import Optional
@@ -170,7 +171,7 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
     )
     update_national_worksheet(
         spreadsheet.worksheet("National"),
-        vaccines=campaign.vaccines,
+        vaccines=campaign.vaccines_extended,
         payment_mode=campaign.payment_mode,
         country=campaign.country,
     )

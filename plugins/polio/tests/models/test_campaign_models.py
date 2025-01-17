@@ -304,3 +304,86 @@ class CampaignTestCase(TestCase, PolioTestCaseMixin):
         self.assertEqual(self.polio_campaign4.vaccines_full_list, [self.bopv, self.mopv2, self.nopv2_bopv])
         self.assertEqual(self.polio_campaign4.single_vaccines_extended_list, [self.bopv, self.mopv2])
         self.assertEqual(self.polio_campaign4.single_vaccines_full_list, [self.bopv, self.mopv2, self.nopv2])
+
+    def test_round_vaccine_properties_no_subactivities(self):
+        # strings
+        self.assertEqual(self.polio2_round_1.vaccine_names, f"{self.mopv2}")
+        self.assertEqual(self.polio2_round_1.single_vaccine_names, f"{self.mopv2}")
+        self.assertEqual(self.polio2_round_1.vaccine_names_extended, f"{self.mopv2}")
+        self.assertEqual(self.polio2_round_1.single_vaccine_names_extended, f"{self.mopv2}")
+        self.assertEqual(self.polio2_round_1.subactivities_vaccine_names, f"")
+        self.assertEqual(self.polio2_round_1.subactivities_single_vaccine_names, f"")
+
+        self.assertEqual(self.polio2_round_2.vaccine_names, f"{self.nopv2_bopv}")
+        self.assertEqual(self.polio2_round_2.single_vaccine_names, f"{self.bopv}, {self.nopv2}")
+        self.assertEqual(self.polio2_round_2.vaccine_names_extended, f"{self.nopv2_bopv}")
+        self.assertEqual(self.polio2_round_2.single_vaccine_names_extended, f"{self.bopv}, {self.nopv2}")
+        self.assertEqual(self.polio2_round_2.subactivities_vaccine_names, f"")
+        self.assertEqual(self.polio2_round_2.subactivities_single_vaccine_names, f"")
+
+        # lists
+        self.assertEqual(self.polio2_round_1.vaccine_list, [self.mopv2])
+        self.assertEqual(self.polio2_round_1.single_vaccine_list, [self.mopv2])
+        self.assertEqual(self.polio2_round_1.vaccine_list_extended, [self.mopv2])
+        self.assertEqual(self.polio2_round_1.single_vaccine_list_extended, [self.mopv2])
+        self.assertEqual(self.polio2_round_1.subactivities_vaccine_list, [])
+        self.assertEqual(self.polio2_round_1.subactivities_single_vaccine_list, [])
+
+        self.assertEqual(self.polio2_round_2.vaccine_list, [self.nopv2_bopv])
+        self.assertEqual(self.polio2_round_2.single_vaccine_list, [self.bopv, self.nopv2])
+        self.assertEqual(self.polio2_round_2.vaccine_list_extended, [self.nopv2_bopv])
+        self.assertEqual(self.polio2_round_2.single_vaccine_list_extended, [self.bopv, self.nopv2])
+        self.assertEqual(self.polio2_round_2.subactivities_vaccine_list, [])
+        self.assertEqual(self.polio2_round_2.subactivities_single_vaccine_list, [])
+
+    def test_round_vaccine_properties_with_subactivities(self):
+        # strings
+        self.assertEqual(self.polio4_round_1.vaccine_names, f"{self.mopv2}")
+        self.assertEqual(self.polio4_round_1.single_vaccine_names, f"{self.mopv2}")
+        self.assertEqual(self.polio4_round_1.vaccine_names_extended, f"{self.mopv2}, {self.nopv2_bopv}")
+        self.assertEqual(self.polio4_round_1.single_vaccine_names_extended, f"{self.bopv}, {self.mopv2}, {self.nopv2}")
+        self.assertEqual(self.polio4_round_1.subactivities_vaccine_names, f"{self.nopv2_bopv}")
+        self.assertEqual(self.polio4_round_1.subactivities_single_vaccine_names, f"{self.bopv}, {self.nopv2}")
+
+        self.assertEqual(self.polio4_round_2.vaccine_names, f"{self.bopv}")
+        self.assertEqual(self.polio4_round_2.single_vaccine_names, f"{self.bopv}")
+        self.assertEqual(self.polio4_round_2.vaccine_names_extended, f"{self.bopv}, {self.mopv2}")
+        self.assertEqual(self.polio4_round_2.single_vaccine_names_extended, f"{self.bopv}, {self.mopv2}")
+        self.assertEqual(self.polio4_round_2.subactivities_vaccine_names, f"{self.mopv2}")
+        self.assertEqual(self.polio4_round_2.subactivities_single_vaccine_names, f"{self.mopv2}")
+
+        # lists
+        self.assertEqual(self.polio4_round_1.vaccine_list, [self.mopv2])
+        self.assertEqual(self.polio4_round_1.single_vaccine_list, [self.mopv2])
+        self.assertEqual(self.polio4_round_1.vaccine_list_extended, [self.mopv2, self.nopv2_bopv])
+        self.assertEqual(self.polio4_round_1.single_vaccine_list_extended, [self.bopv, self.mopv2, self.nopv2])
+        self.assertEqual(self.polio4_round_1.subactivities_vaccine_list, [self.nopv2_bopv])
+        self.assertEqual(self.polio4_round_1.subactivities_single_vaccine_list, [self.bopv, self.nopv2])
+
+        self.assertEqual(self.polio4_round_2.vaccine_list, [self.bopv])
+        self.assertEqual(self.polio4_round_2.single_vaccine_list, [self.bopv])
+        self.assertEqual(self.polio4_round_2.vaccine_list_extended, [self.bopv, self.mopv2])
+        self.assertEqual(self.polio4_round_2.single_vaccine_list_extended, [self.bopv, self.mopv2])
+        self.assertEqual(self.polio4_round_2.subactivities_vaccine_list, [self.mopv2])
+        self.assertEqual(self.polio4_round_2.subactivities_single_vaccine_list, [self.mopv2])
+
+    def test_subactivities_properties(self):
+        self.assertEqual(self.polio3_round_1_sub_activity1.vaccine_names, f"{self.nopv2_bopv}")
+        self.assertEqual(self.polio3_round_1_sub_activity1.vaccine_list, [self.nopv2_bopv])
+        self.assertEqual(self.polio3_round_1_sub_activity1.single_vaccine_names, f"{self.bopv}, {self.nopv2}")
+        self.assertEqual(self.polio3_round_1_sub_activity1.single_vaccine_list, [self.bopv, self.nopv2])
+
+        self.assertEqual(self.polio3_round_2_sub_activity1.vaccine_names, f"{self.bopv}")
+        self.assertEqual(self.polio3_round_2_sub_activity1.vaccine_list, [self.bopv])
+        self.assertEqual(self.polio3_round_2_sub_activity1.single_vaccine_names, f"{self.bopv}")
+        self.assertEqual(self.polio3_round_2_sub_activity1.single_vaccine_list, [self.bopv])
+
+        self.assertEqual(self.polio4_round_1_sub_activity1.vaccine_names, f"{self.nopv2_bopv}")
+        self.assertEqual(self.polio4_round_1_sub_activity1.vaccine_list, [self.nopv2_bopv])
+        self.assertEqual(self.polio4_round_1_sub_activity1.single_vaccine_names, f"{self.bopv}, {self.nopv2}")
+        self.assertEqual(self.polio4_round_1_sub_activity1.single_vaccine_list, [self.bopv, self.nopv2])
+
+        self.assertEqual(self.polio4_round_2_sub_activity1.vaccine_names, f"{self.mopv2}")
+        self.assertEqual(self.polio4_round_2_sub_activity1.vaccine_list, [self.mopv2])
+        self.assertEqual(self.polio4_round_2_sub_activity1.single_vaccine_names, f"{self.mopv2}")
+        self.assertEqual(self.polio4_round_2_sub_activity1.single_vaccine_list, [self.mopv2])

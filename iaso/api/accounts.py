@@ -57,23 +57,30 @@ class AccountViewSet(ModelViewSet):
     PUT /api/account/<id>
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission(permission.SOURCES),  # type: ignore
-        HasAccountPermission,
-    ]
     serializer_class = AccountSerializer
     results_key = "accounts"
     queryset = Account.objects.all()
     # FIXME: USe a PATCH in the future, it make more sense regarding HTTP method semantic
     http_method_names = ["patch", "put"]
 
+    def get_permissions(self):
+        if self.action == "switch":
+            permission_classes = [permissions.IsAuthenticated, HasAccountPermission]
+        else:
+            permission_classes = [
+                permissions.IsAuthenticated,
+                HasPermission(permission.SOURCES),  # type: ignore
+                HasAccountPermission,
+            ]
+
+        return [permission() for permission in permission_classes]
+
     @action(detail=False, methods=["patch"], url_path="switch")
     def switch(self, request):
         # TODO: Make sure the account_id is present
         self.permission_classes = [permissions.IsAuthenticated, HasAccountPermission]
         self.check_permissions(request)
-        account_id = request.data.get("account_id", None)
+        account_id = int(request.data.get("account_id", None))
 
         current_user = request.user
         account_users = current_user.tenant_user.get_all_account_users()

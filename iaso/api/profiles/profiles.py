@@ -29,7 +29,7 @@ from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
-from iaso.utils import is_mobile_request
+from iaso.utils import is_mobile_request, is_multi_account_user
 from iaso.utils.module_permissions import account_module_permissions
 
 PK_ME = "me"
@@ -474,7 +474,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
         # Validation
         try:
-            self.validate_user(request, user)
+            self.validate_user_name(request, user)
             user_permissions = self.validate_user_permissions(request, current_account)
             org_units = self.validate_org_units(request, profile)
             user_roles_data = self.validate_user_roles(request)
@@ -544,19 +544,18 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_permissions,
         editable_org_unit_types,
     ):
-        username = request.data.get("user_name")
-        user.first_name = request.data.get("first_name", "")
-        user.last_name = request.data.get("last_name", "")
-        user.username = username
-        user.email = request.data.get("email", "")
+        if not is_multi_account_user(user):
+            user.first_name = request.data.get("first_name", "")
+            user.last_name = request.data.get("last_name", "")
+            user.username = request.data.get("user_name")
+            user.email = request.data.get("email", "")
+            self.update_password(user, request)
+
         user.groups.set(user_roles_groups)
         user.save()
         user.user_permissions.set(user_permissions)
 
-        self.update_password(user, request)
-
         phone_number = self.extract_phone_number(request)
-
         if phone_number is not None:
             profile.phone_number = phone_number
 
@@ -626,7 +625,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
 
-    def validate_user(self, request, user):
+    def validate_user_name(self, request, user):
+        if is_multi_account_user(user): return # username cannot be updated for multi-account users
+
         username = request.data.get("user_name")
         if not username:
             raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))

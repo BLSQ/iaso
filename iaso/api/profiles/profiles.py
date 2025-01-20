@@ -95,6 +95,7 @@ def get_filtered_profiles(
     if search:
         queryset = queryset.filter(
             Q(user__username__icontains=search)
+            | Q(user__tenant_user__main_user__username__icontains=search)
             | Q(user__first_name__icontains=search)
             | Q(user__last_name__icontains=search)
         ).distinct()

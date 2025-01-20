@@ -153,13 +153,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                 required
                             />
                         </Grid>
-                        <Grid
-                            container
-                            item
-                            xs={6}
-                            md={4}
-                            alignContent="center"
-                        >
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.vials_shipped)}
                                 name={`pre_alerts[${index}].vials_shipped`}
@@ -207,6 +201,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                             );
                                         }
                                     }}
+                                    // @ts-ignore
                                     document={
                                         values?.pre_alerts?.[index]?.document
                                     }

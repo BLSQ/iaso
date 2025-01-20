@@ -149,36 +149,28 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
         [doses_per_vial, index, setFieldValue],
     );
     const onDosesShippedFocused = () => {
-        // setIsDosesShippedFocused(true);
         dosesShippedRef.current = true;
     };
     const onDosesShippedBlur = () => {
-        // setIsDosesShippedFocused(false);
         dosesShippedRef.current = false;
     };
     const onDosesReceivedFocused = () => {
-        // setIsDosesReceivedFocused(true);
         dosesReceivedRef.current = true;
     };
     const onDosesReceivedBlur = () => {
         dosesReceivedRef.current = false;
-        // setIsDosesReceivedFocused(false);
     };
     const onVialsShippedFocused = () => {
-        // setIsVialsShippedFocused(true);
         vialsShippedRef.current = true;
     };
     const onVialsShippedBlur = () => {
-        // setIsVialsShippedFocused(false);
         vialsShippedRef.current = false;
     };
     const onVialsReceivedFocused = () => {
         vialsReceivedRef.current = true;
-        // setIsVialsReceivedFocused(true);
     };
     const onVialsReceivedBlur = () => {
         vialsReceivedRef.current = false;
-        // setIsVialsReceivedFocused(false);
     };
 
     return (
@@ -244,15 +236,6 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={3}>
-                            <Typography
-                                variant="button"
-                                sx={uneditableTextStyling}
-                            >
-                                {`${formatMessage(MESSAGES.doses_per_vial)}:`}{' '}
-                                <NumberCell value={doses_per_vial} />
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
                             <Field
                                 label={formatMessage(MESSAGES.vials_shipped)}
                                 name={`${VAR}[${index}].vials_shipped`}
@@ -275,6 +258,23 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 onChange={handleVialsReceivedUpdate}
                                 required
                             />
+                        </Grid>
+                        <Grid
+                            container
+                            item
+                            xs={6}
+                            md={3}
+                            alignContent="center"
+                        >
+                            <Box>
+                                <Typography
+                                    variant="button"
+                                    sx={uneditableTextStyling}
+                                >
+                                    {`${formatMessage(MESSAGES.doses_per_vial)}:`}{' '}
+                                    <NumberCell value={doses_per_vial} />
+                                </Typography>
+                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>

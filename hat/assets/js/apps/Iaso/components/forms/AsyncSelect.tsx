@@ -119,6 +119,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                 let newOptions: any[] = [...values];
                 if (results) {
                     newOptions = [...newOptions, ...results];
+                    // Make the array unique by `value` key.
                     newOptions = [
                         ...new Map(
                             newOptions.map(item => [item.value, item]),
@@ -132,7 +133,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
             active = false;
         };
     }, [values, inputValue, fetch, minCharBeforeQuery]);
-    const displayedOtpions = useMemo(() => [...options] ?? [], [options]);
+    const displayedOptions = useMemo(() => [...options] ?? [], [options]);
     return (
         <Box>
             <Autocomplete
@@ -155,7 +156,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                 loadingText={
                     loadingText ? formatMessage(loadingText) : undefined
                 }
-                options={displayedOtpions}
+                options={displayedOptions}
                 value={multi ? values : values.length > 0 && values[0]}
                 getOptionLabel={option => option?.label ?? ''}
                 filterOptions={(x: any[]) => x}

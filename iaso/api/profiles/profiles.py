@@ -627,7 +627,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         return response
 
     def validate_user_name(self, request, user):
-        if is_multi_account_user(user): return # username cannot be updated for multi-account users
+        if is_multi_account_user(user):
+            return  # username cannot be updated for multi-account users
 
         username = request.data.get("user_name")
         if not username:

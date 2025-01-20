@@ -128,5 +128,6 @@ def is_mobile_request(request):
     # Check if the User-Agent string contains keywords typical of mobile devices
     return any(mobile in user_agent.lower() for mobile in ["mobile", "android", "iphone", "ipad", "windows phone"])
 
+
 def is_multi_account_user(user):
     return hasattr(user, "tenant_user")

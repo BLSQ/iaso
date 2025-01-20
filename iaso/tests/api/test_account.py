@@ -112,7 +112,6 @@ class AccountAPITestCase(APITestCase):
         j = self.assertJSONResponse(response, 400)
         self.assertEqual(j, {"Error": "Account not allowed to access this default_source"})
 
-
     def test_switch_account(self):
         # Create a main user without profile
         main_user = m.User.objects.create(username="main_user")

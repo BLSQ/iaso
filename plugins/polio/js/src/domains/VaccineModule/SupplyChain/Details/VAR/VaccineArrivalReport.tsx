@@ -37,7 +37,6 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
     const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
     const doses_per_vial =
         arrival_reports?.[index].doses_per_vial ?? doses_per_vial_default;
-
     const poNumberOptions = useMemo(() => {
         return (
             (
@@ -74,11 +73,30 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                     `${VAR}[${index}].doses_shipped`,
                     preAlert.doses_shipped,
                 );
+                const dosesShipped = preAlert.doses_shipped ?? 0;
+                const dosesShippedAsNumber =
+                    typeof dosesShipped === 'number'
+                        ? dosesShipped
+                        : parseInt(dosesShipped ?? '0', 10);
+                setFieldValue(
+                    `${VAR}[${index}].vials_shipped`,
+                    Math.ceil(
+                        dosesShippedAsNumber /
+                            parseInt(doses_per_vial ?? 1, 10),
+                    ),
+                );
             }
-            setFieldValue(key, value);
+            // Call setFieldTouched before setFieldValue to avoid validation bug
             setFieldTouched(key, true);
+            setFieldValue(key, value);
         },
-        [index, setFieldTouched, setFieldValue, values.pre_alerts],
+        [
+            doses_per_vial,
+            index,
+            setFieldTouched,
+            setFieldValue,
+            values.pre_alerts,
+        ],
     );
 
     const handleDosesShippedUpdate = useCallback(

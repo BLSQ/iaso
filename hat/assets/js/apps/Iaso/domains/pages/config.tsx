@@ -11,6 +11,8 @@ import MESSAGES from './messages';
 import { PAGES_TYPES } from './constants';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import * as Permission from '../../utils/permissions';
+import { EditIconButton } from '../../components/Buttons/EditIconButton';
+import { DeleteIconButton } from '../../components/Buttons/DeleteIconButton';
 
 export const baseUrl = baseUrls.pages;
 
@@ -85,9 +87,7 @@ export const usePagesColumns = (
                         <DisplayIfUserHasPerm
                             permissions={[Permission.PAGE_WRITE]}
                         >
-                            <IconButton
-                                icon="edit"
-                                tooltipMessage={MESSAGES.edit}
+                            <EditIconButton
                                 onClick={() =>
                                     handleClickEditRow(
                                         settings.row.original.slug,
@@ -98,9 +98,7 @@ export const usePagesColumns = (
                         <DisplayIfUserHasPerm
                             permissions={[Permission.PAGE_WRITE]}
                         >
-                            <IconButton
-                                icon="delete"
-                                tooltipMessage={MESSAGES.delete}
+                            <DeleteIconButton
                                 onClick={() =>
                                     handleClickDeleteRow(
                                         settings.row.original.slug,

@@ -1,8 +1,5 @@
-import { Box, Button, Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import SearchIcon from '@mui/icons-material/Search';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { makeStyles } from '@mui/styles';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
 import MESSAGES from '../messages';
@@ -10,6 +7,7 @@ import { baseUrl } from '../config';
 import { AsyncSelect } from '../../../components/forms/AsyncSelect';
 import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDropdown';
+import { SearchButton } from '../../../components/SearchButton';
 
 type Params = {
     order: string;
@@ -19,13 +17,9 @@ type Params = {
 };
 
 type Props = { params: Params };
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-}));
+
 const Filters: FunctionComponent<Props> = ({ params }) => {
-    const [textSearchError, setTextSearchError] = useState(false);
-    const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
+    const [, setTextSearchError] = useState(false);
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({
             baseUrl,
@@ -83,17 +77,10 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Grid container item xs={12} md={3} justifyContent="flex-end">
                 <Box mt={2}>
-                    <Button
-                        data-test="search-button"
-                        disabled={textSearchError || !filtersUpdated}
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        onClick={() => handleSearch()}
-                    >
-                        <SearchIcon className={classes.buttonIcon} />
-                        {formatMessage(MESSAGES.search)}
-                    </Button>
+                    <SearchButton
+                        onSearch={handleSearch}
+                        disabled={!filtersUpdated}
+                    />
                 </Box>
             </Grid>
         </Grid>

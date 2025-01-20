@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
-import { Box } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -9,8 +9,6 @@ import { useGetPages } from './hooks/useGetPages';
 import { useRemovePage } from './hooks/useRemovePage';
 import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 import CreateEditDialog from './components/CreateEditDialog';
-import PageActions from './components/PageActions';
-import PageAction from './components/PageAction';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { baseUrls } from '../../constants/urls.ts';
@@ -101,14 +99,15 @@ const Pages = () => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
                 <Box mt={4}>
-                    <PageActions>
-                        <PageAction
-                            icon={AddIcon}
+                    <Grid container spacing={2} justifyContent="flex-end">
+                        <Button
+                            variant="contained"
                             onClick={handleClickCreateButton}
                         >
+                            <AddIcon className={classes.buttonIcon} />
                             {formatMessage(MESSAGES.create)}
-                        </PageAction>
-                    </PageActions>
+                        </Button>
+                    </Grid>
                 </Box>
 
                 <TableWithDeepLink

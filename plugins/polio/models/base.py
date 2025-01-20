@@ -1368,6 +1368,37 @@ class IncidentReport(models.Model):
         ]
 
 
+class EarmarkedStock(models.Model):
+    class EarmarkedStockChoices(models.TextChoices):
+        CREATION = "creation", _("Creation")  #     1. Usable -> Earmark
+        USED = "used", _("Used")  #     2. Earmarked -> Used
+        RETURNED = "returned", _("Return to Usable")  #     3. Used -> Usable
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "campaign"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["round"]),
+        ]
+
+    earmarked_stock_type = models.CharField(
+        max_length=20, choices=EarmarkedStockChoices.choices, default=EarmarkedStockChoices.CREATION
+    )
+    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="earmarked_stocks")
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+
+    vials_earmarked = models.PositiveIntegerField()
+    doses_earmarked = models.PositiveIntegerField()
+
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"
+
+
 class Notification(models.Model):
     """
     List of notifications of polio virus outbreaks.

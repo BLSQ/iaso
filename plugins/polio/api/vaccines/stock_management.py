@@ -23,6 +23,7 @@ from plugins.polio.models import (
     VaccineArrivalReport,
     VaccineRequestForm,
     VaccineStock,
+    EarmarkedStock,
 )
 
 vaccine_stock_id_param = openapi.Parameter(
@@ -57,6 +58,7 @@ class VaccineStockCalculator:
             "date_of_incident_report"
         )
         self.stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock).order_by("report_date")
+        self.earmarked_stocks = EarmarkedStock.objects.filter(vaccine_stock=vaccine_stock).order_by("created_at")
 
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.vaccine_stock.vaccine]
@@ -91,6 +93,7 @@ class VaccineStockCalculator:
                 total_vials_in -= result["vials_out"]
             if result["doses_out"]:
                 total_doses_in -= result["doses_out"]
+
         return total_vials_in, total_doses_in
 
     def get_vials_received(self, end_date=None):
@@ -261,6 +264,38 @@ class VaccineStockCalculator:
                     }
                 )
 
+        earmarked_stocks = self.earmarked_stocks
+        if end_date:
+            earmarked_stocks = earmarked_stocks.filter(created_at__lte=end_date)
+
+        for stock in earmarked_stocks:
+            if stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.CREATION:
+                results.append(
+                    {
+                        "date": stock.created_at.date(),
+                        "action": f"Earmarked for {stock.campaign.obr_name} Round {stock.round.number}",
+                        "vials_in": None,
+                        "doses_in": None,
+                        "vials_out": stock.vials_earmarked,
+                        "doses_out": stock.doses_earmarked,
+                        "type": "earmarked_stock__creation",
+                    }
+                )
+            elif stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.USED:
+                pass
+            elif stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.RETURN:
+                results.append(
+                    {
+                        "date": stock.created_at.date(),
+                        "action": f"Earmarked (Return) for {stock.campaign.obr_name} Round {stock.round.number}",
+                        "vials_in": stock.vials_earmarked,
+                        "doses_in": stock.doses_earmarked,
+                        "vials_out": None,
+                        "doses_out": None,
+                        "type": "earmarked_stock__return",
+                    }
+                )
+
         return results
 
     def get_list_of_used_vials(self, end_date=None):
@@ -332,6 +367,28 @@ class VaccineStockCalculator:
                         "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     }
                 )
+
+        # Add earmarked stock movements of type USED
+        earmarked_stocks = self.earmarked_stocks.filter(
+            vaccine_stock=self.vaccine_stock, earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.USED
+        )
+
+        if end_date:
+            earmarked_stocks = earmarked_stocks.filter(created_at__date__lte=end_date)
+
+        for stock in earmarked_stocks:
+            results.append(
+                {
+                    "date": stock.created_at.date(),
+                    "action": f"Earmarked stock used for {stock.campaign.obr_name} Round {stock.round.number}",
+                    "vials_in": stock.vials_earmarked,
+                    "doses_in": stock.doses_earmarked,
+                    "vials_out": None,
+                    "doses_out": None,
+                    "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                }
+            )
+
         return results
 
 
@@ -519,6 +576,21 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     serializer_class = OutgoingStockMovementSerializer
     model_class = OutgoingStockMovement
 
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+
+        # When Form A is created, cancel any matching earmarked stock
+        if response.status_code == 201:
+            movement = OutgoingStockMovement.objects.get(id=response.data["id"])
+            EarmarkedStock.objects.filter(
+                vaccine_stock=movement.vaccine_stock, campaign=movement.campaign, round=movement.round, cancelled=False
+            ).update(cancelled=True, cancelled_at=timezone.now(), cancelled_reason="Form A submitted")
+
+        # Plutot comparer les valeurs du Form A et diminuer le earmarked stock
+        # et augmente les vials_used et doses_used
+
+        return response
+
 
 class IncidentReportSerializer(serializers.ModelSerializer):
     document = serializers.FileField(required=False)
@@ -544,6 +616,55 @@ class DestructionReportSerializer(serializers.ModelSerializer):
 class DestructionReportViewSet(VaccineStockSubitemBase):
     serializer_class = DestructionReportSerializer
     model_class = DestructionReport
+
+
+class EarmarkedStockSerializer(serializers.ModelSerializer):
+    campaign = serializers.CharField(source="campaign.obr_name")
+    round_number = serializers.IntegerField(source="round.number")
+    doses_earmarked = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EarmarkedStock
+        fields = [
+            "id",
+            "vaccine_stock",
+            "campaign",
+            "round_number",
+            "vials_earmarked",
+            "doses_earmarked",
+            "comment",
+            "created_at",
+            "cancelled",
+            "cancelled_at",
+            "cancelled_reason",
+        ]
+
+    def get_doses_earmarked(self, obj):
+        return obj.vials_earmarked * DOSES_PER_VIAL[obj.vaccine_stock.vaccine]
+
+    def extract_campaign_data(self, validated_data):
+        campaign_data = validated_data.pop("campaign", None)
+        if campaign_data:
+            campaign_obr_name = campaign_data.get("obr_name")
+            campaign = Campaign.objects.get(
+                obr_name=campaign_obr_name, account=self.context["request"].user.iaso_profile.account
+            )
+            return campaign
+        return None
+
+
+class EarmarkedStockViewSet(VaccineStockSubitemBase):
+    serializer_class = EarmarkedStockSerializer
+    model_class = EarmarkedStock
+
+    @action(detail=True, methods=["post"])
+    def cancel(self, request, pk=None):
+        earmarked_stock = self.get_object()
+        earmarked_stock.cancelled = True
+        earmarked_stock.cancelled_at = timezone.now()
+        earmarked_stock.cancelled_reason = request.data.get("reason")
+        earmarked_stock.save()
+        return Response(self.serializer_class(earmarked_stock).data)
 
 
 class VaccineStockManagementViewSet(ModelViewSet):

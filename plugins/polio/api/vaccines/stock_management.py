@@ -1,8 +1,18 @@
 import datetime
 import enum
+from tempfile import NamedTemporaryFile
 from django.db.models import OuterRef, Subquery, Exists, Q
+from django.http import HttpResponse
+from openpyxl import Workbook
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from plugins.polio.export_utils import (
+    CALENDAR_COLUMN_FONT_SIZE,
+    CALENDAR_COLUMNS_CELL_WIDTH,
+    cell_border,
+    cell_dimension_pattern_fill,
+    font_alignment,
+)
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -11,7 +21,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.utils.dateparse import parse_date
 from hat.menupermissions import models as permission
-from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
+from iaso.api.common import CONTENT_TYPE_XLSX, GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
 from plugins.polio.models import (
     DOSES_PER_VIAL,
@@ -717,6 +727,64 @@ class VaccineStockManagementViewSet(ModelViewSet):
             return VaccineStockCreateSerializer
         else:
             return VaccineStockSerializer
+
+    @action(detail=True, methods=["get"])
+    def download_xlsx_summary(self, request, pk=None):
+        vaccine_stock = self.get_queryset().get(id=pk)
+        workbook = Workbook()
+
+        usable_vials_sheet = workbook.active
+        usable_vials_sheet.title = "Usable"
+        unusable_vials = workbook.create_sheet("Unusable")
+
+        if pk is None:
+            return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            vaccine_stock = self.get_queryset().get(id=pk)
+        except VaccineStock.DoesNotExist:
+            return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        end_date = request.query_params.get("end_date", None)
+        if end_date:
+            parsed_end_date = parse_date(end_date)
+            if not parsed_end_date:
+                raise ValidationError("The 'end_date' query parameter is not a valid date.")
+
+        calc = VaccineStockCalculator(vaccine_stock)
+        results = calc.get_list_of_usable_vials(end_date)
+        results = self._sort_results(request, results)
+
+        usable_vials_columns = [
+            "Vaccine",
+            "Date",
+            "Action Type",
+            "Action",
+            "Vials IN",
+            "Vials OUT",
+            "Doses IN",
+            "Doses OUT",
+        ]
+
+        for column in range(1, len(usable_vials_columns) + 1):
+            usable_vials_cell_header = usable_vials_sheet.cell(
+                column=column, row=1, value=usable_vials_columns[column - 1]
+            )
+            usable_vials_cell_header = font_alignment(usable_vials_cell_header, CALENDAR_COLUMN_FONT_SIZE, "center")
+            usable_vials_cell_header = cell_border(usable_vials_cell_header)
+
+        print(results)
+        filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
+        workbook.save(filename)
+
+        with NamedTemporaryFile() as tmp:
+            workbook.save(tmp.name)
+            tmp.seek(0)
+            stream = tmp.read()
+
+        response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+        response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+        return response
 
     def get_queryset(self):
         """

@@ -352,6 +352,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.round',
         defaultMessage: 'Round',
     },
+    download: {
+        defaultMessage: 'Download',
+        id: 'iaso.polio.label.download',
+    },
 });
 
 export default MESSAGES;

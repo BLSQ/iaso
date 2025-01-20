@@ -25,6 +25,7 @@ import {
     useGetUsableVials,
 } from '../hooks/api';
 import { VaccineStockManagementSummary } from './Summary/VaccineStockManagementSummary';
+import ExcellSvg from '../../../../../../../../hat/assets/js/apps/Iaso/components/svg/ExcellSvgComponent';
 
 const useStyles = makeStyles(theme => {
     return {
@@ -82,7 +83,7 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
             <TopBar title={title} displayBackButton goBack={goBack} />
 
             <Box className={classes.containerFullHeightPadded}>
-                <Grid container>
+                <Grid container spacing={2}>
                     <Grid item xs={12} sm={6} md={4}>
                         <VaccineStockManagementSummary
                             isLoading={isLoadingSummary}
@@ -97,13 +98,27 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                         md={8}
                         justifyContent="flex-end"
                     >
-                        <Box>
+                        <Box display="flex" flexDirection="column" gap={2}>
                             <Button
                                 variant="contained"
                                 color="primary"
                                 onClick={goToStockVariation}
                             >
                                 {formatMessage(MESSAGES.stockVariation)}
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                href={`/api/polio/vaccine/vaccine_stock/${params.id}/download_xlsx_summary`}
+                            >
+                                <ExcellSvg
+                                    sx={{
+                                        height: theme => theme.spacing(3),
+                                        width: 'auto',
+                                        marginRight: theme => theme.spacing(1),
+                                    }}
+                                />
+                                {`${formatMessage(MESSAGES.download)} XLSX`}
                             </Button>
                         </Box>
                     </Grid>

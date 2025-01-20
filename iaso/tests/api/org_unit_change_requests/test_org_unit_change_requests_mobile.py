@@ -35,12 +35,15 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         org_unit_type.projects.set([project])
         user.iaso_profile.org_units.set([org_unit])
 
+        cls.account = account
+        cls.data_source = data_source
         cls.instance_1 = instance_1
         cls.instance_2 = instance_2
         cls.org_unit = org_unit
         cls.project = project
         cls.user = user
         cls.user2 = user2
+        cls.version = version
 
     def test_list_ok(self):
         m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo", created_by=self.user)
@@ -63,6 +66,28 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
             response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data["results"]))
+
+    def test_list_should_not_include_change_requests_linked_to_data_source_synchronization(self):
+        self.client.force_authenticate(self.user)
+
+        version2 = m.SourceVersion.objects.create(number=2, data_source=self.data_source)
+        data_source_synchronization = m.DataSourceVersionsSynchronization.objects.create(
+            name="New synchronization",
+            source_version_to_update=self.version,
+            source_version_to_compare_with=version2,
+            account=self.account,
+            created_by=self.user,
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Foo",
+            created_by=self.user,
+            data_source_synchronization=data_source_synchronization,
+        )
+
+        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(0, len(response.data["results"]))
 
     def test_list_should_not_include_soft_deleted_intances(self):
         change_request = m.OrgUnitChangeRequest.objects.create(

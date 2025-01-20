@@ -1,6 +1,6 @@
+import { TextArea } from 'bluesquare-components';
 import { get } from 'lodash';
 import React, { FunctionComponent, useCallback } from 'react';
-import { TextArea } from '../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 
 type Props = {
     field: any;

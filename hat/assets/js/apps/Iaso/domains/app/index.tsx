@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
 import { SentryProvider } from './contexts/SentryProvider';
 import { useRoutes } from './hooks/useRoutes';
+import { InputContextProvider } from './contexts/InputContext';
 
 type Props = {
     userHomePage?: string;
@@ -27,7 +28,9 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
             <BrowserRouter
                 basename={isDashboardPath ? dashboardBasename : undefined}
             >
-                {isDashboardPath ? routes : nonDashboardRoutes}
+                <InputContextProvider>
+                    {isDashboardPath ? routes : nonDashboardRoutes}
+                </InputContextProvider>
             </BrowserRouter>
         </SentryProvider>
     );

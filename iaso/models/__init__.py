@@ -1,5 +1,6 @@
 from .base import *
 from .base import Instance
+from .data_source import DataSource, DataSourceVersionsSynchronization, SourceVersion
 from .device import Device, DeviceOwnership, DevicePosition
 from .forms import Form, FormVersion, FormPredefinedFilter, FormAttachment
 from .org_unit import OrgUnit, OrgUnitType, OrgUnitChangeRequest

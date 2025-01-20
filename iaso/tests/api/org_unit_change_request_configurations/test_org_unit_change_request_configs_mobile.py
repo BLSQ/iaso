@@ -1,3 +1,8 @@
+import datetime
+import time_machine
+
+from django.utils import timezone
+
 from rest_framework import status
 
 from django.contrib.auth.models import Group
@@ -5,7 +10,10 @@ from django.contrib.auth.models import Group
 from iaso import models as m
 from iaso.tests.api.org_unit_change_request_configurations.common_base_with_setup import OUCRCAPIBase
 
+CREATED_AT = datetime.datetime(2025, 1, 20, 10, 31, 0, 0, tzinfo=timezone.utc)
 
+
+@time_machine.travel(CREATED_AT, tick=False)
 class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
     """
     Test mobile OUCRCViewSet.
@@ -104,8 +112,8 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
                     "group_set_ids": [],
                     "editable_reference_form_ids": [],
                     "other_group_ids": [],
-                    "created_at": None,
-                    "updated_at": None,
+                    "created_at": CREATED_AT.timestamp(),
+                    "updated_at": CREATED_AT.timestamp(),
                 },
                 # Because of the configuration of his Profile, the user can't write on `ou_type_water_pokemons`,
                 # so we override the existing configuration.
@@ -118,8 +126,8 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
                     "group_set_ids": [],
                     "editable_reference_form_ids": [],
                     "other_group_ids": [],
-                    "created_at": None,
-                    "updated_at": None,
+                    "created_at": CREATED_AT.timestamp(),
+                    "updated_at": CREATED_AT.timestamp(),
                 },
                 # Because of the configuration of his Profile, the user can't write on `new_org_unit_type_1`,
                 # and since there is no existing configuration, we add a dynamic one.
@@ -132,8 +140,8 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
                     "group_set_ids": [],
                     "editable_reference_form_ids": [],
                     "other_group_ids": [],
-                    "created_at": None,
-                    "updated_at": None,
+                    "created_at": CREATED_AT.timestamp(),
+                    "updated_at": CREATED_AT.timestamp(),
                 },
                 # Because of the configuration of his Profile, the user can't write on `new_org_unit_type_2`,
                 # and since there is no existing configuration, we add a dynamic one.
@@ -146,8 +154,8 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
                     "group_set_ids": [],
                     "editable_reference_form_ids": [],
                     "other_group_ids": [],
-                    "created_at": None,
-                    "updated_at": None,
+                    "created_at": CREATED_AT.timestamp(),
+                    "updated_at": CREATED_AT.timestamp(),
                 },
             ],
         )

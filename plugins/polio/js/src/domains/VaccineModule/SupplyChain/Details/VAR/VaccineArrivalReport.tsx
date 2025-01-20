@@ -3,7 +3,7 @@ import { Box, Grid, Paper, Typography } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
@@ -28,22 +28,15 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
     const { arrival_reports } = values as SupplyChainFormData;
     const markedForDeletion = arrival_reports?.[index].to_delete ?? false;
     const uneditableTextStyling = markedForDeletion ? grayText : undefined;
+    // Use refs to track focused state to reduce renders and avoid sluggish UI
+    const dosesReceivedRef = useRef<boolean>(false);
+    const vialsReceivedRef = useRef<boolean>(false);
+    const dosesShippedRef = useRef<boolean>(false);
+    const vialsShippedRef = useRef<boolean>(false);
 
     const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
     const doses_per_vial =
         arrival_reports?.[index].doses_per_vial ?? doses_per_vial_default;
-    const current_vials_shipped = doses_per_vial
-        ? Math.ceil(
-              ((arrival_reports?.[index].doses_shipped as Optional<number>) ??
-                  0) / doses_per_vial,
-          )
-        : 0;
-    const current_vials_received = doses_per_vial
-        ? Math.ceil(
-              ((arrival_reports?.[index].doses_received as Optional<number>) ??
-                  0) / doses_per_vial,
-          )
-        : 0;
 
     const poNumberOptions = useMemo(() => {
         return (
@@ -70,6 +63,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                 })
         );
     }, [values?.arrival_reports, values.pre_alerts]);
+
     const handleChangePoNumber = useCallback(
         (key, value) => {
             const preAlert = values.pre_alerts?.find(
@@ -86,6 +80,107 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
         },
         [index, setFieldTouched, setFieldValue, values.pre_alerts],
     );
+
+    const handleDosesShippedUpdate = useCallback(
+        (value: number) => {
+            if (dosesShippedRef.current) {
+                const vialsShipped = doses_per_vial
+                    ? Math.ceil(
+                          ((value as Optional<number>) ?? 0) / doses_per_vial,
+                      )
+                    : 0;
+                setFieldValue(`arrival_reports[${index}].doses_shipped`, value);
+                setFieldValue(
+                    `arrival_reports[${index}].vials_shipped`,
+                    vialsShipped,
+                );
+            }
+        },
+        [doses_per_vial, index, setFieldValue],
+    );
+    const handleDosesReceivedUpdate = useCallback(
+        (value: number) => {
+            if (dosesReceivedRef.current) {
+                const vialsReceived = doses_per_vial
+                    ? Math.ceil(
+                          ((value as Optional<number>) ?? 0) / doses_per_vial,
+                      )
+                    : 0;
+                setFieldValue(
+                    `arrival_reports[${index}].doses_received`,
+                    value,
+                );
+                setFieldValue(
+                    `arrival_reports[${index}].vials_received`,
+                    vialsReceived,
+                );
+            }
+        },
+        [doses_per_vial, index, setFieldValue],
+    );
+
+    const handleVialsShippededUpdate = useCallback(
+        (value: number) => {
+            if (vialsShippedRef.current) {
+                const dosesShipped = value * (doses_per_vial ?? 0);
+                setFieldValue(`arrival_reports[${index}].vials_shipped`, value);
+                setFieldValue(
+                    `arrival_reports[${index}].doses_shipped`,
+                    dosesShipped,
+                );
+            }
+        },
+        [doses_per_vial, index, setFieldValue],
+    );
+    const handleVialsReceivedUpdate = useCallback(
+        (value: number) => {
+            if (vialsReceivedRef.current) {
+                const dosesReceived = value * (doses_per_vial ?? 0);
+                setFieldValue(
+                    `arrival_reports[${index}].vials_received`,
+                    value,
+                );
+                setFieldValue(
+                    `arrival_reports[${index}].doses_received`,
+                    dosesReceived,
+                );
+            }
+        },
+        [doses_per_vial, index, setFieldValue],
+    );
+    const onDosesShippedFocused = () => {
+        // setIsDosesShippedFocused(true);
+        dosesShippedRef.current = true;
+    };
+    const onDosesShippedBlur = () => {
+        // setIsDosesShippedFocused(false);
+        dosesShippedRef.current = false;
+    };
+    const onDosesReceivedFocused = () => {
+        // setIsDosesReceivedFocused(true);
+        dosesReceivedRef.current = true;
+    };
+    const onDosesReceivedBlur = () => {
+        dosesReceivedRef.current = false;
+        // setIsDosesReceivedFocused(false);
+    };
+    const onVialsShippedFocused = () => {
+        // setIsVialsShippedFocused(true);
+        vialsShippedRef.current = true;
+    };
+    const onVialsShippedBlur = () => {
+        // setIsVialsShippedFocused(false);
+        vialsShippedRef.current = false;
+    };
+    const onVialsReceivedFocused = () => {
+        vialsReceivedRef.current = true;
+        // setIsVialsReceivedFocused(true);
+    };
+    const onVialsReceivedBlur = () => {
+        vialsReceivedRef.current = false;
+        // setIsVialsReceivedFocused(false);
+    };
+
     return (
         <div className={classes.container}>
             <Paper
@@ -127,6 +222,9 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 name={`${VAR}[${index}].doses_shipped`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
+                                onFocus={onDosesShippedFocused}
+                                onBlur={onDosesShippedBlur}
+                                onChange={handleDosesShippedUpdate}
                                 required
                             />
                         </Grid>
@@ -137,6 +235,9 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 name={`${VAR}[${index}].doses_received`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
+                                onFocus={onDosesReceivedFocused}
+                                onBlur={onDosesReceivedBlur}
+                                onChange={handleDosesReceivedUpdate}
                                 required
                             />
                         </Grid>
@@ -152,22 +253,28 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                             </Typography>
                         </Grid>
                         <Grid item xs={6} md={3}>
-                            <Typography
-                                variant="button"
-                                sx={uneditableTextStyling}
-                            >
-                                {`${formatMessage(MESSAGES.vials_shipped)}:`}{' '}
-                                <NumberCell value={current_vials_shipped} />
-                            </Typography>
+                            <Field
+                                label={formatMessage(MESSAGES.vials_shipped)}
+                                name={`${VAR}[${index}].vials_shipped`}
+                                component={NumberInput}
+                                disabled={markedForDeletion}
+                                onFocus={onVialsShippedFocused}
+                                onBlur={onVialsShippedBlur}
+                                onChange={handleVialsShippededUpdate}
+                                required
+                            />
                         </Grid>
                         <Grid item xs={6} md={3}>
-                            <Typography
-                                variant="button"
-                                sx={uneditableTextStyling}
-                            >
-                                {`${formatMessage(MESSAGES.vials_received)}:`}{' '}
-                                <NumberCell value={current_vials_received} />
-                            </Typography>
+                            <Field
+                                label={formatMessage(MESSAGES.vials_received)}
+                                name={`${VAR}[${index}].vials_received`}
+                                component={NumberInput}
+                                disabled={markedForDeletion}
+                                onFocus={onVialsReceivedFocused}
+                                onBlur={onVialsReceivedBlur}
+                                onChange={handleVialsReceivedUpdate}
+                                required
+                            />
                         </Grid>
                     </Grid>
                 </Grid>

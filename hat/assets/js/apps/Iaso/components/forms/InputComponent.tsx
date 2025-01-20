@@ -16,7 +16,7 @@ import {
     translateOptions,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { ReactNode, useMemo, useState } from 'react';
+import React, { FocusEventHandler, ReactNode, useMemo, useState } from 'react';
 import { useLocale } from '../../domains/app/contexts/LocaleContext';
 import MESSAGES from '../../domains/forms/messages';
 import {
@@ -64,7 +64,10 @@ export type InputComponentProps = {
     value?: any;
     errors?: string[];
     onChange?: (key: string, value: any, countryData?: BaseCountryData) => void;
-
+    onBlur?: FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+    onFocus?:
+        | FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>
+        | undefined;
     options?: any[];
     disabled?: boolean;
     multiline?: boolean;
@@ -133,6 +136,8 @@ const InputComponent: React.FC<InputComponentProps> = ({
     value,
     errors = [],
     onChange = () => null,
+    onBlur,
+    onFocus,
     options = [],
     disabled = false,
     multiline = false,
@@ -249,6 +254,8 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         }}
                         setFieldError={setFieldError}
                         dataTestId={dataTestId}
+                        onBlur={onBlur}
+                        onFocus={onFocus}
                         {...localizedNumberOptions}
                     />
                 );

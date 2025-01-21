@@ -35,6 +35,7 @@ import {
     QUARTERS_NOV_RANGE,
     SEMESTERS,
     SEMESTERS_RANGE,
+    PERIOD_TYPE_FINANCIAL_NOV,
 } from '../constants';
 import MESSAGES from '../messages';
 
@@ -192,7 +193,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                         ) && (
                             <Grid
                                 item
-                                sm={periodType === PERIOD_TYPE_YEAR ? 12 : 6}
+                                sm={(periodType === PERIOD_TYPE_YEAR || periodType === PERIOD_TYPE_FINANCIAL_NOV )? 12 : 6}
                             >
                                 <InputComponent
                                     keyValue="year"

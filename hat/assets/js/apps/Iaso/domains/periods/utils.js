@@ -6,6 +6,7 @@ import {
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_QUARTER_NOV,    
     PERIOD_TYPE_SIX_MONTH,
+    PERIOD_TYPE_FINANCIAL_NOV,
     QUARTERS,
     QUARTERS_NOV,
     SEMESTERS,
@@ -91,6 +92,9 @@ export const getPeriodPickerString = (periodType, period, value) => {
         return '';
     }
     switch (periodType) {
+        case PERIOD_TYPE_FINANCIAL_NOV: {
+            return period.year ? `${period.year}Nov` : null;
+        }
         case PERIOD_TYPE_DAY: {
             return value;
         }

@@ -7,24 +7,29 @@ PERIOD_TYPE_QUARTER = "QUARTER"
 PERIOD_TYPE_QUARTER_NOV = "QUARTER_NOV"
 PERIOD_TYPE_SIX_MONTH = "SIX_MONTH"
 PERIOD_TYPE_YEAR = "YEAR"
+PERIOD_TYPE_FINANCIAL_NOV = "FINANCIAL_NOV"
 
 
 def detect(dhis2_period: str):
     if len(dhis2_period) == 4:
         return PERIOD_TYPE_YEAR
 
-    if "NovQ" in dhis2_period:
+    if (len(dhis2_period) == 7) and "Nov" in dhis2_period:  # 2016Nov
+        return PERIOD_TYPE_FINANCIAL_NOV
+
+    if "NovQ" in dhis2_period:  # 2016NovQ1
         return PERIOD_TYPE_QUARTER_NOV
 
-    if "Q" in dhis2_period:
+    if "Q" in dhis2_period:  # 2016Q1
         return PERIOD_TYPE_QUARTER
 
-    if "S" in dhis2_period:
+    if "S" in dhis2_period:  # 2018S1
         return PERIOD_TYPE_SIX_MONTH
 
-    if len(dhis2_period) == 6:
+    if len(dhis2_period) == 6:  # 201812
         return PERIOD_TYPE_MONTH
-    if len(dhis2_period) == 8:
+
+    if len(dhis2_period) == 8:  # 20181231
         return PERIOD_TYPE_DAY
     raise ValueError("unsupported dhis2 period format for '" + dhis2_period + "'")
 
@@ -46,6 +51,8 @@ class Period:
             return QuarterNovPeriod(period_string)
         elif period_type == PERIOD_TYPE_SIX_MONTH:
             return SemesterPeriod(period_string)
+        elif period_type == PERIOD_TYPE_FINANCIAL_NOV:
+            return FinancialNovPeriod(period_string)
         elif period_type == PERIOD_TYPE_DAY:
             return DayPeriod(period_string)
         raise ValueError(f"unsupported period type: {period_type}")
@@ -196,7 +203,10 @@ class QuarterNovPeriod(Period):
 
     def gen_sub_periods(self):
         year, quarter = self.parts
-        return [MonthPeriod.from_parts(year, month) for month in QUARTER_NOV_TO_MONTHS[quarter]]
+        return [
+            MonthPeriod.from_parts(year - 1 if month == 11 or month == 12 else year, month)
+            for month in QUARTER_NOV_TO_MONTHS[quarter]
+        ]
 
     def start_date(self):
         year, quarter = self.parts
@@ -225,6 +235,32 @@ class YearPeriod(Period):
     def start_date(self):
         year = int(self.value)
         return date(year=year, month=1, day=1)
+
+
+class FinancialNovPeriod(Period):
+    LOWER_BOUND = "2000Nov"
+    HIGHER_BOUND = "2030Nov"
+
+    def next_period(self):
+        n_p = int(self.value[0:4]) + 1
+        return FinancialNovPeriod(f"{n_p:04}Nov")
+
+    def gen_sub_periods(self):
+        year = int(self.value[0:4])
+        quarters = [
+            QuarterNovPeriod.from_parts(year, 1),
+            QuarterNovPeriod.from_parts(year, 2),
+            QuarterNovPeriod.from_parts(year, 3),
+            QuarterNovPeriod.from_parts(year, 4),
+        ]
+        sub_quarters = []
+        for quarter_nov in quarters:
+            sub_quarters += quarter_nov.gen_sub_periods()
+        return quarters + sub_quarters
+
+    def start_date(self):
+        year = int(self.value[0:4])
+        return date(year=year - 1, month=11, day=1)
 
 
 SEMESTERS_TO_QUARTERS = {

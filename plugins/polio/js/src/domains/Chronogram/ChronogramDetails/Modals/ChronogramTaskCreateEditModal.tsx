@@ -8,13 +8,12 @@ import {
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
+    InputWithInfos,
 } from 'bluesquare-components';
 
 import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
-import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
-
 import MESSAGES from '../messages';
 import { ChronogramTask, Chronogram } from '../../Chronogram/types';
 import { NumberInput } from '../../../../components/Inputs/NumberInput';

@@ -11,6 +11,7 @@ import {
     useHumanReadableJsonLogic,
     useSafeIntl,
     useSkipEffectOnMount,
+    InputWithInfos,
 } from 'bluesquare-components';
 
 import DatesRange from '../../../components/filters/DatesRange';
@@ -35,7 +36,6 @@ import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
 import MESSAGES from '../messages';
 
 import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
-import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction.tsx';
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
@@ -216,7 +216,7 @@ const InstancesFiltersComponent = ({
                     formState.startPeriod.value,
                     formState.endPeriod.value,
                 );
-            } catch (e) {
+            } catch {
                 return true;
             }
         }
@@ -262,16 +262,20 @@ const InstancesFiltersComponent = ({
 
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={3}>
-                    <InputComponent
-                        keyValue="search"
-                        onChange={handleFormChange}
-                        value={formState.search.value || ''}
-                        type="search"
-                        label={MESSAGES.textSearch}
-                        onEnterPressed={() => handleSearch()}
-                        onErrorChange={setTextSearchError}
-                        blockForbiddenChars
-                    />
+                    <InputWithInfos
+                        infos={formatMessage(MESSAGES.searchParams)}
+                    >
+                        <InputComponent
+                            keyValue="search"
+                            onChange={handleFormChange}
+                            value={formState.search.value || ''}
+                            type="search"
+                            label={MESSAGES.textSearch}
+                            onEnterPressed={() => handleSearch()}
+                            onErrorChange={setTextSearchError}
+                            blockForbiddenChars
+                        />
+                    </InputWithInfos>
                     <InputComponent
                         keyValue="projectIds"
                         onChange={handleFormChange}

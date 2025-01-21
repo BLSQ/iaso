@@ -1,7 +1,15 @@
 import datetime
 from unittest import TestCase
 
-from iaso.periods import QuarterPeriod, MonthPeriod, YearPeriod, SemesterPeriod, Period, QuarterNovPeriod
+from iaso.periods import (
+    QuarterPeriod,
+    MonthPeriod,
+    YearPeriod,
+    SemesterPeriod,
+    Period,
+    QuarterNovPeriod,
+    FinancialNovPeriod,
+)
 
 
 class PeriodTests(TestCase):
@@ -39,6 +47,7 @@ class PeriodTests(TestCase):
         )
 
     def test_detection(self):
+        self.assertEqual(type(Period.from_string("2021Nov")), FinancialNovPeriod)
         self.assertEqual(type(Period.from_string("2021NovQ2")), QuarterNovPeriod)
         self.assertEqual(type(Period.from_string("2021Q2")), QuarterPeriod)
         self.assertEqual(type(Period.from_string("2021")), YearPeriod)
@@ -146,6 +155,7 @@ class PeriodTests(TestCase):
             ["202403", "2024-03-01"],
             ["202407", "2024-07-01"],
             ["2024", "2024-01-01"],
+            ["2016Nov", "2015-11-01"],
         ]
 
         for data in test_data:
@@ -180,5 +190,39 @@ class PeriodTests(TestCase):
         calculated_periods = Period.range_string_with_sub_periods(from_period, to_period)
 
         self.assertEqual(
-            calculated_periods, ["2021NovQ1", "2021NovQ2", "202111", "202112", "202101", "202102", "202103", "202104"]
+            calculated_periods, ["2021NovQ1", "2021NovQ2", "202011", "202012", "202101", "202102", "202103", "202104"]
+        )
+
+    def test_financial_nov_range_period_to(self):
+        calculated_periods = [
+            str(x) for x in FinancialNovPeriod("2018Nov").range_period_to(FinancialNovPeriod("2021Nov"))
+        ]
+        expected_periods = ["2018Nov", "2019Nov", "2020Nov", "2021Nov"]
+
+        self.assertEqual(calculated_periods, expected_periods)
+
+    def test_financial_nov_range_string_with_sub_periods(self):
+        from_period, to_period = Period.bound_range("2021Nov", "2021Nov")
+        calculated_periods = Period.range_string_with_sub_periods(from_period, to_period)
+        self.assertEqual(
+            calculated_periods,
+            [
+                "2021Nov",
+                "2021NovQ1",
+                "2021NovQ2",
+                "2021NovQ3",
+                "2021NovQ4",
+                "202011",
+                "202012",
+                "202101",
+                "202102",
+                "202103",
+                "202104",
+                "202105",
+                "202106",
+                "202107",
+                "202108",
+                "202109",
+                "202110",
+            ],
         )

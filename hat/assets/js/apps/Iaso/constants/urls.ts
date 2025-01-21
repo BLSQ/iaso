@@ -321,7 +321,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     sources: {
         url: 'settings/sources/list',
-        params: ['accountId', 'projectIds', ...paginationPathParams],
+        params: ['accountId', 'projectIds', 'name', ...paginationPathParams],
     },
     sourceDetails: {
         url: 'settings/source/details',
@@ -329,7 +329,15 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     tasks: {
         url: 'settings/tasks',
-        params: ['accountId', ...paginationPathParams],
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'startDate',
+            'endDate',
+            'status',
+            'users',
+            'taskType',
+        ],
     },
     devices: {
         url: 'settings/devices',
@@ -510,6 +518,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'parent_id',
         ],
     },
+    hidden: { url: 'secret', params: [] },
     error401: { url: '401', params: [] },
     error403: { url: '403', params: [] },
     error404: { url: '404', params: [] },
@@ -603,6 +612,7 @@ type IasoBaseUrls = {
     workflowDetail: string;
     potentialPayments: string;
     lotsPayments: string;
+    hidden: string;
     error401: string;
     error403: string;
     error404: string;

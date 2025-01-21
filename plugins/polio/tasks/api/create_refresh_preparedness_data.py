@@ -5,7 +5,7 @@ from rest_framework import viewsets, permissions, serializers
 from rest_framework.response import Response
 
 from iaso.api.common import HasPermission
-from iaso.api.tasks import TaskSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from hat.menupermissions import models as permission
 
 

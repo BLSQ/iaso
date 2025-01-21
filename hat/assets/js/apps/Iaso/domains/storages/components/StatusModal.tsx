@@ -5,22 +5,17 @@ import React, {
     useCallback,
 } from 'react';
 import isEqual from 'lodash/isEqual';
-
 import {
     useSafeIntl,
     ConfirmCancelModal,
     makeFullModal,
 } from 'bluesquare-components';
-import { Box } from '@mui/material';
 import { Storage, StorageStatus } from '../types/storages';
 import { useSaveStatus } from '../hooks/requests/useSaveStatus';
-
 import { ModalButton } from './ModalButton';
 import InputComponent from '../../../components/forms/InputComponent';
-import { TextArea } from '../../../components/forms/TextArea';
 import { useGetReasons } from '../hooks/useGetReasons';
 import { useGetStatus } from '../hooks/useGetStatus';
-
 import MESSAGES from '../messages';
 
 type Props = {
@@ -66,10 +61,6 @@ const StatusModal: FunctionComponent<Props> = ({
         [status],
     );
 
-    const handleCommentChange = useCallback(
-        newComment => handleChange('comment', newComment),
-        [handleChange],
-    );
     const allowConfirm = useMemo(() => {
         if (status?.status === 'BLACKLISTED' && !status.reason) {
             return false;
@@ -115,14 +106,13 @@ const StatusModal: FunctionComponent<Props> = ({
                         label={MESSAGES.reason}
                         options={reasons}
                     />
-                    <Box mt={2}>
-                        <TextArea
-                            label={formatMessage(MESSAGES.comment)}
-                            value={status?.comment}
-                            onChange={handleCommentChange}
-                            debounceTime={0}
-                        />
-                    </Box>
+                    <InputComponent
+                        type="textarea"
+                        keyValue="comment"
+                        labelString={formatMessage(MESSAGES.comment)}
+                        value={status?.comment}
+                        onChange={handleChange}
+                    />
                 </>
             )}
         </ConfirmCancelModal>

@@ -48,9 +48,11 @@ EXPORTS_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class UserSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source="get_full_name")
+
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "username"]
+        fields = ["id", "first_name", "last_name", "username", "full_name"]
 
 
 def safe_api_import(key: str, fallback_status=200):

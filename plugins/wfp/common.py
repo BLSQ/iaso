@@ -254,6 +254,7 @@ class ETL:
         nextSecondVisitDate = ""
         missed_followup_visit = 0
         if visit["form_id"] in [
+            "child_assistance_2nd_visit_tsfp",
             "child_assistance_follow_up",
             "child_assistance_admission",
             "wfp_coda_pbwg_assistance",

@@ -19,13 +19,13 @@ import {
     baseUrls,
 } from '../../constants/urls.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { fetchAssociatedOrgUnits } from '../../utils/requests';
+import { fetchAssociatedOrgUnits } from './requests';
 import { useCheckUserHasWritePermissionOnOrgunit } from '../../utils/usersUtils.ts';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitImages } from './components/OrgUnitImages.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
-import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
+import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitComments/OrgUnitsMapComments';
 import { OrgUnitChildren } from './details/Children/OrgUnitChildren.tsx';
 import { OrgUnitLinks } from './details/Links/OrgUnitLinks.tsx';
 import { Logs } from './history/LogsComponent.tsx';

@@ -109,9 +109,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.validateStatus',
         defaultMessage: 'Validate status',
     },
-
     goToCurrentTask: {
-        id: 'iaso.dataSources.goToCurrentTask',
+        id: 'iaso.label.goToCurrentTask',
         defaultMessage: 'Launch and show task',
     },
     launch: {

@@ -1,15 +1,32 @@
 import { Box, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import PropTypes from 'prop-types';
 
 import { Select, renderTags, useSafeIntl } from 'bluesquare-components';
 
-import { fetchSubOrgUnitsByType } from '../../../utils/requests';
+import MESSAGES from '../../messages';
+import { getRequest } from '../../../../libs/Api';
+import { openSnackBar } from '../../../../components/snackBars/EventDispatcher';
+import { errorSnackBar } from '../../../../constants/snackBars';
 
-import MESSAGES from '../../orgUnits/messages.ts';
+const fetchSubOrgUnitsByType = (params, orgUnitType) => {
+    return getRequest(`/api/orgunits/?${params}`)
+        .then(res => ({
+            ...orgUnitType,
+            orgUnits: res.orgUnits,
+        }))
+        .catch(error => {
+            openSnackBar(errorSnackBar('fetchOrgUnitsError', null, error));
+            console.error('Error while fetching org unit list:', error);
+        });
+};
 
-const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList = []) => {
+const getSubOrgunits = (
+    orgUnit,
+    orgUnitTypes,
+    orgUnitTypesList = [] as any[],
+) => {
     if (orgUnit?.sub_unit_types.length > 0) {
         let newOrgUnitTypesList = [...orgUnitTypesList];
         orgUnit.sub_unit_types.forEach(subOrgUnit => {
@@ -37,20 +54,26 @@ const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList = []) => {
     return [];
 };
 
-const OrgUnitTypeFilterComponent = props => {
+type Props = {
+    orgUnitTypesSelected: any;
+    setOrgUnitTypesSelected: any;
+    orgUnitTypes: any;
+    currentOrgUnit: any;
+};
+
+const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
+    orgUnitTypesSelected,
+    setOrgUnitTypesSelected,
+    orgUnitTypes,
+    currentOrgUnit,
+}) => {
     const { formatMessage } = useSafeIntl();
-    const {
-        orgUnitTypesSelected,
-        setOrgUnitTypesSelected,
-        orgUnitTypes,
-        currentOrgUnit,
-    } = props;
-    const [orgUnitTypesList, setOrgUnitTypesList] = useState([]);
+    const [orgUnitTypesList, setOrgUnitTypesList] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
     const updateOrgUnitTypesSelected = newOrgUnitTypesSelected => {
-        const promisesArray = [];
-        const oldOrgUnitsTypes = [];
+        const promisesArray: Promise<any>[] = [];
+        const oldOrgUnitsTypes: any[] = [];
         newOrgUnitTypesSelected.forEach(ot => {
             if (!ot.orgUnits) {
                 promisesArray.push(
@@ -80,8 +103,8 @@ const OrgUnitTypeFilterComponent = props => {
     };
 
     useEffect(() => {
-        const newOrgUnitTypesSelected = [];
-        let newOrgUnitTypesList = [];
+        const newOrgUnitTypesSelected: any[] = [];
+        let newOrgUnitTypesList: any[] = [];
         orgUnitTypes.forEach(ot => {
             if (
                 currentOrgUnit?.org_unit_type?.sub_unit_types.find(
@@ -100,7 +123,7 @@ const OrgUnitTypeFilterComponent = props => {
             );
             newOrgUnitTypesList = newOrgUnitTypesList.concat(missingOt);
         });
-        updateOrgUnitTypesSelected(newOrgUnitTypesSelected, false);
+        updateOrgUnitTypesSelected(newOrgUnitTypesSelected);
         setOrgUnitTypesList(newOrgUnitTypesList);
         return () => setOrgUnitTypesSelected([]);
     }, [orgUnitTypes]);

@@ -394,6 +394,8 @@ class CampaignSerializer(serializers.ModelSerializer):
             rounds_to_delete = instance.rounds.exclude(id__in=round_instances_ids)
             if rounds_to_delete.filter(budget_process__isnull=False).exists():
                 raise serializers.ValidationError("Cannot delete a round linked to a budget process.")
+            else:
+                rounds_to_delete.delete()
 
         instance.rounds.set(round_instances)
 

@@ -1,6 +1,8 @@
+import logging
 import operator
 import typing
 import uuid
+
 from copy import deepcopy
 from functools import reduce
 
@@ -24,10 +26,11 @@ from ..utils.expressions import ArraySubquery
 from ..utils.models.common import get_creator_name
 from .project import Project
 
-try:  # for typing
-    from .base import Account
-except:
-    pass
+
+if typing.TYPE_CHECKING:
+    from iaso.models import Account
+
+logger = logging.getLogger(__name__)
 
 
 def get_or_create_org_unit_type(name: str, depth: int, account: "Account", preferred_project: Project) -> "OrgUnitType":
@@ -123,7 +126,7 @@ class OrgUnitType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
-    # Allow the creation of these sub org unit types only for mobile (IA-2153)"
+    # Allow the creation of these sub org unit types only for mobile (IA-2153)
     allow_creating_sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="create_types", blank=True)
     reference_forms = models.ManyToManyField("Form", related_name="reference_of_org_unit_types", blank=True)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
@@ -132,7 +135,7 @@ class OrgUnitType(models.Model):
     objects = OrgUnitTypeManager()
 
     def __str__(self):
-        return "%s" % self.name
+        return f"#{self.pk} {self.name}"
 
     def as_dict(self, sub_units=True, app_id=None):
         res = {
@@ -312,6 +315,9 @@ class OrgUnit(TreeModel):
             models.Index(fields=["source_created_at"]),
         ]
 
+    def __str__(self) -> str:
+        return f"#{self.pk} {self.name}"
+
     @property
     def source_created_at_with_fallback(self):
         return self.source_created_at if self.source_created_at else self.created_at
@@ -383,9 +389,6 @@ class OrgUnit(TreeModel):
                 updated_records += child.calculate_paths(force_recalculate)
 
         return updated_records
-
-    def __str__(self):
-        return "%s %s %d" % (self.org_unit_type, self.name, self.id if self.id else -1)
 
     def as_dict_for_mobile_lite(self):
         return {
@@ -717,6 +720,15 @@ class OrgUnitChangeRequest(models.Model):
     )
     potential_payment = models.ForeignKey(
         "PotentialPayment", on_delete=models.SET_NULL, null=True, blank=True, related_name="change_requests"
+    )
+
+    data_source_synchronization = models.ForeignKey(
+        "DataSourceVersionsSynchronization",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="change_requests",
+        help_text="The data source synchronization that generated this change request.",
     )
 
     objects = models.Manager.from_queryset(OrgUnitChangeRequestQuerySet)()

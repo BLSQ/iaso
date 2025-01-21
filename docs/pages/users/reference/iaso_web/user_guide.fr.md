@@ -15,13 +15,13 @@ Pour vous connecter à l'interface web, rendez-vous sur
 [<u>https://iaso.bluesquare.org/login/</u>](https://iaso.bluesquare.org/login/)
 et connectez-vous avec votre nom d'utilisateur et votre mot de passe.
 
-![alt text](attachments/iasologin.png)
+![alt text](attachments/iasologinfr.png)
 
 Vous pouvez également réinitialiser votre mot de passe en cliquant sur le lien "Mot de passe oublié". Un e-mail automatique vous sera envoyé pour vous permettre de créer un nouveau mot de passe. 
 
 ## Navigation dans IASO
 
-![alt text](<attachments/Web interface intro.jpg>)
+![alt text](<attachments/Web interface introfr.jpg>)
 
 ## Gérer les formulaires de collecte de données
 
@@ -29,11 +29,11 @@ Vous pouvez également réinitialiser votre mot de passe en cliquant sur le lien
 
 Depuis la liste des formulaires, vous pouvez rechercher parmi les formulaires disponibles du compte IASO auquel vous êtes connecté en utilisant les filtres suivants :
 
-![alt text](attachments/formsmanagementv2.png)
+![alt text](attachments/formsmanagementv2fr.png)
 
 Les boutons ci-dessous vous permettent de gérer les formulaires de collecte de données :
 
-![alt text](attachments/formsbuttons.png)
+![alt text](attachments/formsbuttonsfr.png)
 
 ### Créer/Téléverser un formulaire de collecte de données
 Accédez à l'entrée "Formulaires" dans le menu, puis cliquez sur "Liste des formulaires".
@@ -44,7 +44,7 @@ Cliquez sur le bouton "Créer". Une fois sur la page de création de formulaire,
 - Attribuez un [Org unit type](https://iaso.readthedocs.io/en/latest/pages/users/reference/iaso_concepts/iaso_concepts.html#organization-units) à votre formulaire. 
 - Attribuez une période à votre formulaire. Cela est destiné à la collecte de données régulière (par exemple, quotidienne/hebdomadaire/annuelle). Si cette option n'est pas nécessaire, sélectionnez simplement "Pas de période".
 
-![alt text](attachments/createformv2.png)
+![alt text](attachments/createformv2fr.png)
 
 Astuces :
 
@@ -68,29 +68,29 @@ Recherche ouverte : saisissez des mots-clés ;
 Vous pouvez utiliser les filtres pour consulter les soumissions de formulaire selon vos besoins :
 
 
-![alt text](attachments/Formsubmissions.png)
+![alt text](attachments/Formsubmissionsfr.png)
 
 Une fois qu'au moins un filtre de formulaire a été appliqué, vous pouvez télécharger les soumissions à l'aide des boutons "CSV" ou "XLSX".
 
 Vous pouvez également créer une nouvelle soumission en cliquant sur "Créer". Cela ouvrira Enketo et vous demandera à quelle unité d'organisation elle se rapporte.
 
-![alt text](attachments/downloadsubmissions.png)
+![alt text](attachments/downloadsubmissionsfr.png)
 
 Vous pouvez également vérifier les soumissions dans la vue cartographique. Les filtres appliqués s'y reflèteront également. Pour vous assurer que cette vue cartographique est activée, veillez à avoir ajouté l'indicateur de fonctionnalité "GPS pour chaque formulaire" au [Projet](Projects) concerné.
 
-![alt text](attachments/mapviewsubmissions.png)
+![alt text](attachments/mapviewsubmissionsfr.png)
 
 L'onglet "Fichier" vous permet de visualiser les fichiers soumis avec les formulaires, tels que des photos. En cliquant sur un fichier donné, vous serez redirigé vers la soumission de formulaire correspondante. 
 
-![alt text](attachments/formsubmissionsfiles.png)
+![alt text](attachments/formsubmissionsfilesfr.png)
 
 ### Manage submissions
 
 On the Submissions page, you can see the list of submissions that have been done for the account. You can manage them using the below options.
 
-![alt text](attachments/submissionsmanagement.png)
+![alt text](attachments/submissionsmanagementfr.png)
 
-![alt text](attachments/Submissionsbuttons.png)
+![alt text](attachments/Submissionsbuttonsfr.png)
 
 **Visualiser une soumission**
 
@@ -100,7 +100,7 @@ Cela vous permet de voir les données soumises et de les modifier via Enketo
 ([open-source](https://github.com/enketo/enketo-express/) web
 application).
 
-![alt text](attachments/submissionview.png)
+![alt text](attachments/submissionviewfr.png)
 
 La section "Informations" fournit une vue d'ensemble technique du formulaire.
 
@@ -253,12 +253,12 @@ Le bouton "Voir les enfants" permet de naviguer dans la hiérarchie géographiqu
 Les deux premières colonnes "lui-même" indiquent le nombre de formulaires complétés au niveau de l'unité d'organisation mise en évidence.
 La colonne suivante "descendants" donne des informations sur le nombre de formulaires complétés au niveau en question, mais aussi à tous les niveaux inférieurs.
 
-![](<attachments/completeness stats.png>)
+![](<attachments/completeness statsfr.png>)
 
 Vous pouvez également visualiser la complétude des données sous forme de carte en cliquant sur l'onglet "Carte". Notez que vous devez sélectionner un formulaire dans les filtres pour activer cette vue.
 Vous pouvez ajuster les seuils appliqués à la légende sur la complétude dans les paramètres avancés du formulaire concerné.
 
-![alt text](attachments/Completenessmap.png)
+![alt text](attachments/Completenessmapfr.png)
 
 
 ## Géoregistre - Gestion des unités d'organisation
@@ -279,13 +279,13 @@ Vous pouvez sélectionner une unité d'organisation et effectuer les actions sui
 - Consulter l'historique de ses modifications.
 
 
-![alt text](attachments/Orgunitlist.png)
+![alt text](attachments/Orgunitlistfr.png)
 
-![alt text](attachments/orgunitmap.png)
+![alt text](attachments/orgunitmapfr.png)
 
 Les résultats de la recherche peuvent être exportés en CSV, XLSX ou GPKG.
 
-![alt text](<attachments/download orgunits.png>)
+![alt text](<attachments/download orgunitsfr.png>)
 
 Les résultats peuvent être visualisés sous forme de liste ou sur une carte.
 
@@ -338,14 +338,14 @@ Champs optionnels :
 
 Pour accéder à la vue détaillée d'une unité d'organisation, procédez comme suit :
 
-![alt text](attachments/orgunitdetailsedit.png)
+![alt text](attachments/orgunitdetailseditfr.png)
 
 Dans cette vue, vous disposez de plusieurs onglets permettant de modifier l'unité d'organisation selon vos besoins :
 
 - Infos : modifiez les principales informations relatives à cette unité d'organisation.
 - Carte : consultez les informations géographiques disponibles pour cette unité d'organisation (frontières ou coordonnées GPS). Vous pouvez visualiser les données géographiques provenant de plusieurs sources, s'il y en a. Vous pouvez également laisser un commentaire.
 - Enfants : liste les enfants de cette unité d'organisation. Vous pouvez utiliser des filtres pour parcourir la liste de manière plus détaillée.
-![alt text](<attachments/children org units.png>)
+![alt text](<attachments/children org unitsfr.png>)
 - Liens : en cas de correspondance d'une unité d'organisation entre plusieurs sources de données, les liens entre ces sources sont affichés ici.
 - Historique : permet de retracer toutes les modifications apportées à l'unité d'organisation par utilisateur.
 - Formulaires : liste tous les formulaires de collecte de données liés au type de cette unité d'organisation.
@@ -356,7 +356,7 @@ Dans cette vue, vous disposez de plusieurs onglets permettant de modifier l'unit
 Vous pouvez également modifier plusieurs unités d'organisation en masse.
 Pour ce faire, dans la liste des unités d'organisation, cochez les cases des unités que vous souhaitez éditer en masse, puis survolez le bouton d'action. Cliquez sur l'icône en forme d'engrenage et sélectionnez l'action que vous souhaitez effectuer.
 
-![alt text](attachments/Orgunitbulkedit.png)
+![alt text](attachments/Orgunitbulkeditfr.png)
 
 ### Groupes d'unités d'organisation
 
@@ -407,7 +407,7 @@ Champs facultatifs :
 - Types d'unités subalternes à créer : sélectionnez les types que vous souhaitez permettre de créer dans l'application mobile IASO. Par exemple, si vous éditez le type "District", vous pouvez autoriser la création de "Village" ou "Point d'intérêt".
 - Formulaires de référence : sélectionnez un ou plusieurs formulaires de collecte de données assignés comme référence pour ce type d'unité. Ces formulaires sont étroitement liés au type d'unité. Exemple typique : un formulaire pour des données de population pour une zone.
 
-![alt text](attachments/editorgunittype.png)
+![alt text](attachments/editorgunittypefr.png)
 
 ### Gestion des sources de données
 
@@ -432,7 +432,7 @@ Les algorithmes exécutés sont destinés au travail de science des données.
 
 L'entrée "Registre" dans les unités d'organisation est un outil de visualisation permettant aux utilisateurs de naviguer dans la hiérarchie géographique et de consulter les données géographiques ainsi que les données collectées associées aux différents niveaux.
 
-![alt text](attachments/registry.png)
+![alt text](attachments/registryfr.png)
 
 
 ### Examiner les demandes de changement
@@ -443,10 +443,10 @@ Notez que cette fonctionnalité ne fonctionne que si l'indicateur "Demandes de m
 Sur la page "Examiner les propositions de modification", les utilisateurs peuvent utiliser les filtres pour sélectionner les propositions sur lesquelles ils souhaitent se concentrer. Voir ci-dessous les filtres détaillés :
 
 
-![alt text](attachments/reviewchangeproposals.png)
+![alt text](attachments/reviewchangeproposalsfr.png)
 
 Les superviseurs peuvent ensuite cliquer sur l'icône en forme d'engrenage à la fin de la ligne concernée pour voir les détails de la proposition de modification soumise et les comparer à la version précédente affichée à gauche.
-![alt text](attachments/reviewchanges.png)
+![alt text](attachments/reviewchangesfr.png)
 
 Les superviseurs peuvent sélectionner les modifications qu'ils souhaitent approuver en cochant les cases des modifications sélectionnées dans la colonne de droite, puis cliquer sur "Approuver les modifications sélectionnées".
 Si les propositions ne sont pas satisfaisantes, les superviseurs peuvent rejeter toutes les modifications et fournir un commentaire.
@@ -469,7 +469,7 @@ Cliquez sur "Planning" dans le menu. Dans la liste des plannings, vous verrez le
 - Dupliquer le planning : permet de copier une planification existante et de l'adapter au besoin.
 - Supprimer le planning
 
-![alt text](attachments/planninglist.png)
+![alt text](attachments/planninglistfr.png)
 
 **Créer un Planning**
 
@@ -501,7 +501,7 @@ Les zones sélectionnées seront mises en évidence avec la couleur de l'équipe
 
 Pour assigner toutes les unités d'organisation enfants d'une unité parente donnée à la même équipe/utilisateur, sélectionnez le "Mode sélection par parent" avant de procéder.
 
-![alt text](<attachments/planning assignment.png>)
+![alt text](<attachments/planning assignmentfr.png>)
 
 <img src="./attachments/image10.png" style="width:2.97396in;height:2.55034in" />
 
@@ -545,7 +545,7 @@ Les statuts possibles sont :
 - Success : la tâche a été exécutée avec succès.
 - La liste des tâches peut être actualisée en cliquant sur le bouton "Actualiser" en haut à droite.
 
-![alt text](attachments/tasks.png)
+![alt text](attachments/tasksfr.png)
 
 ### Monitoring
 
@@ -561,7 +561,7 @@ Depuis cette page, vous pouvez consulter :
 
 Sur la droite, vous pouvez voir le nombre d'appareils connectés au compte IASO auquel vous êtes connecté.
 
-![alt text](attachments/Devices.png)
+![alt text](attachments/Devicesfr.png)
 
 ### Projets
 
@@ -573,14 +573,14 @@ Chaque projet est identifié par un nom et un identifiant d'application (App ID)
 
 Dans le menu, Admin > Projets > Cliquez sur "Créer".
 
-![alt text](attachments/Project.png)
+![alt text](attachments/Projectfr.png)
 
 Ajoutez ensuite un nom de projet et un App ID.
 Notez que l'App ID devra être saisi par les utilisateurs de l'application mobile IASO lors de leur première connexion à l'application. Il est donc recommandé d'utiliser un identifiant simple pour éviter les erreurs de saisie.
 
 Vous pouvez ensuite sélectionner les indicateurs de fonctionnalités (Feature Flags) que vous souhaitez appliquer à votre projet dans l'onglet suivant, puis cliquer sur "Enregistrer".
 
-![alt text](attachments/featureflags2.png)
+![alt text](attachments/featureflags2fr.png)
 
 **Définition des options mobile**
 
@@ -625,7 +625,7 @@ Depuis le menu Admin > Utilisateurs, cliquez sur "Créer".
 
 1. Remplissez les informations de l'utilisateur.
 
-![alt text](attachments/Createuser.png)
+![alt text](attachments/Createuserfr.png)
 
 Notez que vous pouvez également indiquer les informations suivantes :
 
@@ -637,13 +637,13 @@ Notez que vous pouvez également indiquer les informations suivantes :
 2. Assignez les permissions nécessaires via l'onglet "Permissions".
 
 On the next tab “Permissions”, you can enable/disable permissions for that user as needed. Note that in the “?” are tooltips to explain what the permissions do.
-![alt text](attachments/Permissions.png)
+![alt text](attachments/Permissionsfr.png)
 
 3. Restreignez l'utilisateur à une zone géographique via l'onglet "Localisation".
 
 Dans l'onglet suivant "Permissions", vous pouvez activer ou désactiver les permissions pour cet utilisateur selon vos besoins. Notez que des infobulles (symbolisées par un "?") sont disponibles pour expliquer la fonction de chaque permission.
 
-![alt text](attachments/locationrestrict.png)
+![alt text](attachments/locationrestrictfr.png)
 
 
 **Créer des utilisateurs en masse**
@@ -657,11 +657,11 @@ Utilisez le bouton "Créer depuis un fichier", puis importez votre liste d'utili
 
 Cette vue vous permet de gérer les utilisateurs et leurs permissions. Vous pouvez rechercher un utilisateur en utilisant différents filtres.
 
-![alt text](attachments/userfilters.png)
+![alt text](attachments/userfiltersfr.png)
 
 Vous pouvez modifier les utilisateurs IASO en masse grâce à la fonctionnalité de mise à jour en lot. Commencez par cocher les utilisateurs que vous souhaitez mettre à jour à l'aide des cases situées à droite de chaque ligne.
 
-![alt text](attachments/editusersbulk.png)
+![alt text](attachments/editusersbulkfr.png)
 
 Sélectionnez ensuite l'action ou les actions que vous souhaitez effectuer pour ces utilisateurs. Elles peuvent inclure :
 
@@ -672,7 +672,7 @@ Sélectionnez ensuite l'action ou les actions que vous souhaitez effectuer pour 
 - Ajouter ou supprimer une localisation (ce qui limite ces utilisateurs à la géographie sélectionnée)
 
 Cliquez sur "Valider" une fois terminé.
-![alt text](attachments/usersbulkeditactions.png)
+![alt text](attachments/usersbulkeditactionsfr.png)
 
 ### Rôles utilisateur
 
@@ -682,11 +682,11 @@ Les rôles utilisateur permettent de regrouper des utilisateurs bénéficiant d'
 
 Depuis le menu Admin > Rôles utilisateur, cliquez sur "Créer".
  
- ![alt text](attachments/userroles.png)
+ ![alt text](attachments/userrolesfr.png)
 
 Vous pouvez ensuite assigner ce rôle utilisateur à n'importe quel utilisateur via l'onglet "Permissions" dans la fenêtre d'édition de l'utilisateur. Notez que les permissions du rôle utilisateur s'appliqueront à l'utilisateur, mais si cet utilisateur dispose déjà de permissions supplémentaires, celles-ci ne seront pas supprimées mais viendront s'ajouter.
 
-![alt text](attachments/Userrolespermissions.png)
+![alt text](attachments/Userrolespermissionsfr.png)
 
  Pour assigner plusieurs utilisateurs à ce nouveau rôle utilisateur en masse, retournez à la liste des utilisateurs et procédez à une mise à jour en lot (voir la section "Gérer les utilisateurs" ci-dessus).
 
@@ -704,7 +704,7 @@ Deux types d'équipes existent :
 Depuis le menu, accédez à Admin > Équipes. Cliquez sur "Créer".
 
 
-![alt text](attachments/createteam.png)
+![alt text](attachments/createteamfr.png)
 
 Remplissez les champs suivants :
 

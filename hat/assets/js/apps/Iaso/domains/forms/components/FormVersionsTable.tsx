@@ -35,6 +35,7 @@ export const FormVersionsTable: FunctionComponent<Props> = ({
             defaultSorted={[{ id: 'version_id', desc: true }]}
             extraProps={{
                 defaultPageSize: data?.limit ?? defaultPageSize,
+                periodType,
                 loading,
             }}
         />

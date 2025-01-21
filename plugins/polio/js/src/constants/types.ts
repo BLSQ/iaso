@@ -302,6 +302,26 @@ export type Round = {
     datelogs: RoundDateHistoryEntry[];
 };
 
+type CalendarRound = {
+    id: number;
+    number: number;
+    started_at: string;
+    ended_at: string;
+    vaccine_names: string;
+    target_population: Nullable<number>;
+    scopes: Scope[];
+};
+
+type CalendarSubActivity = {
+    id: number;
+    name: string;
+    scopes: Scope[];
+    start_date: string;
+    end_date: string;
+    vaccine_names: string;
+    round_number: number;
+};
+
 export type CalendarCampaign = {
     id: string;
     epid: Nullable<string>;
@@ -311,24 +331,8 @@ export type CalendarCampaign = {
     account: number;
     top_level_org_unit_name: string;
     top_level_org_unit_id: number;
-    rounds: Array<{
-        id: number;
-        number: number;
-        started_at: string;
-        ended_at: string;
-        vaccine_names: string;
-        target_population: Nullable<number>;
-        scopes: Scope[];
-    }>;
-    sub_activities: Array<{
-        id: number;
-        name: string;
-        scopes: Scope[];
-        start_date: string;
-        end_date: string;
-        vaccine_names: string;
-        round_number: number;
-    }>;
+    rounds: Array<CalendarRound>;
+    sub_activities: Array<CalendarSubActivity>;
     is_preventive: boolean;
     general_status: string;
     grouped_campaigns: number[];

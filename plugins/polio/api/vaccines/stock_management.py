@@ -735,7 +735,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         usable_vials_sheet = workbook.active
         usable_vials_sheet.title = "Usable"
-        unusable_vials = workbook.create_sheet("Unusable")
+        unusable_vials_sheet = workbook.create_sheet("Unusable")
 
         if pk is None:
             return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
@@ -752,11 +752,13 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 raise ValidationError("The 'end_date' query parameter is not a valid date.")
 
         calc = VaccineStockCalculator(vaccine_stock)
-        results = calc.get_list_of_usable_vials(end_date)
-        results = self._sort_results(request, results)
+        usable_vials_results = calc.get_list_of_usable_vials(end_date)
+        usable_vials_results = self._sort_results(request, usable_vials_results)
+
+        unusable_vials_results = calc.get_list_of_unusable_vials(end_date)
+        unusable_vials_results = self._sort_results(request, unusable_vials_results)
 
         usable_vials_columns = [
-            "Vaccine",
             "Date",
             "Action Type",
             "Action",
@@ -766,14 +768,39 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "Doses OUT",
         ]
 
-        for column in range(1, len(usable_vials_columns) + 1):
-            usable_vials_cell_header = usable_vials_sheet.cell(
-                column=column, row=1, value=usable_vials_columns[column - 1]
-            )
-            usable_vials_cell_header = font_alignment(usable_vials_cell_header, CALENDAR_COLUMN_FONT_SIZE, "center")
-            usable_vials_cell_header = cell_border(usable_vials_cell_header)
+        unsable_vials_columns = [
+            "Date",
+            "Action Type",
+            "Action",
+            "Vials IN",
+            "Vials OUT",
+        ]
 
-        print(results)
+        usable_vials_sheet.append(usable_vials_columns)
+        unusable_vials_sheet.append(unsable_vials_columns)
+
+        for entry in usable_vials_results:
+            row = [
+                entry["date"],
+                entry["type"],
+                entry["action"],
+                entry["vials_in"] if entry["vials_in"] is not None else "",
+                entry["vials_out"] if entry["vials_out"] is not None else "",
+                entry["doses_in"] if entry["doses_in"] is not None else "",
+                entry["doses_out"] if entry["doses_out"] is not None else "",
+            ]
+            usable_vials_sheet.append(row)
+
+        for entry in unusable_vials_results:
+            row = [
+                entry["date"],
+                entry["type"],
+                entry["action"],
+                entry["vials_in"] if entry["vials_in"] is not None else "",
+                entry["vials_out"] if entry["vials_out"] is not None else "",
+            ]
+            unusable_vials_sheet.append(row)
+
         filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
         workbook.save(filename)
 

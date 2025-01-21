@@ -4,8 +4,10 @@ import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
+    PERIOD_TYPE_QUARTER_NOV,
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
+    PERIOD_TYPE_FINANCIAL_NOV,
 } from './constants';
 
 export type PeriodObject = {
@@ -14,6 +16,13 @@ export type PeriodObject = {
     semester: number;
     year: number;
     day: number;
+};
+
+const QUARTER_NOV_MONTHS = {
+    1: [11, 12, 1],
+    2: [2, 3, 4],
+    3: [5, 6, 7],
+    4: [8, 9, 10],
 };
 
 export class Period {
@@ -33,7 +42,6 @@ export class Period {
 
     constructor(periodString: string) {
         const [periodType, periodParts] = Period.parse(periodString);
-
         this.periodType = periodType;
         this.month = periodParts.month;
         this.quarter = periodParts.quarter;
@@ -61,6 +69,9 @@ export class Period {
                     '0',
                 )}`;
                 break;
+            case PERIOD_TYPE_QUARTER_NOV:
+                periodTypeString = `${this.year}NovQ${this.quarter}`;
+                break;
             case PERIOD_TYPE_QUARTER:
                 periodTypeString = `${this.year}Q${this.quarter}`;
                 break;
@@ -69,6 +80,9 @@ export class Period {
                 break;
             case PERIOD_TYPE_YEAR:
                 periodTypeString = `${this.year}`;
+                break;
+            case PERIOD_TYPE_FINANCIAL_NOV:
+                periodTypeString = `${this.year}Nov`;
                 break;
             default:
                 throw new Error(`Invalid period type ${periodType}`);
@@ -83,10 +97,14 @@ export class Period {
                 throw new Error(`Invalid period type ${this.periodType}`);
             case PERIOD_TYPE_MONTH:
                 return [this.month];
+            case PERIOD_TYPE_QUARTER_NOV:
+                return QUARTER_NOV_MONTHS[this.quarter];
             case PERIOD_TYPE_QUARTER:
                 return _.range(this.month - 2, this.month + 1);
             case PERIOD_TYPE_SIX_MONTH:
                 return _.range(this.month - 5, this.month + 1);
+            case PERIOD_TYPE_FINANCIAL_NOV:
+                return [11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
             default:
                 return _.range(this.month - 11, this.month + 1);
         }
@@ -113,14 +131,30 @@ export class Period {
                 return `${String(this.month).padStart(2, '0')}/${this.year}`;
             case PERIOD_TYPE_QUARTER:
                 return `Q${this.quarter}/${this.year}`;
+            case PERIOD_TYPE_QUARTER_NOV:
+                return `NovQ${this.quarter}/${this.year}`;
             case PERIOD_TYPE_SIX_MONTH:
                 return `S${this.semester}/${this.year}`;
+            case PERIOD_TYPE_FINANCIAL_NOV:
+                return `${this.year}Nov`;
             default:
                 return `${this.year}`;
         }
     }
 
     static parse(periodString: string): [string, PeriodObject] {
+        if (periodString.includes('NovQ')) {
+            return [
+                PERIOD_TYPE_QUARTER_NOV,
+                Period.parseQuarterNovString(periodString),
+            ];
+        }
+        if (periodString.includes('Nov')) {
+            return [
+                PERIOD_TYPE_FINANCIAL_NOV,
+                Period.parseFinancialNovString(periodString),
+            ];
+        }
         if (periodString.includes('Q')) {
             return [
                 PERIOD_TYPE_QUARTER,
@@ -147,6 +181,12 @@ export class Period {
     }
 
     static getPeriodType(periodString: string): string | null {
+        if (periodString.includes('NovQ') && periodString.length === 9) {
+            return PERIOD_TYPE_QUARTER_NOV;
+        }
+        if (periodString.includes('Nov') && periodString.length === 7) {
+            return PERIOD_TYPE_FINANCIAL_NOV;
+        }
         if (periodString.includes('Q') && periodString.length === 6) {
             return PERIOD_TYPE_QUARTER;
         }
@@ -171,6 +211,18 @@ export class Period {
 
         return {
             month: quarter * 3,
+            quarter,
+            semester: Math.ceil(quarter / 2),
+            year,
+            day: 1,
+        };
+    }
+
+    static parseQuarterNovString(quarterString: string): PeriodObject {
+        const [year, quarter] = quarterString.split('NovQ').map(Number);
+        const month = QUARTER_NOV_MONTHS[quarter].at(-1);
+        return {
+            month,
             quarter,
             semester: Math.ceil(quarter / 2),
             year,
@@ -228,6 +280,16 @@ export class Period {
             day: 31,
         };
     }
+    static parseFinancialNovString(yearString: string): PeriodObject {
+        const year = Number(yearString.slice(0, 4));
+        return {
+            month: 10,
+            quarter: 1,
+            semester: 2,
+            year,
+            day: 31,
+        };
+    }
 
     static padMonth(n: number): string | number {
         return n < 10 ? `0${n}` : n;
@@ -250,6 +312,9 @@ export class Period {
                 return p1.month < p2.month;
             }
             if (p1.periodType === PERIOD_TYPE_QUARTER) {
+                return p1.quarter < p2.quarter;
+            }
+            if (p1.periodType === PERIOD_TYPE_QUARTER_NOV) {
                 return p1.quarter < p2.quarter;
             }
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
@@ -279,10 +344,16 @@ export class Period {
             if (p1.periodType === PERIOD_TYPE_QUARTER) {
                 return p1.quarter <= p2.quarter;
             }
+            if (p1.periodType === PERIOD_TYPE_QUARTER_NOV) {
+                return p1.quarter <= p2.quarter;
+            }
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
                 return p1.semester <= p2.semester;
             }
-            if (p1.periodType === PERIOD_TYPE_YEAR) {
+            if (
+                p1.periodType === PERIOD_TYPE_YEAR ||
+                p1.periodType === PERIOD_TYPE_FINANCIAL_NOV
+            ) {
                 return true;
             }
         }
@@ -306,6 +377,9 @@ export class Period {
                 return p1.month > p2.month;
             }
             if (p1.periodType === PERIOD_TYPE_QUARTER) {
+                return p1.quarter > p2.quarter;
+            }
+            if (p1.periodType === PERIOD_TYPE_QUARTER_NOV) {
                 return p1.quarter > p2.quarter;
             }
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
@@ -335,10 +409,16 @@ export class Period {
             if (p1.periodType === PERIOD_TYPE_QUARTER) {
                 return p1.quarter >= p2.quarter;
             }
+            if (p1.periodType === PERIOD_TYPE_QUARTER_NOV) {
+                return p1.quarter >= p2.quarter;
+            }
             if (p1.periodType === PERIOD_TYPE_SIX_MONTH) {
                 return p1.semester >= p2.semester;
             }
-            if (p1.periodType === PERIOD_TYPE_YEAR) {
+            if (
+                p1.periodType === PERIOD_TYPE_YEAR ||
+                p1.periodType === PERIOD_TYPE_FINANCIAL_NOV
+            ) {
                 return true;
             }
         }
@@ -403,6 +483,23 @@ export class Period {
         return `${year}Q${quarter}`;
     }
 
+    nextQuarterNov(period: string): string {
+        let year = parseInt(period.slice(0, 4), 0);
+        let quarter = parseInt(period.slice(8, 9), 0);
+        if (quarter === 4) {
+            year += 1;
+            quarter = 1;
+        } else if (quarter < 4) {
+            quarter += 1;
+        }
+        return `${year}NovQ${quarter}`;
+    }
+    nextFinancialNov(period: string): string {
+        let year = parseInt(period.slice(0, 4), 0);
+        year += 1;
+        return `${year}Nov`;
+    }
+
     nextSixMonth(period: string): string {
         let year = parseInt(period.slice(0, 4), 0);
         let sixMonth = parseInt(period.slice(5, 6), 0);
@@ -427,6 +524,24 @@ export class Period {
         return `${year}Q${quarter}`;
     }
 
+    previousQuarterNov(period: string): string {
+        let year = parseInt(period.slice(0, 4), 0);
+        let quarter = parseInt(period.slice(8, 9), 0);
+        if (quarter === 1) {
+            year -= 1;
+            quarter = 4;
+        } else if (quarter > 1) {
+            quarter -= 1;
+        }
+        return `${year}NovQ${quarter}`;
+    }
+
+    previousFinancialNov(period: string): string {
+        let year = parseInt(period.slice(0, 4), 0);
+        year -= 1;
+        return `${year}Nov`;
+    }
+
     previousSixMonth(period: string): string {
         let year = parseInt(period.slice(0, 4), 0);
         let sixMonth = parseInt(period.slice(5, 6), 0);
@@ -440,6 +555,12 @@ export class Period {
     }
 
     next(period: string): string {
+        if (period.includes('NovQ')) {
+            return this.nextQuarterNov(period);
+        }
+        if (period.includes('Nov')) {
+            return this.nextFinancialNov(period);
+        }
         if (period.includes('Q')) {
             return this.nextQuarter(period);
         }
@@ -460,6 +581,12 @@ export class Period {
     }
 
     previous(period: string): string {
+        if (period.includes('NovQ')) {
+            return this.previousQuarterNov(period);
+        }
+        if (period.includes('Nov')) {
+            return this.previousFinancialNov(period);
+        }
         if (period.includes('Q')) {
             return this.previousQuarter(period);
         }

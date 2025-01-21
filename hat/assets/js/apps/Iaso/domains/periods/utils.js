@@ -4,8 +4,11 @@ import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
+    PERIOD_TYPE_QUARTER_NOV,    
     PERIOD_TYPE_SIX_MONTH,
+    PERIOD_TYPE_FINANCIAL_NOV,
     QUARTERS,
+    QUARTERS_NOV,
     SEMESTERS,
     MONTHS,
 } from './constants';
@@ -89,6 +92,9 @@ export const getPeriodPickerString = (periodType, period, value) => {
         return '';
     }
     switch (periodType) {
+        case PERIOD_TYPE_FINANCIAL_NOV: {
+            return period.year ? `${period.year}Nov` : null;
+        }
         case PERIOD_TYPE_DAY: {
             return value;
         }
@@ -106,6 +112,13 @@ export const getPeriodPickerString = (periodType, period, value) => {
                 ? null
                 : `${period.year || ''}${quarter || ''}`;
         }
+        case PERIOD_TYPE_QUARTER_NOV: {
+            const { year } = period;
+            const quarter = period.quarter ? QUARTERS_NOV[period.quarter] : null;
+            return !year && !quarter
+                ? null
+                : `${period.year || ''}${quarter || ''}`;
+        }        
         case PERIOD_TYPE_SIX_MONTH: {
             const { year } = period;
             const semester = period.semester
@@ -145,6 +158,13 @@ export const getPrettyPeriod = (period, formatMessage, currentUser) => {
                 formatMessage,
             );
             return `${prettyPeriod} (${monthRangeString})`;
+        }
+        case PERIOD_TYPE_QUARTER_NOV: {
+            const monthRangeString = getMonthRangeString(
+                periodClass.monthRange,
+                formatMessage,
+            );
+            return `${period} (${monthRangeString})`;
         }
         case PERIOD_TYPE_QUARTER: {
             const monthRangeString = getMonthRangeString(

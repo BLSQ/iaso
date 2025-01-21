@@ -1828,6 +1828,19 @@ class InstancesAPITestCase(APITestCase):
 
     def test_instances_sent_date(self):
         self.client.force_authenticate(self.yoda)
+
+        # Ensure predictable results because the default sort order is on `updated_at`.
+        self.instance_1.save()
+        self.instance_2.save()
+        self.instance_3.save()
+        self.instance_4.save()
+        self.assertTrue(
+            self.instance_1.updated_at
+            < self.instance_2.updated_at
+            < self.instance_3.updated_at
+            < self.instance_4.updated_at
+        )
+
         response = self.client.get(
             "/api/instances/",
             {
@@ -1866,7 +1879,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 2)
         instances = response.json()["instances"]
-        self.assertEqual(self.instance_4.id, instances[0].get("id"))
+        self.assertEqual(self.instance_4.id, instances[1].get("id"))
 
     def test_instances_bad_modification_date_from(self):
         self.client.force_authenticate(self.yoda)

@@ -91,6 +91,6 @@ class AccountViewSet(ModelViewSet):
         if user_to_login:
             user_to_login.backend = "django.contrib.auth.backends.ModelBackend"
             login(request, user_to_login)
-            return Response(user_to_login.iaso_profile.account.as_dict())
+            return Response({}, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)

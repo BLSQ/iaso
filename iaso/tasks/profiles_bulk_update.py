@@ -219,6 +219,7 @@ def profiles_bulk_update(
     children_ou: Optional[bool],
     projects: Optional[List[int]],
     user_roles: Optional[List[int]],
+    teams: Optional[List[int]],
     task: Task,
 ):
     """Background Task to bulk update profiles."""
@@ -250,12 +251,12 @@ def profiles_bulk_update(
             children_ou=children_ou,
             projects=projects,
             user_roles=user_roles,
+            teams=teams,
             managed_users_only=True,
         )
 
     if not queryset:
         raise Exception("No matching profile found")
-
     total = queryset.count()
 
     # FIXME Task don't handle rollback properly if task is killed by user or other error

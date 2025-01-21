@@ -1,5 +1,8 @@
 from rest_framework import routers
 
+from plugins.polio.api.dashboards.budget import BudgetDashboardViewSet
+from plugins.polio.api.dashboards.campaign import CampaignDashboardViewSet
+
 # TOFIX: Still haven't understood the exact problem but this should be
 # the first import to avoid some 'BudgetProcess' errors in tests:
 # `AttributeError: 'str' object has no attribute '_meta'`
@@ -124,6 +127,16 @@ router.register(
     r"polio/dashboards/arrival_reports",
     VaccineArrivalReportDashboardViewSet,
     basename="dashboard_arrival_reports",
+)
+router.register(
+    r"polio/dashboards/budgets",
+    BudgetDashboardViewSet,
+    basename="dashboard_budgets",
+)
+router.register(
+    r"polio/dashboards/campaigns",
+    CampaignDashboardViewSet,
+    basename="dashboard_campaigns",
 )
 router.register(
     r"polio/dashboards/rounds",

@@ -27,8 +27,12 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
         org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id)
 
         return (
-            OrgUnitChangeRequest.objects.filter(org_unit__in=org_units)
-            .filter(created_by=self.request.user)
+            OrgUnitChangeRequest.objects.filter(
+                org_unit__in=org_units,
+                created_by=self.request.user,
+                # Change requests liked to a `data_source_synchronization` are limited to the web.
+                data_source_synchronization__isnull=True,
+            )
             .select_related("org_unit")
             .prefetch_related(
                 "new_groups",

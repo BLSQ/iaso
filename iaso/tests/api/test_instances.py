@@ -1691,6 +1691,27 @@ class InstancesAPITestCase(APITestCase):
 
     def test_instances_list_user(self):
         self.client.force_authenticate(self.yoda)
+
+        # Ensure predictable results because the default sort order is on `updated_at`.
+        self.instance_1.save()
+        self.instance_2.save()
+        self.instance_3.save()
+        self.instance_4.save()
+        self.instance_5.save()
+        self.instance_6.save()
+        self.instance_7.save()
+        self.instance_8.save()
+        self.assertTrue(
+            self.instance_1.updated_at
+            < self.instance_2.updated_at
+            < self.instance_3.updated_at
+            < self.instance_4.updated_at
+            < self.instance_5.updated_at
+            < self.instance_6.updated_at
+            < self.instance_7.updated_at
+            < self.instance_8.updated_at
+        )
+
         response_yoda = self.client.get(
             "/api/instances/",
             {query.USER_IDS: self.yoda.id},
@@ -1701,9 +1722,8 @@ class InstancesAPITestCase(APITestCase):
         instances = response_yoda.json()["instances"]
         self.assertEqual(self.instance_1.id, instances[0].get("id"))
         self.assertEqual(self.instance_4.id, instances[1].get("id"))
-        self.assertEqual(self.instance_5.id, instances[3].get("id"))
+        self.assertEqual(self.instance_5.id, instances[2].get("id"))
 
-        self.client.force_authenticate(self.yoda)
         response_yoda_deleted = self.client.get(
             "/api/instances/",
             {query.USER_IDS: self.yoda.id, query.SHOW_DELETED: True},
@@ -1743,10 +1763,9 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(response_yoda_guest.status_code, 200)
         self.assertValidInstanceListData(response_yoda_guest.json(), 5)
         instances = response_yoda_guest.json()["instances"]
-
         self.assertEqual(self.instance_1.id, instances[0].get("id"))
         self.assertEqual(self.instance_4.id, instances[1].get("id"))
-        self.assertEqual(self.instance_8.id, instances[2].get("id"))
+        self.assertEqual(self.instance_8.id, instances[3].get("id"))
         self.assertEqual(self.instance_2.id, instances[4].get("id"))
 
     def test_instances_list_search_by_ids(self):

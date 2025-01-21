@@ -91,19 +91,19 @@ class PagesAPITestCase(APITestCase):
         self.assertEqual(response.json()["results"][0]["name"], page1.name)
 
     def test_pages_list_filter_by_users(self):
-        """GET /pages/?userIds=coma separate userIds"""
+        """GET /pages/?userId=user Id"""
         self.client.force_login(self.first_user)
 
         self.create_page(name="TEST1", slug="test_1", needs_authentication=False, users=[self.second_user.pk])
         page2 = self.create_page(
             name="TEST2", slug="test_2", needs_authentication=True, users=[self.second_user.pk, self.fifth_user.pk]
         )
-        page3 = self.create_page(name="TEST3", slug="test_3", needs_authentication=True, users=[self.fourth_user.pk])
+        self.create_page(name="TEST3", slug="test_3", needs_authentication=True, users=[self.fourth_user.pk])
 
-        response = self.client.get("/api/pages/?userIds=" + str(self.fifth_user.pk) + "," + str(self.fourth_user.pk))
+        response = self.client.get("/api/pages/?userId=" + str(self.fifth_user.pk))
         self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response.json()["results"]), 2)
-        self.assertEqual(sorted([page["id"] for page in response.json()["results"]]), sorted([page2.id, page3.id]))
+        self.assertEqual(len(response.json()["results"]), 1)
+        self.assertEqual(response.json()["results"][0]["id"], page2.id)
 
     def test_create_page_with_no_write_permission(self):
         """POST /pages/ without write page permission should result in a 403"""

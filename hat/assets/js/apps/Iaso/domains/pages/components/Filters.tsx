@@ -27,12 +27,11 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         });
     const handleChangeUsers = useCallback(
         (keyValue, newValue) => {
-            const joined = newValue?.map(r => r.value)?.join(',');
-            handleChange(keyValue, joined);
+            handleChange(keyValue, newValue?.value);
         },
         [handleChange],
     );
-    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
+    const { data: selectedUser } = useGetProfilesDropdown(filters.userId);
 
     return (
         <Grid container spacing={2}>
@@ -65,12 +64,12 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             <Grid item xs={12} sm={6} md={3}>
                 <Box mt={2}>
                     <AsyncSelect
-                        keyValue="userIds"
+                        clearable
+                        keyValue="userId"
                         label={MESSAGES.users}
-                        value={selectedUsers ?? ''}
+                        value={selectedUser ?? ''}
                         onChange={handleChangeUsers}
                         debounceTime={500}
-                        multi
                         fetchOptions={input => getUsersDropDown(input)}
                     />
                 </Box>

@@ -39,7 +39,7 @@ class PageFilter(FilterSet):
     needs_authentication = BooleanFilter(
         field_name="needs_authentication", label=_("Limit on authentication required or not")
     )
-    userIds = CharFilter(method="filter_users", label=_("Users IDs (comma-separated)"))
+    userId = CharFilter(field_name="users__id", lookup_expr="exact", label=_("User ID"))
 
     class Meta:
         model = Page
@@ -47,10 +47,6 @@ class PageFilter(FilterSet):
 
     def filter_by_name_or_slug(self, queryset, _, value):
         return queryset.filter(name__icontains=value) | queryset.filter(slug__icontains=value)
-
-    def filter_users(self, queryset, name, value):
-        users_ids = parse_comma_separated_numeric_values(value, name)
-        return queryset.filter(users__id__in=users_ids)
 
 
 class PagesViewSet(ModelViewSet):

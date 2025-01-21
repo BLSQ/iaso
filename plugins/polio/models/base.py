@@ -15,8 +15,8 @@ from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Q, QuerySet, Sum, Subquery
 from django.db.models.expressions import RawSQL
+from django.db.models import Q, QuerySet, Sum, Subquery
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -309,6 +309,26 @@ class SubActivity(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def vaccine_list(self):
+        all_vaccines = self.scopes.all().values_list("vaccine", flat=True)
+        vaccines = set()
+        vaccines.update(all_vaccines)
+        return sorted(list(vaccines))
+
+    @property
+    def vaccine_names(self):
+        return ", ".join(self.vaccine_list)
+
+    @property
+    def single_vaccine_list(self):
+        vaccines = set(self.vaccine_list)
+        return sorted(list(Campaign.split_combined_vaccines(vaccines)))
+
+    @property
+    def single_vaccine_names(self):
+        return ", ".join(self.single_vaccine_list)
+
 
 class Round(models.Model):
     class Meta:
@@ -393,46 +413,97 @@ class Round(models.Model):
             return False
         return round.ended_at < date.today()
 
-    def vaccine_names(self):
-        # only take into account scope which have orgunit attached
-        campaign = self.campaign
-
-        if campaign.separate_scopes_per_round:
-            scopes_with_orgunits = filter(
-                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
-            )
-            return ", ".join(scope.vaccine for scope in scopes_with_orgunits)
+    @property
+    def actual_scopes(self):
+        """The scopes that actually apply to the round.
+        Can be used to get the shapes of the actual scope, but not the vaccines, since sub-activities are not included.
+        To get all vaccines applicable for the round, use vaccines_list_extended or vaccine_names_extended properties.
+        Would need manual serializing for use in APIs because the CampaignScope and RoundScope are different models
+        """
+        if self.campaign.separate_scopes_per_round:
+            return self.scopes
         else:
-            scopes_with_orgunits = filter(
-                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.campaign.scopes.all()
-            )
-            return ",".join(scope.vaccine for scope in scopes_with_orgunits)
+            return self.campaign.scopes
+
+    @property
+    def vaccine_list(self):
+        """Vaccines used for the round. Not including sub-activities"""
+        vaccines = set()
+        if self.campaign.separate_scopes_per_round:
+            round_vaccines = RoundScope.objects.filter(
+                round=self, group__org_units__isnull=False, vaccine__isnull=False
+            ).values_list("vaccine", flat=True)
+
+            vaccines.update(round_vaccines)
+
+        else:
+            campaign_vaccines = CampaignScope.objects.filter(
+                campaign=self.campaign, group__org_units__isnull=False, vaccine__isnull=False
+            ).values_list("vaccine", flat=True)
+
+            vaccines.update(campaign_vaccines)
+
+        return sorted(list(vaccines))
+
+    @property
+    def single_vaccine_list(self):
+        vaccines = set(self.vaccine_list)
+        return sorted(list(Campaign.split_combined_vaccines(vaccines)))
+
+    @property
+    def vaccine_names(self):
+        """Vaccines used for the round, in string form for easy use in API. Not including sub-activities"""
+        return ", ".join(sorted(list(self.vaccine_list)))
+
+    @property
+    def single_vaccine_names(self):
+        """Vaccines used for the round, splitting type bOPV & nOPV2 into it's component vaccines.
+        In string form for easy use in API.
+        Not including sub-activities"""
+        return ", ".join(sorted(list(self.single_vaccine_list)))
+
+    @property
+    def subactivities_vaccine_list(self):
+        vaccines = set()
+
+        subactivity_vaccines = SubActivityScope.objects.filter(
+            subactivity__round=self, group__org_units__isnull=False, vaccine__isnull=False
+        ).values_list("vaccine", flat=True)
+
+        vaccines.update(subactivity_vaccines)
+        return sorted(list(vaccines))
+
+    @property
+    def subactivities_single_vaccine_list(self):
+        return sorted(list(Campaign.split_combined_vaccines(set(self.subactivities_vaccine_list))))
+
+    @property
+    def subactivities_vaccine_names(self):
+        return ", ".join(self.subactivities_vaccine_list)
+
+    @property
+    def subactivities_single_vaccine_names(self):
+        return ", ".join(self.subactivities_single_vaccine_list)
+
+    @property
+    def vaccine_list_extended(self):
+        """list of vaccines including from sub-activities"""
+        vaccines = set()
+        vaccines.update(self.vaccine_list)
+        vaccines.update(self.subactivities_vaccine_list)
+        return sorted(list(vaccines))
+
+    @property
+    def single_vaccine_list_extended(self):
+        return sorted(list(Campaign.split_combined_vaccines(set(self.vaccine_list_extended))))
 
     @property
     def vaccine_names_extended(self):
-        vaccines = set()
-        subactivity_vaccines = [
-            subactivity["scopes__vaccine"]
-            for subactivity in list(self.sub_activities.filter(scopes__isnull=False).values("scopes__vaccine"))
-        ]
-        for subactivity_vaccine in subactivity_vaccines:
-            vaccines.add(subactivity_vaccine)
-        if self.campaign.separate_scopes_per_round:
-            scopes_with_orgunits = filter(
-                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
-            )
-        else:
-            scopes_with_orgunits = filter(
-                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.campaign.scopes.all()
-            )
-        for scope in scopes_with_orgunits:
-            vaccines.add(scope.vaccine)
+        return ", ".join(self.vaccine_list_extended)
 
-        if VACCINES[3][0] in vaccines:
-            vaccines.remove(VACCINES[3][0])
-            vaccines.add(VACCINES[1][0])
-            vaccines.add(VACCINES[2][0])
-        return ", ".join(sorted(vaccines))
+    @property
+    def single_vaccine_names_extended(self):
+        return ", ".join(self.single_vaccine_list_extended)
 
     @property
     def districts_count_calculated(self):
@@ -809,57 +880,142 @@ class Campaign(SoftDeletableModel):
         super().save(*args, **kwargs)
 
     @property
-    def vaccines(self):
-        # only take into account scope which have orgunit attached
+    def campaign_level_vaccines_list(self):
+        """Vaccine types from campaign level scopes.
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
+
         if self.separate_scopes_per_round:
-            vaccines = set()
-            for round in self.rounds.all():
-                scopes_with_orgunits = filter(
-                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, round.scopes.all()
-                )
-                for scope in scopes_with_orgunits:
-                    vaccines.add(scope.vaccine)
-            return ", ".join(sorted(vaccines))
-        else:
-            scopes_with_orgunits = filter(
-                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
-            )
-            return ",".join(sorted({scope.vaccine for scope in scopes_with_orgunits}))
+            return []
 
-    def vaccine_names(self):
-        # only take into account scope which have orgunit attached and vaccine is not None
-        scopes_with_orgunits_and_vaccine = filter(
-            lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
-        )
+        vaccines = set()
 
-        vaccine_names = sorted({scope.vaccine for scope in scopes_with_orgunits_and_vaccine})
-        return ", ".join(vaccine_names)
+        campaign_vaccines = CampaignScope.objects.filter(
+            campaign=self, group__org_units__isnull=False, vaccine__isnull=False
+        ).values_list("vaccine", flat=True)
+
+        vaccines.update(campaign_vaccines)
+        return sorted(list(vaccines))
+
+    @property
+    def campaign_level_single_vaccines_list(self):
+        """Same as self.campaign_level_vaccines_list, but the vaccine type nOPV2&bOPV2 is split.
+        So a campaign with nOPV2 and nOPV2&bOPV2 in its scopes will only have 2 elements in the list.
+        Useful when dealing with actual vaccines, eg: vaccine stocks
+
+        """
+        vaccines = set(self.campaign_level_vaccines_list)
+        return sorted(list(self.split_combined_vaccines(vaccines)))
+
+    @property
+    def round_level_vaccines_list(self):
+        """vaccines from round level scopes, excluding subactivities
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
+        if not self.separate_scopes_per_round:
+            return []
+
+        vaccines = set()
+        rnds = self.rounds.all().values("id")
+
+        round_vaccines = RoundScope.objects.filter(
+            round__id__in=Subquery(rnds), group__org_units__isnull=False, vaccine__isnull=False
+        ).values_list("vaccine", flat=True)
+
+        vaccines.update(round_vaccines)
+        return sorted(list(vaccines))
+
+    @property
+    def round_level_single_vaccines_list(self):
+        """Same as self.round_level_vaccines_list, but the vaccine type nOPV2&bOPV2 is split.
+        So a campaign with nOPV2 and nOPV2&bOPV2 in its scopes will only have 2 elements in the list.
+        Useful when dealing with actual vaccines, eg: vaccine stocks
+        """
+        vaccines = set(self.round_level_vaccines_list)
+        return sorted(list(self.split_combined_vaccines(vaccines)))
+
+    @property
+    def sub_activity_level_vaccines_list(self):
+        """List of vaccines from sub-activities scopes (excluding parent round scopes)
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
+        vaccines = set()
+        rnds = self.rounds.all().values("id")
+
+        subactivity_vaccines = SubActivityScope.objects.filter(
+            subactivity__round__id__in=Subquery(rnds), group__org_units__isnull=False, vaccine__isnull=False
+        ).values_list("vaccine", flat=True)
+
+        vaccines.update(subactivity_vaccines)
+        return sorted(list(vaccines))
+
+    @property
+    def sub_activity_level_single_vaccines_list(self):
+        """Same as self.sub_activity_level_vaccines_list, but the vaccine type nOPV2&bOPV2 is split.
+        So a campaign with nOPV2 and nOPV2&bOPV2 in its scopes will only have 2 elements in the list.
+        Useful when dealing with actual vaccines, eg: vaccine stocks
+
+        """
+        vaccines = set(self.sub_activity_level_vaccines_list)
+        return sorted(list(self.split_combined_vaccines(vaccines)))
+
+    @property
+    def vaccines_extended_list(self):
+        vaccines = set()
+        vaccines.update(self.campaign_level_vaccines_list)
+        vaccines.update(self.round_level_vaccines_list)
+        return sorted(list(vaccines))
+
+    @property
+    def vaccines_full_list(self):
+        vaccines = set()
+        vaccines.update(self.campaign_level_vaccines_list)
+        vaccines.update(self.round_level_vaccines_list)
+        vaccines.update(self.sub_activity_level_vaccines_list)
+        return sorted(list(vaccines))
+
+    @property
+    def single_vaccines_extended_list(self):
+        """Same as self.vaccines_extended_list, but the vaccine type nOPV2&bOPV2 is split.
+        So a campaign with nOPV2 and nOPV2&bOPV2 in its scopes will only have 2 elements in the list.
+        Useful when dealing with actual vaccines, eg: vaccine stocks
+        """
+        vaccines = set(self.vaccines_extended_list)
+        return sorted(list(self.split_combined_vaccines(vaccines)))
+
+    @property
+    def single_vaccines_full_list(self):
+        """Same as self.single_vaccines_full_list, but includes sub_activities"""
+        vaccines = set(self.vaccines_full_list)
+        return sorted(list(self.split_combined_vaccines(vaccines)))
+
+    # deprecated
+    # equivalent to vaccines_extended
+    # currently used in preparedness
+    @property
+    def vaccines(self):
+        return ", ".join(self.vaccines_extended_list)
 
     @property
     def vaccines_extended(self):
-        vaccines = set()
-        for round in self.rounds.all():
-            subactivity_vaccines = [
-                subactivity["scopes__vaccine"]
-                for subactivity in list(round.sub_activities.filter(scopes__isnull=False).values("scopes__vaccine"))
-            ]
-            for subactivity_vaccine in subactivity_vaccines:
-                vaccines.add(subactivity_vaccine)
-            if self.separate_scopes_per_round:
-                scopes_with_orgunits = filter(
-                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, round.scopes.all()
-                )
-            else:
-                scopes_with_orgunits = filter(
-                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
-                )
-            for scope in scopes_with_orgunits:
-                vaccines.add(scope.vaccine)
-            if VACCINES[3][0] in vaccines:
-                vaccines.remove(VACCINES[3][0])
-                vaccines.add(VACCINES[1][0])
-                vaccines.add(VACCINES[2][0])
-            return ", ".join(sorted(vaccines))
+        return ", ".join(self.vaccines_extended_list)
+
+    @property
+    def vaccines_full(self):
+        return ", ".join(self.vaccines_full_list)
+
+    @property
+    def single_vaccines_extended(self):
+        return ", ".join(self.single_vaccines_extended_list)
+
+    @property
+    def single_vaccines_full(self):
+        return ", ".join(self.single_vaccines_full_list)
+
+    @staticmethod
+    def split_combined_vaccines(vaccines):
+        if VACCINES[3][0] in vaccines:
+            vaccines.remove(VACCINES[3][0])
+            vaccines.add(VACCINES[1][0])
+            vaccines.add(VACCINES[2][0])
+        return vaccines
 
     def update_geojson_field(self):
         "Update the geojson field on the campaign DO NOT TRIGGER the save() you have to do it manually"

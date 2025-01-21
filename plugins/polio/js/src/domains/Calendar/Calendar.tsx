@@ -36,6 +36,7 @@ import {
     CampaignsFilters,
     getRedirectUrl,
 } from './campaignCalendar/CampaignsFilters';
+import { HasSubActivityLegend } from './campaignCalendar/HasSubActivityLegend';
 import { IsTestLegend } from './campaignCalendar/IsTestLegend';
 import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 import { TogglePeriod } from './campaignCalendar/TogglePeriod';
@@ -273,6 +274,9 @@ export const Calendar: FunctionComponent = () => {
                                         <IsTestLegend />
                                     </Box>
                                 )}
+                                <Box mr={2}>
+                                    <HasSubActivityLegend />
+                                </Box>
                                 {!isPdf && (
                                     <TogglePeriod
                                         params={params}

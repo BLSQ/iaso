@@ -88,7 +88,7 @@ Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles 
 
 * Date de notification              : {c.cvdpv2_notified_at}
 * Date du prochain round (Round {next_round_number})          : {next_round_date if campaign.rounds else None}
-* Type de vaccin                    : {c.vaccines}
+* Type de vaccin                    : {c.vaccines_extended}
 * Population cible                  : {target_population} 
 * RA Date de l'approbation RRT/ORPG  : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date de soumission du budget      : {c.submitted_to_rrt_at_WFEDITABLE}
@@ -112,7 +112,7 @@ Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis
 
 * Data de notificação: {c.cvdpv2_notified_at}
 * Proxima ronda (Round {next_round_number}) data: {next_round_date if campaign.rounds else None}
-* Tipo de vacina: {c.vaccines}
+* Tipo de vacina: {c.vaccines_extended}
 * População-alvo: {target_population}
 * RA Data de aprovação RRT/ORPG: {c.risk_assessment_rrt_oprtt_approval_at}
 * Data de envio do orçamento:  {c.submitted_to_rrt_at_WFEDITABLE}
@@ -136,7 +136,7 @@ If there are missing data or dates; visit {url} to update
 
 * Notification date              : {c.cvdpv2_notified_at}
 * Next round (Round {next_round_number}) date: {next_round_date if campaign.rounds else None}
-* Vaccine Type                   : {c.vaccines}
+* Vaccine Type                   : {c.vaccines_extended}
 * Target population              : {target_population} 
 * RA RRT/ORPG approval date      : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date Budget Submitted          : {c.submitted_to_rrt_at_WFEDITABLE}

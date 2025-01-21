@@ -409,8 +409,8 @@ describe('Periods model', () => {
             expectedPeriod = {
                 periodType: PERIOD_TYPE_FINANCIAL_NOV,
                 month: 10,
-                day: 1,
-                quarter: 2,
+                day: 31,
+                quarter: 1,
                 semester: 2,
                 year: 2018,
                 periodString,

@@ -2471,7 +2471,7 @@ class InstancesAPITestCase(APITestCase):
             self.assertListEqual(sorted(actual_instances_ids), sorted([i.id for i in expected_instances]))
         except AssertionError as e:
             print("expected ", api_response.json(), "to contains", expected_instances, " but", e)
-            print("exected ids ", [i.id for i in expected_instances])
+            print("expected ids ", [i.id for i in expected_instances])
             print("actual ids ", [x.get("id") for x in api_response.json()["instances"]])
             print("instance_1", self.instance_1.id)
             print("instance_2", self.instance_2.id)

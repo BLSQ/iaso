@@ -1,23 +1,23 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import PropTypes from 'prop-types';
-import { Grid, Button, Box, useTheme, useMediaQuery } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
+import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import InputComponent from 'Iaso/components/forms/InputComponent.tsx';
 import {
     commonStyles,
-    useSafeIntl,
     useRedirectTo,
+    useSafeIntl,
 } from 'bluesquare-components';
-import MESSAGES from '../messages.ts';
+import PropTypes from 'prop-types';
+import React, { useCallback, useMemo, useState } from 'react';
 import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
-import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
-import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles.ts';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams.ts';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles.ts';
+import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
+import MESSAGES from '../messages.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -39,7 +39,7 @@ const Filters = ({ baseUrl, params }) => {
         location: params.location,
         orgUnitTypes: params.orgUnitTypes,
         ouParent: params.ouParent,
-        ouChildren: params.ouParent,
+        ouChildren: params.ouChildren,
         projectsIds: params.projectsIds,
         userRoles: params.userRoles,
         teamsIds: params.teamsIds,

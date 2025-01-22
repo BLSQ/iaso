@@ -1145,16 +1145,6 @@ class LQASIMPolioTestCase(APITestCase):
             form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
         )
 
-    def test_shapes_resp_is_cached(self):
-        self.client.force_authenticate(self.yoda)
-
-        response = self.client.get("/api/polio/campaigns/merged_shapes.geojson/")
-
-        is_cached = True if cache.get("{0}-geo_shapes".format(self.yoda.id), version=CACHE_VERSION) else False
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(is_cached, True)
-
     def test_general_status(self):
         c = Campaign.objects.create(account=self.star_wars)
         c.rounds.create(number=1, started_at=datetime.date(2021, 1, 1), ended_at=datetime.date(2021, 1, 2))

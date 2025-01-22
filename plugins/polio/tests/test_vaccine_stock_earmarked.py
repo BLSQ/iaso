@@ -7,6 +7,7 @@ from plugins.polio import models as pm
 import hat.menupermissions.models as permissions
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
+EARMARKED_BASE_URL = "/api/polio/vaccine/stock/earmarked_stock/"
 DT = datetime.datetime(2024, 10, 29, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
 
@@ -207,20 +208,71 @@ class VaccineStockEarmarkedTests(APITestCase):
         self.assertEqual(updated_data["total_usable_vials"], initial_usable)
 
         # Test EarmarkedStockViewSet endpoints
-        earmarked_url = "/api/polio/vaccine/stock/earmarked_stock/"
-
         # Test list endpoint
-        response = self.client.get(earmarked_url)
+        response = self.client.get(EARMARKED_BASE_URL)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data), 3)  # Should return all 3 earmarked stocks we created
+        self.assertEqual(len(data["results"]), 3)
+        # Verify response has expected schema
+        expected_fields = {
+            "id": int,
+            "vaccine_stock": int,
+            "campaign": str,
+            "round_number": int,
+            "earmarked_stock_type": str,
+            "vials_earmarked": int,
+            "doses_earmarked": int,
+            "comment": [str, type(None)],
+            "created_at": str,
+            "updated_at": str,
+        }
+
+        self.assertValidSimpleSchema(data["results"][0], expected_fields)
 
         # Test detail endpoint
-        response = self.client.get(f"{earmarked_url}{created_stock.id}/")
+        response = self.client.get(f"{EARMARKED_BASE_URL}{created_stock.id}/")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["campaign"], self.campaign.obr_name)
-        self.assertEqual(data["round_number"], self.round.number)
-        self.assertEqual(data["vials_earmarked"], 50)
-        self.assertEqual(data["doses_earmarked"], 1000)
-        self.assertEqual(data["earmarked_stock_type"], "created")
+        self.assertValidSimpleSchema(data, expected_fields)
+
+        # Test creation endpoint
+        create_data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "campaign": self.campaign.obr_name,
+            "round_number": self.round.number,
+            "vials_earmarked": 75,
+            "doses_earmarked": 1500,
+            "earmarked_stock_type": "created",
+            "comment": "Test creation",
+        }
+
+        response = self.client.post(EARMARKED_BASE_URL, create_data, format="json")
+        self.assertEqual(response.status_code, 201)
+        created_id = response.json()["id"]
+
+        # Verify the stock was created correctly
+        created_stock = pm.EarmarkedStock.objects.get(id=created_id)
+        self.assertEqual(created_stock.vials_earmarked, 75)
+        self.assertEqual(created_stock.doses_earmarked, 1500)
+        self.assertEqual(created_stock.earmarked_stock_type, "created")
+        self.assertEqual(created_stock.campaign, self.campaign)
+        self.assertEqual(created_stock.round, self.round)
+
+        # Test deletion endpoint
+        response = self.client.delete(f"{EARMARKED_BASE_URL}{created_id}/")
+        self.assertEqual(response.status_code, 204)
+
+        # Verify the stock was deleted
+        with self.assertRaises(pm.EarmarkedStock.DoesNotExist):
+            pm.EarmarkedStock.objects.get(id=created_id)
+
+        # Verify unauthorized users cannot create/delete
+        self.client.force_authenticate(AnonymousUser())
+
+        # Try to create
+        response = self.client.post(EARMARKED_BASE_URL, create_data)
+        self.assertEqual(response.status_code, 403)
+
+        # Try to delete existing stock
+        response = self.client.delete(f"{EARMARKED_BASE_URL}{created_stock.id}/")
+        self.assertEqual(response.status_code, 403)

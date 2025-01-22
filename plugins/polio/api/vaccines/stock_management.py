@@ -523,6 +523,28 @@ class VaccineStockSubitemBase(ModelViewSet):
         return queryset
 
 
+class VaccineStockSubitemEdit(VaccineStockSubitemBase):
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Extract campaign data
+        campaign_obr_name = serializer.validated_data.get("campaign").get("obr_name")
+        round_number = serializer.validated_data.get("round").get("number")
+
+        # Get campaign and round objects
+        campaign = Campaign.objects.get(obr_name=campaign_obr_name, account=request.user.iaso_profile.account)
+        _round = campaign.rounds.get(number=round_number)
+
+        # Update validated data
+        serializer.validated_data["campaign"] = campaign
+        serializer.validated_data["round"] = _round
+
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
 class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name")
     document = serializers.FileField(required=False)
@@ -620,7 +642,6 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
 class EarmarkedStockSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name")
     round_number = serializers.IntegerField(source="round.number")
-    doses_earmarked = serializers.SerializerMethodField()
 
     class Meta:
         model = EarmarkedStock
@@ -651,7 +672,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
         return None
 
 
-class EarmarkedStockViewSet(VaccineStockSubitemBase):
+class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     serializer_class = EarmarkedStockSerializer
     model_class = EarmarkedStock
 

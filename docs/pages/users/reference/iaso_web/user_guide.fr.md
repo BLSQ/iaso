@@ -413,8 +413,6 @@ Cliquez sur "Planning" dans le menu. Dans la liste des plannings, vous verrez le
 - Dupliquer le planning : permet de copier une planification existante et de l'adapter au besoin.
 - Supprimer le planning
 
-![alt text](attachments/planninglistfr.png)
-
 **Créer un Planning**
 
 Cliquez sur "Créer" et la fenêtre s'ouvrira.

@@ -5,9 +5,15 @@ export const useGetPages = options => {
     const params = {
         limit: options.pageSize,
         page: options.page,
+        needs_authentication: options.needs_authentication,
+        userId: options.userId,
     };
     if (options.order && options.order !== '') {
         params.order = options.order;
+    }
+
+    if (options.search && options.search !== '') {
+        params.search = options.search;
     }
 
     const getURL = urlParams => {

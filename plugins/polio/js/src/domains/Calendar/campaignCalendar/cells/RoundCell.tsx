@@ -102,6 +102,9 @@ export const RoundCell: FunctionComponent<Props> = ({
                             opacity: vaccineOpacity,
                             display: 'block',
                             height: `${100 / vaccinesList.length}%`,
+                            border: round.hasSubActivities
+                                ? '3px solid rebeccapurple'
+                                : undefined,
                         }}
                     />
                 ))}

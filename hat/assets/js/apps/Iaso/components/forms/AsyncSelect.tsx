@@ -33,7 +33,7 @@ type Props = {
     multi?: boolean;
     helperText?: string;
     minCharBeforeQuery?: number;
-    fetchOptions: (input: string) => Promise<any[]>;
+    fetchOptions: (input: string) => Promise<any>;
     renderTags?: (
         tag: any[],
         getTagProps: AutocompleteGetTagProps,
@@ -119,6 +119,11 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                 let newOptions: any[] = [...values];
                 if (results) {
                     newOptions = [...newOptions, ...results];
+                    newOptions = [
+                        ...new Map(
+                            newOptions.map(item => [item.value, item]),
+                        ).values(),
+                    ];
                 }
                 setOptions(newOptions);
             }
@@ -151,7 +156,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                     loadingText ? formatMessage(loadingText) : undefined
                 }
                 options={displayedOtpions}
-                value={values}
+                value={multi ? values : values.length > 0 && values[0]}
                 getOptionLabel={option => option?.label ?? ''}
                 filterOptions={(x: any[]) => x}
                 autoComplete
@@ -165,6 +170,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                     setInputValue(newInputValue);
                 }}
                 isOptionEqualToValue={getOptionSelected}
+                freeSolo
             />
         </Box>
     );

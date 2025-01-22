@@ -54,6 +54,7 @@ from plugins.polio.models import (
     SpreadSheetImport,
     VaccineAuthorization,
 )
+from plugins.polio.models.base import SubActivity, SubActivityScope
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.parser import InvalidFormatError, get_preparedness
 from plugins.polio.preparedness.spreadsheet_manager import Campaign, generate_spreadsheet_for_campaign
@@ -101,7 +102,7 @@ def check_total_doses_requested(vaccine_authorization, nOPV2_rounds, current_cam
 
         existing_nopv2_rounds = []
         for r in campaigns_rounds:
-            if "nOPV2" in r.vaccine_names():
+            if "nOPV2" in r.vaccine_names:
                 existing_nopv2_rounds.append(r)
 
         for r in existing_nopv2_rounds:
@@ -146,8 +147,8 @@ class CampaignSerializer(serializers.ModelSerializer):
     single_vaccines = serializers.SerializerMethodField(read_only=True)
 
     def get_vaccines(self, obj):
-        if obj.vaccines:
-            return ",".join([vaccine.strip() for vaccine in obj.vaccines.split(",")])
+        if obj.vaccines_extended_list:
+            return ",".join(obj.vaccines_extended_list)
         return ""
 
     def get_single_vaccines(self, obj):
@@ -262,7 +263,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         c_rounds = [r for r in campaign.rounds.all()]
         nOPV2_rounds = []
         for r in c_rounds:
-            if "nOPV2" in r.vaccine_names():
+            if "nOPV2" in r.vaccine_names:
                 nOPV2_rounds.append(r)
 
         if initial_org_unit and len(nOPV2_rounds) > 0:
@@ -407,7 +408,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         c_rounds = [r for r in campaign.rounds.all()]
         nOPV2_rounds = []
         for r in c_rounds:
-            if "nOPV2" in r.vaccine_names():
+            if "nOPV2" in r.vaccine_names:
                 nOPV2_rounds.append(r)
         if initial_org_unit and len(nOPV2_rounds) > 0:
             try:
@@ -579,6 +580,26 @@ class CalendarCampaignSerializer(CampaignSerializer):
     """This serializer contains juste enough data for the Calendar view in the web ui. Read only.
     Used by both anonymous and non-anonymous user"""
 
+    class NestedSubactivitySerializer(serializers.ModelSerializer):
+        class NestedScopeSerializer(serializers.ModelSerializer):
+            class NestedGroupSerializer(GroupSerializer):
+                class Meta:
+                    model = Group
+                    fields = ["id"]
+
+            class Meta:
+                model = SubActivityScope
+                fields = ["group", "vaccine"]
+
+            group = NestedGroupSerializer()
+
+        scopes = NestedScopeSerializer(many=True)
+        round_number = serializers.IntegerField(source="round.number")
+
+        class Meta:
+            model = SubActivity
+            fields = ["name", "start_date", "end_date", "scopes", "id", "vaccine_names", "round_number"]
+
     class NestedListRoundSerializer(RoundSerializer):
         class NestedScopeSerializer(RoundScopeSerializer):
             class NestedGroupSerializer(GroupSerializer):
@@ -611,6 +632,11 @@ class CalendarCampaignSerializer(CampaignSerializer):
     rounds = NestedListRoundSerializer(many=True, required=False)
     scopes = NestedScopeSerializer(many=True, required=False)
     campaign_types = CampaignTypeSerializer(many=True, required=False)
+    sub_activities = serializers.SerializerMethodField()
+
+    def get_sub_activities(self, campaign):
+        sub_activities = SubActivity.objects.filter(round__campaign=campaign)
+        return self.NestedSubactivitySerializer(sub_activities, many=True, context=self.context).data
 
     class Meta:
         model = Campaign
@@ -619,19 +645,19 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "epid",
             "obr_name",
             "account",
-            "cvdpv2_notified_at",
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "rounds",
+            "sub_activities",
             "is_preventive",
             "general_status",
             "grouped_campaigns",
             "separate_scopes_per_round",
             "scopes",
             # displayed in RoundPopper
-            "risk_assessment_status",
-            "budget_status",
+            # To deprecate in front-end code as it doesn't have subactivities
             "vaccines",
+            "single_vaccines",
             "campaign_types",
             "description",
             "is_test",
@@ -991,7 +1017,7 @@ class CampaignViewSet(ModelViewSet):
             campaign = campaigns.get(pk=round.campaign_id)
             country = campaign.country.name if campaign.country else ""
             obr_name = campaign.obr_name
-            vaccine_types = campaign.vaccines
+            vaccine_types = campaign.vaccines_extended
             onset_date = campaign.onset_at
             round_number = round.number
             item["country"] = country
@@ -1294,7 +1320,7 @@ class CampaignViewSet(ModelViewSet):
             "started_at": started_at,
             "ended_at": ended_at,
             "obr_name": obr_name,
-            "vaccines": round.vaccine_names(),
+            "vaccines": round.vaccine_names,
             "round_number": round_number,
             "percentage_covered_target_population": percentage_covered_target_population,
             "target_population": target_population,

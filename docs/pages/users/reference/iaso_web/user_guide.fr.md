@@ -15,13 +15,13 @@ Pour vous connecter à l'interface web, rendez-vous sur
 [<u>https://iaso.bluesquare.org/login/</u>](https://iaso.bluesquare.org/login/)
 et connectez-vous avec votre nom d'utilisateur et votre mot de passe.
 
-![alt text](attachments/iasologinfr.png)
+![alt text](attachments/Loginiasofr.png)
 
 Vous pouvez également réinitialiser votre mot de passe en cliquant sur le lien "Mot de passe oublié". Un e-mail automatique vous sera envoyé pour vous permettre de créer un nouveau mot de passe. 
 
 ## Navigation dans IASO
 
-![alt text](<attachments/Web interface introfr.jpg>)
+![alt text](<attachments/Webinterfaceintrofr.jpg>)
 
 ## Gérer les formulaires de collecte de données
 
@@ -29,7 +29,7 @@ Vous pouvez également réinitialiser votre mot de passe en cliquant sur le lien
 
 Depuis la liste des formulaires, vous pouvez rechercher parmi les formulaires disponibles du compte IASO auquel vous êtes connecté en utilisant les filtres suivants :
 
-![alt text](attachments/formsmanagementv2fr.png)
+![alt text](attachments/formsmanagement2fr.png)
 
 Les boutons ci-dessous vous permettent de gérer les formulaires de collecte de données :
 
@@ -84,9 +84,9 @@ L'onglet "Fichier" vous permet de visualiser les fichiers soumis avec les formul
 
 ![alt text](attachments/formsubmissionsfilesfr.png)
 
-### Manage submissions
+### Gérer les soumissions de formulaires
 
-On the Submissions page, you can see the list of submissions that have been done for the account. You can manage them using the below options.
+Sur la page des soumissions, vous pouvez trouver la liste des soumissions de formulaires qui ont été effectuées. Vous pouvez les gérer en utilisant les fonctionnalités ci-dessous.
 
 ![alt text](attachments/submissionsmanagementfr.png)
 
@@ -116,12 +116,6 @@ La section "Formulaire" montre toutes les questions et réponses saisies pendant
 
 L'icône "XML" vous permet de télécharger une soumission au format XML.
 
-<img src="./attachments/image102.png"
-style="width:5.96354in;height:2.29367in" />
-
-<img src="./attachments/image71.png"
-style="width:5.95313in;height:2.73806in" />
-
 L'icône en forme d'engrenage, en bas à droite, affiche une série d'options au survol. Ces options permettent de :
 
 - Supprimer une soumission
@@ -135,17 +129,12 @@ Voir ci-dessous les sections dédiées pour plus d'informations sur chacune de c
 
 **Supprimer une soumission**
 
-Permet de supprimer le formulaire. Si celui-ci a déjà été exporté vers DHIS2, cela ne supprimera pas les données dans DHIS2. Un message d'avertissement apparaîtra :
+Permet de supprimer le formulaire. Si celui-ci a déjà été exporté vers DHIS2, cela ne supprimera pas les données dans DHIS2. Un message d'avertissement apparaîtra.
 
-<img src="./attachments/image66.png"
-style="width:4.52131in;height:1.05729in" />
 
 **Modifier l'unité d'organisation ou la période associée**
 
 En cliquant sur "Modifier la période et/ou l'unité d'organisation", une fenêtre s'ouvre, vous permettant de réassigner l'instance. Vous pouvez modifier la période ou l'unité d'organisation assignée au formulaire soumis.
-
-<img src="./attachments/image76.png"
-style="width:1.56771in;height:1.65794in" />
 
 **Exporter une soumission**
 
@@ -156,12 +145,6 @@ La fonction d'exportation permet d'exporter le formulaire vers DHIS2. Au préala
 Pour modifier un formulaire, cliquez sur l'icône Enketo (voir ci-dessus).
 
 Modifiez le formulaire en changeant les réponses aux questions nécessaires. Ensuite, cliquez sur "Soumettre" en bas du formulaire.
-
-<img src="./attachments/image57.png"
-style="width:6.15663in;height:3.40104in" />
-
-<img src="./attachments/image7.png"
-style="width:1.04311in;height:0.32269in" />
 
 **Pousser les coordonnées GPS de la soumission vers l'unité d'organisation**
 
@@ -179,16 +162,11 @@ Cette vue vous permet de consulter les statistiques concernant les formulaires. 
 - Le premier montre le nombre total de soumissions au fil du temps.
 - Le second montre les nouvelles soumissions par mois et par formulaire.
 
-<img src="./attachments/image74.png" style="width:6.5in;height:1.75in" />
-
 ### Correspondances avec DHIS2
 
 Un grand avantage d'IASO est la possibilité d'exporter des données vers DHIS2. Pour cela, un mappage préalable est nécessaire. Une fois le formulaire téléversé, il faut mapper le formulaire pour qu'il corresponde à un élément de données dans DHIS2.
 
-Cliquez sur "DHIS mappings" pour voir les formulaires :
-
-<img src="./attachments/image75.png" style="width:6.5in;height:2.59722in" />
-
+Cliquez sur "DHIS mappings" pour voir les formulaires.
 
 Dans la vue du formulaire, vous pouvez consulter les détails suivants :
 
@@ -205,9 +183,6 @@ Dans la vue du formulaire, vous pouvez consulter les détails suivants :
 - Date de la dernière modification
   
 Cliquez sur "Créer" et une fenêtre s'ouvrira, vous permettant de mapper chaque questionnaire des formulaires XLS à l'élément de données correspondant dans DHIS2.
-element<img src="./attachments/image93.png"
-style="width:2.03704in;height:1.83333in" /><img src="./attachments/image98.png"
-style="width:2.05729in;height:1.8085in" />
 
 Le processus de correspondance consiste à sélectionner une question à gauche et à décider si elle doit être mappée à DHIS2 ou non.
 
@@ -216,9 +191,6 @@ Certaines questions, comme des notes ou des métadonnées, peuvent ne pas néces
 Si la question doit être mappée, recherchez l'élément correspondant dans le champ en utilisant le nom, le code ou l'ID, puis confirmez.
 
 Une fois confirmée, la question deviendra verte et sera comptabilisée.
-
-<img src="./attachments/image115.png"
-style="width:7.03646in;height:3.20249in" />
 
 ### Complétude
 
@@ -231,16 +203,11 @@ Dans la vue "Complétude", vous verrez les détails suivants :
 
 Cliquez sur chacun de ces boutons pour afficher les formulaires prêts à être exportés, avec des erreurs ou déjà exportés. Un filtre sur la période permet d'organiser les données par périodicité : mois, trimestre, semestre ou année. 
 
-<img src="./attachments/image94.png"
-style="width:6.96429in;height:1.48438in" />
-
 En cliquant sur le nombre de soumissions, vous serez redirigé vers la vue des soumissions, où vous pourrez cliquer sur l'icône "Voir" pour consulter les soumissions de ce formulaire.
 
-Cliquez sur le bouton <img src="./attachments/image104.png"
-style="width:0.49791in;height:0.40738in" />pour synchroniser deux formulaires.
+Cliquez sur le bouton pour synchroniser deux formulaires.
 
 Exemple : pour obtenir des données agrégées à partir d'une enquête de vérification communautaire, tous les formulaires des clients doivent être synchronisés dans un seul formulaire.
-<img src="./attachments/image17.png" style="width:6.5in;height:2.95833in" />
 
 ### Statistiques de complétude
 
@@ -289,9 +256,6 @@ Les résultats de la recherche peuvent être exportés en CSV, XLSX ou GPKG.
 
 Les résultats peuvent être visualisés sous forme de liste ou sur une carte.
 
-<img src="./attachments/image35.png"
-style="width:6.18229in;height:2.9029in" />
-
 Le statut indique, par exemple, qu'un village vient d'être ajouté et doit être révisé.
 
 La référence externe est utilisée pour exporter des données vers DHIS2.
@@ -300,23 +264,13 @@ La carte permet de localiser la structure.
 
 Vous pouvez consulter l'historique des modifications en cliquant sur la petite icône d'horloge ou les détails des formulaires remplis en cliquant sur l'icône en forme d'œil.
 
-<img src="./attachments/image32.png" style="width:6.5in;height:2.875in" />
-
-Plusieurs recherches peuvent être effectuées en ajoutant des onglets à la page avec le bouton +. <img src="./attachments/image45.png" style="width:7.01017in;height:1.93229in" />
+Plusieurs recherches peuvent être effectuées en ajoutant des onglets à la page avec le bouton +. 
 
 Vous pouvez choisir la couleur des résultats sur la carte pour chaque recherche.
-
-<img src="./attachments/image90.png"
-style="width:6.95313in;height:2.9466in" />
-
- <img src="./attachments/image120.png" style="width:6.26042in;height:2.38542in" />
 
 **Création d'une unité d'organisation**
 
 Sur la page de la liste des unités d'organisation, cliquez sur "Créer". Vous pouvez alors créer une unité d'organisation selon vos besoins.
-
-
-<img src="./attachments/image16.png" style="width:6.86961in;height:2.80729in" />
 
 Vous devrez saisir les informations suivantes avant d'enregistrer :
 
@@ -362,15 +316,9 @@ Pour ce faire, dans la liste des unités d'organisation, cochez les cases des un
 
 Les unités d'organisation peuvent être regroupées dans des groupes, et ces groupes peuvent être organisés en ensembles de groupes. Ensemble, ils peuvent imiter une hiérarchie organisationnelle alternative, utilisable lors de la création de rapports ou d'autres sorties de données. En plus de représenter des localisations géographiques alternatives ne faisant pas partie de la hiérarchie principale, ces groupes sont utiles pour attribuer des schémas de classification aux unités d'organisation.
 
-<img src="./attachments/image44.png" style="width:6.5in;height:2.41667in" />
-
-
 **Gestion des groupes d'unités d'organisation**
 
 Pour gérer les groupes d'unités d'organisation, accédez au menu Unités d'organisation > Groupes.
-
-<img src="./attachments/image5.png" style="width:6.5in;height:2.29167in" />
-
 
 Cette vue vous permet de rechercher des groupes d'unités d'organisation via une entrée de texte libre.
 
@@ -417,16 +365,12 @@ IASO permet d'importer et de gérer une ou plusieurs sources de données géogra
 
 Vous trouverez ici les sources de données avec leurs noms, versions et descriptions. Il est possible de modifier une source de données, de consulter l'historique des versions ou de comparer les sources et de les exporter vers DHIS2.
 
-<img src="./attachments/image52.png" style="width:6.5in;height:1.86111in" />
-
 #### Correspondance
 
 Cette fonctionnalité est plutôt géospatiale : elle permet d'établir des liens entre plusieurs pyramides géographiques.
 Exemple : dans un CSV, une "province x" peut être appelée "PROVINCE X" dans une source, et "DPS X" dans une autre.
 
 Les algorithmes exécutés sont destinés au travail de science des données.
-
-<img src="./attachments/image40.png" style="width:6.5in;height:1.26389in" />
 
 ### Registre
 
@@ -473,9 +417,7 @@ Cliquez sur "Planning" dans le menu. Dans la liste des plannings, vous verrez le
 
 **Créer un Planning**
 
-Cliquez sur "Créer" et la fenêtre ci-dessous s'ouvrira :
-
-<img src="./attachments/image48.png" style="width:6.5in;height:3.80556in" />
+Cliquez sur "Créer" et la fenêtre s'ouvrira.
 
 Les champs suivants sont obligatoires :
 
@@ -503,13 +445,9 @@ Pour assigner toutes les unités d'organisation enfants d'une unité parente don
 
 ![alt text](<attachments/planning assignmentfr.png>)
 
-<img src="./attachments/image10.png" style="width:2.97396in;height:2.55034in" />
-
 **Utiliser l'onglet Liste**
 
 Si vous préférez utiliser l'onglet Liste, le processus est similaire. La principale différence est que vous travaillez ici avec une liste de noms selon le niveau sélectionné. Les unités d'organisation sont assignées en cliquant devant le nom de l'élément dans la colonne "Assignation".
-
-<img src="./attachments/image73.png" style="width:6.5in;height:2.68056in" />
 
 Vous pouvez trier les unités d'organisation et les parents en cliquant sur le nom des colonnes.
 
@@ -572,8 +510,6 @@ Chaque projet est identifié par un nom et un identifiant d'application (App ID)
 **Créer un projet**
 
 Dans le menu, Admin > Projets > Cliquez sur "Créer".
-
-![alt text](attachments/Projectfr.png)
 
 Ajoutez ensuite un nom de projet et un App ID.
 Notez que l'App ID devra être saisi par les utilisateurs de l'application mobile IASO lors de leur première connexion à l'application. Il est donc recommandé d'utiliser un identifiant simple pour éviter les erreurs de saisie.
@@ -672,6 +608,7 @@ Sélectionnez ensuite l'action ou les actions que vous souhaitez effectuer pour 
 - Ajouter ou supprimer une localisation (ce qui limite ces utilisateurs à la géographie sélectionnée)
 
 Cliquez sur "Valider" une fois terminé.
+
 ![alt text](attachments/usersbulkeditactionsfr.png)
 
 ### Rôles utilisateur

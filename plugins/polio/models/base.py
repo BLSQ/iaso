@@ -6,6 +6,7 @@ from collections import defaultdict
 from datetime import date
 from typing import Any, Optional, Tuple, Union
 from uuid import uuid4
+
 import django.db.models.manager
 import pandas as pd
 from django.conf import settings
@@ -372,6 +373,7 @@ class Round(models.Model):
     main_awareness_problem = models.CharField(max_length=255, null=True, blank=True)
     lqas_district_passing = models.IntegerField(null=True, blank=True)
     lqas_district_failing = models.IntegerField(null=True, blank=True)
+    is_test = models.BooleanField(default=False)
 
     # Preparedness
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)

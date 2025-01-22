@@ -617,6 +617,12 @@ class CalendarCampaignSerializer(CampaignSerializer):
             model = Round
             fields = ["id", "number", "started_at", "ended_at", "scopes", "vaccine_names", "target_population"]
 
+        def to_representation(self, instance):
+            # Skip test rounds
+            if instance.is_test:
+                return None
+            return super().to_representation(instance)
+
     class NestedScopeSerializer(CampaignScopeSerializer):
         class NestedGroupSerializer(GroupSerializer):
             class Meta:
@@ -637,6 +643,12 @@ class CalendarCampaignSerializer(CampaignSerializer):
     def get_sub_activities(self, campaign):
         sub_activities = SubActivity.objects.filter(round__campaign=campaign)
         return self.NestedSubactivitySerializer(sub_activities, many=True, context=self.context).data
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Filter out None values from rounds (the test rounds we skipped)
+        data["rounds"] = [r for r in data["rounds"] if r is not None]
+        return data
 
     class Meta:
         model = Campaign
@@ -1162,12 +1174,13 @@ class CampaignViewSet(ModelViewSet):
         return campaigns_data
 
     @staticmethod
-    def get_filtered_rounds(rounds, params):
+    def get_filtered_rounds(rounds, params, exclude_test_rounds=False):
         """
         It returns the filtered rounds based on params from url
             parameters:
                 rounds: list of rounds
                 params: params from url
+                exclude_test_rounds: whether to exclude test rounds or not
             return:
                 returns filtered list of rounds
         """
@@ -1176,6 +1189,11 @@ class CampaignViewSet(ModelViewSet):
         campaign_category = params.get("campaignCategory") if params.get("campaignCategory") is not None else None
         search = params.get("search")
         org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
+
+        # Filter out test rounds if requested
+        if exclude_test_rounds:
+            rounds = rounds.filter(is_test=False)
+
         # Test campaigns should not appear in the xlsx calendar
         rounds = rounds.filter(campaign__is_test=False)
         if countries:
@@ -1238,17 +1256,9 @@ class CampaignViewSet(ModelViewSet):
     def get_calendar_data(self: "CampaignViewSet", year: int, params: Any) -> Any:
         """
         Returns filtered rounds from database
-
-            parameters:
-                self: a self
-                year (int): a year int
-                params(dictionary): a params dictionary
-            returns:
-                rounds (array of dictionary): a rounds of array of dictionaries
         """
         rounds = Round.objects.filter(started_at__year=year)
-        # get the filtered list of rounds
-        rounds = self.get_filtered_rounds(rounds, params)
+        rounds = self.get_filtered_rounds(rounds, params, exclude_test_rounds=True)
 
         return self.loop_on_rounds(self, rounds)
 

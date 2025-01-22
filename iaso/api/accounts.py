@@ -80,7 +80,7 @@ class AccountViewSet(ModelViewSet):
         # TODO: Make sure the account_id is present
         self.permission_classes = [permissions.IsAuthenticated, HasAccountPermission]
         self.check_permissions(request)
-        account_id = int(request.data.get("account_id", None))
+        account_id = int(request.data["account_id"]) if request.data.get("account_id") else None
 
         current_user = request.user
         account_users = current_user.tenant_user.get_all_account_users()
@@ -91,6 +91,7 @@ class AccountViewSet(ModelViewSet):
         if user_to_login:
             user_to_login.backend = "django.contrib.auth.backends.ModelBackend"
             login(request, user_to_login)
+            # Return an empty response since no data is needed by the frontend
             return Response({}, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)

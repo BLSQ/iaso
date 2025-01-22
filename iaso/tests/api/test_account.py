@@ -1,3 +1,5 @@
+from django.contrib import auth
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -126,5 +128,6 @@ class AccountAPITestCase(APITestCase):
         self.client.force_authenticate(account_user_ghi)
         response = self.client.patch("/api/accounts/switch/", {"account_id": self.wha.pk})
 
-        j = self.assertJSONResponse(response, 200)
-        self.assertEqual(j["name"], "Worldwide Health Aid")
+        self.assertJSONResponse(response, 200)
+        logged_in_user = auth.get_user(self.client)
+        self.assertEqual(logged_in_user.iaso_profile.account.name, "Worldwide Health Aid")

@@ -600,15 +600,28 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
 
-        # When Form A is created, cancel any matching earmarked stock
+        # When Form A is created, find if there is a matching earmarked stock
+        # and create a new earmarked stock of type USED with the same values
         if response.status_code == 201:
             movement = OutgoingStockMovement.objects.get(id=response.data["id"])
-            EarmarkedStock.objects.filter(
-                vaccine_stock=movement.vaccine_stock, campaign=movement.campaign, round=movement.round, cancelled=False
-            ).update(cancelled=True, cancelled_at=timezone.now(), cancelled_reason="Form A submitted")
+            matching_earmark = EarmarkedStock.objects.filter(
+                vaccine_stock=movement.vaccine_stock,
+                campaign=movement.campaign,
+                round=movement.round,
+                earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.CREATED,
+                doses_earmarked=movement.usable_vials_used * movement.vaccine_stock.doses_per_vial,
+            ).first()
 
-        # Plutot comparer les valeurs du Form A et diminuer le earmarked stock
-        # et augmente les vials_used et doses_used
+            if matching_earmark:
+                EarmarkedStock.objects.create(
+                    vaccine_stock=movement.vaccine_stock,
+                    campaign=movement.campaign,
+                    round=movement.round,
+                    earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.USED,
+                    vials_earmarked=matching_earmark.vials_earmarked,
+                    doses_earmarked=matching_earmark.doses_earmarked,
+                    comment="Created from Form A submission",
+                )
 
         return response
 

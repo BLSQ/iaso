@@ -138,6 +138,15 @@ class IasoTestCaseMixin:
         org_unit_type.save()
         return org_unit_type
 
+    @staticmethod
+    def create_valid_org_unit(name, type, version):
+        org_unit = m.OrgUnit.objects.create(
+            org_unit_type=type,
+            version=version,
+            name=name,
+        )
+        return org_unit
+
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass

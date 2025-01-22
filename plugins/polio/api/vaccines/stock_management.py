@@ -609,7 +609,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
                 campaign=movement.campaign,
                 round=movement.round,
                 earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.CREATED,
-                doses_earmarked=movement.usable_vials_used * movement.vaccine_stock.doses_per_vial,
+                vials_earmarked=movement.usable_vials_used,
             ).first()
 
             if matching_earmark:

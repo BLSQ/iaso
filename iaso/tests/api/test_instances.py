@@ -1699,6 +1699,14 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(response_yoda.status_code, 200)
         self.assertValidInstanceListData(response_yoda.json(), 4)
         instances = response_yoda.json()["instances"]
+        print("\n**** api response")
+        for i in instances:
+            print(i.get("id"), i.get("updated_at"), i.get("created_at"))
+
+        print("**** db content")
+        for i in Instance.objects.all():
+            print(i.id, i.updated_at, i.created_at)
+
         self.assertEqual(self.instance_1.id, instances[0].get("id"))
         self.assertEqual(self.instance_4.id, instances[1].get("id"))
         self.assertEqual(self.instance_5.id, instances[3].get("id"))

@@ -1670,17 +1670,29 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(
             "/api/instances/", {"planningIds": planning_1.id}, headers={"Content-Type": "application/json"}
         )
-        self.assertJSONResponse(response, 200)
-        self.assertValidInstanceListData(response.json(), 1)
-        self.assertEqual(response.json()["instances"][0]["id"], instance_1.id)
+
+        self.assertInstanceListContainsStrictly(response, [instance_1])
+
         # it should return all of the instances
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/instances/?order=-id", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
-        self.assertValidInstanceListData(response.json(), 9)
 
-        self.assertEqual(response.json()["instances"][0]["id"], instance_2.id)
-        self.assertEqual(response.json()["instances"][1]["id"], instance_1.id)
+        self.assertInstanceListContainsStrictly(
+            response,
+            [  # the one specific to this test
+                instance_1,
+                instance_2,
+                # the one from setup
+                self.instance_1,
+                self.instance_2,
+                self.instance_3,
+                self.instance_4,
+                self.instance_5,
+                self.instance_6,
+                self.instance_8,
+            ],
+        )
+
         # it should return none of the instances
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
@@ -1696,20 +1708,10 @@ class InstancesAPITestCase(APITestCase):
             {query.USER_IDS: self.yoda.id},
             headers={"Content-Type": "application/json"},
         )
-        self.assertEqual(response_yoda.status_code, 200)
-        self.assertValidInstanceListData(response_yoda.json(), 4)
-        instances = response_yoda.json()["instances"]
-        print("\n**** api response")
-        for i in instances:
-            print(i.get("id"), i.get("updated_at"), i.get("created_at"))
 
-        print("**** db content")
-        for i in Instance.objects.all():
-            print(i.id, i.updated_at, i.created_at)
-
-        self.assertEqual(self.instance_1.id, instances[0].get("id"))
-        self.assertEqual(self.instance_4.id, instances[1].get("id"))
-        self.assertEqual(self.instance_5.id, instances[3].get("id"))
+        self.assertInstanceListContainsStrictly(
+            response_yoda, [self.instance_1, self.instance_4, self.instance_5, self.instance_8]
+        )
 
         self.client.force_authenticate(self.yoda)
         response_yoda_deleted = self.client.get(
@@ -1717,45 +1719,31 @@ class InstancesAPITestCase(APITestCase):
             {query.USER_IDS: self.yoda.id, query.SHOW_DELETED: True},
             headers={"Content-Type": "application/json"},
         )
-        self.assertEqual(response_yoda_deleted.status_code, 200)
-        self.assertValidInstanceListData(response_yoda_deleted.json(), 1)
-        instances = response_yoda_deleted.json()["instances"]
-        self.assertEqual(self.instance_7.id, instances[0].get("id"))
+        self.assertInstanceListContainsStrictly(response_yoda_deleted, [self.instance_7])
 
         response_guest = self.client.get(
             "/api/instances/",
             {query.USER_IDS: self.guest.id},
             headers={"Content-Type": "application/json"},
         )
-        self.assertEqual(response_guest.status_code, 200)
-        self.assertValidInstanceListData(response_guest.json(), 1)
-        instances = response_guest.json()["instances"]
-        self.assertEqual(self.instance_2.id, instances[0].get("id"))
+        self.assertInstanceListContainsStrictly(response_guest, [self.instance_2])
 
         response_supervisor = self.client.get(
             "/api/instances/",
             {query.USER_IDS: self.supervisor.id},
             headers={"Content-Type": "application/json"},
         )
-        self.assertEqual(response_supervisor.status_code, 200)
-        self.assertValidInstanceListData(response_supervisor.json(), 2)
-        instances = response_supervisor.json()["instances"]
-        self.assertEqual(self.instance_3.id, instances[0].get("id"))
-        self.assertEqual(self.instance_6.id, instances[1].get("id"))
+        self.assertInstanceListContainsStrictly(response_supervisor, [self.instance_3, self.instance_6])
 
         response_yoda_guest = self.client.get(
             "/api/instances/",
             {query.USER_IDS: f"{self.yoda.id},{self.guest.id}"},
             headers={"Content-Type": "application/json"},
         )
-        self.assertEqual(response_yoda_guest.status_code, 200)
-        self.assertValidInstanceListData(response_yoda_guest.json(), 5)
-        instances = response_yoda_guest.json()["instances"]
 
-        self.assertEqual(self.instance_1.id, instances[0].get("id"))
-        self.assertEqual(self.instance_4.id, instances[1].get("id"))
-        self.assertEqual(self.instance_8.id, instances[2].get("id"))
-        self.assertEqual(self.instance_2.id, instances[4].get("id"))
+        self.assertInstanceListContainsStrictly(
+            response_yoda_guest, [self.instance_1, self.instance_4, self.instance_8, self.instance_2, self.instance_5]
+        )
 
     def test_instances_list_search_by_ids(self):
         self.client.force_authenticate(self.yoda)
@@ -1775,13 +1763,8 @@ class InstancesAPITestCase(APITestCase):
             {"search": "ids: " + str(instance_2.id) + " " + str(instance_1.id)},
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response_without_coma, 200)
-        instances_without_coma = response_without_coma.json()["instances"]
 
-        self.assertEqual(2, len(instances_without_coma))
-        self.assertListEqual(
-            sorted([instance["id"] for instance in instances_without_coma]), sorted([instance_1.id, instance_2.id])
-        )
+        self.assertInstanceListContainsStrictly(response_without_coma, [instance_1, instance_2])
 
         # ids with coma
         response_with_coma = self.client.get(
@@ -1789,13 +1772,8 @@ class InstancesAPITestCase(APITestCase):
             {"search": "ids: " + str(instance_2.id) + ", " + str(instance_3.id)},
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response_with_coma, 200)
-        instances_with_coma = response_with_coma.json()["instances"]
 
-        self.assertEqual(2, len(instances_with_coma))
-        self.assertListEqual(
-            sorted([instance["id"] for instance in instances_with_coma]), sorted([instance_2.id, instance_3.id])
-        )
+        self.assertInstanceListContainsStrictly(response_with_coma, [instance_2, instance_3])
 
     def test_instances_bad_sent_date_from(self):
         self.client.force_authenticate(self.yoda)
@@ -1825,11 +1803,8 @@ class InstancesAPITestCase(APITestCase):
             },
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
-        self.assertValidInstanceListData(response.json(), 2)
-        instances = response.json()["instances"]
-        self.assertEqual(self.instance_1.id, instances[0].get("id"))
-        self.assertEqual(self.instance_2.id, instances[1].get("id"))
+
+        self.assertInstanceListContainsStrictly(response, [self.instance_1, self.instance_2])
 
         response = self.client.get(
             "/api/instances/",
@@ -1839,10 +1814,7 @@ class InstancesAPITestCase(APITestCase):
             },
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
-        self.assertValidInstanceListData(response.json(), 1)
-        instances = response.json()["instances"]
-        self.assertEqual(self.instance_3.id, instances[0].get("id"))
+        self.assertInstanceListContainsStrictly(response, [self.instance_3])
 
         response = self.client.get(
             "/api/instances/",
@@ -1852,10 +1824,8 @@ class InstancesAPITestCase(APITestCase):
             },
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
-        self.assertValidInstanceListData(response.json(), 2)
-        instances = response.json()["instances"]
-        self.assertEqual(self.instance_4.id, instances[0].get("id"))
+
+        self.assertInstanceListContainsStrictly(response, [self.instance_4, self.instance_8])
 
     def test_instances_bad_modification_date_from(self):
         self.client.force_authenticate(self.yoda)
@@ -1885,11 +1855,7 @@ class InstancesAPITestCase(APITestCase):
             },
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
-        self.assertValidInstanceListData(response.json(), 2)
-        instances = response.json()["instances"]
-        self.assertEqual(self.instance_5.id, instances[0].get("id"))
-        self.assertEqual(self.instance_6.id, instances[1].get("id"))
+        self.assertInstanceListContainsStrictly(response, [self.instance_5, self.instance_6])
 
     def test_instances_filter_from_date_to_date(self):
         # Create new instance with source_created_at None
@@ -1911,19 +1877,9 @@ class InstancesAPITestCase(APITestCase):
             },
             headers={"Content-Type": "application/json"},
         )
-        self.assertJSONResponse(response, 200)
-        self.assertValidInstanceListData(response.json(), 4)
-        instances = response.json()["instances"]
-        instance_ids = [i["id"] for i in instances]
-        instance_ids.sort()
-        self.assertEqual(
-            instance_ids,
-            [
-                self.instance_3.id,
-                self.instance_4.id,
-                self.instance_8.id,
-                another_instance.id,
-            ],
+
+        self.assertInstanceListContainsStrictly(
+            response, [self.instance_3, self.instance_4, self.instance_8, another_instance]
         )
 
     def test_attachments_list(self):
@@ -2505,3 +2461,24 @@ class InstancesAPITestCase(APITestCase):
         self.assertCountEqual(
             response_json["warning_no_location"], [self.instance_6.org_unit_id, self.instance_8.org_unit_id]
         )
+
+    def assertInstanceListContainsStrictly(self, api_response, expected_instances):
+        try:
+            self.assertEqual(api_response.status_code, 200)
+            self.assertValidInstanceListData(api_response.json(), len(expected_instances))
+            actual_instances_ids = [x.get("id") for x in api_response.json()["instances"]]
+
+            self.assertListEqual(sorted(actual_instances_ids), sorted([i.id for i in expected_instances]))
+        except AssertionError as e:
+            print("expected ", api_response.json(), "to contains", expected_instances, " but", e)
+            print("exected ids ", [i.id for i in expected_instances])
+            print("actual ids ", [x.get("id") for x in api_response.json()["instances"]])
+            print("instance_1", self.instance_1.id)
+            print("instance_2", self.instance_2.id)
+            print("instance_3", self.instance_3.id)
+            print("instance_4", self.instance_4.id)
+            print("instance_5", self.instance_5.id)
+            print("instance_6", self.instance_6.id)
+            print("instance_7", self.instance_7.id)
+            print("instance_8", self.instance_8.id)
+            raise e

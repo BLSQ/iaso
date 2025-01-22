@@ -109,24 +109,24 @@ class VaccineStockEarmarkedTests(APITestCase):
         # Verify earmarked stock appears in list
         found = False
         for entry in data["results"]:
-            if entry["vials_in"] == 100 and entry["doses_in"] == 2000 and entry["type"] == "incident_report":
+            if entry["vials_in"] == 100 and entry["doses_in"] == 2000 and entry["type"] == "earmarked_stock__used":
                 found = True
                 break
 
         self.assertTrue(found, "Earmarked stock of type USED should appear in unusable vials list")
 
     def test_earmarked_stock_creation_not_in_unusable_vials(self):
-        """Test that earmarked stock of type CREATION does not appear in unusable vials list"""
+        """Test that earmarked stock of type CREATEDdoes not appear in unusable vials list"""
         self.client.force_authenticate(self.user_rw_perms)
 
-        # Create earmarked stock of type CREATION
+        # Create earmarked stock of type CREATED
         earmarked_stock = pm.EarmarkedStock.objects.create(
             vaccine_stock=self.vaccine_stock,
             campaign=self.campaign,
             round=self.round,
             vials_earmarked=100,
             doses_earmarked=2000,
-            earmarked_stock_type=pm.EarmarkedStock.EarmarkedStockChoices.CREATION,
+            earmarked_stock_type=pm.EarmarkedStock.EarmarkedStockChoices.CREATED,
             created_at=self.now - datetime.timedelta(days=1),
         )
 
@@ -136,11 +136,13 @@ class VaccineStockEarmarkedTests(APITestCase):
         data = response.json()
 
         # Verify earmarked stock does not appear in list
+        found = False
         for entry in data["results"]:
-            self.assertFalse(
-                entry["vials_in"] == 100 and entry["doses_in"] == 2000,
-                "Earmarked stock of type CREATION should not appear in unusable vials list",
-            )
+            if entry["vials_in"] == 100 and entry["doses_in"] == 2000 and entry["type"] == "earmarked_stock__created":
+                found = True
+                break
+
+        self.assertFalse(found, "Earmarked stock of type CREATED should not appear in unusable vials list")
 
     def test_earmarked_stock_affects_summary_totals(self):
         """Test that earmarked stocks affect summary totals appropriately"""
@@ -164,14 +166,14 @@ class VaccineStockEarmarkedTests(APITestCase):
             created_at=self.now - datetime.timedelta(days=1),
         )
 
-        # Create earmarked stock of type CREATION (adds to usable stock)
-        creation_stock = pm.EarmarkedStock.objects.create(
+        # Create earmarked stock of type CREATED (adds to usable stock)
+        created_stock = pm.EarmarkedStock.objects.create(
             vaccine_stock=self.vaccine_stock,
             campaign=self.campaign,
             round=self.round,
             vials_earmarked=50,
             doses_earmarked=1000,
-            earmarked_stock_type=pm.EarmarkedStock.EarmarkedStockChoices.CREATION,
+            earmarked_stock_type=pm.EarmarkedStock.EarmarkedStockChoices.CREATED,
             created_at=self.now - datetime.timedelta(days=1),
         )
 
@@ -183,7 +185,7 @@ class VaccineStockEarmarkedTests(APITestCase):
         # Verify USED stock affects unusable total
         self.assertEqual(updated_data["total_unusable_vials"], initial_unusable + 100)
 
-        # Verify CREATION stock affects usable total
+        # Verify CREATED stock affects usable total
         self.assertEqual(updated_data["total_usable_vials"], initial_usable - 50)
 
         # if we now create a RETURNED stock, it should affect the usable total
@@ -203,3 +205,22 @@ class VaccineStockEarmarkedTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         updated_data = response.json()
         self.assertEqual(updated_data["total_usable_vials"], initial_usable)
+
+        # Test EarmarkedStockViewSet endpoints
+        earmarked_url = "/api/polio/vaccine/stock/earmarked_stock/"
+
+        # Test list endpoint
+        response = self.client.get(earmarked_url)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data), 3)  # Should return all 3 earmarked stocks we created
+
+        # Test detail endpoint
+        response = self.client.get(f"{earmarked_url}{created_stock.id}/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["campaign"], self.campaign.obr_name)
+        self.assertEqual(data["round_number"], self.round.number)
+        self.assertEqual(data["vials_earmarked"], 50)
+        self.assertEqual(data["doses_earmarked"], 1000)
+        self.assertEqual(data["earmarked_stock_type"], "created")

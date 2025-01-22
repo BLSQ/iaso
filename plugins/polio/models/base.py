@@ -1392,9 +1392,9 @@ class IncidentReport(models.Model):
 
 class EarmarkedStock(models.Model):
     class EarmarkedStockChoices(models.TextChoices):
-        CREATION = "creation", _("Creation")  #     1. Usable -> Earmark
+        CREATED = "created", _("Created")  #     1. Usable -> Earmark
         USED = "used", _("Used")  #     2. Earmarked -> Used
-        RETURNED = "returned", _("Return to Usable")  #     3. Used -> Usable
+        RETURNED = "returned", _("Returned")  #     3. Used -> Usable
 
     class Meta:
         indexes = [
@@ -1404,7 +1404,7 @@ class EarmarkedStock(models.Model):
         ]
 
     earmarked_stock_type = models.CharField(
-        max_length=20, choices=EarmarkedStockChoices.choices, default=EarmarkedStockChoices.CREATION
+        max_length=20, choices=EarmarkedStockChoices.choices, default=EarmarkedStockChoices.CREATED
     )
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="earmarked_stocks")
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)

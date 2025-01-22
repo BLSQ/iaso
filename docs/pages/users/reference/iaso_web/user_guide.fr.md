@@ -21,7 +21,7 @@ Vous pouvez également réinitialiser votre mot de passe en cliquant sur le lien
 
 ## Navigation dans IASO
 
-![alt text](<attachments/Webinterfaceintrofr.jpg>)
+![alt text](<attachments/Webinterfaceintrofr.png>)
 
 ## Gérer les formulaires de collecte de données
 

@@ -15,10 +15,10 @@ L'application mobile IASO doit être configurée sur la partie web avant utilisa
 Ensuite, vous pouvez :
 
 - Télécharger [IASO App](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&pcampaignid=web_share) sur Google Play Store
-- Insérer l'URL du serveur : https://iaso.bluesquare.org
+- Insérer l'URL du serveur : https://iaso.bluesquare.org (Attention, cet url peut varier en fonction du contexte des projets)
 - Puis, entrer l'App ID.
 
-Vous pouvez également configurer l'application mobile en scanning le QR code du projet correspondant sur le web. 
+Vous pouvez également configurer l'application mobile en scannant le QR code du projet correspondant sur le web. 
 
 ![](attachments/iasomobileapplicationsetup.png)
 
@@ -27,7 +27,7 @@ Vous pouvez également configurer l'application mobile en scanning le QR code du
 
 Voir ci-dessous un aperçu des principaux boutons que vous pouvez trouver sur l'écran principal en mode collecte de données. 
 
-![](attachments/mobileappbuttons.png)
+![](attachments/mobileappbuttonsfr.png)
 
 Dans la section "Plus d'options", vous pouvez effectuer les actions suivantes :
 
@@ -42,7 +42,7 @@ Dans la section "Plus d'options", vous pouvez effectuer les actions suivantes :
 
 Une fois connecté à l'application mobile IASO, vous pouvez procéder à la collecte de données. Voici les différents écrans que vous verrez lors d'une simple collecte de données.
 
-![alt text](attachments/datacollection.png)
+![alt text](attachments/datacollectionfr.png)
 
 Le formulaire de collecte de données sélectionné s'ouvrira alors. Vous pouvez répondre aux différentes questions et appuyer sur "Suivant" jusqu'à la fin du formulaire.
 
@@ -59,7 +59,7 @@ Les données collectées sur votre appareil mobile sont stockées localement. Vo
 
 Cliquez sur l'icône **"Envoyer les formulaires finalisés"** sur la page d'accueil de l'application mobile, dans le coin supérieur droit.
 
-![alt text](attachments/uploaddata.png)
+![alt text](attachments/uploaddatafr.png)
 
 Une page spécifique s'ouvrira pour vous indiquer si les données ont été correctement téléchargées. Finalisez l'opération en cliquant sur **"Envoyer au serveur"**.
 

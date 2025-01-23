@@ -186,6 +186,26 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertEqual(response_data["start_period"], start_period)
         self.assertEqual(response_data["end_period"], end_period)
 
+    def test_form_versions_patch(self):
+        """PUT /formversions/<form_id>: ok"""
+        self.client.force_authenticate(self.yoda)
+
+        start_period = "BIG BANG"
+        end_period = "DOOMSDAY"
+        response = self.client.patch(
+            f"/api/formversions/{self.form_2 .form_versions.first().id}/",
+            data={
+                "end_period": end_period,
+                "form_id": self.form_2.id,
+                "start_period": start_period,
+            },
+            format="json",
+        )
+        response_data = response.json()
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["start_period"], start_period)
+        self.assertEqual(response_data["end_period"], end_period)
+
     def test_form_versions_destroy(self):
         """DELETE /formversions/<form_id>: not authorized for now"""
 

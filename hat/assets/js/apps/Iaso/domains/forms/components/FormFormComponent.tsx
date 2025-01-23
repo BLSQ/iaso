@@ -120,7 +120,6 @@ const FormForm: FunctionComponent<FormFormProps> = ({
             <Grid container spacing={2} justifyContent="flex-start">
                 <Grid xs={6} item>
                     {/* Splitting the Typography to be able to align it with the checkbox */}
-
                     <InputComponent
                         keyValue="name"
                         onChange={(key, value) => setFieldValue(key, value)}

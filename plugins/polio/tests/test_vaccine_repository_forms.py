@@ -20,7 +20,7 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
         cls.account = m.Account.objects.create(name="polio", default_version=cls.source_version_1)
         cls.now = now()
 
-        cls.org_unit_type_country = m.OrgUnitType.objects.create(name="Country")
+        cls.org_unit_type_country = m.OrgUnitType.objects.create(name="Country", category="COUNTRY")
         cls.org_unit_type_district = m.OrgUnitType.objects.create(name="District")
 
         cls.campaign, cls.campaign_round_1, _, _, cls.testland, _ = cls.create_campaign(
@@ -216,7 +216,6 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
 
         response = self.client.get(f"{BASE_URL}?campaign={campaign2.obr_name}&order=number")
         data = response.json()
-        print("RESULTS", data["results"])
         self.assertEqual(len(data["results"]), 6)  # 3 rounds * 2 vaccines = 6
         # Check first 2 entrieds are the same round...
         self.assertEqual(data["results"][0]["campaign_obr_name"], campaign2.obr_name)
@@ -243,6 +242,7 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
             district_name="ZDistrict",
         )
         campaign2.campaign_types.add(self.polio_type)
+        campaign2.initial_org_unit = self.zambia
         campaign2.country = self.zambia
         campaign2.save()
         campaign2_round.number = 1
@@ -332,7 +332,7 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
         campaign2_rnd2.delete()
         campaign2_rnd3.delete()
         campaign2.campaign_types.add(self.polio_type)
-        campaign2.country = self.zambia
+        campaign2.initial_org_unit = self.zambia
         campaign2.save()
         campaign2.campaign_types.add(self.polio_type)
 
@@ -343,7 +343,7 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
             number=1,
         )
 
-        campaign2.save
+        campaign2.save()
 
         vrf2 = pm.VaccineRequestForm.objects.create(
             campaign=campaign2,
@@ -371,7 +371,7 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
             district_name="YDistrict",
         )
         preparing_campaign.campaign_types.add(self.polio_type)
-        preparing_campaign.country = self.zambia
+        preparing_campaign.initial_org_unit = self.zambia
         preparing_campaign.save()
         preparing_campaign_round.delete()
         preparing_campaign2_rnd2.delete()

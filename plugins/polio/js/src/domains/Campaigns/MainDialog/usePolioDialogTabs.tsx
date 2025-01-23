@@ -16,9 +16,9 @@ import {
 } from '../RiskAssessment/RiskAssessmentForm';
 import { RoundsForm, roundFormFields } from '../Rounds/RoundsForm';
 import { ScopeForm, scopeFormFields } from '../Scope/ScopeForm';
+import { SubActivitiesForm } from '../SubActivities/SubActivitiesForm';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { Tab } from './PolioDialogTabs';
-import { SubActivitiesForm } from '../SubActivities/SubActivitiesForm';
 
 export const usePolioDialogTabs = (
     formik: FormikProps<CampaignFormValues>,
@@ -26,7 +26,6 @@ export const usePolioDialogTabs = (
 ): Tab[] => {
     const { formatMessage } = useSafeIntl();
     const isPolio = useIsPolioCampaign(formik.values);
-
     return useMemo(() => {
         const defaultTabs = [
             {

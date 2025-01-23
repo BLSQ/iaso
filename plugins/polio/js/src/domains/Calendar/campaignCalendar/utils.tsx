@@ -2,7 +2,7 @@ import moment, { Moment } from 'moment';
 import React, { ReactElement } from 'react';
 import { colsCounts, dateFormat } from './constants';
 
-import { Campaign } from '../../../constants/types';
+import { CalendarCampaign } from '../../../constants/types';
 import { CampaignDurationCell } from './cells/CampaignDuration';
 import { EmptyCell } from './cells/Empty';
 import { RoundCell } from './cells/RoundCell';
@@ -210,7 +210,7 @@ const filterCampaigns = (
     });
 };
 
-const mapCampaigns = (allCampaigns: Campaign[]): MappedCampaign[] => {
+const mapCampaigns = (allCampaigns: CalendarCampaign[]): MappedCampaign[] => {
     return allCampaigns.map(c => {
         const rounds = c.rounds.map((round, index) => {
             const nextRound = c.rounds[index + 1];
@@ -234,6 +234,13 @@ const mapCampaigns = (allCampaigns: Campaign[]): MappedCampaign[] => {
             const daysCount = hasNextRound
                 ? moment(nextRound.started_at, dateFormat).diff(end, 'days')
                 : 0;
+
+            const hasSubActivities = Boolean(
+                c.sub_activities.find(
+                    subActivity => subActivity.round_number === round.number,
+                ),
+            );
+
             const mappedRound = {
                 ...round,
                 target_population,
@@ -243,6 +250,7 @@ const mapCampaigns = (allCampaigns: Campaign[]): MappedCampaign[] => {
                 end,
                 weeksCount,
                 daysCount,
+                hasSubActivities,
             };
             if (c.is_preventive && !nextRound?.started_at) {
                 return { ...mappedRound, weeksCount: 0, daysCount: 0 };

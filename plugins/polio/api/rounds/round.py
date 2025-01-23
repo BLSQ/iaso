@@ -6,10 +6,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import HasPermission, ModelViewSet, UserSerializer
+from iaso.api.common import HasPermission, ModelViewSet
 from plugins.polio.api.shared_serializers import (
     GroupSerializer,
-    RoundDateHistoryEntrySerializer,
     RoundDateHistoryEntryForRoundSerializer,
 )
 from plugins.polio.models import ReasonForDelay, Round, RoundDateHistoryEntry, RoundScope, Campaign

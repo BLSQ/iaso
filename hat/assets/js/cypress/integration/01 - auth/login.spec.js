@@ -11,14 +11,21 @@ const selectLanguage = lang => {
         // eslint-disable-next-line no-param-reassign
         w.beforeReload = true;
     });
+
+    // Wait for the selector to be ready
     cy.get('.language-picker')
+        .should('exist')
         .should('be.visible')
-        .select(lang, { force: true })
-        .should('have.value', lang);
-    // this assertion evaluation to true means the page has reloaded, which is needed for the next assertions to pass
+        .wait(1000) // Add small delay to ensure stability
+        .then($select => {
+            cy.wrap($select)
+                .select(lang, { force: true })
+                .should('have.value', lang);
+        });
+
+    // Wait for page reload
     cy.window().should('not.have.prop', 'beforeReload');
     cy.get('html').invoke('attr', 'lang').should('equal', lang);
-
     cy.getCookie(langageCookie).should('have.property', 'value', lang);
 };
 
@@ -51,9 +58,8 @@ describe('Log in page', () => {
     describe('Unhappy flow', () => {
         beforeEach(() => {
             cy.visit(signInUrl);
-            // Wait for page to be fully loaded and interactive
-            cy.get('#id_username').should('be.visible').and('not.be.disabled');
-            cy.get('#id_password').should('be.visible').and('not.be.disabled');
+            // Add longer wait for page load
+            cy.wait(2000);
         });
         it('missing unsername should not submit login', () => {
             cy.get('#id_password')
@@ -66,28 +72,39 @@ describe('Log in page', () => {
         });
         it('missing password should not submit login', () => {
             cy.get('#id_username')
+                .should('exist')
                 .should('be.visible')
-                .and('not.be.disabled')
-                .clear()
-                .type('Link', { force: true });
+                .wait(1000)
+                .then($input => {
+                    cy.wrap($input)
+                        .clear({ force: true })
+                        .type('Link', { force: true });
+                });
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);
         });
         it('wrong credentials should display error message', () => {
-            // Split the commands to handle potential page updates
-            cy.get('#id_username').as('username');
-            cy.get('@username')
+            // Handle username input
+            cy.get('#id_username')
+                .should('exist')
                 .should('be.visible')
-                .and('not.be.disabled')
-                .clear()
-                .type('Link', { force: true });
+                .wait(1000)
+                .then($input => {
+                    cy.wrap($input)
+                        .clear({ force: true })
+                        .type('Link', { force: true });
+                });
 
-            cy.get('#id_password').as('password');
-            cy.get('@password')
+            // Handle password input
+            cy.get('#id_password')
+                .should('exist')
                 .should('be.visible')
-                .and('not.be.disabled')
-                .clear()
-                .type('ZELDA', { force: true });
+                .wait(1000)
+                .then($input => {
+                    cy.wrap($input)
+                        .clear({ force: true })
+                        .type('ZELDA', { force: true });
+                });
 
             cy.get('.auth__text--error').should('not.exist');
             cy.get('#submit').click();

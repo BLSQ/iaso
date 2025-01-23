@@ -41,6 +41,7 @@ const dataSourceByProjectId = (dataSources: any[], projectId: string) => {
             };
         },
     );
+
     if (projectId) {
         return allDataSource?.filter((source: { projectIds: string[] }) =>
             source.projectIds?.includes(projectId),
@@ -69,7 +70,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     const { data: projects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
-
     const { data: dataSources, isLoading: areSourcesLoading } =
         useGetDataSources(params);
 
@@ -107,6 +107,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     filters.dataSource = undefined;
                     filters.version = undefined;
                 }
+                filters.project_ids = newValue;
                 setProjectIds(value);
                 setDataSource(undefined);
                 setVersion(undefined);

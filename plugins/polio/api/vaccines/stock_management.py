@@ -125,6 +125,24 @@ class VaccineStockCalculator:
 
         return total_vials_in, total_doses_in
 
+    def get_total_of_earmarked(self, end_date=None):
+        earmarked_list = self.get_list_of_earmarked(end_date)
+
+        total_vials = 0
+        total_doses = 0
+
+        for entry in earmarked_list:
+            if entry["vials_in"]:
+                total_vials += entry["vials_in"]
+            if entry["doses_in"]:
+                total_doses += entry["doses_in"]
+            if entry["vials_out"]:
+                total_vials -= entry["vials_out"]
+            if entry["doses_out"]:
+                total_doses -= entry["doses_out"]
+
+        return total_vials, total_doses
+
     def get_list_of_vaccines_received(self, end_date=None):
         """
         Vaccines received are only those linked to an arrival report. We exclude those found e.g. during physical inventory
@@ -389,6 +407,12 @@ class VaccineStockCalculator:
                 )
 
         return results
+
+    def get_list_of_earmarked(self, end_date=None):
+        earmarked_movements = self.earmarked_stocks
+        if end_date:
+            earmarked_movements = earmarked_movements.filter(created_at__lte=end_date)
+        return EarmarkedStockSerializer(earmarked_movements, many=True).data
 
 
 class VaccineStockListSerializer(serializers.ListSerializer):
@@ -775,6 +799,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         total_usable_vials, total_usable_doses = calculator.get_total_of_usable_vials()
         total_unusable_vials, total_unusable_doses = calculator.get_total_of_unusable_vials()
+        total_earmarked_vials, total_earmarked_doses = calculator.get_total_of_earmarked()
 
         summary_data = {
             "country_id": vaccine_stock.country.id,
@@ -783,6 +808,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "total_usable_vials": total_usable_vials,
             "total_unusable_vials": total_unusable_vials,
             "total_usable_doses": total_usable_doses,
+            "total_earmarked_vials": total_earmarked_vials,
+            "total_earmarked_doses": total_earmarked_doses,
             "total_unusable_doses": total_unusable_doses,
         }
 
@@ -845,6 +872,36 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_unusable_vials(end_date)
+        results = self._sort_results(request, results)
+
+        paginator = Paginator()
+        page = paginator.paginate_queryset(results, request)
+        if page is not None:
+            return paginator.get_paginated_response(page)
+        return Response({"results": results})
+
+    @action(detail=True, methods=["get"])
+    def get_earmarked_stock(self, request, pk=None):
+        """
+        Retrieve a detailed list of movements for earmarked stock associated with a given VaccineStock ID.
+
+        """
+        if pk is None:
+            return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            vaccine_stock = self.get_queryset().get(id=pk)
+        except VaccineStock.DoesNotExist:
+            return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        end_date = request.query_params.get("end_date", None)
+        if end_date:
+            parsed_end_date = parse_date(end_date)
+            if not parsed_end_date:
+                raise ValidationError("The 'end_date' query parameter is not a valid date.")
+
+        calc = VaccineStockCalculator(vaccine_stock)
+        results = calc.get_list_of_earmarked(end_date)
         results = self._sort_results(request, results)
 
         paginator = Paginator()

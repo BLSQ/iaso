@@ -48,20 +48,39 @@ describe('Log in page', () => {
     describe('Unhappy flow', () => {
         beforeEach(() => {
             cy.visit(signInUrl);
+            // Wait for page to be fully loaded and interactive
+            cy.get('#id_username').should('be.visible').and('not.be.disabled');
+            cy.get('#id_password').should('be.visible').and('not.be.disabled');
         });
         it('missing unsername should not submit login', () => {
-            cy.get('#id_password').type('Link');
+            cy.get('#id_password')
+                .should('be.visible')
+                .and('not.be.disabled')
+                .clear()
+                .type('Link', { force: true });
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);
         });
         it('missing password should not submit login', () => {
-            cy.get('#id_username').type('Link');
+            cy.get('#id_username')
+                .should('be.visible')
+                .and('not.be.disabled')
+                .clear()
+                .type('Link', { force: true });
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);
         });
         it('wrong credentials should display error message', () => {
-            cy.get('#id_username').type('Link');
-            cy.get('#id_password').type('ZELDA');
+            cy.get('#id_username')
+                .should('be.visible')
+                .and('not.be.disabled')
+                .clear()
+                .type('Link', { force: true });
+            cy.get('#id_password')
+                .should('be.visible')
+                .and('not.be.disabled')
+                .clear()
+                .type('ZELDA', { force: true });
             cy.get('.auth__text--error').should('not.exist');
             cy.get('#submit').click();
             cy.get('.auth__text--error').should('be.visible');

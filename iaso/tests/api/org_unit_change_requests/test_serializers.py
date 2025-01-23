@@ -690,6 +690,15 @@ class OrgUnitChangeRequestReviewSerializerTestCase(TestCase):
     def test_validate(self):
         data = {
             "status": OrgUnitChangeRequest.Statuses.REJECTED,
+            "rejection_comment": "",
+        }
+        serializer = OrgUnitChangeRequestReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(error.exception.detail["non_field_errors"][0], "A `rejection_comment` must be provided.")
+
+        data = {
+            "status": OrgUnitChangeRequest.Statuses.REJECTED,
             "rejection_comment": "       ",
         }
         serializer = OrgUnitChangeRequestReviewSerializer(data=data)

@@ -412,7 +412,37 @@ class VaccineStockCalculator:
         earmarked_movements = self.earmarked_stocks
         if end_date:
             earmarked_movements = earmarked_movements.filter(created_at__lte=end_date)
-        return EarmarkedStockSerializer(earmarked_movements, many=True).data
+        movements = EarmarkedStockSerializer(earmarked_movements, many=True).data
+        results = []
+        for movement in movements:
+            movement_type = movement["earmarked_stock_type"]
+            if (
+                movement_type == EarmarkedStock.EarmarkedStockChoices.USED
+                or movement_type == EarmarkedStock.EarmarkedStockChoices.RETURNED
+            ):
+                results.append(
+                    {
+                        "date": movement["created_at"],
+                        "action": f"Earmarked stock used for {movement['campaign']} Round {movement['round_number']}",
+                        "vials_out": movement["vials_earmarked"],
+                        "doses_out": movement["doses_earmarked"],
+                        "vials_in": None,
+                        "doses_in": None,
+                        "type": f"earmarked_stock__{movement_type}",
+                    }
+                )
+            else:
+                results.append(
+                    {
+                        "date": movement["created_at"],
+                        "action": f"Earmarked stock used for {movement['campaign']} Round {movement['round_number']}",
+                        "vials_in": movement["vials_earmarked"],
+                        "doses_in": movement["doses_earmarked"],
+                        "vials_out": None,
+                        "doses_out": None,
+                        "type": f"earmarked_stock__{movement_type}",
+                    }
+                )
 
 
 class VaccineStockListSerializer(serializers.ListSerializer):

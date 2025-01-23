@@ -1578,6 +1578,32 @@ class EarmarkedStock(models.Model):
     def __str__(self):
         return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"
 
+    @classmethod
+    def get_available_vials_count(cls, vaccine_stock: VaccineStock, _round: Round):
+        matching_earmarks_plus = EarmarkedStock.objects.filter(
+            vaccine_stock=vaccine_stock,
+            campaign=_round.campaign,
+            round=_round,
+            earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.CREATED,
+        )
+
+        matching_earmarks_minus = EarmarkedStock.objects.filter(
+            vaccine_stock=vaccine_stock,
+            campaign=_round.campaign,
+            round=_round,
+            earmarked_stock_type__in=[
+                EarmarkedStock.EarmarkedStockChoices.USED,
+                EarmarkedStock.EarmarkedStockChoices.RETURNED,
+            ],
+        )
+
+        total_vials_usable_plus = matching_earmarks_plus.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+        total_vials_usable_minus = matching_earmarks_minus.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+
+        total_vials_usable = total_vials_usable_plus - total_vials_usable_minus
+
+        return total_vials_usable
+
 
 class Notification(models.Model):
     """

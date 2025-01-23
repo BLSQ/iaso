@@ -1,6 +1,6 @@
 import datetime
 import enum
-from django.db.models import OuterRef, Subquery, Exists, Q
+from django.db.models import OuterRef, Subquery, Exists, Q, Sum
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, serializers, status
@@ -604,22 +604,27 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         # and create a new earmarked stock of type USED with the same values
         if response.status_code == 201:
             movement = OutgoingStockMovement.objects.get(id=response.data["id"])
-            matching_earmark = EarmarkedStock.objects.filter(
+            matching_earmarks = EarmarkedStock.objects.filter(
                 vaccine_stock=movement.vaccine_stock,
                 campaign=movement.campaign,
                 round=movement.round,
                 earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.CREATED,
                 vials_earmarked=movement.usable_vials_used,
-            ).first()
+            )
 
-            if matching_earmark:
+            total_vials_usable = matching_earmarks.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+
+            vials_earmarked_used = min(total_vials_usable, movement.usable_vials_used)
+            doses_earmarked_used = vials_earmarked_used * DOSES_PER_VIAL[movement.vaccine_stock.vaccine]
+
+            if len(matching_earmarks) > 0 and vials_earmarked_used > 0:
                 EarmarkedStock.objects.create(
                     vaccine_stock=movement.vaccine_stock,
                     campaign=movement.campaign,
                     round=movement.round,
                     earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.USED,
-                    vials_earmarked=matching_earmark.vials_earmarked,
-                    doses_earmarked=matching_earmark.doses_earmarked,
+                    vials_earmarked=vials_earmarked_used,
+                    doses_earmarked=doses_earmarked_used,
                     comment="Created from Form A submission",
                 )
 

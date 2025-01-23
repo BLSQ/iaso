@@ -443,6 +443,7 @@ class VaccineStockCalculator:
                         "type": f"earmarked_stock__{movement_type}",
                     }
                 )
+        return results
 
 
 class VaccineStockListSerializer(serializers.ListSerializer):

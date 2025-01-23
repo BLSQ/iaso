@@ -11,7 +11,10 @@ const selectLanguage = lang => {
         // eslint-disable-next-line no-param-reassign
         w.beforeReload = true;
     });
-    cy.get('.language-picker').select(lang).should('have.value', lang);
+    cy.get('.language-picker')
+        .should('be.visible')
+        .select(lang, { force: true })
+        .should('have.value', lang);
     // this assertion evaluation to true means the page has reloaded, which is needed for the next assertions to pass
     cy.window().should('not.have.prop', 'beforeReload');
     cy.get('html').invoke('attr', 'lang').should('equal', lang);
@@ -71,16 +74,21 @@ describe('Log in page', () => {
             cy.url().should('eq', signInUrl);
         });
         it('wrong credentials should display error message', () => {
-            cy.get('#id_username')
+            // Split the commands to handle potential page updates
+            cy.get('#id_username').as('username');
+            cy.get('@username')
                 .should('be.visible')
                 .and('not.be.disabled')
                 .clear()
                 .type('Link', { force: true });
-            cy.get('#id_password')
+
+            cy.get('#id_password').as('password');
+            cy.get('@password')
                 .should('be.visible')
                 .and('not.be.disabled')
                 .clear()
                 .type('ZELDA', { force: true });
+
             cy.get('.auth__text--error').should('not.exist');
             cy.get('#submit').click();
             cy.get('.auth__text--error').should('be.visible');

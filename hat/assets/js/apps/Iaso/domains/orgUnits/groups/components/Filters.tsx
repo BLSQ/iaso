@@ -103,11 +103,8 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 value = undefined;
             }
             if (key === 'project_ids') {
-                if (newValue === null) {
-                    filters.dataSource = undefined;
-                    filters.version = undefined;
-                }
-
+                filters.dataSource = undefined;
+                filters.version = undefined;
                 setProjectIds(value);
                 setDataSource(undefined);
                 setVersion(undefined);

@@ -690,7 +690,7 @@ class OrgUnitChangeRequestReviewSerializerTestCase(TestCase):
     def test_validate(self):
         data = {
             "status": OrgUnitChangeRequest.Statuses.REJECTED,
-            "rejection_comment": "",
+            "rejection_comment": "       ",
         }
         serializer = OrgUnitChangeRequestReviewSerializer(data=data)
         with self.assertRaises(ValidationError) as error:

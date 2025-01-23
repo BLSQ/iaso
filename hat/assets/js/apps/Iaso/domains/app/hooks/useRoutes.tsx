@@ -23,6 +23,7 @@ type Result = {
     routes: ReactElement | null;
     nonDashboardRoutes: ReactElement | null;
     isLoadingRoutes: boolean;
+    isCurrentRouteAnonymous: boolean;
 };
 
 const useHomeOnlineComponent = (): ElementType | undefined => {
@@ -185,12 +186,13 @@ export const useRoutes = (userHomePage?: string): Result => {
             currentRoute?.baseUrl === baseUrls.home,
         false,
     );
+    const isCurrentRouteAnonymous = Boolean(currentRoute?.allowAnonymous);
     const redirections = useRedirections({
         hasNoAccount,
         isFetchingCurrentUser,
         pluginRedirections,
         userHomePage,
-        allowAnonymous: Boolean(currentRoute?.allowAnonymous),
+        allowAnonymous: isCurrentRouteAnonymous,
     });
     // routes should protectedRoutes change if currentUser has changed
     const routes: ReactElement | null = useMemo(
@@ -226,7 +228,13 @@ export const useRoutes = (userHomePage?: string): Result => {
             routes,
             nonDashboardRoutes,
             isLoadingRoutes: isFetchingCurrentUser,
+            isCurrentRouteAnonymous,
         }),
-        [routes, isFetchingCurrentUser, nonDashboardRoutes],
+        [
+            routes,
+            isFetchingCurrentUser,
+            nonDashboardRoutes,
+            isCurrentRouteAnonymous,
+        ],
     );
 };

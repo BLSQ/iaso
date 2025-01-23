@@ -107,7 +107,7 @@ const getUnusableVials = async (id: string, queryString: string) => {
     return getRequest(`${apiUrl}${id}/get_unusable_vials/?${queryString}`);
 };
 // Need to pass id to apiUrl
-// Splitting both hooks to be able to store both payloads in the cache and avoid refteching with each tab change
+// Splitting hooks to be able to store payloads in the cache and avoid refetching with each tab change
 export const useGetUnusableVials = (
     params: StockManagementDetailsParams,
     enabled: boolean,
@@ -128,6 +128,35 @@ export const useGetUnusableVials = (
     return useSnackQuery({
         queryKey: ['unusable-vials', queryString, id],
         queryFn: () => getUnusableVials(id, queryString),
+        options: { ...options, enabled },
+    });
+};
+
+const getEarmarked = async (id: string, queryString: string) => {
+    return getRequest(`${apiUrl}${id}/get_earmarked_stock/?${queryString}`);
+};
+// Need to pass id to apiUrl
+// Splitting hooks to be able to store both payloads in the cache and avoid refetching with each tab change
+export const useGetEarmarked = (
+    params: StockManagementDetailsParams,
+    enabled: boolean,
+): UseQueryResult<any, any> => {
+    const {
+        unusableVialsOrder: order,
+        unusableVialsPage: page,
+        unusableVialsPageSize: pageSize,
+    } = params;
+    const safeParams = useUrlParams({
+        order,
+        page,
+        pageSize,
+    } as Partial<UrlParams>);
+    const { id } = params;
+    const apiParams = useApiParams(safeParams);
+    const queryString = new URLSearchParams(apiParams).toString();
+    return useSnackQuery({
+        queryKey: ['earmarked', queryString, id],
+        queryFn: () => getEarmarked(id, queryString),
         options: { ...options, enabled },
     });
 };

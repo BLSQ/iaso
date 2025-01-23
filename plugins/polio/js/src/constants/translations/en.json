@@ -1,5 +1,4 @@
 {
-    "aso.polio.label.stockCorrection": "Stock correction",
     "blsq.dialog.doYouWantToClose": "Do you want to close?",
     "blsq.dialog.unsavedDataWillBeLost": "Unsaved data will be lost",
     "blsq.label.proceed": "proceed",
@@ -407,6 +406,9 @@
     "iaso.polio.label.dosesRequested": "Doses requested",
     "iaso.polio.label.dosesShipped": "Doses shipped",
     "iaso.polio.label.downloadScopesToCsv": "Download scopes",
+    "iaso.polio.label.earmarked": "Earmarked",
+    "iaso.polio.label.earmarked_doses": "Earmarked doses",
+    "iaso.polio.label.earmarked_vials": "Earmarked vials",
     "iaso.polio.label.editGroupedCampaign": "Edit grouped campaign",
     "iaso.polio.label.editIncident": "Edit incident report",
     "iaso.polio.label.editReasonForDelay": "Edit reason for delay",

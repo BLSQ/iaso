@@ -10,7 +10,7 @@ export type StockManagementListParams = {
     vaccine_type?: string;
 };
 
-export type TabValue = 'usableVials' | 'unusableVials';
+export type TabValue = 'usableVials' | 'unusableVials' | 'earmarked';
 
 export type StockManagementDetailsParams = Partial<UrlParams> & {
     id: string; // number as string

@@ -352,6 +352,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.round',
         defaultMessage: 'Round',
     },
+    earmarked: {
+        id: 'iaso.polio.label.earmarked',
+        defaultMessage: 'Earmarked',
+    },
+    earmarked_doses: {
+        id: 'iaso.polio.label.earmarked_doses',
+        defaultMessage: 'Earmarked doses',
+    },
+    earmarked_vials: {
+        id: 'iaso.polio.label.earmarked_vials',
+        defaultMessage: 'Earmarked vials',
+    },
 });
 
 export default MESSAGES;

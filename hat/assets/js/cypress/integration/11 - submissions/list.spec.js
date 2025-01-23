@@ -466,13 +466,13 @@ describe('Submissions', () => {
             });
         };
         cy.wait('@getSubmissions').then(() => {
-            // TODO: test new period type day
+            // TODO: test new period type day, quarter nov an yearly nov
             const currentYear = new Date().getFullYear();
             const startYear = currentYear - 9;
             const endYear = currentYear - 8;
             testPeriod(1, `${startYear}01`, `${endYear}01`);
             testPeriod(2, `${startYear}Q1`, `${endYear}Q1`);
-            testPeriod(3, `${startYear}`, `${endYear}`);
+            testPeriod(4, `${startYear}`, `${endYear}`);
         });
     });
 

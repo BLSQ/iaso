@@ -5,6 +5,8 @@ import page2 from '../../../fixtures/orgunits/changes/orgUnitChanges-page2.json'
 import listFixture from '../../../fixtures/orgunits/changes/orgUnitChanges.json';
 import orgUnits from '../../../fixtures/orgunits/list.json';
 import orgUnitTypes from '../../../fixtures/orgunittypes/dropdown-list.json';
+import dataSources from '../../../fixtures/datasources/details-ou.json';
+import sourceversion from '../../../fixtures/sourceversions/sourceversion.json';
 import superUser from '../../../fixtures/profiles/me/superuser.json';
 import userRoles from '../../../fixtures/userRoles/list.json';
 import { testPageFilters } from '../../../support/testPageFilters';
@@ -116,9 +118,16 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/groups/dropdown/**', {
+    cy.intercept('GET', '/api/sourceversions/3/', sourceversion);
+    cy.intercept('GET', '/api/groups/dropdown/?defaultVersion=3', {
         fixture: `groups/dropdownlist.json`,
     });
+
+    cy.intercept(
+        'GET',
+        '/api/datasources/?filter_empty_versions=true/',
+        dataSources,
+    );
     cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', orgUnitTypes);
 
     cy.intercept('GET', '/api/forms/**', {

@@ -1,9 +1,9 @@
 from itertools import chain
 
 import django_filters
+from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-
 from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin
 from rest_framework.request import Request
@@ -78,7 +78,12 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
             non_editable_org_unit_type_ids = project_org_unit_types - user_editable_org_unit_type_ids
 
             dynamic_configurations = [
-                OrgUnitChangeRequestConfiguration(org_unit_type_id=org_unit_type_id, org_units_editable=False)
+                OrgUnitChangeRequestConfiguration(
+                    org_unit_type_id=org_unit_type_id,
+                    org_units_editable=False,
+                    created_at=timezone.now(),
+                    updated_at=timezone.now(),
+                )
                 for org_unit_type_id in non_editable_org_unit_type_ids
             ]
 

@@ -26,7 +26,7 @@ export const useGetGroupSetsDropdown = (
                 return data.map(groupSet => {
                     return {
                         value: groupSet.id,
-                        label: groupSet.name,
+                        label: groupSet.label,
                         original: groupSet,
                     };
                 });

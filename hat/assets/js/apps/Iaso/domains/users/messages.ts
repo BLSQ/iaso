@@ -528,6 +528,11 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Org Unit Type Write restrictions from User role apply to this user. Refer to the user role configuration for more details',
     },
+    multiAccountUserInfoDisabledWarning: {
+        id: 'iaso.users.multiAccountUserInfoDisabledWarning',
+        defaultMessage:
+            'This user is a multi-account user. For this user, you can only edit settings specific to this account, such as their permissions.',
+    },
 });
 
 export default MESSAGES;

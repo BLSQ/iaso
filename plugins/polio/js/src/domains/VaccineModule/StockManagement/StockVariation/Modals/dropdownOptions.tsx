@@ -1,6 +1,7 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
 import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { CREATED, RETURNED, USED } from '../../constants';
 import MESSAGES from '../../messages';
 
 export const VM_REACHED_DISCARD_POINT = 'vvm_reached_discard_point';
@@ -72,5 +73,32 @@ export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
                 option2: DropdownOptions<IncidentType>,
             ) => option1.label.localeCompare(option2.label),
         ) as DropdownOptions<IncidentType>[];
+    }, [formatMessage]);
+};
+
+type EarmarkType = 'created' | 'returned' | 'used';
+
+export const useEarmarkOptions = (): DropdownOptions<EarmarkType>[] => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(() => {
+        return [
+            {
+                label: formatMessage(MESSAGES[USED]),
+                value: USED,
+            },
+            {
+                label: formatMessage(MESSAGES[CREATED]),
+                value: CREATED,
+            },
+            {
+                label: formatMessage(MESSAGES[RETURNED]),
+                value: RETURNED,
+            },
+        ].sort(
+            (
+                option1: DropdownOptions<EarmarkType>,
+                option2: DropdownOptions<EarmarkType>,
+            ) => option1.label.localeCompare(option2.label),
+        ) as DropdownOptions<EarmarkType>[];
     }, [formatMessage]);
 };

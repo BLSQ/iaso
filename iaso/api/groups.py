@@ -72,13 +72,18 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class GroupDropdownSerializer(serializers.ModelSerializer):
+    label = serializers.SerializerMethodField()
+
+    def get_label(self, obj):
+        datasource = obj.source_version.data_source.name
+        version_number = obj.source_version.number
+        name = obj.name
+        return f"{name} ({datasource} - {version_number})"
+
     class Meta:
         model = Group
-        fields = [
-            "id",
-            "name",
-        ]
-        read_only_fields = ["id", "name"]
+        fields = ["id", "name", "label"]
+        read_only_fields = ["id", "name", "label"]
 
 
 class GroupsViewSet(ModelViewSet):

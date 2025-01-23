@@ -106,7 +106,6 @@ export const useStyles = makeStyles(() => ({
     addRoundButton: {
         fontSize: 10,
         height: 20,
-        marginTop: 14,
     },
     tabsContainer: {
         position: 'relative',

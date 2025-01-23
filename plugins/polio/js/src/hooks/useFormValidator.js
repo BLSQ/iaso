@@ -402,6 +402,7 @@ const useRoundShape = () => {
             .min(0, formatMessage(MESSAGES.positiveRangeInteger))
             .max(100, formatMessage(MESSAGES.positiveRangeInteger))
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        is_test: yup.boolean().nullable(),
     });
 };
 

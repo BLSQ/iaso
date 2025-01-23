@@ -634,7 +634,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         round = c.rounds.first()
         self.assertEqual(round.started_at, date(2022, 11, 8))
         self.assertEqual(round.ended_at, date(2022, 11, 10))
-        self.assertEqual(round.vaccines.count(), 1)
+        self.assertEqual(len(round.vaccines_list), 1)
         self.assertEqual(round.destructions.count(), 1)
         self.assertEqual(round.shipments.count(), 0)
 

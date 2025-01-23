@@ -188,6 +188,7 @@ export type OptionsRounds = {
     label: string;
     campaign_id: number;
     target_population?: number;
+    is_test?: boolean;
 };
 
 export type DropdownOptions = {

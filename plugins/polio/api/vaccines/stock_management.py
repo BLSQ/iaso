@@ -443,6 +443,7 @@ class VaccineStockCalculator:
                         "type": f"earmarked_stock__{movement_type}",
                     }
                 )
+        return results
 
 
 class VaccineStockListSerializer(serializers.ListSerializer):
@@ -658,20 +659,12 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         # and create a new earmarked stock of type USED with the same values
         if response.status_code == 201:
             movement = OutgoingStockMovement.objects.get(id=response.data["id"])
-            matching_earmarks = EarmarkedStock.objects.filter(
-                vaccine_stock=movement.vaccine_stock,
-                campaign=movement.campaign,
-                round=movement.round,
-                earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.CREATED,
-                vials_earmarked=movement.usable_vials_used,
-            )
-
-            total_vials_usable = matching_earmarks.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+            total_vials_usable = EarmarkedStock.get_available_vials_count(movement.vaccine_stock, movement.round)
 
             vials_earmarked_used = min(total_vials_usable, movement.usable_vials_used)
             doses_earmarked_used = vials_earmarked_used * DOSES_PER_VIAL[movement.vaccine_stock.vaccine]
 
-            if len(matching_earmarks) > 0 and vials_earmarked_used > 0:
+            if vials_earmarked_used > 0:
                 EarmarkedStock.objects.create(
                     vaccine_stock=movement.vaccine_stock,
                     campaign=movement.campaign,

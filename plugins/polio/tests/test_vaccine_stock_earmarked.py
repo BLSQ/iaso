@@ -7,6 +7,7 @@ from plugins.polio import models as pm
 import hat.menupermissions.models as permissions
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
+BASE_URL_SUB_RESOURCES = "/api/polio/vaccine/stock/"
 EARMARKED_BASE_URL = "/api/polio/vaccine/stock/earmarked_stock/"
 DT = datetime.datetime(2024, 10, 29, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
@@ -276,3 +277,99 @@ class VaccineStockEarmarkedTests(APITestCase):
         # Try to delete existing stock
         response = self.client.delete(f"{EARMARKED_BASE_URL}{created_stock.id}/")
         self.assertEqual(response.status_code, 403)
+
+        # Test automatic creation of USED earmarked stock when Form A is submitted
+        self.client.force_authenticate(self.user_rw_perms)
+
+        # Create initial earmarked stock
+        earmarked_data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "campaign": self.campaign.obr_name,
+            "round_number": self.round.number,
+            "vials_earmarked": 200,
+            "doses_earmarked": 4000,
+            "earmarked_stock_type": "created",
+            "comment": "Initial earmark",
+        }
+        response = self.client.post(EARMARKED_BASE_URL, earmarked_data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Create Form A (OutgoingStockMovement) for same campaign/round
+        form_a_data = {
+            "campaign": self.campaign.obr_name,
+            "vaccine_stock": self.vaccine_stock.id,
+            "form_a_reception_date": "2023-10-03",
+            "report_date": "2023-10-04",
+            "usable_vials_used": 75,
+            "lot_numbers": ["LOT123"],
+            "missing_vials": 0,
+            "round": self.round.number,
+        }
+
+        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", form_a_data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        response_data = response.json()
+        self.assertEqual(response_data["usable_vials_used"], 75)
+
+        # Should have created USED stock with max available earmarked amount
+        used_stocks = pm.EarmarkedStock.objects.filter(
+            vaccine_stock=self.vaccine_stock, campaign=self.campaign, round=self.round, earmarked_stock_type="used"
+        )
+
+        self.assertEqual(used_stocks.count(), 2)
+
+        latest_used = used_stocks.latest("id")
+        self.assertEqual(latest_used.vials_earmarked, 75)  # Limited to available earmarked amount
+        self.assertEqual(latest_used.doses_earmarked, 1500)  # 75 vials * 20 doses per vial
+
+        # Create second Form A (OutgoingStockMovement) for same campaign/round and it should use the 25 vials remaining from the latest earmarked stock
+        second_form_a_data = {
+            "campaign": self.campaign.obr_name,
+            "vaccine_stock": self.vaccine_stock.id,
+            "form_a_reception_date": "2023-10-03",
+            "report_date": "2023-10-04",
+            "usable_vials_used": 25,
+            "lot_numbers": ["LOT123"],
+            "missing_vials": 0,
+            "round": self.round.number,
+        }
+
+        response = self.client.post(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", second_form_a_data, format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        used_stocks = pm.EarmarkedStock.objects.filter(
+            vaccine_stock=self.vaccine_stock, campaign=self.campaign, round=self.round, earmarked_stock_type="used"
+        )
+
+        self.assertEqual(used_stocks.count(), 3)
+
+        latest_used = used_stocks.latest("id")
+        self.assertEqual(latest_used.vials_earmarked, 25)  # Limited to available earmarked amount
+        self.assertEqual(latest_used.doses_earmarked, 500)
+
+        # Create third Form A (OutgoingStockMovement) for same campaign/round and it should use the 25 vials remaining from the latest earmarked stock
+        third_form_a_data = {
+            "campaign": self.campaign.obr_name,
+            "vaccine_stock": self.vaccine_stock.id,
+            "form_a_reception_date": "2023-10-03",
+            "report_date": "2023-10-04",
+            "usable_vials_used": 1000,
+            "lot_numbers": ["LOT123"],
+            "missing_vials": 0,
+            "round": self.round.number,
+        }
+
+        response = self.client.post(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", third_form_a_data, format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+
+        used_stocks = pm.EarmarkedStock.objects.filter(
+            vaccine_stock=self.vaccine_stock, campaign=self.campaign, round=self.round, earmarked_stock_type="used"
+        )
+
+        # This time it should NOT create a new USED stock because there are no more earmarked stocks left
+        self.assertEqual(used_stocks.count(), 3)

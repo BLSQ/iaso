@@ -55,7 +55,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const [selectedVersionId, setSelectedVersionId] = useState<string>(
         params.source_version_id
             ? params.source_version_id
-            : defaultSourceVersion.version.id.toString(),
+            : defaultSourceVersion?.version?.id.toString(),
     );
 
     const { filters, handleSearch, handleChange, filtersUpdated } =
@@ -101,13 +101,13 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                               version.id.toString() ===
                               params.source_version_id,
                       ),
-                  )[0].value
+                  )?.[0]?.value
                 : undefined,
         [dataSources, params.source_version_id],
     );
 
     const [dataSource, setDataSource] = useState<string>(
-        sourceParam || defaultSourceVersion.source.id.toString(),
+        sourceParam || defaultSourceVersion?.source?.id.toString(),
     );
     const formOptions = useMemo(
         () =>
@@ -122,9 +122,10 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         () =>
             dataSources?.find(
                 source =>
-                    source.value === defaultSourceVersion.source.id.toString(),
+                    source.value ===
+                    defaultSourceVersion?.source?.id.toString(),
             )?.value || '',
-        [dataSources, defaultSourceVersion.source.id],
+        [dataSources, defaultSourceVersion?.source?.id],
     );
 
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
@@ -141,7 +142,8 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             sourceParam ||
             dataSources?.find(
                 source =>
-                    source.value === defaultSourceVersion.source.id.toString(),
+                    source.value ===
+                    defaultSourceVersion?.source?.id.toString(),
             )?.value;
 
         if (updatedDataSource) {
@@ -149,7 +151,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         }
     }, [
         dataSources,
-        defaultSourceVersion.source.id,
+        defaultSourceVersion?.source?.id,
         setDataSource,
         sourceParam,
     ]);

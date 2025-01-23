@@ -25,6 +25,7 @@ const currentUser = {
     home_page: '/settings/users/management',
     projects: [1],
     user_roles: [1],
+    has_multiple_accounts: { value: false },
 };
 
 const renderComponent = initialData => {

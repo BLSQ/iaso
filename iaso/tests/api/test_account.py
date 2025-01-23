@@ -1,3 +1,5 @@
+from django.contrib import auth
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -111,3 +113,21 @@ class AccountAPITestCase(APITestCase):
         response = self.client.put(f"/api/accounts/{self.ghi.pk}/", {"default_version": self.wha_version.pk})
         j = self.assertJSONResponse(response, 400)
         self.assertEqual(j, {"Error": "Account not allowed to access this default_source"})
+
+    def test_switch_account(self):
+        # Create a main user without profile
+        main_user = m.User.objects.create(username="main_user")
+        main_user.save()
+
+        # And 2 account users with profile
+        account_user_ghi = self.create_user_with_profile(username="User_A", account=self.ghi)
+        m.TenantUser.objects.create(main_user=main_user, account_user=account_user_ghi)
+        account_user_wha = self.create_user_with_profile(username="User_B", account=self.wha)
+        m.TenantUser.objects.create(main_user=main_user, account_user=account_user_wha)
+
+        self.client.force_authenticate(account_user_ghi)
+        response = self.client.patch("/api/accounts/switch/", {"account_id": self.wha.pk})
+
+        self.assertJSONResponse(response, 200)
+        logged_in_user = auth.get_user(self.client)
+        self.assertEqual(logged_in_user.iaso_profile.account.name, "Worldwide Health Aid")

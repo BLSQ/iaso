@@ -14,6 +14,7 @@ import { EditIncident } from '../Modals/CreateEditIncident';
 
 import { BreakWordCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/BreakWordCell';
 import { DisplayIfUserHasPerm } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
+import { USED } from '../../constants';
 import {
     useDeleteDestruction,
     useDeleteEarmarked,
@@ -380,8 +381,8 @@ export const useEarmarkedTableColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.earmarked_vials),
-                accessor: 'earmarked_vials',
-                id: 'earmarked_vials',
+                accessor: 'vials_earmarked',
+                id: 'vials_earmarked',
                 sortable: true,
                 Cell: settings => (
                     <NumberCell value={settings.row.original.earmarked_vials} />
@@ -389,8 +390,8 @@ export const useEarmarkedTableColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.earmarked_doses),
-                accessor: 'earmarked_doses',
-                id: 'earmarked_doses',
+                accessor: 'doses_earmarked',
+                id: 'doses_earmarked',
                 sortable: true,
                 Cell: settings => (
                     <NumberCell value={settings.row.original.earmarked_doses} />
@@ -402,6 +403,9 @@ export const useEarmarkedTableColumns = (
                 id: 'account',
                 sortable: false,
                 Cell: settings => {
+                    if (settings.row.original.earmarked_stock_type === USED) {
+                        return null;
+                    }
                     return (
                         <DisplayIfUserHasPerm
                             permissions={[STOCK_MANAGEMENT_WRITE]}

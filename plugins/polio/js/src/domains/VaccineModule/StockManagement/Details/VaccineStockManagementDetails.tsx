@@ -77,6 +77,10 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
     const title = `${formatMessage(MESSAGES.stockDetails)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
+    const exportXlsxUrl =
+        tab === USABLE_VIALS
+            ? `/api/polio/vaccine/vaccine_stock/${params.id}/usable_vials/?export_xlsx=true`
+            : `/api/polio/vaccine/vaccine_stock/${params.id}/get_unusable_vials/?export_xlsx=true`;
 
     return (
         <>
@@ -109,7 +113,7 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                             <Button
                                 variant="contained"
                                 color="primary"
-                                href={`/api/polio/vaccine/vaccine_stock/${params.id}/download_xlsx_summary`}
+                                href={exportXlsxUrl}
                             >
                                 <ExcellSvg
                                     sx={{

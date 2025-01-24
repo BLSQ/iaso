@@ -683,6 +683,26 @@ class VaccineStockManagementViewSet(ModelViewSet):
         results = calc.get_list_of_usable_vials(end_date)
         results = self._sort_results(request, results)
 
+        export_xlsx = request.query_params.get("export_xlsx", False)
+
+        if export_xlsx:
+            filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
+            workbook = self.download_xlsx_summary(
+                request,
+                filename,
+                results,
+                lambda: calc.get_list_of_unusable_vials(end_date),
+                "Usable",
+            )
+            with NamedTemporaryFile() as tmp:
+                workbook.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+
+            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+            response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            return response
+
         paginator = Paginator()
         page = paginator.paginate_queryset(results, request)
         if page is not None:
@@ -698,6 +718,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
         that resulted in unusable vials, with each movement timestamped and including
         the number of vials and doses affected.
         """
+
         if pk is None:
             return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -716,6 +737,26 @@ class VaccineStockManagementViewSet(ModelViewSet):
         results = calc.get_list_of_unusable_vials(end_date)
         results = self._sort_results(request, results)
 
+        export_xlsx = request.query_params.get("export_xlsx", False)
+
+        if export_xlsx:
+            filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
+            workbook = self.download_xlsx_summary(
+                request,
+                filename,
+                results,
+                lambda: calc.get_list_of_usable_vials(end_date),
+                "unusable",
+            )
+            with NamedTemporaryFile() as tmp:
+                workbook.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+
+            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+            response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            return response
+
         paginator = Paginator()
         page = paginator.paginate_queryset(results, request)
         if page is not None:
@@ -728,35 +769,17 @@ class VaccineStockManagementViewSet(ModelViewSet):
         else:
             return VaccineStockSerializer
 
-    @action(detail=True, methods=["get"])
-    def download_xlsx_summary(self, request, pk=None):
-        vaccine_stock = self.get_queryset().get(id=pk)
+    def download_xlsx_summary(self, request, filename, results, method, tab):
         workbook = Workbook()
 
         usable_vials_sheet = workbook.active
-        usable_vials_sheet.title = "Usable"
+        usable_vials_sheet.title = tab
         unusable_vials_sheet = workbook.create_sheet("Unusable")
 
-        if pk is None:
-            return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            vaccine_stock = self.get_queryset().get(id=pk)
-        except VaccineStock.DoesNotExist:
-            return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        end_date = request.query_params.get("end_date", None)
-        if end_date:
-            parsed_end_date = parse_date(end_date)
-            if not parsed_end_date:
-                raise ValidationError("The 'end_date' query parameter is not a valid date.")
-
-        calc = VaccineStockCalculator(vaccine_stock)
-        usable_vials_results = calc.get_list_of_usable_vials(end_date)
+        usable_vials_results = method()
         usable_vials_results = self._sort_results(request, usable_vials_results)
 
-        unusable_vials_results = calc.get_list_of_unusable_vials(end_date)
-        unusable_vials_results = self._sort_results(request, unusable_vials_results)
+        unusable_vials_results = results
 
         usable_vials_columns = [
             "Date",
@@ -801,17 +824,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
             ]
             unusable_vials_sheet.append(row)
 
-        filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
         workbook.save(filename)
-
-        with NamedTemporaryFile() as tmp:
-            workbook.save(tmp.name)
-            tmp.seek(0)
-            stream = tmp.read()
-
-        response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
-        response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
-        return response
+        return workbook
 
     def get_queryset(self):
         """

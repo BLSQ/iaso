@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
 import { TextField } from '@mui/material';
 import { get } from 'lodash';
+import PropTypes from 'prop-types';
+import React, { useCallback } from 'react';
 
 export const TextInput = ({
     field = {},
@@ -27,6 +27,11 @@ export const TextInput = ({
         <TextField
             InputLabelProps={{
                 shrink: Boolean(field.value ?? value ?? '') || shrinkLabel,
+            }}
+            FormHelperTextProps={{
+                sx: {
+                    mb: 1,
+                },
             }}
             fullWidth
             variant="outlined"

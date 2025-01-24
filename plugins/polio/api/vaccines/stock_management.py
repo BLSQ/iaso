@@ -311,6 +311,18 @@ class VaccineStockCalculator:
                         "type": "earmarked_stock__returned",
                     }
                 )
+            elif stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.USED:
+                results.append(
+                    {
+                        "date": stock.created_at.date(),
+                        "action": f"Earmarked used for {stock.campaign.obr_name} Round {stock.round.number}",
+                        "vials_in": stock.vials_earmarked,
+                        "doses_in": stock.doses_earmarked,
+                        "vials_out": None,
+                        "doses_out": None,
+                        "type": "earmarked_stock__used",
+                    }
+                )
 
         return results
 

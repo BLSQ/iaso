@@ -742,9 +742,6 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def get_doses_earmarked(self, obj):
-        return obj.vials_earmarked * DOSES_PER_VIAL[obj.vaccine_stock.vaccine]
-
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
         if campaign_data:

@@ -28,11 +28,6 @@ export const TextInput = ({
             InputLabelProps={{
                 shrink: Boolean(field.value ?? value ?? '') || shrinkLabel,
             }}
-            FormHelperTextProps={{
-                sx: {
-                    mb: 1,
-                },
-            }}
             fullWidth
             variant="outlined"
             size="medium"

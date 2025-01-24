@@ -1487,6 +1487,7 @@
     "iaso.users.selectedOrgUnits": "Unité d'organisation sélectionnées",
     "iaso.users.update": "Mettre l'utilisateur à jour",
     "iaso.users.userAdminOnly": "Edition pour les administrateurs uniquement",
+    "iaso.users.multiAccountUserInfoDisabledWarning": "Cet utilisateur est un utilisateur multicompte. Pour cet utilisateur, vous ne pouvez modifier que les paramètres spécifiques à ce compte Iaso \"{account}\", tels que ses autorisations.",
     "iaso.users.userPermissions": "Permissions d'utilisateur",
     "iaso.users.userRoleOrgUnitTypeRestrictionWarning": "Des restrictions d'écriture de rôle d’utilisateur s’appliquent à cet utilisateur. Consulter le rôle d’utilisateur en question pour plus de détails",
     "iaso.users.usersHistory": "Historique des utilisateurs",

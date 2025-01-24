@@ -7,6 +7,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin, auth
 from django.db import models
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView, TemplateView
@@ -14,11 +15,12 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
-from iaso.views import ModelDataView, health, page
+from iaso.views import ModelDataView, health, page, robots_txt
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
 admin.site.index_title = "Administration de Iaso"
+
 
 if settings.MAINTENANCE_MODE:
     urlpatterns = [
@@ -67,6 +69,7 @@ else:
         urlpatterns += [path("accounts/", include(provider_urlpatterns))]
 
     urlpatterns += [
+        path("robots.txt", robots_txt),
         path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),
         path("_health/", health),
         path("_health", health),  # same without slash otherwise AWS complain about redirect

@@ -41,19 +41,24 @@ export const useGroupSetsTableColumns = (deleteGroupSet): Column[] => {
                 sortable: false,
                 width: 200,
                 Cell: settings => {
-                    settings.row.original.groups.sort((a, b) =>
-                        a.name > b.name ? 1 : b.name > a.name ? -1 : 0,
-                    );
+                    const groups = settings.row.original.groups.sort((a, b) => {
+                        if (a.name > b.name) return 1;
+                        if (b.name > a.name) return -1;
+                        return 0;
+                    });
                     return (
                         <span>
-                            {settings.row.original.groups.map(g => (
-                                <Chip
-                                    className={classes.groupChip}
-                                    label={g.name}
-                                    color="primary"
-                                    key={g.id}
-                                />
-                            ))}
+                            {groups.map(group => {
+                                const label = `${group.name} (${group.source_version.data_source.name}) - ${group.source_version.number}`;
+                                return (
+                                    <Chip
+                                        className={classes.groupChip}
+                                        label={label}
+                                        color="primary"
+                                        key={group.id}
+                                    />
+                                );
+                            })}
                         </span>
                     );
                 },

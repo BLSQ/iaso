@@ -1,6 +1,11 @@
 import { Moment } from 'moment';
 import { User } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { Campaign, MergedShape, Scope, Shape } from '../../../constants/types';
+import {
+    CalendarCampaign,
+    MergedShape,
+    Scope,
+    Shape,
+} from '../../../constants/types';
 import { CampaignCategory } from '../../Campaigns/hooks/api/useGetCampaigns';
 
 export type Query = {
@@ -24,10 +29,11 @@ export type CalendarRound = {
     vaccine_names: string;
     scopes: Scope[];
     target_population: number;
+    hasSubActivities: boolean;
 };
 
 export type MappedCampaign = {
-    original: Campaign;
+    original: CalendarCampaign;
     name: string;
     rounds: CalendarRound[];
     scopes: Scope[];

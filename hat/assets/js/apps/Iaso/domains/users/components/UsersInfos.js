@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
-import { Grid } from '@mui/material';
+import { Alert, Grid, SxProps, Theme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
 import PropTypes from 'prop-types';
@@ -14,6 +15,12 @@ import MESSAGES from '../messages.ts';
 import { userHasPermission } from '../utils.js';
 import { USERS_ADMIN } from '../../../utils/permissions';
 
+const useStyles = makeStyles(theme => ({
+    alert: {
+        marginBottom: theme.spacing(1),
+    },
+}));
+
 const UsersInfos = ({
     setFieldValue,
     currentUser,
@@ -23,12 +30,15 @@ const UsersInfos = ({
     const loggedUser = useCurrentUser();
     const isLoggedUserAdmin = userHasPermission(USERS_ADMIN, loggedUser);
     const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
+
     const isEmailAdressExist = isEmpty(currentUser.email.value);
     const sendUserEmailInvitation = !!isEmailAdressExist;
     const sendUserIEmailnvitationLabel = isEmailAdressExist
         ? MESSAGES.sentEmailInvitationWhenAdresseExist
         : MESSAGES.sentEmailInvitation;
     let passwordDisabled = false;
+
     if (currentUser.send_email_invitation) {
         if (sendUserEmailInvitation) {
             // eslint-disable-next-line no-param-reassign
@@ -72,8 +82,20 @@ const UsersInfos = ({
         [setFieldValue],
     );
 
+    const isMultiAccountUser = currentUser.has_multiple_accounts.value;
+
     return (
         <form>
+            {isMultiAccountUser && (
+                <Alert severity="info" className={classes.alert}>
+                    {formatMessage(
+                        MESSAGES.multiAccountUserInfoDisabledWarning,
+                        {
+                            account: loggedUser.account.name,
+                        },
+                    )}
+                </Alert>
+            )}
             <Grid container spacing={2}>
                 <Grid item sm={12} md={6}>
                     <InputComponent
@@ -86,6 +108,7 @@ const UsersInfos = ({
                         type="text"
                         label={MESSAGES.userName}
                         required
+                        disabled={isMultiAccountUser}
                     />
                     <InputComponent
                         keyValue="first_name"
@@ -94,6 +117,7 @@ const UsersInfos = ({
                         errors={currentUser.first_name.errors}
                         type="text"
                         label={MESSAGES.firstName}
+                        disabled={isMultiAccountUser}
                     />
                     <InputComponent
                         keyValue="last_name"
@@ -102,6 +126,7 @@ const UsersInfos = ({
                         errors={currentUser.last_name.errors}
                         type="text"
                         label={MESSAGES.lastName}
+                        disabled={isMultiAccountUser}
                     />
                     <InputComponent
                         keyValue="email"
@@ -110,6 +135,7 @@ const UsersInfos = ({
                         errors={currentUser.email.errors}
                         type="email"
                         label={MESSAGES.email}
+                        disabled={isMultiAccountUser}
                     />
                     <InputComponent
                         keyValue="password"
@@ -123,7 +149,7 @@ const UsersInfos = ({
                             initialData ? isInitialDataEmpty : MESSAGES.password
                         }
                         required={!initialData}
-                        disabled={passwordDisabled}
+                        disabled={passwordDisabled || isMultiAccountUser}
                     />
                 </Grid>
                 <Grid item sm={12} md={6}>

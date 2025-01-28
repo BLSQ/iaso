@@ -1,7 +1,6 @@
 import logging
 from itertools import groupby
 from operator import itemgetter
-
 from plugins.wfp.common import ETL
 from plugins.wfp.models import *
 

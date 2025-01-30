@@ -440,7 +440,7 @@ class ETL:
         if step.get("ration_to_distribute") is not None or step.get("ration") is not None:
             quantity = 0
             ration_type = ""
-            if step.get("_total_number_of_sachets") is not None:
+            if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
                 quantity = step.get("_total_number_of_sachets", 0)
             elif step.get("_csb_packets") is not None:
                 quantity = step.get("_csb_packets", 0)
@@ -474,9 +474,10 @@ class ETL:
             if step.get("ration_type") in ["csb", "csb1", "csb2"]:
                 quantity = step.get("_csb_packets")
             elif step.get("ration_type") == "lndf":
-                quantity = step.get("_lndf_kgs")
+                quantity = step.get("_lndf_kgs", 0)
             else:
-                quantity = step.get("_total_number_of_sachets", None)
+                if step.get("_total_number_of_sachets_rutf") == "" or step.get("_total_number_of_sachets") == "":
+                    quantity = 0
             assistance = {
                 "type": step.get("ration_type"),
                 "quantity": quantity,

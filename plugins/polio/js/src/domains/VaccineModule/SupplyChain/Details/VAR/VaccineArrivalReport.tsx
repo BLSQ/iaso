@@ -203,16 +203,28 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                     <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={3}>
                             {/* TODO Add errors */}
+                            <Box mb={2}>
+                                <Field
+                                    label={formatMessage(MESSAGES.po_number)}
+                                    name={`${VAR}[${index}].po_number`}
+                                    component={Select}
+                                    shrinkLabel={false}
+                                    freeSolo
+                                    options={poNumberOptions}
+                                    disabled={markedForDeletion}
+                                    required
+                                    onChange={handleChangePoNumber}
+                                />
+                            </Box>
                             <Field
-                                label={formatMessage(MESSAGES.po_number)}
-                                name={`${VAR}[${index}].po_number`}
-                                component={Select}
-                                shrinkLabel={false}
-                                freeSolo
-                                options={poNumberOptions}
+                                label={formatMessage(MESSAGES.vials_shipped)}
+                                name={`${VAR}[${index}].vials_shipped`}
+                                component={NumberInput}
                                 disabled={markedForDeletion}
+                                onFocus={onVialsShippedFocused}
+                                onBlur={onVialsShippedBlur}
+                                onChange={handleVialsShippededUpdate}
                                 required
-                                onChange={handleChangePoNumber}
                             />
                         </Grid>
                         <Grid item xs={6} md={3}>
@@ -223,6 +235,16 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 name={`${VAR}[${index}].arrival_report_date`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
+                                required
+                            />
+                            <Field
+                                label={formatMessage(MESSAGES.vials_received)}
+                                name={`${VAR}[${index}].vials_received`}
+                                component={NumberInput}
+                                disabled={markedForDeletion}
+                                onFocus={onVialsReceivedFocused}
+                                onBlur={onVialsReceivedBlur}
+                                onChange={handleVialsReceivedUpdate}
                                 required
                             />
                         </Grid>
@@ -237,6 +259,15 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 onChange={handleDosesShippedUpdate}
                                 required
                             />
+                            <Box mt={2}>
+                                <Typography
+                                    variant="button"
+                                    sx={uneditableTextStyling}
+                                >
+                                    {`${formatMessage(MESSAGES.doses_per_vial)}:`}{' '}
+                                    <NumberCell value={doses_per_vial} />
+                                </Typography>
+                            </Box>
                         </Grid>
 
                         <Grid item xs={6} md={3}>
@@ -250,49 +281,6 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 onChange={handleDosesReceivedUpdate}
                                 required
                             />
-                        </Grid>
-                    </Grid>
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.vials_shipped)}
-                                name={`${VAR}[${index}].vials_shipped`}
-                                component={NumberInput}
-                                disabled={markedForDeletion}
-                                onFocus={onVialsShippedFocused}
-                                onBlur={onVialsShippedBlur}
-                                onChange={handleVialsShippededUpdate}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.vials_received)}
-                                name={`${VAR}[${index}].vials_received`}
-                                component={NumberInput}
-                                disabled={markedForDeletion}
-                                onFocus={onVialsReceivedFocused}
-                                onBlur={onVialsReceivedBlur}
-                                onChange={handleVialsReceivedUpdate}
-                                required
-                            />
-                        </Grid>
-                        <Grid
-                            container
-                            item
-                            xs={6}
-                            md={3}
-                            alignContent="center"
-                        >
-                            <Box>
-                                <Typography
-                                    variant="button"
-                                    sx={uneditableTextStyling}
-                                >
-                                    {`${formatMessage(MESSAGES.doses_per_vial)}:`}{' '}
-                                    <NumberCell value={doses_per_vial} />
-                                </Typography>
-                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>

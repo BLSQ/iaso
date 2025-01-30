@@ -117,31 +117,6 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                 disabled={markedForDeletion}
                                 required
                             />
-                        </Grid>
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(MESSAGES.po_number)}
-                                name={`pre_alerts[${index}].po_number`}
-                                component={TextInput}
-                                disabled={markedForDeletion}
-                                shrinkLabel={false}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(
-                                    MESSAGES.estimated_arrival_time,
-                                )}
-                                name={`pre_alerts[${index}].estimated_arrival_time`}
-                                component={DateInput}
-                                disabled={markedForDeletion}
-                                required
-                            />
-                        </Grid>
-                    </Grid>
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_shipped)}
                                 name={`pre_alerts[${index}].doses_shipped`}
@@ -152,41 +127,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                 onBlur={onDosesBlur}
                                 required
                             />
-                        </Grid>
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(MESSAGES.vials_shipped)}
-                                name={`pre_alerts[${index}].vials_shipped`}
-                                component={NumberInput}
-                                disabled={markedForDeletion}
-                                onChange={handleVialsShippedUpdate}
-                                onFocus={onVialsFocus}
-                                onBlur={onVialsBlur}
-                                required
-                            />
-                        </Grid>
-                        <Grid
-                            container
-                            item
-                            xs={6}
-                            md={4}
-                            alignContent="center"
-                        >
-                            <Box>
-                                <Typography
-                                    variant="button"
-                                    sx={uneditableTextStyling}
-                                >
-                                    {`${formatMessage(
-                                        MESSAGES.doses_per_vial,
-                                    )}:`}{' '}
-                                    <NumberCell value={doses_per_vial} />
-                                </Typography>
-                            </Box>
-                        </Grid>
-
-                        <Grid item xs={12} md={4}>
-                            <Box>
+                            <Box mt={2}>
                                 <DocumentUploadWithPreview
                                     errors={documentErrors}
                                     onFilesSelect={files => {
@@ -206,6 +147,50 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                         values?.pre_alerts?.[index]?.document
                                     }
                                 />
+                            </Box>
+                        </Grid>
+                        <Grid item xs={6} md={4}>
+                            <Box mb={2}>
+                                <Field
+                                    label={formatMessage(MESSAGES.po_number)}
+                                    name={`pre_alerts[${index}].po_number`}
+                                    component={TextInput}
+                                    disabled={markedForDeletion}
+                                    shrinkLabel={false}
+                                    required
+                                />
+                            </Box>
+                            <Field
+                                label={formatMessage(MESSAGES.vials_shipped)}
+                                name={`pre_alerts[${index}].vials_shipped`}
+                                component={NumberInput}
+                                disabled={markedForDeletion}
+                                onChange={handleVialsShippedUpdate}
+                                onFocus={onVialsFocus}
+                                onBlur={onVialsBlur}
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={4}>
+                            <Field
+                                label={formatMessage(
+                                    MESSAGES.estimated_arrival_time,
+                                )}
+                                name={`pre_alerts[${index}].estimated_arrival_time`}
+                                component={DateInput}
+                                disabled={markedForDeletion}
+                                required
+                            />
+                            <Box>
+                                <Typography
+                                    variant="button"
+                                    sx={uneditableTextStyling}
+                                >
+                                    {`${formatMessage(
+                                        MESSAGES.doses_per_vial,
+                                    )}:`}{' '}
+                                    <NumberCell value={doses_per_vial} />
+                                </Typography>
                             </Box>
                         </Grid>
                     </Grid>

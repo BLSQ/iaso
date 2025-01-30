@@ -476,7 +476,8 @@ class ETL:
             elif step.get("ration_type") == "lndf":
                 quantity = step.get("_lndf_kgs", 0)
             else:
-                quantity = step.get("_total_number_of_sachets", 0)
+                if step.get("_total_number_of_sachets_rutf") == "" or step.get("_total_number_of_sachets") == "":
+                    quantity = 0
             assistance = {
                 "type": step.get("ration_type"),
                 "quantity": quantity,

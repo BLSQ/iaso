@@ -3,6 +3,7 @@ import { routes } from './src/constants/routes';
 import en from './src/constants/translations/en.json';
 import fr from './src/constants/translations/fr.json';
 import { baseUrls, paramsConfig } from './src/constants/urls';
+import { UserTab } from './userTab';
 
 const translations = {
     fr,
@@ -16,6 +17,12 @@ const config: Plugin = {
     redirections: [],
     menu: [],
     translations,
+    customComponents: [
+        {
+            key: 'user.extraTab',
+            component: UserTab,
+        },
+    ],
 };
 
 export default config;

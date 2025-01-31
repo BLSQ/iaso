@@ -10,6 +10,7 @@ import {
 import React, {
     FunctionComponent,
     useCallback,
+    useContext,
     useEffect,
     useMemo,
     useState,
@@ -18,8 +19,10 @@ import React, {
 import { MutateFunction, useQueryClient } from 'react-query';
 
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import { PluginsContext } from '../../../utils';
 import * as Permissions from '../../../utils/permissions';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
+import { Plugins } from '../../app/types';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
 import PermissionsAttribution from './PermissionsAttribution';
@@ -170,6 +173,13 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         ];
     }, [allUserRolesPermissions, user.user_permissions.value]);
 
+    const { plugins }: Plugins = useContext(PluginsContext);
+    // Find the custom tab component if it exists
+    const customUserTab = plugins[0].customComponents?.find(
+        comp => comp.key === 'user.extraTab',
+    );
+    console.log('customUserTab', customUserTab);
+
     useEffect(() => {
         setHasNoOrgUnitManagementWrite(
             !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
@@ -253,6 +263,15 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             label={formatMessage(MESSAGES.orgUnitWriteTypes)}
                         />
                     )}
+                    {customUserTab && (
+                        <Tab
+                            classes={{
+                                root: classes.tab,
+                            }}
+                            value="customTab"
+                            label="Custom Tab"
+                        />
+                    )}
                 </Tabs>
                 <div className={classes.root} id="user-profile-dialog">
                     <div
@@ -296,6 +315,12 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                                     ouTypesIds,
                                 )
                             }
+                        />
+                    )}
+                    {tab === 'customTab' && customUserTab && (
+                        <customUserTab.component
+                            currentUser={user}
+                            setFieldValue={setFieldValue}
                         />
                     )}
                 </div>

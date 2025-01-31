@@ -272,6 +272,10 @@ export const useNewFields = (
                         fieldKey,
                         value,
                     );
+                    console.log('key', key);
+                    console.log('oldValue', oldValue);
+                    console.log('newValue', newValue);
+                    console.log('isChanged', isChanged);
                     const { label, order, fieldType } = fieldDef;
                     return {
                         key: fieldKey,

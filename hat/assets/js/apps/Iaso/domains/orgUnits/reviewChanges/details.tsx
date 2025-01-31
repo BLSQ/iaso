@@ -53,12 +53,14 @@ export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
 
     const { data: changeRequest, isFetching: isFetchingChangeRequest } =
         useGetApprovalProposal(Number(params.changeRequestId));
+    console.log('changeRequest', changeRequest);
     const isNew: boolean =
         !isFetchingChangeRequest && changeRequest?.status === 'new';
     const isNewOrgUnit = changeRequest
         ? changeRequest.org_unit.validation_status === 'NEW'
         : false;
     const { newFields, setSelected } = useNewFields(changeRequest);
+    console.log('newFields', newFields);
     const goBack = useGoBack(baseUrls.orgUnitsChangeRequest);
     const titleMessage = useMemo(() => {
         if (changeRequest?.status === 'rejected') {

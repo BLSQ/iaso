@@ -29,7 +29,10 @@ export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
                     changeRequest && changeRequest[`new_${field.key}`];
                 const changedFieldWithOldValues =
                     changeRequest && changeRequest[`old_${field.key}`];
-
+                console.log(
+                    'changedFieldWithOldValues',
+                    changedFieldWithOldValues,
+                );
                 return (
                     <HighlightFields
                         key={key}

@@ -30,6 +30,7 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
     const isSelected =
         (status && field?.isSelected === true && 'success.light') || '';
 
+    console.log('fieldValues', fieldValues);
     return (
         <Accordion defaultExpanded>
             <AccordionSummary
@@ -50,7 +51,6 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
                                         value.right === false)) &&
                                     'error.light') ||
                                 '';
-
                             return (
                                 <TableRow key={value.id}>
                                     <TableCell

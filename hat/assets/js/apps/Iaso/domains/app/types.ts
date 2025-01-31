@@ -36,6 +36,10 @@ export type Plugin = {
     baseUrls: Record<string, string>;
     paramsConfig: Record<string, string[]>;
     redirections?: RoutingRedirection[];
+    customComponents?: {
+        key: string;
+        component: ElementType;
+    }[];
 };
 
 export type Plugins = {

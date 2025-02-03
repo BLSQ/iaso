@@ -395,6 +395,16 @@ class Round(models.Model):
         # The scope will be deleted by Django's cascading
         super().delete(*args, **kwargs)
 
+    def add_chronogram(self, created_by: User = None) -> None:
+        """
+        Create a "standard chronogram" for all upcoming rounds of a campaign.
+        See POLIO-1781.
+        """
+        if not self.chronograms.valid().exists():
+            from plugins.polio.models import ChronogramTemplateTask
+
+            ChronogramTemplateTask.objects.create_chronogram(round=self, created_by=created_by)
+
     def get_item_by_key(self, key):
         return getattr(self, key)
 

@@ -241,6 +241,11 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(len(jr["rounds"][0]["datelogs"]), 1)
         self.assertEqual(jr["rounds"][0]["datelogs"][0]["reason_for_delay"], self.initial_data.key_name)
 
+        # A chronogram should've been automatically created for the new round.
+        round = Round.objects.get(id=jr["rounds"][0]["id"])
+        self.assertEqual(round.chronograms.valid().count(), 1)
+        self.assertEqual(round.chronograms.valid().first().created_by, self.yoda)
+
     def test_update_round_date_adds_history(self):
         """Updating round dates should add an entry in datelogs"""
         self.client.force_authenticate(self.yoda)

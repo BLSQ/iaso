@@ -9,7 +9,7 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase
-from plugins.polio.models import CampaignType, Round
+from plugins.polio.models import CampaignType, Round, Chronogram
 from plugins.polio.preparedness.spreadsheet_manager import *
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
@@ -229,6 +229,12 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(1, rounds.count())
         round_zero = rounds.first()
         self.assertEqual(round_zero.number, 0)
+
+        # A chronogram should've been automatically created for the new round.
+        self.assertEqual(round_zero.chronograms.valid().count(), 1)
+        chronogram = round_zero.chronograms.valid().first()
+        self.assertEqual(chronogram.created_by, self.user)
+
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", payload, format="json")
 
         r = self.assertJSONResponse(response, 200)
@@ -260,6 +266,12 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(1, rounds.count())
         round_zero = rounds.first()
         self.assertEqual(round_zero.number, 1)
+
+        # A chronogram should've been automatically created for the new round.
+        self.assertEqual(round_zero.chronograms.valid().count(), 1)
+        chronogram = round_zero.chronograms.valid().first()
+        self.assertEqual(chronogram.created_by, self.user)
+
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", payload, format="json")
 
         r = self.assertJSONResponse(response, 200)
@@ -296,6 +308,15 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         rounds = c.rounds.all().order_by("number")
         self.assertEqual(2, rounds.count())
         self.assertQuerySetEqual(rounds, [1, 2], lambda r: r.number)
+
+        # A chronogram should've been automatically created for each new round.
+        round_1 = c.rounds.first()
+        self.assertEqual(round_1.chronograms.valid().count(), 1)
+        self.assertEqual(round_1.chronograms.valid().first().created_by, self.user)
+        round_2 = c.rounds.last()
+        self.assertEqual(round_2.chronograms.valid().count(), 1)
+        self.assertEqual(round_2.chronograms.valid().first().created_by, self.user)
+
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 2)
@@ -336,10 +357,17 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         campaign.refresh_from_db()
         self.assertEqual(campaign.obr_name, "obr_name2")
         self.assertEqual(campaign.rounds.count(), 2, campaign.rounds)
-        self.assertEqual(campaign.rounds.get(number=1).number, 1)
-        self.assertEqual(campaign.rounds.get(number=1).ended_at, date(2021, 1, 20))
-        self.assertEqual(campaign.rounds.get(number=1).lqas_district_failing, 100)
-        self.assertEqual(campaign.rounds.get(number=1).lqas_district_passing, None)
+
+        round_1 = campaign.rounds.get(number=1)
+        self.assertEqual(round_1.number, 1)
+        self.assertEqual(round_1.ended_at, date(2021, 1, 20))
+        self.assertEqual(round_1.lqas_district_failing, 100)
+        self.assertEqual(round_1.lqas_district_passing, None)
+
+        # Chronograms should only be added at creation time.
+        self.assertEqual(round_1.chronograms.valid().count(), 0)
+        round_2 = campaign.rounds.get(number=2)
+        self.assertEqual(round_2.chronograms.valid().count(), 0)
 
     @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_patch_campaign_remove_round(self):
@@ -448,6 +476,14 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(r["rounds"][1]["started_at"], "2021-04-01")
         self.assertEqual(r["rounds"][1]["districts_count_calculated"], 2)
 
+        # A chronogram should've been automatically created for each new round.
+        round_1 = c.rounds.get(id=r["rounds"][0]["id"])
+        self.assertEqual(round_1.chronograms.valid().count(), 1)
+        self.assertEqual(round_1.chronograms.valid().first().created_by, self.user)
+        round_2 = c.rounds.get(id=r["rounds"][1]["id"])
+        self.assertEqual(round_2.chronograms.valid().count(), 1)
+        self.assertEqual(round_2.chronograms.valid().first().created_by, self.user)
+
         scope_bOPV = c.scopes.get(vaccine="bOPV")
         scope_mOPV2 = c.scopes.get(vaccine="mOPV2")
         self.assertEqual(
@@ -518,6 +554,14 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(r["rounds"][0]["districts_count_calculated"], 2)
         self.assertEqual(r["rounds"][1]["started_at"], "2021-04-01")
         self.assertEqual(r["rounds"][1]["districts_count_calculated"], 0)
+
+        # A chronogram should've been automatically created for each new round.
+        round_1 = c.rounds.get(id=r["rounds"][0]["id"])
+        self.assertEqual(round_1.chronograms.valid().count(), 1)
+        self.assertEqual(round_1.chronograms.valid().first().created_by, self.user)
+        round_2 = c.rounds.get(id=r["rounds"][1]["id"])
+        self.assertEqual(round_2.chronograms.valid().count(), 1)
+        self.assertEqual(round_2.chronograms.valid().first().created_by, self.user)
 
         round_one = r["rounds"][0]
 

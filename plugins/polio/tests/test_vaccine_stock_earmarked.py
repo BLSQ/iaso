@@ -188,7 +188,7 @@ class VaccineStockEarmarkedTests(APITestCase):
         self.assertEqual(updated_data["total_unusable_vials"], initial_unusable + 100)
 
         # Verify CREATED stock affects usable total
-        self.assertEqual(updated_data["total_usable_vials"], initial_usable - 50)
+        self.assertEqual(updated_data["total_usable_vials"], initial_usable + 100 - 50)
 
         # if we now create a RETURNED stock, it should affect the usable total
 
@@ -206,7 +206,7 @@ class VaccineStockEarmarkedTests(APITestCase):
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/summary/")
         self.assertEqual(response.status_code, 200)
         updated_data = response.json()
-        self.assertEqual(updated_data["total_usable_vials"], initial_usable)
+        self.assertEqual(updated_data["total_usable_vials"], initial_usable + 100 - 50 + 50)
 
         # Test EarmarkedStockViewSet endpoints
         # Test list endpoint
@@ -303,7 +303,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "usable_vials_used": 75,
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
-            "round": self.round.number,
+            "round": self.round.id,
         }
 
         response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", form_a_data, format="json")
@@ -332,7 +332,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "usable_vials_used": 25,
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
-            "round": self.round.number,
+            "round": self.round.id,
         }
 
         response = self.client.post(
@@ -359,7 +359,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "usable_vials_used": 1000,
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
-            "round": self.round.number,
+            "round": self.round.id,
         }
 
         response = self.client.post(

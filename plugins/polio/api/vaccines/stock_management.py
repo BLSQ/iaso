@@ -311,6 +311,18 @@ class VaccineStockCalculator:
                         "type": "earmarked_stock__returned",
                     }
                 )
+            elif stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.USED:
+                results.append(
+                    {
+                        "date": stock.created_at.date(),
+                        "action": f"Earmarked used for {stock.campaign.obr_name} Round {stock.round.number}",
+                        "vials_in": stock.vials_earmarked,
+                        "doses_in": stock.doses_earmarked,
+                        "vials_out": None,
+                        "doses_out": None,
+                        "type": "earmarked_stock__used",
+                    }
+                )
 
         return results
 
@@ -678,21 +690,22 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         # and create a new earmarked stock of type USED with the same values
         if response.status_code == 201:
             movement = OutgoingStockMovement.objects.get(id=response.data["id"])
-            total_vials_usable = EarmarkedStock.get_available_vials_count(movement.vaccine_stock, movement.round)
+            if movement and movement.round and movement.vaccine_stock:
+                total_vials_usable = EarmarkedStock.get_available_vials_count(movement.vaccine_stock, movement.round)
 
-            vials_earmarked_used = min(total_vials_usable, movement.usable_vials_used)
-            doses_earmarked_used = vials_earmarked_used * DOSES_PER_VIAL[movement.vaccine_stock.vaccine]
+                vials_earmarked_used = min(total_vials_usable, movement.usable_vials_used)
+                doses_earmarked_used = vials_earmarked_used * DOSES_PER_VIAL[movement.vaccine_stock.vaccine]
 
-            if vials_earmarked_used > 0:
-                EarmarkedStock.objects.create(
-                    vaccine_stock=movement.vaccine_stock,
-                    campaign=movement.campaign,
-                    round=movement.round,
-                    earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.USED,
-                    vials_earmarked=vials_earmarked_used,
-                    doses_earmarked=doses_earmarked_used,
-                    comment="Created from Form A submission",
-                )
+                if vials_earmarked_used > 0:
+                    EarmarkedStock.objects.create(
+                        vaccine_stock=movement.vaccine_stock,
+                        campaign=movement.campaign,
+                        round=movement.round,
+                        earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.USED,
+                        vials_earmarked=vials_earmarked_used,
+                        doses_earmarked=doses_earmarked_used,
+                        comment="Created from Form A submission",
+                    )
 
         return response
 

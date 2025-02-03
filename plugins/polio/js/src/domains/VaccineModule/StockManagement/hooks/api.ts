@@ -437,7 +437,6 @@ const createEditIncident = async (body: any) => {
               ),
           )
         : {};
-
     const requestBody: any = {
         url: `${modalUrl}incident_report/`,
         data: filteredParams,

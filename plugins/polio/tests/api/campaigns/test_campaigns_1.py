@@ -510,8 +510,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         subactivity_1 = SubActivity.objects.create(
             name="Test SubActivity",
             round=round_1,
-            start_date=date(2022, 1, 1),
-            end_date=date(2022, 1, 31),
+            start_date=datetime.date(2022, 1, 1),
+            end_date=datetime.date(2022, 1, 31),
         )
         group = m.Group.objects.create(name="Test group", source_version=self.source_version_1)
         group.org_units.add(district)
@@ -557,8 +557,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         subactivity_2 = SubActivity.objects.create(
             name="Test SubActivity 2",
             round=round_2,
-            start_date=date(2022, 1, 1),
-            end_date=date(2022, 1, 31),
+            start_date=datetime.date(2022, 1, 1),
+            end_date=datetime.date(2022, 1, 31),
         )
         subactivity_scope_with_round_level_scope = SubActivityScope.objects.create(
             subactivity=subactivity_2, group=group, vaccine="mOPV2"

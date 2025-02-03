@@ -385,7 +385,7 @@ export const useEarmarkedTableColumns = (
                 id: 'vials_earmarked',
                 sortable: true,
                 Cell: settings => (
-                    <NumberCell value={settings.row.original.earmarked_vials} />
+                    <NumberCell value={settings.row.original.vials_earmarked} />
                 ),
             },
             {
@@ -394,7 +394,7 @@ export const useEarmarkedTableColumns = (
                 id: 'doses_earmarked',
                 sortable: true,
                 Cell: settings => (
-                    <NumberCell value={settings.row.original.earmarked_doses} />
+                    <NumberCell value={settings.row.original.doses_earmarked} />
                 ),
             },
             {

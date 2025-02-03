@@ -214,7 +214,7 @@ class VaccineStockCalculator:
         for report in incident_reports:
             if (
                 report.usable_vials > 0
-                and report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
+                and report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD
             ):
                 results.append(
                     {
@@ -224,6 +224,21 @@ class VaccineStockCalculator:
                         "doses_in": (report.usable_vials or 0) * self.get_doses_per_vial(),
                         "vials_out": None,
                         "doses_out": None,
+                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    }
+                )
+            if (
+                report.usable_vials > 0
+                and report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_REMOVE
+            ):
+                results.append(
+                    {
+                        "date": report.date_of_incident_report,
+                        "action": report.stock_correction,
+                        "vials_in": None,
+                        "doses_in": None,
+                        "vials_out": report.usable_vials or 0,
+                        "doses_out": (report.usable_vials or 0) * self.get_doses_per_vial(),
                         "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     }
                 )
@@ -315,7 +330,7 @@ class VaccineStockCalculator:
         # Add unusable vials from IncidentReports
         for report in incident_reports:
             if report.unusable_vials > 0 and (
-                report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
+                report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
@@ -329,6 +344,20 @@ class VaccineStockCalculator:
                         "doses_in": (report.unusable_vials or 0) * self.get_doses_per_vial(),
                         "vials_out": None,
                         "doses_out": None,
+                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    }
+                )
+            if report.unusable_vials > 0 and (
+                report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_REMOVE
+            ):
+                results.append(
+                    {
+                        "date": report.date_of_incident_report,
+                        "action": report.stock_correction,  # for every field FOO that has choices set, the object will have a get_FOO_display() method
+                        "vials_in": None,
+                        "doses_in": None,
+                        "vials_out": report.unusable_vials or 0,
+                        "doses_out": (report.unusable_vials or 0) * self.get_doses_per_vial(),
                         "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     }
                 )

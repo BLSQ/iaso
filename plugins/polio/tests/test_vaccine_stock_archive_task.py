@@ -167,7 +167,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         )
         cls.incident_report_rdc_mopv_3 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_rdc_mopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_rdc_1_round_1.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_rdc_1_round_1.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
@@ -175,7 +175,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         )
         cls.incident_report_rdc_mopv_4 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_rdc_mopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_rdc_1_round_2.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_rdc_1_round_2.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
@@ -183,7 +183,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         )
         cls.incident_report_rdc_mopv_5 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_rdc_mopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_rdc_1_round_3.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_rdc_1_round_3.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
@@ -322,7 +322,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         )
         cls.incident_report_chad_nopv_3 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_chad_nopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_chad_1_round_1.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_chad_1_round_1.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
@@ -331,7 +331,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         # should be ignored when computing round 1 values based on date
         cls.incident_report_rdc_chad_nopv_4 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_chad_nopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
@@ -339,7 +339,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         )
         cls.incident_report_rdc_chad_mopv = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_chad_mopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             unusable_vials=0,

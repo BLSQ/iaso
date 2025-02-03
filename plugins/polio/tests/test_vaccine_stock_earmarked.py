@@ -303,7 +303,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "usable_vials_used": 75,
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
-            "round": self.round.number,
+            "round": self.round.id,
         }
 
         response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", form_a_data, format="json")
@@ -332,7 +332,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "usable_vials_used": 25,
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
-            "round": self.round.number,
+            "round": self.round.id,
         }
 
         response = self.client.post(
@@ -359,7 +359,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "usable_vials_used": 1000,
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
-            "round": self.round.number,
+            "round": self.round.id,
         }
 
         response = self.client.post(

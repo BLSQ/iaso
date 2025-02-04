@@ -763,6 +763,10 @@ class Campaign(SoftDeletableModel):
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
 
+    @property
+    def has_polio_type(self) -> bool:
+        return self.campaign_types.filter(name=CampaignType.POLIO).exists()
+
     def get_item_by_key(self, key):
         return getattr(self, key)
 

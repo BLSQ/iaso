@@ -27,6 +27,12 @@ import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances
 import { useGetOrgUnit } from './TreeView/requests';
 
 const useStyles = makeStyles(theme => ({
+    '@global': {
+        body: {
+            overflowX: 'hidden !important',
+            overflowY: 'auto !important',
+        },
+    },
     speedDialTop: {
         top: theme.spacing(12.5),
     },

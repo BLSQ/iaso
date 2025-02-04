@@ -200,31 +200,46 @@ class VaccineStockCalculator:
         if end_date:
             stock_movements = stock_movements.filter(report_date__lte=end_date)
         for movement in stock_movements:
-            if movement.usable_vials_used > 0:
+            if movement.earmarked_stocks.count() > 0:
+                earmarked_stock_vials = movement.earmarked_stocks.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+                real_vials_used = movement.usable_vials_used - earmarked_stock_vials
                 results.append(
                     {
                         "date": movement.report_date,
-                        "action": "Form A - Vials Used",
+                        "action": f"Form A - Vials Used ({earmarked_stock_vials} vials from Earmarked, {real_vials_used} vials used from stock)",
                         "vials_in": None,
                         "doses_in": None,
-                        "vials_out": movement.usable_vials_used or 0,
-                        "doses_out": (movement.usable_vials_used or 0) * self.get_doses_per_vial(),
+                        "vials_out": real_vials_used or 0,
+                        "doses_out": (real_vials_used or 0) * self.get_doses_per_vial(),
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
+            else:
+                if movement.usable_vials_used > 0:
+                    results.append(
+                        {
+                            "date": movement.report_date,
+                            "action": "Form A - Vials Used",
+                            "vials_in": None,
+                            "doses_in": None,
+                            "vials_out": movement.usable_vials_used or 0,
+                            "doses_out": (movement.usable_vials_used or 0) * self.get_doses_per_vial(),
+                            "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                        }
+                    )
 
-            if movement.missing_vials > 0:
-                results.append(
-                    {
-                        "date": movement.report_date,
-                        "action": "Form A - Missing Vials",
-                        "vials_in": None,
-                        "doses_in": None,
-                        "vials_out": movement.missing_vials or 0,
-                        "doses_out": (movement.missing_vials or 0) * self.get_doses_per_vial(),
-                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
-                    }
-                )
+                if movement.missing_vials > 0:
+                    results.append(
+                        {
+                            "date": movement.report_date,
+                            "action": "Form A - Missing Vials",
+                            "vials_in": None,
+                            "doses_in": None,
+                            "vials_out": movement.missing_vials or 0,
+                            "doses_out": (movement.missing_vials or 0) * self.get_doses_per_vial(),
+                            "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                        }
+                    )
 
         # Add incident reports (IN movements then OUT movements)
         incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
@@ -312,17 +327,18 @@ class VaccineStockCalculator:
                     }
                 )
             elif stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.USED:
-                results.append(
-                    {
-                        "date": stock.created_at.date(),
-                        "action": f"Earmarked used for {stock.campaign.obr_name} Round {stock.round.number}",
-                        "vials_in": stock.vials_earmarked,
-                        "doses_in": stock.doses_earmarked,
-                        "vials_out": None,
-                        "doses_out": None,
-                        "type": "earmarked_stock__used",
-                    }
-                )
+                pass
+                # results.append(
+                #     {
+                #         "date": stock.created_at.date(),
+                #         "action": f"Earmarked used for {stock.campaign.obr_name} Round {stock.round.number}",
+                #         "vials_in": stock.vials_earmarked,
+                #         "doses_in": stock.doses_earmarked,
+                #         "vials_out": None,
+                #         "doses_out": None,
+                #         "type": "earmarked_stock__used",
+                #     }
+                # )
 
         return results
 
@@ -334,10 +350,19 @@ class VaccineStockCalculator:
         results = []
         for movement in outgoing_movements:
             if movement.usable_vials_used > 0:
+                if movement.earmarked_stocks.count() > 0:
+                    earmarked_stock_vials = (
+                        movement.earmarked_stocks.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+                    )
+                    desc_text = f"Form A - Vials Used ({earmarked_stock_vials} vials from Earmarked)"
+
+                else:
+                    desc_text = "Form A - Vials Used"
+
                 results.append(
                     {
                         "date": movement.report_date,
-                        "action": "Form A - Vials Used",
+                        "action": desc_text,
                         "vials_out": None,
                         "doses_out": None,
                         "vials_in": movement.usable_vials_used or 0,
@@ -405,7 +430,9 @@ class VaccineStockCalculator:
             earmarked_stocks = earmarked_stocks.filter(created_at__date__lte=end_date)
 
         for stock in earmarked_stocks:
-            if stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.USED:
+            if (
+                stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.USED and stock.form_a is None
+            ):  # if FormA is not None, it's accounted by the FormA, no need to repeat
                 results.append(
                     {
                         "date": stock.created_at.date(),
@@ -432,10 +459,15 @@ class VaccineStockCalculator:
                 movement_type == EarmarkedStock.EarmarkedStockChoices.USED
                 or movement_type == EarmarkedStock.EarmarkedStockChoices.RETURNED
             ):
+                if movement["form_a"] is not None:
+                    action_text = f"Earmarked stock used for FormA ({movement['form_a']})"
+                else:
+                    action_text = f"Earmarked stock used for {movement['campaign']} Round {movement['round_number']}"
+
                 results.append(
                     {
                         "date": movement["created_at"],
-                        "action": f"Earmarked stock used for {movement['campaign']} Round {movement['round_number']}",
+                        "action": action_text,
                         "vials_out": movement["vials_earmarked"],
                         "doses_out": movement["doses_earmarked"],
                         "vials_in": None,
@@ -447,7 +479,7 @@ class VaccineStockCalculator:
                 results.append(
                     {
                         "date": movement["created_at"],
-                        "action": f"Earmarked stock used for {movement['campaign']} Round {movement['round_number']}",
+                        "action": f"Earmarked stock reserved for {movement['campaign']} Round {movement['round_number']}",
                         "vials_in": movement["vials_earmarked"],
                         "doses_in": movement["doses_earmarked"],
                         "vials_out": None,
@@ -748,6 +780,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             "vaccine_stock",
             "campaign",
             "round_number",
+            "form_a",
             "earmarked_stock_type",
             "vials_earmarked",
             "doses_earmarked",

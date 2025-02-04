@@ -1,7 +1,6 @@
 import hashlib
 import typing
 
-from django.core import exceptions
 from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import serializers, parsers, status
@@ -47,7 +46,7 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
 
         is_safe, details = scan_uploaded_file_for_virus(file)
         if not is_safe:
-            raise exceptions.ValidationError({"file": [details]})
+            raise serializers.ValidationError({"file": [details]})
         try:
             previous_attachment = FormAttachment.objects.get(name=file.name, form=form)
             previous_attachment.file = file
@@ -58,7 +57,7 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
             return FormAttachment.objects.create(form=form, name=file.name, file=file, md5=self.md5sum(file))
         except Exception as e:
             # putting the error in an array to prevent front-end crash
-            raise exceptions.ValidationError({"file": [e]})
+            raise serializers.ValidationError({"file": [e]})
 
     @staticmethod
     def md5sum(file: File):

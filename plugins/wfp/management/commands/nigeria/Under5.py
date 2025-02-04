@@ -1,6 +1,5 @@
 from plugins.wfp.models import *
 from iaso.models import *
-from django.core.management.base import BaseCommand
 from itertools import groupby
 from operator import itemgetter
 from plugins.wfp.common import ETL

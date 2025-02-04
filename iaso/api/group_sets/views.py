@@ -29,10 +29,18 @@ class GroupSetPagination(Paginator):
 
 
 class GroupSetDropdownSerializer(serializers.ModelSerializer):
+    label = serializers.SerializerMethodField()
+
+    def get_label(self, obj):
+        datasource = obj.source_version.data_source.name
+        version = obj.source_version.number
+        name = obj.name
+        return f"{name} ({datasource} - {version})"
+
     class Meta:
         model = GroupSet
-        fields = ["id", "name"]
-        read_only_fields = ["id", "name"]
+        fields = ["id", "name", "label"]
+        read_only_fields = ["id", "name", "label"]
 
 
 class GroupSetsViewSet(ModelViewSet):

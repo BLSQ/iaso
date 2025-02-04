@@ -1,4 +1,3 @@
-version: "3"
 services:
   clamav:
     image: clamav/clamav:latest_base

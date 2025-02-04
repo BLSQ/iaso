@@ -1567,6 +1567,7 @@ class EarmarkedStock(models.Model):
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="earmarked_stocks")
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    form_a = models.ForeignKey(OutgoingStockMovement, on_delete=models.CASCADE, null=True, blank=True)
 
     vials_earmarked = models.PositiveIntegerField()
     doses_earmarked = models.PositiveIntegerField()

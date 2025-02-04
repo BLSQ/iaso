@@ -1,7 +1,9 @@
 import logging
 import tempfile
+import os
 
 import clamav_client
+from datetime import datetime
 from clamav_client.clamd import CommunicationError
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -37,8 +39,11 @@ def _scan_with_clamav(file_path: str):
 
     try:
         scanner = clamav_client.get_scanner(config=settings.CLAMAV_CONFIGURATION)
+        before = datetime.now()
         scan = scanner.scan(file_path)
-        logger.info(f"Scan result: {scan}")
+        after = datetime.now()
+        file_size = os.path.getsize(file_path)
+        logger.info(f"Scan result: {scan} - done in {after - before} - size {file_size} B")
 
         is_safe = scan.passed
         if scan.state == "FOUND":

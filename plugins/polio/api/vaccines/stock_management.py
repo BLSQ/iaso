@@ -705,6 +705,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
                         vials_earmarked=vials_earmarked_used,
                         doses_earmarked=doses_earmarked_used,
                         comment="Created from Form A submission",
+                        form_a=movement,
                     )
 
         return response

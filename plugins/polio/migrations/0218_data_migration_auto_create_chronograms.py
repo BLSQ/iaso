@@ -29,9 +29,6 @@ def migrate_data_forward(apps, schema_editor):
         .prefetch_related("campaign__campaign_types", "chronograms")
     )
 
-    print("-" * 80)
-    print(f"Number of rounds to which chronograms will be added: {rounds.count()}.")
-
     for round in rounds:
         account = round.campaign.account
 
@@ -56,9 +53,6 @@ def migrate_data_forward(apps, schema_editor):
             for template in chronogram_template_tasks
         ]
         ChronogramTask.objects.bulk_create(tasks)
-
-        print("-" * 80)
-        print(f"A chronogram with ID #{chronogram.id} has been automatically created for round ID #{round.id}")
 
 
 class Migration(migrations.Migration):

@@ -8,5 +8,6 @@ from .enketo_xml import (
     to_xforms_xml,
     ENKETO_FORM_ID_SEPARATOR,
     inject_instance_id_in_form,
+    extract_xml_instance_from_form_xml,
 )
 from .md5_file import calculate_file_md5

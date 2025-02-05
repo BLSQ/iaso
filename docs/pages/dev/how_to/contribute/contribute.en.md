@@ -27,23 +27,26 @@ docker compose exec iaso ./manage.py test
 
 ### Translations
 
-The few translation for the Django side (login and reset password email etc..)
-are separated from the test. We only translate the template for now
-not the python code (string on model or admin).
+When modifying or adding new strings to translate, use our custom command to regenerate the translations:
 
-When modifying or adding new strings to translate, use the following command to
-regenerate the translations:
+```bash
+python manage.py make_translations
+```
 
-```manage.py makemessages --locale=fr --extension txt --extension html```
+This will update translation files in multiple locations while ignoring common development folders (node_modules, venv, cypress, etc.):
+- `hat/locale/fr/LC_MESSAGES/django.po` for the core application
+- `iaso/locale/fr/LC_MESSAGES/django.po` for the Iaso application
+- Additional `.po` files for plugins that use translations
 
-This will update `hat/locale/fr/LC_MESSAGES/django.po` with the new strings to
-translate.
+To check for missing translations:
+```bash
+python scripts/check_translations.py
+```
 
-After updating it with the translation you need to following command to have
-them reflected in the interface:
-
-```manage.py compilemessages```
-
+After updating the `.po` files with your translations, compile them:
+```bash
+python manage.py compilemessages
+```
 
 ### Code reloading
 

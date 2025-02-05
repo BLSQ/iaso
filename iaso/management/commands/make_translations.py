@@ -16,12 +16,23 @@ class Command(BaseCommand):
             "--extension=py",
             "--extension=html",
             "--ignore=.venv",
+            "--ignore=venv",
             "--ignore=cypress",
             "--ignore=node_modules",
+            "--ignore=beanstalk_worker",
+            "--ignore=django_sql_dashboard_export",
+            "--ignore=locust",
+            "--ignore=notebooks",
+            "--ignore=setuper",
+            "--ignore=scripts",
         ]
 
         # Run makemessages once with all paths
-        call_command("makemessages", *cmd_args)
+        try:
+            call_command("makemessages", *cmd_args)
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(f"Warning: {str(e)}"))
+            self.stdout.write("Continuing despite error...")
 
         # Find and report on .po files
         project_root = Path.cwd()

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .config import TRANSLATION_PATHS
+from scripts.translations.config import TRANSLATION_PATHS
 
 
 def find_translation_files(project_root, file_pattern):

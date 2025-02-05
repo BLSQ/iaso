@@ -68,6 +68,7 @@ def check_po_file(po_path):
 
 
 def main():
+    # Get project root (two levels up from this script)
     project_root = Path(__file__).parent.parent.parent
     po_files = find_translation_files(project_root, "django.po")
 

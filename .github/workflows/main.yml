@@ -36,7 +36,7 @@ jobs:
               run: |
                   npm ci
                   npm test
-            - name: Check that no JS translation are missing
+            - name: Check Frontend (JS/React) translations
               run: |
                   python scripts/update_trads.py
             - name: Slack notification
@@ -127,14 +127,16 @@ jobs:
             - name: Check formatting with Black
               run: |
                   . ./venv/bin/activate && black --check .
-            - name: Check translations
+            - name: Check Backend (Django) translations
               run: |
                   . ./venv/bin/activate
+                  # Generate translations using our custom command
                   python manage.py make_translations
+                  # Check for missing translations
                   python scripts/check_translations.py
+                  # Compile messages if all translations are present
                   python manage.py compilemessages
               env:
-                  IASO_ENVIRONMENT: development
                   RDS_DB_NAME: github_actions
                   SECRET_KEY: secret
                   DEBUG: true
@@ -146,10 +148,6 @@ jobs:
                   CACHE: false
                   DEV_SERVER: true
                   PLUGINS: polio,wfp
-                  AWS_STORAGE_BUCKET_NAME: iaso-dev
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  DEFAULT_FILE_STORAGE: storages.backends.s3boto3.S3Boto3Storage
             - name: Django tests
               run: |
                   . ./venv/bin/activate &&  python manage.py migrate

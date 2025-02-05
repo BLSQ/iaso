@@ -6,6 +6,9 @@ IGNORE_PATTERNS = [
     "static/*",
     "media/*",
     ".git/*",
+    "site-packages/django/*",
+    "site-packages/django_*/*",
+    "site-packages/rest_framework/*",
 ]
 
 # Convert to command line format for Django makemessages

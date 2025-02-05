@@ -295,6 +295,13 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
     </url>
     <url>
+        <loc>Nonepages/users/reference/how_we_work/how_we_work.html</loc>
+        <lastmod>2025-02-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/how_we_work/how_we_work.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/reference/how_we_work/how_we_work.html"/>
+    </url>
+    <url>
         <loc>Nonepages/users/reference/iaso_concepts/iaso_concepts.html</loc>
         <lastmod>2025-02-05</lastmod>
         <changefreq>daily</changefreq>
@@ -622,6 +629,13 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/setup_dhis2_login_in_iaso/setup_dhis2_login_in_iaso.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/users/reference/how_we_work/how_we_work.html</loc>
+        <lastmod>2025-02-05</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/reference/how_we_work/how_we_work.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/reference/how_we_work/how_we_work.html"/>
     </url>
     <url>
         <loc>Nonefr/pages/users/reference/iaso_concepts/iaso_concepts.html</loc>

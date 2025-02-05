@@ -1,26 +1,33 @@
 # Folders to ignore when processing translations
 IGNORE_PATTERNS = [
-    "venv/*",
-    "node_modules/*",
-    "*/cypress/*",
-    "static/*",
-    "media/*",
-    ".git/*",
+    "venv",  # Remove trailing /* to match directory exactly
+    ".venv",
+    "node_modules",
+    "cypress",
+    "static",
+    "media",
+    ".git",
 ]
 
 # Convert to command line format for Django makemessages
 IGNORE_ARGS = [f"--ignore={pattern}" for pattern in IGNORE_PATTERNS]
 
 
-# Function to check if a path should be ignored
 def should_ignore_path(path):
+    import os
     from pathlib import Path
 
-    path_str = str(Path(path))
+    path = Path(path).resolve()
+    path_str = str(path)
 
-    # Directly check for site-packages in path
-    if "site-packages" in path_str:
+    # Directly check for site-packages and venv paths
+    if any(segment in path_str for segment in ["site-packages", "venv", ".venv"]):
         return True
 
-    # Check other ignore patterns
-    return any(pattern.replace("*", "") in path_str for pattern in IGNORE_PATTERNS)
+    project_root = Path.cwd().resolve()
+
+    try:
+        relative_path = str(path.relative_to(project_root))
+        return any(pattern in relative_path.split(os.sep) for pattern in IGNORE_PATTERNS)
+    except ValueError:
+        return True

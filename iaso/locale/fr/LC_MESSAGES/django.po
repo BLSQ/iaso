@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-05 11:35+0000\n"
+"POT-Creation-Date: 2025-02-05 15:03+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -41,8 +41,8 @@ msgid ""
 "There are multiple submissions for this period and organizational unit, "
 "please log in the dashboard to fix."
 msgstr ""
-"Il y a plusieurs soumissions pour cette période et cette unité organisationnelle, "
-"veuillez vous connecter au tableau de bord pour corriger."
+"Il y a plusieurs soumissions pour cette période et cette unité "
+"organisationnelle, veuillez vous connecter au tableau de bord pour corriger."
 
 #: iaso/api/group_sets/filters.py:24
 msgid "Search by groupset's name"
@@ -65,8 +65,8 @@ msgid ""
 "objectId and contentType parameters are required. contentType Can be one of "
 "iaso.orgunit, iaso.form, iaso.instance"
 msgstr ""
-"Les paramètres objectId et contentType sont requis. contentType peut être l'un des suivants : "
-"iaso.orgunit, iaso.form, iaso.instance"
+"Les paramètres objectId et contentType sont requis. contentType peut être "
+"l'un des suivants : iaso.orgunit, iaso.form, iaso.instance"
 
 #: iaso/api/org_unit_change_request_configurations/filters.py:9
 #: iaso/api/org_unit_change_requests/filters.py:26
@@ -152,12 +152,9 @@ msgid "Validation status"
 msgstr "Statut de validation"
 
 #: iaso/api/org_units.py:434 iaso/api/org_units.py:717
-msgid "Invalid validation status : {validation_status}"
-msgstr "Statut de validation invalide : {validation_status}"
-
-#: iaso/api/org_units.py:434 iaso/api/org_units.py:717
 msgid "You cannot create or edit an Org unit of this type"
-msgstr "Vous ne pouvez pas créer ou modifier une unité organisationnelle de ce type"
+msgstr ""
+"Vous ne pouvez pas créer ou modifier une unité organisationnelle de ce type"
 
 #: iaso/api/org_units.py:544 iaso/api/org_units.py:730
 msgid "You cannot create an Org Unit without a parent"
@@ -348,7 +345,8 @@ msgstr "L'instance doit être liée à un formulaire."
 
 #: iaso/models/base.py:1081
 msgid "The OrgUnit must be linked to a OrgUnitType."
-msgstr "L'unité organisationnelle doit être liée à un type d'unité organisationnelle."
+msgstr ""
+"L'unité organisationnelle doit être liée à un type d'unité organisationnelle."
 
 #: iaso/models/base.py:1083
 msgid "The submission must be an instance of a reference form."
@@ -368,15 +366,18 @@ msgstr "Authentification requise sur mobile"
 
 #: iaso/models/base.py:1691
 msgid "Mobile: Limit download of orgunit to what the user has access to"
-msgstr "Mobile : Limiter le téléchargement des unités organisationnelles à celles auxquelles l'utilisateur a accès"
+msgstr ""
+"Mobile : Limiter le téléchargement des unités organisationnelles à celles "
+"auxquelles l'utilisateur a accès"
 
 #: iaso/models/base.py:1699
 msgid ""
 "Saving a form as finalized on mobile triggers an upload attempt immediately "
 "+ everytime network becomes available"
 msgstr ""
-"L'enregistrement d'un formulaire comme finalisé sur mobile déclenche une tentative "
-"de téléchargement immédiatement + à chaque fois que le réseau devient disponible"
+"L'enregistrement d'un formulaire comme finalisé sur mobile déclenche une "
+"tentative de téléchargement immédiatement + à chaque fois que le réseau "
+"devient disponible"
 
 #: iaso/models/comment.py:21
 msgid "content type"
@@ -387,14 +388,15 @@ msgid ""
 "Used in the UI e.g. to filter Change Requests by Data Source Synchronization "
 "operations."
 msgstr ""
-"Utilisé dans l'interface utilisateur pour filtrer les demandes de modification par "
-"opérations de synchronisation de source de données."
+"Utilisé dans l'interface utilisateur pour filtrer les demandes de "
+"modification par opérations de synchronisation de source de données."
 
 #: iaso/models/data_source.py:217
 msgid ""
 "The version of the pyramid for which we want to generate change requests."
 msgstr ""
-"La version de la pyramide pour laquelle nous voulons générer des demandes de modification."
+"La version de la pyramide pour laquelle nous voulons générer des demandes de "
+"modification."
 
 #: iaso/models/data_source.py:223
 msgid "The version of the pyramid to use as a comparison."
@@ -406,23 +408,29 @@ msgstr "La différence utilisée pour créer des demandes de modification."
 
 #: iaso/models/data_source.py:229
 msgid "A string representation of the parameters used for the diff."
-msgstr "Une représentation sous forme de chaîne des paramètres utilisés pour la différence."
+msgstr ""
+"Une représentation sous forme de chaîne des paramètres utilisés pour la "
+"différence."
 
 #: iaso/models/data_source.py:232
 msgid ""
 "The number of change requests that will be generated to create an org unit."
 msgstr ""
-"Le nombre de demandes de modification qui seront générées pour créer une unité organisationnelle."
+"Le nombre de demandes de modification qui seront générées pour créer une "
+"unité organisationnelle."
 
 #: iaso/models/data_source.py:235
 msgid ""
 "The number of change requests that will be generated to update an org unit."
 msgstr ""
-"Le nombre de demandes de modification qui seront générées pour mettre à jour une unité organisationnelle."
+"Le nombre de demandes de modification qui seront générées pour mettre à jour "
+"une unité organisationnelle."
 
 #: iaso/models/data_source.py:244
 msgid "The background task that used the diff to create change requests."
-msgstr "La tâche en arrière-plan qui a utilisé la différence pour créer des demandes de modification."
+msgstr ""
+"La tâche en arrière-plan qui a utilisé la différence pour créer des demandes "
+"de modification."
 
 #: iaso/models/data_source.py:256
 msgid "Data source synchronization"
@@ -498,7 +506,9 @@ msgstr "Pas de demande de modification"
 
 #: iaso/models/forms.py:81
 msgid "Create change request if form is reference form"
-msgstr "Créer une demande de modification si le formulaire est un formulaire de référence"
+msgstr ""
+"Créer une demande de modification si le formulaire est un formulaire de "
+"référence"
 
 #: iaso/models/org_unit.py:118
 msgid "Country"
@@ -618,8 +628,12 @@ msgstr "Clé primaire ou uuid invalide \"{pk_value}\" - l'objet n'existe pas."
 #: iaso/utils/serializer/id_or_uuid_field.py:15
 #, python-brace-format
 msgid "Incorrect type. Expected pk or uuid value, received {data_type}."
-msgstr "Type incorrect. Valeur de clé primaire ou uuid attendue, reçu {data_type}."
+msgstr ""
+"Type incorrect. Valeur de clé primaire ou uuid attendue, reçu {data_type}."
 
 #: iaso/utils/serializer/three_dim_point_field.py:19
 msgid "Enter a valid location."
 msgstr "Entrez une localisation valide."
+
+#~ msgid "Invalid validation status : {validation_status}"
+#~ msgstr "Statut de validation invalide : {validation_status}"

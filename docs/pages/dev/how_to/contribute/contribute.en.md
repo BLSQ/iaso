@@ -27,26 +27,25 @@ docker compose exec iaso ./manage.py test
 
 ### Translations
 
-When modifying or adding new strings to translate, use our custom command to regenerate the translations:
+When modifying or adding new strings to translate, use our custom commands to manage translations:
 
 ```bash
+# Generate/update translation files
 python manage.py make_translations
+
+# Check for missing translations
+python scripts/translations/check.py
+
+# Compile translation files
+python manage.py compile_translations
 ```
 
-This will update translation files in multiple locations while ignoring common development folders (node_modules, venv, cypress, etc.):
+These commands will process translation files in specific locations:
 - `hat/locale/fr/LC_MESSAGES/django.po` for the core application
 - `iaso/locale/fr/LC_MESSAGES/django.po` for the Iaso application
-- Additional `.po` files for plugins that use translations
+- Additional `.po` files in `plugins/*/locale/*/LC_MESSAGES/django.po` for plugins that use translations
 
-To check for missing translations:
-```bash
-python scripts/check_translations.py
-```
-
-After updating the `.po` files with your translations, compile them:
-```bash
-python manage.py compilemessages
-```
+The commands are designed to only process these specific paths, ignoring any other locations in the project.
 
 ### Code reloading
 

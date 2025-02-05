@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-import os
 import sys
 from pathlib import Path
 
-from translation_config import TRANSLATION_PATHS
+from scripts.translations.utils import find_translation_files
 
 
 # ANSI escape codes for colors
@@ -17,17 +16,9 @@ class Colors:
     BOLD = "\033[1m"
 
 
-def format_path(path):
-    """Format a file path to be relative to the project root"""
-    try:
-        return str(Path(path).relative_to(Path.cwd()))
-    except ValueError:
-        return path
-
-
 def check_po_file(po_path):
     """Check a single .po file for missing translations"""
-    print(f"\n{Colors.BLUE}Checking{Colors.ENDC} {Colors.BOLD}{format_path(po_path)}{Colors.ENDC}")
+    print(f"\n{Colors.BLUE}Checking{Colors.ENDC} {Colors.BOLD}{po_path}{Colors.ENDC}")
     missing = []
 
     with open(po_path, "r", encoding="utf-8") as f:
@@ -77,34 +68,21 @@ def check_po_file(po_path):
 
 
 def main():
-    project_root = Path(__file__).parent.parent
-    po_files = []
+    project_root = Path(__file__).parent.parent.parent
+    po_files = find_translation_files(project_root, "django.po")
 
-    # Scan for .po files in specified paths
-    for base_path in TRANSLATION_PATHS:
-        base_dir = project_root / base_path
-        if base_path == "plugins":
-            # For plugins, look in each plugin's locale directory
-            for plugin_dir in base_dir.glob("*"):
-                if plugin_dir.is_dir():
-                    po_files.extend(plugin_dir.glob("**/django.po"))
-        else:
-            # For hat and iaso, look in their locale directories
-            po_files.extend(base_dir.glob("**/django.po"))
-
-    # Filter out any files in virtual environments
-    po_files = [f for f in po_files if "venv" not in str(f) and ".venv" not in str(f)]
+    print(f"\n{Colors.HEADER}🔍 Checking translations in {len(po_files)} files...{Colors.ENDC}")
 
     all_missing = []
     files_with_missing = 0
 
-    print(f"\n{Colors.HEADER}🔍 Checking translations in {len(po_files)} files...{Colors.ENDC}")
-
     for po_file in po_files:
-        missing = check_po_file(po_file)
+        missing = check_po_file(po_file.relative_to(project_root))
         if missing:
             files_with_missing += 1
-            print(f"\n{Colors.FAIL}❌ Missing translations in {Colors.BOLD}{format_path(po_file)}{Colors.ENDC}")
+            print(
+                f"\n{Colors.FAIL}❌ Missing translations in {Colors.BOLD}{po_file.relative_to(project_root)}{Colors.ENDC}"
+            )
             for msg in missing:
                 print(f"  {Colors.WARNING}▶ {msg}{Colors.ENDC}")
             all_missing.extend(missing)

@@ -30,11 +30,8 @@ docker compose exec iaso ./manage.py test
 When modifying or adding new strings to translate, use our custom commands to manage translations:
 
 ```bash
-# Generate/update translation files
+# Generate/update and test translations
 python manage.py make_translations
-
-# Check for missing translations
-python scripts/translations/check.py
 
 # Compile translation files
 python manage.py compile_translations

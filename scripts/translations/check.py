@@ -3,7 +3,6 @@ import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
-from scripts.translations.utils import find_translation_files
 
 
 # ANSI escape codes for colors
@@ -66,39 +65,3 @@ def check_po_file(po_path):
             missing.append(full_msgid)
 
     return missing
-
-
-def main():
-    # Get project root (two levels up from this script)
-    project_root = Path(__file__).parent.parent.parent
-    po_files = find_translation_files(project_root, "django.po")
-
-    print(f"\n{Colors.HEADER}🔍 Checking translations in {len(po_files)} files...{Colors.ENDC}")
-
-    all_missing = []
-    files_with_missing = 0
-
-    for po_file in po_files:
-        missing = check_po_file(po_file.relative_to(project_root))
-        if missing:
-            files_with_missing += 1
-            print(
-                f"\n{Colors.FAIL}❌ Missing translations in {Colors.BOLD}{po_file.relative_to(project_root)}{Colors.ENDC}"
-            )
-            for msg in missing:
-                print(f"  {Colors.WARNING}▶ {msg}{Colors.ENDC}")
-            all_missing.extend(missing)
-
-    print("\n" + "=" * 80)
-    if all_missing:
-        print(
-            f"{Colors.FAIL}❌ Found {len(all_missing)} missing translations in {files_with_missing} files{Colors.ENDC}"
-        )
-        sys.exit(1)
-    else:
-        print(f"{Colors.GREEN}✅ All translations are complete! 🎉{Colors.ENDC}")
-        sys.exit(0)
-
-
-if __name__ == "__main__":
-    main()

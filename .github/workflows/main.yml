@@ -131,7 +131,6 @@ jobs:
               run: |
                   . ./venv/bin/activate
                   python manage.py make_translations
-                  python scripts/translations/check.py
                   python manage.py compile_translations
               env:
                   RDS_DB_NAME: github_actions

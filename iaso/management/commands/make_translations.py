@@ -1,37 +1,77 @@
+import logging
+import os
+import re
+import time
+from io import StringIO
 from pathlib import Path
 
 from django.core.management import call_command
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+from django.core.management.commands.makemessages import Command as MakeMessagesCommand
 
+from scripts.translations.check import check_po_file
 from scripts.translations.config import IGNORE_ARGS
-from scripts.translations.utils import find_translation_files
 
 
 class Command(BaseCommand):
-    help = "Make translations"
+    help = "Make translations and check for missing translations"
 
     def handle(self, *args, **options):
+        # Find existing .po files and their modification times before running makemessages
+        project_root = Path.cwd()
+        po_files_before = {po_file: po_file.stat().st_mtime for po_file in project_root.rglob("*.po")}
+
         cmd_args = [
             "--locale=fr",
             "--extension=txt",
             "--extension=py",
             "--extension=html",
+            "--verbosity=0",  # Ensure detailed output
         ] + IGNORE_ARGS
 
-        # Run makemessages once with all paths
+        # Set up logging to capture the output
+        log_stream = StringIO()
+        logging.basicConfig(stream=log_stream, level=logging.INFO)
+
         try:
             call_command("makemessages", *cmd_args)
+            log_stream.seek(0)
+            output = log_stream.read()
+
+            # Display only the .po files from the makemessages output
+            self.stdout.write("\nProcessed .po files:")
+            po_file_pattern = re.compile(r".*\.po$")
+            for line in output.splitlines():
+                if po_file_pattern.search(line):
+                    self.stdout.write(f"  {self.style.SUCCESS('✓')} {self.style.WARNING(line)}")
+
         except Exception as e:
             self.stdout.write(self.style.WARNING(f"Warning: {str(e)}"))
             self.stdout.write("Continuing despite error...")
 
-        # Find and report on .po files
-        project_root = Path.cwd()
-        po_files = find_translation_files(project_root, "django.po")
+        # Check which .po files were modified
+        po_files_after = {po_file: po_file.stat().st_mtime for po_file in project_root.rglob("*.po")}
+        modified_files = [
+            po_file
+            for po_file in po_files_after
+            if po_file not in po_files_before or po_files_after[po_file] > po_files_before[po_file]
+        ]
 
-        self.stdout.write("\nTranslation files processed:")
-        for po_file in po_files:
+        self.stdout.write("\nModified .po files:")
+        has_missing_translations = False
+        for po_file in modified_files:
             relative_path = po_file.relative_to(project_root)
-            self.stdout.write(f"  {self.style.SUCCESS('✓')} {self.style.WARNING(str(relative_path))}")
+            missing_translations = check_po_file(po_file)
+            self.stdout.write(f"\n  {self.style.WARNING('!')} File: {self.style.WARNING(str(relative_path))}")
+            if missing_translations:
+                has_missing_translations = True
+                self.stdout.write("    Missing translations:")
+                for msg in missing_translations:
+                    self.stdout.write(f"      - {msg}")
+            else:
+                self.stdout.write(f"  {self.style.SUCCESS('✓')} All translations complete!")
 
-        self.stdout.write(self.style.SUCCESS(f"\nSuccessfully processed {len(po_files)} translation files"))
+        if has_missing_translations:
+            raise CommandError("Some translations are missing. Please add the missing translations before proceeding.")
+
+        self.stdout.write(self.style.SUCCESS("\nAll fields are translated successfully!"))

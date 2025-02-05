@@ -152,6 +152,10 @@ msgid "Validation status"
 msgstr "Statut de validation"
 
 #: iaso/api/org_units.py:434 iaso/api/org_units.py:717
+msgid "Invalid validation status : {validation_status}"
+msgstr "Statut de validation invalide : {validation_status}"
+
+#: iaso/api/org_units.py:434 iaso/api/org_units.py:717
 msgid "You cannot create or edit an Org unit of this type"
 msgstr "Vous ne pouvez pas créer ou modifier une unité organisationnelle de ce type"
 

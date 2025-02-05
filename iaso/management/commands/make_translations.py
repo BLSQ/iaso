@@ -3,18 +3,21 @@ from pathlib import Path
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from scripts.translations.utils import find_translation_files, get_translation_command_args
+from scripts.translations.utils import find_translation_files
 
 
 class Command(BaseCommand):
-    help = "Make translations with standard ignore patterns"
+    help = "Make translations"
 
     def handle(self, *args, **options):
-        cmd_args = get_translation_command_args() + [
+        cmd_args = [
             "--locale=fr",
             "--extension=txt",
             "--extension=py",
             "--extension=html",
+            "--ignore=.venv",
+            "--ignore=cypress",
+            "--ignore=node_modules",
         ]
 
         # Run makemessages once with all paths

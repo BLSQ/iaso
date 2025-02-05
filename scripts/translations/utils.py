@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from scripts.translations.config import TRANSLATION_PATHS
 
 
@@ -22,17 +20,3 @@ def find_translation_files(project_root, file_pattern):
             # For hat and iaso, look in their locale directories
             files.extend(base_dir.glob(f"**/{file_pattern}"))
     return files
-
-
-def get_translation_command_args():
-    """Get common command arguments for translation commands"""
-    cmd_args = [
-        "--verbosity=0",  # Suppress default output
-        "--ignore=*",  # Ignore everything except our translation paths
-    ]
-
-    # Add explicit ignore exceptions for our translation paths
-    for path in TRANSLATION_PATHS:
-        cmd_args.append(f"--ignore=!{path}/*")
-
-    return cmd_args

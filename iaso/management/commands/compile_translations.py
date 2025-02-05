@@ -3,14 +3,18 @@ from pathlib import Path
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from scripts.translations.utils import find_translation_files, get_translation_command_args
+from scripts.translations.utils import find_translation_files
 
 
 class Command(BaseCommand):
     help = "Compile translations for specific paths only"
 
     def handle(self, *args, **options):
-        cmd_args = get_translation_command_args()
+        cmd_args = [
+            "--ignore=.venv",
+            "--ignore=cypress",
+            "--ignore=node_modules",
+        ]
 
         # Run compilemessages once with all paths
         call_command("compilemessages", *cmd_args)

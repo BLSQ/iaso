@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-05 13:32+0000\n"
+"POT-Creation-Date: 2025-02-05 14:47+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -17,6 +17,130 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
+
+#: plugins/wfp/models.py:6
+msgid "Male"
+msgstr "Masculin"
+
+#: plugins/wfp/models.py:6
+msgid "Female"
+msgstr "Féminin"
+
+#: plugins/wfp/models.py:9
+msgid "Death"
+msgstr "Décès"
+
+#: plugins/wfp/models.py:10
+msgid "Cured"
+msgstr "Guéri"
+
+#: plugins/wfp/models.py:11
+msgid "Dismissal"
+msgstr "Renvoi"
+
+#: plugins/wfp/models.py:12
+msgid "Voluntary Withdrawal"
+msgstr "Retrait volontaire"
+
+#: plugins/wfp/models.py:13
+msgid "Transfer To OTP"
+msgstr "Transfert vers OTP"
+
+#: plugins/wfp/models.py:14
+msgid "Transfer To TSFP"
+msgstr "Transfert vers TSFP"
+
+#: plugins/wfp/models.py:15
+msgid "Non respondent"
+msgstr "Non répondant"
+
+#: plugins/wfp/models.py:16
+msgid "Transferred out"
+msgstr "Transféré"
+
+#: plugins/wfp/models.py:17
+msgid "Defaulter"
+msgstr "Défaillant"
+
+#: plugins/wfp/models.py:18
+msgid "Other"
+msgstr "Autre"
+
+#: plugins/wfp/models.py:22
+msgid "TSFP"
+msgstr "TSFP"
+
+#: plugins/wfp/models.py:23
+msgid "OTP"
+msgstr "OTP"
+
+#: plugins/wfp/models.py:24
+msgid "Breastfeeding"
+msgstr "Allaitement"
+
+#: plugins/wfp/models.py:25
+msgid "Pregnant"
+msgstr "Enceinte"
+
+#: plugins/wfp/models.py:28
+msgid "PLW"
+msgstr "FAP"
+
+#: plugins/wfp/models.py:28
+msgid "U5"
+msgstr "M5"
+
+#: plugins/wfp/models.py:31
+msgid "MUAC"
+msgstr "MUAC"
+
+#: plugins/wfp/models.py:32
+msgid "WHZ"
+msgstr "WHZ"
+
+#: plugins/wfp/models.py:33
+msgid "OEDEMA"
+msgstr "ŒDÈME"
+
+#: plugins/wfp/models.py:34
+msgid "By wasted child"
+msgstr "Par enfant émacié"
+
+#: plugins/wfp/models.py:38
+msgid "New case"
+msgstr "Nouveau cas"
+
+#: plugins/wfp/models.py:39
+msgid "Readmission as non-respondent"
+msgstr "Réadmission comme non-répondant"
+
+#: plugins/wfp/models.py:40
+msgid "Referred from OTP (SAM)"
+msgstr "Référé de l'OTP (MAS)"
+
+#: plugins/wfp/models.py:41
+msgid "Referred from SC"
+msgstr "Référé du SC"
+
+#: plugins/wfp/models.py:42
+msgid "Referred from TSFP (MAM)"
+msgstr "Référé du TSFP (MAM)"
+
+#: plugins/wfp/models.py:43
+msgid "Relapse"
+msgstr "Rechute"
+
+#: plugins/wfp/models.py:44
+msgid "Returned defaulter"
+msgstr "Défaillant de retour"
+
+#: plugins/wfp/models.py:45
+msgid "Returned referral"
+msgstr "Référence retournée"
+
+#: plugins/wfp/models.py:46
+msgid "Transfer from other TSFP"
+msgstr "Transfert d'un autre TSFP"
 
 #: plugins/wfp_auth/templates/wfp_auth/login_subtemplate.html:4
 msgid "Login via WFP CIAM"
@@ -86,6 +210,358 @@ msgstr ""
 msgid "New User Account %(username)s Awaiting Access Permissions"
 msgstr ""
 "Nouveau compte utilisateur %(username)s en attente de permissions d'accès"
+
+#: hat/menupermissions/models.py:243
+msgid "Formulaires"
+msgstr "Formulaires"
+
+#: hat/menupermissions/models.py:244
+msgid "Statistiques pour les formulaires"
+msgstr "Statistiques pour les formulaires"
+
+#: hat/menupermissions/models.py:245
+msgid "Correspondances avec DHIS2"
+msgstr "Correspondances avec DHIS2"
+
+#: hat/menupermissions/models.py:246
+msgid "modules"
+msgstr "modules"
+
+#: hat/menupermissions/models.py:247
+msgid "Complétude des données"
+msgstr "Complétude des données"
+
+#: hat/menupermissions/models.py:248
+msgid "Unités d'organisations"
+msgstr "Unités d'organisations"
+
+#: hat/menupermissions/models.py:249
+msgid "Lire les unités d'organisations"
+msgstr "Lire les unités d'organisations"
+
+#: hat/menupermissions/models.py:250
+msgid "Editer le Registre"
+msgstr "Editer le Registre"
+
+#: hat/menupermissions/models.py:251
+msgid "Lire le Registre"
+msgstr "Lire le Registre"
+
+#: hat/menupermissions/models.py:252
+msgid "Correspondances sources"
+msgstr "Correspondances sources"
+
+#: hat/menupermissions/models.py:253 hat/menupermissions/models.py:327
+msgid "Users"
+msgstr "Utilisateurs"
+
+#: hat/menupermissions/models.py:254
+msgid "Users managed"
+msgstr "Utilisateurs gérés"
+
+#: hat/menupermissions/models.py:255
+msgid "Pages"
+msgstr "Pages"
+
+#: hat/menupermissions/models.py:256
+msgid "Projets"
+msgstr "Projets"
+
+#: hat/menupermissions/models.py:257
+msgid "Sources"
+msgstr "Sources"
+
+#: hat/menupermissions/models.py:258
+msgid "Tâches"
+msgstr "Tâches"
+
+#: hat/menupermissions/models.py:259
+msgid "Soumissions"
+msgstr "Soumissions"
+
+#: hat/menupermissions/models.py:260
+msgid "Editer soumissions"
+msgstr "Editer soumissions"
+
+#: hat/menupermissions/models.py:261
+msgid "Editer le planning"
+msgstr "Editer le planning"
+
+#: hat/menupermissions/models.py:262
+msgid "Lire le planning"
+msgstr "Lire le planning"
+
+#: hat/menupermissions/models.py:263 hat/menupermissions/models.py:323
+msgid "Reports"
+msgstr "Rapports"
+
+#: hat/menupermissions/models.py:264
+msgid "Equipes"
+msgstr "Equipes"
+
+#: hat/menupermissions/models.py:265
+msgid "Attributions"
+msgstr "Attributions"
+
+#: hat/menupermissions/models.py:266
+msgid "Budget Polio"
+msgstr "Budget Polio"
+
+#: hat/menupermissions/models.py:267
+msgid "Entities"
+msgstr "Entités"
+
+#: hat/menupermissions/models.py:268
+msgid "Write entity type"
+msgstr "Écrire type d'entité"
+
+#: hat/menupermissions/models.py:269
+msgid "Storages"
+msgstr "Stockages"
+
+#: hat/menupermissions/models.py:270
+msgid "Completeness stats"
+msgstr "Statistiques de complétude"
+
+#: hat/menupermissions/models.py:271
+msgid "Workflows"
+msgstr "Flux de travail"
+
+#: hat/menupermissions/models.py:272
+msgid "Budget Polio Admin"
+msgstr "Administration Budget Polio"
+
+#: hat/menupermissions/models.py:273
+msgid "Read Entity duplicates"
+msgstr "Lire les doublons d'entités"
+
+#: hat/menupermissions/models.py:274
+msgid "Write Entity duplicates"
+msgstr "Écrire les doublons d'entités"
+
+#: hat/menupermissions/models.py:275
+msgid "Manage user roles"
+msgstr "Gérer les rôles utilisateurs"
+
+#: hat/menupermissions/models.py:276
+msgid "Read data store"
+msgstr "Lire le stockage de données"
+
+#: hat/menupermissions/models.py:277
+msgid "Write data store"
+msgstr "Écrire dans le stockage de données"
+
+#: hat/menupermissions/models.py:278
+msgid "Org unit types"
+msgstr "Types d'unités d'organisation"
+
+#: hat/menupermissions/models.py:279
+msgid "Org unit groups"
+msgstr "Groupes d'unités d'organisation"
+
+#: hat/menupermissions/models.py:280
+msgid "Org unit change request review"
+msgstr "Révision des demandes de modification d'unités d'organisation"
+
+#: hat/menupermissions/models.py:281
+msgid "Org unit change request configurations"
+msgstr "Configurations des demandes de modification d'unités d'organisation"
+
+#: hat/menupermissions/models.py:282
+msgid "Write data source"
+msgstr "Écrire source de données"
+
+#: hat/menupermissions/models.py:283
+msgid "Write page"
+msgstr "Écrire page"
+
+#: hat/menupermissions/models.py:284
+msgid "Payments page"
+msgstr "Page des paiements"
+
+#: hat/menupermissions/models.py:287
+msgid "Polio"
+msgstr "Polio"
+
+#: hat/menupermissions/models.py:288
+msgid "Polio config"
+msgstr "Configuration Polio"
+
+#: hat/menupermissions/models.py:289
+msgid "Polio chronogram"
+msgstr "Chronogramme Polio"
+
+#: hat/menupermissions/models.py:290
+msgid "Polio chronogram user (restricted write)"
+msgstr "Utilisateur chronogramme Polio (écriture restreinte)"
+
+#: hat/menupermissions/models.py:291
+msgid "Polio notifications"
+msgstr "Notifications Polio"
+
+#: hat/menupermissions/models.py:292
+msgid "Polio Vaccine Authorizations Read Only"
+msgstr "Autorisations vaccin Polio (lecture seule)"
+
+#: hat/menupermissions/models.py:293
+msgid "Polio Vaccine Authorizations Admin"
+msgstr "Administration des autorisations vaccin Polio"
+
+#: hat/menupermissions/models.py:294
+msgid "Polio Vaccine Supply Chain Read"
+msgstr "Lecture chaîne d'approvisionnement vaccin Polio"
+
+#: hat/menupermissions/models.py:295
+msgid "Polio Vaccine Supply Chain Write"
+msgstr "Écriture chaîne d'approvisionnement vaccin Polio"
+
+#: hat/menupermissions/models.py:296
+msgid "Polio Vaccine Stock Management Read"
+msgstr "Lecture gestion des stocks vaccin Polio"
+
+#: hat/menupermissions/models.py:297
+msgid "Polio Vaccine Stock Management Write"
+msgstr "Écriture gestion des stocks vaccin Polio"
+
+#: hat/menupermissions/models.py:300
+msgid "Areas"
+msgstr "Zones"
+
+#: hat/menupermissions/models.py:301
+msgid "Edit areas"
+msgstr "Éditer les zones"
+
+#: hat/menupermissions/models.py:302
+msgid "Edit areas shapes"
+msgstr "Éditer les formes des zones"
+
+#: hat/menupermissions/models.py:303
+msgid "Cases"
+msgstr "Cas"
+
+#: hat/menupermissions/models.py:304
+msgid "Cases analysis"
+msgstr "Analyse des cas"
+
+#: hat/menupermissions/models.py:305
+msgid "Coordinations"
+msgstr "Coordinations"
+
+#: hat/menupermissions/models.py:306
+msgid "Devices"
+msgstr "Appareils"
+
+#: hat/menupermissions/models.py:307
+msgid "Téléchargement de données"
+msgstr "Téléchargement de données"
+
+#: hat/menupermissions/models.py:308
+msgid "Doublons"
+msgstr "Doublons"
+
+#: hat/menupermissions/models.py:309
+msgid "Edition d'un patient"
+msgstr "Edition d'un patient"
+
+#: hat/menupermissions/models.py:310
+msgid "Health facilities"
+msgstr "Établissements de santé"
+
+#: hat/menupermissions/models.py:311
+msgid "Labo"
+msgstr "Labo"
+
+#: hat/menupermissions/models.py:312
+msgid "Labo import"
+msgstr "Import labo"
+
+#: hat/menupermissions/models.py:313
+msgid "Locator"
+msgstr "Localisateur"
+
+#: hat/menupermissions/models.py:314
+msgid "Macroplanning"
+msgstr "Macroplanification"
+
+#: hat/menupermissions/models.py:315
+msgid "Microplanning"
+msgstr "Microplanification"
+
+#: hat/menupermissions/models.py:316
+msgid "Modifications"
+msgstr "Modifications"
+
+#: hat/menupermissions/models.py:317
+msgid "Plannings"
+msgstr "Planifications"
+
+#: hat/menupermissions/models.py:318
+msgid "Plannings template"
+msgstr "Modèle de planifications"
+
+#: hat/menupermissions/models.py:319
+msgid "Quality control"
+msgstr "Contrôle qualité"
+
+#: hat/menupermissions/models.py:320
+msgid "Reconciliation"
+msgstr "Réconciliation"
+
+#: hat/menupermissions/models.py:321
+msgid "Routes"
+msgstr "Routes"
+
+#: hat/menupermissions/models.py:322
+msgid "Graphs"
+msgstr "Graphiques"
+
+#: hat/menupermissions/models.py:324
+msgid "Upload of cases files"
+msgstr "Téléversement des fichiers de cas"
+
+#: hat/menupermissions/models.py:325
+msgid "Upload of villages files"
+msgstr "Téléversement des fichiers de villages"
+
+#: hat/menupermissions/models.py:326
+msgid "Teams"
+msgstr "Équipes"
+
+#: hat/menupermissions/models.py:328
+msgid "Vector control"
+msgstr "Contrôle vectoriel"
+
+#: hat/menupermissions/models.py:329
+msgid "Vector control import Gpx"
+msgstr "Import GPX contrôle vectoriel"
+
+#: hat/menupermissions/models.py:330
+msgid "Villages"
+msgstr "Villages"
+
+#: hat/menupermissions/models.py:331
+msgid "Work zones"
+msgstr "Zones de travail"
+
+#: hat/menupermissions/models.py:332
+msgid "Zones"
+msgstr "Zones"
+
+#: hat/menupermissions/models.py:333
+msgid "Edit zones"
+msgstr "Éditer les zones"
+
+#: hat/menupermissions/models.py:334
+msgid "Edit zones shapes"
+msgstr "Éditer les formes des zones"
+
+#: hat/settings.py:356
+msgid "French"
+msgstr "Français"
+
+#: hat/settings.py:357
+msgid "English"
+msgstr "Anglais"
 
 #: hat/templates/iaso/forgot_password.html:13
 #: hat/templates/iaso/reset_password_confirmation.html:15
@@ -215,360 +691,3 @@ msgstr "L'équipe %(site_name)s."
 #, python-format
 msgid "Password reset on %(site_name)s"
 msgstr "Réinitialisation du mot de passe sur %(site_name)s"
-
-#~ msgid "Male"
-#~ msgstr "Masculin"
-
-#~ msgid "Female"
-#~ msgstr "Féminin"
-
-#~ msgid "Death"
-#~ msgstr "Décès"
-
-#~ msgid "Cured"
-#~ msgstr "Guéri"
-
-#~ msgid "Dismissal"
-#~ msgstr "Renvoi"
-
-#~ msgid "Voluntary Withdrawal"
-#~ msgstr "Retrait volontaire"
-
-#~ msgid "Transfer To OTP"
-#~ msgstr "Transfert vers OTP"
-
-#~ msgid "Transfer To TSFP"
-#~ msgstr "Transfert vers TSFP"
-
-#~ msgid "Non respondent"
-#~ msgstr "Non répondant"
-
-#~ msgid "Transferred out"
-#~ msgstr "Transféré"
-
-#~ msgid "Defaulter"
-#~ msgstr "Défaillant"
-
-#~ msgid "Other"
-#~ msgstr "Autre"
-
-#~ msgid "TSFP"
-#~ msgstr "TSFP"
-
-#~ msgid "OTP"
-#~ msgstr "OTP"
-
-#~ msgid "Breastfeeding"
-#~ msgstr "Allaitement"
-
-#~ msgid "Pregnant"
-#~ msgstr "Enceinte"
-
-#~ msgid "PLW"
-#~ msgstr "FAP"
-
-#~ msgid "U5"
-#~ msgstr "M5"
-
-#~ msgid "MUAC"
-#~ msgstr "MUAC"
-
-#~ msgid "WHZ"
-#~ msgstr "WHZ"
-
-#~ msgid "OEDEMA"
-#~ msgstr "ŒDÈME"
-
-#~ msgid "By wasted child"
-#~ msgstr "Par enfant émacié"
-
-#~ msgid "New case"
-#~ msgstr "Nouveau cas"
-
-#~ msgid "Readmission as non-respondent"
-#~ msgstr "Réadmission comme non-répondant"
-
-#~ msgid "Referred from OTP (SAM)"
-#~ msgstr "Référé de l'OTP (MAS)"
-
-#~ msgid "Referred from SC"
-#~ msgstr "Référé du SC"
-
-#~ msgid "Referred from TSFP (MAM)"
-#~ msgstr "Référé du TSFP (MAM)"
-
-#~ msgid "Relapse"
-#~ msgstr "Rechute"
-
-#~ msgid "Returned defaulter"
-#~ msgstr "Défaillant de retour"
-
-#~ msgid "Returned referral"
-#~ msgstr "Référence retournée"
-
-#~ msgid "Transfer from other TSFP"
-#~ msgstr "Transfert d'un autre TSFP"
-
-#~ msgid "Formulaires"
-#~ msgstr "Formulaires"
-
-#~ msgid "Statistiques pour les formulaires"
-#~ msgstr "Statistiques pour les formulaires"
-
-#~ msgid "Correspondances avec DHIS2"
-#~ msgstr "Correspondances avec DHIS2"
-
-#~ msgid "modules"
-#~ msgstr "modules"
-
-#~ msgid "Complétude des données"
-#~ msgstr "Complétude des données"
-
-#~ msgid "Unités d'organisations"
-#~ msgstr "Unités d'organisations"
-
-#~ msgid "Lire les unités d'organisations"
-#~ msgstr "Lire les unités d'organisations"
-
-#~ msgid "Editer le Registre"
-#~ msgstr "Editer le Registre"
-
-#~ msgid "Lire le Registre"
-#~ msgstr "Lire le Registre"
-
-#~ msgid "Correspondances sources"
-#~ msgstr "Correspondances sources"
-
-#~ msgid "Users"
-#~ msgstr "Utilisateurs"
-
-#~ msgid "Users managed"
-#~ msgstr "Utilisateurs gérés"
-
-#~ msgid "Pages"
-#~ msgstr "Pages"
-
-#~ msgid "Projets"
-#~ msgstr "Projets"
-
-#~ msgid "Sources"
-#~ msgstr "Sources"
-
-#~ msgid "Tâches"
-#~ msgstr "Tâches"
-
-#~ msgid "Soumissions"
-#~ msgstr "Soumissions"
-
-#~ msgid "Editer soumissions"
-#~ msgstr "Editer soumissions"
-
-#~ msgid "Editer le planning"
-#~ msgstr "Editer le planning"
-
-#~ msgid "Lire le planning"
-#~ msgstr "Lire le planning"
-
-#~ msgid "Reports"
-#~ msgstr "Rapports"
-
-#~ msgid "Equipes"
-#~ msgstr "Equipes"
-
-#~ msgid "Attributions"
-#~ msgstr "Attributions"
-
-#~ msgid "Budget Polio"
-#~ msgstr "Budget Polio"
-
-#~ msgid "Entities"
-#~ msgstr "Entités"
-
-#~ msgid "Write entity type"
-#~ msgstr "Écrire type d'entité"
-
-#~ msgid "Storages"
-#~ msgstr "Stockages"
-
-#~ msgid "Completeness stats"
-#~ msgstr "Statistiques de complétude"
-
-#~ msgid "Workflows"
-#~ msgstr "Flux de travail"
-
-#~ msgid "Budget Polio Admin"
-#~ msgstr "Administration Budget Polio"
-
-#~ msgid "Read Entity duplicates"
-#~ msgstr "Lire les doublons d'entités"
-
-#~ msgid "Write Entity duplicates"
-#~ msgstr "Écrire les doublons d'entités"
-
-#~ msgid "Manage user roles"
-#~ msgstr "Gérer les rôles utilisateurs"
-
-#~ msgid "Read data store"
-#~ msgstr "Lire le stockage de données"
-
-#~ msgid "Write data store"
-#~ msgstr "Écrire dans le stockage de données"
-
-#~ msgid "Org unit types"
-#~ msgstr "Types d'unités d'organisation"
-
-#~ msgid "Org unit groups"
-#~ msgstr "Groupes d'unités d'organisation"
-
-#~ msgid "Org unit change request review"
-#~ msgstr "Révision des demandes de modification d'unités d'organisation"
-
-#~ msgid "Org unit change request configurations"
-#~ msgstr "Configurations des demandes de modification d'unités d'organisation"
-
-#~ msgid "Write data source"
-#~ msgstr "Écrire source de données"
-
-#~ msgid "Write page"
-#~ msgstr "Écrire page"
-
-#~ msgid "Payments page"
-#~ msgstr "Page des paiements"
-
-#~ msgid "Polio"
-#~ msgstr "Polio"
-
-#~ msgid "Polio config"
-#~ msgstr "Configuration Polio"
-
-#~ msgid "Polio chronogram"
-#~ msgstr "Chronogramme Polio"
-
-#~ msgid "Polio chronogram user (restricted write)"
-#~ msgstr "Utilisateur chronogramme Polio (écriture restreinte)"
-
-#~ msgid "Polio notifications"
-#~ msgstr "Notifications Polio"
-
-#~ msgid "Polio Vaccine Authorizations Read Only"
-#~ msgstr "Autorisations vaccin Polio (lecture seule)"
-
-#~ msgid "Polio Vaccine Authorizations Admin"
-#~ msgstr "Administration des autorisations vaccin Polio"
-
-#~ msgid "Polio Vaccine Supply Chain Read"
-#~ msgstr "Lecture chaîne d'approvisionnement vaccin Polio"
-
-#~ msgid "Polio Vaccine Supply Chain Write"
-#~ msgstr "Écriture chaîne d'approvisionnement vaccin Polio"
-
-#~ msgid "Polio Vaccine Stock Management Read"
-#~ msgstr "Lecture gestion des stocks vaccin Polio"
-
-#~ msgid "Polio Vaccine Stock Management Write"
-#~ msgstr "Écriture gestion des stocks vaccin Polio"
-
-#~ msgid "Areas"
-#~ msgstr "Zones"
-
-#~ msgid "Edit areas"
-#~ msgstr "Éditer les zones"
-
-#~ msgid "Edit areas shapes"
-#~ msgstr "Éditer les formes des zones"
-
-#~ msgid "Cases"
-#~ msgstr "Cas"
-
-#~ msgid "Cases analysis"
-#~ msgstr "Analyse des cas"
-
-#~ msgid "Coordinations"
-#~ msgstr "Coordinations"
-
-#~ msgid "Devices"
-#~ msgstr "Appareils"
-
-#~ msgid "Téléchargement de données"
-#~ msgstr "Téléchargement de données"
-
-#~ msgid "Doublons"
-#~ msgstr "Doublons"
-
-#~ msgid "Edition d'un patient"
-#~ msgstr "Edition d'un patient"
-
-#~ msgid "Health facilities"
-#~ msgstr "Établissements de santé"
-
-#~ msgid "Labo"
-#~ msgstr "Labo"
-
-#~ msgid "Labo import"
-#~ msgstr "Import labo"
-
-#~ msgid "Locator"
-#~ msgstr "Localisateur"
-
-#~ msgid "Macroplanning"
-#~ msgstr "Macroplanification"
-
-#~ msgid "Microplanning"
-#~ msgstr "Microplanification"
-
-#~ msgid "Modifications"
-#~ msgstr "Modifications"
-
-#~ msgid "Plannings"
-#~ msgstr "Planifications"
-
-#~ msgid "Plannings template"
-#~ msgstr "Modèle de planifications"
-
-#~ msgid "Quality control"
-#~ msgstr "Contrôle qualité"
-
-#~ msgid "Reconciliation"
-#~ msgstr "Réconciliation"
-
-#~ msgid "Routes"
-#~ msgstr "Routes"
-
-#~ msgid "Graphs"
-#~ msgstr "Graphiques"
-
-#~ msgid "Upload of cases files"
-#~ msgstr "Téléversement des fichiers de cas"
-
-#~ msgid "Upload of villages files"
-#~ msgstr "Téléversement des fichiers de villages"
-
-#~ msgid "Teams"
-#~ msgstr "Équipes"
-
-#~ msgid "Vector control"
-#~ msgstr "Contrôle vectoriel"
-
-#~ msgid "Vector control import Gpx"
-#~ msgstr "Import GPX contrôle vectoriel"
-
-#~ msgid "Villages"
-#~ msgstr "Villages"
-
-#~ msgid "Work zones"
-#~ msgstr "Zones de travail"
-
-#~ msgid "Zones"
-#~ msgstr "Zones"
-
-#~ msgid "Edit zones"
-#~ msgstr "Éditer les zones"
-
-#~ msgid "Edit zones shapes"
-#~ msgstr "Éditer les formes des zones"
-
-#~ msgid "French"
-#~ msgstr "Français"
-
-#~ msgid "English"
-#~ msgstr "Anglais"

@@ -11,6 +11,7 @@ class Command(BaseCommand):
         cmd_args = [
             "--locale=fr",
             "--extension=txt",
+            "--extension=py",
             "--extension=html",
         ] + IGNORE_ARGS
 

@@ -26,7 +26,7 @@ msgstr "Le modèle {value} n'existe pas."
 
 #: iaso/api/comment.py:25
 msgid "Invalid value."
-msgstr "Valeur invalide."
+msgstr ""
 
 #: iaso/api/data_source_versions_synchronization/filters.py:10
 msgid "Created at greater than or equal to"

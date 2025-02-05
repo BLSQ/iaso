@@ -37,12 +37,9 @@ python manage.py make_translations
 python manage.py compile_translations
 ```
 
-These commands will process translation files in specific locations:
-- `hat/locale/fr/LC_MESSAGES/django.po` for the core application
-- `iaso/locale/fr/LC_MESSAGES/django.po` for the Iaso application
-- Additional `.po` files in `plugins/*/locale/*/LC_MESSAGES/django.po` for plugins that use translations
+These commands will process translation files all over the project.
 
-The commands are designed to only process these specific paths, ignoring any other locations in the project.
+The `make_translations` command also performs checks for missing translations. If these tests do not pass, you should add the missing translations using Poedit or by directly editing the `.po` file.
 
 ### Code reloading
 

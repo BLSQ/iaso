@@ -1,7 +1,7 @@
 # Folders to scan for translations
 TRANSLATION_PATHS = [
-    "hat",
-    "iaso",
+    "hat/locale",
+    "iaso/locale",
     "plugins",
 ]
 

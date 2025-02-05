@@ -9,6 +9,7 @@ IASO development follows continuous software enhancement through iteration, ensu
 ### SCRUM-based development for IASO
 
 Bluesquare employs the SCRUM methodology, using two-week sprints to manage IASO development. Within each sprint:
+
 - Deliverables are regularly discussed to prioritize cost-effective features.
 - Potential delays are identified early.
 - The most impactful features are developed first, ensuring an efficient use of resources.
@@ -22,6 +23,7 @@ IASO's development leverages Agile's flexibility to enable close collaboration w
 The IASO development process actively engages users and key stakeholders to adopt a patient or user-centric and people-centered systems design. This approach ensures that solutions address the actual needs of frontline health workers, program managers, and policymakers. 
 
 Bluesquare integrates user input through:
+
 - Co-design workshops with implementing partners.
 - Iterative user acceptance testing (UAT) sessions to validate features before deployment.
 - Regular feedback mechanisms embedded in the platform to capture insights from end users.
@@ -39,6 +41,7 @@ Bluesquare's approach to IASO implementation is based on co-construction, ensuri
 # Value alignment
 
 IASO aligns with global health priorities by addressing real-world digitalization challenges. Our open-source, scalable, and adaptable tools ensure:
+
 - Effective campaign microplanning and tracking.
 - Strengthened georegistries for health system management.
 - Robust stock management for health commodities.
@@ -48,6 +51,7 @@ Bluesquare's work with IASO reflects a commitment to social impact and equitable
 # Quality assurance in IASO development
 
 Quality assurance is integral to IASO’s development and is implemented through:
+
 - **Test-driven development (TDD)**: Ensuring all new features are built and validated through automated test cases before deployment.
 - **Specification documents and visual mockups**: Ensuring shared understanding of complex features before development.
 - **Automated testing**: Preventing regressions in existing functionalities.
@@ -58,6 +62,7 @@ Quality assurance is integral to IASO’s development and is implemented through
 ## Continuous user feedback mechanisms
 
 IASO development includes structured mechanisms for gathering and incorporating user feedback for continuous improvement:
+
 - Periodic stakeholder workshops to review feature requests and usability enhancements.
 - Iterative release cycles that incorporate new user-driven refinements in each version.
 
@@ -70,6 +75,7 @@ IASO implementations benefit from robust backstopping support via a dedicated si
 - **Quality assurance**: Conducting regular quality checks to align with client expectations.
 
 IASO support services vary based on project criticality:
+
 - Routine projects have a **service desk with response times under 8 hours** during business hours.
 - Technical and program support is available in **English and French**, with additional languages spoken by field-based staff.
 

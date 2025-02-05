@@ -152,7 +152,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         return ""
 
     def get_single_vaccines(self, obj):
-        return obj.vaccines_extended
+        return obj.single_vaccines_extended
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:

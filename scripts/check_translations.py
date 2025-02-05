@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 
-from translation_config import should_ignore_path
+from translation_config import TRANSLATION_PATHS
 
 
 # ANSI escape codes for colors
@@ -79,12 +79,21 @@ def check_po_file(po_path):
 def main():
     project_root = Path(__file__).parent.parent
     po_files = []
-    for root, _, files in os.walk(project_root):
-        if should_ignore_path(root) or "site-packages" in str(root):
-            continue
-        for file in files:
-            if file == "django.po":
-                po_files.append(os.path.join(root, file))
+
+    # Scan for .po files in specified paths
+    for base_path in TRANSLATION_PATHS:
+        base_dir = project_root / base_path
+        if base_path == "plugins":
+            # For plugins, look in each plugin's locale directory
+            for plugin_dir in base_dir.glob("*"):
+                if plugin_dir.is_dir():
+                    po_files.extend(plugin_dir.glob("**/django.po"))
+        else:
+            # For hat and iaso, look in their locale directories
+            po_files.extend(base_dir.glob("**/django.po"))
+
+    # Filter out any files in virtual environments
+    po_files = [f for f in po_files if "venv" not in str(f) and ".venv" not in str(f)]
 
     all_missing = []
     files_with_missing = 0

@@ -4,31 +4,43 @@ from pathlib import Path
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from scripts.translation_config import IGNORE_ARGS
+from scripts.translation_config import TRANSLATION_PATHS
 
 
 class Command(BaseCommand):
     help = "Make translations with standard ignore patterns"
 
     def handle(self, *args, **options):
-        # Add explicit ignore patterns for virtual environments
         cmd_args = [
             "--locale=fr",
             "--extension=txt",
             "--extension=py",
             "--extension=html",
             "--verbosity=0",  # Suppress default output
-            "--ignore=venv",  # Explicitly ignore venv directory
-            "--ignore=.venv",  # Explicitly ignore .venv directory
-        ] + IGNORE_ARGS
+            # Ignore everything except our translation paths
+            "--ignore=*",
+        ]
 
-        # Ensure we're in the project root
-        project_root = Path(os.getcwd())
+        # Add explicit ignore exceptions for our translation paths
+        for path in TRANSLATION_PATHS:
+            cmd_args.append(f"--ignore=!{path}/*")
 
+        # Run makemessages once with all paths
         call_command("makemessages", *cmd_args)
 
         # Find and report on .po files
-        po_files = [f for f in project_root.glob("**/django.po") if "venv" not in str(f) and ".venv" not in str(f)]
+        project_root = Path.cwd()
+        po_files = []
+        for base_path in TRANSLATION_PATHS:
+            base_dir = project_root / base_path
+            if base_path == "plugins":
+                # For plugins, look in each plugin's locale directory
+                for plugin_dir in base_dir.glob("*"):
+                    if plugin_dir.is_dir():
+                        po_files.extend(plugin_dir.glob("**/django.po"))
+            else:
+                # For hat and iaso, look in their locale directories
+                po_files.extend(base_dir.glob("**/django.po"))
 
         self.stdout.write("\nTranslation files processed:")
         for po_file in po_files:

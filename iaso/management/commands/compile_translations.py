@@ -11,7 +11,6 @@ class Command(BaseCommand):
     help = "Compile translations for specific paths only"
 
     def handle(self, *args, **options):
-
         # Run compilemessages once with all paths
         call_command("compilemessages", *IGNORE_ARGS)
 

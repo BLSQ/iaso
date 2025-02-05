@@ -130,11 +130,8 @@ jobs:
             - name: Check Backend (Django) translations
               run: |
                   . ./venv/bin/activate
-                  # Generate translations using our custom command
                   python manage.py make_translations
-                  # Check for missing translations
                   python scripts/check_translations.py
-                  # Compile messages if all translations are present
                   python manage.py compilemessages
               env:
                   RDS_DB_NAME: github_actions

@@ -6,9 +6,15 @@ IGNORE_PATTERNS = [
     "static/*",
     "media/*",
     ".git/*",
+    # Django and third-party package translations
     "site-packages/django/*",
-    "site-packages/django_*/*",
+    "site-packages/django_*/*",  # Catches django_celery_results, django_comments, etc.
     "site-packages/rest_framework/*",
+    # Add specific third-party packages if needed
+    "site-packages/celery/*",
+    "site-packages/allauth/*",
+    # Ignore all site-packages translations to be thorough
+    "site-packages/*/locale/*",
 ]
 
 # Convert to command line format for Django makemessages

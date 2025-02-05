@@ -403,6 +403,34 @@ class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
         return validated_data
 
 
+class OrgUnitChangeRequestBulkReviewSerializer(serializers.Serializer):
+    """
+    Bulk-approve or bulk-reject `OrgUnitChangeRequest`s.
+    """
+
+    select_all = serializers.BooleanField(default=False)
+    status = serializers.ChoiceField(choices=OrgUnitChangeRequest.Statuses, default=None)
+    selected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1))
+    unselected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1))
+    rejection_comment = serializers.CharField(required=False, default="")
+
+    def validate_status(self, value):
+        approved = OrgUnitChangeRequest.Statuses.APPROVED
+        rejected = OrgUnitChangeRequest.Statuses.REJECTED
+        if value not in [approved, rejected]:
+            raise serializers.ValidationError(f"Must be `{approved}` or `{rejected}`.")
+        return value
+
+    def validate(self, validated_data):
+        status = validated_data.get("status")
+        rejection_comment = validated_data.get("rejection_comment")
+
+        if status == OrgUnitChangeRequest.Statuses.REJECTED and not rejection_comment:
+            raise serializers.ValidationError("A `rejection_comment` must be provided.")
+
+        return validated_data
+
+
 class AuditOrgUnitChangeRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnitChangeRequest

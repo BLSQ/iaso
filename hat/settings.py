@@ -358,12 +358,20 @@ LANGUAGES = (
 )
 
 LOCALE_PATHS = [
-    "/var/app/current/hat/locale/",
-    "/opt/app/hat/locale/",
-    "hat/locale/",
-    "/opt/app/iaso/locale/",
-    "iaso/locale/",
+    os.path.join(BASE_DIR, "hat/locale/"),
+    os.path.join(BASE_DIR, "iaso/locale/"),
 ]
+
+if os.path.exists("/var/app"):
+    LOCALE_PATHS = [
+        "/var/app/current/hat/locale/",
+        "/opt/app/hat/locale/",
+    ] + LOCALE_PATHS
+
+if os.path.exists("/opt/app"):
+    LOCALE_PATHS = [
+        "/opt/app/iaso/locale/",
+    ] + LOCALE_PATHS
 
 TIME_ZONE = "UTC"
 

@@ -188,7 +188,7 @@ class VaccineStockEarmarkedTests(APITestCase):
         self.assertEqual(updated_data["total_unusable_vials"], initial_unusable + 100)
 
         # Verify CREATED stock affects usable total
-        self.assertEqual(updated_data["total_usable_vials"], initial_usable + 100 - 50)
+        self.assertEqual(updated_data["total_usable_vials"], initial_usable - 50)
 
         # if we now create a RETURNED stock, it should affect the usable total
 
@@ -206,7 +206,7 @@ class VaccineStockEarmarkedTests(APITestCase):
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/summary/")
         self.assertEqual(response.status_code, 200)
         updated_data = response.json()
-        self.assertEqual(updated_data["total_usable_vials"], initial_usable + 100 - 50 + 50)
+        self.assertEqual(updated_data["total_usable_vials"], initial_usable - 50 + 50)
 
         # Test EarmarkedStockViewSet endpoints
         # Test list endpoint

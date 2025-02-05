@@ -80,7 +80,7 @@ def main():
     project_root = Path(__file__).parent.parent
     po_files = []
     for root, _, files in os.walk(project_root):
-        if should_ignore_path(root):
+        if should_ignore_path(root) or "site-packages" in str(root):
             continue
         for file in files:
             if file == "django.po":

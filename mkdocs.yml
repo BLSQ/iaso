@@ -101,7 +101,6 @@ nav: # nav configures the side bar menu
      - ./pages/users/reference/iaso_modules/iaso_modules.md
      - ./pages/users/reference/iaso_web/user_guide.md
      - ./pages/users/reference/iaso_mobile/iaso_mobile.md
-  - How we work: ./pages/users/reference/how_we_work/how_we_work.md
   - Developers:
     - References:
       # - Data model glossary:

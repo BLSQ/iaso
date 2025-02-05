@@ -3,6 +3,7 @@ from pathlib import Path
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
+from scripts.translations.config import IGNORE_ARGS
 from scripts.translations.utils import find_translation_files
 
 
@@ -10,24 +11,9 @@ class Command(BaseCommand):
     help = "Compile translations for specific paths only"
 
     def handle(self, *args, **options):
-        cmd_args = [
-            "--ignore=.venv",
-            "--ignore=cypress",
-            "--ignore=node_modules",
-            "--ignore=.venv",
-            "--ignore=venv",
-            "--ignore=cypress",
-            "--ignore=node_modules",
-            "--ignore=beanstalk_worker",
-            "--ignore=django_sql_dashboard_export",
-            "--ignore=locust",
-            "--ignore=notebooks",
-            "--ignore=setuper",
-            "--ignore=scripts",
-        ]
 
         # Run compilemessages once with all paths
-        call_command("compilemessages", *cmd_args)
+        call_command("compilemessages", *IGNORE_ARGS)
 
         # Find and report on .mo files
         project_root = Path.cwd()

@@ -3,6 +3,7 @@ from pathlib import Path
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
+from scripts.translations.config import IGNORE_ARGS
 from scripts.translations.utils import find_translation_files
 
 
@@ -15,17 +16,7 @@ class Command(BaseCommand):
             "--extension=txt",
             "--extension=py",
             "--extension=html",
-            "--ignore=.venv",
-            "--ignore=venv",
-            "--ignore=cypress",
-            "--ignore=node_modules",
-            "--ignore=beanstalk_worker",
-            "--ignore=django_sql_dashboard_export",
-            "--ignore=locust",
-            "--ignore=notebooks",
-            "--ignore=setuper",
-            "--ignore=scripts",
-        ]
+        ] + IGNORE_ARGS
 
         # Run makemessages once with all paths
         try:

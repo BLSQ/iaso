@@ -6,8 +6,6 @@ Bluesquare's implementation of IASO follows an agile methodology, ensuring conti
 
 IASO development follows continuous software enhancement through iteration, ensuring that improvements are deployed in a structured and phased manner. By integrating user feedback loops at each stage, we ensure the solution evolves in line with real-world needs.
 
-### SCRUM-based development for IASO
-
 Bluesquare employs the SCRUM methodology, using two-week sprints to manage IASO development. Within each sprint:
 
 - Deliverables are regularly discussed to prioritize cost-effective features.
@@ -18,7 +16,9 @@ Bluesquare employs the SCRUM methodology, using two-week sprints to manage IASO 
 
 IASO's development leverages Agile's flexibility to enable close collaboration with clients, even in remote settings. This method brings stakeholders into the project team, fostering transparency and mutual understanding. If required, longer sprint cycles can be adopted once a stable version of IASO is deployed. Agile has proven particularly effective in LMICs and emergency contexts, allowing essential features to be deployed and tested in real-world scenarios under complex conditions.
 
-## User engagement and patient-centric design
+IASO is part of Bluesquare's open-source solutions ecosystem. Agile methodology allows us to incorporate client feedback into IASO's development efficiently, ensuring that features align with real-world needs. This iterative approach supports customization and enhances the platform’s performance and productivity.
+
+## User engagement and user-centric design
 
 The IASO development process actively engages users and key stakeholders to adopt a patient or user-centric and people-centered systems design. This approach ensures that solutions address the actual needs of frontline health workers, program managers, and policymakers. 
 
@@ -30,15 +30,11 @@ Bluesquare integrates user input through:
 
 This participatory approach ensures that IASO is not only technically robust but also intuitive and aligned with local system workflows.
 
-## Agile adaptability in open-source software
-
-IASO is part of Bluesquare's open-source solutions ecosystem. Agile methodology allows us to incorporate client feedback into IASO's development efficiently, ensuring that features align with real-world needs. This iterative approach supports customization and enhances the platform’s performance and productivity.
-
-# Project co-construction
+## Project co-construction
 
 Bluesquare's approach to IASO implementation is based on co-construction, ensuring collaboration with partners at every stage. This principle has been applied in large-scale health initiatives, including immunization campaigns and disease surveillance. Our adaptability enables us to navigate complex governance settings, from WHO data standards to UNICEF’s digital health frameworks. While we adhere to established design methodologies, we continuously seek to refine user experience and are open to collaborations with design experts.
 
-# Value alignment
+## Value alignment
 
 IASO aligns with global health priorities by addressing real-world digitalization challenges. Our open-source, scalable, and adaptable tools ensure:
 
@@ -48,7 +44,7 @@ IASO aligns with global health priorities by addressing real-world digitalizatio
 
 Bluesquare's work with IASO reflects a commitment to social impact and equitable access to geospatial data. By challenging conventional health information system approaches, we aim to drive innovation in digital health solutions.
 
-# Quality assurance in IASO development
+## Quality assurance in IASO development
 
 Quality assurance is integral to IASO’s development and is implemented through:
 
@@ -66,7 +62,7 @@ IASO development includes structured mechanisms for gathering and incorporating 
 - Periodic stakeholder workshops to review feature requests and usability enhancements.
 - Iterative release cycles that incorporate new user-driven refinements in each version.
 
-# Backstopping support
+## Backstopping support
 
 IASO implementations benefit from robust backstopping support via a dedicated single point of contact overseeing:
 

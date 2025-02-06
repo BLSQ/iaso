@@ -29,4 +29,8 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Projects',
         id: 'iaso.label.projects',
     },
+    landingPage: {
+        defaultMessage: 'Landing page',
+        id: 'iaso.users.label.landingPage',
+    },
 });

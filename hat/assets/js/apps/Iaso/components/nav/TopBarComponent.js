@@ -7,7 +7,6 @@ import React, { useContext } from 'react';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MenuIcon from '@mui/icons-material/Menu';
-
 import PropTypes from 'prop-types';
 
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
@@ -17,6 +16,7 @@ import { useSidebar } from '../../domains/app/contexts/SideBarContext.tsx';
 import { CurrentUserInfos } from './CurrentUser/index.tsx';
 import { HomePageButton } from './HomePageButton.tsx';
 import { LogoutButton } from './LogoutButton.tsx';
+import { LangSwitch } from '../../domains/home/components/LangSwitch';
 
 const styles = theme => ({
     menuButton: {
@@ -51,6 +51,7 @@ function TopBar(props) {
         goBack,
         displayMenuButton,
         disableShadow,
+        langSwitch,
     } = props;
     const classes = useStyles();
 
@@ -137,6 +138,16 @@ function TopBar(props) {
                             <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />
                             </Box>
+                            {langSwitch && (
+                                <Box
+                                    display="flex"
+                                    justifyContent="center"
+                                    marginTop={1.5}
+                                    pl={2}
+                                >
+                                    <LangSwitch topBar />
+                                </Box>
+                            )}
                         </Grid>
                     )}
                 </Grid>
@@ -153,6 +164,7 @@ TopBar.defaultProps = {
     title: '',
     displayMenuButton: true,
     disableShadow: false,
+    langSwitch: false,
 };
 
 TopBar.propTypes = {
@@ -162,6 +174,7 @@ TopBar.propTypes = {
     goBack: PropTypes.func,
     displayMenuButton: PropTypes.bool,
     disableShadow: PropTypes.bool,
+    langSwitch: PropTypes.bool,
 };
 
 export default TopBar;

@@ -25,9 +25,25 @@ const useStyles = makeStyles(theme => ({
         paddingLeft: theme.spacing(3),
         paddingRight: theme.spacing(3),
     },
+    languageSwithActiveOnTopBar: {
+        color: '#white',
+        cursor: 'text',
+    },
+    languageSwitchOnTopBar: {
+        display: 'inline-block',
+        textTransform: 'uppercase',
+        cursor: 'pointer',
+        padding: theme.spacing(0, 0.5),
+        color: 'black',
+        textDecoration: 'underline',
+    },
 }));
 
-export const LangSwitch: FunctionComponent = () => {
+type Props = {
+    topBar?: boolean;
+};
+
+export const LangSwitch: FunctionComponent<Props> = ({ topBar }) => {
     const classes: Record<string, string> = useStyles();
     const { mutate: saveCurrentUser } = useSaveCurrentUser(false);
     const hasNoAccount = useHasNoAccount();
@@ -50,9 +66,13 @@ export const LangSwitch: FunctionComponent = () => {
                 <Box key={locale.code}>
                     <Box
                         className={classNames(
-                            classes.languageSwitch,
+                            topBar && locale.code !== activeLocale
+                                ? classes.languageSwitchOnTopBar
+                                : classes.languageSwitch,
                             locale.code === activeLocale &&
-                                classes.languageSwitchActive,
+                                (topBar
+                                    ? classes.languageSwithActiveOnTopBar
+                                    : classes.languageSwitchActive),
                         )}
                         onClick={() => handleClick(locale.code)}
                     >

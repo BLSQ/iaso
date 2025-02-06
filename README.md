@@ -686,15 +686,6 @@ docker compose exec iaso ./manage.py test
 ```
 
 
-### Important Notes
-
-- The scripts are configured to ignore certain directories and include `.py` files, as translations are used in API error handling and choice lists.
-- You do not need to add translations for English, as it is the default language. Currently, only French translations are required.
-- If you encounter issues with locale paths, ensure that the `LOCALE_PATHS` setting in `settings.py` is correctly configured to include the necessary directories.
-
-By following these steps, you can efficiently manage translations within the Iaso platform, including those from additional Django apps and plugins.
-
-
 Code reloading
 --------------
 

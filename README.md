@@ -688,42 +688,37 @@ docker compose exec iaso ./manage.py test
 Translations
 ------------
 
-There are a some user facing text in the Django side, and they require translations. For examples the login and reset password email and their page.
-These are handled separately and differently from the JS frontend translations, and are storer in the folder `hat/locale/`
+We have automated the translation process using custom management commands. This process involves generating translation files, checking for missing translations, and compiling them for use in the application. The process also includes fetching translations from other Django apps, including those located in plugin folders.
 
-We only require translations for the html and e-mail template.
-not the python code (e.g. strings on model or the admin), stuff that the end users are going to see directly.
+### Steps for Managing Translations
 
-When modifying or adding new strings that require translation, use the following command to
-regenerate the translations file:
+1. **Generate and Check Translations:**
 
-```manage.py makemessages --locale=fr --extension txt --extension html```
+   Use the `make_translations` management command to generate translation files and check for any missing translations. This command will process `.txt`, `.py`, and `.html` files across the entire project, including any plugins, ensuring that all user-facing text is captured.
 
-This will update `hat/locale/fr/LC_MESSAGES/django.po` with the new strings to
-translate.
+   ```bash
+   python manage.py make_translations
+   ```
 
-If you get an error about `/opt/app` or cannot accessing docker:
-Change in settings.py LOCALE_PATHS to
-``` python
-LOCALE_PATHS = [ "hat/locale/"]
-```
+   This command will update the `.po` files in the `hat/locale/`, `iaso/locale/`, and any other relevant directories. It will also report any missing translations that need to be addressed.
 
-And specify --ignore
-```bash
-makemessages --locale=fr --extension txt --extension html --ignore /opt/app --ignore docker --ignore node_modules
-```
+2. **Compile Translations:**
 
+   After ensuring all translations are complete, use the `compile_translations` command to compile the translation files. This step is necessary to reflect the translations in the application interface.
 
-After updating it with the translation you need to following command to have
-them reflected in the interface:
+   ```bash
+   python manage.py compile_translations
+   ```
 
-```manage.py compilemessages```
+   This compilation is automatically performed when the Docker image is launched, but you can run it manually if needed.
 
-This is done automatically when you launch the docker image so if new translations
-you just pulled in git don't appear, relaunch the iaso docker.
+### Important Notes
 
+- The scripts are configured to ignore certain directories and include `.py` files, as translations are used in API error handling and choice lists.
+- You do not need to add translations for English, as it is the default language. Currently, only French translations are required.
+- If you encounter issues with locale paths, ensure that the `LOCALE_PATHS` setting in `settings.py` is correctly configured to include the necessary directories.
 
-You do not need to add translation for English as it is the default language, so for now only the French correspondance is needed.
+By following these steps, you can efficiently manage translations within the Iaso platform, including those from additional Django apps and plugins.
 
 
 Code reloading
@@ -815,7 +810,6 @@ Please also check the `# Email configuration` section in settings.py and check
 everything is set correctly. Notably the sending address. See the
 [sending email](https://docs.djangoproject.com/en/4.1/topics/email/) section
 in the Django documentation for the possible backends and tweak. 
-`
 
 Deployment on AWS Elastic Beanstalk
 ====================================

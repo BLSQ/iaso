@@ -27,19 +27,29 @@ docker compose exec iaso ./manage.py test
 
 ### Translations
 
-When modifying or adding new strings to translate, use our custom commands to manage translations:
+We have automated the translation process using custom management commands. This process involves generating translation files, checking for missing translations, and compiling them for use in the application.
 
-```bash
-# Generate/update and test translations
-python manage.py make_translations
+#### Steps for Managing Translations
 
-# Compile translation files
-python manage.py compile_translations
-```
+1. **Generate and Check Translations:**
 
-These commands will process translation files all over the project.
+   Use the `make_translations` management command to generate translation files and check for any missing translations. This command will process `.txt`, `.py`, and `.html` files across the entire project, including any plugins.
 
-The `make_translations` command also performs checks for missing translations. If these tests do not pass, you should add the missing translations using Poedit or by directly editing the `.po` file.
+   ```bash
+   python manage.py make_translations
+   ```
+
+2. **Compile Translations:**
+
+   After ensuring all translations are complete, use the `compile_translations` command to compile the translation files.
+
+   ```bash
+   python manage.py compile_translations
+   ```
+
+For more detailed instructions, please refer to the [main README](../README.md).
+
+These commands will process translation files throughout the project. The `make_translations` command also performs checks for missing translations. If these tests do not pass, you should add the missing translations using Poedit or by directly editing the `.po` file.
 
 ### Code reloading
 

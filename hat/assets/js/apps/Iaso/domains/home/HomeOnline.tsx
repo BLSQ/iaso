@@ -1,16 +1,16 @@
 import { Box, Container, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { useSafeIntl } from 'bluesquare-components';
 import { CurrentUserInfos } from '../../components/nav/CurrentUser';
 import { LogoutButton } from '../../components/nav/LogoutButton';
+import TopBar from '../../components/nav/TopBarComponent';
 import iasoBg from '../../images/iaso-bg.jpg';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { LogoSvg } from '../app/components/LogoSvg';
 import { ThemeConfigContext } from '../app/contexts/ThemeConfigContext';
 import { useHomeButtons } from './hooks/useHomeButtons';
-import TopBar from '../../components/nav/TopBarComponent';
 import { MESSAGES } from './messages';
 
 const useStyles = makeStyles(theme => ({

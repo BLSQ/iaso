@@ -1,22 +1,19 @@
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MenuIcon from '@mui/icons-material/Menu';
 import { Box, Grid, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-import React, { useContext } from 'react';
-
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import MenuIcon from '@mui/icons-material/Menu';
 import PropTypes from 'prop-types';
-
-import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-
+import React, { useContext } from 'react';
 import { useSidebar } from '../../domains/app/contexts/SideBarContext.tsx';
+import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
+import { LangSwitch } from '../../domains/home/components/LangSwitch';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 import { CurrentUserInfos } from './CurrentUser/index.tsx';
 import { HomePageButton } from './HomePageButton.tsx';
 import { LogoutButton } from './LogoutButton.tsx';
-import { LangSwitch } from '../../domains/home/components/LangSwitch';
 
 const styles = theme => ({
     menuButton: {

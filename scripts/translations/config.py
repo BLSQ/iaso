@@ -1,9 +1,3 @@
-TRANSLATION_PATHS = [
-    "hat/locale",
-    "iaso/locale",
-    "plugins",
-]
-
 IGNORE_ARGS = [
     "--ignore=.venv",
     "--ignore=cypress",

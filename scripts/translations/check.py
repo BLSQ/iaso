@@ -5,7 +5,6 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 
-# ANSI escape codes for colors
 class Colors:
     HEADER = "\033[95m"
     BLUE = "\033[94m"
@@ -56,8 +55,6 @@ def check_po_file(po_path):
                 current_msgid.append(content)
             else:
                 current_msgstr.append(content)
-
-    # Process the last entry
     if current_msgid:
         full_msgid = "".join(current_msgid)
         full_msgstr = "".join(current_msgstr)

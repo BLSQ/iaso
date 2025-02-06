@@ -7,7 +7,6 @@ from pathlib import Path
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
-from django.core.management.commands.makemessages import Command as MakeMessagesCommand
 
 from scripts.translations.check import check_po_file
 from scripts.translations.config import IGNORE_ARGS
@@ -29,24 +28,13 @@ class Command(BaseCommand):
             "--verbosity=0",  # Ensure detailed output
         ] + IGNORE_ARGS
 
-        # Set up logging to capture the output
-        log_stream = StringIO()
-        logging.basicConfig(stream=log_stream, level=logging.INFO)
-
         try:
+            self.stdout.write(self.style.SUCCESS("Starting translation process..."))  # Log start
             call_command("makemessages", *cmd_args)
-            log_stream.seek(0)
-            output = log_stream.read()
-
-            # Display only the .po files from the makemessages output
-            self.stdout.write("\nProcessed .po files:")
-            po_file_pattern = re.compile(r".*\.po$")
-            for line in output.splitlines():
-                if po_file_pattern.search(line):
-                    self.stdout.write(f"  {self.style.SUCCESS('✓')} {self.style.WARNING(line)}")
+            self.stdout.write(self.style.SUCCESS("Translation process completed successfully."))
 
         except Exception as e:
-            self.stdout.write(self.style.WARNING(f"Warning: {str(e)}"))
+            self.stdout.write(self.style.ERROR(f"Error during translation process: {str(e)}"))  # Log error
             self.stdout.write("Continuing despite error...")
 
         # Check which .po files were modified

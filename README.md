@@ -685,32 +685,6 @@ For the Python backend, we use the Django builtin test framework. Tests can be e
 docker compose exec iaso ./manage.py test
 ```
 
-Translations
-------------
-
-We have automated the translation process using custom management commands. This process involves generating translation files, checking for missing translations, and compiling them for use in the application. The process also includes fetching translations from other Django apps, including those located in plugin folders.
-
-### Steps for Managing Translations
-
-1. **Generate and Check Translations:**
-
-   Use the `make_translations` management command to generate translation files and check for any missing translations. This command will process `.txt`, `.py`, and `.html` files across the entire project, including any plugins, ensuring that all user-facing text is captured.
-
-   ```bash
-   python manage.py make_translations
-   ```
-
-   This command will update the `.po` files in the `hat/locale/`, `iaso/locale/`, and any other relevant directories. It will also report any missing translations that need to be addressed.
-
-2. **Compile Translations:**
-
-   After ensuring all translations are complete, use the `compile_translations` command to compile the translation files. This step is necessary to reflect the translations in the application interface.
-
-   ```bash
-   python manage.py compile_translations
-   ```
-
-   This compilation is automatically performed when the Docker image is launched, but you can run it manually if needed.
 
 ### Important Notes
 

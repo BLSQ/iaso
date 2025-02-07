@@ -11,7 +11,7 @@ VRF_CONFIG_SLUG = "vrf-pipeline-config"
 
 
 class RefreshVrfDataViewset(ExternalTaskModelViewSet):
-    http_method_names = ["get"]
+    http_method_names = ["get", "patch"]
     model = Task
     task_name = VRF_TASK_NAME
     config_slug = VRF_CONFIG_SLUG
@@ -19,7 +19,7 @@ class RefreshVrfDataViewset(ExternalTaskModelViewSet):
     # Overriding the list method because powerBI sends a GET request
     # So we have to have a GET that behaves like a POST
     def list(self, request):
-        # Worrkaround: we need ro reive a user id an validate it in the serializer
+        # Workaround: we need ro reive a user id an validate it in the serializer
         user = User.objects.filter(username="openhexa_iaso_user")
         slug = VRF_CONFIG_SLUG
         user = request.user

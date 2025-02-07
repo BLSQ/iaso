@@ -27,7 +27,7 @@ class MetricValue(models.Model):
 
     metric_type = models.ForeignKey(MetricType, on_delete=models.PROTECT)
     org_unit = models.ForeignKey(OrgUnit, null=True, blank=True, on_delete=models.PROTECT)
-    year = models.IntegerField(blank=True)
+    year = models.IntegerField(null=True, blank=True)
     value = models.FloatField()
 
     def __str__(self):

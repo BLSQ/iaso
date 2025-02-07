@@ -17,3 +17,4 @@ from .deduplication import EntityDuplicateAnalyzis, EntityDuplicate
 from .microplanning import Planning, Team
 from .payments import Payment, PotentialPayment, PaymentLot
 from .tenant_users import TenantUser
+from .metric import MetricType, MetricValue

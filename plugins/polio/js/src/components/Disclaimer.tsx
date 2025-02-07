@@ -1,10 +1,13 @@
 import React, { FC } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import MESSAGES from '../constants/messages';
 
 export const Disclaimer: FC = () => {
+    const { formatMessage } = useSafeIntl();
     return (
-        <Box>
-            <Typography>DISCLAIMER TE4Xt</Typography>
-        </Box>
+        <Typography color="secondary" sx={{ fontSize: '11px' }}>
+            {formatMessage(MESSAGES.disclaimer)}
+        </Typography>
     );
 };

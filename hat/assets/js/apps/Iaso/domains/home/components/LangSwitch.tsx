@@ -62,25 +62,31 @@ export const LangSwitch: FunctionComponent<Props> = ({ topBar }) => {
     );
     return (
         <>
-            {APP_LOCALES.map((locale, index) => (
-                <Box key={locale.code}>
-                    <Box
-                        className={classNames(
-                            topBar && locale.code !== activeLocale
-                                ? classes.languageSwitchOnTopBar
-                                : classes.languageSwitch,
-                            locale.code === activeLocale &&
-                                (topBar
-                                    ? classes.languageSwithActiveOnTopBar
-                                    : classes.languageSwitchActive),
-                        )}
-                        onClick={() => handleClick(locale.code)}
-                    >
-                        {locale.code}
+            {APP_LOCALES.map((locale, index) => {
+                const switchStyle =
+                    topBar && locale.code !== activeLocale
+                        ? classes.languageSwitchOnTopBar
+                        : classes.languageSwitch;
+                const switchActiveStyle =
+                    locale.code === activeLocale &&
+                    (topBar
+                        ? classes.languageSwithActiveOnTopBar
+                        : classes.languageSwitchActive);
+                return (
+                    <Box key={locale.code}>
+                        <Box
+                            className={classNames(
+                                switchStyle,
+                                switchActiveStyle,
+                            )}
+                            onClick={() => handleClick(locale.code)}
+                        >
+                            {locale.code}
+                        </Box>
+                        {index + 1 !== APP_LOCALES.length && '-'}
                     </Box>
-                    {index + 1 !== APP_LOCALES.length && '-'}
-                </Box>
-            ))}
+                );
+            })}
         </>
     );
 };

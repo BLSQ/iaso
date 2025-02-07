@@ -20,7 +20,7 @@ class RefreshVrfDataViewset(ExternalTaskModelViewSet):
     # So we have to have a GET that behaves like a POST
     def list(self, request):
         # Workaround: we need ro reive a user id an validate it in the serializer
-        user = User.objects.filter(username="openhexa_iaso_user")
+        user = User.objects.get(username="openhexa_iaso_user")
         slug = VRF_CONFIG_SLUG
         user = request.user
         task = Task.objects.create(
@@ -40,7 +40,7 @@ class RefreshVrfDataViewset(ExternalTaskModelViewSet):
 
     def get_queryset(self):
         # user = self.request.user
-        user = User.objects.filter(username="openhexa_iaso_user")
+        user = User.objects.get(username="openhexa_iaso_user")
         account = user.iaso_profile.account
         queryset = Task.objects.filter(account=account).filter(external=True)
         return queryset

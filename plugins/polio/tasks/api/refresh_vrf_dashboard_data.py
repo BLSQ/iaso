@@ -22,7 +22,6 @@ class RefreshVrfDataViewset(ExternalTaskModelViewSet):
         # Workaround: we need ro reive a user id an validate it in the serializer
         user = User.objects.get(username="openhexa_iaso_user")
         slug = VRF_CONFIG_SLUG
-        user = request.user
         task = Task.objects.create(
             created_by=user,
             launcher=user,

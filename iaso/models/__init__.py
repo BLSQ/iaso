@@ -6,6 +6,7 @@ from .device import Device, DeviceOwnership, DevicePosition
 from .entity import Entity, EntityType
 from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
+from .metric import MetricType, MetricValue
 from .microplanning import Planning, Team
 from .org_unit import OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from .org_unit_change_request_configuration import OrgUnitChangeRequestConfiguration
@@ -43,6 +44,8 @@ __all__ = [
     "ImportGPKG",
     "Instance",
     "InstanceFile",
+    "MetricType",
+    "MetricValue",
     "OrgUnit",
     "OrgUnitChangeRequest",
     "OrgUnitChangeRequestConfiguration",

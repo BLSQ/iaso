@@ -37,3 +37,10 @@ class RefreshVrfDataViewset(ExternalTaskModelViewSet):
         task.status = status
         task.save()
         return Response({"task": TaskSerializer(instance=task).data})
+
+    def get_queryset(self):
+        # user = self.request.user
+        user = User.objects.filter(username="openhexa_iaso_user")
+        account = user.iaso_profile.account
+        queryset = Task.objects.filter(account=account).filter(external=True)
+        return queryset

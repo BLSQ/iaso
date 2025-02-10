@@ -43,7 +43,9 @@ class ChronogramTaskSerializerTestCase(TestCase):
         cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
         cls.campaign.campaign_types.add(cls.polio_type)
 
-        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY.date())
+        cls.round = Round(number=1, campaign=cls.campaign, started_at=TODAY.date())
+        cls.round.save(add_chronogram=False)
+
         cls.chronogram = Chronogram.objects.create(round=cls.round, created_by=cls.user)
         cls.chronogram_task = ChronogramTask.objects.create(
             period=Period.BEFORE,
@@ -267,7 +269,8 @@ class ChronogramCreateSerializerTestCase(TestCase):
         cls.campaign.campaign_types.add(cls.polio_type)
 
         # Round.
-        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY)
+        cls.round = Round(number=1, campaign=cls.campaign, started_at=TODAY.date())
+        cls.round.save(add_chronogram=False)
 
         # Chronogram templates.
         cls.chronogram_template_1 = ChronogramTemplateTask.objects.create(
@@ -323,7 +326,7 @@ class ChronogramCreateSerializerTestCase(TestCase):
     def test_validate_round_without_started_at(self):
         request = APIRequestFactory().get("/")
         request.user = self.user
-        round = Round.objects.create(number=666, started_at=TODAY)
+        round = Round.objects.create(number=666, started_at=TODAY.date())
         data = {
             "round": round.id,
         }

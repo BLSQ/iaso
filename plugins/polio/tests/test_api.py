@@ -1,12 +1,14 @@
+import datetime
+
 from django.contrib.auth.models import Permission, User
-from django.utils.timezone import now
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase
-from plugins.polio.models import CampaignType, Round, Chronogram
+from plugins.polio.models import CampaignType, Round
 from plugins.polio.preparedness.spreadsheet_manager import *
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
@@ -20,7 +22,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
     @classmethod
     def setUpTestData(cls):
         cls.data_source = m.DataSource.objects.create(name="Default source")
-        cls.now = now()
+        cls.now = timezone.now()
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.account = polio_account = Account.objects.create(name="polio", default_version=cls.source_version_1)
         cls.user = cls.create_user_with_profile(username="yoda", account=polio_account, permissions=["iaso_forms"])
@@ -204,6 +206,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(self.user)
         self.assertEqual(Campaign.objects.count(), 0)
 
+        started_at = self.now.strftime("%Y-%m-%d")
+        ended_at = (self.now + datetime.timedelta(days=20)).strftime("%Y-%m-%d")
         payload = {
             "account": self.account.pk,
             "obr_name": "obr_name",
@@ -211,8 +215,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "rounds": [
                 {
                     "number": 0,
-                    "started_at": "2021-02-01",
-                    "ended_at": "2021-02-20",
+                    "started_at": started_at,
+                    "ended_at": ended_at,
                 }
             ],
         }
@@ -230,7 +234,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         # A chronogram should've been automatically created for the new round.
         self.assertEqual(round_zero.chronograms.valid().count(), 1)
         chronogram = round_zero.chronograms.valid().first()
-        self.assertEqual(chronogram.created_by, self.user)
+        self.assertIsNone(chronogram.created_by)
 
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", payload, format="json")
 
@@ -241,6 +245,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(self.user)
         self.assertEqual(Campaign.objects.count(), 0)
 
+        started_at = self.now.strftime("%Y-%m-%d")
+        ended_at = (self.now + datetime.timedelta(days=20)).strftime("%Y-%m-%d")
         payload = {
             "account": self.account.pk,
             "obr_name": "obr_name",
@@ -248,8 +254,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "rounds": [
                 {
                     "number": 1,
-                    "started_at": "2021-02-01",
-                    "ended_at": "2021-02-20",
+                    "started_at": started_at,
+                    "ended_at": ended_at,
                 }
             ],
         }
@@ -267,18 +273,22 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         # A chronogram should've been automatically created for the new round.
         self.assertEqual(round_zero.chronograms.valid().count(), 1)
         chronogram = round_zero.chronograms.valid().first()
-        self.assertEqual(chronogram.created_by, self.user)
+        self.assertIsNone(chronogram.created_by)
 
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", payload, format="json")
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 1)
-        self.assertEqual(r["rounds"][0]["started_at"], "2021-02-01")
+        self.assertEqual(r["rounds"][0]["started_at"], started_at)
 
     def test_create_campaign_with_round_one_and_two(self):
         self.client.force_authenticate(self.user)
         self.assertEqual(Campaign.objects.count(), 0)
 
+        started_at_round_1 = self.now.strftime("%Y-%m-%d")
+        ended_at_round_1 = (self.now + datetime.timedelta(days=20)).strftime("%Y-%m-%d")
+        started_at_round_2 = (self.now + datetime.timedelta(days=60)).strftime("%Y-%m-%d")
+        ended_at_round_2 = (self.now + datetime.timedelta(days=80)).strftime("%Y-%m-%d")
         payload = {
             "account": self.account.pk,
             "obr_name": "obr_name",
@@ -286,13 +296,13 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "rounds": [
                 {
                     "number": 1,
-                    "started_at": "2021-02-01",
-                    "ended_at": "2021-02-20",
+                    "started_at": started_at_round_1,
+                    "ended_at": ended_at_round_1,
                 },
                 {
                     "number": 2,
-                    "started_at": "2021-04-01",
-                    "ended_at": "2021-04-20",
+                    "started_at": started_at_round_2,
+                    "ended_at": ended_at_round_2,
                 },
             ],
         }
@@ -309,21 +319,25 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         # A chronogram should've been automatically created for each new round.
         round_1 = c.rounds.first()
         self.assertEqual(round_1.chronograms.valid().count(), 1)
-        self.assertEqual(round_1.chronograms.valid().first().created_by, self.user)
+        self.assertIsNone(round_1.chronograms.valid().first().created_by)
         round_2 = c.rounds.last()
         self.assertEqual(round_2.chronograms.valid().count(), 1)
-        self.assertEqual(round_2.chronograms.valid().first().created_by, self.user)
+        self.assertIsNone(round_2.chronograms.valid().first().created_by)
 
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 2)
-        self.assertEqual(r["rounds"][0]["started_at"], "2021-02-01")
-        self.assertEqual(r["rounds"][1]["started_at"], "2021-04-01")
+        self.assertEqual(r["rounds"][0]["started_at"], started_at_round_1)
+        self.assertEqual(r["rounds"][1]["started_at"], started_at_round_2)
 
     def test_create_campaign_with_scopes(self):
         self.client.force_authenticate(self.user)
         self.assertEqual(Campaign.objects.count(), 0)
 
+        started_at_round_1 = self.now.strftime("%Y-%m-%d")
+        ended_at_round_1 = (self.now + datetime.timedelta(days=20)).strftime("%Y-%m-%d")
+        started_at_round_2 = (self.now + datetime.timedelta(days=60)).strftime("%Y-%m-%d")
+        ended_at_round_2 = (self.now + datetime.timedelta(days=80)).strftime("%Y-%m-%d")
         payload = {
             "account": self.account.pk,
             "obr_name": "obr_name",
@@ -335,13 +349,13 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "rounds": [
                 {
                     "number": 1,
-                    "started_at": "2021-02-01",
-                    "ended_at": "2021-02-20",
+                    "started_at": started_at_round_1,
+                    "ended_at": ended_at_round_1,
                 },
                 {
                     "number": 2,
-                    "started_at": "2021-04-01",
-                    "ended_at": "2021-04-20",
+                    "started_at": started_at_round_2,
+                    "ended_at": ended_at_round_2,
                 },
             ],
         }
@@ -362,18 +376,18 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 2)
-        self.assertEqual(r["rounds"][0]["started_at"], "2021-02-01")
+        self.assertEqual(r["rounds"][0]["started_at"], started_at_round_1)
         self.assertEqual(r["rounds"][0]["districts_count_calculated"], 2)
-        self.assertEqual(r["rounds"][1]["started_at"], "2021-04-01")
+        self.assertEqual(r["rounds"][1]["started_at"], started_at_round_2)
         self.assertEqual(r["rounds"][1]["districts_count_calculated"], 2)
 
         # A chronogram should've been automatically created for each new round.
         round_1 = c.rounds.get(id=r["rounds"][0]["id"])
         self.assertEqual(round_1.chronograms.valid().count(), 1)
-        self.assertEqual(round_1.chronograms.valid().first().created_by, self.user)
+        self.assertIsNone(round_1.chronograms.valid().first().created_by)
         round_2 = c.rounds.get(id=r["rounds"][1]["id"])
         self.assertEqual(round_2.chronograms.valid().count(), 1)
-        self.assertEqual(round_2.chronograms.valid().first().created_by, self.user)
+        self.assertIsNone(round_2.chronograms.valid().first().created_by)
 
         scope_bOPV = c.scopes.get(vaccine="bOPV")
         scope_mOPV2 = c.scopes.get(vaccine="mOPV2")
@@ -403,6 +417,10 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(self.user)
         self.assertEqual(Campaign.objects.count(), 0)
 
+        started_at_round_1 = self.now.strftime("%Y-%m-%d")
+        ended_at_round_1 = (self.now + datetime.timedelta(days=20)).strftime("%Y-%m-%d")
+        started_at_round_2 = (self.now + datetime.timedelta(days=60)).strftime("%Y-%m-%d")
+        ended_at_round_2 = (self.now + datetime.timedelta(days=80)).strftime("%Y-%m-%d")
         payload = {
             "account": self.account.pk,
             "obr_name": "obr_name",
@@ -411,8 +429,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             "rounds": [
                 {
                     "number": 1,
-                    "started_at": "2021-02-01",
-                    "ended_at": "2021-02-20",
+                    "started_at": started_at_round_1,
+                    "ended_at": ended_at_round_1,
                     "scopes": [
                         {"vaccine": "bOPV", "group": {"org_units": [self.org_unit.id]}},
                         {"vaccine": "mOPV2", "group": {"org_units": [self.child_org_unit.id]}},
@@ -420,8 +438,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
                 },
                 {
                     "number": 2,
-                    "started_at": "2021-04-01",
-                    "ended_at": "2021-04-20",
+                    "started_at": started_at_round_2,
+                    "ended_at": ended_at_round_2,
                 },
             ],
         }
@@ -441,18 +459,18 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 2)
-        self.assertEqual(r["rounds"][0]["started_at"], "2021-02-01")
+        self.assertEqual(r["rounds"][0]["started_at"], started_at_round_1)
         self.assertEqual(r["rounds"][0]["districts_count_calculated"], 2)
-        self.assertEqual(r["rounds"][1]["started_at"], "2021-04-01")
+        self.assertEqual(r["rounds"][1]["started_at"], started_at_round_2)
         self.assertEqual(r["rounds"][1]["districts_count_calculated"], 0)
 
         # A chronogram should've been automatically created for each new round.
         round_1 = c.rounds.get(id=r["rounds"][0]["id"])
         self.assertEqual(round_1.chronograms.valid().count(), 1)
-        self.assertEqual(round_1.chronograms.valid().first().created_by, self.user)
+        self.assertIsNone(round_1.chronograms.valid().first().created_by)
         round_2 = c.rounds.get(id=r["rounds"][1]["id"])
         self.assertEqual(round_2.chronograms.valid().count(), 1)
-        self.assertEqual(round_2.chronograms.valid().first().created_by, self.user)
+        self.assertIsNone(round_2.chronograms.valid().first().created_by)
 
         round_one = r["rounds"][0]
 
@@ -700,7 +718,7 @@ class PreparednessAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.data_source = m.DataSource.objects.create(name="Default source")
-        cls.now = now()
+        cls.now = timezone.now()
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.account = Account.objects.create(name="polio", default_version=cls.source_version_1)
         cls.user = cls.create_user_with_profile(username="user", account=cls.account, permissions=["iaso_forms"])

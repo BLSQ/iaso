@@ -1,7 +1,7 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
-import React, { FunctionComponent, useCallback } from 'react';
 import { useHasNoAccount } from '../../../utils/usersUtils';
 import { APP_LOCALES } from '../../app/constants';
 import { useLocale } from '../../app/contexts/LocaleContext';
@@ -56,12 +56,10 @@ export const LangSwitch: FunctionComponent<Props> = () => {
                 return (
                     <Box key={locale.code}>
                         <Box
-                            className={classNames(
-                                classes.languageSwitch,
-                                locale.code === activeLocale
-                                    ? classes.languageSwithActive
-                                    : '',
-                            )}
+                            className={classNames(classes.languageSwitch, {
+                                [classes.languageSwithActive]:
+                                    locale.code === activeLocale,
+                            })}
                             onClick={() => handleClick(locale.code)}
                         >
                             {locale.code}

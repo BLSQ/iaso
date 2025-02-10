@@ -118,7 +118,7 @@ class VaccineStockEarmarkedTests(APITestCase):
         self.assertTrue(found, "Earmarked stock of type USED should appear in unusable vials list")
 
     def test_earmarked_stock_creation_not_in_unusable_vials(self):
-        """Test that earmarked stock of type CREATEDdoes not appear in unusable vials list"""
+        """Test that earmarked stock of type CREATED does not appear in unusable vials list"""
         self.client.force_authenticate(self.user_rw_perms)
 
         # Create earmarked stock of type CREATED

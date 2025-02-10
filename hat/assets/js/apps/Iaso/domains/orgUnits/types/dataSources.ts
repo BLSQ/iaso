@@ -1,4 +1,4 @@
-type Version = {
+export type Version = {
     number: number;
     description?: string;
     id: number;
@@ -6,6 +6,8 @@ type Version = {
     updated_at: number;
     org_units_count: number;
     is_default?: boolean;
+    data_source?: number;
+    data_source_name?: string;
 };
 
 type Project = {

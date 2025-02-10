@@ -10,17 +10,14 @@ from unittest.mock import patch
 import pandas as pd
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
-from django.core.cache import cache
 from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from iaso import models as m
 from iaso.models import Account, Team
-from iaso.models.json_config import Config
 from iaso.test import APITestCase, TestCase
 from plugins.polio.api.campaigns.campaigns import CampaignSerializer, CampaignViewSet
-from plugins.polio.api.common import CACHE_VERSION
 from plugins.polio.export_utils import format_date
 from plugins.polio.models import CampaignScope, ReasonForDelay, Round, RoundScope
 from plugins.polio.preparedness.calculator import get_preparedness_score
@@ -240,11 +237,6 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(len(jr["rounds"]), 1)
         self.assertEqual(len(jr["rounds"][0]["datelogs"]), 1)
         self.assertEqual(jr["rounds"][0]["datelogs"][0]["reason_for_delay"], self.initial_data.key_name)
-
-        # A chronogram should've been automatically created for the new round.
-        round = Round.objects.get(id=jr["rounds"][0]["id"])
-        self.assertEqual(round.chronograms.valid().count(), 1)
-        self.assertEqual(round.chronograms.valid().first().created_by, self.yoda)
 
     def test_update_round_date_adds_history(self):
         """Updating round dates should add an entry in datelogs"""

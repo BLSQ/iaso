@@ -1,6 +1,6 @@
+import React, { FunctionComponent, useContext } from 'react';
 import { Box, Container, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { CurrentUserInfos } from '../../components/nav/CurrentUser';
 import { LogoutButton } from '../../components/nav/LogoutButton';

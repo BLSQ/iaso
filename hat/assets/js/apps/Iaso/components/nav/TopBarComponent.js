@@ -1,3 +1,4 @@
+import React, { useContext } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Box, Grid, IconButton, useMediaQuery, useTheme } from '@mui/material';
@@ -6,7 +7,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
-import React, { useContext } from 'react';
 import { useSidebar } from '../../domains/app/contexts/SideBarContext.tsx';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
 import { LangSwitch } from '../../domains/home/components/LangSwitch';

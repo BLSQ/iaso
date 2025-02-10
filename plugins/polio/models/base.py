@@ -394,6 +394,7 @@ class Round(models.Model):
         if (
             add_chronogram
             and self.started_at
+            and isinstance(self.started_at, datetime.date)
             and self.started_at >= timezone.now().date()
             and self.campaign
             and self.campaign.has_polio_type

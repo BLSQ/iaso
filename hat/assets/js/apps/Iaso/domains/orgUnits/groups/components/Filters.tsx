@@ -12,6 +12,7 @@ import { useDataSourceVersions } from '../../../dataSources/requests';
 import { useGetDataSources } from '../../../dataSources/useGetDataSources';
 import { useFilterState } from '../../../../hooks/useFilterState';
 import InputComponent from '../../../../components/forms/InputComponent';
+import { DataSources, Version } from '../../types/dataSources';
 import { baseUrl } from '../config';
 import MESSAGES from '../messages';
 
@@ -28,30 +29,39 @@ type Props = {
     params: Params;
 };
 
-const dataSourceByProjectId = (dataSources: any[], projectId: string) => {
-    const allDataSource: any[] = dataSources?.map(
-        (source: { projects: any[][]; name: any; id: any }) => {
-            const projectIds = source?.projects[0].map(
-                (project: { id: string }) => project?.id.toString(),
-            );
-            return {
-                label: source?.name,
-                value: `${source?.id}`,
-                projectIds,
-            };
-        },
-    );
-    if (projectId) {
-        return allDataSource?.filter((source: { projectIds: string[] }) =>
-            source.projectIds?.includes(projectId),
-        );
-    }
-    return allDataSource;
+type DataSource = {
+    label: string;
+    value: string;
+    projectIds: string[];
 };
 
-const versionsBySource = (sourceVersions: any[], source: string) => {
+const filterDataSourcesByProjectId = (
+    dataSources: DataSources,
+    projectId: string,
+) => {
+    const allDataSources: DataSource[] = dataSources?.map(source => {
+        const projects = source.projects.flat();
+        const projectIds = projects.map(project => project?.id?.toString());
+        return {
+            label: source?.name,
+            value: `${source?.id}`,
+            projectIds,
+        };
+    });
+    if (projectId) {
+        return allDataSources?.filter(source =>
+            source?.projectIds?.includes(projectId),
+        );
+    }
+    return allDataSources;
+};
+
+const filterSourceversionByDataSource = (
+    sourceVersions: Version[],
+    source: string,
+) => {
     const versions = sourceVersions?.filter(
-        version => version?.data_source.toString() === source,
+        version => version?.data_source?.toString() === source,
     );
     return versions?.map(version => {
         return {
@@ -86,12 +96,20 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     );
 
     const dataSourceDropDown = useMemo(
-        () => dataSourceByProjectId(dataSources?.sources, filters?.project_ids),
+        () =>
+            filterDataSourcesByProjectId(
+                dataSources?.sources,
+                filters?.project_ids,
+            ),
         [dataSources, filters?.project_ids],
     );
 
     const sourceVersionsDropDown = useMemo(
-        () => versionsBySource(sourceVersions, filters?.dataSource),
+        () =>
+            filterSourceversionByDataSource(
+                sourceVersions,
+                filters?.dataSource,
+            ),
         [filters?.dataSource, sourceVersions],
     );
 

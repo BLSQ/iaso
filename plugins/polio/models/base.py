@@ -1574,7 +1574,7 @@ class EarmarkedStock(models.Model):
     vials_earmarked = models.PositiveIntegerField()
     doses_earmarked = models.PositiveIntegerField()
 
-    comment = models.TextField(blank=True, null=True)
+    comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

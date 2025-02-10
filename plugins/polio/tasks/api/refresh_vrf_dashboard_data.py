@@ -19,8 +19,7 @@ class RefreshVrfDataViewset(ExternalTaskModelViewSet):
     # Overriding the list method because powerBI sends a GET request
     # So we have to have a GET that behaves like a POST
     def list(self, request):
-        # Workaround: we need ro reive a user id an validate it in the serializer
-        user = User.objects.get(username="openhexa_iaso_user")
+        user = request.user
         slug = VRF_CONFIG_SLUG
         task = Task.objects.create(
             created_by=user,
@@ -38,8 +37,7 @@ class RefreshVrfDataViewset(ExternalTaskModelViewSet):
         return Response({"task": TaskSerializer(instance=task).data})
 
     def get_queryset(self):
-        # user = self.request.user
-        user = User.objects.get(username="openhexa_iaso_user")
+        user = self.request.user
         account = user.iaso_profile.account
         queryset = Task.objects.filter(account=account).filter(external=True)
         return queryset

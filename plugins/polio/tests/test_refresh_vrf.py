@@ -13,10 +13,6 @@ class RefreshVrfDataTestCase(APITestCase):
         cls.url = "/api/polio/tasks/refreshvrf/"
         cls.account = account = m.Account.objects.create(name="test account")
         cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
-        # FIXME: temporary set up. The user id should be passed as query param
-        cls.openhexa_iaso_user = cls.create_user_with_profile(
-            username="openhexa_iaso_user", account=account, permissions=["iaso_polio", "iaso_polio_config"]
-        )
 
         cls.external_task1 = m.Task.objects.create(
             status=RUNNING, account=account, launcher=cls.user, name="external task 1", external=True
@@ -80,7 +76,7 @@ class RefreshVrfDataTestCase(APITestCase):
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
         self.assertEqual(task["status"], RUNNING)
-        self.assertEqual(task["launcher"]["username"], self.openhexa_iaso_user.username)
+        self.assertEqual(task["launcher"]["username"], self.user.username)
         self.assertEqual(task["name"], VRF_TASK_NAME)
 
     @patch.object(RefreshVrfDataViewset, "launch_task", mock_openhexa_call_skipped)
@@ -92,7 +88,7 @@ class RefreshVrfDataTestCase(APITestCase):
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
         self.assertEqual(task["status"], SKIPPED)
-        self.assertEqual(task["launcher"]["username"], self.openhexa_iaso_user.username)
+        self.assertEqual(task["launcher"]["username"], self.user.username)
         self.assertEqual(task["name"], VRF_TASK_NAME)
 
     @patch.object(RefreshVrfDataViewset, "launch_task", mock_openhexa_call_running)

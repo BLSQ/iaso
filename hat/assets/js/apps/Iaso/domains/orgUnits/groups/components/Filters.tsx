@@ -85,7 +85,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const { data: sourceVersions, isLoading: areSourceVersionsLoading } =
         useDataSourceVersions();
 
-    const [projectIds, setProjectIds] = useState<string | undefined>(
+    const [projectId, setProjectId] = useState<string | undefined>(
         filters?.project_ids,
     );
     const [dataSource, setDataSource] = useState<string | undefined>(
@@ -123,7 +123,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             if (key === 'project_ids') {
                 filters.dataSource = undefined;
                 filters.version = undefined;
-                setProjectIds(value);
+                setProjectId(value);
                 setDataSource(undefined);
                 setVersion(undefined);
             }
@@ -136,7 +136,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
             }
             handleChange(key, value);
         },
-        [filters, handleChange, setProjectIds, setDataSource, setVersion],
+        [filters, handleChange, setProjectId, setDataSource, setVersion],
     );
     const { formatMessage } = useSafeIntl();
 
@@ -158,7 +158,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 <InputComponent
                     keyValue="project_ids"
                     onChange={handleChangeSelect}
-                    value={projectIds}
+                    value={projectId}
                     type="select"
                     label={MESSAGES.projects}
                     options={projects}

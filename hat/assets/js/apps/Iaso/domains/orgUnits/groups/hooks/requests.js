@@ -22,9 +22,9 @@ export const useGetGroups = params => {
     }
     if (params.dataSource) {
         newParams.dataSource = params.dataSource;
-        if (params.version) {
-            newParams.version = params.version;
-        }
+    }
+    if (params.version) {
+        newParams.version = params.version;
     }
 
     const searchParams = new URLSearchParams(newParams);

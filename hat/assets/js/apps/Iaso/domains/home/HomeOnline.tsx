@@ -1,6 +1,5 @@
 import { Box, Container, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { CurrentUserInfos } from '../../components/nav/CurrentUser';
@@ -11,7 +10,6 @@ import { useCurrentUser } from '../../utils/usersUtils';
 import { LogoSvg } from '../app/components/LogoSvg';
 import { ThemeConfigContext } from '../app/contexts/ThemeConfigContext';
 import { useHomeButtons } from './hooks/useHomeButtons';
-import { MESSAGES } from './messages';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -94,17 +92,12 @@ const useStyles = makeStyles(theme => ({
 }));
 export const HomeOnline: FunctionComponent = () => {
     const classes = useStyles();
-    const { formatMessage } = useSafeIntl();
     const { LOGO_PATH, APP_TITLE } = useContext(ThemeConfigContext);
     const homeButtons = useHomeButtons();
     const currentUser = useCurrentUser();
     return (
         <>
-            <TopBar
-                title={formatMessage(MESSAGES.landingPage)}
-                displayBackButton={false}
-                langSwitch
-            />
+            <TopBar displayBackButton={false} />
             <Box
                 className={classes.root}
                 sx={{ backgroundImage: `url("${window.STATIC_URL}${iasoBg}")` }}

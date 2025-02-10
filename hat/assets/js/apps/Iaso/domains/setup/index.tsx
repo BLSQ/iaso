@@ -16,7 +16,6 @@ import {
 } from '../../libs/validation';
 import { commaSeparatedIdsToStringArray } from '../../utils/forms';
 import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
-import { LangSwitch } from '../home/components/LangSwitch';
 import { useGetModulesDropDown } from './hooks/useGetModulesDropDown';
 import { useSaveAccount } from './hooks/useSaveAccount';
 import { MESSAGES } from './messages';
@@ -120,10 +119,6 @@ export const SetupAccount: FunctionComponent = () => {
                 title={formatMessage(MESSAGES.welcome)}
             />
             <Paper className={classes.paper}>
-                <Box display="flex" justifyContent="flex-end">
-                    <LangSwitch />
-                </Box>
-
                 {isAdmin && (
                     <>
                         {isSaved && (

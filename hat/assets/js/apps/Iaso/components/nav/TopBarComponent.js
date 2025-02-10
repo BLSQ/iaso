@@ -48,7 +48,6 @@ function TopBar(props) {
         goBack,
         displayMenuButton,
         disableShadow,
-        langSwitch,
     } = props;
     const classes = useStyles();
 
@@ -135,16 +134,14 @@ function TopBar(props) {
                             <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />
                             </Box>
-                            {langSwitch && (
-                                <Box
-                                    display="flex"
-                                    justifyContent="center"
-                                    marginTop={1.5}
-                                    pl={2}
-                                >
-                                    <LangSwitch topBar />
-                                </Box>
-                            )}
+                            <Box
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                                pl={1}
+                            >
+                                <LangSwitch />
+                            </Box>
                         </Grid>
                     )}
                 </Grid>
@@ -161,7 +158,6 @@ TopBar.defaultProps = {
     title: '',
     displayMenuButton: true,
     disableShadow: false,
-    langSwitch: false,
 };
 
 TopBar.propTypes = {
@@ -171,7 +167,6 @@ TopBar.propTypes = {
     goBack: PropTypes.func,
     displayMenuButton: PropTypes.bool,
     disableShadow: PropTypes.bool,
-    langSwitch: PropTypes.bool,
 };
 
 export default TopBar;

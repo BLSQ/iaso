@@ -1,6 +1,4 @@
 import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
 
@@ -46,31 +44,13 @@ export default function LanguageSwitchComponent() {
 
     return (
         <div className={classes.wrapper}>
-            <Typography
-                variant="body2"
-                color="textSecondary"
-                onClick={handleClickListItem}
-                className={classes.currentLocale}
-            >
-                {activeLocale.label}
-            </Typography>
             <Menu
                 id="lock-menu"
                 anchorEl={anchorEl}
                 keepMounted
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
-            >
-                {APP_LOCALES.map(appLocale => (
-                    <MenuItem
-                        key={appLocale.code}
-                        selected={appLocale.code === activeLocale}
-                        onClick={() => handleLocaleSwitch(appLocale.code)}
-                    >
-                        {appLocale.label}
-                    </MenuItem>
-                ))}
-            </Menu>
+            />
         </div>
     );
 }

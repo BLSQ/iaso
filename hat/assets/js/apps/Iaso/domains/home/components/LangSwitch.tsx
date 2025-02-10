@@ -13,9 +13,7 @@ const useStyles = makeStyles(theme => ({
         textTransform: 'uppercase',
         cursor: 'pointer',
         padding: theme.spacing(0, 0.5),
-    },
-    languageSwitchActive: {
-        color: theme.palette.primary.main,
+        color: '#ffffff',
     },
     languageSwitchButton: {
         backgroundColor: theme.palette.success.main,
@@ -25,17 +23,9 @@ const useStyles = makeStyles(theme => ({
         paddingLeft: theme.spacing(3),
         paddingRight: theme.spacing(3),
     },
-    languageSwithActiveOnTopBar: {
-        color: '#white',
+    languageSwithActive: {
+        color: theme.palette.secondary.light,
         cursor: 'text',
-    },
-    languageSwitchOnTopBar: {
-        display: 'inline-block',
-        textTransform: 'uppercase',
-        cursor: 'pointer',
-        padding: theme.spacing(0, 0.5),
-        color: 'black',
-        textDecoration: 'underline',
     },
 }));
 
@@ -43,7 +33,7 @@ type Props = {
     topBar?: boolean;
 };
 
-export const LangSwitch: FunctionComponent<Props> = ({ topBar }) => {
+export const LangSwitch: FunctionComponent<Props> = () => {
     const classes: Record<string, string> = useStyles();
     const { mutate: saveCurrentUser } = useSaveCurrentUser(false);
     const hasNoAccount = useHasNoAccount();
@@ -63,26 +53,20 @@ export const LangSwitch: FunctionComponent<Props> = ({ topBar }) => {
     return (
         <>
             {APP_LOCALES.map((locale, index) => {
-                const switchStyle =
-                    topBar && locale.code !== activeLocale
-                        ? classes.languageSwitchOnTopBar
-                        : classes.languageSwitch;
-                const switchActiveStyle =
-                    locale.code === activeLocale &&
-                    (topBar
-                        ? classes.languageSwithActiveOnTopBar
-                        : classes.languageSwitchActive);
                 return (
                     <Box key={locale.code}>
                         <Box
                             className={classNames(
-                                switchStyle,
-                                switchActiveStyle,
+                                classes.languageSwitch,
+                                locale.code === activeLocale
+                                    ? classes.languageSwithActive
+                                    : '',
                             )}
                             onClick={() => handleClick(locale.code)}
                         >
                             {locale.code}
                         </Box>
+
                         {index + 1 !== APP_LOCALES.length && '-'}
                     </Box>
                 );

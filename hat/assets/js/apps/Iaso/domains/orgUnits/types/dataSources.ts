@@ -37,7 +37,7 @@ export type DataSource = {
     color?: string;
 };
 
-type DataSources = DataSource[];
+export type DataSources = DataSource[];
 
 export type DataSourcesApi = {
     sources: DataSources;

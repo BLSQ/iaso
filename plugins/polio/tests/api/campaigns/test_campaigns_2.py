@@ -12,7 +12,7 @@ from iaso import models as m
 from iaso.models import Account, Team
 from iaso.test import APITestCase
 from plugins.polio.export_utils import format_date
-from plugins.polio.models import ReasonForDelay, Round, RoundScope
+from plugins.polio.models import Campaign, CampaignType, ReasonForDelay, Round, RoundScope
 from plugins.polio.preparedness.exceptions import InvalidFormatError
 from plugins.polio.preparedness.spreadsheet_manager import *
 from plugins.polio.tasks.weekly_email import send_notification_email
@@ -277,6 +277,38 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(jr["rounds"][0]["datelogs"][1]["previous_ended_at"], "2023-04-01")
         self.assertEqual(jr["rounds"][0]["datelogs"][1]["started_at"], "2023-03-21")
         self.assertEqual(jr["rounds"][0]["datelogs"][1]["previous_started_at"], "2023-03-21")
+
+    def test_adding_a_new_round_should_generate_a_chronogram(self):
+        """Adding a new round to a Polio campaign should generate a chronogram."""
+
+        campaign = Campaign.objects.create(account=self.account, obr_name="obr_name")
+        polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+        campaign.campaign_types.add(polio_type)
+        self.assertEqual(0, campaign.rounds.count())
+
+        self.client.force_authenticate(self.yoda)
+
+        # Add a round.
+        response = self.client.put(
+            f"/api/polio/campaigns/{campaign.id}/",
+            data={
+                "obr_name": campaign.obr_name,
+                "rounds": [
+                    {
+                        "number": 1,
+                        "started_at": now().date(),
+                        "ended_at": (now() + datetime.timedelta(days=30)).date(),
+                    }
+                ],
+            },
+            format="json",
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertEqual(1, campaign.rounds.count())
+
+        round = campaign.rounds.first()
+        self.assertEqual(round.chronograms.valid().count(), 1)
+        self.assertIsNone(round.chronograms.valid().first().created_by)
 
     def test_can_only_see_campaigns_within_user_org_units_hierarchy(self):
         """

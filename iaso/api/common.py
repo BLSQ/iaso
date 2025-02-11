@@ -234,18 +234,19 @@ class Paginator(pagination.PageNumberPagination):
     def __init__(self, results_key="results"):
         self.results_key = results_key
 
+    def get_paginated_output(self, data) -> dict:
+        return {
+            "count": self.page.paginator.count,
+            self.results_key: data,
+            "has_next": self.page.has_next(),
+            "has_previous": self.page.has_previous(),
+            "page": self.page.number,
+            "pages": self.page.paginator.num_pages,
+            "limit": self.page.paginator.per_page,
+        }
+
     def get_paginated_response(self, data):
-        return Response(
-            {
-                "count": self.page.paginator.count,
-                self.results_key: data,
-                "has_next": self.page.has_next(),
-                "has_previous": self.page.has_previous(),
-                "page": self.page.number,
-                "pages": self.page.paginator.num_pages,
-                "limit": self.page.paginator.per_page,
-            }
-        )
+        return Response(self.get_paginated_output(data))
 
 
 class EtlPaginator(Paginator):

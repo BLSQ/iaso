@@ -241,6 +241,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.label.sourceVersion',
         defaultMessage: 'Source version',
     },
+
+    multiSelectionAction: {
+        defaultMessage: 'Edit selected users',
+        id: 'iaso.users.multiSelectionAction',
+    },
 });
 
 export default MESSAGES;

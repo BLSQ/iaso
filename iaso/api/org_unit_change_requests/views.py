@@ -4,7 +4,6 @@ from datetime import datetime
 import django_filters
 from django.db.models import Prefetch
 from django.http import HttpResponse
-
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -24,7 +23,7 @@ from iaso.api.org_unit_change_requests.serializers import (
     OrgUnitChangeRequestWriteSerializer,
 )
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import OrgUnit, OrgUnitChangeRequest, Instance
+from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest
 from iaso.utils.models.common import get_creator_name
 
 
@@ -190,4 +189,13 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             writer.writerow(row)
         filename = filename + ".csv"
         response["Content-Disposition"] = "attachment; filename=" + filename
+        return response
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        select_all_count = queryset.filter(status=OrgUnitChangeRequest.Statuses.NEW).count()
+
+        response.data["select_all_count"] = select_all_count
+
         return response

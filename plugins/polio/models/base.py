@@ -407,6 +407,9 @@ class Round(models.Model):
         """
         from plugins.polio.models import ChronogramTemplateTask
 
+        if isinstance(self.started_at, datetime.datetime):
+            self.started_at = self.started_at.date()
+
         if (
             self.started_at
             and isinstance(self.started_at, datetime.date)
@@ -415,8 +418,6 @@ class Round(models.Model):
             and self.campaign.has_polio_type
             and not self.chronograms.valid().exists()
         ):
-            if isinstance(self.started_at, datetime.datetime):
-                self.started_at = self.started_at.date()
             ChronogramTemplateTask.objects.create_chronogram(round=self, created_by=None, account=self.campaign.account)
 
     def get_item_by_key(self, key):

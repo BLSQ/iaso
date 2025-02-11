@@ -68,32 +68,53 @@ class RoundModelTestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(pm.RoundScope.objects.count(), 2)
         self.assertEqual(m.Group.objects.count(), 3)
 
-    def test_save_for_automatic_chronogram_creation(self):
+    def test_save(self):
         polio_type = pm.CampaignType.objects.get(name=pm.CampaignType.POLIO)
         self.campaign.campaign_types.add(polio_type)
 
-        now = timezone.now()
+        round = pm.Round(number=1, campaign=self.campaign, started_at=timezone.now().date())
 
-        # Ensure no chronogram is created with an explicit `add_chronogram=False`.
-        round = pm.Round(number=1, campaign=self.campaign, started_at=now.date())
         round.save(add_chronogram=False)
         self.assertEqual(round.chronograms.valid().count(), 0)
 
-        # Ensure no chronogram is created when `started_at` in the past.
-        date_in_past = now - datetime.timedelta(days=1)
-        round = pm.Round(number=2, campaign=self.campaign, started_at=date_in_past.date())
-        round.save()
-        self.assertEqual(round.chronograms.valid().count(), 0)
-
-        # Ensure a new chronogram is created when `started_at` is >= now.
-        round = pm.Round(number=3, campaign=self.campaign, started_at=now.date())
         round.save()
         self.assertEqual(round.chronograms.valid().count(), 1)
 
-        # Ensure no chronogram is created for non-Polio campaigns.
+    def test_add_chronogram(self):
+        now = timezone.now()
+
+        polio_type = pm.CampaignType.objects.get(name=pm.CampaignType.POLIO)
+        self.campaign.campaign_types.add(polio_type)
+
+        date_in_past = (now - datetime.timedelta(days=1)).date()
+        round_1 = pm.Round(number=1, campaign=self.campaign, started_at=date_in_past)
+        round_1.save(add_chronogram=False)
+        round_1.add_chronogram()
+        self.assertEqual(
+            round_1.chronograms.valid().count(), 0, "No chronogram should be created when `started_at` in the past."
+        )
+
+        round_2 = pm.Round(number=2, campaign=self.campaign, started_at=now.date())
+        round_2.save(add_chronogram=False)
+        round_2.add_chronogram()
+        self.assertEqual(
+            round_2.chronograms.valid().count(), 1, "A new chronogram should be created when `started_at` >= now."
+        )
+
+        round_3 = pm.Round(number=3, campaign=self.campaign, started_at=now)
+        round_3.save(add_chronogram=False)
+        round_3.add_chronogram()
+        self.assertEqual(
+            round_3.chronograms.valid().count(),
+            1,
+            "A new chronogram should be created even when `started_at` is a datetime object.",
+        )
+
         self.campaign.campaign_types.remove(polio_type)
         measles_type = pm.CampaignType.objects.get(name=pm.CampaignType.MEASLES)
         self.campaign.campaign_types.add(measles_type)
-        round = pm.Round(number=4, campaign=self.campaign, started_at=now.date())
-        round.save()
-        self.assertEqual(round.chronograms.valid().count(), 0)
+        round_4 = pm.Round(number=1, campaign=self.campaign, started_at=now.date())
+        round_4.save(add_chronogram=False)
+        self.assertEqual(
+            round_4.chronograms.valid().count(), 0, "No chronogram should be created for non-Polio campaigns."
+        )

@@ -189,9 +189,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.lot_numbers',
         defaultMessage: 'Lot numbers',
     },
-    physical_inventory: {
-        id: 'iaso.polio.label.physical_inventory',
-        defaultMessage: 'Physical inventory',
+    physical_inventory_add: {
+        id: 'iaso.polio.label.physical_inventory_add',
+        defaultMessage: 'Add to Physical inventory',
+    },
+    physical_inventory_remove: {
+        id: 'iaso.polio.label.physical_inventory_remove',
+        defaultMessage: 'Remove from Physical inventory',
     },
     stealing: {
         id: 'iaso.polio.label.stealing',
@@ -360,6 +364,10 @@ const MESSAGES = defineMessages({
     round: {
         id: 'iaso.polio.label.round',
         defaultMessage: 'Round',
+    },
+    stockToModify: {
+        id: 'iaso.polio.label.stockToModify',
+        defaultMessage: 'Stock to modify',
     },
     earmarked: {
         id: 'iaso.polio.label.earmarked',

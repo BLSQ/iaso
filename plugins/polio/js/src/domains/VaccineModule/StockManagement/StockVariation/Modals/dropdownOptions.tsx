@@ -9,7 +9,8 @@ export const VACCINE_EXPIRED = 'vaccine_expired';
 export const LOSSES = 'losses';
 export const RETURN_TO_SUPPLIER = 'return';
 export const STEALING = 'stealing';
-export const PHYSICAL_INVENTORY = 'physical_inventory';
+export const PHYSICAL_INVENTORY_ADD = 'physical_inventory_add';
+export const PHYSICAL_INVENTORY_REMOVE = 'physical_inventory_remove';
 export const BROKEN = 'broken';
 export const UNREADABLE_LABEL = 'unreadable_label';
 // from backend model.
@@ -19,7 +20,8 @@ export const UNREADABLE_LABEL = 'unreadable_label';
 // LOSSES = "losses", _("Losses")
 // RETURN = "return", _("Return")
 // STEALING = "stealing", _("Stealing")
-// PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
+// PHYSICAL_INVENTORY_ADD = "physical_inventory_add", _("Add to Physical Inventory")
+// PHYSICAL_INVENTORY_REMOVE = "physical_inventory_remove", _("rempove from Physical Inventory")
 
 type IncidentType =
     | 'vaccine_expired'
@@ -56,8 +58,12 @@ export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
                 value: STEALING,
             },
             {
-                label: formatMessage(MESSAGES[PHYSICAL_INVENTORY]),
-                value: PHYSICAL_INVENTORY,
+                label: formatMessage(MESSAGES[PHYSICAL_INVENTORY_ADD]),
+                value: PHYSICAL_INVENTORY_ADD,
+            },
+            {
+                label: formatMessage(MESSAGES[PHYSICAL_INVENTORY_REMOVE]),
+                value: PHYSICAL_INVENTORY_REMOVE,
             },
             {
                 label: formatMessage(MESSAGES[BROKEN]),

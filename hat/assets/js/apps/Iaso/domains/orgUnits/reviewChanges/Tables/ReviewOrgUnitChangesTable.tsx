@@ -1,7 +1,21 @@
+import React, {
+    FunctionComponent,
+    ReactElement,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
+import EditIcon from '@mui/icons-material/Settings';
 import { Box } from '@mui/material';
-import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import {
+    Column,
+    setTableSelection,
+    textPlaceholder,
+    selectionInitialState,
+    useSafeIntl,
+} from 'bluesquare-components';
+
 import Color from 'color';
-import React, { FunctionComponent, ReactElement, useMemo } from 'react';
 import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import { UserCell } from '../../../../components/Cells/UserCell';
@@ -9,8 +23,10 @@ import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLi
 import { baseUrls } from '../../../../constants/urls';
 import { ColumnCell } from '../../../../types/general';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
-import { IconButton } from '../details';
+import { Selection } from '../../types/selection';
+import { MultiActionsDialog } from '../Components/MultiActionsDialog';
 import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
+import { IconButton } from '../details';
 import MESSAGES from '../messages';
 import {
     ApproveOrgUnitParams,
@@ -18,6 +34,9 @@ import {
     OrgUnitChangeRequest,
     OrgUnitChangeRequestsPaginated,
 } from '../types';
+
+const getIsSelectionDisabled = (ou: OrgUnitChangeRequest) =>
+    ou.status !== 'new';
 
 const useColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -192,20 +211,68 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     params,
 }) => {
     const columns = useColumns();
+    const [selection, setSelection] = useState<Selection<OrgUnitChangeRequest>>(
+        selectionInitialState,
+    );
 
+    const [multiActionPopupOpen, setMultiActionPopupOpen] =
+        useState<boolean>(false);
+    const { formatMessage } = useSafeIntl();
+    const handleTableSelection = useCallback(
+        (selectionType, items = [], totalCount = 0) => {
+            const newSelection: Selection<OrgUnitChangeRequest> =
+                setTableSelection(selection, selectionType, items, totalCount);
+            setSelection(newSelection);
+        },
+        [selection],
+    );
+    const selectionActions = useMemo(
+        () => [
+            {
+                icon: <EditIcon />,
+                label: formatMessage(MESSAGES.multiSelectionAction),
+                onClick: () => setMultiActionPopupOpen(true),
+                disabled:
+                    multiActionPopupOpen ||
+                    (selection.selectedItems.length === 0 &&
+                        !selection.selectAll),
+            },
+        ],
+        [
+            formatMessage,
+            multiActionPopupOpen,
+            selection.selectAll,
+            selection.selectedItems.length,
+        ],
+    );
     return (
-        <TableWithDeepLink
-            marginTop={false}
-            data={data?.results ?? []}
-            pages={data?.pages ?? 1}
-            defaultSorted={[{ id: 'updated_at', desc: true }]}
-            columns={columns}
-            count={data?.count ?? 0}
-            baseUrl={baseUrl}
-            countOnTop
-            params={params}
-            rowProps={getRowProps}
-            extraProps={{ loading: isFetching }}
-        />
+        <>
+            <MultiActionsDialog
+                open={multiActionPopupOpen}
+                closeDialog={() => setMultiActionPopupOpen(false)}
+                selection={selection}
+            />
+            <TableWithDeepLink
+                marginTop={false}
+                data={data?.results ?? []}
+                pages={data?.pages ?? 1}
+                defaultSorted={[{ id: 'updated_at', desc: true }]}
+                columns={columns}
+                count={data?.count ?? 0}
+                baseUrl={baseUrl}
+                countOnTop
+                params={params}
+                rowProps={getRowProps}
+                extraProps={{ loading: isFetching }}
+                multiSelect
+                selection={selection}
+                selectionActions={selectionActions}
+                selectAllCount={data?.select_all_count ?? 0}
+                getIsSelectionDisabled={getIsSelectionDisabled}
+                setTableSelection={(selectionType, items, totalCount) =>
+                    handleTableSelection(selectionType, items, totalCount)
+                }
+            />
+        </>
     );
 };

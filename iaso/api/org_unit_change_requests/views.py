@@ -4,7 +4,6 @@ from datetime import datetime
 import django_filters
 from django.db.models import Prefetch
 from django.http import HttpResponse
-
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -236,4 +235,13 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             writer.writerow(row)
         filename = filename + ".csv"
         response["Content-Disposition"] = "attachment; filename=" + filename
+        return response
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        select_all_count = queryset.filter(status=OrgUnitChangeRequest.Statuses.NEW).count()
+
+        response.data["select_all_count"] = select_all_count
+
         return response

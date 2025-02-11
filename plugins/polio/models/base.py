@@ -1541,14 +1541,7 @@ class EarmarkedStock(models.Model):
     class EarmarkedStockChoices(models.TextChoices):
         CREATED = "created", _("Created")  #     1. Usable -> Earmark
         USED = "used", _("Used")  #     2. Earmarked -> Used
-        RETURNED = "returned", _("Returned")  #     3. Used -> Usable
-
-    class Meta:
-        indexes = [
-            models.Index(fields=["vaccine_stock", "campaign"]),
-            models.Index(fields=["created_at"]),
-            models.Index(fields=["round"]),
-        ]
+        RETURNED = "returned", _("Returned")  #     3. Earmark -> Usable
 
     earmarked_stock_type = models.CharField(
         max_length=20, choices=EarmarkedStockChoices.choices, default=EarmarkedStockChoices.CREATED
@@ -1566,6 +1559,13 @@ class EarmarkedStock(models.Model):
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "campaign"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["round"]),
+        ]
 
     def __str__(self):
         return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"

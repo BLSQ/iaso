@@ -1,15 +1,15 @@
-import { Box, Grid, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
-import { Field, useFormikContext } from 'formik';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useMemo,
 } from 'react';
-import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { Box, Grid, Typography } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import { Field, useFormikContext } from 'formik';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
+import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { NumberInput } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';

@@ -470,7 +470,7 @@ class ETL:
                 "quantity": quantity,
             }
             given_assistance.append(assistance)
-        elif step.get("ration_type"):
+        elif step.get("ration_type") is not None and step.get("ration_type") != "":
             if step.get("ration_type") in ["csb", "csb1", "csb2"]:
                 quantity = step.get("_csb_packets")
             elif step.get("ration_type") == "lndf":

@@ -387,24 +387,8 @@ class Round(models.Model):
 
     def save(self, *args, add_chronogram: bool = True, **kwargs):
         super().save(*args, **kwargs)
-        # Create a "standard chronogram" for all upcoming rounds of a campaign.
-        # See POLIO-1781.
-        # Because the API views make it hard to perform an "automatic chronogram creation" in a predictable manner,
-        # this is the safest place to do it even if it's not the most performant.
-        if (
-            add_chronogram
-            and self.started_at
-            and isinstance(self.started_at, datetime.date)
-            and self.started_at >= timezone.now().date()
-            and self.campaign
-            and self.campaign.has_polio_type
-            and not self.chronograms.valid().exists()
-        ):
-            from plugins.polio.models import ChronogramTemplateTask
-
-            if isinstance(self.started_at, datetime.datetime):
-                self.started_at = self.started_at.date()
-            ChronogramTemplateTask.objects.create_chronogram(round=self, created_by=None, account=self.campaign.account)
+        if add_chronogram:
+            self.add_chronogram()
 
     def delete(self, *args, **kwargs):
         # Explicitly delete groups related to the round's scopes, because the cascade deletion won't work reliably
@@ -415,6 +399,25 @@ class Round(models.Model):
         # Call the parent class's delete() method to proceed with deleting the Round
         # The scope will be deleted by Django's cascading
         super().delete(*args, **kwargs)
+
+    def add_chronogram(self):
+        """
+        Create a "standard chronogram" for all upcoming rounds of a campaign.
+        See POLIO-1781.
+        """
+        from plugins.polio.models import ChronogramTemplateTask
+
+        if (
+            self.started_at
+            and isinstance(self.started_at, datetime.date)
+            and self.started_at >= timezone.now().date()
+            and self.campaign
+            and self.campaign.has_polio_type
+            and not self.chronograms.valid().exists()
+        ):
+            if isinstance(self.started_at, datetime.datetime):
+                self.started_at = self.started_at.date()
+            ChronogramTemplateTask.objects.create_chronogram(round=self, created_by=None, account=self.campaign.account)
 
     def get_item_by_key(self, key):
         return getattr(self, key)

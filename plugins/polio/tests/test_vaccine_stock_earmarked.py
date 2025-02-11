@@ -58,8 +58,8 @@ class VaccineStockEarmarkedTests(APITestCase):
         cls.round = pm.Round.objects.create(
             campaign=cls.campaign,
             number=1,
-            started_at=cls.now,
-            ended_at=cls.now + datetime.timedelta(days=5),
+            started_at=cls.now.date(),
+            ended_at=(cls.now + datetime.timedelta(days=5)).date(),
         )
 
         # Create test vaccine stock

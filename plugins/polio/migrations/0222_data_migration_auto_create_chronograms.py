@@ -49,7 +49,7 @@ def migrate_data_forward(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("polio", "0217_round_is_test"),
+        ("polio", "0221_merge_20250211_1527"),
     ]
 
     operations = [migrations.RunPython(migrate_data_forward, migrations.RunPython.noop, elidable=True)]

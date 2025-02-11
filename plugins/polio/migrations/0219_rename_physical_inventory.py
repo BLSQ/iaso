@@ -10,7 +10,7 @@ def migrate_physical_inventory_report_type(apps, schema_editor):
 
     incident_reports = IncidentReport.objects.all()
     for report in incident_reports:
-        if report.stock_correction == Choices.PHYSICAL_INVENTORY:
+        if report.stock_correction == "physical_inventory":
             report.stock_correction = Choices.PHYSICAL_INVENTORY_ADD
             report.save()
 
@@ -22,7 +22,7 @@ def revert_physical_inventory_report_type(apps, schema_editor):
     incident_reports = IncidentReport.objects.all()
     for report in incident_reports:
         if report.stock_correction == Choices.PHYSICAL_INVENTORY_ADD:
-            report.stock_correction = Choices.PHYSICAL_INVENTORY
+            report.stock_correction = "physical_inventory"
             report.save()
 
 

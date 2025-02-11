@@ -1510,7 +1510,8 @@ class IncidentReport(models.Model):
         LOSSES = "losses", _("Losses")
         RETURN = "return", _("Return")
         STEALING = "stealing", _("Stealing")
-        PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
+        PHYSICAL_INVENTORY_ADD = "physical_inventory_add", _("Add to Physical Inventory")
+        PHYSICAL_INVENTORY_REMOVE = "physical_inventory_remove", _("remove from Physical Inventory")
         BROKEN = "broken", _("Broken")
         UNREADABLE_LABEL = "unreadable_label", _("Unreadable label")
 

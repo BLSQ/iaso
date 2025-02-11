@@ -12,7 +12,7 @@ import { useDataSourceVersions } from '../../../dataSources/requests';
 import { useGetDataSources } from '../../../dataSources/useGetDataSources';
 import { useFilterState } from '../../../../hooks/useFilterState';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { DataSources, Version } from '../../types/dataSources';
+import { Project, Version } from '../../types/dataSources';
 import { baseUrl } from '../config';
 import MESSAGES from '../messages';
 
@@ -32,43 +32,8 @@ type Props = {
 type DataSource = {
     label: string;
     value: string;
-    projectIds: string[];
-};
-
-const filterDataSourcesByProjectId = (
-    dataSources: DataSources,
-    projectId: string,
-) => {
-    const allDataSources: DataSource[] = dataSources?.map(source => {
-        const projects = source.projects.flat();
-        const projectIds = projects.map(project => project?.id?.toString());
-        return {
-            label: source?.name,
-            value: `${source?.id}`,
-            projectIds,
-        };
-    });
-    if (projectId) {
-        return allDataSources?.filter(source =>
-            source?.projectIds?.includes(projectId),
-        );
-    }
-    return allDataSources;
-};
-
-const filterSourceversionByDataSource = (
-    sourceVersions: Version[],
-    source: string,
-) => {
-    const versions = sourceVersions?.filter(
-        version => version?.data_source?.toString() === source,
-    );
-    return versions?.map(version => {
-        return {
-            label: `${version?.data_source_name}-${version?.number}`,
-            value: `${version?.id}`,
-        };
-    });
+    projectIds?: string[];
+    projects?: Project[];
 };
 
 const Filters: FunctionComponent<Props> = ({ params }) => {
@@ -88,30 +53,50 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const [projectId, setProjectId] = useState<string | undefined>(
         filters?.project_ids,
     );
-    const [dataSource, setDataSource] = useState<string | undefined>(
+    const [dataSource, setDataSource] = useState<DataSource | undefined>(
         filters?.dataSource,
     );
-    const [version, setVersion] = useState<string | undefined>(
+    const [version, setVersion] = useState<Version | undefined>(
         filters?.version,
     );
 
-    const dataSourceDropDown = useMemo(
-        () =>
-            filterDataSourcesByProjectId(
-                dataSources?.sources,
-                filters?.project_ids,
-            ),
-        [dataSources, filters?.project_ids],
-    );
+    const dataSourceDropDown = useMemo(() => {
+        const allDataSources: DataSource[] = dataSources?.sources?.map(
+            source => {
+                const allProjects: Project[] = source.projects.flat();
+                const projectIds = allProjects.map(project =>
+                    project?.id?.toString(),
+                );
+                return {
+                    label: source?.name,
+                    value: `${source?.id}`,
+                    projectIds,
+                };
+            },
+        );
+        if (projectId) {
+            return allDataSources?.filter(source =>
+                source?.projectIds?.includes(projectId),
+            );
+        }
+        return allDataSources;
+    }, [dataSources, projectId]);
 
-    const sourceVersionsDropDown = useMemo(
-        () =>
-            filterSourceversionByDataSource(
-                sourceVersions,
-                filters?.dataSource,
-            ),
-        [filters?.dataSource, sourceVersions],
-    );
+    const sourceVersionsDropDown = useMemo(() => {
+        if (!sourceVersions) return [];
+
+        return sourceVersions
+            ?.filter(
+                sourceVersion =>
+                    sourceVersion?.data_source?.toString() === dataSource,
+            )
+            .map(sourceVersion => {
+                return {
+                    label: `${sourceVersion?.data_source_name}-${sourceVersion?.number}`,
+                    value: `${sourceVersion?.id}`,
+                };
+            });
+    }, [dataSource, sourceVersions]);
 
     const handleChangeSelect = useCallback(
         (key, newValue) => {

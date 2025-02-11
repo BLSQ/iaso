@@ -1,18 +1,21 @@
 import datetime
 import enum
-from django.db.models import OuterRef, Subquery, Exists, Q
+
+from django.db.models import Exists, OuterRef, Q, Subquery
+from django.utils.dateparse import parse_date
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import filters, serializers, status, permissions
+from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
-from django.utils.dateparse import parse_date
+
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
+from plugins.polio.api.vaccines.common import VaccineStockManagementPermission
 from plugins.polio.models import (
     DOSES_PER_VIAL,
     Campaign,
@@ -402,40 +405,6 @@ class VaccineStockCreateSerializer(serializers.ModelSerializer):
         return VaccineStock.objects.create(**validated_data)
 
 
-class VaccineStockManagementReadWritePerm(GenericReadWritePerm):
-    read_perm = permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ
-    write_perm = permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE
-
-
-class VaccineStockManagementPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        # Users with read or write permission can do anything in general
-        if (
-            request.user.has_perm(permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE)
-            or request.user.has_perm(permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ)
-            or request.user.is_superuser
-        ):
-            return True
-        return False
-
-    def has_object_permission(self, request, view, obj):
-        # Users with write permission can do anything
-        if request.user.has_perm(permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE) or request.user.is_superuser:
-            return True
-
-        # Users with read permission can read anything or add entries
-        if request.user.has_perm(permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ):
-            if request.method in ["GET", "HEAD", "OPTIONS", "POST"]:
-                return True
-
-            # For edit/delete, check if object is less than a week old
-            if request.method in ["PUT", "PATCH", "DELETE"]:
-                one_week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
-                return obj.created_at > one_week_ago
-
-        return False
-
-
 class StockManagementCustomFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, _view):
         country_id = request.GET.get("country_id")
@@ -469,7 +438,12 @@ class StockManagementCustomFilter(filters.BaseFilterBackend):
 
 class VaccineStockSubitemBase(ModelViewSet):
     allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
-    permission_classes = [VaccineStockManagementReadWritePerm]
+    permission_classes = [
+        lambda: VaccineStockManagementPermission(
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+        )
+    ]
     model_class = None
 
     @swagger_auto_schema(
@@ -610,7 +584,12 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     """
 
-    permission_classes = [VaccineStockManagementPermission]
+    permission_classes = [
+        lambda: VaccineStockManagementPermission(
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+        )
+    ]
     serializer_class = VaccineStockSerializer
     http_method_names = ["get", "head", "options", "post", "delete"]
 

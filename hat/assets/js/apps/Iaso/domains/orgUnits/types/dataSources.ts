@@ -10,7 +10,7 @@ export type Version = {
     data_source_name?: string;
 };
 
-type Project = {
+export type Project = {
     id: number;
     name: string;
     app_id: string;

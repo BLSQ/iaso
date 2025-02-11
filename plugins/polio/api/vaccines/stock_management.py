@@ -326,19 +326,6 @@ class VaccineStockCalculator:
                         "type": "earmarked_stock__returned",
                     }
                 )
-            elif stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.USED:
-                pass
-                # results.append(
-                #     {
-                #         "date": stock.created_at.date(),
-                #         "action": f"Earmarked used for {stock.campaign.obr_name} Round {stock.round.number}",
-                #         "vials_in": stock.vials_earmarked,
-                #         "doses_in": stock.doses_earmarked,
-                #         "vials_out": None,
-                #         "doses_out": None,
-                #         "type": "earmarked_stock__used",
-                #     }
-                # )
 
         return results
 
@@ -451,25 +438,25 @@ class VaccineStockCalculator:
         earmarked_movements = self.earmarked_stocks
         if end_date:
             earmarked_movements = earmarked_movements.filter(created_at__lte=end_date)
-        movements = EarmarkedStockSerializer(earmarked_movements, many=True).data
+
         results = []
-        for movement in movements:
-            movement_type = movement["earmarked_stock_type"]
+        for movement in earmarked_movements:
+            movement_type = movement.earmarked_stock_type
             if (
                 movement_type == EarmarkedStock.EarmarkedStockChoices.USED
                 or movement_type == EarmarkedStock.EarmarkedStockChoices.RETURNED
             ):
-                if movement["form_a"] is not None:
-                    action_text = f"Earmarked stock used for FormA ({movement['form_a']})"
+                if movement.form_a is not None:
+                    action_text = f"Earmarked stock used for FormA ({movement.form_a})"
                 else:
-                    action_text = f"Earmarked stock used for {movement['campaign']} Round {movement['round_number']}"
+                    action_text = f"Earmarked stock used for {movement.campaign.obr_name} Round {movement.round.number}"
 
                 results.append(
                     {
-                        "date": movement["created_at"],
+                        "date": movement.created_at,
                         "action": action_text,
-                        "vials_out": movement["vials_earmarked"],
-                        "doses_out": movement["doses_earmarked"],
+                        "vials_out": movement.vials_earmarked,
+                        "doses_out": movement.doses_earmarked,
                         "vials_in": None,
                         "doses_in": None,
                         "type": f"earmarked_stock__{movement_type}",
@@ -478,10 +465,10 @@ class VaccineStockCalculator:
             else:
                 results.append(
                     {
-                        "date": movement["created_at"],
-                        "action": f"Earmarked stock reserved for {movement['campaign']} Round {movement['round_number']}",
-                        "vials_in": movement["vials_earmarked"],
-                        "doses_in": movement["doses_earmarked"],
+                        "date": movement.created_at,
+                        "action": f"Earmarked stock reserved for {movement.campaign.obr_name} Round {movement.round.number}",
+                        "vials_in": movement.vials_earmarked,
+                        "doses_in": movement.doses_earmarked,
                         "vials_out": None,
                         "doses_out": None,
                         "type": f"earmarked_stock__{movement_type}",
@@ -804,6 +791,11 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     serializer_class = EarmarkedStockSerializer
     model_class = EarmarkedStock
 
+    def get_queryset(self):
+        return EarmarkedStock.objects.filter(
+            vaccine_stock__account=self.request.user.iaso_profile.account
+        ).select_related("vaccine_stock", "campaign", "round")
+
 
 class VaccineStockManagementViewSet(ModelViewSet):
     """
@@ -981,12 +973,12 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         """
         if pk is None:
-            return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError("No VaccineStock ID provided")
 
         try:
             vaccine_stock = self.get_queryset().get(id=pk)
         except VaccineStock.DoesNotExist:
-            return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
+            raise ValidationError(f"VaccineStock not found for id={pk}")
 
         end_date = request.query_params.get("end_date", None)
         if end_date:

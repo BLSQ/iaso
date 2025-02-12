@@ -1,6 +1,6 @@
+import React, { FunctionComponent } from 'react';
 import { Table, TableBody, TableCell, TableRow } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { Accordion } from '../../../../components/Accordion/Accordion';
 import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
 import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
@@ -30,7 +30,6 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
     const isSelected =
         (status && field?.isSelected === true && 'success.light') || '';
 
-    console.log('fieldValues', fieldValues);
     return (
         <Accordion defaultExpanded>
             <AccordionSummary

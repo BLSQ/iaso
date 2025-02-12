@@ -395,6 +395,26 @@ class Round(models.Model):
         # The scope will be deleted by Django's cascading
         super().delete(*args, **kwargs)
 
+    def add_chronogram(self):
+        """
+        Create a "standard chronogram" for all upcoming rounds of a campaign.
+        See POLIO-1781.
+        """
+        from plugins.polio.models import ChronogramTemplateTask
+
+        if isinstance(self.started_at, datetime.datetime):
+            self.started_at = self.started_at.date()
+
+        if (
+            self.started_at
+            and isinstance(self.started_at, datetime.date)
+            and self.started_at >= timezone.now().date()
+            and self.campaign
+            and self.campaign.has_polio_type
+            and not self.chronograms.valid().exists()
+        ):
+            ChronogramTemplateTask.objects.create_chronogram(round=self, created_by=None, account=self.campaign.account)
+
     def get_item_by_key(self, key):
         return getattr(self, key)
 
@@ -752,6 +772,10 @@ class Campaign(SoftDeletableModel):
 
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
+
+    @property
+    def has_polio_type(self) -> bool:
+        return self.campaign_types.filter(name=CampaignType.POLIO).exists()
 
     def get_item_by_key(self, key):
         return getattr(self, key)

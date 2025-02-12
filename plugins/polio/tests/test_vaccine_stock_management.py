@@ -65,8 +65,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
 
         cls.campaign_round_1 = pm.Round.objects.create(
             campaign=cls.campaign,
-            started_at=datetime.datetime(2021, 1, 1),
-            ended_at=datetime.datetime(2021, 1, 31),
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
             number=1,
         )
 

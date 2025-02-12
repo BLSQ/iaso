@@ -46,8 +46,7 @@ class ChronogramTaskViewSetTestCase(APITestCase):
         cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
         cls.campaign.campaign_types.add(cls.polio_type)
 
-        cls.round = Round(number=1, campaign=cls.campaign, started_at=TODAY.date())
-        cls.round.save(add_chronogram=False)
+        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY.date())
 
         cls.chronogram = Chronogram.objects.create(round=cls.round, created_by=cls.user)
         cls.chronogram_task = ChronogramTask.objects.create(
@@ -337,10 +336,8 @@ class ChronogramViewSetTestCase(APITestCase):
         cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
         cls.campaign.campaign_types.add(cls.polio_type)
 
-        cls.round_1 = Round(number=1, campaign=cls.campaign, started_at=TODAY.date())
-        cls.round_1.save(add_chronogram=False)
-        cls.round_2 = Round(number=2, campaign=cls.campaign, started_at=TODAY.date())
-        cls.round_2.save(add_chronogram=False)
+        cls.round_1 = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY.date())
+        cls.round_2 = Round.objects.create(number=2, campaign=cls.campaign, started_at=TODAY.date())
 
         cls.chronogram = Chronogram.objects.create(round=cls.round_2, created_by=cls.user)
         ChronogramTask.objects.create(

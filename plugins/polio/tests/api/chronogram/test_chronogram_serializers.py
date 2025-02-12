@@ -43,8 +43,7 @@ class ChronogramTaskSerializerTestCase(TestCase):
         cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
         cls.campaign.campaign_types.add(cls.polio_type)
 
-        cls.round = Round(number=1, campaign=cls.campaign, started_at=TODAY.date())
-        cls.round.save(add_chronogram=False)
+        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY.date())
 
         cls.chronogram = Chronogram.objects.create(round=cls.round, created_by=cls.user)
         cls.chronogram_task = ChronogramTask.objects.create(
@@ -269,8 +268,7 @@ class ChronogramCreateSerializerTestCase(TestCase):
         cls.campaign.campaign_types.add(cls.polio_type)
 
         # Round.
-        cls.round = Round(number=1, campaign=cls.campaign, started_at=TODAY.date())
-        cls.round.save(add_chronogram=False)
+        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY.date())
 
         # Chronogram templates.
         cls.chronogram_template_1 = ChronogramTemplateTask.objects.create(

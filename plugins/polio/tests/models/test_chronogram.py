@@ -40,8 +40,7 @@ class ChronogramTaskTestCase(TestCase):
 
         # Round.
         round_start = (TODAY - datetime.timedelta(days=10)).date()
-        cls.round = Round(number=1, campaign=cls.campaign, started_at=round_start)
-        cls.round.save(add_chronogram=False)
+        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=round_start)
 
         # Chronogram.
         cls.chronogram = Chronogram.objects.create(round=cls.round, created_by=cls.user)
@@ -182,8 +181,7 @@ class ChronogramTemplateTaskTestCase(TestCase):
         cls.campaign.campaign_types.add(cls.polio_type)
 
         # Round.
-        cls.round = Round(number=1, campaign=cls.campaign, started_at=TODAY.date())
-        cls.round.save(add_chronogram=False)
+        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY.date())
 
         # Chronogram templates.
         cls.chronogram_template_1 = ChronogramTemplateTask.objects.create(

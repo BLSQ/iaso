@@ -385,11 +385,6 @@ class Round(models.Model):
 
     objects = models.Manager.from_queryset(RoundQuerySet)()
 
-    def save(self, *args, add_chronogram: bool = True, **kwargs):
-        super().save(*args, **kwargs)
-        if add_chronogram:
-            self.add_chronogram()
-
     def delete(self, *args, **kwargs):
         # Explicitly delete groups related to the round's scopes, because the cascade deletion won't work reliably
         Group.objects.filter(roundScope__isnull=False).filter(

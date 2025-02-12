@@ -149,17 +149,6 @@ class RoundScope(models.Model):
         ordering = ["round", "vaccine"]
 
 
-# # Signal to delete the Group when the Round is deleted
-# @receiver(post_delete, sender=RoundScope)
-# def delete_group_on_round_delete(sender, instance, **kwargs):
-#     """
-#     Delete the associated Group when the RoundScope instance is deleted,
-#     which happens when a Round is deleted.
-#     """
-#     if instance.group:
-#         instance.group.delete()
-
-
 def make_group_campaign_scope():
     return Group.objects.create(name="hidden campaignScope")
 
@@ -1521,7 +1510,8 @@ class IncidentReport(models.Model):
         LOSSES = "losses", _("Losses")
         RETURN = "return", _("Return")
         STEALING = "stealing", _("Stealing")
-        PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
+        PHYSICAL_INVENTORY_ADD = "physical_inventory_add", _("Add to Physical Inventory")
+        PHYSICAL_INVENTORY_REMOVE = "physical_inventory_remove", _("remove from Physical Inventory")
         BROKEN = "broken", _("Broken")
         UNREADABLE_LABEL = "unreadable_label", _("Unreadable label")
 
@@ -1546,6 +1536,66 @@ class IncidentReport(models.Model):
             models.Index(fields=["vaccine_stock", "date_of_incident_report"]),  # Frequently queried together
             models.Index(fields=["incident_report_received_by_rrt"]),  # Used in filtering
         ]
+
+
+class EarmarkedStock(models.Model):
+    class EarmarkedStockChoices(models.TextChoices):
+        CREATED = "created", _("Created")  #     1. Usable -> Earmark
+        USED = "used", _("Used")  #     2. Earmarked -> Used
+        RETURNED = "returned", _("Returned")  #     3. Earmark -> Usable
+
+    earmarked_stock_type = models.CharField(
+        max_length=20, choices=EarmarkedStockChoices.choices, default=EarmarkedStockChoices.CREATED
+    )
+    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="earmarked_stocks")
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    form_a = models.ForeignKey(
+        OutgoingStockMovement, on_delete=models.CASCADE, null=True, blank=True, related_name="earmarked_stocks"
+    )
+
+    vials_earmarked = models.PositiveIntegerField()
+    doses_earmarked = models.PositiveIntegerField()
+
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "campaign"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["round"]),
+        ]
+
+    def __str__(self):
+        return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"
+
+    @classmethod
+    def get_available_vials_count(cls, vaccine_stock: VaccineStock, _round: Round):
+        matching_earmarks_plus = EarmarkedStock.objects.filter(
+            vaccine_stock=vaccine_stock,
+            campaign=_round.campaign,
+            round=_round,
+            earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.CREATED,
+        )
+
+        matching_earmarks_minus = EarmarkedStock.objects.filter(
+            vaccine_stock=vaccine_stock,
+            campaign=_round.campaign,
+            round=_round,
+            earmarked_stock_type__in=[
+                EarmarkedStock.EarmarkedStockChoices.USED,
+                EarmarkedStock.EarmarkedStockChoices.RETURNED,
+            ],
+        )
+
+        total_vials_usable_plus = matching_earmarks_plus.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+        total_vials_usable_minus = matching_earmarks_minus.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+
+        total_vials_usable = total_vials_usable_plus - total_vials_usable_minus
+
+        return total_vials_usable
 
 
 class Notification(models.Model):

@@ -102,6 +102,14 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         if not org_units_for_user.filter(id=org_unit_to_change.pk).exists():
             raise PermissionDenied("The user is trying to create a change request for an unauthorized OrgUnit.")
 
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        # Allow the front-end to know the total number of change requests with the status "new" that can be used in bulk review.
+        response.data["select_all_count"] = (
+            self.filter_queryset(self.get_queryset()).filter(status=OrgUnitChangeRequest.Statuses.NEW).count()
+        )
+        return response
+
     def perform_create(self, serializer):
         """
         POST to create an `OrgUnitChangeRequest`.

@@ -7,7 +7,7 @@ from rest_framework.mixins import ListModelMixin
 from django.db.models import Count, Prefetch, Q
 
 from iaso.api.org_unit_change_requests.filters import MobileOrgUnitChangeRequestListFilter
-from iaso.api.org_unit_change_requests.pagination import MobileOrgUnitChangeRequestPagination
+from iaso.api.org_unit_change_requests.pagination import OrgUnitChangeRequestPagination
 from iaso.api.org_unit_change_requests.permissions import HasOrgUnitsChangeRequestPermission
 from iaso.api.org_unit_change_requests.serializers import MobileOrgUnitChangeRequestListSerializer
 from iaso.api.serializers import AppIdSerializer
@@ -19,7 +19,7 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = MobileOrgUnitChangeRequestListFilter
     serializer_class = MobileOrgUnitChangeRequestListSerializer
-    pagination_class = MobileOrgUnitChangeRequestPagination
+    pagination_class = OrgUnitChangeRequestPagination
 
     def get_queryset(self):
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)

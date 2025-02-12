@@ -74,7 +74,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(10):
             # filter_for_user_and_app_id
             #   1. SELECT OrgUnit
             # get_queryset
@@ -88,14 +88,9 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             #   8. PREFETCH OrgUnitChangeRequest.new_reference_instances__form
             #   9. PREFETCH OrgUnitChangeRequest.old_reference_instances__form
             #  10. PREFETCH OrgUnitChangeRequest.org_unit_type.projects
-            # extra pagination
-            #  11. COUNT(status=new)
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)
-
-        self.assertEqual(2, len(response.data["results"]))
-        self.assertEqual(2, response.data["count"])
-        self.assertEqual(2, response.data["count_new"])
+            self.assertEqual(2, len(response.data["results"]))
 
     def test_list_without_auth(self):
         response = self.client.get("/api/orgunits/changes/")

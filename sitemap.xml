@@ -169,6 +169,13 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/campaigns/subactivities.html"/>
     </url>
     <url>
+        <loc>Nonepages/dev/reference/clamav/clamav.html</loc>
+        <lastmod>2025-02-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/clamav/clamav.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/clamav/clamav.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/reference/data_model_glossary/data_model_glossary.html</loc>
         <lastmod>2025-02-13</lastmod>
         <changefreq>daily</changefreq>
@@ -503,6 +510,13 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/campaigns/subactivities.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/campaigns/subactivities.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/dev/reference/clamav/clamav.html</loc>
+        <lastmod>2025-02-13</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/clamav/clamav.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/clamav/clamav.html"/>
     </url>
     <url>
         <loc>Nonefr/pages/dev/reference/data_model_glossary/data_model_glossary.html</loc>

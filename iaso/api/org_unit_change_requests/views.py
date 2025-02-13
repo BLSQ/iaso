@@ -5,7 +5,7 @@ import django_filters
 from django.db.models import Prefetch
 from django.http import HttpResponse
 
-from rest_framework import filters, viewsets, status as drf_http_status
+from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -25,7 +25,12 @@ from iaso.api.org_unit_change_requests.serializers import (
     OrgUnitChangeRequestBulkReviewSerializer,
 )
 from iaso.api.serializers import AppIdSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import OrgUnit, OrgUnitChangeRequest, Instance
+from iaso.tasks.org_unit_change_requests_bulk_review import (
+    org_unit_change_requests_bulk_approve,
+    org_unit_change_requests_bulk_reject,
+)
 from iaso.utils.models.common import get_creator_name
 
 
@@ -173,15 +178,18 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         if unselected_ids:
             queryset = queryset.exclude(pk__in=unselected_ids)
 
+        ids = list(queryset.values_list("pk", flat=True))
+
         if status == OrgUnitChangeRequest.Statuses.APPROVED:
-            for change_request in queryset.all():
-                change_request.approve(self.request.user, approved_fields)
+            task = org_unit_change_requests_bulk_approve(
+                change_requests_ids=ids, approved_fields=list(approved_fields), user=self.request.user
+            )
+        else:
+            task = org_unit_change_requests_bulk_reject(
+                change_requests_ids=ids, rejection_comment=rejection_comment, user=self.request.user
+            )
 
-        elif status == OrgUnitChangeRequest.Statuses.REJECTED:
-            for change_request in queryset.all():
-                change_request.reject(self.request.user, rejection_comment)
-
-        return Response({"result": "success"}, status=drf_http_status.HTTP_200_OK)
+        return Response({"task": TaskSerializer(instance=task).data})
 
     @staticmethod
     def org_unit_change_request_csv_columns():

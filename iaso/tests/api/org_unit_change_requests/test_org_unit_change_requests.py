@@ -2,15 +2,15 @@ import csv
 import datetime
 import io
 
-from iaso.api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
-from iaso.utils.models.common import get_creator_name
 import time_machine
 
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
+from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
+from iaso.utils.models.common import get_creator_name
 
 
-class OrgUnitChangeRequestAPITestCase(APITestCase):
+class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
     """
     Test actions on the ViewSet.
     """
@@ -397,10 +397,23 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         }
         response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_approve")
+
+        self.assertEqual(task.launcher, self.user_with_review_perm)
+        self.assertCountEqual(task.params["kwargs"]["change_requests_ids"], [change_request_1.pk, change_request_2.pk])
+        self.assertCountEqual(task.params["kwargs"]["approved_fields"], ["new_name"])
+
+        self.runAndValidateTask(task, "SUCCESS")
+
+        task.refresh_from_db()
+        self.assertEqual(task.progress_message, "Bulk approved 2 change requests.")
 
         change_request_1.refresh_from_db()
         self.assertEqual(change_request_1.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
         self.assertEqual(change_request_1.updated_by, self.user_with_review_perm)
+
         change_request_2.refresh_from_db()
         self.assertEqual(change_request_2.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
         self.assertEqual(change_request_2.updated_by, self.user_with_review_perm)
@@ -429,13 +442,27 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         }
         response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_reject")
+
+        self.assertEqual(task.launcher, self.user_with_review_perm)
+        self.assertCountEqual(task.params["kwargs"]["change_requests_ids"], [change_request_1.pk, change_request_2.pk])
+        self.assertCountEqual(task.params["kwargs"]["rejection_comment"], "No way.")
+
+        self.runAndValidateTask(task, "SUCCESS")
+
+        task.refresh_from_db()
+        self.assertEqual(task.progress_message, "Bulk rejected 2 change requests.")
 
         change_request_1.refresh_from_db()
         self.assertEqual(change_request_1.status, m.OrgUnitChangeRequest.Statuses.REJECTED)
         self.assertEqual(change_request_1.updated_by, self.user_with_review_perm)
+
         change_request_2.refresh_from_db()
         self.assertEqual(change_request_2.status, m.OrgUnitChangeRequest.Statuses.REJECTED)
         self.assertEqual(change_request_2.updated_by, self.user_with_review_perm)
+
         change_request_3.refresh_from_db()
         self.assertEqual(change_request_3.status, m.OrgUnitChangeRequest.Statuses.NEW)
         self.assertEqual(change_request_3.updated_by, None)

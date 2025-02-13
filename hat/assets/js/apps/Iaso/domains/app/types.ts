@@ -1,5 +1,6 @@
-import { IntlMessage } from 'bluesquare-components';
 import { ElementType, ReactNode } from 'react';
+import { Theme } from '@mui/material/styles';
+import { IntlMessage } from 'bluesquare-components';
 import {
     RouteCustom,
     Redirection as RoutingRedirection,
@@ -40,6 +41,7 @@ export type Plugin = {
         key: string;
         component: ElementType;
     }[];
+    theme?: Theme;
 };
 
 export type Plugins = {

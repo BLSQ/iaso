@@ -372,6 +372,74 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         response = self.client.delete(f"/api/orgunits/changes/{change_request.pk}/", format="json")
         self.assertEqual(response.status_code, 405)
 
+    def test_bulk_review_without_perm(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data={}, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    @time_machine.travel(DT, tick=False)
+    def test_bulk_review_approve(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="foo"
+        )
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="bar"
+        )
+
+        data = {
+            "select_all": 1,
+            "selected_ids": [],
+            "unselected_ids": [],
+            "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
+            "approved_fields": ["new_name"],
+        }
+        response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        change_request_1.refresh_from_db()
+        self.assertEqual(change_request_1.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
+        self.assertEqual(change_request_1.updated_by, self.user_with_review_perm)
+        change_request_2.refresh_from_db()
+        self.assertEqual(change_request_2.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
+        self.assertEqual(change_request_2.updated_by, self.user_with_review_perm)
+
+    @time_machine.travel(DT, tick=False)
+    def test_bulk_review_reject(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="foo"
+        )
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="bar"
+        )
+        change_request_3 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="baz"
+        )
+
+        data = {
+            "select_all": 0,
+            "selected_ids": [change_request_1.pk, change_request_2.pk],
+            "unselected_ids": [change_request_3.pk],
+            "status": m.OrgUnitChangeRequest.Statuses.REJECTED,
+            "approved_fields": [],
+            "rejection_comment": "No way.",
+        }
+        response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        change_request_1.refresh_from_db()
+        self.assertEqual(change_request_1.status, m.OrgUnitChangeRequest.Statuses.REJECTED)
+        self.assertEqual(change_request_1.updated_by, self.user_with_review_perm)
+        change_request_2.refresh_from_db()
+        self.assertEqual(change_request_2.status, m.OrgUnitChangeRequest.Statuses.REJECTED)
+        self.assertEqual(change_request_2.updated_by, self.user_with_review_perm)
+        change_request_3.refresh_from_db()
+        self.assertEqual(change_request_3.status, m.OrgUnitChangeRequest.Statuses.NEW)
+        self.assertEqual(change_request_3.updated_by, None)
+
     def test_export_to_csv(self):
         """
         It tests the CSV export for the org change requests list.

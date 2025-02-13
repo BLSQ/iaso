@@ -5,7 +5,7 @@ import django_filters
 from django.db.models import Prefetch
 from django.http import HttpResponse
 
-from rest_framework import filters, viewsets
+from rest_framework import filters, viewsets, status as drf_http_status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -22,6 +22,7 @@ from iaso.api.org_unit_change_requests.serializers import (
     OrgUnitChangeRequestRetrieveSerializer,
     OrgUnitChangeRequestReviewSerializer,
     OrgUnitChangeRequestWriteSerializer,
+    OrgUnitChangeRequestBulkReviewSerializer,
 )
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import OrgUnit, OrgUnitChangeRequest, Instance
@@ -47,7 +48,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
     pagination_class = OrgUnitChangeRequestPagination
 
     def get_permissions(self):
-        if self.action == "partial_update":
+        if self.action in ["partial_update", "bulk_review"]:
             permission_classes = [HasOrgUnitsChangeRequestReviewPermission]
         else:
             permission_classes = [HasOrgUnitsChangeRequestPermission]
@@ -152,6 +153,35 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
 
         response_serializer = OrgUnitChangeRequestRetrieveSerializer(change_request)
         return Response(response_serializer.data)
+
+    @action(detail=False, methods=["patch"])
+    def bulk_review(self, request):
+        serializer = OrgUnitChangeRequestBulkReviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        selected_ids = serializer.validated_data["selected_ids"]
+        unselected_ids = serializer.validated_data["unselected_ids"]
+        status = serializer.validated_data["status"]
+        approved_fields = serializer.validated_data["approved_fields"]
+        rejection_comment = serializer.validated_data["rejection_comment"]
+
+        queryset = self.filter_queryset(self.get_queryset()).filter(status=OrgUnitChangeRequest.Statuses.NEW)
+
+        if selected_ids:
+            queryset = queryset.filter(pk__in=selected_ids)
+
+        if unselected_ids:
+            queryset = queryset.exclude(pk__in=unselected_ids)
+
+        if status == OrgUnitChangeRequest.Statuses.APPROVED:
+            for change_request in queryset.all():
+                change_request.approve(self.request.user, approved_fields)
+
+        elif status == OrgUnitChangeRequest.Statuses.REJECTED:
+            for change_request in queryset.all():
+                change_request.reject(self.request.user, rejection_comment)
+
+        return Response({"result": "success"}, status=drf_http_status.HTTP_200_OK)
 
     @staticmethod
     def org_unit_change_request_csv_columns():

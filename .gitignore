@@ -190,6 +190,7 @@ originals
 /setuper/credentials.py
 /setuper/generated/
 plugins/trypelim
+plugins/snt_malaria
 
 
 

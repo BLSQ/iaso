@@ -472,7 +472,7 @@ class ETL:
             given_assistance.append(assistance)
         elif step.get("ration_type") is not None and step.get("ration_type") != "":
             if step.get("ration_type") in ["csb", "csb1", "csb2"]:
-                quantity = step.get("_csb_packets")
+                quantity = step.get("_csb_packets", 0)
             elif step.get("ration_type") == "lndf":
                 quantity = step.get("_lndf_kgs", 0)
             else:

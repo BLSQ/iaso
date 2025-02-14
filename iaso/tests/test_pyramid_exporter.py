@@ -1,3 +1,4 @@
+import datetime
 import json
 from io import StringIO
 from os import environ
@@ -81,6 +82,7 @@ class CommandTests(TestCase):
         org_unit_chief.validated = False
         org_unit_chief.parent = parent
         org_unit_chief.simplified_geom = MultiPolygon([Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])])
+        org_unit_chief.opening_date = None
         org_unit_chief.save()
 
         group = Group.objects.get(source_ref="f25dqv3Y7Z0", source_version=version_ref)
@@ -96,6 +98,7 @@ class CommandTests(TestCase):
         org_unit.validated = False
         org_unit.parent = org_unit_chief
         org_unit.location = Point(-1.3596, 2.5317, 0)
+        org_unit.opening_date = datetime.date(2025, 1, 14)
         org_unit.save()
 
         # update existing chp coordinates
@@ -217,7 +220,7 @@ class CommandTests(TestCase):
                     "id": new_children.source_ref,
                     "name": "new children",
                     "shortName": "new children",
-                    "openingDate": "1960-08-03T00:00:00.000",
+                    "openingDate": "2025-01-14T00:00:00.000",
                     "parent": {"id": new_chief_dom.source_ref},
                     "geometry": {"type": "Point", "coordinates": [-1.3596, 2.5317]},
                     "coordinates": "[-1.3596, 2.5317]",

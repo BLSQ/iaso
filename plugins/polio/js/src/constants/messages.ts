@@ -2346,6 +2346,11 @@ const MESSAGES = defineMessages({
             'Select initial region and encode dates for at least one round to unlock sub-activities tab',
         id: 'iaso.polio.subActivitiesUnlockConditions',
     },
+    subActivitiesLockedScopeChange: {
+        defaultMessage:
+            'Sub-activities are locked because you switched the scope level. Please save this campaign first and edit it again to access sub-activities',
+        id: 'iaso.polio.subActivitiesLockedScopeChange',
+    },
     campaignSaveError: {
         defaultMessage: 'Campaign not saved',
         id: 'iaso.polio.campaignSaveError',

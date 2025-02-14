@@ -1,4 +1,33 @@
-# Application mobile
+# Mobile
+
+## Appareils recommandés pour la collecte de données avec IASO (dernière mise à jour: février 2025) 
+
+L'**application Android IASO** nécessite **moins de 30 Mo de stockage** et peu de puissance de traitement, la rendant compatible avec des **smartphones d'entrée de gamme**.  
+
+### Recommandations pour les Smartphones  
+Pour une utilisation standard, nous recommandons les **appareils Android One** (ex. Nokia 2.3, bien que le programme soit moins actif). En 2025, le **Samsung Galaxy A14** est une bonne alternative ([spécifications](https://www.gsmarena.com/samsung_galaxy_a14-12151.php)).  
+
+- Si vous collectez **beaucoup de photos/vidéos**, optez pour un téléphone avec **plus de stockage**.  
+- Évitez les appareils fonctionnant sous **Android en dessous de la version 6**.  
+
+### Tablettes pour un usage intensif  
+Pour une saisie fréquente des données, une **tablette** améliore le confort grâce à un **clavier plus grand**. Nous recommandons les **modèles Samsung**, comme la **Galaxy Tab A 8.0 (~200€)**. Assurez-vous qu'elle prenne en charge la **connectivité 4G**.  
+
+Avant d’**acheter en grande quantité**, testez une unité pour vérifier la compatibilité avec toutes les applications et fonctionnalités requises (**NFC, boussole, scan QR**).  
+
+#### Spécifications techniques pour tablettes  
+- **Écran :** 7-10" Full HD tactile  
+- **Mémoire :** 2 Go de RAM, 16 Go de stockage (+MicroSD jusqu'à 128 Go)  
+- **Processeur :** Quad-core 1.6 GHz  
+- **Batterie :** 7-8 heures d'autonomie  
+- **Connectivité :** 4G LTE, Wi-Fi, Bluetooth 5.0  
+- **OS :** Android 6+ (de préférence **versions Android One**)  
+
+### Accessoires  
+- **Étui de protection** pour tablette  
+- **Chargeur solaire 25 000mAh** (ports Type-C & USB)  
+
+## Application mobile IASO
 
 L'application mobile IASO est disponible sur le Google Play Store (uniquement pour les téléphones Android).
 

@@ -90,8 +90,9 @@ services:
         command: start_dev
 
     db:
-        image: postgis/postgis:16-3.4
-        build: docker/db
+        # Pinning specific minor versions of PostgreSQL and PostGIS is not easy.
+        # https://github.com/postgis/docker-postgis/issues/396
+        image: postgis/postgis:16-3.5
         logging: *iaso_logging
         ports:
             - '5433:5432'
@@ -101,6 +102,7 @@ services:
             POSTGRES_DB: ${RDS_DB_NAME}
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
+
     # the webpack dev server
     webpack:
         image: iaso-webpack

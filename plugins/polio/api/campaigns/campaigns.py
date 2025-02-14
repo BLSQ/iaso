@@ -206,7 +206,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             org_units = scope.get("group", {}).get("org_units")
             scope, created = campaign.scopes.get_or_create(vaccine=vaccine)
             source_version_id = None
-            name = f"scope for campaign {campaign.obr_name}" + (f" - {vaccine}" if vaccine else "")
+            name = f"scope {scope.id} for campaign {campaign.obr_name}" + (f" - {vaccine}" if vaccine else "")
             if org_units:
                 source_version_ids = set([ou.version_id for ou in org_units])
                 if len(source_version_ids) != 1:
@@ -242,10 +242,10 @@ class CampaignSerializer(serializers.ModelSerializer):
                     if len(source_version_ids) != 1:
                         raise serializers.ValidationError("All orgunit should be in the same source version")
                     source_version_id = list(source_version_ids)[0]
-                name = f"scope for round {round.number} campaign {campaign.obr_name}" + (
+                scope, created = round.scopes.get_or_create(vaccine=vaccine)
+                name = f"scope {scope.id} for round {round.number} campaign {campaign.obr_name}" + (
                     f" - {vaccine}" if vaccine else ""
                 )
-                scope, created = round.scopes.get_or_create(vaccine=vaccine)
                 if not scope.group:
                     scope.group = Group.objects.create(name=name)
                 else:
@@ -386,19 +386,27 @@ class CampaignSerializer(serializers.ModelSerializer):
 
                     scope.group.org_units.set(org_units)
 
+        submitted_round_ids = set([r.id for r in round_instances])
+        current_round_ids = set(instance.rounds.values_list("id", flat=True))
+
         # When some rounds need to be deleted, the payload contains only the rounds to keep.
         # So we have to detect if somebody wants to delete a round to prevent deletion of
         # rounds linked to budget processes.
-        has_rounds_to_delete = round_instances and instance.rounds.count() > len(round_instances)
+        has_rounds_to_delete = round_instances and len(current_round_ids) > len(submitted_round_ids)
         if has_rounds_to_delete:
-            round_instances_ids = [r.id for r in round_instances]
-            rounds_to_delete = instance.rounds.exclude(id__in=round_instances_ids)
+            rounds_to_delete = instance.rounds.exclude(id__in=submitted_round_ids)
             if rounds_to_delete.filter(budget_process__isnull=False).exists():
                 raise serializers.ValidationError("Cannot delete a round linked to a budget process.")
             else:
                 rounds_to_delete.delete()
 
         instance.rounds.set(round_instances)
+
+        # We have to detect new rounds manually because of the way rounds are associated to the campaign.
+        new_rounds_ids = submitted_round_ids - current_round_ids
+        if new_rounds_ids:
+            for round in instance.rounds.filter(id__in=new_rounds_ids):
+                round.add_chronogram()
 
         campaign = super().update(instance, validated_data)
         campaign.update_geojson_field()

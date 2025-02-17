@@ -6,8 +6,6 @@ import { useSnackQuery } from '../../libs/apiHooks';
 const apiUrl = '/api/datasources';
 const tableDefaults = {
     order: 'name',
-    page: 1,
-    limit: 20,
 };
 
 const queryParamsMap = new Map([['projectIds', 'project_ids']]);

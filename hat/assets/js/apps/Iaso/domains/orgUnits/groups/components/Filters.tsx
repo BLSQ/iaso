@@ -4,14 +4,14 @@ import React, {
     useMemo,
     useCallback,
 } from 'react';
-import { Grid, Button } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { Grid, Button } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { useFilterState } from '../../../../hooks/useFilterState';
 import { useDataSourceVersions } from '../../../dataSources/requests';
 import { useGetDataSources } from '../../../dataSources/useGetDataSources';
-import { useFilterState } from '../../../../hooks/useFilterState';
-import InputComponent from '../../../../components/forms/InputComponent';
+import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { Project, Version } from '../../types/dataSources';
 import { baseUrl } from '../config';
 import MESSAGES from '../messages';
@@ -45,7 +45,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const { data: projects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
     const { data: dataSources, isLoading: areSourcesLoading } =
-        useGetDataSources({ ...params, ...filters });
+        useGetDataSources({ ...params, pageSize: undefined, ...filters });
 
     const { data: sourceVersions, isLoading: areSourceVersionsLoading } =
         useDataSourceVersions();

@@ -1,32 +1,70 @@
-[tool.black]
-line-length = 120
-include = '\.pyi?$'
-target-version = ['py39']
-exclude = '''
-/(
-    \.git
-  | \.venv
-  | venv
-  | node_modules
-  | src/django-webpack-loader
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
 [project]
 name = "Iaso"
 readme = "README.md"
 requires-python = "~=3.9"
-dependencies = [
-    "black==23.12.1"
-]
 
 [project.urls]
 Repository = "https://github.com/BLSQ/"
+
+[tool.ruff]
+exclude = [
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".tox",
+    ".venv",
+    ".venv",
+    ".venv",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "src/django-webpack-loader",
+]
+indent-width = 4
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+ignore = ["ISC001", "D203", "D213"]
+select = [
+#    "ANN", # flake8-annotations
+    "ARG", # flake8-arguments
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "C90", # mccabe complexity
+    "DJ",  # flake8-django
+    "DTZ", # flake8-datetimez
+    "E",   # pycodestyle
+    "EM",  # flake8-errmsg
+    "F",   # flake8
+    "G",   # flake8-logging-format
+    "I",   # isort
+    "ISC", # flake8-implicit-str-concat
+    "LOG", # flake8-logging
+    "N",   # pep8-naming
+    "PIE", # flake8-pie
+    "PT",  # flake8-pytest-style
+    "PTH", # flake8-use-pathlib
+    "RET", # flake8-return
+    "RUF", # ruff-specific rules
+    "Q",   # flake8-quotes
+    "SIM", # flake8-simplify
+    "T10", # flake8-print
+    "TCH", # flake8-type-checking
+    "TRY", # tryceratops
+    "UP",  # pyupgrade
+]
+
+
+[tool.ruff.format]
+indent-style = "space"
+line-ending = "auto"
+quote-style = "double"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["iaso"]
+lines-after-imports = 2
+lines-between-types = 1

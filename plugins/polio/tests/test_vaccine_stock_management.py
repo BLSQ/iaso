@@ -192,6 +192,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             stock["stock_of_usable_vials"], 21
         )  # 20 received - 13 used + 15 found in inventory -1 removed from inventory
         self.assertEqual(stock["stock_of_unusable_vials"], 27)
+        self.assertEqual(stock["stock_of_earmarked_vials"], 0)
         self.assertEqual(stock["vials_destroyed"], 3)  # 3 destroyed
 
     def test_usable_vials_endpoint(self):

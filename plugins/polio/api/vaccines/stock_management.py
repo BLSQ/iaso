@@ -6,6 +6,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
+from django_filters.rest_framework import FilterSet, NumberFilter
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -816,9 +817,18 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
         return None
 
 
+class EarmarkedStockFilter(FilterSet):
+    vaccine_stock = NumberFilter(field_name="vaccine_stock_id")
+
+    class Meta:
+        model = EarmarkedStock
+        fields = ["vaccine_stock"]
+
+
 class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     serializer_class = EarmarkedStockSerializer
     model_class = EarmarkedStock
+    filterset_class = EarmarkedStockFilter
 
     def get_queryset(self):
         return EarmarkedStock.objects.filter(

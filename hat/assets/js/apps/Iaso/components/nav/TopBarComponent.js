@@ -61,7 +61,7 @@ function TopBar(props) {
     const currentUser = useCurrentUser();
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
-
+    const Disclaimer = useFindCustomComponent('topbar.disclaimer');
     return (
         <AppBar
             position="relative"
@@ -145,6 +145,17 @@ function TopBar(props) {
                         </Grid>
                     )}
                 </Grid>
+                {Disclaimer && (
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            bottom: theme.spacing(0.25),
+                            right: theme.spacing(7),
+                        }}
+                    >
+                        <Disclaimer />
+                    </Box>
+                )}
             </Toolbar>
             {children}
         </AppBar>

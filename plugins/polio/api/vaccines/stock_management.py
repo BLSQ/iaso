@@ -1064,7 +1064,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
             VaccineStock.objects.filter(
                 account=self.request.user.iaso_profile.account, country__id__in=accessible_org_units_ids
             )
-            .prefetch_related("destructionreport_set", "incidentreport_set", "outgoingstockmovement_set")
+            .prefetch_related(
+                "destructionreport_set", "incidentreport_set", "outgoingstockmovement_set", "earmarked_stocks"
+            )
             .distinct()
             .order_by("id")
         )

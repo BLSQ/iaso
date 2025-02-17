@@ -145,7 +145,7 @@ class Form(SoftDeletableModel):
                 return self.latest_versions[0]
             return None
         except AttributeError as e:
-            print("WARN form loaded without approtiate queryset.with_latest_version(), might trigger n+1 select")
+            # WARN form loaded without approtiate queryset.with_latest_version(), might trigger n+1 select
             return self.form_versions.order_by("-created_at").first()
 
     def __str__(self):

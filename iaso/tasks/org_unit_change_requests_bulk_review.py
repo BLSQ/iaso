@@ -11,7 +11,7 @@ def org_unit_change_requests_bulk_approve(
     approved_fields: list[str],
     task: Task,
 ):
-    task.report_progress_and_stop_if_killed(progress_message="Synchronizing source versions…")
+    task.report_progress_and_stop_if_killed(progress_message="Bulk approving change requests…")
 
     user = task.launcher
 
@@ -30,7 +30,7 @@ def org_unit_change_requests_bulk_reject(
     rejection_comment: str,
     task: Task,
 ):
-    task.report_progress_and_stop_if_killed(progress_message="Synchronizing source versions…")
+    task.report_progress_and_stop_if_killed(progress_message="Bulk rejecting change requests…")
 
     user = task.launcher
 

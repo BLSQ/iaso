@@ -389,8 +389,8 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         )
 
         data = {
-            "select_all": 1,
-            "selected_ids": [],
+            "select_all": 0,
+            "selected_ids": [change_request_1.pk, change_request_2.pk],
             "unselected_ids": [],
             "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
             "approved_fields": ["new_name"],
@@ -433,8 +433,8 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         )
 
         data = {
-            "select_all": 0,
-            "selected_ids": [change_request_1.pk, change_request_2.pk],
+            "select_all": 1,
+            "selected_ids": [],
             "unselected_ids": [change_request_3.pk],
             "status": m.OrgUnitChangeRequest.Statuses.REJECTED,
             "approved_fields": [],

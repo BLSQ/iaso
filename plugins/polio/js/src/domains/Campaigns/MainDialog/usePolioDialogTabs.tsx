@@ -9,6 +9,7 @@ import {
     EvaluationsForms,
     evaluationFormFields,
 } from '../Evaluations/EvaluationsForms';
+import { useSubActivityTabTooltip } from '../hooks/useSubActivityTabTooltip';
 import { PreparednessForm } from '../Preparedness/PreparednessForm';
 import {
     RiskAssessmentForm,
@@ -20,26 +21,13 @@ import { SubActivitiesForm } from '../SubActivities/SubActivitiesForm';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { Tab } from './PolioDialogTabs';
 
-function determineSubActivityTabTooltip(
-    formik: FormikProps<CampaignFormValues>,
-    formatMessage: any,
-) {
-    if (
-        formik.values.id &&
-        formik.values.separate_scopes_per_round !==
-            formik.initialValues.separate_scopes_per_round
-    ) {
-        return formatMessage(MESSAGES.subActivitiesLockedScopeChange);
-    }
-    return formatMessage(MESSAGES.subActivitiesUnlockConditions);
-}
-
 export const usePolioDialogTabs = (
     formik: FormikProps<CampaignFormValues>,
     selectedCampaign: Campaign,
 ): Tab[] => {
     const { formatMessage } = useSafeIntl();
     const isPolio = useIsPolioCampaign(formik.values);
+    const subActivityTabTooltip = useSubActivityTabTooltip(formik);
     return useMemo(() => {
         const defaultTabs = [
             {
@@ -85,10 +73,7 @@ export const usePolioDialogTabs = (
                     (formik.values.id &&
                         formik.values.separate_scopes_per_round !==
                             formik.initialValues.separate_scopes_per_round),
-                disabledMessage: determineSubActivityTabTooltip(
-                    formik,
-                    formatMessage,
-                ),
+                disabledMessage: subActivityTabTooltip,
                 hasTabError: false,
             },
         ];

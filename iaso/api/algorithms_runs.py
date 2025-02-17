@@ -2,11 +2,11 @@ import importlib
 
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, permissions, exceptions
+from rest_framework import exceptions, permissions, viewsets
 from rest_framework.response import Response
 
-from iaso.models import AlgorithmRun, DataSource, SourceVersion, MatchingAlgorithm
 from hat.menupermissions import models as permission
+from iaso.models import AlgorithmRun, DataSource, MatchingAlgorithm, SourceVersion
 
 
 class AlgorithmsRunsViewSet(viewsets.ViewSet):
@@ -72,8 +72,7 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
             res["pages"] = paginator.num_pages
             res["limit"] = limit
             return Response(res)
-        else:
-            return Response(map(lambda x: x.as_list(), queryset))
+        return Response(map(lambda x: x.as_list(), queryset))
 
     def create(self, request):
         algo_id = request.data.get("algo")

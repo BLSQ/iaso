@@ -3,6 +3,7 @@ import random
 import re
 import time
 import typing
+
 from functools import reduce
 from io import StringIO
 from logging import getLogger
@@ -10,6 +11,7 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import django_cte
+
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
 from django.contrib import auth
@@ -42,6 +44,7 @@ from ..utils.jsonlogic import jsonlogic_to_q
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .project import Project
+
 
 logger = getLogger(__name__)
 
@@ -1127,7 +1130,7 @@ class Instance(models.Model):
                 identifier = identifier.zfill(3)
             random_number = random.choice("1234567890")
             value = int(identifier + random_number)
-            suffix = "{:02d}".format(value % 97)
+            suffix = f"{value % 97:02d}"
             self.correlation_id = identifier + random_number + suffix
             self.save()
 
@@ -1155,11 +1158,9 @@ class Instance(models.Model):
                         flat_results,
                     )
                 return flat_results["flat_json"]
-            else:
-                # warn old form, but keep it working ? or throw error
-                return flat_parse_xml_soup(soup, [], None)["flat_json"]
-        else:
+            # warn old form, but keep it working ? or throw error
             return flat_parse_xml_soup(soup, [], None)["flat_json"]
+        return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
     def get_and_save_json_of_xml(self, force=False, tries=3):
         """
@@ -1174,7 +1175,7 @@ class Instance(models.Model):
         if self.json and not force:
             # already converted, we can use this one
             return self.json
-        elif self.file:
+        if self.file:
             # not converted yet, but we have a file, so we can convert it
             if "amazonaws" in self.file.url:
                 for i in range(tries):
@@ -1193,9 +1194,8 @@ class Instance(models.Model):
             self.json = self.xml_file_to_json(file)
             self.save()
             return self.json
-        else:
-            # no file, no json, when/why does this happen?
-            return {}
+        # no file, no json, when/why does this happen?
+        return {}
 
     def get_form_version(self):
         json = self.get_and_save_json_of_xml()
@@ -1538,11 +1538,10 @@ class Profile(models.Model):
             return result | {
                 "org_units": [o.as_very_small_dict() for o in self.org_units.all()],
             }
-        else:
-            return result | {
-                "account": self.account.as_small_dict(),
-                "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
-            }
+        return result | {
+            "account": self.account.as_small_dict(),
+            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
+        }
 
     def as_short_dict(self):
         try:

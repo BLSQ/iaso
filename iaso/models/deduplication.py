@@ -1,9 +1,9 @@
 from django.db import models
-from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 
 from iaso.api.deduplication.algos import DEFAULT_ALGORITHM, POSSIBLE_ALGORITHMS  # type: ignore
 from iaso.models import Entity, Task
+
 
 # PENDING = "PENDING"
 # VALIDATED = "VALIDATED"

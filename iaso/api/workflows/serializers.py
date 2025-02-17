@@ -2,15 +2,17 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 import iaso.api.workflows.utils as utils
+
 from iaso.models import (
-    Form,
     EntityType,
+    Form,
     Workflow,
-    WorkflowVersion,
     WorkflowChange,
     WorkflowFollowup,
+    WorkflowVersion,
 )
 from iaso.models.workflow import WorkflowVersionsStatus
+
 
 CALCULATE_TYPE = "calculate"
 
@@ -90,7 +92,7 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
 
         if form.id == wfv.workflow.entity_type.reference_form.id:
             raise serializers.ValidationError(
-                f"Cannot create a WorkflowChange where form and reference form are the same"
+                "Cannot create a WorkflowChange where form and reference form are the same"
             )
 
         return form_id
@@ -112,20 +114,18 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
         # But we can have two different keys mapping to the same value, we need to check for it
 
         if len(mapping.values()) != len(list(set(mapping.values()))):
-            raise serializers.ValidationError(f"Mapping cannot have two identical values")
+            raise serializers.ValidationError("Mapping cannot have two identical values")
 
         for _source, _target in mapping.items():
             q = find_question_by_name(_source, s_questions)
             if q is None:
                 raise serializers.ValidationError(f"Question {_source} does not exist in source form")
-            else:
-                s_type = q["type"]
+            s_type = q["type"]
 
             q = find_question_by_name(_target, r_questions)
             if q is None:
                 raise serializers.ValidationError(f"Question {_target} does not exist in reference/target form")
-            else:
-                r_type = q["type"]
+            r_type = q["type"]
 
             if s_type != r_type and s_type != CALCULATE_TYPE and r_type != CALCULATE_TYPE:
                 raise serializers.ValidationError(f"Question {_source} and {_target} do not have the same type")
@@ -186,15 +186,14 @@ class WorkflowFollowupModifySerializer(serializers.Serializer):
         if "form_ids" in data:
             if len(data["form_ids"]) == 0:
                 raise serializers.ValidationError("form_ids must not be empty")
-            else:
-                for f in data["form_ids"]:
-                    if not Form.objects.filter(id=f).exists():
-                        raise serializers.ValidationError("form_ids must be valid form ids")
+            for f in data["form_ids"]:
+                if not Form.objects.filter(id=f).exists():
+                    raise serializers.ValidationError("form_ids must be valid form ids")
 
-                    f = Form.objects.get(id=f)
-                    # TODO this is crashing while saving
-                    if f.projects.filter(account=self.context["request"].user.iaso_profile.account).count() == 0:
-                        raise serializers.ValidationError(f"form_id {f.id} is not accessible to the user")
+                f = Form.objects.get(id=f)
+                # TODO this is crashing while saving
+                if f.projects.filter(account=self.context["request"].user.iaso_profile.account).count() == 0:
+                    raise serializers.ValidationError(f"form_id {f.id} is not accessible to the user")
         follow_up = get_object_or_404(WorkflowFollowup, id=data["id"])
         utils.validate_version_id(follow_up.workflow_version.id, self.context["request"].user)
 
@@ -319,8 +318,7 @@ class WorkflowPartialUpdateSerializer(serializers.Serializer):
     def validate_status(self, new_status):
         if hasattr(WorkflowVersionsStatus, new_status):
             return new_status
-        else:
-            raise serializers.ValidationError(new_status + "is not recognized as proper status value")
+        raise serializers.ValidationError(new_status + "is not recognized as proper status value")
 
     def validate_name(self, new_name):
         if len(new_name) <= 1:
@@ -339,8 +337,7 @@ class WorkflowPartialUpdateSerializer(serializers.Serializer):
 
             if not res["success"]:
                 raise serializers.ValidationError(res["error"])
-            else:
-                instance_changed = True
+            instance_changed = True
 
         if instance_changed:
             instance.save()

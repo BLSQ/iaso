@@ -1,5 +1,7 @@
 import requests
+
 from django.shortcuts import get_object_or_404
+
 
 SP_AUTH_URL = "https://login.microsoftonline.com/{tenant_id}/oauth2/token"
 POWERBI_RESOURCE = "https://analysis.windows.net/powerbi/api"

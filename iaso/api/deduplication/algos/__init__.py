@@ -7,6 +7,7 @@ from ..common import PotentialDuplicate  # type: ignore
 from . import levenshtein
 from .base import DeduplicationAlgorithm
 
+
 POSSIBLE_ALGORITHMS = [[k, k] for k in DeduplicationAlgorithm.ALGORITHMS.keys()]
 DEFAULT_ALGORITHM = POSSIBLE_ALGORITHMS[0][0]
 
@@ -37,5 +38,4 @@ def run_algo(algo_name, algo_params, task=None) -> List[PotentialDuplicate]:
         algo = DeduplicationAlgorithm.ALGORITHMS[algo_name]()
         enriched_params = enrich_params(algo_params)
         return algo.run(algo_params, task)
-    else:
-        raise ValueError(f"Unknown algorithm {algo_name}")
+    raise ValueError(f"Unknown algorithm {algo_name}")

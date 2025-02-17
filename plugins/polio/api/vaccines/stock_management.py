@@ -1,16 +1,18 @@
 import datetime
 import enum
-from django.db.models import OuterRef, Subquery, Exists, Q, Sum
+
+from django.db.models import Exists, OuterRef, Q, Subquery, Sum
+from django.utils.dateparse import parse_date
+from django_filters.rest_framework import FilterSet, NumberFilter
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
-from django_filters.rest_framework import FilterSet, NumberFilter
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
-from django.utils.dateparse import parse_date
+
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
@@ -18,14 +20,15 @@ from plugins.polio.models import (
     DOSES_PER_VIAL,
     Campaign,
     DestructionReport,
+    EarmarkedStock,
     IncidentReport,
     OutgoingStockMovement,
     Round,
     VaccineArrivalReport,
     VaccineRequestForm,
     VaccineStock,
-    EarmarkedStock,
 )
+
 
 vaccine_stock_id_param = openapi.Parameter(
     name="vaccine_stock",
@@ -394,7 +397,7 @@ class VaccineStockCalculator:
             results.append(
                 {
                     "date": report.destruction_report_date,
-                    "action": (f"{report.action}" if len(report.action) > 0 else f"Destruction report"),
+                    "action": (f"{report.action}" if len(report.action) > 0 else "Destruction report"),
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials_destroyed or 0,
@@ -906,8 +909,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["get"])
     def summary(self, request, pk=None):
@@ -1043,8 +1045,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == "create":
             return VaccineStockCreateSerializer
-        else:
-            return VaccineStockSerializer
+        return VaccineStockSerializer
 
     def get_queryset(self):
         """
@@ -1088,7 +1089,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "doses_out": 0,
         }
 
-        if order not in valid_order_keys_and_defaults.keys():
+        if order not in valid_order_keys_and_defaults:
             return sorted(results, key=lambda d: d["date"])
 
         return sorted(results, key=lambda d: d[order] or valid_order_keys_and_defaults[order], reverse=reverse)

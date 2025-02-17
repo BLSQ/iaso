@@ -1,16 +1,18 @@
 import typing
 import uuid
+
 from typing import Optional
 
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.db import models
 
 from iaso.models.entity import EntityType, Form
+
 from ..utils.models.soft_deletable import (
-    SoftDeletableModel,
     DefaultSoftDeletableManager,
-    OnlyDeletedSoftDeletableManager,
     IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
 )
 
 
@@ -134,11 +136,10 @@ class WorkflowVersion(SoftDeletableModel):
 
             return {"success": True}
 
-        else:
-            return {
-                "success": False,
-                "error": f"Transition from {old_status_str} to {new_status_str} is not allowed",
-            }
+        return {
+            "success": False,
+            "error": f"Transition from {old_status_str} to {new_status_str} is not allowed",
+        }
 
     def __str__(self):
         status_label = self.status

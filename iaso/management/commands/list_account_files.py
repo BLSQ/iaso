@@ -1,10 +1,8 @@
-import os
 import csv
-from pathlib import Path
-from django.core.paginator import Paginator
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
+from django.core.paginator import Paginator
 
 
 def fullname(o):

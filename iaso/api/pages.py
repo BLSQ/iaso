@@ -1,12 +1,11 @@
 from django.contrib.auth.models import User
-from django.db.models import Q
-from django_filters.rest_framework import FilterSet, CharFilter, BooleanFilter
 from django.utils.translation import gettext_lazy as _
-from rest_framework import serializers, permissions
-from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
-from iaso.models import Page
+from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet
+from rest_framework import permissions, serializers
 
 from hat.menupermissions import models as permission
+from iaso.api.common import ModelViewSet
+from iaso.models import Page
 
 
 class PagesSerializer(serializers.ModelSerializer):

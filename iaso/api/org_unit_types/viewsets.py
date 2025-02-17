@@ -1,11 +1,14 @@
 from django.db.models import Q
-from rest_framework import status, permissions
-from rest_framework.response import Response
-from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
+from rest_framework import permissions, status
 from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
 from iaso.models import OrgUnitType
-from .serializers import OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2, OrgUnitTypesDropdownSerializer
+
 from ..common import ModelViewSet
+from .serializers import OrgUnitTypesDropdownSerializer, OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2
+
 
 DEFAULT_ORDER = "name"
 

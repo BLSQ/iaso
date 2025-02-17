@@ -1,6 +1,7 @@
 import typing
+
 from unittest import mock
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 from xml.sax.saxutils import escape
 
 from django.core.files import File
@@ -11,6 +12,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.test import APITestCase
+
 
 BASE_URL = "/api/formattachments/"
 MANIFEST_URL = "/api/forms/{form_id}/manifest/"

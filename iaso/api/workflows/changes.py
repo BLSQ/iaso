@@ -1,15 +1,16 @@
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema, no_body
+from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import permissions
-from rest_framework import viewsets
 from rest_framework.response import Response
 
 import iaso.api.workflows.serializers as ser
 import iaso.api.workflows.utils as utils
+
+from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import WorkflowChange
-from hat.menupermissions import models as permission
+
 
 version_id_param = openapi.Parameter(
     name="version_id",
@@ -56,7 +57,7 @@ class WorkflowChangeViewSet(ModelViewSet):
         return queryset
 
     def create(self, request, *args, **kwargs):
-        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
+        version_id = request.query_params.get("version_id", kwargs.get("version_id"))
 
         utils.validate_version_id(version_id, request.user)
 

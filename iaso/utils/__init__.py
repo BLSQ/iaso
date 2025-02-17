@@ -1,6 +1,7 @@
 """This module provides various utils and helpers for IASO"""
 
-from typing import Dict, Any, List, Optional, Iterable
+from collections.abc import Iterable
+from typing import Any, Dict, List, Optional
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.utils.text import slugify
@@ -77,6 +78,7 @@ def slugify_underscore(filename):
 
 
 import re
+
 
 sql_injection_geom_regex = re.compile(r"[^a-zA-Z0-9_]")
 

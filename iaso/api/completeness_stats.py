@@ -30,11 +30,13 @@ This endpoint is used to display the completeness stats in the dashboard. Comple
 ```
 """
 
-from typing import Any, List, Mapping, Optional, TypedDict, Union
+from collections.abc import Mapping
+from typing import Annotated, Any, List, Optional, TypedDict, Union
 
 import rest_framework.fields
 import rest_framework.renderers
 import rest_framework_csv.renderers
+
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db import models
@@ -48,7 +50,6 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
-from typing_extensions import Annotated
 
 from hat.menupermissions import models as permission
 from iaso.models import Form, Group, Instance, OrgUnit, OrgUnitType, Project
@@ -104,10 +105,9 @@ class PrimaryKeysRelatedField(serializers.ManyRelatedField):
     def get_value(self, dictionary: Mapping[Any, str]) -> Union[Any, List[Any]]:
         if self.field_name not in dictionary:
             return rest_framework.fields.empty
-        else:
-            value: str
-            value = dictionary[self.field_name]
-            return value.split(",")
+        value: str
+        value = dictionary[self.field_name]
+        return value.split(",")
 
 
 # noinspection PyMethodMayBeStatic

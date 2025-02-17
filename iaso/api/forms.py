@@ -1,4 +1,5 @@
 import typing
+
 from copy import copy
 from datetime import timedelta
 from xml.sax.saxutils import escape
@@ -198,9 +199,9 @@ class FormSerializer(DynamicFieldsModelSerializer):
                 before = data.get("periods_before_allowed", 0)
                 after = data.get("periods_after_allowed", 0)
                 if before + after < 1:
-                    tracker_errors[
-                        "periods_allowed"
-                    ] = "periods_before_allowed + periods_after_allowed should be greater than or equal to 1"
+                    tracker_errors["periods_allowed"] = (
+                        "periods_before_allowed + periods_after_allowed should be greater than or equal to 1"
+                    )
             if tracker_errors:
                 raise serializers.ValidationError(tracker_errors)
         return data
@@ -365,7 +366,7 @@ class FormsViewSet(ModelViewSet):
 
         if csv_format:
             return self.list_to_csv()
-        elif xlsx_format:
+        if xlsx_format:
             return self.list_to_xlsx()
 
         return super().list(request, *args, **kwargs)

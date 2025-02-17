@@ -1,10 +1,11 @@
 """JsonLogic(https://jsonlogic.com/)-related utilities."""
 
 import operator
+
 from typing import Any, Callable, Dict
 
-from django.db.models import Exists, Q, Transform, OuterRef
-from django.db.models.fields.json import KeyTransformTextLookupMixin, JSONField
+from django.db.models import Exists, OuterRef, Q, Transform
+from django.db.models.fields.json import JSONField, KeyTransformTextLookupMixin
 
 
 # This is used to cast a json value from string into a float.
@@ -56,12 +57,12 @@ def jsonlogic_to_q(
         for lookup in jsonlogic["and"]:
             sub_query = operator.and_(sub_query, func(lookup, field_prefix))
         return sub_query
-    elif "or" in jsonlogic:
+    if "or" in jsonlogic:
         sub_query = Q()
         for lookup in jsonlogic["or"]:
             sub_query = operator.or_(sub_query, func(lookup, field_prefix))
         return sub_query
-    elif "!" in jsonlogic:
+    if "!" in jsonlogic:
         return ~func(jsonlogic["!"], field_prefix)
 
     if not jsonlogic.keys():
@@ -83,7 +84,7 @@ def jsonlogic_to_q(
         "in": "icontains",
     }
 
-    if op not in lookups.keys():
+    if op not in lookups:
         raise ValueError(
             f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: f{lookups.keys()}"
         )
@@ -155,7 +156,7 @@ def entities_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -
 
         if operator == "some":
             return Exists(Instance.objects.filter(form_id_filter & entities_jsonlogic_to_q(conditions, field_prefix)))
-        elif operator == "all":
+        if operator == "all":
             # In case of "all", we do a double filter:
             # - EXIST on the form without conditions to exclude entities that don't have the form
             # - NOT EXIST on the form with inverted conditions, so only get forms that only have
@@ -163,7 +164,7 @@ def entities_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -
             return Exists(Instance.objects.filter(form_id_filter)) & ~Exists(
                 Instance.objects.filter(form_id_filter & ~entities_jsonlogic_to_q(conditions, field_prefix))
             )
-        elif operator == "none":
+        if operator == "none":
             return ~Exists(Instance.objects.filter(form_id_filter & entities_jsonlogic_to_q(conditions, field_prefix)))
     else:
         return jsonlogic_to_q(

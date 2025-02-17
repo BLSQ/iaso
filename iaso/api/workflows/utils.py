@@ -1,10 +1,11 @@
-from copy import deepcopy
 import uuid
+
+from copy import deepcopy
 
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from iaso.models import WorkflowVersion, EntityType, WorkflowChange, WorkflowFollowup
+from iaso.models import EntityType, WorkflowChange, WorkflowFollowup, WorkflowVersion
 from iaso.models.workflow import WorkflowVersionsStatus
 
 

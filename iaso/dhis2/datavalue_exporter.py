@@ -1,18 +1,21 @@
 import itertools
 import json
 import logging
+
 from timeit import default_timer as timer
 
-from dhis2 import Api
-from dhis2 import RequestException
+from dhis2 import Api, RequestException
 from django.core.paginator import Paginator
 from django.utils import timezone
 
 import iaso.models as models
-from iaso.models import OrgUnit, MappingVersion, ExportLog, RUNNING, ERRORED, EXPORTED
+
+from iaso.models import ERRORED, EXPORTED, RUNNING, ExportLog, MappingVersion, OrgUnit
+
+from ..periods import Period
 from .api_logger import ApiLogger  # type: ignore
 from .value_formatter import format_value
-from ..periods import Period
+
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +28,7 @@ class InstanceExportError(BaseException):
         self.message = str(args[0]) + " : " + description
 
     def __str__(self):
-        return "InstanceExportError, {0} ".format(self.message)
+        return f"InstanceExportError, {self.message} "
 
 
 def get_event_date(instance, form_mapping):
@@ -96,9 +99,9 @@ class AggregateHandler(BaseHandler):
 
         descriptions = uniquify(descriptions)
         if len(descriptions) > 0:
-            self.logger.warn(
+            self.logger.warning(
                 "----------------------- aggregate EXPORT ERROR --------------------\n"
-                + "Failed to create dataValueSets got {} {} {}".format(message, counts, descriptions)
+                + f"Failed to create dataValueSets got {message} {counts} {descriptions}"
             )
             return InstanceExportError(message, counts, descriptions)
 
@@ -142,11 +145,10 @@ class AggregateHandler(BaseHandler):
                 except Exception as error:
                     errored = True
                     mapping_errors.append([question_key, error])
-                    self.logger.warn("ERROR Mapping {} {}".format(error, question_key))
+                    self.logger.warning(f"ERROR Mapping {error} {question_key}")
         if errored:
             return (None, mapping_errors)
-        else:
-            return (data_set_entry, None)
+        return (data_set_entry, None)
 
     def export_page(self, prefix, data, export_statuses, stats, api):
         if len(data) == 0:
@@ -327,8 +329,7 @@ class EventHandler(BaseHandler):
 
         if errored:
             return (None, event_errors)
-        else:
-            return (event, None)
+        return (event, None)
 
     def export_page(self, prefix, data, export_statuses, stats, api):
         if len(data) == 0:
@@ -486,8 +487,7 @@ class EventTrackerHandler(BaseHandler):
 
         if errored:
             return (None, event_errors)
-        else:
-            return ((instance, form_mapping, tracked_entity_with_events, export_status), None)
+        return ((instance, form_mapping, tracked_entity_with_events, export_status), None)
 
     def find_tracked_entity(
         self, api, country_dhis2_id, tracked_entity_type, unique_number_attribute_id, unique_number
@@ -499,7 +499,7 @@ class EventTrackerHandler(BaseHandler):
                 "ou": country_dhis2_id,
                 "ouMode": "DESCENDANTS",
                 "trackedEntityType": tracked_entity_type,
-                "filter": f"{unique_number_attribute_id}:EQ:{str(unique_number)}",
+                "filter": f"{unique_number_attribute_id}:EQ:{unique_number!s}",
             },
         ).json()
 
@@ -651,29 +651,25 @@ class EventTrackerHandler(BaseHandler):
                     tracked_entity_dhis2["enrollments"][0]["events"].append(event)
                 self.update_tracked_entity(api, tracked_entity_dhis2)
                 return tracked_entity_dhis2["trackedEntityInstance"]
-            else:
-                raise Exception(f"error : no tracked entity with unique number : {unique_number}")
+            raise Exception(f"error : no tracked entity with unique number : {unique_number}")
+        unique_number = self.generate_unique_number(api, unique_number_attribute_id, instance.org_unit)
+
+        self.logger.debug(str(instance.id) + "unique number ?" + str(unique_number))
+
+        unique_number_attribute = self.get_first(
+            [
+                attribute
+                for attribute in tracked_entity_iaso["attributes"]
+                if attribute["attribute"] == unique_number_attribute_id
+            ]
+        )
+        if unique_number_attribute:
+            unique_number_attribute["value"] = unique_number
         else:
-            unique_number = self.generate_unique_number(api, unique_number_attribute_id, instance.org_unit)
+            tracked_entity_iaso["attributes"].append({"attribute": unique_number_attribute_id, "value": unique_number})
 
-            self.logger.debug(str(instance.id) + "unique number ?" + str(unique_number))
-
-            unique_number_attribute = self.get_first(
-                [
-                    attribute
-                    for attribute in tracked_entity_iaso["attributes"]
-                    if attribute["attribute"] == unique_number_attribute_id
-                ]
-            )
-            if unique_number_attribute:
-                unique_number_attribute["value"] = unique_number
-            else:
-                tracked_entity_iaso["attributes"].append(
-                    {"attribute": unique_number_attribute_id, "value": unique_number}
-                )
-
-            tracked_entity_resp = self.create_tracked_entity(api, tracked_entity_iaso)
-            return tracked_entity_resp["response"]["importSummaries"][0]["reference"]
+        tracked_entity_resp = self.create_tracked_entity(api, tracked_entity_iaso)
+        return tracked_entity_resp["response"]["importSummaries"][0]["reference"]
 
     def flag_as_exported(self, export_status, stats, export_logs):
         export_request = export_status.export_request
@@ -694,7 +690,7 @@ class EventTrackerHandler(BaseHandler):
         export_request.save()
 
     def handle_exception(self, resp, message):
-        if not "response" in resp and resp["status"] == "ERROR":
+        if "response" not in resp and resp["status"] == "ERROR":
             final_message = message + resp["message"]
             return InstanceExportError(final_message, {}, [final_message])
 
@@ -736,7 +732,7 @@ class DataValueExporter:
         }
 
     def get_api(self, mapping_version):
-        if not mapping_version.id in self.api_cache:
+        if mapping_version.id not in self.api_cache:
             credentials = mapping_version.mapping.data_source.credentials
             self.api_cache[mapping_version.id] = Api(credentials.url, credentials.login, credentials.password)
         return self.api_cache[mapping_version.id]
@@ -772,8 +768,7 @@ class DataValueExporter:
                 exception = InstanceExportError(message, {}, list(map(lambda x: x[0] + " " + str(x[1]), map_errors)))
 
                 raise exception
-            else:
-                data[form_mapping.mapping.mapping_type].append(values)
+            data[form_mapping.mapping.mapping_type].append(values)
         return data
 
     def flag_as_errored(self, export_request, export_statuses, message, stats):

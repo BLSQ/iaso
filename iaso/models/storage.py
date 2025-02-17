@@ -1,5 +1,6 @@
 # TODO: need better type annotations in this file
 import uuid
+
 from datetime import datetime
 
 from django.contrib.auth.models import User
@@ -7,7 +8,7 @@ from django.db import models
 from django.db.models import QuerySet
 from django.utils import timezone
 
-from iaso.models import Entity, Instance, OrgUnit, Account, Project
+from iaso.models import Account, Entity, Instance, OrgUnit, Project
 
 
 class StorageDevice(models.Model):

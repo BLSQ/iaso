@@ -19,7 +19,7 @@ from iaso.utils.models.soft_deletable import (
 class OrgUnitChangeRequestConfigurationQuerySet(QuerySet):
     def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
         if not user or not user.is_authenticated:
-            raise UserNotAuthError(f"User not Authenticated")
+            raise UserNotAuthError("User not Authenticated")
 
         profile = user.iaso_profile
         return self.filter(project__account=profile.account)

@@ -1,9 +1,11 @@
 import datetime
+
 from iaso.models.base import Group
 from iaso.models.org_unit import OrgUnitType
 from iaso.test import APITestCase
 from plugins.polio.models import SubActivity, SubActivityScope
 from plugins.polio.tests.api.test import PolioTestCaseMixin
+
 
 BASE_URL = "/api/polio/dashboards/subactivityscopes"
 

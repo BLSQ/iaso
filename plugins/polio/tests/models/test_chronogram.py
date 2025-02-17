@@ -4,9 +4,8 @@ import time_machine
 
 from iaso import models as m
 from iaso.test import TestCase
-
-from plugins.polio.models import Campaign, Round, Chronogram, ChronogramTask, CampaignType
-from plugins.polio.models.chronogram import Period, ChronogramTemplateTask
+from plugins.polio.models import Campaign, CampaignType, Chronogram, ChronogramTask, Round
+from plugins.polio.models.chronogram import ChronogramTemplateTask, Period
 
 
 TODAY = datetime.datetime(2024, 6, 24, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)

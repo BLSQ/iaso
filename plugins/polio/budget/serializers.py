@@ -388,7 +388,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
                     # if step.transition_key == "override"
                     # we need to access the actual step to get the to_node_key, as the one in the workflow is generic and not to be used
 
-                if to_node_key in node_dict.keys():
+                if to_node_key in node_dict:
                     # If this is in the category
                     node = node_dict[to_node_key]
                     for other_key in node.mark_nodes_as_completed:
@@ -456,8 +456,8 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
             reference_date = override_step.created_at
             for section in r:
                 for item in section["items"]:
-                    if reference_date >= item.get(
-                        "performed_at", reference_date
+                    if (
+                        reference_date >= item.get("performed_at", reference_date)
                     ):  # I think using reference date wold create problems with overrides that don't happen on the same day
                         item_order = item["order"]
                         if (
@@ -465,13 +465,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
                             and item_order > start_position
                             and item_order < destination_position
                             and not item.get("step_id", None)
-                        ):
-                            item["skipped"] = True
-                            item["cancelled"] = False
-                        # This is an edge case for when 2 steps have the same order (ie: have to done at the same time,
-                        # but with no determined priority, eg: UNICEF Co sends budget and WHO CO sends budget)
-                        # We then add a check on the label.
-                        elif (
+                        ) or (
                             is_skipping
                             and item_order >= start_position
                             and item_order < destination_position
@@ -624,20 +618,20 @@ class TransitionToSerializer(serializers.Serializer):
                     # Write the value only if doesn't exist yet, this way we keep track of when a step was first submitted
                     if not getattr(budget_process, field, None):
                         setattr(budget_process, field, step.created_at)
-                        setattr(budget_process, "status", transition.to_node)
+                        budget_process.status = transition.to_node
                         # Custom checks for current workflow. Since we're checking the destination, we'll miss the data for the "concurrent steps".
                         # eg: if we move from state "who_sent_budget" to "gpei_consolidated_budgets", we will miss "unicef_sent_budget" without this check
                         # Needs to be updated when state key names change
                         if transition.to_node == "gpei_consolidated_budgets":
                             if budget_process.who_sent_budget_at_WFEDITABLE is None:
-                                setattr(budget_process, "who_sent_budget_at_WFEDITABLE", step.created_at)
+                                budget_process.who_sent_budget_at_WFEDITABLE = step.created_at
                             elif budget_process.unicef_sent_budget_at_WFEDITABLE is None:
-                                setattr(budget_process, "unicef_sent_budget_at_WFEDITABLE", step.created_at)
+                                budget_process.unicef_sent_budget_at_WFEDITABLE = step.created_at
                         if transition.to_node == "approved":
                             if budget_process.approved_by_who_at_WFEDITABLE is None:
-                                setattr(budget_process, "approved_by_who_at_WFEDITABLE", step.created_at)
+                                budget_process.approved_by_who_at_WFEDITABLE = step.created_at
                             elif budget_process.approved_by_unicef_at_WFEDITABLE is None:
-                                setattr(budget_process, "approved_by_unicef_at_WFEDITABLE", step.created_at)
+                                budget_process.approved_by_unicef_at_WFEDITABLE = step.created_at
                         budget_process.save()
 
         return step
@@ -706,7 +700,7 @@ class TransitionOverrideSerializer(serializers.Serializer):
                 if model_field_exists(budget_process, field):
                     # Since we override, we don't check that the field is empty.
                     setattr(budget_process, field, step.created_at)
-                    setattr(budget_process, "status", to_node.key)
+                    budget_process.status = to_node.key
                     order = to_node.order
                     nodes_to_cancel = workflow.get_nodes_after(order)
                     campaign_fields_to_cancel = [node.key + "_at_WFEDITABLE" for node in nodes_to_cancel]

@@ -1,6 +1,7 @@
-import pandas as pd
-import re
 import os
+import re
+
+import pandas as pd
 
 
 #

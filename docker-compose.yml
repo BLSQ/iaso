@@ -41,8 +41,8 @@ services:
             SENTRY_ENVIRONMENT:
             SENTRY_URL:
             SENTRY_FRONT_ENABLED:
-            RDS_HOSTNAME: db
-            RDS_DB_NAME:
+            RDS_HOSTNAME: smestach-iaso.ct2pysztqwxb.eu-central-1.rds.amazonaws.com
+            RDS_DB_NAME: iaso
             THEME_PRIMARY_COLOR:
             THEME_SECONDARY_COLOR:
             THEME_PRIMARY_BACKGROUND_COLOR: #OpenHexa API token
@@ -61,12 +61,12 @@ services:
             LOGO_PATH:
             APP_TITLE:
             SHOW_NAME_WITH_LOGO:
-            RDS_USERNAME: postgres
-            RDS_PASSWORD: postgres
+            RDS_USERNAME: iaso
+            RDS_PASSWORD: 6WzLYgL2nYatuiYEzHnK
             DB_READONLY_USERNAME: postgres
             DB_READONLY_PASSWORD: postgres
             DEBUG: 'true'
-            DEBUG_SQL:
+            DEBUG_SQL: 'true'
             DNS_DOMAIN:
             TEST_PROD:
             SECRET_KEY: secret

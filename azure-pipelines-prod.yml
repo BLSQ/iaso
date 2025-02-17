@@ -74,7 +74,7 @@ steps:
   displayName: 'Environment info'
 
 - script: |
-    . ./venv/bin/activate && ruff --check .
+    . ./venv/bin/activate && ruff check .
   displayName: 'Check formatting with ruff'
 
 # Setting the details for the health page

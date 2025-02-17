@@ -1756,7 +1756,7 @@ class NotificationImport(models.Model):
     def read_excel(cls, file: File) -> pd.DataFrame:
         try:
             df = pd.read_excel(file, keep_default_na=False)
-        except Exception:
+        except Exception as err:
             raise ValueError(f"Invalid Excel file {file}.")
 
         # Normalize xlsx header's names.

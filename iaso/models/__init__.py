@@ -1,5 +1,4 @@
 from .base import *
-from .base import Instance
 from .comment import CommentIaso
 from .data_source import DataSource, DataSourceVersionsSynchronization, SourceVersion
 from .deduplication import EntityDuplicate, EntityDuplicateAnalyzis
@@ -17,3 +16,49 @@ from .reports import Report, ReportVersion
 from .storage import StorageDevice, StorageLogEntry, StoragePassword
 from .tenant_users import TenantUser
 from .workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
+
+
+__all__ = [
+    "IFRAME",
+    "POWERBI",
+    "RAW",
+    "SUPERSET",
+    "TEXT",
+    "CommentIaso",
+    "DataSource",
+    "DataSourceVersionsSynchronization",
+    "Device",
+    "DeviceOwnership",
+    "DevicePosition",
+    "Entity",
+    "EntityDuplicate",
+    "EntityDuplicateAnalyzis",
+    "EntityType",
+    "Form",
+    "FormAttachment",
+    "FormPredefinedFilter",
+    "FormVersion",
+    "ImportGPKG",
+    "OrgUnit",
+    "OrgUnitChangeRequest",
+    "OrgUnitChangeRequestConfiguration",
+    "OrgUnitType",
+    "Page",
+    "Payment",
+    "PaymentLot",
+    "Planning",
+    "PotentialPayment",
+    "Project",
+    "Report",
+    "ReportVersion",
+    "SourceVersion",
+    "StorageDevice",
+    "StorageLogEntry",
+    "StoragePassword",
+    "Team",
+    "TenantUser",
+    "Workflow",
+    "WorkflowChange",
+    "WorkflowFollowup",
+    "WorkflowVersion",
+]

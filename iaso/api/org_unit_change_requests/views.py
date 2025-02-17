@@ -19,19 +19,19 @@ from iaso.api.org_unit_change_requests.permissions import (
     HasOrgUnitsChangeRequestReviewPermission,
 )
 from iaso.api.org_unit_change_requests.serializers import (
+    OrgUnitChangeRequestBulkReviewSerializer,
     OrgUnitChangeRequestListSerializer,
     OrgUnitChangeRequestRetrieveSerializer,
     OrgUnitChangeRequestReviewSerializer,
     OrgUnitChangeRequestWriteSerializer,
-    OrgUnitChangeRequestBulkReviewSerializer,
 )
 from iaso.api.serializers import AppIdSerializer
 from iaso.api.tasks.serializers import TaskSerializer
+from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest
 from iaso.tasks.org_unit_change_requests_bulk_review import (
     org_unit_change_requests_bulk_approve,
     org_unit_change_requests_bulk_reject,
 )
-from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest
 from iaso.utils.models.common import get_creator_name
 
 

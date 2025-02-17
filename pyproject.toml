@@ -14,13 +14,13 @@ exclude = [
     ".mypy_cache",
     ".tox",
     ".venv",
-    ".venv",
-    ".venv",
     "_build",
     "buck-out",
     "build",
     "dist",
+    "locust",
     "node_modules",
+    "notebooks",
     "src/django-webpack-loader",
 ]
 indent-width = 4
@@ -32,28 +32,29 @@ select = [
     "ARG", # flake8-arguments
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
-    "C90", # mccabe complexity
     "DJ",  # flake8-django
     "DTZ", # flake8-datetimez
     "E",   # pycodestyle
     "EM",  # flake8-errmsg
     "F",   # flake8
-    "G",   # flake8-logging-format
     "I",   # isort
     "ISC", # flake8-implicit-str-concat
     "LOG", # flake8-logging
     "N",   # pep8-naming
     "PIE", # flake8-pie
-    "PT",  # flake8-pytest-style
-    "PTH", # flake8-use-pathlib
     "RET", # flake8-return
-    "RUF", # ruff-specific rules
     "Q",   # flake8-quotes
     "SIM", # flake8-simplify
     "T10", # flake8-print
-    "TCH", # flake8-type-checking
-    "TRY", # tryceratops
     "UP",  # pyupgrade
+    # Disabled rules.
+    # "C90", # mccabe complexity
+    # "G",   # flake8-logging-format
+    # "PT",  # flake8-pytest-style
+    # "PTH", # flake8-use-pathlib
+    # "RUF", # ruff-specific rules
+    # "TCH", # flake8-type-checking
+    # "TRY", # tryceratops
 ]
 # https://docs.astral.sh/ruff/rules
 ignore = [
@@ -81,8 +82,6 @@ ignore = [
     "C416",    # unnecessary-comprehension
     "C417",    # unnecessary-map
     "C419",    # unnecessary-comprehension-in-call
-    # mccabe (C90).
-    "C901",    # complex-structure
     # flake8-django (DJ).
     "DJ001",   # django-nullable-model-string-field
     "DJ007",   # django-all-with-model-form
@@ -110,19 +109,12 @@ ignore = [
     "EM101",   # raw-string-in-exception
     "EM102",   # f-string-in-exception
     # Pyflakes (F).
-    "F401",    # unused-import
     "F403",    # undefined-local-with-import-star
     "F405",    # undefined-local-with-import-star-usage
     "F601",    # multi-value-repeated-key-literal
     "F811",    # redefined-while-unused
     "F821",    # undefined-name
     "F841",    # unused-variable
-    # flake8-logging-format (G).
-    "G002",    # logging-percent-format
-    "G003",    # logging-string-concat
-    "G004",    # logging-f-string
-    # flake8-implicit-str-concat (ISC).
-    "ISC003",  # explicit-string-concatenation
     # pep8-naming (N).
     "N801",    # invalid-class-name
     "N802",    # invalid-function-name
@@ -133,35 +125,9 @@ ignore = [
     "N817",    # camelcase-imported-as-acronym
     "N818",    # error-suffix-on-exception-name
     "N999",    # invalid-module-name
-    # flake8-pie (PIE).
-    "PIE794",  # duplicate-class-field-definition
-    "PIE810",  # multiple-starts-ends-with
-    # flake8-pytest-style (PT).
-    "PT008",   # pytest-patch-with-lambda
-    "PT009",   # pytest-unittest-assertion
-    "PT015",   # pytest-assert-always-false
-    "PT027",   # pytest-unittest-raises-assertion
-    "PTH100",  # os-path-abspath
-    "PTH103",  # os-makedirs
-    "PTH107",  # os-remove
-    "PTH109",  # os-getcwd
-    "PTH110",  # os-path-exists
-    "PTH112",  # os-path-isdir
-    "PTH118",  # os-path-join
-    "PTH119",  # os-path-basename
-    "PTH120",  # os-path-dirname
-    "PTH122",  # os-path-splitext
-    "PTH123",  # builtin-open
-    "PTH202",  # os-path-getsize
     # flake8-return (RET).
     "RET503",  # implicit-return
     "RET504",  # unnecessary-assign
-    # Ruff-specific rules (RUF).
-    "RUF001",  # ambiguous-unicode-character-string
-    "RUF005",  # collection-literal-concatenation
-    "RUF012",  # mutable-class-default
-    "RUF013",  # implicit-optional
-    "RUF015",  # unnecessary-iterable-allocation-for-first-element
     # flake8-simplify (SIM).
     "SIM102",  # collapsible-if
     "SIM103",  # needless-bool
@@ -175,19 +141,6 @@ ignore = [
     "SIM201",  # negate-equal-op
     "SIM210",  # if-expr-with-true-false
     "SIM211",  # if-expr-with-false-true
-    # flake8-type-checking (TC).
-    "TC001",   # typing-only-first-party-import
-    "TC002",   # typing-only-third-party-import
-    "TC003",   # typing-only-standard-library-import
-    # tryceratops (TRY).
-    "TRY002",  # raise-vanilla-class
-    "TRY003",  # raise-vanilla-args
-    "TRY004",  # type-check-without-type-error
-    "TRY201",  # verbose-raise
-    "TRY300",  # try-consider-else
-    "TRY301",  # raise-within-try
-    "TRY400",  # error-instead-of-exception
-    "TRY401",  # verbose-log-message
     # pyupgrade (UP).
     "UP006",   # non-pep585-annotation
     "UP008",   # super-call-with-parameters
@@ -205,6 +158,5 @@ quote-style = "double"
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
-known-first-party = ["iaso"]
 lines-after-imports = 2
 lines-between-types = 1

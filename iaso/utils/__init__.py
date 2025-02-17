@@ -1,7 +1,6 @@
 """This module provides various utils and helpers for IASO"""
 
-from collections.abc import Iterable
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.utils.text import slugify

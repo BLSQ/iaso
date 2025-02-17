@@ -1089,7 +1089,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "doses_out": 0,
         }
 
-        if order not in valid_order_keys_and_defaults:
+        if order not in valid_order_keys_and_defaults.keys():
             return sorted(results, key=lambda d: d["date"])
 
         return sorted(results, key=lambda d: d[order] or valid_order_keys_and_defaults[order], reverse=reverse)

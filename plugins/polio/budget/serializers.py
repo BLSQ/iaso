@@ -388,7 +388,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
                     # if step.transition_key == "override"
                     # we need to access the actual step to get the to_node_key, as the one in the workflow is generic and not to be used
 
-                if to_node_key in node_dict:
+                if to_node_key in node_dict.keys():
                     # If this is in the category
                     node = node_dict[to_node_key]
                     for other_key in node.mark_nodes_as_completed:

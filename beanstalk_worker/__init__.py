@@ -35,7 +35,7 @@ def task_decorator(task_name=""):
                     func(*args, task=the_task, **kwargs)
                     if the_task.status == RUNNING:
                         the_task.report_success()
-                except KilledException:
+                except KilledException as e:
                     # If it was interrupted in the middle of a transaction the new status was not saved so save it again
                     the_task.save()
                 except Exception as e:

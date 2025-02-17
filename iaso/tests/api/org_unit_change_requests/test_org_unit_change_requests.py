@@ -374,7 +374,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
     def test_bulk_review_without_perm(self):
         self.client.force_authenticate(self.user)
-        response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data={}, format="json")
+        response = self.client.patch("/api/orgunits/changes/bulk_review/", data={}, format="json")
         self.assertEqual(response.status_code, 403)
 
     @time_machine.travel(DT, tick=False)
@@ -395,7 +395,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
             "approved_fields": ["new_name"],
         }
-        response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data=data, format="json")
+        response = self.client.patch("/api/orgunits/changes/bulk_review/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
         data = response.json()
 
@@ -440,7 +440,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "approved_fields": [],
             "rejection_comment": "No way.",
         }
-        response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data=data, format="json")
+        response = self.client.patch("/api/orgunits/changes/bulk_review/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
         data = response.json()
 

@@ -425,12 +425,8 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
     results_key = "results"
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES_DUPLICATE_READ)]  # type: ignore
     serializer_class = EntityDuplicateSerializer
-    results_key = "results"
     model = EntityDuplicate
     pagination_class = Paginator
-
-    def get_results_key(self):
-        return self.results_key
 
     def list(self, request: Request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -442,7 +438,7 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         if not self.remove_results_key_if_paginated:
-            return Response(data={self.get_results_key(): serializer.data}, content_type="application/json")
+            return Response(data={self.results_key: serializer.data}, content_type="application/json")
         return Response(data=serializer.data, content_type="application/json")
 
     def get_queryset(self):

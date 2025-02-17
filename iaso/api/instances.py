@@ -4,7 +4,7 @@ import ntpath
 
 from copy import copy
 from time import gmtime, strftime
-from typing import Annotated, Any, Dict, Union
+from typing import Any, Dict, Union
 
 import pandas as pd
 
@@ -20,7 +20,7 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
-from typing_extensions import TypedDict
+from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
 

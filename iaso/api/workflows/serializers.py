@@ -11,7 +11,6 @@ from iaso.models import (
     WorkflowFollowup,
     WorkflowVersion,
 )
-from iaso.models.workflow import WorkflowVersionsStatus
 
 
 CALCULATE_TYPE = "calculate"
@@ -316,6 +315,8 @@ class WorkflowPartialUpdateSerializer(serializers.Serializer):
     name = serializers.CharField(required=False)
 
     def validate_status(self, new_status):
+        from iaso.models.workflow import WorkflowVersionsStatus
+
         if hasattr(WorkflowVersionsStatus, new_status):
             return new_status
         raise serializers.ValidationError(new_status + "is not recognized as proper status value")

@@ -80,7 +80,7 @@ class Dumper:
 
         diffable_fields = []
         for field in fields:
-            if field.startswith("groupset:") or field.startswith("group:"):
+            if field.startswith(("groupset:", "group:")):
                 diffable_fields.append(field.split(":")[2])
             else:
                 diffable_fields.append(field)

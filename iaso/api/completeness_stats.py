@@ -30,8 +30,7 @@ This endpoint is used to display the completeness stats in the dashboard. Comple
 ```
 """
 
-from collections.abc import Mapping
-from typing import Annotated, Any, List, Optional, TypedDict, Union
+from typing import Any, List, Mapping, Optional, TypedDict, Union
 
 import rest_framework.fields
 import rest_framework.renderers
@@ -50,6 +49,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
+from typing_extensions import Annotated
 
 from hat.menupermissions import models as permission
 from iaso.models import Form, Group, Instance, OrgUnit, OrgUnitType, Project
@@ -369,7 +369,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 raise serializers.ValidationError(
                     {"order": ["Sorting by `orgunit__name` is not supported, please use `name` instead"]}
                 )
-            if not (order.startswith("form_stats") or order.startswith("-form_stats")):
+            if not order.startswith(("form_stats", "-form_stats")):
                 converted_orders.append(order)
             else:
                 # Expect something like `form_stats__form_12__total_instances`

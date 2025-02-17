@@ -101,7 +101,7 @@ class AggregateHandler(BaseHandler):
         if len(descriptions) > 0:
             self.logger.warning(
                 "----------------------- aggregate EXPORT ERROR --------------------\n"
-                + f"Failed to create dataValueSets got {message} {counts} {descriptions}"
+                f"Failed to create dataValueSets got {message} {counts} {descriptions}"
             )
             return InstanceExportError(message, counts, descriptions)
 

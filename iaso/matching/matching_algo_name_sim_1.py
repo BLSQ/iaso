@@ -44,7 +44,7 @@ class Algorithm:
                         self.add_item(names_1, item, normalized_alias)
 
         names_2 = {remove_words(item.name.strip().lower(), self.words_to_strip): item for item in level_2}
-        for name_1 in names_1:
+        for name_1 in names_1.keys():
             item_2 = names_2.get(name_1)
 
             if item_2:

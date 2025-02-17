@@ -84,7 +84,7 @@ def jsonlogic_to_q(
         "in": "icontains",
     }
 
-    if op not in lookups:
+    if op not in lookups.keys():
         raise ValueError(
             f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: f{lookups.keys()}"
         )

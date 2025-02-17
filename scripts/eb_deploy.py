@@ -22,7 +22,7 @@ if __name__ == "__main__":
     version = os.environ["VERSION_NAME"]
 
     # If the argument correspond to one of the env, deploy to it
-    if sys.argv[1].lower() in [x.lower() for x in eb_envs]:
+    if sys.argv[1].lower() in [x.lower() for x in eb_envs.keys()]:
         exit(eb_deploy(sys.argv[1], version_name=version))
 
     # otherwise consider it's a tag and update all the environment with the same `env` tag

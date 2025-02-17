@@ -114,9 +114,6 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
     serializer_class = EntityDuplicateAnalyzisSerializer
     pagination_class = Paginator
 
-    def get_results_key(self):
-        return self.results_key
-
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
         return EntityDuplicateAnalyzis.objects.filter(task__account=user_account)
@@ -134,7 +131,7 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
             return self.get_paginated_response(serializer.data)
 
         serializer = EntityDuplicateAnalyzisSerializer(queryset, many=True)
-        return Response(data={self.get_results_key(): serializer.data})
+        return Response(data={self.results_key: serializer.data})
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         """

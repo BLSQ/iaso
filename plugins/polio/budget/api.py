@@ -12,9 +12,20 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from hat.menupermissions import models as permission
-from iaso.api.common import CSVExportMixin, DeletionFilterBackend, HasPermission, ModelViewSet
+from iaso.api.common import (
+    CSVExportMixin,
+    DeletionFilterBackend,
+    HasPermission,
+    ModelViewSet,
+)
 from plugins.polio.budget.filters import BudgetProcessFilter
-from plugins.polio.budget.models import BudgetProcess, BudgetStep, BudgetStepFile, MailTemplate, get_workflow
+from plugins.polio.budget.models import (
+    BudgetProcess,
+    BudgetStep,
+    BudgetStepFile,
+    MailTemplate,
+    get_workflow,
+)
 from plugins.polio.budget.serializers import (
     AvailableRoundsSerializer,
     BudgetProcessSerializer,
@@ -125,9 +136,13 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
         """
         Returns all available rounds that can be used to create a new `BudgetProcess`.
         """
-        user_campaigns = Campaign.polio_objects.filter_for_user(self.request.user).filter(country__isnull=False)
+        user_campaigns = Campaign.polio_objects.filter_for_user(request.user).filter(country__isnull=False)
+
         available_rounds = (
-            Round.objects.filter(budget_process__isnull=True, campaign__in=user_campaigns)
+            Round.objects.filter(
+                budget_process__isnull=True,
+                campaign__in=list(user_campaigns),
+            )
             .select_related("campaign__country")
             .order_by("campaign__country__name", "campaign__obr_name", "number")
             .only(

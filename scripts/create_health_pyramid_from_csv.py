@@ -128,7 +128,7 @@ for row in rows:
 
 
 # TODO: Generalize this based on the retrieved OU types
-for state in pyramid_dict:
+for state in pyramid_dict.keys():
     print(state, end=" ")
     state_id = find_or_create_org_unit(name=state, org_unit_type_id=ou_types["State"], parent_id=COUNTRY_ID)
 

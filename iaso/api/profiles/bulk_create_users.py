@@ -494,7 +494,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 )
 
             return phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
-        except phonenumbers.NumberParseException:
+        except phonenumbers.NumberParseException as e:
             raise serializers.ValidationError(
                 {"error": f"Operation aborted. This '{phone_number}' is not a phone number"}
             )

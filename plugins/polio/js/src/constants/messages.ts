@@ -2425,7 +2425,7 @@ const MESSAGES = defineMessages({
     },
     scopesWillBeDeleted: {
         id: 'iaso.polio.campaign.label.scopesWillBeDeleted',
-        defaultMessage: 'The previous scopes will be deleted (sub-activity ones included)',
+        defaultMessage: 'The previous scopes will be deleted (at the sub-activity level too)',
     },
     scopeWarningTitle: {
         id: 'iaso.polio.campaign.label.scopeWarningTitle',

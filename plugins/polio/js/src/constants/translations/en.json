@@ -77,7 +77,7 @@
     "iaso.polio.campaign.form": "Form",
     "iaso.polio.campaign.initial_org_unit": "Org Unit",
     "iaso.polio.campaign.key": "Key",
-    "iaso.polio.campaign.label.scopesWillBeDeleted": "The previous scopes will be deleted (sub-activity ones included)",
+    "iaso.polio.campaign.label.scopesWillBeDeleted": "The previous scopes will be deleted (at the sub-activity level too)",
     "iaso.polio.campaign.label.scopeWarningTitle": "Scope type has been changed",
     "iaso.polio.campaign.lqasMap": "LQAS map",
     "iaso.polio.campaign.mobilePayment": "Mobile Payment",

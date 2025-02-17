@@ -164,6 +164,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         serializer = OrgUnitChangeRequestBulkReviewSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        select_all = serializer.validated_data["select_all"]
         selected_ids = serializer.validated_data["selected_ids"]
         unselected_ids = serializer.validated_data["unselected_ids"]
         status = serializer.validated_data["status"]
@@ -172,11 +173,10 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
 
         queryset = self.filter_queryset(self.get_queryset()).filter(status=OrgUnitChangeRequest.Statuses.NEW)
 
-        if selected_ids:
-            queryset = queryset.filter(pk__in=selected_ids)
-
-        if unselected_ids:
+        if select_all:
             queryset = queryset.exclude(pk__in=unselected_ids)
+        else:
+            queryset = queryset.filter(pk__in=selected_ids)
 
         ids = list(queryset.values_list("pk", flat=True))
 

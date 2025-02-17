@@ -756,12 +756,39 @@ class OrgUnitChangeRequestBulkReviewSerializerTestCase(TestCase):
             serializer.is_valid(raise_exception=True)
         self.assertEqual(error.exception.detail["status"][0], "Must be `approved` or `rejected`.")
 
+    def test_validate_selection(self):
+        data = {
+            "select_all": 1,
+            "selected_ids": [1, 2],
+            "status": OrgUnitChangeRequest.Statuses.APPROVED,
+            "approved_fields": ["new_name"],
+        }
+        serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(
+            error.exception.detail["non_field_errors"][0], "You cannot set both `select_all` and `selected_ids`."
+        )
+
+        data = {
+            "select_all": 0,
+            "unselected_ids": [1, 2],
+            "status": OrgUnitChangeRequest.Statuses.APPROVED,
+            "approved_fields": ["new_name"],
+        }
+        serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(
+            error.exception.detail["non_field_errors"][0], "You cannot set `unselected_ids` without `select_all`."
+        )
+
     def test_validate_approve(self):
         data = {
             "status": OrgUnitChangeRequest.Statuses.APPROVED,
             "approved_fields": [],
         }
-        serializer = OrgUnitChangeRequestReviewSerializer(data=data)
+        serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
         with self.assertRaises(ValidationError) as error:
             serializer.is_valid(raise_exception=True)
         self.assertEqual(
@@ -773,7 +800,7 @@ class OrgUnitChangeRequestBulkReviewSerializerTestCase(TestCase):
             "status": OrgUnitChangeRequest.Statuses.REJECTED,
             "rejection_comment": "      ",
         }
-        serializer = OrgUnitChangeRequestReviewSerializer(data=data)
+        serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
         with self.assertRaises(ValidationError) as error:
             serializer.is_valid(raise_exception=True)
         self.assertEqual(error.exception.detail["non_field_errors"][0], "A `rejection_comment` must be provided.")

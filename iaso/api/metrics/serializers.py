@@ -9,6 +9,7 @@ class MetricTypeSerializer(serializers.ModelSerializer):
             "id",
             "account",
             "name",
+            "category",
             "description",
             "source",
             "units",

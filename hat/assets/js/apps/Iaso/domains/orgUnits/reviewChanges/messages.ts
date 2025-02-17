@@ -157,6 +157,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.changeRequest.addPartiallyApprovedComment',
         defaultMessage: 'Add comment for the partial approval',
     },
+    confirmAcceptChangeRequest: {
+        id: 'iaso.changeRequest.confirmAcceptChangeRequest',
+        defaultMessage:
+            'You are about to replace the original version (left) with the modified version (right).',
+    },
+    confirmMessage: {
+        id: 'iaso.changeRequest.confirmMessage',
+        defaultMessage: 'Do you confirm those changes?',
+    },
     comment: {
         id: 'iaso.changeRequest.comment',
         defaultMessage: 'Comment',

@@ -113,8 +113,13 @@ class Exporter:
                 "shortName": name_comparison.after[:50],
                 "openingDate": "1960-08-03T00:00:00.000",
             }
+
+            if to_create.org_unit.opening_date:
+                payload["openingDate"] = to_create.org_unit.opening_date.strftime("%Y-%m-%d") + "T00:00:00.000"
+
             if to_create.org_unit.parent:
                 payload["parent"] = {"id": to_create.org_unit.parent.source_ref}
+
             self.fill_geometry_or_coordinates(to_create.comparison("geometry"), payload)
 
             self.iaso_logger.info("will post ", payload)

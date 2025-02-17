@@ -2,7 +2,6 @@ import logging
 import operator
 import typing
 import uuid
-
 from copy import deepcopy
 from functools import reduce
 
@@ -25,7 +24,6 @@ from iaso.models.data_source import SourceVersion
 from ..utils.expressions import ArraySubquery
 from ..utils.models.common import get_creator_name
 from .project import Project
-
 
 if typing.TYPE_CHECKING:
     from iaso.models import Account
@@ -488,6 +486,7 @@ class OrgUnit(TreeModel):
             res["source"] = self.version.data_source.name if self.version else None
             res["source_id"] = self.version.data_source.id if self.version else None
             res["version"] = self.version.number if self.version else None
+            res["version_id"] = self.version.id if self.version else None
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
 

@@ -1119,7 +1119,16 @@ class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
 
 @admin.register(MetricType)
 class MetricTypeAdmin(admin.ModelAdmin):
-    list_display = ("name", "account", "source", "units", "created_at", "updated_at")
+    list_display = (
+        "id",
+        "account",
+        "name",
+        "category",
+        "source",
+        "units",
+        "created_at",
+        "updated_at",
+    )
     search_fields = ("name", "description", "source", "units", "comments")
     list_filter = ("account", "source")
     ordering = ("name",)

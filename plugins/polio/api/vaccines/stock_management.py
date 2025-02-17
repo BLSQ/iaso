@@ -974,7 +974,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 request,
                 filename,
                 results,
-                lambda: calc.get_list_of_unusable_vials(end_date),
+                {
+                    "Unusable": lambda: calc.get_list_of_unusable_vials(end_date),
+                    "Earmarked": lambda: calc.get_list_of_earmarked(end_date),
+                },
                 "Usable",
             )
             with NamedTemporaryFile() as tmp:
@@ -1028,8 +1031,11 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 request,
                 filename,
                 results,
-                lambda: calc.get_list_of_usable_vials(end_date),
-                "unusable",
+                {
+                    "Usable": lambda: calc.get_list_of_usable_vials(end_date),
+                    "Earmarked": lambda: calc.get_list_of_earmarked(end_date),
+                },
+                "Unusable",
             )
             with NamedTemporaryFile() as tmp:
                 workbook.save(tmp.name)
@@ -1070,6 +1076,30 @@ class VaccineStockManagementViewSet(ModelViewSet):
         results = calc.get_list_of_earmarked(end_date)
         results = self._sort_results(request, results)
 
+        export_xlsx = request.query_params.get("export_xlsx", False)
+
+        if export_xlsx:
+            filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
+            workbook = self.download_xlsx_summary(
+                request,
+                filename,
+                results,
+                {
+                    "Usable": lambda: calc.get_list_of_usable_vials(end_date),
+                    "Unusable": lambda: calc.get_list_of_unusable_vials(end_date),
+                },
+                "Earmarked",
+            )
+
+            with NamedTemporaryFile() as tmp:
+                workbook.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+
+            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+            response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            return response
+
         paginator = Paginator()
         page = paginator.paginate_queryset(results, request)
         if page is not None:
@@ -1082,60 +1112,43 @@ class VaccineStockManagementViewSet(ModelViewSet):
         else:
             return VaccineStockSerializer
 
-    def download_xlsx_summary(self, request, filename, results, method, tab):
+    def download_xlsx_summary(self, request, filename, results, lambda_methods, tab):
         workbook = Workbook()
 
-        usable_vials_sheet = workbook.active
-        usable_vials_sheet.title = tab
-        unusable_vials_sheet = workbook.create_sheet("Unusable")
+        sheet_configs = {
+            "Usable": {
+                "columns": ["Date", "Action Type", "Action", "Vials IN", "Vials OUT", "Doses IN", "Doses OUT"],
+                "keys": ["date", "type", "action", "vials_in", "vials_out", "doses_in", "doses_out"],
+            },
+            "Unusable": {
+                "columns": ["Date", "Action Type", "Action", "Vials IN", "Vials OUT"],
+                "keys": ["date", "type", "action", "vials_in", "vials_out"],
+            },
+            "Earmarked": {
+                "columns": ["Date", "Action Type", "Action", "Vials IN", "Vials OUT"],
+                "keys": ["date", "type", "action", "vials_in", "vials_out"],
+            },
+        }
 
-        usable_vials_results = method()
-        usable_vials_results = self._sort_results(request, usable_vials_results)
+        sheet_order = sheet_configs.keys()
 
-        unusable_vials_results = results
+        for _, sheet_name in enumerate(sheet_order):
+            config = sheet_configs[sheet_name]
+            if sheet_name == tab:
+                sheet = workbook.active
+                sheet.title = sheet_name
+            else:
+                sheet = workbook.create_sheet(sheet_name)
+            sheet.append(config["columns"])
 
-        usable_vials_columns = [
-            "Date",
-            "Action Type",
-            "Action",
-            "Vials IN",
-            "Vials OUT",
-            "Doses IN",
-            "Doses OUT",
-        ]
-
-        unsable_vials_columns = [
-            "Date",
-            "Action Type",
-            "Action",
-            "Vials IN",
-            "Vials OUT",
-        ]
-
-        usable_vials_sheet.append(usable_vials_columns)
-        unusable_vials_sheet.append(unsable_vials_columns)
-
-        for entry in usable_vials_results:
-            row = [
-                entry["date"],
-                entry["type"],
-                entry["action"],
-                entry["vials_in"] if entry["vials_in"] is not None else "",
-                entry["vials_out"] if entry["vials_out"] is not None else "",
-                entry["doses_in"] if entry["doses_in"] is not None else "",
-                entry["doses_out"] if entry["doses_out"] is not None else "",
-            ]
-            usable_vials_sheet.append(row)
-
-        for entry in unusable_vials_results:
-            row = [
-                entry["date"],
-                entry["type"],
-                entry["action"],
-                entry["vials_in"] if entry["vials_in"] is not None else "",
-                entry["vials_out"] if entry["vials_out"] is not None else "",
-            ]
-            unusable_vials_sheet.append(row)
+            data = (
+                results
+                if sheet_name == tab
+                else self._sort_results(request, lambda_methods.get(sheet_name, lambda: [])())
+            )
+            for entry in data:
+                row = [entry[key] if entry[key] is not None else "" for key in config["keys"]]
+                sheet.append(row)
 
         workbook.save(filename)
         return workbook

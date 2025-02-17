@@ -123,9 +123,9 @@ jobs:
             - name: Environment info
               run: |
                   pip list
-            - name: Check formatting with Black
+            - name: Check formatting with ruff
               run: |
-                  . ./venv/bin/activate && black --check .
+                  . ./venv/bin/activate && ruff --check .
             - name: Django tests
               run: |
                   . ./venv/bin/activate &&  python manage.py compilemessages

@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import { useSidebar } from '../../domains/app/contexts/SideBarContext.tsx';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
 import { LangSwitch } from '../../domains/home/components/LangSwitch';
+import { useFindCustomComponent } from '../../utils/CustomComponents';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import { CurrentUserInfos } from './CurrentUser/index.tsx';
 import { HomePageButton } from './HomePageButton.tsx';

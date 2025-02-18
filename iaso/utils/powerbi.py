@@ -1,12 +1,13 @@
-import requests
 import time
+from datetime import datetime
+
+import requests
+from django.contrib.auth.models import User
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from datetime import datetime
+
 from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import RUNNING, SUCCESS, Task
-from django.contrib.auth.models import User
-
 
 SP_AUTH_URL = "https://login.microsoftonline.com/{tenant_id}/oauth2/token"
 POWERBI_RESOURCE = "https://analysis.windows.net/powerbi/api"
@@ -57,7 +58,12 @@ def get_openhexa_config_for_data_set_id(data_set_id):
     if oh_conf.exists():
         oh_conf = oh_conf.first()
         oh_config = oh_conf.content
-        dataset_config = oh_config[data_set_id]
+        # Convert data_set_id to string if it's a UUID
+        data_set_id_str = str(data_set_id)
+        if data_set_id_str in oh_config:
+            dataset_config = oh_config[data_set_id_str]
+        else:
+            raise KeyError(f"Data set ID {data_set_id_str} not found in configuration.")
     return dataset_config
 
 

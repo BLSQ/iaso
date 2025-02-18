@@ -112,8 +112,8 @@ class NG_Under5:
             )
         )
 
-    def run(self):
-        entity_type = ETL(["child_under_5_3"])
+    def run(self, type):
+        entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
         beneficiaries = entity_type.retrieve_entities()
 

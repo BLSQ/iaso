@@ -2,6 +2,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 
 from plugins.polio.api.vaccines.common import sort_results
+from plugins.polio.export_utils import cell_border
 
 
 def get_sheet_configs():
@@ -48,7 +49,9 @@ def write_vials_doses_totals(sheet, config, sums, sum_columns_indices):
     sheet.append(total_row)
     total_row_index = sheet.max_row
     for col in range(1, len(config["columns"]) + 1):
-        sheet.cell(row=total_row_index, column=col).font = Font(bold=True)
+        cell = sheet.cell(row=total_row_index, column=col)
+        cell.font = Font(bold=True)
+        cell.number_format = "#,##0"
 
 
 def vials_doses_totals(data, sum_columns):
@@ -71,7 +74,8 @@ def write_vials_doses_stock_balance(sheet, config, sums, sum_columns_indices):
     stock_balances_row = [""] * len(config["columns"])
     stock_balances_row[action_index] = "Stock Balances :"
 
-    stock_balances_row[sum_columns_indices[0]] = sums["vials_in"] - sums["vials_out"]
+    if "vials_in" in sums and "vials_out" in sums:
+        stock_balances_row[sum_columns_indices[0]] = sums["vials_in"] - sums["vials_out"]
 
     if "doses_in" in sums and "doses_out" in sums:
         stock_balances_row[sum_columns_indices[2]] = sums["doses_in"] - sums["doses_out"]
@@ -80,7 +84,33 @@ def write_vials_doses_stock_balance(sheet, config, sums, sum_columns_indices):
 
     stock_balances_row_index = sheet.max_row
     for col in range(1, len(config["columns"]) + 1):
-        sheet.cell(row=stock_balances_row_index, column=col).font = Font(bold=True)
+        cell = sheet.cell(row=stock_balances_row_index, column=col)
+        cell.font = Font(bold=True)
+        cell.number_format = "#,##0"
+
+
+def write_colums_headers(sheet, config):
+    """
+    Adds columns headers.
+    """
+    sheet.append(config["columns"])
+    for col, _ in enumerate(config["columns"], start=1):
+        sheet.column_dimensions[chr(64 + col)].width = 21
+        cell_header = sheet.cell(row=1, column=col)
+        cell_header = cell_border(cell_header)
+
+
+def write_columns_data(sheet, config, datas):
+    """
+    Adds columns data.
+    """
+    for entry in datas:
+        row = [entry[key] if entry[key] is not None else "" for key in config["keys"]]
+        sheet.append(row)
+
+        for col_idx, value in enumerate(row, start=1):
+            if isinstance(value, (int, float)):
+                sheet.cell(row=sheet.max_row, column=col_idx).number_format = "#,##0"
 
 
 def download_xlsx_summary(request, filename, results, lambda_methods, tab):
@@ -98,19 +128,17 @@ def download_xlsx_summary(request, filename, results, lambda_methods, tab):
             sheet = workbook.create_sheet(sheet_name)
 
         sheets[sheet_name] = sheet
-        sheet.append(config["columns"])
+
+        write_colums_headers(sheet, config)
 
         datas = results if sheet_name == tab else sort_results(request, lambda_methods.get(sheet_name, lambda: [])())
 
-        sum_columns_indices = [config["keys"].index(col) for col in config["sum_columns"]]
-        sums = vials_doses_totals(datas, config["sum_columns"])
-
-        for entry in datas:
-            row = [entry[key] if entry[key] is not None else "" for key in config["keys"]]
-            sheet.append(row)
+        write_columns_data(sheet, config, datas)
 
         sheet.append([""] * len(config["columns"]))
 
+        sum_columns_indices = [config["keys"].index(col) for col in config["sum_columns"]]
+        sums = vials_doses_totals(datas, config["sum_columns"])
         write_vials_doses_totals(sheet, config, sums, sum_columns_indices)
 
         write_vials_doses_stock_balance(sheet, config, sums, sum_columns_indices)

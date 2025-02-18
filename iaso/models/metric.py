@@ -14,6 +14,7 @@ class MetricType(models.Model):
     source = models.CharField(max_length=255, blank=True)
     units = models.CharField(max_length=255, blank=True)
     category = models.CharField(max_length=255, blank=True)
+    legend_threshold = models.JSONField(blank=True, default=dict)
     comments = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

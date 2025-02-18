@@ -1,17 +1,18 @@
 import uuid
 
-from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
+from rest_framework import serializers
+
 from hat.audit.audit_logger import AuditLogger
 from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API, Modification
+from iaso.api.common import TimestampField
 from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.models.payments import PaymentStatuses
+from iaso.utils import geojson_queryset
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
-from iaso.api.common import TimestampField
-from iaso.utils import geojson_queryset
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -180,6 +181,8 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
         return [{"id": group.id, "name": group.name} for group in obj.org_unit.groups.all()]
 
     def get_current_org_unit_type_projects(self, obj: OrgUnitChangeRequest):
+        if obj.org_unit.org_unit_type is None:
+            return []
         return [{"id": project.id, "name": project.name} for project in obj.org_unit.org_unit_type.projects.all()]
 
     def get_payment_status(self, obj: OrgUnitChangeRequest):

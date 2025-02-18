@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Box, Button, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -81,10 +81,24 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
     const title = `${formatMessage(MESSAGES.stockDetails)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
-    const exportXlsxUrl =
-        tab === USABLE_VIALS
-            ? `/api/polio/vaccine/vaccine_stock/${params.id}/usable_vials/?export_xlsx=true`
-            : `/api/polio/vaccine/vaccine_stock/${params.id}/get_unusable_vials/?export_xlsx=true`;
+
+    const exportXlsxUrl = useMemo(() => {
+        let xlsxUrl = `/api/polio/vaccine/vaccine_stock/${params.id}`;
+        switch (tab) {
+            case USABLE_VIALS:
+                xlsxUrl = `${xlsxUrl}/usable_vials/?export_xlsx=true`;
+                break;
+            case UNUSABLE_VIALS:
+                xlsxUrl = `${xlsxUrl}/get_unusable_vials/?export_xlsx=true`;
+                break;
+            case EARMARKED:
+                xlsxUrl = `${xlsxUrl}/get_unusable_vials/?export_xlsx=true`;
+                break;
+            default:
+                break;
+        }
+        return xlsxUrl;
+    }, [params.id, tab]);
 
     return (
         <>

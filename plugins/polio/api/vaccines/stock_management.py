@@ -1,23 +1,15 @@
-import datetime
 import enum
 from tempfile import NamedTemporaryFile
 from django.http import HttpResponse
-from openpyxl import Workbook
-from openpyxl.styles import Font
 from django.db.models import OuterRef, Subquery, Exists, Q, Sum
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from plugins.polio.export_utils import (
-    CALENDAR_COLUMN_FONT_SIZE,
-    CALENDAR_COLUMNS_CELL_WIDTH,
-    cell_border,
-    cell_dimension_pattern_fill,
-    font_alignment,
-)
+
+from plugins.polio.api.vaccines.common import sort_results
+from plugins.polio.api.vaccines.export_utils import download_xlsx_summary
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
-from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.request import Request
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.utils.dateparse import parse_date
@@ -999,13 +991,13 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_usable_vials(end_date)
-        results = self._sort_results(request, results)
+        results = sort_results(request, results)
 
         export_xlsx = request.query_params.get("export_xlsx", False)
 
         if export_xlsx:
             filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
-            workbook = self.download_xlsx_summary(
+            workbook = download_xlsx_summary(
                 request,
                 filename,
                 results,
@@ -1056,13 +1048,13 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_unusable_vials(end_date)
-        results = self._sort_results(request, results)
+        results = sort_results(request, results)
 
         export_xlsx = request.query_params.get("export_xlsx", False)
 
         if export_xlsx:
             filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
-            workbook = self.download_xlsx_summary(
+            workbook = download_xlsx_summary(
                 request,
                 filename,
                 results,
@@ -1109,13 +1101,13 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_earmarked(end_date)
-        results = self._sort_results(request, results)
+        results = sort_results(request, results)
 
         export_xlsx = request.query_params.get("export_xlsx", False)
 
         if export_xlsx:
             filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
-            workbook = self.download_xlsx_summary(
+            workbook = download_xlsx_summary(
                 request,
                 filename,
                 results,
@@ -1147,108 +1139,6 @@ class VaccineStockManagementViewSet(ModelViewSet):
         else:
             return VaccineStockSerializer
 
-    @staticmethod
-    def get_sheet_configs():
-        common_columns = ["Country", "Vaccine", "Date", "Action Type", "Action"]
-        common_keys = ["country", "vaccine", "date", "type", "action"]
-
-        variants_columns_keys = {
-            "Usable": {
-                "extra_columns": ["Vials IN", "Vials OUT", "Doses IN", "Doses OUT"],
-                "extra_keys": ["vials_in", "vials_out", "doses_in", "doses_out"],
-            },
-            "Unusable": {
-                "extra_columns": ["Vials IN", "Vials OUT"],
-                "extra_keys": ["vials_in", "vials_out"],
-            },
-            "Earmarked": {
-                "extra_columns": ["Vials IN", "Vials OUT"],
-                "extra_keys": ["vials_in", "vials_out"],
-            },
-        }
-
-        return {
-            name: {
-                "columns": common_columns + variant["extra_columns"],
-                "keys": common_keys + variant["extra_keys"],
-                "sum_columns": variant["extra_keys"],
-            }
-            for name, variant in variants_columns_keys.items()
-        }
-
-    # @staticmethod
-    # def vials_doses_totals(sheet, config, sum_columns_indices, sums, action_index):
-
-    # @staticmethod
-    # def vials_doses_stock_balance(sheet, config, sums, sum_columns_indices, action_index):
-
-    def download_xlsx_summary(self, request, filename, results, lambda_methods, tab):
-        workbook = Workbook()
-        sheet_configs = self.get_sheet_configs()
-
-        sheets_order = sheet_configs.keys()
-
-        for _, sheet_name in enumerate(sheets_order):
-            config = sheet_configs[sheet_name]
-            if sheet_name == tab:
-                sheet = workbook.active
-                sheet.title = sheet_name
-            else:
-                sheet = workbook.create_sheet(sheet_name)
-
-            sheet.append(config["columns"])
-
-            data = (
-                results
-                if sheet_name == tab
-                else self._sort_results(request, lambda_methods.get(sheet_name, lambda: [])())
-            )
-
-            sum_columns_indices = [config["keys"].index(col) for col in config["sum_columns"]]
-            sums = {col: 0 for col in config["sum_columns"]}
-            for entry in data:
-                row = [entry[key] if entry[key] is not None else "" for key in config["keys"]]
-                sheet.append(row)
-
-                for col, _ in zip(config["sum_columns"], sum_columns_indices):
-                    if isinstance(entry[col], (int, float)):
-                        sums[col] += entry[col]
-
-            action_index = config["keys"].index("action")
-
-            sheet.append([""] * len(config["columns"]))
-
-            total_row = [""] * len(config["columns"])
-
-            total_row[action_index] = "Total :"
-
-            for col, idx in zip(config["sum_columns"], sum_columns_indices):
-                total_row[idx] = sums[col]
-
-            sheet.append(total_row)
-
-            total_row_index = sheet.max_row
-            for col in range(1, len(config["columns"]) + 1):
-                sheet.cell(row=total_row_index, column=col).font = Font(bold=True)
-
-            stock_vials = sums["vials_in"] - sums["vials_out"]
-
-            stock_balances_row = [""] * len(config["columns"])
-            stock_balances_row[action_index] = "Stock Balances"
-            stock_balances_row[sum_columns_indices[0]] = stock_vials
-
-            if "doses_in" in sums and "doses_out" in sums:
-                stock_doses = sums["doses_in"] - sums["doses_out"]
-                stock_balances_row[sum_columns_indices[2]] = stock_doses
-
-            sheet.append(stock_balances_row)
-            stock_balances_row_index = sheet.max_row
-            for col in range(1, len(config["columns"]) + 1):
-                sheet.cell(row=stock_balances_row_index, column=col).font = Font(bold=True)
-
-        workbook.save(filename)
-        return workbook
-
     def get_queryset(self):
         """
         Get the queryset for VaccineStock objects.
@@ -1271,25 +1161,3 @@ class VaccineStockManagementViewSet(ModelViewSet):
             .distinct()
             .order_by("id")
         )
-
-    def _sort_results(self, request: Request, results: list[dict]) -> list[dict]:
-        order = request.query_params.get(OrderingFilter.ordering_param)
-        reverse = False
-
-        if order and order.startswith("-"):
-            reverse = True
-            order = order.removeprefix("-")
-
-        valid_order_keys_and_defaults = {
-            "date": datetime.datetime.min,
-            "action": "",
-            "vials_in": 0,
-            "vials_out": 0,
-            "doses_in": 0,
-            "doses_out": 0,
-        }
-
-        if order not in valid_order_keys_and_defaults.keys():
-            return sorted(results, key=lambda d: d["date"])
-
-        return sorted(results, key=lambda d: d[order] or valid_order_keys_and_defaults[order], reverse=reverse)

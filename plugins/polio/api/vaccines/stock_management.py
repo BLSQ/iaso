@@ -6,7 +6,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from plugins.polio.api.vaccines.common import sort_results
-from plugins.polio.api.vaccines.export_utils import download_xlsx_summary
+from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -997,7 +997,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         if export_xlsx:
             filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
-            workbook = download_xlsx_summary(
+            workbook = download_xlsx_stock_variants(
                 request,
                 filename,
                 results,
@@ -1054,7 +1054,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         if export_xlsx:
             filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
-            workbook = download_xlsx_summary(
+            workbook = download_xlsx_stock_variants(
                 request,
                 filename,
                 results,
@@ -1107,7 +1107,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         if export_xlsx:
             filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
-            workbook = download_xlsx_summary(
+            workbook = download_xlsx_stock_variants(
                 request,
                 filename,
                 results,

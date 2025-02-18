@@ -6,8 +6,8 @@ from plugins.polio.export_utils import cell_border
 
 
 def get_sheet_configs():
-    common_columns = ["Country", "Vaccine", "Date", "Action Type", "Action"]
-    common_keys = ["country", "vaccine", "date", "type", "action"]
+    common_columns = ["Country", "Vaccine", "Date", "Vials type", "Action Type", "Action"]
+    common_keys = ["country", "vaccine", "date", "vials_type", "type", "action"]
 
     variants_columns_keys = {
         "Usable": {
@@ -100,20 +100,25 @@ def write_colums_headers(sheet, config):
         cell_header = cell_border(cell_header)
 
 
-def write_columns_data(sheet, config, datas):
+def write_columns_data(sheet, config, datas, sheet_name):
     """
     Adds columns data.
     """
     for entry in datas:
-        row = [entry[key] if entry[key] is not None else "" for key in config["keys"]]
+        row = []
+        for key in config["keys"]:
+            if key == "vials_type":
+                row.append(sheet_name)
+            else:
+                row.append(entry[key] if entry[key] is not None else "")
         sheet.append(row)
 
-        for col_idx, value in enumerate(row, start=1):
+        for col_index, value in enumerate(row, start=1):
             if isinstance(value, (int, float)):
-                sheet.cell(row=sheet.max_row, column=col_idx).number_format = "#,##0"
+                sheet.cell(row=sheet.max_row, column=col_index).number_format = "#,##0"
 
 
-def download_xlsx_summary(request, filename, results, lambda_methods, tab):
+def download_xlsx_stock_variants(request, filename, results, lambda_methods, tab):
     workbook = Workbook()
     sheet_configs = get_sheet_configs()
 
@@ -133,7 +138,7 @@ def download_xlsx_summary(request, filename, results, lambda_methods, tab):
 
         datas = results if sheet_name == tab else sort_results(request, lambda_methods.get(sheet_name, lambda: [])())
 
-        write_columns_data(sheet, config, datas)
+        write_columns_data(sheet, config, datas, sheet_name)
 
         sheet.append([""] * len(config["columns"]))
 

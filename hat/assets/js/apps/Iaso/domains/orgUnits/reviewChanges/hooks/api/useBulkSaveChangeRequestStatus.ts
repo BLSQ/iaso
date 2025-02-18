@@ -12,6 +12,7 @@ const taskApi = `/api/orgunits/changes/bulk_review/`;
 
 export type BulkSaveBody = Selection<OrgUnitChangeRequest> & {
     status: ChangeRequestValidationStatus;
+    rejection_comment?: string;
 };
 const saveBulkChangeRequests = async (body: BulkSaveBody): Promise<any> => {
     const formattedBody = {
@@ -19,6 +20,7 @@ const saveBulkChangeRequests = async (body: BulkSaveBody): Promise<any> => {
         unselected_ids: body.unSelectedItems?.map(item => item.id),
         select_all: body.selectAll,
         status: body.status,
+        rejection_comment: body.rejection_comment,
     };
     return patchRequest(taskApi, formattedBody);
 };

@@ -5,6 +5,7 @@ import React, {
     useState,
 } from 'react';
 
+import { Box } from '@mui/material';
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -33,6 +34,7 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
     const [status, setStatus] = useState<
         ChangeRequestValidationStatus | undefined
     >(undefined);
+    const [comment, setComment] = useState<string | undefined>(undefined);
     const { mutateAsync: bulkSaveStatus } = useBulkSaveChangeRequestStatus();
     const handleSave = useCallback(() => {
         if (!status) {
@@ -41,10 +43,19 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
         bulkSaveStatus({
             ...selection,
             status,
+            rejection_comment: comment,
         });
+        // TODO: handle error and not empty selection
         resetSelection();
         closeDialog();
-    }, [bulkSaveStatus, closeDialog, resetSelection, selection, status]);
+    }, [
+        bulkSaveStatus,
+        closeDialog,
+        resetSelection,
+        selection,
+        status,
+        comment,
+    ]);
     const statusOptions: DropdownOptions<string>[] = useMemo(
         () => [
             {
@@ -94,6 +105,18 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
                 options={statusOptions}
                 labelString={formatMessage(MESSAGES.status)}
             />
+            {status === 'rejected' && (
+                <Box mt={1}>
+                    <InputComponent
+                        type="textarea"
+                        keyValue=""
+                        value={comment}
+                        onChange={(_, newComment) => setComment(newComment)}
+                        debounceTime={0}
+                        withMarginTop={false}
+                    />
+                </Box>
+            )}
         </ConfirmCancelModal>
     );
 };

@@ -1,6 +1,6 @@
+import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { FormikProps } from 'formik';
-import { useMemo } from 'react';
 import MESSAGES from '../../../constants/messages';
 import { Campaign, CampaignFormValues } from '../../../constants/types';
 import { compareArraysValues } from '../../../utils/compareArraysValues';
@@ -9,6 +9,7 @@ import {
     EvaluationsForms,
     evaluationFormFields,
 } from '../Evaluations/EvaluationsForms';
+import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { useSubActivityTabTooltip } from '../hooks/useSubActivityTabTooltip';
 import { PreparednessForm } from '../Preparedness/PreparednessForm';
 import {
@@ -18,7 +19,6 @@ import {
 import { RoundsForm, roundFormFields } from '../Rounds/RoundsForm';
 import { ScopeForm, scopeFormFields } from '../Scope/ScopeForm';
 import { SubActivitiesForm } from '../SubActivities/SubActivitiesForm';
-import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { Tab } from './PolioDialogTabs';
 
 export const usePolioDialogTabs = (
@@ -100,7 +100,6 @@ export const usePolioDialogTabs = (
                     formik.errors,
                 ),
                 key: 'evaluation',
-
             },
             {
                 title: formatMessage(MESSAGES.preparedness),

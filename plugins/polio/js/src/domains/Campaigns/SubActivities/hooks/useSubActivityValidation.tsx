@@ -1,24 +1,42 @@
-import * as yup from 'yup';
+import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-import { useMemo } from 'react';
+import * as yup from 'yup';
 import { dateFormat } from '../../../Calendar/campaignCalendar/constants';
 import MESSAGES from '../messages';
 
 const dateKeys = {
-    round: { start: 'start_date', end: 'end_date' },
+    activity: { start: 'start_date', end: 'end_date' },
     lqas: { start: 'lqas_started_at', end: 'lqas_ended_at' },
     im: { start: 'im_started_at', end: 'im_ended_at' },
+};
+
+const formatRoundErrorMessage = ({
+    initialMessage,
+    roundDate,
+    formDate,
+    errorMsg,
+}): string => {
+    // Rounds cannot have empty start date so no need to null check it
+    const roundStartDate = moment(roundDate, dateFormat);
+    if (roundStartDate.isAfter(formDate)) {
+        if (!initialMessage) {
+            return errorMsg;
+        }
+        return `${initialMessage}. ${errorMsg}`;
+    }
+    return initialMessage;
 };
 
 yup.addMethod(
     yup.date,
     'validateStartDate',
-    function validateStartDate(formatMessage, dateType = 'round') {
+    function validateStartDate(formatMessage) {
         return this.test('validateStartDate', '', (value, context) => {
-            const keys = dateKeys[dateType];
+            const keys = dateKeys.activity;
             const { path, createError, parent } = context;
             const newStartDate = moment(value);
+
             const endDate =
                 parent[keys.end] && moment(parent[keys.end], dateFormat);
 
@@ -27,6 +45,12 @@ yup.addMethod(
             if (endDate?.isBefore(newStartDate)) {
                 errorMessage = formatMessage(MESSAGES.startDateAfterEndDate);
             }
+            errorMessage = formatRoundErrorMessage({
+                initialMessage: errorMessage,
+                roundDate: parent.round_start_date,
+                formDate: newStartDate,
+                errorMsg: formatMessage(MESSAGES.mustBeAfterRoundStartDate),
+            });
 
             if (errorMessage) {
                 return createError({
@@ -42,21 +66,36 @@ yup.addMethod(
 yup.addMethod(
     yup.date,
     'validateLqasImStartDate',
-    function validateLqasImStartDate(formatMessage) {
+    function validateLqasImStartDate(formatMessage, dateType) {
         return this.test('validateLqasImStartDate', '', (value, context) => {
-            const keys = dateKeys.round;
+            const keys = dateKeys[dateType];
             const { path, createError, parent } = context;
             if (!value) {
                 return true;
             }
+            const activityHasEndDate = Boolean(parent.end_date);
+
             const newStartDate = moment(value);
-            const roundEndDate =
+            const endDate =
                 parent[keys.end] && moment(parent[keys.end], dateFormat);
 
-            let errorMessage;
+            let errorMessage = '';
 
-            if (roundEndDate?.isAfter(newStartDate)) {
-                errorMessage = formatMessage(MESSAGES.mustBeAfterRoundEndDate);
+            if (endDate?.isBefore(newStartDate)) {
+                errorMessage = formatMessage(MESSAGES.endDateBeforeStartDate);
+            }
+            if (activityHasEndDate) {
+                const activityEndDate = moment(parent.end_date, dateFormat);
+                if (endDate?.isSameOrBefore(activityEndDate)) {
+                    if (errorMessage) {
+                        errorMessage = formatMessage(
+                            MESSAGES.mustBeAfterSubActivityEndDate,
+                        );
+                    } else {
+                        errorMessage = `${errorMessage}
+                        ${formatMessage(MESSAGES.mustBeAfterSubActivityEndDate)}`;
+                    }
+                }
             }
 
             if (errorMessage) {
@@ -73,18 +112,36 @@ yup.addMethod(
 yup.addMethod(
     yup.date,
     'validateLqasImEndDate',
-    function validateLqasImEndDate(formatMessage) {
+    function validateLqasImEndDate(formatMessage, dateType) {
         return this.test('validateLqasImEndDate', '', (value, context) => {
-            const keys = dateKeys.round;
+            const keys = dateKeys[dateType];
             const { path, createError, parent } = context;
+            if (!value) {
+                return true;
+            }
+            const activityHasEndDate = Boolean(parent.end_date);
             const newEndDate = moment(value);
-            const roundStartDate =
+            const startDate =
                 parent[keys.start] && moment(parent[keys.start], dateFormat);
 
             let errorMessage;
 
-            if (roundStartDate?.isAfter(newEndDate)) {
-                errorMessage = formatMessage(MESSAGES.endDateBeforeStartDate);
+            if (startDate?.isAfter(newEndDate)) {
+                errorMessage = formatMessage(MESSAGES.startDateAfterEndDate);
+            }
+            if (activityHasEndDate) {
+                const activityEndDate = moment(parent.end_date, dateFormat);
+                // We compare to the activity end date because LQAs/IM should start after the round ends
+                if (startDate?.isSameOrBefore(activityEndDate)) {
+                    if (errorMessage) {
+                        errorMessage = formatMessage(
+                            MESSAGES.mustBeAfterSubActivityEndDate,
+                        );
+                    } else {
+                        errorMessage = `${errorMessage}
+                        ${formatMessage(MESSAGES.mustBeAfterSubActivityEndDate)}`;
+                    }
+                }
             }
 
             if (errorMessage) {
@@ -102,9 +159,9 @@ yup.addMethod(
     yup.date,
     'validateEndDate',
     // Add round to args and uncomment code to enable restriction based on round dates
-    function validateEndDate(formatMessage, dateType = 'round') {
+    function validateEndDate(formatMessage) {
         return this.test('validateEndDate', '', (value, context) => {
-            const keys = dateKeys[dateType];
+            const keys = dateKeys.activity;
             const { path, createError, parent } = context;
             const newEndDate = moment(value);
             const startDate =
@@ -114,6 +171,12 @@ yup.addMethod(
             if (startDate?.isAfter(newEndDate)) {
                 errorMessage = formatMessage(MESSAGES.endDateBeforeStartDate);
             }
+            errorMessage = formatRoundErrorMessage({
+                initialMessage: errorMessage,
+                roundDate: parent.round_start_date,
+                formDate: newEndDate,
+                errorMsg: formatMessage(MESSAGES.mustBeAfterRoundStartDate),
+            });
 
             if (errorMessage) {
                 return createError({
@@ -160,9 +223,8 @@ export const useSubActivityValidation = (): yup.ObjectSchema<any> => {
                     // start should be before end
                     // start should not be before round start
                     // @ts-ignore
-                    .validateStartDate(formatMessage, 'lqas')
                     // lqas/im cannot start before the round/subactivity has ended
-                    .validateLqasImStartDate(formatMessage),
+                    .validateLqasImStartDate(formatMessage, 'lqas'),
                 lqas_ended_at: yup
                     .date()
                     .typeError(formatMessage(MESSAGES.invalidDate))
@@ -170,18 +232,16 @@ export const useSubActivityValidation = (): yup.ObjectSchema<any> => {
                     // end should be after start
                     // end should not be after round end
                     // @ts-ignore
-                    .validateLqasImEndDate(formatMessage)
-                    .validateEndDate(formatMessage, 'lqas'),
+                    .validateLqasImEndDate(formatMessage, 'lqas'),
                 im_started_at: yup
                     .date()
                     .typeError(formatMessage(MESSAGES.invalidDate))
                     .nullable()
                     // start should be before end
                     // start should not be before round start
-                    // @ts-ignore
-                    .validateStartDate(formatMessage, 'im')
                     // lqas/im cannot start before the round/subactivity has ended
-                    .validateLqasImStartDate(formatMessage),
+                    // @ts-ignore
+                    .validateLqasImStartDate(formatMessage, 'im'),
                 im_ended_at: yup
                     .date()
                     .typeError(formatMessage(MESSAGES.invalidDate))
@@ -189,8 +249,7 @@ export const useSubActivityValidation = (): yup.ObjectSchema<any> => {
                     // end should be after start
                     // end should not be after round end
                     // @ts-ignore
-                    .validateLqasImEndDate(formatMessage)
-                    .validateEndDate(formatMessage, 'im'),
+                    .validateLqasImEndDate(formatMessage, 'im'),
                 age_unit: yup.string().nullable(),
                 age_min: yup.number().nullable(),
                 age_max: yup.number().nullable(),

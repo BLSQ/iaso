@@ -114,8 +114,13 @@ export const usePolioDialogTabs = (
     }, [
         formatMessage,
         formik.errors,
-        formik.values,
+        formik.initialValues.separate_scopes_per_round,
+        formik.values.id,
+        formik.values.initial_org_unit,
+        formik.values.rounds.length,
+        formik.values.separate_scopes_per_round,
         isPolio,
         selectedCampaign?.rounds,
+        subActivityTabTooltip,
     ]);
 };

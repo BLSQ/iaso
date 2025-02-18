@@ -16,7 +16,11 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
-from plugins.polio.api.vaccines.common import VaccineStockManagementPermission
+from plugins.polio.api.vaccines.common import (
+    VaccineStockManagementPermission,
+    can_edit_helper_date,
+    can_edit_helper_datetime,
+)
 from plugins.polio.models import (
     DOSES_PER_VIAL,
     Campaign,
@@ -692,6 +696,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name")
     document = serializers.FileField(required=False)
     round_number = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = OutgoingStockMovement
@@ -708,10 +713,14 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "comment",
             "round",
             "round_number",
+            "can_edit",
         ]
 
     def get_round_number(self, obj):
         return obj.round.number if obj.round else None
+
+    def get_can_edit(self, obj):
+        return can_edit_helper_date(self.context["request"].user, obj.report_date)
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -770,10 +779,14 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
 
 class IncidentReportSerializer(serializers.ModelSerializer):
     document = serializers.FileField(required=False)
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = IncidentReport
         fields = "__all__"
+
+    def get_can_edit(self, obj):
+        return can_edit_helper_date(self.context["request"].user, obj.date_of_incident_report)
 
 
 class IncidentReportViewSet(VaccineStockSubitemBase):
@@ -783,10 +796,14 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
 
 class DestructionReportSerializer(serializers.ModelSerializer):
     document = serializers.FileField(required=False)
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = DestructionReport
         fields = "__all__"
+
+    def get_can_edit(self, obj):
+        return can_edit_helper_date(self.context["request"].user, obj.destruction_report_date)
 
 
 class DestructionReportViewSet(VaccineStockSubitemBase):
@@ -797,6 +814,7 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
 class EarmarkedStockSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name")
     round_number = serializers.IntegerField(source="round.number")
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = EarmarkedStock
@@ -812,7 +830,11 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             "comment",
             "created_at",
             "updated_at",
+            "can_edit",
         ]
+
+    def get_can_edit(self, obj):
+        return can_edit_helper_datetime(self.context["request"].user, obj.created_at)
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)

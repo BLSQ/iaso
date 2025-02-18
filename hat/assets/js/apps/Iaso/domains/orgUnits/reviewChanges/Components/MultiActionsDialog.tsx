@@ -1,86 +1,99 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 
-import ReportIcon from '@mui/icons-material/Report';
-import {
-    Box,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Typography,
-} from '@mui/material';
-import { formatThousand } from 'bluesquare-components';
-// @ts-ignore
-import ConfirmDialog from '../../../../components/dialogs/ConfirmDialogComponent';
+import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 
+import InputComponent from '../../../../components/forms/InputComponent';
+import { DropdownOptions } from '../../../../types/utils';
 import { Selection } from '../../types/selection';
-import { OrgUnitChangeRequest } from '../types';
+import { useBulkSaveChangeRequestStatus } from '../hooks/api/useBulkSaveChangeRequestStatus';
+import MESSAGES from '../messages';
+import { ChangeRequestValidationStatus, OrgUnitChangeRequest } from '../types';
 
 type Props = {
     open: boolean;
     closeDialog: () => void;
     selection: Selection<OrgUnitChangeRequest>;
+    resetSelection: () => void;
 };
 
 export const MultiActionsDialog: FunctionComponent<Props> = ({
     open,
     closeDialog,
-    selection: { selectCount, selectedItems, unSelectedItems, selectAll },
+    selection,
+    resetSelection,
 }) => {
+    const { formatMessage } = useSafeIntl();
+    const { selectCount } = selection;
+
+    const [status, setStatus] = useState<
+        ChangeRequestValidationStatus | undefined
+    >(undefined);
+    const { mutateAsync: bulkSaveStatus } = useBulkSaveChangeRequestStatus();
     const handleSave = useCallback(() => {
-        console.log('save');
-        //  We should reset selection to initial state
-        // call api to save selected items bulk changes (approve or reject)
-        // invalidate react-query cache
-        // close dialog
-    }, []);
+        if (!status) {
+            return;
+        }
+        bulkSaveStatus({
+            ...selection,
+            status,
+        });
+        resetSelection();
+        closeDialog();
+    }, [bulkSaveStatus, closeDialog, resetSelection, selection, status]);
+    const statusOptions: DropdownOptions<string>[] = useMemo(
+        () => [
+            {
+                label: formatMessage(MESSAGES.rejected),
+                value: 'rejected',
+            },
+            {
+                label: formatMessage(MESSAGES.approved),
+                value: 'approved',
+            },
+        ],
+        [formatMessage],
+    );
+    const handleChange = useCallback(
+        (_, value) => {
+            setStatus(value);
+        },
+        [setStatus],
+    );
     if (!open) {
         return null;
     }
     return (
-        <Dialog
-            fullWidth
-            maxWidth="xs"
+        <ConfirmCancelModal
             open={open}
-            onClose={(_event, reason) => {
-                if (reason === 'backdropClick') {
-                    closeDialog();
-                }
-            }}
-            scroll="body"
+            onClose={closeDialog}
+            id="BulkSaveOrgUnitChangesDialog"
+            dataTestId="BulkSaveOrgUnitChangesDialog"
+            titleMessage={formatMessage(MESSAGES.changeSelectedChangeRequests, {
+                count: selectCount,
+            })}
+            closeDialog={closeDialog}
+            onConfirm={handleSave}
+            onCancel={() => null}
+            confirmMessage={MESSAGES.save}
+            cancelMessage={MESSAGES.cancel}
+            closeOnConfirm={false}
+            allowConfirm={!!status}
         >
-            <DialogTitle>TITLE</DialogTitle>
-            <DialogContent>CONTENT</DialogContent>
-            <DialogActions>
-                <Button onClick={closeDialog} color="primary">
-                    CANCEL
-                </Button>
-
-                <ConfirmDialog
-                    withDivider
-                    btnMessage="VALDATE"
-                    question={
-                        <Box>
-                            <ReportIcon color="error" fontSize="large" />
-                            CONFIRM
-                            <ReportIcon color="error" fontSize="large" />
-                        </Box>
-                    }
-                    message={
-                        <Typography
-                            variant="body2"
-                            color="error"
-                            component="span"
-                        >
-                            {formatThousand(selectCount)}
-                        </Typography>
-                    }
-                    confirm={handleSave}
-                    btnDisabled={false}
-                    btnVariant="text"
-                />
-            </DialogActions>
-        </Dialog>
+            <InputComponent
+                type="select"
+                multi
+                clearable
+                keyValue="status"
+                value={status}
+                onChange={handleChange}
+                options={statusOptions}
+                labelString={formatMessage(MESSAGES.status)}
+            />
+        </ConfirmCancelModal>
     );
 };

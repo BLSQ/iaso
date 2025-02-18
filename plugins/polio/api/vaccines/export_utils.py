@@ -87,8 +87,8 @@ def download_xlsx_summary(request, filename, results, lambda_methods, tab):
     workbook = Workbook()
     sheet_configs = get_sheet_configs()
 
-    sheets_order = ["Usable", "Unusable", "Earmarked"]
-
+    sheets_order = sheet_configs.keys()
+    sheets = {}
     for sheet_name in sheets_order:
         config = sheet_configs[sheet_name]
         if sheet_name == tab:
@@ -97,6 +97,7 @@ def download_xlsx_summary(request, filename, results, lambda_methods, tab):
         else:
             sheet = workbook.create_sheet(sheet_name)
 
+        sheets[sheet_name] = sheet
         sheet.append(config["columns"])
 
         datas = results if sheet_name == tab else sort_results(request, lambda_methods.get(sheet_name, lambda: [])())
@@ -114,5 +115,6 @@ def download_xlsx_summary(request, filename, results, lambda_methods, tab):
 
         write_vials_doses_stock_balance(sheet, config, sums, sum_columns_indices)
 
+    workbook._sheets = [sheets[name] for name in sheets_order]
     workbook.save(filename)
     return workbook

@@ -393,7 +393,6 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "selected_ids": [change_request_1.pk, change_request_2.pk],
             "unselected_ids": [],
             "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
-            "approved_fields": ["new_name"],
         }
         response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
@@ -403,7 +402,6 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         self.assertEqual(task.launcher, self.user_with_review_perm)
         self.assertCountEqual(task.params["kwargs"]["change_requests_ids"], [change_request_1.pk, change_request_2.pk])
-        self.assertCountEqual(task.params["kwargs"]["approved_fields"], ["new_name"])
 
         self.runAndValidateTask(task, "SUCCESS")
 
@@ -437,7 +435,6 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "selected_ids": [],
             "unselected_ids": [change_request_3.pk],
             "status": m.OrgUnitChangeRequest.Statuses.REJECTED,
-            "approved_fields": [],
             "rejection_comment": "No way.",
         }
         response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data=data, format="json")

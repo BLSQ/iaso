@@ -8,7 +8,6 @@ from iaso.models import Task, OrgUnitChangeRequest
 @task_decorator(task_name="org_unit_change_requests_bulk_approve")
 def org_unit_change_requests_bulk_approve(
     change_requests_ids: list[int],
-    approved_fields: list[str],
     task: Task,
 ):
     task.report_progress_and_stop_if_killed(progress_message="Bulk approving change requests…")
@@ -16,6 +15,7 @@ def org_unit_change_requests_bulk_approve(
     user = task.launcher
 
     change_requests = OrgUnitChangeRequest.objects.filter(id__in=change_requests_ids)
+    approved_fields = OrgUnitChangeRequest.get_new_fields()  # In bulk review, we approve all fields.
 
     with transaction.atomic():
         for change_request in change_requests:

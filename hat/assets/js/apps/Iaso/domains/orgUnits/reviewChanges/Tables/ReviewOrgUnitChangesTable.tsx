@@ -1,19 +1,12 @@
 import React, {
     FunctionComponent,
     ReactElement,
-    useCallback,
     useMemo,
     useState,
 } from 'react';
 import EditIcon from '@mui/icons-material/Settings';
 import { Box } from '@mui/material';
-import {
-    Column,
-    setTableSelection,
-    textPlaceholder,
-    selectionInitialState,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
 import Color from 'color';
 import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
@@ -22,8 +15,8 @@ import { UserCell } from '../../../../components/Cells/UserCell';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
 import { ColumnCell } from '../../../../types/general';
+import { useTableSelection } from '../../../../utils/table';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
-import { Selection } from '../../types/selection';
 import { MultiActionsDialog } from '../Components/MultiActionsDialog';
 import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
 import { IconButton } from '../details';
@@ -211,21 +204,14 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     params,
 }) => {
     const columns = useColumns();
-    const [selection, setSelection] = useState<Selection<OrgUnitChangeRequest>>(
-        selectionInitialState,
-    );
+
+    const { selection, handleTableSelection, handleUnselectAll } =
+        useTableSelection<OrgUnitChangeRequest>(data?.count ?? 0);
 
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
-    const handleTableSelection = useCallback(
-        (selectionType, items = [], totalCount = 0) => {
-            const newSelection: Selection<OrgUnitChangeRequest> =
-                setTableSelection(selection, selectionType, items, totalCount);
-            setSelection(newSelection);
-        },
-        [selection],
-    );
+
     const selectionActions = useMemo(
         () => [
             {
@@ -251,6 +237,7 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 open={multiActionPopupOpen}
                 closeDialog={() => setMultiActionPopupOpen(false)}
                 selection={selection}
+                resetSelection={handleUnselectAll}
             />
             <TableWithDeepLink
                 marginTop={false}

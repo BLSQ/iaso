@@ -246,6 +246,16 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit selected users',
         id: 'iaso.users.multiSelectionAction',
     },
+
+    changeSelectedChangeRequests: {
+        id: 'iaso.changeRequest.changeSelectedChangeRequests',
+        defaultMessage: 'Edit {count} selected change requests',
+    },
+    changeSelectedChangeRequestsLaunched: {
+        id: 'iaso.snackBar.changeSelectedChangeRequestsLaunched',
+        defaultMessage:
+            'The modifications to the change requests will take a few moments to take effect',
+    },
 });
 
 export default MESSAGES;

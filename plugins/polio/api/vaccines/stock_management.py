@@ -3,6 +3,7 @@ import enum
 from tempfile import NamedTemporaryFile
 from django.http import HttpResponse
 from openpyxl import Workbook
+from openpyxl.styles import Font
 from django.db.models import OuterRef, Subquery, Exists, Q, Sum
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -190,6 +191,8 @@ class VaccineStockCalculator:
         for report in arrival_reports:
             results.append(
                 {
+                    "country": report.request_form.get_country().name,
+                    "vaccine": report.request_form.vaccine_type,
                     "date": report.arrival_report_date,
                     "action": "PO #" + report.po_number if report.po_number else "Stock Arrival",
                     "vials_in": report.vials_received or 0,
@@ -215,6 +218,8 @@ class VaccineStockCalculator:
                 real_vials_used = movement.usable_vials_used - earmarked_stock_vials
                 results.append(
                     {
+                        "country": movement.campaign.country.name,
+                        "vaccine": movement.vaccine_stock.vaccine,
                         "date": movement.report_date,
                         "action": f"Form A - Vials Used ({earmarked_stock_vials} vials from Earmarked, {real_vials_used} vials used from stock)",
                         "vials_in": None,
@@ -228,6 +233,8 @@ class VaccineStockCalculator:
                 if movement.usable_vials_used > 0:
                     results.append(
                         {
+                            "country": movement.campaign.country.name,
+                            "vaccine": movement.vaccine_stock.vaccine,
                             "date": movement.report_date,
                             "action": "Form A - Vials Used",
                             "vials_in": None,
@@ -241,6 +248,8 @@ class VaccineStockCalculator:
                 if movement.missing_vials > 0:
                     results.append(
                         {
+                            "country": movement.campaign.country.name,
+                            "vaccine": movement.vaccine_stock.vaccine,
                             "date": movement.report_date,
                             "action": "Form A - Missing Vials",
                             "vials_in": None,
@@ -264,6 +273,8 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
+                        "country": report.vaccine_stock.country.name,
+                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,
                         "vials_in": report.usable_vials or 0,
@@ -279,6 +290,8 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
+                        "country": report.vaccine_stock.country.name,
+                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,
                         "vials_in": None,
@@ -296,6 +309,8 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
+                        "country": report.vaccine_stock.country.name,
+                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,
                         "vials_in": None,
@@ -312,6 +327,8 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
+                        "country": report.vaccine_stock.country.name,
+                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,
                         "vials_in": None,
@@ -330,6 +347,8 @@ class VaccineStockCalculator:
             if stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.CREATED:
                 results.append(
                     {
+                        "country": stock.campaign.country.name,
+                        "vaccine": stock.vaccine_stock.vaccine,
                         "date": stock.created_at.date(),
                         "action": f"Earmarked created for {stock.campaign.obr_name} Round {stock.round.number}",
                         "vials_in": None,
@@ -342,6 +361,8 @@ class VaccineStockCalculator:
             elif stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.RETURNED:
                 results.append(
                     {
+                        "country": stock.campaign.country.name,
+                        "vaccine": stock.vaccine_stock.vaccine,
                         "date": stock.created_at.date(),
                         "action": f"Earmarked returned for {stock.campaign.obr_name} Round {stock.round.number}",
                         "vials_in": stock.vials_earmarked,
@@ -373,6 +394,8 @@ class VaccineStockCalculator:
 
                 results.append(
                     {
+                        "country": movement.campaign.country.name,
+                        "vaccine": movement.vaccine_stock.vaccine,
                         "date": movement.report_date,
                         "action": desc_text,
                         "vials_out": None,
@@ -402,6 +425,8 @@ class VaccineStockCalculator:
         for report in destruction_reports:
             results.append(
                 {
+                    "country": report.vaccine_stock.country.name,
+                    "vaccine": report.vaccine_stock.vaccine,
                     "date": report.destruction_report_date,
                     "action": (f"{report.action}" if len(report.action) > 0 else f"Destruction report"),
                     "vials_in": None,
@@ -423,6 +448,8 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
+                        "country": report.vaccine_stock.country.name,
+                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,  # for every field FOO that has choices set, the object will have a get_FOO_display() method
                         "vials_in": report.unusable_vials or 0,
@@ -437,6 +464,8 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
+                        "country": report.vaccine_stock.country.name,
+                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,  # for every field FOO that has choices set, the object will have a get_FOO_display() method
                         "vials_in": None,
@@ -461,6 +490,8 @@ class VaccineStockCalculator:
             ):  # if FormA is not None, it's accounted by the FormA, no need to repeat
                 results.append(
                     {
+                        "country": report.vaccine_stock.country.name,
+                        "vaccine": report.vaccine_stock.vaccine,
                         "date": stock.created_at.date(),
                         "action": f"Earmarked stock used for {stock.campaign.obr_name} Round {stock.round.number}",
                         "vials_in": stock.vials_earmarked,
@@ -492,7 +523,9 @@ class VaccineStockCalculator:
 
                 results.append(
                     {
-                        "date": movement.created_at,
+                        "country": movement.vaccine_stock.country.name,
+                        "vaccine": movement.vaccine_stock.vaccine,
+                        "date": movement.created_at.date(),
                         "action": action_text,
                         "vials_out": movement.vials_earmarked,
                         "doses_out": movement.doses_earmarked,
@@ -504,7 +537,9 @@ class VaccineStockCalculator:
             else:
                 results.append(
                     {
-                        "date": movement.created_at,
+                        "country": movement.vaccine_stock.country.name,
+                        "vaccine": movement.vaccine_stock.vaccine,
+                        "date": movement.created_at.date(),
                         "action": f"Earmarked stock reserved for {movement.campaign.obr_name} Round {movement.round.number}",
                         "vials_in": movement.vials_earmarked,
                         "doses_in": movement.doses_earmarked,
@@ -1112,33 +1147,55 @@ class VaccineStockManagementViewSet(ModelViewSet):
         else:
             return VaccineStockSerializer
 
-    def download_xlsx_summary(self, request, filename, results, lambda_methods, tab):
-        workbook = Workbook()
+    @staticmethod
+    def get_sheet_configs():
+        common_columns = ["Country", "Vaccine", "Date", "Action Type", "Action"]
+        common_keys = ["country", "vaccine", "date", "type", "action"]
 
-        sheet_configs = {
+        variants_columns_keys = {
             "Usable": {
-                "columns": ["Date", "Action Type", "Action", "Vials IN", "Vials OUT", "Doses IN", "Doses OUT"],
-                "keys": ["date", "type", "action", "vials_in", "vials_out", "doses_in", "doses_out"],
+                "extra_columns": ["Vials IN", "Vials OUT", "Doses IN", "Doses OUT"],
+                "extra_keys": ["vials_in", "vials_out", "doses_in", "doses_out"],
             },
             "Unusable": {
-                "columns": ["Date", "Action Type", "Action", "Vials IN", "Vials OUT"],
-                "keys": ["date", "type", "action", "vials_in", "vials_out"],
+                "extra_columns": ["Vials IN", "Vials OUT"],
+                "extra_keys": ["vials_in", "vials_out"],
             },
             "Earmarked": {
-                "columns": ["Date", "Action Type", "Action", "Vials IN", "Vials OUT"],
-                "keys": ["date", "type", "action", "vials_in", "vials_out"],
+                "extra_columns": ["Vials IN", "Vials OUT"],
+                "extra_keys": ["vials_in", "vials_out"],
             },
         }
 
-        sheet_order = sheet_configs.keys()
+        return {
+            name: {
+                "columns": common_columns + variant["extra_columns"],
+                "keys": common_keys + variant["extra_keys"],
+                "sum_columns": variant["extra_keys"],
+            }
+            for name, variant in variants_columns_keys.items()
+        }
 
-        for _, sheet_name in enumerate(sheet_order):
+    # @staticmethod
+    # def vials_doses_totals(sheet, config, sum_columns_indices, sums, action_index):
+
+    # @staticmethod
+    # def vials_doses_stock_balance(sheet, config, sums, sum_columns_indices, action_index):
+
+    def download_xlsx_summary(self, request, filename, results, lambda_methods, tab):
+        workbook = Workbook()
+        sheet_configs = self.get_sheet_configs()
+
+        sheets_order = sheet_configs.keys()
+
+        for _, sheet_name in enumerate(sheets_order):
             config = sheet_configs[sheet_name]
             if sheet_name == tab:
                 sheet = workbook.active
                 sheet.title = sheet_name
             else:
                 sheet = workbook.create_sheet(sheet_name)
+
             sheet.append(config["columns"])
 
             data = (
@@ -1146,9 +1203,48 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 if sheet_name == tab
                 else self._sort_results(request, lambda_methods.get(sheet_name, lambda: [])())
             )
+
+            sum_columns_indices = [config["keys"].index(col) for col in config["sum_columns"]]
+            sums = {col: 0 for col in config["sum_columns"]}
             for entry in data:
                 row = [entry[key] if entry[key] is not None else "" for key in config["keys"]]
                 sheet.append(row)
+
+                for col, _ in zip(config["sum_columns"], sum_columns_indices):
+                    if isinstance(entry[col], (int, float)):
+                        sums[col] += entry[col]
+
+            action_index = config["keys"].index("action")
+
+            sheet.append([""] * len(config["columns"]))
+
+            total_row = [""] * len(config["columns"])
+
+            total_row[action_index] = "Total :"
+
+            for col, idx in zip(config["sum_columns"], sum_columns_indices):
+                total_row[idx] = sums[col]
+
+            sheet.append(total_row)
+
+            total_row_index = sheet.max_row
+            for col in range(1, len(config["columns"]) + 1):
+                sheet.cell(row=total_row_index, column=col).font = Font(bold=True)
+
+            stock_vials = sums["vials_in"] - sums["vials_out"]
+
+            stock_balances_row = [""] * len(config["columns"])
+            stock_balances_row[action_index] = "Stock Balances"
+            stock_balances_row[sum_columns_indices[0]] = stock_vials
+
+            if "doses_in" in sums and "doses_out" in sums:
+                stock_doses = sums["doses_in"] - sums["doses_out"]
+                stock_balances_row[sum_columns_indices[2]] = stock_doses
+
+            sheet.append(stock_balances_row)
+            stock_balances_row_index = sheet.max_row
+            for col in range(1, len(config["columns"]) + 1):
+                sheet.cell(row=stock_balances_row_index, column=col).font = Font(bold=True)
 
         workbook.save(filename)
         return workbook

@@ -28,6 +28,26 @@ const formatRoundErrorMessage = ({
     return initialMessage;
 };
 
+const formatLqasImErrorMessage = ({
+    subactivityEndDate,
+    formDate,
+    initialMessage,
+    errorMsg,
+}): string => {
+    const activityHasEndDate = Boolean(subactivityEndDate);
+    if (activityHasEndDate) {
+        const activityEndDate = moment(subactivityEndDate, dateFormat);
+        if (formDate?.isSameOrBefore(activityEndDate)) {
+            if (!initialMessage) {
+                return errorMsg;
+            }
+            return `${initialMessage}
+                ${errorMsg}`;
+        }
+    }
+    return initialMessage;
+};
+
 yup.addMethod(
     yup.date,
     'validateStartDate',
@@ -73,31 +93,21 @@ yup.addMethod(
             if (!value) {
                 return true;
             }
-            const activityHasEndDate = Boolean(parent.end_date);
-
             const newStartDate = moment(value);
             const endDate =
                 parent[keys.end] && moment(parent[keys.end], dateFormat);
 
             let errorMessage = '';
 
-            if (endDate?.isBefore(newStartDate)) {
+            if (endDate?.isSameOrBefore(newStartDate)) {
                 errorMessage = formatMessage(MESSAGES.endDateBeforeStartDate);
             }
-            if (activityHasEndDate) {
-                const activityEndDate = moment(parent.end_date, dateFormat);
-                if (endDate?.isSameOrBefore(activityEndDate)) {
-                    if (errorMessage) {
-                        errorMessage = formatMessage(
-                            MESSAGES.mustBeAfterSubActivityEndDate,
-                        );
-                    } else {
-                        errorMessage = `${errorMessage}
-                        ${formatMessage(MESSAGES.mustBeAfterSubActivityEndDate)}`;
-                    }
-                }
-            }
-
+            errorMessage = formatLqasImErrorMessage({
+                subactivityEndDate: parent.end_date,
+                initialMessage: errorMessage,
+                errorMsg: formatMessage(MESSAGES.mustBeAfterSubActivityEndDate),
+                formDate: newStartDate,
+            });
             if (errorMessage) {
                 return createError({
                     path,
@@ -119,30 +129,21 @@ yup.addMethod(
             if (!value) {
                 return true;
             }
-            const activityHasEndDate = Boolean(parent.end_date);
             const newEndDate = moment(value);
             const startDate =
                 parent[keys.start] && moment(parent[keys.start], dateFormat);
 
             let errorMessage;
 
-            if (startDate?.isAfter(newEndDate)) {
+            if (startDate?.isSameOrAfter(newEndDate)) {
                 errorMessage = formatMessage(MESSAGES.startDateAfterEndDate);
             }
-            if (activityHasEndDate) {
-                const activityEndDate = moment(parent.end_date, dateFormat);
-                // We compare to the activity end date because LQAs/IM should start after the round ends
-                if (startDate?.isSameOrBefore(activityEndDate)) {
-                    if (errorMessage) {
-                        errorMessage = formatMessage(
-                            MESSAGES.mustBeAfterSubActivityEndDate,
-                        );
-                    } else {
-                        errorMessage = `${errorMessage}
-                        ${formatMessage(MESSAGES.mustBeAfterSubActivityEndDate)}`;
-                    }
-                }
-            }
+            errorMessage = formatLqasImErrorMessage({
+                subactivityEndDate: parent.end_date,
+                initialMessage: errorMessage,
+                errorMsg: formatMessage(MESSAGES.mustBeAfterSubActivityEndDate),
+                formDate: newEndDate,
+            });
 
             if (errorMessage) {
                 return createError({

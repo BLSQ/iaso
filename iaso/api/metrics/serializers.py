@@ -14,6 +14,7 @@ class MetricTypeSerializer(serializers.ModelSerializer):
             "source",
             "units",
             "comments",
+            "legend_threshold",
             "created_at",
             "updated_at",
         ]

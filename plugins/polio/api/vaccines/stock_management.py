@@ -482,8 +482,8 @@ class VaccineStockCalculator:
             ):  # if FormA is not None, it's accounted by the FormA, no need to repeat
                 results.append(
                     {
-                        "country": report.vaccine_stock.country.name,
-                        "vaccine": report.vaccine_stock.vaccine,
+                        "country": stock.vaccine_stock.country.name,
+                        "vaccine": stock.vaccine_stock.vaccine,
                         "date": stock.created_at.date(),
                         "action": f"Earmarked stock used for {stock.campaign.obr_name} Round {stock.round.number}",
                         "vials_in": stock.vials_earmarked,

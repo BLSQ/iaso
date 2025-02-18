@@ -1,4 +1,5 @@
 import datetime
+from django.utils import timezone
 from hat.menupermissions import models as permission
 from rest_framework import permissions
 
@@ -21,15 +22,26 @@ def can_edit_helper_date(user, the_date):
 
 
 def can_edit_helper_datetime(user, the_datetime):
-    return can_edit_helper(user, the_datetime, datetime.datetime.now())
+    return can_edit_helper(user, the_datetime, timezone.now())
 
 
 class VaccineStockManagementPermission(permissions.BasePermission):
-    def __init__(self, admin_perm, non_admin_perm, days_open=VACCINE_STOCK_MANAGEMENT_DAYS_OPEN, *args, **kwargs):
+    def __init__(
+        self,
+        admin_perm,
+        non_admin_perm,
+        days_open=VACCINE_STOCK_MANAGEMENT_DAYS_OPEN,
+        datetime_field="created_at",
+        datetime_now_today=timezone.now,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.non_admin_perm = non_admin_perm
         self.admin_perm = admin_perm
         self.days_open = days_open
+        self.datetime_field = datetime_field
+        self.datetime_now_today = datetime_now_today
 
     def has_permission(self, request, view):
         # Users with read or write permission can do anything in general
@@ -53,7 +65,7 @@ class VaccineStockManagementPermission(permissions.BasePermission):
 
             # For edit/delete, check if object is less than a week old
             if request.method in ["PUT", "PATCH", "DELETE"]:
-                one_week_ago = datetime.datetime.now() - datetime.timedelta(days=self.days_open)
-                return obj.created_at >= one_week_ago
+                one_week_ago = self.datetime_now_today() - datetime.timedelta(days=self.days_open)
+                return getattr(obj, self.datetime_field) >= one_week_ago
 
         return False

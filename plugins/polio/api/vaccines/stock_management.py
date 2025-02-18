@@ -2,14 +2,15 @@ import datetime
 import enum
 
 from django.db.models import Exists, OuterRef, Q, Subquery, Sum
+from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django_filters.rest_framework import FilterSet, NumberFilter
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
-from django_filters.rest_framework import FilterSet, NumberFilter
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -25,13 +26,13 @@ from plugins.polio.models import (
     DOSES_PER_VIAL,
     Campaign,
     DestructionReport,
+    EarmarkedStock,
     IncidentReport,
     OutgoingStockMovement,
     Round,
     VaccineArrivalReport,
     VaccineRequestForm,
     VaccineStock,
-    EarmarkedStock,
 )
 
 vaccine_stock_id_param = openapi.Parameter(
@@ -619,12 +620,6 @@ class StockManagementCustomFilter(filters.BaseFilterBackend):
 
 class VaccineStockSubitemBase(ModelViewSet):
     allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
-    permission_classes = [
-        lambda: VaccineStockManagementPermission(
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-        )
-    ]
     model_class = None
 
     @swagger_auto_schema(
@@ -748,6 +743,14 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     serializer_class = OutgoingStockMovementSerializer
     model_class = OutgoingStockMovement
+    permission_classes = [
+        lambda: VaccineStockManagementPermission(
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            datetime_field="report_date",
+            datetime_now_today=datetime.date.today,
+        )
+    ]
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
@@ -792,6 +795,14 @@ class IncidentReportSerializer(serializers.ModelSerializer):
 class IncidentReportViewSet(VaccineStockSubitemBase):
     serializer_class = IncidentReportSerializer
     model_class = IncidentReport
+    permission_classes = [
+        lambda: VaccineStockManagementPermission(
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            datetime_field="date_of_incident_report",
+            datetime_now_today=datetime.date.today,
+        )
+    ]
 
 
 class DestructionReportSerializer(serializers.ModelSerializer):
@@ -809,6 +820,14 @@ class DestructionReportSerializer(serializers.ModelSerializer):
 class DestructionReportViewSet(VaccineStockSubitemBase):
     serializer_class = DestructionReportSerializer
     model_class = DestructionReport
+    permission_classes = [
+        lambda: VaccineStockManagementPermission(
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            datetime_field="destruction_report_date",
+            datetime_now_today=datetime.date.today,
+        )
+    ]
 
 
 class EarmarkedStockSerializer(serializers.ModelSerializer):
@@ -859,6 +878,14 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     serializer_class = EarmarkedStockSerializer
     model_class = EarmarkedStock
     filterset_class = EarmarkedStockFilter
+    permission_classes = [
+        lambda: VaccineStockManagementPermission(
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            datetime_field="created_at",
+            datetime_now_today=timezone.now,
+        )
+    ]
 
     def get_queryset(self):
         return EarmarkedStock.objects.filter(

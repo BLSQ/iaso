@@ -3,10 +3,13 @@ from typing import Any, Protocol
 from django import forms as django_forms
 from django.contrib import admin
 from django.contrib.admin import widgets, SimpleListFilter
+from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
+from django.contrib.auth.models import User
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.db.models import Exists, OuterRef
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils.html import format_html, format_html_join
@@ -15,6 +18,7 @@ from django_json_widget.widgets import JSONEditorWidget
 
 from hat.audit.models import DJANGO_ADMIN
 from iaso.models.json_config import Config  # type: ignore
+from iaso.utils import is_multi_account_user
 from iaso.utils.admin.custom_filters import (
     DuplicateUUIDFilter,
     EntityEmptyAttributesFilter,
@@ -443,11 +447,62 @@ class GroupAdmin(admin.ModelAdmin):
         return obj.org_units.count()
 
 
+class UserProfileInline(admin.StackedInline):
+    model = Profile
+    raw_id_fields = ("org_units",)
+
+
 @admin_attr_decorator
-class UserAdmin(admin.GeoModelAdmin):
-    search_fields = ("username", "email", "first_name", "last_name", "iaso_profile__account__name")
-    list_filter = ("iaso_profile__account", "is_staff", "is_superuser", "is_active")
-    list_display = ("id", "username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
+class UserAdmin(AuthUserAdmin):
+    list_display = AuthUserAdmin.list_display + ("accounts",)
+
+    inlines = [
+        UserProfileInline,
+    ]
+
+    def accounts(self, user):
+        if user.tenant_users.exists():  # Multi-account user
+            return [
+                tu.account_user.iaso_profile and tu.account_user.iaso_profile.account.name
+                for tu in user.tenant_users.all()
+            ]
+        else:  # Regular user
+            return user.iaso_profile and user.iaso_profile.account
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.prefetch_related(
+            "iaso_profile__account",
+            "tenant_users__account_user__iaso_profile__account",
+        )
+
+        # If request is for list, hide the multi-account "account_users".
+        # That way we only show regular + main multi-account users.
+        # Don't filter for edit screen so we can still access via /tenantuser.
+        if request.resolver_match.url_name == "auth_user_changelist":
+            queryset = queryset.annotate(
+                has_tenant_user=Exists(TenantUser.objects.filter(account_user=OuterRef("pk")))
+            ).filter(has_tenant_user=False)
+
+        return queryset
+
+    def add_view(self, *args, **kwargs):  # type: ignore
+        self.inlines = [
+            UserProfileInline,
+        ]
+        return super(UserAdmin, self).add_view(*args, **kwargs)
+
+    def change_view(self, *args, **kwargs):  # type: ignore
+        self.inlines = [
+            UserProfileInline,
+        ]
+        return super(UserAdmin, self).change_view(*args, **kwargs)
+
+
+# unregister old user admin
+admin.site.unregister(User)
+# register new user admin
+admin.site.register(User, UserAdmin)
 
 
 @admin.register(Profile)
@@ -1026,7 +1081,7 @@ class GroupSetAdmin(admin.ModelAdmin):
 class TenantUserAdmin(admin.ModelAdmin):
     list_display = (
         "main_user",
-        "account_user",
+        "account_user_link",
         "account",
         "created_at",
         "updated_at",
@@ -1037,6 +1092,11 @@ class TenantUserAdmin(admin.ModelAdmin):
     search_fields = ("main_user__username", "account_user__username", "account_user__iaso_profile__account__name")
     raw_id_fields = ("main_user", "account_user")
     readonly_fields = ("created_at", "updated_at", "account", "all_account_users", "other_accounts")
+
+    def account_user_link(self, obj):
+        # Create a link to the User change page in the admin
+        url = reverse("admin:auth_user_change", args=[obj.account_user.pk])
+        return format_html('<a href="{}">{}</a>', url, obj.account_user.username)
 
     def get_urls(self):
         urls = super().get_urls()

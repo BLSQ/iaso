@@ -185,3 +185,8 @@ class DataSourcesAPITestCase(APITestCase):
         data = self.assertJSONResponse(response, 200)
         self.assertEqual(len(data["sources"]), 1)
         self.assertEqual(data["sources"][0]["id"], self.data_source.pk)
+
+    def test_dropdown_datasource(self):
+        self.client.force_authenticate(self.joe)
+        response = self.client.get("/api/datasources/dropdown/?order=name")
+        self.assertJSONResponse(response, 200)

@@ -1,10 +1,10 @@
 from django.db.models import Count
-from iaso.api.group_sets.serializers import GroupSetSerializer
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
+from iaso.api.group_sets.serializers import GroupSetSerializer
 from iaso.models import DataSource, Group, Project, SourceVersion
 
 from .common import HasPermission, ModelViewSet, TimestampField
@@ -114,13 +114,12 @@ class GroupsViewSet(ModelViewSet):
         profile = self.request.user.iaso_profile
         queryset = Group.objects.filter(
             source_version__data_source__projects__in=profile.account.project_set.all()
-        ).prefetch_related("group_sets")
+        ).select_related("source_version", "source_version__data_source")
+        queryset = queryset.prefetch_related("group_sets")
         return queryset
 
     def filter_queryset(self, queryset, allow_anon=False):
         light = self.request.GET.get("light", False)
-        queryset = queryset.prefetch_related("source_version")
-        queryset = queryset.prefetch_related("source_version__data_source")
         if not light:
             queryset = queryset.annotate(org_unit_count=Count("org_units"))
 

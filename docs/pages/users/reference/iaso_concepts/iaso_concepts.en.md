@@ -43,3 +43,15 @@ Good to know:
 - Some users can be limited to one or several Project(s)/App ID(s) - you can define this in the User management part
 - Every Org Unit Type has to be linked to one or several Project(s)
 - Every Form has to be linked to one or several Project(s)
+
+## Entities
+In IASO, an “**Entity**” is anything that can move or be moved and that we want to track through time and Org Units. For example, a beneficiary, a car, a vaccination card, etc.
+
+To differentiate between different kinds of entities, IASO has a concept of “**Entity Type**”.
+
+An entity is represented by a submission to a [form](#Questionnaires-or-XLS-data-collection-forms). This submission is referred to as the **profile**.
+The entity type defines which form has to be filled in to create a new entity.
+
+### Workflows
+Based on the entity's profile, it is possible to offer different kind of forms to fill and how each new submission impacts the profile.
+The rules which define which forms and how each submission impacts the profile are called a "**Workflow**." 

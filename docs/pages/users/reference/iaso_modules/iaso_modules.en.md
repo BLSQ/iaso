@@ -28,4 +28,4 @@ IASO is organized according to Modules, which are groups of functionalities whic
 - Entities are items that can move from a geography to another, for instance a person, a pallet of goods, or other
 - Entities can be created from the mobile application and then managed from the web application
 - Find the entities duplicates by using the web application interface and make the decision to merge two similar entities or not
-- Assign workflows to entity types, enabling specific data collection forms to open according to previsouly given answers
+- Assign workflows to entity types, enabling specific data collection forms to open according to previously given answers

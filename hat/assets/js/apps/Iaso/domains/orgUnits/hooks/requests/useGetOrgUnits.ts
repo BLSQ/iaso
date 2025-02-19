@@ -1,17 +1,15 @@
+import { Pagination } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 
-import { Pagination } from 'bluesquare-components';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
+import { Locations } from '../../components/OrgUnitsMap';
 import { OrgUnit } from '../../types/orgUnit';
 import { Search } from '../../types/search';
 
-import { ApiParams } from '../useGetApiParams';
-
-import { Locations } from '../../components/OrgUnitsMap';
-
 import { mapOrgUnitByLocation } from '../../utils';
+import { ApiParams } from '../useGetApiParams';
 
 export type Count = {
     index: number;
@@ -27,7 +25,6 @@ type Props = {
     callback?: () => void;
     isSearchActive: boolean;
     enabled?: boolean;
-    resetPageToOne: string;
 };
 
 type PropsLocation = {
@@ -35,7 +32,6 @@ type PropsLocation = {
     searches: Search[];
     isSearchActive: boolean;
     enabled?: boolean;
-    resetPageToOne: string;
 };
 
 export const useGetOrgUnits = ({
@@ -43,12 +39,11 @@ export const useGetOrgUnits = ({
     isSearchActive,
     callback = () => null,
     enabled = false,
-    resetPageToOne,
 }: Props): UseQueryResult<Result, Error> => {
     const onSuccess = () => callback();
     const queryString = new URLSearchParams(params);
     return useSnackQuery({
-        queryKey: ['orgunits', resetPageToOne],
+        queryKey: ['orgunits', params],
         queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
         options: {
             enabled,
@@ -70,11 +65,10 @@ export const useGetOrgUnitsLocations = ({
     searches,
     isSearchActive,
     enabled = false,
-    resetPageToOne,
 }: PropsLocation): UseQueryResult<Locations | undefined, Error> => {
     const queryString = new URLSearchParams(params);
     return useSnackQuery({
-        queryKey: ['orgunitslocations', resetPageToOne],
+        queryKey: ['orgunitslocations', params],
         queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
         options: {
             enabled,

@@ -10,7 +10,6 @@ import {
     selectionInitialState,
     setTableSelection,
     useSafeIntl,
-    useSkipEffectOnMount,
 } from 'bluesquare-components';
 
 import { UseMutateAsyncFunction } from 'react-query';
@@ -113,7 +112,7 @@ export const TableList: FunctionComponent<Props> = ({
                 selection={selection}
                 saveMulti={saveMulti}
             />
-            <Box mt={-4}>
+            <Box mt={-4} pb={2}>
                 <TableWithDeepLink
                     data={orgUnitsData?.orgunits || []}
                     count={orgUnitsData?.count}

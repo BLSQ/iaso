@@ -382,10 +382,24 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user_with_review_perm)
 
         change_request_1 = m.OrgUnitChangeRequest.objects.create(
-            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="foo"
+            status=m.OrgUnitChangeRequest.Statuses.NEW,
+            org_unit=self.org_unit,
+            created_by=self.user,
+            new_name="foo",
+            requested_fields=["new_name"],
+        )
+        org_unit_2 = m.OrgUnit.objects.create(
+            name="baz",
+            org_unit_type=self.org_unit_type,
+            version=self.version,
+            parent=self.org_unit,
         )
         change_request_2 = m.OrgUnitChangeRequest.objects.create(
-            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="bar"
+            status=m.OrgUnitChangeRequest.Statuses.NEW,
+            org_unit=org_unit_2,
+            created_by=self.user,
+            new_name="new baz",
+            requested_fields=["new_name"],
         )
 
         data = {
@@ -411,10 +425,16 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         change_request_1.refresh_from_db()
         self.assertEqual(change_request_1.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
         self.assertEqual(change_request_1.updated_by, self.user_with_review_perm)
+        change_request_1.org_unit.refresh_from_db()
+        self.assertEqual(change_request_1.org_unit.name, "foo")
+        self.assertEqual(change_request_1.org_unit.parent, None)  # Should be unmodified.
 
         change_request_2.refresh_from_db()
         self.assertEqual(change_request_2.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
         self.assertEqual(change_request_2.updated_by, self.user_with_review_perm)
+        change_request_2.org_unit.refresh_from_db()
+        self.assertEqual(change_request_2.org_unit.name, "new baz")
+        self.assertEqual(change_request_2.org_unit.parent, self.org_unit)  # Should be unmodified.
 
     @time_machine.travel(DT, tick=False)
     def test_bulk_review_reject(self):

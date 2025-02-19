@@ -15,10 +15,12 @@ def org_unit_change_requests_bulk_approve(
     user = task.launcher
 
     change_requests = OrgUnitChangeRequest.objects.filter(id__in=change_requests_ids)
-    approved_fields = OrgUnitChangeRequest.get_new_fields()  # In bulk review, we approve all fields.
 
     with transaction.atomic():
         for change_request in change_requests:
+            # In bulk review, there is no way to select just a subset of `requested_fields`.
+            # So we approve *all* fields for a which a change was requested.
+            approved_fields = change_request.requested_fields
             change_request.approve(user, approved_fields)
 
     task.report_success(message=f"Bulk approved {len(change_requests_ids)} change requests.")

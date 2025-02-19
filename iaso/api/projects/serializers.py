@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from iaso.models import Project, FeatureFlag
+from iaso.models import FeatureFlag, Project
+
 from ..common import TimestampField
 
 
@@ -19,8 +20,7 @@ class FeatureFlagSerializer(serializers.Serializer):
     def validate_code(self, data):
         if FeatureFlag.objects.filter(code=data).count() == 1:
             return data
-        else:
-            raise serializers.ValidationError("Unknown feature flag code")
+        raise serializers.ValidationError("Unknown feature flag code")
 
 
 class ProjectSerializer(serializers.ModelSerializer):

@@ -1,12 +1,14 @@
-import uuid
-from datetime import datetime
-from submissions import (
-    submission2xml,
-    org_unit_gps_point,
-    submission_org_unit_gps_point,
-    create_default_reference_submission,
-)
 import random
+import uuid
+
+from datetime import datetime
+
+from submissions import (
+    create_default_reference_submission,
+    org_unit_gps_point,
+    submission2xml,
+    submission_org_unit_gps_point,
+)
 
 
 def define_health_facility_reference_form(iaso_client):
@@ -76,7 +78,7 @@ def create_submission_with_picture(account_name, iaso_client):
                 }
             ]
             iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
-            form_versions = iaso_client.get(f"/api/formversions/")["form_versions"]
+            form_versions = iaso_client.get("/api/formversions/")["form_versions"]
             form_version = [form_version for form_version in form_versions if form_version["form_id"] == form_id]
 
             instance_json = {

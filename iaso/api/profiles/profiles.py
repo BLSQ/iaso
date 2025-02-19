@@ -1,4 +1,5 @@
 import copy
+
 from typing import Any, List, Optional, Set, Union
 
 from django.conf import settings
@@ -31,6 +32,7 @@ from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
 from iaso.utils import is_mobile_request, is_multi_account_user
 from iaso.utils.module_permissions import account_module_permissions
+
 
 PK_ME = "me"
 
@@ -109,7 +111,7 @@ def get_filtered_profiles(
         ).distinct()
 
     parent: Optional[OrgUnit] = None
-    if parent_ou and location or children_ou and location:
+    if (parent_ou and location) or (children_ou and location):
         ou = get_object_or_404(OrgUnit, pk=location)
         if parent_ou and ou.parent is not None:
             parent = ou.parent
@@ -330,8 +332,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             res["pages"] = paginator.num_pages
             res["limit"] = limit
             return Response(res)
-        else:
-            return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
+        return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
 
     def create(self, request):
         current_profile = request.user.iaso_profile
@@ -343,12 +344,9 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if not username:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
-        else:
-            existing_user = User.objects.filter(username__iexact=username)
-            if existing_user:
-                return JsonResponse(
-                    {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
-                )
+        existing_user = User.objects.filter(username__iexact=username)
+        if existing_user:
+            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
         if not password and not send_email_invitation:
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
         main_user = None
@@ -366,23 +364,22 @@ class ProfilesViewSet(viewsets.ViewSet):
                 return JsonResponse(
                     {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
                 )
-            else:
-                # TODO: invitation
-                # TODO what if already main user?
-                old_username = username
-                username = f"{username}_{current_account.name.lower().replace(' ', '_')}"
+            # TODO: invitation
+            # TODO what if already main user?
+            old_username = username
+            username = f"{username}_{current_account.name.lower().replace(' ', '_')}"
 
-                # duplicate existing_user into main user and account user
-                main_user = copy.copy(existing_user)
+            # duplicate existing_user into main user and account user
+            main_user = copy.copy(existing_user)
 
-                existing_user.username = f"{old_username}_{'unknown' if not hasattr(existing_user, 'iaso_profile') else existing_user.iaso_profile.account.name.lower().replace(' ', '_')}"
-                existing_user.set_unusable_password()
-                existing_user.save()
+            existing_user.username = f"{old_username}_{'unknown' if not hasattr(existing_user, 'iaso_profile') else existing_user.iaso_profile.account.name.lower().replace(' ', '_')}"
+            existing_user.set_unusable_password()
+            existing_user.save()
 
-                main_user.pk = None
-                main_user.save()
+            main_user.pk = None
+            main_user.save()
 
-                TenantUser.objects.create(main_user=main_user, account_user=existing_user)
+            TenantUser.objects.create(main_user=main_user, account_user=existing_user)
         except User.DoesNotExist:
             pass  # no existing user, simply create a new user
 
@@ -779,11 +776,10 @@ class ProfilesViewSet(viewsets.ViewSet):
             number = PhoneNumber.from_string(phone_number, region=country_code.upper())
             if number and number.is_valid():
                 return number
-            else:
-                raise ProfileError(
-                    field="phone_number",
-                    detail=_("Invalid phone number"),
-                )
+            raise ProfileError(
+                field="phone_number",
+                detail=_("Invalid phone number"),
+            )
 
     @staticmethod
     def update_password(user, request):

@@ -1,10 +1,10 @@
 from django.db.models import Count
-from iaso.api.group_sets.serializers import GroupSetSerializer
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
+from iaso.api.group_sets.serializers import GroupSetSerializer
 from iaso.models import DataSource, Group, Project, SourceVersion
 
 from .common import HasPermission, ModelViewSet, TimestampField

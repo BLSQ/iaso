@@ -6,7 +6,7 @@ from plugins.polio.preparedness.calculator import get_preparedness_score
 
 class CampaignCalculatorTestCase(TestCase):
     def setUp(self) -> None:
-        with open("./plugins/polio/preparedness/test_data/example1.json", "r") as json_data:
+        with open("./plugins/polio/preparedness/test_data/example1.json") as json_data:
             self.preparedness_preview = json.load(json_data)
 
     def test_national_score(self):

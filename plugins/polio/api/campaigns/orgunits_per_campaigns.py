@@ -70,5 +70,4 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
             for item in res:
                 writer.writerow(item)
             return response
-        else:
-            return JsonResponse(res, safe=False)
+        return JsonResponse(res, safe=False)

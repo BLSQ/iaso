@@ -1,14 +1,14 @@
 import datetime
+
 import time_machine
 
-from django.utils import timezone
-
-from rest_framework import status
-
 from django.contrib.auth.models import Group
+from django.utils import timezone
+from rest_framework import status
 
 from iaso import models as m
 from iaso.tests.api.org_unit_change_request_configurations.common_base_with_setup import OUCRCAPIBase
+
 
 CREATED_AT = datetime.datetime(2025, 1, 20, 10, 31, 0, 0, tzinfo=timezone.utc)
 

@@ -1,9 +1,10 @@
 from datetime import datetime
-from iaso import models as m
-from iaso.test import APITestCase
-from iaso.models.base import RUNNING, KILLED, SUCCESS, SKIPPED
-from iaso.models.json_config import Config
 from unittest.mock import patch
+
+from iaso import models as m
+from iaso.models.base import KILLED, RUNNING, SKIPPED, SUCCESS
+from iaso.models.json_config import Config
+from iaso.test import APITestCase
 from plugins.polio.tasks.api.refresh_vrf_dashboard_data import VRF_CONFIG_SLUG, VRF_TASK_NAME, RefreshVrfDataViewset
 
 

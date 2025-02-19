@@ -1,7 +1,9 @@
-from django.test import TestCase
-from plugins.polio.preparedness.spread_cache import CachedSpread
-from plugins.polio.preparedness.parser import get_preparedness
 import json
+
+from django.test import TestCase
+
+from plugins.polio.preparedness.parser import get_preparedness
+from plugins.polio.preparedness.spread_cache import CachedSpread
 
 
 class PreparednessParserTests(TestCase):

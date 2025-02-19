@@ -1,9 +1,8 @@
-from datetime import datetime
 import uuid
 
-from fake import fake_person
+from datetime import datetime
+
 from submissions import submission2xml
-from random import randint
 
 
 def setup_registry(account_name, iaso_client):

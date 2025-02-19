@@ -1,27 +1,28 @@
 import logging
 
 import django_filters
+
 from django.shortcuts import get_object_or_404
-from gql.transport.requests import RequestsHTTPTransport
 from gql import Client, gql
+from gql.transport.requests import RequestsHTTPTransport
 from lazy_services import LazyService  # type: ignore
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import ModelViewSet, HasPermission
+from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.tasks.filters import (
-    StatusFilterBackend,
     StartEndDateFilterBackend,
+    StatusFilterBackend,
     TaskTypeFilterBackend,
     UsersFilterBackend,
 )
-from iaso.models.base import ERRORED, RUNNING, SKIPPED, QUEUED, Task
+from iaso.models.base import ERRORED, QUEUED, RUNNING, SKIPPED, Task
 from iaso.models.json_config import Config
 from iaso.utils.s3_client import generate_presigned_url_from_s3
 
-from .serializers import ExternalTaskSerializer, ExternalTaskPostSerializer, TaskSerializer
+from .serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskSerializer
 
 
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
@@ -83,8 +84,7 @@ class TaskSourceViewSet(ModelViewSet):
         if current_user.has_perm(permission.DATA_TASKS) or task.created_by == request.user:
             serializer = self.get_serializer(task)
             return Response(serializer.data)
-        else:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
     @action(detail=True, methods=["get"], url_path="presigned-url")
     def generate_presigned_url(self, request, pk=None):
@@ -99,10 +99,9 @@ class TaskSourceViewSet(ModelViewSet):
                 return Response({"error": str(e)}, status=400)
 
             return Response({"presigned_url": response})
-        else:
-            raise serializers.ValidationError(
-                {"presigned_url": "Could not create a presigned URL, are you sure the task generated a file?"}
-            )
+        raise serializers.ValidationError(
+            {"presigned_url": "Could not create a presigned URL, are you sure the task generated a file?"}
+        )
 
     @action(detail=True, methods=["patch"], url_path="relaunch")
     def relaunch(self, request, pk):
@@ -127,8 +126,7 @@ class TaskSourceViewSet(ModelViewSet):
 
             serializer = self.get_serializer(task)
             return Response(serializer.data)
-        else:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
     @action(detail=False, methods=["get"], url_path="types")
     def types(self, _request):

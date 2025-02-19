@@ -1,9 +1,10 @@
-from django.db import IntegrityError
-from django.test import TestCase
-from iaso import models as m
-from django.contrib.auth.models import User
 from datetime import datetime
 
+from django.contrib.auth.models import User
+from django.db import IntegrityError
+from django.test import TestCase
+
+from iaso import models as m
 from iaso.models.payments import PaymentStatuses
 
 

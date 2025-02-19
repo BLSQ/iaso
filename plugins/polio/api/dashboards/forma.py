@@ -5,6 +5,7 @@ from typing import Any, Callable, Dict, Optional
 from uuid import UUID
 
 import pandas as pd
+
 from django.core.cache import cache
 from django.db.models import Max, Min
 from django.http import HttpResponse
@@ -16,10 +17,10 @@ from rest_framework.decorators import action
 
 from iaso.api.common import CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
-from plugins.polio.api.common import find_orgunit_in_cache, get_url_content, make_orgunits_cache
-from plugins.polio.api.dashboards.vaccine_stocks import handle_ona_request_with_key
-from plugins.polio.models import Campaign
 from iaso.models.json_config import Config
+from plugins.polio.api.common import find_orgunit_in_cache, get_url_content, make_orgunits_cache
+from plugins.polio.models import Campaign
+
 
 logger = getLogger(__name__)
 
@@ -98,7 +99,7 @@ def make_find_orgunit_for_campaign(cs):
 
 def find_campaign_orgunits(campaign_find_func, campaign, *args):
     if pd.isna(campaign):
-        return
+        return None
     if not campaign_find_func.get(campaign.pk):
         if not campaign.get_all_districts_qs().count() > 0:
             campaign_find_func[campaign.pk] = lambda *x: None
@@ -318,9 +319,8 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
         if request.GET.get("format", None) == "csv":
             r = df.to_csv()
             return HttpResponse(r, content_type=CONTENT_TYPE_CSV)
-        else:
-            r = df.to_json(orient="table")
-            return HttpResponse(r, content_type="application/json")
+        r = df.to_json(orient="table")
+        return HttpResponse(r, content_type="application/json")
 
     # deprecated
     @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
@@ -331,6 +331,5 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
         if request.GET.get("format", None) == "csv":
             r = df.to_csv()
             return HttpResponse(r, content_type=CONTENT_TYPE_CSV)
-        else:
-            r = df.to_json(orient="table")
-            return HttpResponse(r, content_type="application/json")
+        r = df.to_json(orient="table")
+        return HttpResponse(r, content_type="application/json")

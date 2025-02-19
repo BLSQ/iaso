@@ -1,10 +1,13 @@
 import traceback
+
 from functools import wraps
 from logging import getLogger
 
 import sentry_sdk
+
 from django.utils import timezone
 from lazy_services import LazyService  # type: ignore
+
 
 logger = getLogger(__name__)
 
@@ -18,7 +21,7 @@ def task_decorator(task_name=""):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            from iaso.models.base import Task, ERRORED, KilledException, RUNNING
+            from iaso.models.base import ERRORED, RUNNING, KilledException, Task
 
             immediate = kwargs.pop("_immediate", False)  # if true, we need to run the task now, we are a worker
             if immediate:
@@ -52,20 +55,20 @@ def task_decorator(task_name=""):
                     logger.exception(f"Error when running task {the_task.id}: {the_task}")
                     sentry_sdk.capture_exception(e)
                 return the_task
-            else:  # enqueue the task
-                task = Task()
-                user = kwargs.pop("user")
-                task.account = user.iaso_profile.account
-                task.created_by = user
-                task.launcher = user
-                task.name = task_name
-                task.params = {"args": args, "kwargs": kwargs, "module": func.__module__, "method": func.__name__}
-                # Save it here so we can have the id
-                task.save()
-                task.queue_answer = task_service.enqueue(func.__module__, func.__name__, args, kwargs, task_id=task.id)
-                task.save()
+            # enqueue the task
+            task = Task()
+            user = kwargs.pop("user")
+            task.account = user.iaso_profile.account
+            task.created_by = user
+            task.launcher = user
+            task.name = task_name
+            task.params = {"args": args, "kwargs": kwargs, "module": func.__module__, "method": func.__name__}
+            # Save it here so we can have the id
+            task.save()
+            task.queue_answer = task_service.enqueue(func.__module__, func.__name__, args, kwargs, task_id=task.id)
+            task.save()
 
-                return task
+            return task
 
         wrapper._is_task = True
         return wrapper

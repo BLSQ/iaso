@@ -1,5 +1,4 @@
 import typing
-from typing import Optional
 
 from django.db.models import BooleanField, Count, TextField, Value
 from django.db.models.expressions import Case, When

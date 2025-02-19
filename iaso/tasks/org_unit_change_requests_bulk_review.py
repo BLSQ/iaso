@@ -1,8 +1,7 @@
 from django.db import transaction
 
 from beanstalk_worker import task_decorator
-
-from iaso.models import Task, OrgUnitChangeRequest
+from iaso.models import OrgUnitChangeRequest, Task
 
 
 @task_decorator(task_name="org_unit_change_requests_bulk_approve")

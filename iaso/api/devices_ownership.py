@@ -1,8 +1,9 @@
-from rest_framework import viewsets, permissions
+from rest_framework import permissions, viewsets
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
 from iaso.models import DeviceOwnership
+
 from .common import HasPermission
 
 

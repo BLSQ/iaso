@@ -3,7 +3,6 @@ import datetime
 import time_machine
 
 from iaso.test import APITestCase
-
 from plugins.polio.api.chronogram.filters import filter_for_power_bi
 from plugins.polio.models import Chronogram
 

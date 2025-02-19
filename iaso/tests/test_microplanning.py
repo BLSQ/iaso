@@ -1,13 +1,14 @@
-import mock
+from unittest import mock
+
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 from django_ltree.fields import PathValue  # type: ignore
 
 from hat.audit.models import Modification
-from iaso.api.microplanning import TeamSerializer, PlanningSerializer, AssignmentSerializer
-from iaso.models import Account, DataSource, SourceVersion, OrgUnit, Form, OrgUnitType
-from iaso.models.microplanning import TeamType, Team, Planning, Assignment
-from iaso.test import IasoTestCaseMixin, APITestCase
+from iaso.api.microplanning import AssignmentSerializer, PlanningSerializer, TeamSerializer
+from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, SourceVersion
+from iaso.models.microplanning import Assignment, Planning, Team, TeamType
+from iaso.test import APITestCase, IasoTestCaseMixin
 
 
 class TeamTestCase(APITestCase, IasoTestCaseMixin):
@@ -504,7 +505,7 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(ash_ketchum)
 
         # Fetch the list of teams without any type filter
-        response = self.client.get(f"/api/microplanning/teams/", format="json")
+        response = self.client.get("/api/microplanning/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 6)  # 2 from happy path (set up) + 4 new ones
 
@@ -538,7 +539,7 @@ class TeamAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         # Fetch the list of teams without any project filter
-        response = self.client.get(f"/api/microplanning/teams/", format="json")
+        response = self.client.get("/api/microplanning/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 3)  # 2 from happy path (set up) + 1 new one
 
@@ -916,7 +917,7 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(deleted_assignment.deleted_at, None)
         self.assertEqual(Modification.objects.count(), 1)
 
-        response = self.client.delete("/api/microplanning/assignments/{}/".format(deleted_assignment.id))
+        response = self.client.delete(f"/api/microplanning/assignments/{deleted_assignment.id}/")
 
         self.assertJSONResponse(response, 204)
         deleted_assignment.refresh_from_db()
@@ -965,7 +966,7 @@ class AssignmentAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/mobile/plannings/", format="json")
+        response = self.client.get("/api/mobile/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
         plannings = r["plannings"]
         self.assertEqual(len(plannings), 2)
@@ -1003,7 +1004,7 @@ class AssignmentAPITestCase(APITestCase):
         user = self.create_user_with_profile(username="user2", account=self.account)
         self.client.force_authenticate(user)
 
-        response = self.client.get(f"/api/mobile/plannings/", format="json")
+        response = self.client.get("/api/mobile/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["plannings"]), 0)
 
@@ -1025,5 +1026,5 @@ class AssignmentAPITestCase(APITestCase):
         response = self.client.patch(f"/api/mobile/plannings/{self.planning.id}/", format="json")
         self.assertEqual(response.status_code, 403)
 
-        response = self.client.post(f"/api/mobile/plannings/", data={}, format="json")
+        response = self.client.post("/api/mobile/plannings/", data={}, format="json")
         self.assertEqual(response.status_code, 403)

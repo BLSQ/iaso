@@ -5,6 +5,7 @@ from django.db import connections
 
 from beanstalk_worker import task_service
 
+
 LISTEN_TIMEOUT = 30
 
 logger = getLogger(__name__)

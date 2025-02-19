@@ -43,7 +43,7 @@ class Dumper:
         stats_ou = {}
 
         for diff in diffs:
-            if not diff.status in stats_ou:
+            if diff.status not in stats_ou:
                 stats_ou[diff.status] = 1
             else:
                 stats_ou[diff.status] += 1
@@ -52,12 +52,12 @@ class Dumper:
 
         for diff in diffs:
             for comp in diff.comparisons:
-                if not comp.field in stats_comparison_by_field:
+                if comp.field not in stats_comparison_by_field:
                     stats_comparison_by_field[comp.field] = {}
                 comp_stats = stats_comparison_by_field[comp.field]
-                if not comp.status in comp_stats:
+                if comp.status not in comp_stats:
                     comp_stats[comp.status] = {}
-                if not "count" in comp_stats[comp.status]:
+                if "count" not in comp_stats[comp.status]:
                     comp_stats[comp.status]["count"] = 1
                 else:
                     comp_stats[comp.status]["count"] += 1
@@ -80,7 +80,7 @@ class Dumper:
 
         diffable_fields = []
         for field in fields:
-            if field.startswith("groupset:") or field.startswith("group:"):
+            if field.startswith(("groupset:", "group:")):
                 diffable_fields.append(field.split(":")[2])
             else:
                 diffable_fields.append(field)
@@ -115,9 +115,7 @@ class Dumper:
                     if "POINT Z" in str(comparison.before) and comparison.after:
                         if str(comparison.before)[:40] != str(comparison.after)[:40]:
                             results.append(
-                                "{:.3f}".format(
-                                    GEOSGeometry(comparison.before).distance(GEOSGeometry(str(comparison.after))) * 100
-                                )
+                                f"{GEOSGeometry(comparison.before).distance(GEOSGeometry(str(comparison.after))) * 100:.3f}"
                             )
                         else:
                             results.append(0)

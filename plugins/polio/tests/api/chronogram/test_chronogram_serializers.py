@@ -1,20 +1,19 @@
 import datetime
 
 import time_machine
-from rest_framework.test import APIRequestFactory
 
 from django.utils import translation
+from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
 from iaso.test import TestCase
-
 from plugins.polio.api.chronogram.serializers import (
+    ChronogramCreateSerializer,
     ChronogramTaskSerializer,
     ChronogramTemplateTaskSerializer,
-    ChronogramCreateSerializer,
 )
-from plugins.polio.models import Campaign, Round, Chronogram, ChronogramTask, CampaignType
-from plugins.polio.models.chronogram import Period, ChronogramTemplateTask
+from plugins.polio.models import Campaign, CampaignType, Chronogram, ChronogramTask, Round
+from plugins.polio.models.chronogram import ChronogramTemplateTask, Period
 
 
 TODAY = datetime.datetime(2024, 6, 27, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)

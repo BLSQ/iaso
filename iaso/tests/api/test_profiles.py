@@ -3,6 +3,7 @@ import typing
 import jsonschema
 import numpy as np
 import pandas as pd
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
@@ -16,6 +17,7 @@ from iaso import models as m
 from iaso.models import Profile
 from iaso.models.microplanning import Team
 from iaso.test import APITestCase
+
 
 name_and_id_schema = {
     "type": "object",
@@ -250,7 +252,7 @@ class ProfileAPITestCase(APITestCase):
             "dhis2_id": "",
         }
 
-        response = self.client.patch("/api/profiles/{0}/".format(jim.id), data=data, format="json")
+        response = self.client.patch(f"/api/profiles/{jim.id}/", data=data, format="json")
 
         self.assertEqual(response.status_code, 200, response)
 
@@ -783,8 +785,8 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(email.subject, "Set up a password for your new account on iaso-test.bluesquare.org")
         self.assertEqual(email.from_email, "sender@test.com")
         self.assertEqual(email.to, ["test@test.com"])
-        self.assertIn(f"http://iaso-test.bluesquare.org", email.body)
-        self.assertIn(f"The iaso-test.bluesquare.org Team.", email.body)
+        self.assertIn("http://iaso-test.bluesquare.org", email.body)
+        self.assertIn("The iaso-test.bluesquare.org Team.", email.body)
 
     def test_create_profile_with_no_password_and_not_send_email(self):
         self.client.force_authenticate(self.jim)
@@ -980,7 +982,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_search_by_ids(self):
         self.client.force_authenticate(self.jane)
-        response = self.client.get(f"/api/profiles/", {"ids": f"{self.jane.id},{self.jim.id}"})
+        response = self.client.get("/api/profiles/", {"ids": f"{self.jane.id},{self.jim.id}"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["profiles"]), 2)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
@@ -988,7 +990,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_search_by_teams(self):
         self.client.force_authenticate(self.jane)
-        response = self.client.get(f"/api/profiles/", {"teams": f"{self.team1.pk},{self.team2.pk}"})
+        response = self.client.get("/api/profiles/", {"teams": f"{self.team1.pk},{self.team2.pk}"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["profiles"]), 2)
         user_names = [item["user_name"] for item in response.data["profiles"]]
@@ -1241,7 +1243,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
         }
-        response = self.client.post(f"/api/profiles/", data=data, format="json")
+        response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_managed_permission_cannot_delete_users(self):
@@ -1453,7 +1455,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(new_profile["dhis2_id"], data["dhis2_id"])
         self.assertEqual(new_profile["language"], data["language"])
         self.assertEqual(new_profile["home_page"], data["home_page"])
-        self.assertEqual(new_profile["phone_number"], f'+{data["phone_number"]}')
+        self.assertEqual(new_profile["phone_number"], f"+{data['phone_number']}")
         self.assertEqual(len(new_profile["org_units"]), 1)
         self.assertIn(self.org_unit_from_parent_type.id, new_profile["org_units"])
         self.assertEqual(len(new_profile["user_roles"]), 1)
@@ -1500,7 +1502,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(new_profile["dhis2_id"], data["dhis2_id"])
         self.assertEqual(new_profile["language"], data["language"])
         self.assertEqual(new_profile["home_page"], data["home_page"])
-        self.assertEqual(new_profile["phone_number"], f'+{data["phone_number"]}')
+        self.assertEqual(new_profile["phone_number"], f"+{data['phone_number']}")
         self.assertEqual(len(new_profile["org_units"]), 1)
         self.assertIn(self.org_unit_from_parent_type.id, new_profile["org_units"])
         self.assertEqual(len(new_profile["user_roles"]), 1)
@@ -1524,7 +1526,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(past_profile["dhis2_id"], data["dhis2_id"])
         self.assertEqual(past_profile["language"], data["language"])
         self.assertEqual(past_profile["home_page"], data["home_page"])
-        self.assertEqual(past_profile["phone_number"], f'+{data["phone_number"]}')
+        self.assertEqual(past_profile["phone_number"], f"+{data['phone_number']}")
         self.assertEqual(len(past_profile["org_units"]), 1)
         self.assertIn(self.org_unit_from_parent_type.id, past_profile["org_units"])
         self.assertEqual(len(past_profile["user_roles"]), 1)
@@ -1600,7 +1602,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(past_value["dhis2_id"], data["dhis2_id"])
         self.assertEqual(past_value["language"], data["language"])
         self.assertEqual(past_value["home_page"], data["home_page"])
-        self.assertEqual(past_value["phone_number"], f'+{data["phone_number"]}')
+        self.assertEqual(past_value["phone_number"], f"+{data['phone_number']}")
         self.assertEqual(len(past_value["org_units"]), 1)
         self.assertIn(
             self.org_unit_from_parent_type.id,
@@ -1628,7 +1630,7 @@ class ProfileAPITestCase(APITestCase):
     def test_log_on_user_updates_own_profile(self):
         self.client.force_authenticate(self.jim)
         new_data = {"language": "fr"}
-        response = self.client.patch(f"/api/profiles/me/", data=new_data, format="json")
+        response = self.client.patch("/api/profiles/me/", data=new_data, format="json")
         self.assertJSONResponse(response, 200)
         # Log as super user to access the logs API
         self.client.force_authenticate(self.john)

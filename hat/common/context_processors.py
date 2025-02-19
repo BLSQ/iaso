@@ -1,4 +1,5 @@
 import json
+
 from typing import Any, Dict
 
 from django.conf import settings

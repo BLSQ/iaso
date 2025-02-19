@@ -1,6 +1,7 @@
 from iaso.models import WorkflowFollowup
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 
+
 BASE_API = "/api/workflowfollowups/"
 
 

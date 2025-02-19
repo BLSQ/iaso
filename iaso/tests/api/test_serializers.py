@@ -1,8 +1,10 @@
 import datetime
+
 from collections import OrderedDict
 from unittest import mock
 
 import pytz
+
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -314,7 +316,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_creator_org_unit(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,

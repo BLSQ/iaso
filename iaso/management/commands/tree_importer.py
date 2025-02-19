@@ -6,7 +6,8 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from unidecode import unidecode
 
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Project
+from iaso.models import DataSource, OrgUnit, OrgUnitType, Project, SourceVersion
+
 
 DEFAULT_DATA_DICT = {
     "name": "Nom",
@@ -106,7 +107,7 @@ class Command(BaseCommand):
             project = Project.objects.get(id=project_id)
             main_out = get_or_create_org_unit_type(name=main_org_unit_name, project=project)
             print("Creating Org Unit Types")
-            data_dict = json.loads(open(data_dict_name, "r").read())
+            data_dict = json.loads(open(data_dict_name).read())
             for parent in data_dict["parents"]:
                 out = get_or_create_org_unit_type(name=parent, project=project)
 

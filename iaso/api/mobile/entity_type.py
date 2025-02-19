@@ -96,7 +96,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
         user = self.request.user
 
         if not user or not user.is_authenticated:
-            raise AuthenticationFailed(f"User not authenticated")
+            raise AuthenticationFailed("User not authenticated")
 
         queryset = EntityType.objects.filter(account=user.iaso_profile.account)
 

@@ -1,12 +1,15 @@
 import os
 import time
+
 from datetime import datetime, timedelta
 from logging import getLogger
 
 import gspread  # type: ignore
+
 from gspread import Client  # type: ignore
 from gspread.exceptions import APIError  # type: ignore
 from oauth2client.service_account import ServiceAccountCredentials  # type: ignore
+
 
 logger = getLogger(__name__)
 
@@ -76,11 +79,10 @@ class IasoClient(Client):
                 if e.response.status_code != 429 or attempt >= 4:
                     logger.exception(e)
                     raise
-                else:
-                    # Will still log in sentry so we can track
-                    logger.info(f"Hitting rate limit error from google, sleeping")
-                    attempt += 1
-                    time.sleep(10)
+                # Will still log in sentry so we can track
+                logger.info("Hitting rate limit error from google, sleeping")
+                attempt += 1
+                time.sleep(10)
 
 
 def get_google_config(slug):

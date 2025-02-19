@@ -1,5 +1,6 @@
-from ..dhis2.url_helper import clean_url
 from django.test import TestCase
+
+from ..dhis2.url_helper import clean_url
 
 
 class Dhis2UrlHelperTests(TestCase):

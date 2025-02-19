@@ -1,5 +1,6 @@
 import datetime
 import logging
+
 from traceback import format_exc
 
 from django.core.files.uploadhandler import TemporaryFileUploadHandler
@@ -17,6 +18,7 @@ from iaso.api.serializers import AppIdSerializer
 from iaso.models import Project
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
 from iaso.utils.s3_client import upload_file_to_s3
+
 
 logger = logging.getLogger(__name__)
 
@@ -94,11 +96,11 @@ class MobileBulkUploadsViewSet(ViewSet):
 
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ValueError as exc:
-            logger.exception(f"ValueError: {str(exc)}")
+            logger.exception(f"ValueError: {exc!s}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as exc:
             api_import.has_problem = True
             api_import.exception = format_exc()
             api_import.save()
-            logger.exception(f"Exception: {str(exc)}")
+            logger.exception(f"Exception: {exc!s}")
             return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

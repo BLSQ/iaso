@@ -1,6 +1,8 @@
 import json
-from fake import fake_person
+
 from datetime import datetime, timedelta
+
+from fake import fake_person
 
 
 def setup_users_teams_micro_planning(account_name, iaso_client):
@@ -38,7 +40,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
 
     users = iaso_client.get("/api/profiles?limit=20000")["profiles"]
 
-    print(f"\t{len(users) -1 } users created")
+    print(f"\t{len(users) - 1} users created")
 
     manager = iaso_client.get("/api/profiles/me/")
 
@@ -62,7 +64,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
 
     teams = iaso_client.get("/api/microplanning/teams/?limit=20000")["results"]
 
-    print(f"\t{len(teams) -1 } teams created")
+    print(f"\t{len(teams) - 1} teams created")
 
     iaso_client.post(
         "/api/microplanning/teams/",

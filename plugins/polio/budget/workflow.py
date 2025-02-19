@@ -1,13 +1,14 @@
-from typing import Union, List, Optional, Tuple
-
 from dataclasses import dataclass, field
-from django.db.models import Q, QuerySet
 
 # Move to typing import Literal when upgrading to python 3.8
-from typing import Literal
+from typing import List, Literal, Optional, Tuple, Union
+
+from django.db.models import Q, QuerySet
 
 import plugins.polio.models
+
 from iaso.models.microplanning import Team, TeamType
+
 
 # from plugins.polio.models import Campaign
 # attachment is either file or a links
@@ -78,8 +79,7 @@ class Workflow:
         key is not found in the workfloe e.g. it was deleted"""
         if key in self.transitions_dict:
             return self.transitions_dict[key].label
-        else:
-            return key
+        return key
 
     def self_check(self):
         for transition in self.transitions:

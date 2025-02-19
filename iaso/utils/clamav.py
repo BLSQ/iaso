@@ -1,9 +1,11 @@
 import logging
-import tempfile
 import os
+import tempfile
+
+from datetime import datetime
 
 import clamav_client
-from datetime import datetime
+
 from clamav_client.clamd import CommunicationError
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -47,7 +49,7 @@ def _scan_with_clamav(file_path: str):
 
         is_safe = scan.passed
         if scan.state == "FOUND":
-            details = f"A virus was found in this file, please contact your administrator"
+            details = "A virus was found in this file, please contact your administrator"
         elif scan.state == "ERROR":
             details = f"An error occurred while scanning the file - {scan.details}"
         elif scan.state is None:

@@ -3,17 +3,18 @@ import typing
 
 from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from rest_framework import serializers, parsers, status
+from rest_framework import parsers, serializers, status
 from rest_framework.exceptions import NotFound
 from rest_framework.fields import Field
 from rest_framework.response import Response
 
-from iaso.models import FormAttachment, Form, Project
+from hat.menupermissions import models as permission
+from iaso.models import Form, FormAttachment, Project
+
+from ..utils.clamav import scan_uploaded_file_for_virus
 from .common import ModelViewSet, TimestampField
 from .forms import HasFormPermission
 from .query_params import APP_ID
-from hat.menupermissions import models as permission
-from ..utils.clamav import scan_uploaded_file_for_virus
 
 
 class FormAttachmentSerializer(serializers.ModelSerializer):

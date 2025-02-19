@@ -6,6 +6,7 @@ from ..common import PotentialDuplicate  # type: ignore
 from .base import DeduplicationAlgorithm
 from .finalize import finalize_from_task
 
+
 LEVENSHTEIN_MAX_DISTANCE = 3
 ABOVE_SCORE_DISPLAY = 50
 
@@ -28,14 +29,14 @@ def _build_query(params):
             # if field is a number we need to get as a result the difference between the two numbers
             # the final value should be 1 - (abs(number1 - number2) / max(number1, number2))
             fc_arr.append(
-                f"(1.0 - ( abs ( (instance1.json->>%s)::double precision - (instance2.json->>%s)::double precision ) / greatest( (instance1.json->>%s)::double precision, (instance2.json->>%s)::double precision )))"
+                "(1.0 - ( abs ( (instance1.json->>%s)::double precision - (instance2.json->>%s)::double precision ) / greatest( (instance1.json->>%s)::double precision, (instance2.json->>%s)::double precision )))"
             )
             query_params.append(f_name)
             query_params.append(f_name)
             query_params.append(f_name)
             query_params.append(f_name)
         elif f_type == "text":
-            fc_arr.append(f"(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))")
+            fc_arr.append("(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))")
             query_params.append(f_name)
             query_params.append(f_name)
             query_params.append(levenshtein_max_distance)
@@ -84,7 +85,7 @@ class InverseAlgorithm(DeduplicationAlgorithm):
         task.report_progress_and_stop_if_killed(
             progress_value=0,
             end_value=count,
-            progress_message=f"Started Levenshtein Algorithm",
+            progress_message="Started Levenshtein Algorithm",
         )
 
         cursor = connection.cursor()
@@ -107,7 +108,7 @@ class InverseAlgorithm(DeduplicationAlgorithm):
         task.report_progress_and_stop_if_killed(
             progress_value=100,
             end_value=count,
-            progress_message=f"Ended Levenshtein Algorithm",
+            progress_message="Ended Levenshtein Algorithm",
         )
 
         finalize_from_task(task, potential_duplicates)

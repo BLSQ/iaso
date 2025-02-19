@@ -1,6 +1,6 @@
 from django.db import models
 
-from iaso.models import Project, DataSource
+from iaso.models import DataSource, Project
 
 
 class ImportGPKG(models.Model):

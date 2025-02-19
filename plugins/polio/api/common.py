@@ -1,4 +1,5 @@
 import json
+
 from collections import defaultdict
 from datetime import timedelta
 from enum import Enum
@@ -8,9 +9,11 @@ from typing import Optional
 
 import pandas as pd
 import requests
+
 from django.utils.timezone import now
 
 from plugins.polio.models import Round, URLCache
+
 
 logger = getLogger(__name__)
 
@@ -105,7 +108,7 @@ def find_district(district_name, region_name, district_dict):
     district_list = district_dict.get(district_name_lower)
     if district_list and len(district_list) == 1:
         return district_list[0]
-    elif district_list and len(district_list) > 1:
+    if district_list and len(district_list) > 1:
         for di in district_list:
             parent_aliases_lower = [alias.lower().strip() for alias in di.parent.aliases] if di.parent.aliases else []
             if di.parent.name.lower().strip() == region_name.lower().strip() or (
@@ -236,7 +239,7 @@ def find_orgunit_in_cache(cache_dict, name, parent_name=None):
     matched_orgunits = cache_dict[name]
 
     if len(matched_orgunits) == 0:
-        return
+        return None
     if len(matched_orgunits) == 1:
         return matched_orgunits[0]
     for f in matched_orgunits:

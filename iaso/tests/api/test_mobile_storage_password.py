@@ -1,5 +1,5 @@
 from iaso.api.query_params import APP_ID
-from iaso.models import Account, StoragePassword, Project
+from iaso.models import Account, Project, StoragePassword
 from iaso.test import APITestCase
 
 

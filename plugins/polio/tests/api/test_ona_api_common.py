@@ -1,7 +1,8 @@
-from plugins.polio.api.common import find_orgunit_in_cache, get_url_content, make_orgunits_cache
+import responses  # type: ignore
 
 from django.test import TestCase  # type: ignore
-import responses  # type: ignore
+
+from plugins.polio.api.common import get_url_content
 
 
 class ApiCommonTestCase(TestCase):

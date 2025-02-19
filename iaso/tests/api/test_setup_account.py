@@ -1,6 +1,6 @@
-from django.contrib.auth.models import User, Permission
-from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
+from django.contrib.auth.models import Permission, User
 
+from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
 from iaso.test import APITestCase

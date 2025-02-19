@@ -682,7 +682,7 @@ system requirements section for the most up-to-date information.
 Code formatting
 ---------------
 
-We have adopted Black [](https://github.com/psf/black) as our code
+We have adopted ruff [](https://github.com/astral-sh/ruff) as our code
 formatting tool. Line length is 120.
 
 The easiest way to use it is to install the pre-commit hook:

@@ -1,12 +1,14 @@
+import random
 import uuid
+
 from datetime import datetime, timedelta
+
 from submissions import (
-    submission2xml,
+    create_default_reference_submission,
     org_unit_gps_point,
     picture_by_org_unit_type_name,
-    create_default_reference_submission,
+    submission2xml,
 )
-import random
 
 
 def setup_instances(account_name, iaso_client):

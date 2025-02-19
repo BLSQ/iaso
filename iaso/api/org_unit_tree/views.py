@@ -1,11 +1,8 @@
 import django_filters
 
 from django.db.models import Count, Q
-
-from rest_framework import filters, permissions, viewsets
-from rest_framework import serializers
+from rest_framework import filters, permissions, serializers, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 
 from iaso.api.org_unit_tree.filters import OrgUnitTreeFilter
 from iaso.api.org_unit_tree.pagination import OrgUnitTreePagination

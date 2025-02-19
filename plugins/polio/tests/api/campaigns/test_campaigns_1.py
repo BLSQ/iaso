@@ -1,7 +1,6 @@
 import datetime
 
 from django.utils import timezone
-
 from rest_framework.test import APIClient
 
 from iaso import models as m

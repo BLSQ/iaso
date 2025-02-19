@@ -19,7 +19,7 @@ jobs:
     test_js:
         runs-on: ubuntu-20.04
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - name: Use node.js 20
               uses: actions/setup-node@v2
               with:
@@ -58,7 +58,7 @@ jobs:
             packages: write
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               with:
                   fetch-depth: 0
             - name: Set up Docker Buildx
@@ -101,9 +101,9 @@ jobs:
                 # needed because the postgres container does not provide a health check
                 options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
         steps:
-            - uses: actions/checkout@v2
-            - name: Set up Python 3.9
-              uses: actions/setup-python@v2
+            - uses: actions/checkout@v4
+            - name: Install Python 3.9
+              uses: actions/setup-python@v5
               with:
                   python-version: 3.9
             - name: Install GDAL and gettext
@@ -123,9 +123,10 @@ jobs:
             - name: Environment info
               run: |
                   pip list
-            - name: Check formatting with Black
+            - name: Check formatting with ruff
+              # https://docs.astral.sh/ruff/integrations/#github-actions
               run: |
-                  . ./venv/bin/activate && black --check .
+                  . ./venv/bin/activate && ruff check --output-format=github .
             - name: Django tests
               run: |
                   . ./venv/bin/activate &&  python manage.py compilemessages

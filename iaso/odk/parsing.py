@@ -1,8 +1,8 @@
 import pathlib
 import typing
 
-from django.utils import timezone, dateparse
-from pyxform import create_survey_from_xls, errors, Survey as BaseSurvey  # type: ignore
+from django.utils import dateparse, timezone
+from pyxform import Survey as BaseSurvey, create_survey_from_xls, errors  # type: ignore
 
 
 class ParsingError(Exception):

@@ -1,10 +1,11 @@
-from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest import mock
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 
-from iaso.test import APITestCase
-from iaso.models import Account, Project
 from hat.api_import.models import APIImport
+from iaso.models import Account, Project
+from iaso.test import APITestCase
+
 
 BASE_URL = "/api/mobile/bulkupload/"
 APP_ID = "org.bluesquare.rdc"

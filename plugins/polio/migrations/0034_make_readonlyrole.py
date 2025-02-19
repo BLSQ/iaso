@@ -1,5 +1,6 @@
 from django.db import migrations
 
+
 """
 Create a read only role for django-sql-dashboard.
 You need to manually assign it to a postrgesql user with:

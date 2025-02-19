@@ -1,10 +1,10 @@
 import tempfile
 import typing
+
 from unittest import mock
 
 from django.core.files import File
-from django.core.files.uploadedfile import UploadedFile
-from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
 
 from iaso import models as m
@@ -64,7 +64,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         with open("iaso/tests/fixtures/odk_valid_multi_select.xlsx", "rb") as xls_file:
             response = self.client.post(
-                f"/api/formversions/",
+                "/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -107,7 +107,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         with open("iaso/tests/fixtures/odk_valid_multi_select.xlsx", "rb") as xls_file:
             response = self.client.post(
-                f"/api/formversions/",
+                "/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -173,7 +173,7 @@ class FormsVersionAPITestCase(APITestCase):
         start_period = "BIG BANG"
         end_period = "DOOMSDAY"
         response = self.client.put(
-            f"/api/formversions/{self.form_2 .form_versions.first().id}/",
+            f"/api/formversions/{self.form_2.form_versions.first().id}/",
             data={
                 "end_period": end_period,
                 "form_id": self.form_2.id,
@@ -193,7 +193,7 @@ class FormsVersionAPITestCase(APITestCase):
         start_period = "BIG BANG"
         end_period = "DOOMSDAY"
         response = self.client.patch(
-            f"/api/formversions/{self.form_2 .form_versions.first().id}/",
+            f"/api/formversions/{self.form_2.form_versions.first().id}/",
             data={
                 "end_period": end_period,
                 "form_id": self.form_2.id,
@@ -210,7 +210,7 @@ class FormsVersionAPITestCase(APITestCase):
         """DELETE /formversions/<form_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.delete(f"/api/formversions/33/")
+        response = self.client.delete("/api/formversions/33/")
         self.assertJSONResponse(response, 405)
 
     def test_form_versions_create_ok_first_version(self):
@@ -219,7 +219,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xlsx", "rb") as xls_file:
             response = self.client.post(
-                f"/api/formversions/",
+                "/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -248,7 +248,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xlsx", "rb") as xls_file:
             response = self.client.post(
-                f"/api/formversions/",
+                "/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -293,7 +293,7 @@ class FormsVersionAPITestCase(APITestCase):
 
         with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xlsx", "rb") as xls_file:
             response = self.client.post(
-                f"/api/formversions/",
+                "/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -322,7 +322,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022401.xlsx", "rb") as xls_file:
             response = self.client.post(
-                f"/api/formversions/",
+                "/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -336,7 +336,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022402.xlsx", "rb") as xls_file:
             response = self.client.post(
-                f"/api/formversions/",
+                "/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -350,7 +350,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022301.xlsx", "rb") as xls_file:
             response = self.client.post(
-                f"/api/formversions/",
+                "/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -366,7 +366,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         with open("iaso/tests/fixtures/odk_form_blatantly_invalid.xlsx", "rb") as xls_file:
             response = self.client.post(
-                f"/api/formversions/",
+                "/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -383,7 +383,7 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/formversions/", data={}, format="multipart", headers={"accept": "application/json"}
+            "/api/formversions/", data={}, format="multipart", headers={"accept": "application/json"}
         )
         self.assertJSONResponse(response, 400)
         response_data = response.json()
@@ -394,7 +394,7 @@ class FormsVersionAPITestCase(APITestCase):
 
         with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
             response = self.client.post(
-                f"/api/formversions/",
+                "/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -408,7 +408,7 @@ class FormsVersionAPITestCase(APITestCase):
         form_file_mock = mock.MagicMock(spec=File)
         form_file_mock.name = "test_batman.xml"
         response = self.client.post(
-            f"/api/formversions/",
+            "/api/formversions/",
             data={"form_id": self.form_1.id, "version_id": "february_2020", "xls_file": form_file_mock},
             format="multipart",
         )

@@ -1,11 +1,11 @@
 import django_filters
 
 from django.conf import settings
-from django.utils.translation import gettext as _
 from django.db.models import QuerySet
+from django.utils.translation import gettext as _
 
-from plugins.polio.models import Notification
 from iaso.models import OrgUnit
+from plugins.polio.models import Notification
 
 
 def countries(request) -> QuerySet[OrgUnit]:

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from iaso.models import OrgUnit, MatchingAlgorithm, Link, AlgorithmRun
+from iaso.models import AlgorithmRun, Link, MatchingAlgorithm, OrgUnit
 
 
 def remove_words(dest, words):
@@ -45,7 +45,7 @@ class Algorithm:
 
         names_2 = {remove_words(item.name.strip().lower(), self.words_to_strip): item for item in level_2}
         for name_1 in names_1.keys():
-            item_2 = names_2.get(name_1, None)
+            item_2 = names_2.get(name_1)
 
             if item_2:
                 items = names_1[name_1]
@@ -91,7 +91,7 @@ class Algorithm:
 
         index = 1
         children_1 = list(
-            OrgUnit.objects.filter(parent__in=parent_1).prefetch_related(("source_set__source__source_set__source"))
+            OrgUnit.objects.filter(parent__in=parent_1).prefetch_related("source_set__source__source_set__source")
         )
         children_2 = list(OrgUnit.objects.filter(parent__in=parent_2))
         while children_1 and children_2:
@@ -101,9 +101,7 @@ class Algorithm:
             children_2 = list(OrgUnit.objects.filter(parent__in=children_2))
 
             children_1 = list(
-                OrgUnit.objects.filter(parent__in=children_1).prefetch_related(
-                    ("source_set__source__source_set__source")
-                )
+                OrgUnit.objects.filter(parent__in=children_1).prefetch_related("source_set__source__source_set__source")
             )
 
             index = index + 1

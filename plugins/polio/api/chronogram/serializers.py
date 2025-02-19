@@ -1,12 +1,9 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from django.contrib.auth.models import User
-
 from hat.menupermissions import models as iaso_permission
-
 from iaso.api.common import DynamicFieldsModelSerializer
-
-from plugins.polio.models import Chronogram, ChronogramTask, ChronogramTemplateTask, Round, Campaign
+from plugins.polio.models import Campaign, Chronogram, ChronogramTask, ChronogramTemplateTask, Round
 
 
 class UserNestedSerializer(serializers.ModelSerializer):

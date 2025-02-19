@@ -8,8 +8,6 @@ This processing creates a record in the `APIImport` table for future reference,
 and it's executed in a database transaction to avoid data loss.
 """
 
-from datetime import datetime
-from copy import copy
 import json
 import logging
 import ntpath
@@ -17,13 +15,15 @@ import os
 import time
 import zipfile
 
+from copy import copy
+from datetime import datetime
+from traceback import format_exc
 
-from beanstalk_worker import task_decorator
 from django.core.files import File
 from django.db import transaction
 from django.utils.translation import gettext as _
-from traceback import format_exc
 
+from beanstalk_worker import task_decorator
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, log_modification
@@ -31,8 +31,9 @@ from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances import import_data as import_instances
 from iaso.api.mobile.org_units import import_data as import_org_units
 from iaso.api.storage import import_storage_logs
-from iaso.models import Project, Instance
+from iaso.models import Instance, Project
 from iaso.utils.s3_client import download_file
+
 
 INSTANCES_JSON = "instances.json"
 ORG_UNITS_JSON = "orgUnits.json"
@@ -72,7 +73,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 else:
                     logger.info(f"The file {ORG_UNITS_JSON} does not exist in the zip file.")
 
-                if not INSTANCES_JSON in zip_ref.namelist():
+                if INSTANCES_JSON not in zip_ref.namelist():
                     raise ValueError(f"{zip_file_path}: The file {INSTANCES_JSON} does not exist in the zip file.")
 
                 logger.info("Processing forms and files")
@@ -230,7 +231,7 @@ def duplicate_instance_files(new_instance_files):
 def result_message(user, project, start_date, start_time, stats):
     return f"""
 Mobile bulk import successful for user {user.username} and project {project.name}.
-Started: {str(start_date)}, time spent: {time.time()-start_time} sec
+Started: {start_date!s}, time spent: {time.time() - start_time} sec
 Number of imported org units: {stats["new_org_units"]}
 Number of imported form submissions: {stats["new_instances"]}
 Number of imported submission attachments: {stats["new_instance_files"]}

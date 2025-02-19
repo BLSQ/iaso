@@ -1,13 +1,13 @@
 import importlib
+
 from importlib import import_module
 
 import django_sql_dashboard  # type: ignore
+
 from django.apps import apps
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin, auth
-from django.db import models
-from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import include, path, re_path
 from django.views.generic import RedirectView, TemplateView
@@ -15,7 +15,8 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
-from iaso.views import ModelDataView, health, page, robots_txt, health_clamav
+from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
+
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"

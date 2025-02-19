@@ -1,11 +1,12 @@
 import datetime
+
 import time_machine
 
 from rest_framework import status
 
+from hat.audit.models import Modification
 from iaso import models as m
 from iaso.tests.api.org_unit_change_request_configurations.common_base_with_setup import OUCRCAPIBase
-from hat.audit.models import Modification
 
 
 class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
@@ -244,7 +245,7 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
             "org_units_editable": False,
         }
         response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
-        self.assertContains(response, f"Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
+        self.assertContains(response, "Invalid pk", status_code=status.HTTP_400_BAD_REQUEST)
 
         result = response.json()
         self.assertIn("org_unit_type_id", result)

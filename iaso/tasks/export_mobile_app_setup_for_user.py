@@ -17,22 +17,25 @@ import json
 import logging
 import os
 import re
-import requests
-from urllib.parse import urlencode, urlparse, urlunparse
 import uuid
 import zipfile
 
-from beanstalk_worker import task_decorator
+from urllib.parse import urlencode, urlparse, urlunparse
+
+import requests
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
+from beanstalk_worker import task_decorator
 from iaso.models import Project
 from iaso.tasks.utils.mobile_app_setup_api_calls import API_CALLS
 from iaso.utils.encryption import encrypt_file
 from iaso.utils.iaso_api_client import IasoClient
 from iaso.utils.s3_client import upload_file_to_s3
+
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +201,7 @@ def _download_form_attachments(iaso_client, tmp_dir, resources, app_id):
         else:
             attachment_file = requests.get(url, headers=iaso_client.headers)
 
-        logger.info(f"\tDOWNLOAD manifest")
+        logger.info("\tDOWNLOAD manifest")
         manifest_file = requests.get(
             SERVER + f"/api/forms/{form_id}/manifest/?app_id={app_id}",
             headers=iaso_client.headers,

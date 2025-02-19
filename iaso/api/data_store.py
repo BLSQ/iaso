@@ -1,10 +1,10 @@
-from iaso.api.common import ModelViewSet
-from iaso.models.base import Account
-from iaso.models.data_store import JsonDataStore
-from rest_framework import serializers, permissions
-from drf_yasg.utils import swagger_auto_schema
 from django.utils.text import slugify
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import permissions, serializers
+
 from hat.menupermissions import models as permission
+from iaso.api.common import ModelViewSet
+from iaso.models.data_store import JsonDataStore
 
 
 class DataStoreSerializer(serializers.ModelSerializer):
@@ -58,22 +58,15 @@ class DataStorePermission(permissions.BasePermission):
 
         if request.method == "GET":
             can_get = (
-                request.user
-                and request.user.is_authenticated
-                and request.user.has_perm(read_perm)
-                or request.user.is_superuser
-            )
+                request.user and request.user.is_authenticated and request.user.has_perm(read_perm)
+            ) or request.user.is_superuser
             return can_get
-        elif request.method == "POST" or request.method == "PUT" or request.method == "DELETE":
+        if request.method == "POST" or request.method == "PUT" or request.method == "DELETE":
             can_post = (
-                request.user
-                and request.user.is_authenticated
-                and request.user.has_perm(write_perm)
-                or request.user.is_superuser
-            )
+                request.user and request.user.is_authenticated and request.user.has_perm(write_perm)
+            ) or request.user.is_superuser
             return can_post
-        else:
-            return False
+        return False
 
 
 @swagger_auto_schema(tags=["datastore"])

@@ -1,10 +1,12 @@
 import calendar
 import datetime as dt
+
 from typing import Any, Optional, Union
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.styles.borders import Border, Side
+
 
 CALENDAR_COLUMNS_CELL_WIDTH = 25.75
 CALENDAR_FIRST_COLUMN_CELL_WIDTH = 35.00
@@ -61,7 +63,7 @@ def generate_xlsx_campaigns_calendar(filename: str, datas: Any) -> Workbook:
         for month in range(1, 13):
             if str(month) in datas[row - 1]["rounds"].keys():
                 # assign rounds to each cell
-                for r in range(0, len(datas[row - 1]["rounds"][str(month)])):
+                for r in range(len(datas[row - 1]["rounds"][str(month)])):
                     cell_val = datas[row - 1]["rounds"][str(month)][r]
                     formatted_cell_val = get_cell_data(cell_val)
                     cell = sheet.cell(column=month + 1, row=r + start_row, value=formatted_cell_val)

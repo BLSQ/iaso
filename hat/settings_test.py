@@ -1,4 +1,5 @@
-from .settings import *  # noqa: F401,F403
+from .settings import *
+
 
 # Disable Database Serialization to speed up tests (Django < 4.0).
 # Django serializes the whole database into a SQL string at the start of a test run, which can take a few seconds.

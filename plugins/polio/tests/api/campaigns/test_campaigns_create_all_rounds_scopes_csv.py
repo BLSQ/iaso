@@ -4,8 +4,8 @@ import time_machine
 
 from iaso import models as m
 from iaso.test import APITestCase
+from plugins.polio.models import Campaign, CampaignScope, Round
 
-from plugins.polio.models import Campaign, Round, CampaignScope
 
 TODAY = datetime.datetime(2024, 10, 21, 11, 0, 0, 0, tzinfo=datetime.timezone.utc)
 

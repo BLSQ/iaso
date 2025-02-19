@@ -1,4 +1,5 @@
 import django_filters
+
 from django.db.models import Q
 from rest_framework import filters, serializers, viewsets
 from rest_framework.decorators import action
@@ -23,7 +24,7 @@ from iaso.models import OrgUnitChangeRequestConfiguration, OrgUnitType
 
 
 class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
-    f"""OrgUnitChangeRequestConfiguration API
+    """OrgUnitChangeRequestConfiguration API
 
     GET /api/orgunits/changes/configs
     GET /api/orgunits/changes/configs/<id>
@@ -32,6 +33,7 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
     DELETE /api/orgunits/changes/configs/<id>
     GET /api/orgunits/changes/configs/check_availability/?project_id=<project_id>
     """
+
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = OrgUnitChangeRequestConfigurationListFilter
     ordering_fields = [

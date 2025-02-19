@@ -1,7 +1,6 @@
 from django.db import transaction
 
 from beanstalk_worker import task_decorator
-
 from iaso.models import DataSourceVersionsSynchronization, Task
 
 

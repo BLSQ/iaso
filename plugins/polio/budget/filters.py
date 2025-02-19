@@ -3,7 +3,6 @@ import django_filters
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext as _
-from rest_framework.exceptions import ValidationError
 
 from iaso.api.common import parse_comma_separated_numeric_values
 from plugins.polio.budget.models import BudgetProcess

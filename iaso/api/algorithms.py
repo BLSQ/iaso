@@ -1,8 +1,8 @@
 from django.db.models import Q
-from rest_framework import viewsets, permissions, serializers
+from rest_framework import permissions, serializers, viewsets
 
-from iaso.models import MatchingAlgorithm, Project
 from hat.menupermissions import models as permission
+from iaso.models import MatchingAlgorithm, Project
 
 
 class AlgorithmsSerializer(serializers.ModelSerializer):

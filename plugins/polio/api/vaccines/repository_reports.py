@@ -1,4 +1,6 @@
 """API endpoints and serializers for vaccine repository reports."""
+
+from django.db.models import Q
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, serializers
@@ -6,7 +8,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from django.db.models import Q
+
 from iaso.api.common import Paginator
 from plugins.polio.models import VaccineStock
 

@@ -1,21 +1,22 @@
+import argparse
+import random
 import re
+import string
+import sys
 
+from additional_projects import create_projects, link_new_projects_to_main_data_source
+from create_submission_with_picture import create_submission_with_picture
+from data_collection import setup_instances
+from default_healthFacility_form import setup_health_facility_level_default_form
+from entities import setup_entities
 from iaso_api_client import IasoClient
 from micro_planning import setup_users_teams_micro_planning
-from data_collection import setup_instances
-from pyramid import setup_orgunits
-from entities import setup_entities
-from registry import setup_registry
-from default_healthFacility_form import setup_health_facility_level_default_form
-from review_change_proposal import setup_review_change_proposal
-from create_submission_with_picture import create_submission_with_picture
-from additional_projects import create_projects, link_new_projects_to_main_data_source
-from user_roles_permissions import create_user_role
 from org_unit_pictures import associate_favorite_picture
-import string
-import random
-import argparse
-import sys
+from pyramid import setup_orgunits
+from registry import setup_registry
+from review_change_proposal import setup_review_change_proposal
+from user_roles_permissions import create_user_role
+
 
 seed_default_health_facility_form = True
 
@@ -147,6 +148,6 @@ if __name__ == "__main__":
             pass
 
     if not server_url or not username or not password:
-        sys.exit(f"ERROR: Values for server url, user name and password are all required")
+        sys.exit("ERROR: Values for server url, user name and password are all required")
 
     create_account(server_url, username, password, account_name, additional_projects)

@@ -76,7 +76,7 @@ def create_projects(account_name, iaso_client):
 
 
 def link_forms_to_new_projects(projects, forms, iaso_client):
-    existing_forms = iaso_client.get(f"/api/forms/")["forms"]
+    existing_forms = iaso_client.get("/api/forms/")["forms"]
     for form in forms:
         project_ids = [project["id"] for project in projects if form in project["linked_forms"]]
         form_to_link_to_project = [current_form for current_form in existing_forms if current_form["name"] == form]

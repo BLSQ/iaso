@@ -1,4 +1,5 @@
 import datetime
+
 from datetime import date
 
 from django.contrib.auth.models import User
@@ -11,15 +12,15 @@ from rest_framework.test import APIClient
 from beanstalk_worker.services import TestTaskService
 from hat import settings
 from iaso import models as m
-from iaso.models import Account, Group, OrgUnitType, Team, Profile
+from iaso.models import Account, Group, OrgUnitType, Profile, Team
 from iaso.test import APITestCase
 from plugins.polio.models import VaccineAuthorization
 from plugins.polio.settings import NOPV2_VACCINE_TEAM_NAME
 from plugins.polio.tasks.vaccine_authorizations_mail_alerts import (
     expired_vaccine_authorizations_email_alert,
-    vaccine_authorization_update_expired_entries,
-    send_email_vaccine_authorizations_60_days_expiration_alert,
     send_email_expired_vaccine_authorizations_alert,
+    send_email_vaccine_authorizations_60_days_expiration_alert,
+    vaccine_authorization_update_expired_entries,
     vaccine_authorizations_60_days_expiration_email_alert,
 )
 
@@ -163,8 +164,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["country"]["name"], "Democratic Republic of Congo")
-        self.assertEqual(response.data["expiration_date"], "2225-02-01"),
-        self.assertEqual(response.data["start_date"], "2224-02-01"),
+        (self.assertEqual(response.data["expiration_date"], "2225-02-01"),)
+        (self.assertEqual(response.data["start_date"], "2224-02-01"),)
         self.assertEqual(response.data["status"], "ONGOING")
         self.assertEqual(response.data["comment"], "waiting for approval.")
         self.assertEqual(response.data["quantity"], 12346)

@@ -1,5 +1,6 @@
 import os.path
-from unittest.mock import patch, MagicMock
+
+from unittest.mock import MagicMock, patch
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test import override_settings

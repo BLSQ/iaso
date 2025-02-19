@@ -1,4 +1,4 @@
-from django.db.models import Q, ExpressionWrapper, BooleanField, Value
+from django.db.models import BooleanField, ExpressionWrapper, Q, Value
 from django.db.models.query import QuerySet
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema

@@ -193,7 +193,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         f"""GET /orgunittypes/?{PROJECT}=... happy path"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(f"/api/v2/orgunittypes/", {PROJECT: self.ead.id})
+        response = self.client.get("/api/v2/orgunittypes/", {PROJECT: self.ead.id})
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(response.json(), 2)
 
@@ -201,7 +201,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         f"""GET /orgunittypes/?{PROJECT}=... wrong id"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(f"/api/v2/orgunittypes/", {PROJECT: -1})
+        response = self.client.get("/api/v2/orgunittypes/", {PROJECT: -1})
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(response.json(), 0)
 

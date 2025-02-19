@@ -1,10 +1,11 @@
 import json
+
 from unittest.mock import patch
 
 from django.test import SimpleTestCase
 from django.utils.dateparse import parse_datetime
 
-from iaso.odk import parse_xls_form, Survey, ParsingError, to_questions_by_name
+from iaso.odk import ParsingError, Survey, parse_xls_form, to_questions_by_name
 
 
 class ParsingTestCase(SimpleTestCase):
@@ -18,7 +19,7 @@ class ParsingTestCase(SimpleTestCase):
         self.assertIsInstance(xml_content, bytes)
         self.assertGreater(len(xml_content), 100)
         # check correctness of root data key
-        self.assertIn(f'<data id="sample1" version="2020022401">', xml_content.decode("utf-8"))
+        self.assertIn('<data id="sample1" version="2020022401">', xml_content.decode("utf-8"))
         self.assertEqual(survey.form_id, "sample1")
         self.assertEqual(survey.version, "2020022401")
 

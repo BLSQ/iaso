@@ -1,5 +1,7 @@
+import random
+import uuid
+
 from dict2xml import dict2xml
-import uuid, random
 
 
 def submission2xml(submission_dict, form_id, form_version_id, gen_uuid=False):

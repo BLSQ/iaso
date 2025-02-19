@@ -1,6 +1,9 @@
-from django.core.management.base import BaseCommand
 from datetime import datetime
+
+from django.core.management.base import BaseCommand
+
 import iaso.models as m
+
 
 # This is one time command to "reparse" the xml to json
 # All submissions for forms with select_multiple has to be reparse

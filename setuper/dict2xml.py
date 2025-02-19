@@ -2,24 +2,25 @@ import collections
 import collections.abc
 import re
 
+
 start_ranges = "|".join(
-    "[{0}]".format(r)
+    f"[{r}]"
     for r in [
-        "\xC0-\xD6",
-        "\xD8-\xF6",
-        "\xF8-\u02FF",
-        "\u0370-\u037D",
-        "\u037F-\u1FFF",
-        "\u200C-\u200D",
-        "\u2070-\u218F",
-        "\u2C00-\u2FEF",
-        "\u3001-\uD7FF",
-        "\uF900-\uFDCF",
-        "\uFDF0-\uFFFD",
+        "\xc0-\xd6",
+        "\xd8-\xf6",
+        "\xf8-\u02ff",
+        "\u0370-\u037d",
+        "\u037f-\u1fff",
+        "\u200c-\u200d",
+        "\u2070-\u218f",
+        "\u2c00-\u2fef",
+        "\u3001-\ud7ff",
+        "\uf900-\ufdcf",
+        "\ufdf0-\ufffd",
     ]
 )
 
-NameStartChar = re.compile(r"(:|[A-Z]|_|[a-z]|{0})".format(start_ranges))
+NameStartChar = re.compile(rf"(:|[A-Z]|_|[a-z]|{start_ranges})")
 NameChar = re.compile(r"(\-|\.|[0-9]|\xB7|[\u0300-\u036F]|[\u203F-\u2040])")
 
 ########################
@@ -27,7 +28,7 @@ NameChar = re.compile(r"(\-|\.|[0-9]|\xB7|[\u0300-\u036F]|[\u203F-\u2040])")
 ########################
 
 
-class Node(object):
+class Node:
     """
     Represents each tag in the tree
 
@@ -66,11 +67,11 @@ class Node(object):
         wrap = self.wrap
         end, start = "", ""
         if wrap:
-            end = "</{0}>".format(wrap)
-            start = "<{0}>".format(wrap)
+            end = f"</{wrap}>"
+            start = f"<{wrap}>"
 
         if self.closed_tags_for and self.data in self.closed_tags_for:
-            return "<{0}/>".format(self.wrap)
+            return f"<{self.wrap}/>"
 
         # Convert the data attached in this node into a value and children
         value, children = self.convert()
@@ -97,11 +98,10 @@ class Node(object):
 
                     # We already have what we want, return the indented result
                     return indenter(result, False)
-                else:
-                    result = []
-                    for c in children:
-                        result.append(c.serialize(indenter))
-                    return "".join([start, indenter(result, True), end])
+                result = []
+                for c in children:
+                    result.append(c.serialize(indenter))
+                return "".join([start, indenter(result, True), end])
 
         # If here, either:
         #  * Have a value
@@ -119,12 +119,11 @@ class Node(object):
         data = self.data
         if isinstance(data, str):
             return "flat"
-        elif isinstance(data, collections.abc.Mapping):
+        if isinstance(data, collections.abc.Mapping):
             return "mapping"
-        elif isinstance(data, collections.abc.Iterable):
+        if isinstance(data, collections.abc.Iterable):
             return "iterable"
-        else:
-            return "flat"
+        return "flat"
 
     def convert(self):
         """
@@ -171,7 +170,7 @@ class Node(object):
         else:
             val = str(data)
             if self.tag:
-                val = "<{0}>{1}</{2}>".format(self.tag, val, self.tag)
+                val = f"<{self.tag}>{val}</{self.tag}>"
 
         return val, children
 
@@ -195,8 +194,7 @@ class Node(object):
                 ["_" if not NameStartChar.match(wrap) else ""]
                 + ["_" if not (NameStartChar.match(c) or NameChar.match(c)) else c for c in wrap]
             )
-        else:
-            return wrap
+        return wrap
 
 
 ########################
@@ -204,7 +202,7 @@ class Node(object):
 ########################
 
 
-class Converter(object):
+class Converter:
     """Logic for creating a Node tree and serialising that tree into a string"""
 
     def __init__(self, wrap=None, indent="  ", newlines=True):
@@ -246,8 +244,8 @@ class Converter(object):
                     and indent each line in the child by one indent unit
                 """
                 if wrapped:
-                    seperator = "\n{0}".format(indent)
-                    surrounding = "\n{0}{{0}}\n".format(indent)
+                    seperator = f"\n{indent}"
+                    surrounding = f"\n{indent}{{0}}\n"
                 else:
                     seperator = "\n"
                     surrounding = "{0}"

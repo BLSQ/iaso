@@ -1,7 +1,7 @@
 from django.core.files import File
 from django.core.management.base import BaseCommand
 
-from iaso.models import Project, Form, FormVersion
+from iaso.models import Form, FormVersion, Project
 from iaso.odk import parsing
 
 

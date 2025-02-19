@@ -23,6 +23,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import PermissionDenied
 
+
 _ASSIGNMENTS = "iaso_assignments"
 _COMPLETENESS = "iaso_completeness"
 _COMPLETENESS_STATS = "iaso_completeness_stats"

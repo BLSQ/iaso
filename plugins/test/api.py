@@ -1,11 +1,12 @@
 import logging
 
 from django.contrib.auth.models import User
-from rest_framework import permissions, serializers, routers
+from rest_framework import permissions, routers, serializers
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.viewsets import ModelViewSet
 
 from .models import BlogPost
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,9 +41,8 @@ class HasBlogPostPermission(permissions.BasePermission):
         # Everyone can read
         if request.method in SAFE_METHODS:
             return True
-        else:
-            # only an author can edit his post
-            return obj.author == request.user
+        # only an author can edit his post
+        return obj.author == request.user
 
 
 class BlogPostViewSet(ModelViewSet):

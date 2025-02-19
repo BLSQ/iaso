@@ -20,10 +20,11 @@ TODO: Remove old trad?
 """
 
 import json
+import os
 import sys
 import typing
+
 from collections import OrderedDict, defaultdict
-import os
 
 
 def extract_translations(path, trad_dir):

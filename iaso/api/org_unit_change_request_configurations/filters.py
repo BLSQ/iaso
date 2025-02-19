@@ -1,4 +1,5 @@
 import django_filters
+
 from django.utils.translation import gettext_lazy as _
 
 from iaso.api.common import parse_comma_separated_numeric_values

@@ -1,13 +1,15 @@
 "Summary for dashboard"
+
 from datetime import date, timedelta
 from logging import getLogger
 
 from django.core.cache import cache
 from gspread.utils import extract_id_from_url  # type: ignore
 
-from plugins.polio.models import SpreadSheetImport, Round, Campaign
+from plugins.polio.models import Campaign, Round, SpreadSheetImport
 from plugins.polio.preparedness.calculator import avg
 from plugins.polio.preparedness.parser import get_preparedness, indicators
+
 
 logger = getLogger(__name__)
 

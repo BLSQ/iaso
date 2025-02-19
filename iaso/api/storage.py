@@ -1,32 +1,34 @@
 # TODO: need better type annotations in this file
 import datetime
-from typing import Tuple, Union, List, Any
+
+from typing import Any, List, Tuple, Union
 
 from django.core.paginator import Paginator
-from django.db.models import Prefetch, QuerySet, Q
+from django.db.models import Prefetch, Q, QuerySet
 from django.http import HttpResponse, StreamingHttpResponse
-from rest_framework import viewsets, permissions, serializers, status
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.fields import Field
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from hat.api.export_utils import generate_xlsx, iter_items, Echo, timestamp_to_utc_datetime
+from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.menupermissions import models as permission
 from iaso.api.entity import EntitySerializer
 from iaso.api.serializers import OrgUnitSerializer
-from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
+from iaso.models import Entity, Instance, OrgUnit, StorageDevice, StorageLogEntry
+
 from .common import (
-    TimestampField,
-    HasPermission,
-    UserSerializer,
-    CONTENT_TYPE_XLSX,
     CONTENT_TYPE_CSV,
+    CONTENT_TYPE_XLSX,
     EXPORTS_DATETIME_FORMAT,
+    HasPermission,
+    TimestampField,
+    UserSerializer,
     safe_api_import,
 )
 from .instances import FileFormatEnum
-from hat.menupermissions import models as permission
 
 
 class EntityNestedSerializer(EntitySerializer):
@@ -280,24 +282,23 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
 
         if file_export:
             return device_generate_export(queryset=queryset, file_format=file_format_export)
-        else:  # JSON response for the frontend
-            if limit_str is not None:
-                limit = int(limit_str)
-                page_offset = int(page_offset)
-                paginator = Paginator(queryset, limit)
-                res = {"count": paginator.count}
-                if page_offset > paginator.num_pages:
-                    page_offset = paginator.num_pages
-                page = paginator.page(page_offset)
-                res["results"] = serializer(page.object_list, many=True).data
-                res["has_next"] = page.has_next()
-                res["has_previous"] = page.has_previous()
-                res["page"] = page_offset
-                res["pages"] = paginator.num_pages
-                res["limit"] = limit
-                return Response(res)
-            else:
-                return Response(StorageSerializer(queryset, many=True).data)
+        # JSON response for the frontend
+        if limit_str is not None:
+            limit = int(limit_str)
+            page_offset = int(page_offset)
+            paginator = Paginator(queryset, limit)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
+            res["results"] = serializer(page.object_list, many=True).data
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
+            return Response(res)
+        return Response(StorageSerializer(queryset, many=True).data)
 
     @action(detail=False, methods=["post"])
     def blacklisted(self, request):
@@ -335,8 +336,8 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
             )
             return Response({}, status=200)
 
-        else:  # Some parameters were invalid
-            return Response({}, status=400)
+        # Some parameters were invalid
+        return Response({}, status=400)
 
 
 # This could be rewritten in more idiomatic DRF (serializers, ...). On the other hand, I quite like the explicitness
@@ -560,11 +561,9 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
             res["pages"] = paginator.num_pages
             res["limit"] = limit
             return Response(res)
-        else:
-            return Response(StorageSerializerWithLogs(device_with_logs).data)
-    else:
-        # File export requested
-        return logs_for_device_generate_export(queryset=log_entries_queryset, file_format=file_format_export)
+        return Response(StorageSerializerWithLogs(device_with_logs).data)
+    # File export requested
+    return logs_for_device_generate_export(queryset=log_entries_queryset, file_format=file_format_export)
 
 
 class StorageSerializerForBlacklisted(serializers.ModelSerializer):

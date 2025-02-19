@@ -1,5 +1,4 @@
 from django.utils import timezone
-
 from rest_framework.test import APIClient
 
 from iaso import models as m
@@ -41,7 +40,7 @@ class PreparednessAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 2)
 
-        response = self.client.get(f"/api/polio/preparedness_dashboard/", format="json")
+        response = self.client.get("/api/polio/preparedness_dashboard/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 0)
 
@@ -65,7 +64,7 @@ class PreparednessAPITestCase(APITestCase):
         round_three.preparedness_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1"
         round_three.save()
 
-        response = self.client.get(f"/api/polio/preparedness_dashboard/", format="json")
+        response = self.client.get("/api/polio/preparedness_dashboard/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
         for campaign_round in r:

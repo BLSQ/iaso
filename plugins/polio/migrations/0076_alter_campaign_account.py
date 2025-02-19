@@ -2,8 +2,9 @@
 
 # Since we've assigned all campaigns to an account in a previous migration, we can now tighten the system by making the
 # account field non-nullable
-from django.db import migrations, models
 import django.db.models.deletion
+
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):

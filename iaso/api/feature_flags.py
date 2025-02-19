@@ -1,10 +1,13 @@
-from rest_framework import serializers, permissions
+from itertools import chain
+
+from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from iaso.models import FeatureFlag
-from .common import ModelViewSet, TimestampField
+
 from hat.menupermissions.constants import FEATUREFLAGES_TO_EXCLUDE
-from itertools import chain
+from iaso.models import FeatureFlag
+
+from .common import ModelViewSet, TimestampField
 
 
 class FeatureFlagsSerializer(serializers.ModelSerializer):

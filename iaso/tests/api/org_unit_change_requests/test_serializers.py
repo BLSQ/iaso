@@ -1,27 +1,29 @@
 import collections
 import datetime
-import time_machine
 import uuid
+
+from collections import OrderedDict
+
+import time_machine
 
 from django.contrib.gis.geos import Point
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
-from collections import OrderedDict
 
+from iaso import models as m
 from iaso.api.org_unit_change_requests.serializers import (
     InstanceForChangeRequestSerializer,
     MobileOrgUnitChangeRequestListSerializer,
+    OrgUnitChangeRequestBulkReviewSerializer,
     OrgUnitChangeRequestListSerializer,
+    OrgUnitChangeRequestRetrieveSerializer,
+    OrgUnitChangeRequestReviewSerializer,
     OrgUnitChangeRequestWriteSerializer,
     OrgUnitForChangeRequestSerializer,
-    OrgUnitChangeRequestReviewSerializer,
-    OrgUnitChangeRequestRetrieveSerializer,
-    OrgUnitChangeRequestBulkReviewSerializer,
 )
 from iaso.models import OrgUnitChangeRequest
 from iaso.models.payments import PaymentStatuses
 from iaso.test import TestCase
-from iaso import models as m
 
 
 class InstanceForChangeRequestSerializerTestCase(TestCase):

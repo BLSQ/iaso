@@ -1,7 +1,8 @@
 from django.db.models import Q
 
-from iaso.models import OrgUnit, GroupSet, Group
-from .comparisons import as_field_types, Diff, Comparison
+from iaso.models import Group, GroupSet, OrgUnit
+
+from .comparisons import Comparison, Diff, as_field_types
 
 
 def index_pyramid(orgunits):

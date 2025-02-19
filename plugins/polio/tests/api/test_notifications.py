@@ -1,18 +1,19 @@
 import datetime
 import os
 import shutil
-import time_machine
+
 from unittest import mock
+
+import time_machine
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
-from django.utils import timezone
 
 from hat import settings
-from plugins.polio.api.notifications.serializers import NotificationSerializer, NotificationImportSerializer
-from plugins.polio.models import Notification, NotificationImport
-from iaso.test import APITestCase, TestCase
 from iaso import models as m
+from iaso.test import APITestCase, TestCase
+from plugins.polio.api.notifications.serializers import NotificationImportSerializer, NotificationSerializer
+from plugins.polio.models import Notification, NotificationImport
 
 
 DT = datetime.datetime(2023, 11, 21, 11, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -354,7 +355,7 @@ class NotificationViewSetTestCase(APITestCase):
         with open(XLSX_FILE_PATH, "rb") as xlsx_file:
             data = {"account": self.account.pk, "file": xlsx_file}
             response = self.client.post(
-                f"/api/polio/notifications/import_xlsx/",
+                "/api/polio/notifications/import_xlsx/",
                 data=data,
                 format="multipart",
                 headers={"accept": "application/json"},

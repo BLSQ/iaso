@@ -2,7 +2,7 @@ from django.contrib.gis.geos import Point
 
 from hat.audit.models import Modification
 from iaso.gpkg.import_gpkg import import_gpkg_file
-from iaso.models import Account, Project, OrgUnit, Group, OrgUnitType, DataSource, SourceVersion
+from iaso.models import Account, DataSource, Group, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.test import TestCase
 
 

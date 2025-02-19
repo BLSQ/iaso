@@ -1,14 +1,13 @@
 from django.contrib.auth.models import User
-
 from rest_framework import serializers
 
 from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models import (
-    DataSourceVersionsSynchronization,
-    SourceVersion,
     Account,
+    DataSourceVersionsSynchronization,
     OrgUnit,
     OrgUnitType,
+    SourceVersion,
 )
 
 
@@ -141,7 +140,7 @@ class CreateJsonDiffParametersSerializer(serializers.Serializer):
             source_version = self.context["data_source_versions_synchronization"].source_version_to_update
             if top_org_unit.version != source_version:
                 raise serializers.ValidationError(
-                    f"The version of this org unit is different from the version to update."
+                    "The version of this org unit is different from the version to update."
                 )
         return top_org_unit
 
@@ -150,6 +149,6 @@ class CreateJsonDiffParametersSerializer(serializers.Serializer):
             source_version = self.context["data_source_versions_synchronization"].source_version_to_compare_with
             if top_org_unit.version != source_version:
                 raise serializers.ValidationError(
-                    f"The version of this org unit is different from the version to update."
+                    "The version of this org unit is different from the version to update."
                 )
         return top_org_unit

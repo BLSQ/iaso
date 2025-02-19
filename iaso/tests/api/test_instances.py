@@ -3,11 +3,13 @@ import datetime
 import io
 import json
 import typing
+
 from unittest import mock
 from unittest.mock import patch
 from uuid import uuid4
 
 import pytz
+
 from django.contrib.gis.geos import Point
 from django.core.files import File
 from django.utils import timezone
@@ -15,12 +17,13 @@ from django.utils.timezone import now
 from rest_framework import status
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from hat.audit.models import Modification, INSTANCE_API
+from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.api import query_params as query
 from iaso.models import FormVersion, Instance, InstanceLock
 from iaso.models.microplanning import Planning, Team
 from iaso.test import APITestCase
+
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
@@ -255,7 +258,7 @@ class InstancesAPITestCase(APITestCase):
         ]
 
         response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -301,7 +304,7 @@ class InstancesAPITestCase(APITestCase):
             }
         ]
         response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -351,7 +354,7 @@ class InstancesAPITestCase(APITestCase):
             }
         ]
         response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -403,7 +406,7 @@ class InstancesAPITestCase(APITestCase):
             }
         ]
         response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -456,7 +459,7 @@ class InstancesAPITestCase(APITestCase):
             },
         ]
         response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -488,7 +491,7 @@ class InstancesAPITestCase(APITestCase):
             }
         ]
         response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
         j = response.json()
@@ -514,12 +517,12 @@ class InstancesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get(f"/api/instances/?org_unit_status=VALID")
+        response = self.client.get("/api/instances/?org_unit_status=VALID")
         self.assertJSONResponse(response, 200)
 
         self.assertValidInstanceListData(response.json(), 7)
 
-        response = self.client.get(f"/api/instances/?org_unit_status=REJECTED")
+        response = self.client.get("/api/instances/?org_unit_status=REJECTED")
         self.assertJSONResponse(response, 200)
 
         self.assertValidInstanceListData(response.json(), 0)
@@ -606,7 +609,7 @@ class InstancesAPITestCase(APITestCase):
         audit_before_count = Modification.objects.all().count()
 
         response = self.client.post(
-            f"/api/instances/bulkdelete/",
+            "/api/instances/bulkdelete/",
             {"selected_ids": [str(soft_deleted_instance.id)], "is_deletion": True, "showDeleted": False},
             format="json",
         )
@@ -627,7 +630,7 @@ class InstancesAPITestCase(APITestCase):
 
         # lets restore
         response = self.client.post(
-            f"/api/instances/bulkdelete/",
+            "/api/instances/bulkdelete/",
             {"selected_ids": [str(soft_deleted_instance.id)], "is_deletion": False, "showDeleted": "true"},
             format="json",
         )
@@ -669,7 +672,7 @@ class InstancesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]})
-        response = self.client.get(f"/api/instances/", {"jsonContent": json_filters})
+        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
         self.assertJSONResponse(response, 200)
         response_json = response.json()
         self.assertValidInstanceListData(response_json, expected_length=1)
@@ -703,7 +706,7 @@ class InstancesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         json_filters = json.dumps({"!": {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]}})
-        response = self.client.get(f"/api/instances/", {"jsonContent": json_filters})
+        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
 
         response_json = response.json()
         # We should receive the a and c (+ the instances created in setupTestData), but not the b (because it's a female under 25)
@@ -748,7 +751,7 @@ class InstancesAPITestCase(APITestCase):
             ],
         }
 
-        response = self.client.get(f"/api/instances/", {"jsonContent": json.dumps(filters)})
+        response = self.client.get("/api/instances/", {"jsonContent": json.dumps(filters)})
         self.assertJSONResponse(response, 200)
         response_json = response.json()
         self.assertValidInstanceListData(response_json, expected_length=2)
@@ -760,7 +763,7 @@ class InstancesAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get(
-            f"/api/instances/", {"form_id": self.form_1.id, "status": m.Instance.STATUS_DUPLICATED}
+            "/api/instances/", {"form_id": self.form_1.id, "status": m.Instance.STATUS_DUPLICATED}
         )
         self.assertJSONResponse(response, 200)
 
@@ -770,7 +773,7 @@ class InstancesAPITestCase(APITestCase):
         """GET /instances/?search=refs:org_unit__source_ref"""
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get(f"/api/instances/", {"search": "refs:" + self.jedi_council_corruscant.source_ref})
+        response = self.client.get("/api/instances/", {"search": "refs:" + self.jedi_council_corruscant.source_ref})
         self.assertJSONResponse(response, 200)
 
         self.assertValidInstanceListData(response.json(), 7)
@@ -779,7 +782,7 @@ class InstancesAPITestCase(APITestCase):
         """GET /instances/?search=refs:org_unit__source_ref"""
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get(f"/api/instances/", {"search": "refs:source_ref_not_in"})
+        response = self.client.get("/api/instances/", {"search": "refs:source_ref_not_in"})
         self.assertJSONResponse(response, 200)
 
         self.assertValidInstanceListData(response.json(), 0)
@@ -797,7 +800,7 @@ class InstancesAPITestCase(APITestCase):
             form=form, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
         )
 
-        response = self.client.get(f"/api/instances/", {"form_id": form.id})
+        response = self.client.get("/api/instances/", {"form_id": form.id})
         res = self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(res, 1)
         self.assertEqual(res["instances"][0]["status"], "READY")
@@ -805,7 +808,7 @@ class InstancesAPITestCase(APITestCase):
         dup = self.create_form_instance(
             form=form, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
         )
-        response = self.client.get(f"/api/instances/", {"form_id": form.id})
+        response = self.client.get("/api/instances/", {"form_id": form.id})
         res = self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(res, 2)
         self.assertEqual(res["instances"][0]["status"], "DUPLICATED")
@@ -817,9 +820,9 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(True, dup.deleted)
         self.assertEqual(1, Modification.objects.count())
         # check status is ready again
-        self.client.get(f"/api/instances/", {"form_id": form.id})
+        self.client.get("/api/instances/", {"form_id": form.id})
 
-        response = self.client.get(f"/api/instances/", {"form_id": form.id})
+        response = self.client.get("/api/instances/", {"form_id": form.id})
         res = self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(res, 1)
         self.assertEqual(res["instances"][0]["status"], "READY")
@@ -960,7 +963,7 @@ class InstancesAPITestCase(APITestCase):
 
     def test_can_retrieve_instances_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/?format=csv", headers={"Content-Type": "text/csv"})
+        response = self.client.get("/api/instances/?format=csv", headers={"Content-Type": "text/csv"})
         self.assertFileResponse(response, 200, "text/csv; charset=utf-8")
 
     def test_can_retrieve_submissions_list_in_csv_format(self):
@@ -1061,7 +1064,7 @@ class InstancesAPITestCase(APITestCase):
         # Make sure IA-3275 is fixed by sending a 400 instead of letting the backend crash
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
-            f"/api/instances/?limit=20&order=org_unit__name&page=1&showDeleted=false&org_unit_status=VALID&csv=true",
+            "/api/instances/?limit=20&order=org_unit__name&page=1&showDeleted=false&org_unit_status=VALID&csv=true",
             headers={"Content-Type": "text/csv"},
         )
         self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -1081,7 +1084,7 @@ class InstancesAPITestCase(APITestCase):
         org_unit_without_submissions = m.OrgUnit.objects.create(name="org unit without submissions")
 
         # not restricted yet, can list all instances
-        response = self.client.get(f"/api/instances/")
+        response = self.client.get("/api/instances/")
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 10)
         # restrict user to endor region, can only see one instance. Not instance without org unit
@@ -1092,7 +1095,7 @@ class InstancesAPITestCase(APITestCase):
         restricted.iaso_profile.save()
         self.client.force_authenticate(restricted)
 
-        response = self.client.get(f"/api/instances/")
+        response = self.client.get("/api/instances/")
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 1)
 
@@ -1100,7 +1103,7 @@ class InstancesAPITestCase(APITestCase):
         restricted.iaso_profile.org_units.set([self.jedi_council_endor])
         restricted.iaso_profile.save()
 
-        response = self.client.get(f"/api/instances/")
+        response = self.client.get("/api/instances/")
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 2)
 
@@ -1110,21 +1113,21 @@ class InstancesAPITestCase(APITestCase):
         )
         restricted.iaso_profile.save()
 
-        response = self.client.get(f"/api/instances/")
+        response = self.client.get("/api/instances/")
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 8)
 
         # Check org unit without submissions return empty
         restricted.iaso_profile.org_units.set([org_unit_without_submissions])
 
-        response = self.client.get(f"/api/instances/")
+        response = self.client.get("/api/instances/")
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 0)
 
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def test_stats(self):
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/stats/")
+        response = self.client.get("/api/instances/stats/")
         r = self.assertJSONResponse(response, 200)
 
         self.assertEqual(
@@ -1176,7 +1179,7 @@ class InstancesAPITestCase(APITestCase):
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def test_stats_sum(self):
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/stats_sum/")
+        response = self.client.get("/api/instances/stats_sum/")
         r = self.assertJSONResponse(response, 200)
 
         self.assertEqual(
@@ -1251,7 +1254,7 @@ class InstancesAPITestCase(APITestCase):
             form=duplicate_form_b, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
         )
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/stats/")
+        response = self.client.get("/api/instances/stats/")
         r = self.assertJSONResponse(response, 200)
 
         self.assertEqual(
@@ -1268,7 +1271,7 @@ class InstancesAPITestCase(APITestCase):
                 }
             ],
         )
-        response = self.client.get(f"/api/instances/stats_sum/")
+        response = self.client.get("/api/instances/stats_sum/")
         self.assertJSONResponse(response, 200)
 
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
@@ -1303,7 +1306,7 @@ class InstancesAPITestCase(APITestCase):
             form=duplicate_form_b, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
         )
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/stats/")
+        response = self.client.get("/api/instances/stats/")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(
             r["data"],
@@ -1320,7 +1323,7 @@ class InstancesAPITestCase(APITestCase):
             ],
         )
 
-        response = self.client.get(f"/api/instances/stats_sum/")
+        response = self.client.get("/api/instances/stats_sum/")
         self.assertJSONResponse(response, 200)
 
     def test_lock_instance(self):
@@ -1344,7 +1347,7 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/{instance.pk}/")
         j = self.assertJSONResponse(response, 200)
         self.assertEqual(j["is_locked"], True)
-        response = self.client.get(f"/api/instances/?limit=100")
+        response = self.client.get("/api/instances/?limit=100")
         j = self.assertJSONResponse(response, 200)
 
         json_instance = list(filter(lambda x: x["id"] == instance.id, j["instances"]))[0]
@@ -1401,13 +1404,13 @@ class InstancesAPITestCase(APITestCase):
         # Bob cannot remove Alice's lock
         self.client.force_authenticate(bob)
         response = self.client.post(
-            f"/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=alice).id}, json=True
+            "/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=alice).id}, json=True
         )
         self.assertJSONResponse(response, 403)
         # Alice remove her lock
         self.client.force_authenticate(alice)
         response = self.client.post(
-            f"/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=alice).id}, json=True
+            "/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=alice).id}, json=True
         )
         self.assertJSONResponse(response, 200)
         self._check_via_api(instance, alice, can_user_modify=True, is_locked=True)
@@ -1417,7 +1420,7 @@ class InstancesAPITestCase(APITestCase):
         # Alice remove Bob's lock. No active lock, anyone can modify
         self.client.force_authenticate(alice)
         response = self.client.post(
-            f"/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=bob).id}, json=True
+            "/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=bob).id}, json=True
         )
         self.assertJSONResponse(response, 200)
         self._check_via_api(instance, alice, can_user_modify=True, is_locked=False)
@@ -1427,7 +1430,7 @@ class InstancesAPITestCase(APITestCase):
         # Error if trying to unlock a lock already unlocked
         self.client.force_authenticate(alice)
         response = self.client.post(
-            f"/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=bob).id}, json=True
+            "/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=bob).id}, json=True
         )
         self.assertJSONResponse(response, 400)
         # Chris add lock. Anyone can modify
@@ -1452,7 +1455,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertFalse(json["is_reference_instance"])
         self.assertGreaterEqual(len(json["instance_locks"]), 1 if is_locked else 0, json["instance_locks"])
         # check from list view
-        response = self.client.get(f"/api/instances/?limit=100")
+        response = self.client.get("/api/instances/?limit=100")
         j = self.assertJSONResponse(response, 200)
         json_instance = list(filter(lambda x: x["id"] == instance.id, j["instances"]))[0]
         self.assertEqual(json_instance["is_locked"], is_locked)
@@ -1493,7 +1496,7 @@ class InstancesAPITestCase(APITestCase):
             },
         ]
         response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -1538,7 +1541,7 @@ class InstancesAPITestCase(APITestCase):
             },
         ]
         response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -1577,7 +1580,7 @@ class InstancesAPITestCase(APITestCase):
             },
         ]
         response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -1612,7 +1615,7 @@ class InstancesAPITestCase(APITestCase):
             },
         ]
         response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
 
         self.assertEqual(response.status_code, 200)
@@ -1971,7 +1974,7 @@ class InstancesAPITestCase(APITestCase):
             instance.refresh_from_db()
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/check_bulk_gps_push/")  # by default, select_all = True
+        response = self.client.get("/api/instances/check_bulk_gps_push/")  # by default, select_all = True
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
         self.assertEqual(response_json["result"], "success")
@@ -1993,7 +1996,7 @@ class InstancesAPITestCase(APITestCase):
             instance.save()
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/check_bulk_gps_push/")  # by default, select_all = True
+        response = self.client.get("/api/instances/check_bulk_gps_push/")  # by default, select_all = True
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         response_json = response.json()
         self.assertEqual(response_json["result"], "errors")
@@ -2016,7 +2019,7 @@ class InstancesAPITestCase(APITestCase):
             instance.refresh_from_db()
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/check_bulk_gps_push/")  # by default, select_all = True
+        response = self.client.get("/api/instances/check_bulk_gps_push/")  # by default, select_all = True
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         response_json = response.json()
         self.assertEqual(response_json["result"], "errors")
@@ -2046,7 +2049,7 @@ class InstancesAPITestCase(APITestCase):
             instance.save()
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/check_bulk_gps_push/")
+        response = self.client.get("/api/instances/check_bulk_gps_push/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         response_json = response.json()
@@ -2089,7 +2092,7 @@ class InstancesAPITestCase(APITestCase):
             instance.refresh_from_db()
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/check_bulk_gps_push/")
+        response = self.client.get("/api/instances/check_bulk_gps_push/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
         self.assertEqual(response_json["result"], "warnings")
@@ -2126,7 +2129,7 @@ class InstancesAPITestCase(APITestCase):
             instance.refresh_from_db()
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/check_bulk_gps_push/")
+        response = self.client.get("/api/instances/check_bulk_gps_push/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_json = response.json()
         self.assertEqual(response_json["result"], "warnings")
@@ -2179,7 +2182,7 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertContains(
             response,
-            f"Not found",
+            "Not found",
             status_code=status.HTTP_404_NOT_FOUND,
         )
 
@@ -2209,7 +2212,7 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertContains(
             response,
-            f"Not found",
+            "Not found",
             status_code=status.HTTP_404_NOT_FOUND,
         )
 
@@ -2341,7 +2344,7 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertContains(
             response,
-            f"Not found",
+            "Not found",
             status_code=status.HTTP_404_NOT_FOUND,
         )
 
@@ -2371,7 +2374,7 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertContains(
             response,
-            f"Not found",
+            "Not found",
             status_code=status.HTTP_404_NOT_FOUND,
         )
 

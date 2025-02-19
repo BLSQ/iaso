@@ -1,4 +1,5 @@
 import operator
+
 from functools import reduce
 from itertools import combinations
 
@@ -8,7 +9,7 @@ from rest_framework import filters
 
 from iaso.models import OrgUnit
 from iaso.models.deduplication import ValidationStatus
-from iaso.utils.date_and_time import date_string_to_start_of_day, date_string_to_end_of_day
+from iaso.utils.date_and_time import date_string_to_end_of_day, date_string_to_start_of_day
 
 
 class EntityIdFilterBackend(filters.BaseFilterBackend):
@@ -109,7 +110,7 @@ class EntityTypeFilterBackend(filters.BaseFilterBackend):
 
         if entity_type_id is None:
             return queryset
-        elif "," in entity_type_id:
+        if "," in entity_type_id:
             entity_type_ids = entity_type_id.split(",")
         else:
             entity_type_ids = [int(entity_type_id)]

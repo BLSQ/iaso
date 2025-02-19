@@ -2,8 +2,8 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.files import File
 
 from iaso import models as m
-from iaso.models import Entity, EntityType, Instance
 from iaso.api.deduplication.entity_duplicate import merge_entities
+from iaso.models import Entity, EntityType, Instance
 from iaso.test import APITestCase
 
 

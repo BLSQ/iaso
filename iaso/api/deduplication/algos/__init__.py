@@ -1,17 +1,18 @@
 from typing import List
 
-from iaso.api.workflows.serializers import find_question_by_name
-from iaso.models import EntityType
-
 from ..common import PotentialDuplicate  # type: ignore
-from . import levenshtein
+from . import levenshtein as levenshtein
 from .base import DeduplicationAlgorithm
+
 
 POSSIBLE_ALGORITHMS = [[k, k] for k in DeduplicationAlgorithm.ALGORITHMS.keys()]
 DEFAULT_ALGORITHM = POSSIBLE_ALGORITHMS[0][0]
 
 
 def enrich_params(orig_params):
+    from iaso.api.workflows.serializers import find_question_by_name
+    from iaso.models import EntityType
+
     entity_type_id = orig_params.get("entity_type_id")
     entity_type = EntityType.objects.get(id=entity_type_id)
     ref_form = entity_type.reference_form
@@ -37,5 +38,4 @@ def run_algo(algo_name, algo_params, task=None) -> List[PotentialDuplicate]:
         algo = DeduplicationAlgorithm.ALGORITHMS[algo_name]()
         enriched_params = enrich_params(algo_params)
         return algo.run(algo_params, task)
-    else:
-        raise ValueError(f"Unknown algorithm {algo_name}")
+    raise ValueError(f"Unknown algorithm {algo_name}")

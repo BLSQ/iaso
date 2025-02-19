@@ -1,12 +1,12 @@
-from hat.audit.audit_mixin import AuditMixin
-from plugins.polio.models import ReasonForDelay
-from rest_framework import serializers
-from iaso.api.common import ModelViewSet, HasPermission
-from rest_framework import filters
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from rest_framework import filters, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+from hat.audit.audit_mixin import AuditMixin
 from hat.menupermissions import models as permission
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from iaso.api.common import HasPermission, ModelViewSet
+from plugins.polio.models import ReasonForDelay
 
 
 class AuditReasonForDelaySerializer(serializers.ModelSerializer):
@@ -83,7 +83,9 @@ class ReasonForDelayViewSet(AuditMixin, ModelViewSet):
         return ReasonForDelay.objects.filter(deleted_at__isnull=True).filter(account=account)
 
     # This endpoint is to populate the dropdown choices for regular polio users
-    @action(methods=["GET"], detail=False, permission_classes=[HasPermission(permission.POLIO, permission.POLIO_CONFIG)])  # type: ignore
+    @action(
+        methods=["GET"], detail=False, permission_classes=[HasPermission(permission.POLIO, permission.POLIO_CONFIG)]
+    )  # type: ignore
     def forcampaign(self, request):
         queryset = self.get_queryset()
         reasons_for_delay = ReasonForDelayForCampaignSerializer(queryset, many=True).data

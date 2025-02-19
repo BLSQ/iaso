@@ -1,7 +1,9 @@
-import uuid
-from datetime import datetime
-from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point
 import random
+import uuid
+
+from datetime import datetime
+
+from submissions import org_unit_gps_point, submission2xml, submission_org_unit_gps_point
 
 
 def setup_health_facility_level_default_form(account_name, iaso_client):

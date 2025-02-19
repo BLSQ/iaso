@@ -13,7 +13,7 @@ def load_json(path_to_file):
 def generate_diff(keys, source_dict):
     diff = []
     for key in keys:
-        if not key in source_dict:
+        if key not in source_dict:
             diff.append(key)
     return diff
 

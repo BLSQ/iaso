@@ -7,6 +7,7 @@ from iaso.models import Account, DataSource, Group, OrgUnit, OrgUnitType, Source
 from iaso.test import APITestCase
 from plugins.polio.models import Campaign, Round, SubActivity, SubActivityScope
 
+
 BASE_URL = "/api/polio/campaigns_subactivities/"
 
 

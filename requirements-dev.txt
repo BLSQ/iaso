@@ -20,11 +20,9 @@ django-sslserver==0.22  # https://pypi.org/project/django-sslserver/
 
 # Quality and performance.
 # ------------------------------------------------------------------------------
-black==23.12.1  # https://github.com/ambv/black/tags
-django-querycount==0.8.3  # https://github.com/bradmontgomery/django-querycount
-flake8-mypy==17.8.0  # https://pypi.org/project/flake8-mypy/
-flake8==6.1.0  # https://github.com/PyCQA/flake8/tags
-pre-commit==3.6.0  # https://github.com/pre-commit/pre-commit/tags
+django-querycount==0.8.3  # https://github.com/bradmontgomery/django-querycount/tags
+pre-commit==4.1.0  # https://github.com/pre-commit/pre-commit/tags
+ruff==0.9.6  # https://github.com/astral-sh/ruff/tags
 
 # Testing tools.
 # ------------------------------------------------------------------------------

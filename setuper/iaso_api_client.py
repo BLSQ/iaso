@@ -1,5 +1,6 @@
-import requests
 import time
+
+import requests
 
 
 class IasoClient:

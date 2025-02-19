@@ -1,13 +1,13 @@
 /// <reference types="cypress" />
 import moment from 'moment';
+import dataSources from '../../../fixtures/datasources/details-ou.json';
 import emptyFixture from '../../../fixtures/orgunits/changes/empty.json';
 import page2 from '../../../fixtures/orgunits/changes/orgUnitChanges-page2.json';
 import listFixture from '../../../fixtures/orgunits/changes/orgUnitChanges.json';
 import orgUnits from '../../../fixtures/orgunits/list.json';
 import orgUnitTypes from '../../../fixtures/orgunittypes/dropdown-list.json';
-import dataSources from '../../../fixtures/datasources/details-ou.json';
-import sourceversion from '../../../fixtures/sourceversions/sourceversion.json';
 import superUser from '../../../fixtures/profiles/me/superuser.json';
+import sourceversion from '../../../fixtures/sourceversions/sourceversion.json';
 import userRoles from '../../../fixtures/userRoles/list.json';
 import { testPageFilters } from '../../../support/testPageFilters';
 import { testPagination } from '../../../support/testPagination';
@@ -227,8 +227,7 @@ describe('Organisations changes', () => {
                 permissions: [],
                 is_superuser: false,
             });
-            const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '403');
+            cy.get('#error-code').should('contain', '403');
         });
     });
     describe('Table', () => {
@@ -282,14 +281,12 @@ describe('Organisations changes', () => {
                     const orgUnitChangeIndex = 0;
                     openDialogForChangeRequestIndex(orgUnitChangeIndex);
 
-                    interceptFlag = false;
                     cy.intercept(
                         {
                             method: 'PATCH',
                             pathname: `/api/orgunits/changes/27`,
                         },
                         req => {
-                            interceptFlag = true;
                             req.reply({
                                 statusCode: 200,
                                 body: {
@@ -302,8 +299,66 @@ describe('Organisations changes', () => {
 
                     cy.get('#check-box-name').click();
                     cy.get('[data-test="confirm-button"]').click();
-                    cy.wait('@approveChanges').then(() => {
-                        cy.wrap(interceptFlag).should('eq', true);
+                    cy.get('[data-test="cancel-comment-button"]').click();
+                    cy.get('[data-test="confirm-button"]').click();
+                    cy.get('[data-test="confirm-comment-button"]').click();
+                    cy.wait('@approveChanges').then(interception => {
+                        cy.wrap(interception)
+                            .its('request.body.status')
+                            .should('eq', 'approved');
+                        cy.wrap(interception)
+                            .its('request.body.approved_fields[0]')
+                            .should('eq', 'new_name');
+                        cy.wrap(interception)
+                            .its('request.body.approved_fields.length')
+                            .should('eq', 1);
+                    });
+                });
+            });
+            it('should display correct changes request infos and partially approve', () => {
+                goToPage();
+                cy.intercept('GET', '/api/orgunits/changes/23', {
+                    fixture: 'orgunits/changes/orgUnitChange-23.json',
+                });
+                cy.wait('@getOrgUnitChanges').then(() => {
+                    const orgUnitChangeIndex = 1;
+                    openDialogForChangeRequestIndex(orgUnitChangeIndex);
+
+                    cy.intercept(
+                        {
+                            method: 'PATCH',
+                            pathname: `/api/orgunits/changes/23`,
+                        },
+                        req => {
+                            req.reply({
+                                statusCode: 200,
+                                body: {
+                                    status: 'approved',
+                                    approved_fields: ['new_name'],
+                                },
+                            });
+                        },
+                    ).as('approveChanges');
+
+                    cy.get('#check-box-name').click();
+                    cy.get('[data-test="confirm-button"]').click();
+                    cy.get('[data-test="cancel-comment-button"]').click();
+                    cy.get('[data-test="confirm-button"]').click();
+                    cy.get('textarea').type('test comment');
+                    cy.get('[data-test="confirm-comment-button"]').click();
+                    cy.wait('@approveChanges').then(interception => {
+                        cy.wrap(interception)
+                            .its('request.body.status')
+                            .should('eq', 'approved');
+                        cy.wrap(interception)
+                            .its('request.body.approved_fields[0]')
+                            .should('eq', 'new_name');
+                        cy.wrap(interception)
+                            .its('request.body.approved_fields.length')
+                            .should('eq', 1);
+                        cy.wrap(interception)
+                            .its('request.body.rejection_comment')
+                            .should('eq', 'test comment');
                     });
                 });
             });
@@ -316,9 +371,7 @@ describe('Organisations changes', () => {
                 cy.wait('@getOrgUnitChanges').then(() => {
                     const orgUnitChangeIndex = 0;
                     openDialogForChangeRequestIndex(orgUnitChangeIndex);
-                    cy.get('[data-test="reject-button"]')
-                        .click()
-                        .then(() => {});
+                    cy.get('[data-test="reject-button"]').click();
                     const textArea = cy.get('textarea');
                     textArea.type('test comment');
                     const comment = textArea.value;
@@ -328,7 +381,6 @@ describe('Organisations changes', () => {
                             pathname: `/api/orgunits/changes/27`,
                         },
                         req => {
-                            interceptFlag = true;
                             req.reply({
                                 statusCode: 200,
                                 body: {
@@ -339,10 +391,14 @@ describe('Organisations changes', () => {
                         },
                     ).as('approveChanges');
                     cy.get('[data-test="confirm-comment-button"]').click();
-                    interceptFlag = false;
 
-                    cy.wait('@approveChanges').then(() => {
-                        cy.wrap(interceptFlag).should('eq', true);
+                    cy.wait('@approveChanges').then(interception => {
+                        cy.wrap(interception)
+                            .its('request.body.status')
+                            .should('eq', 'rejected');
+                        cy.wrap(interception)
+                            .its('request.body.rejection_comment')
+                            .should('eq', 'test comment');
                     });
                 });
             });

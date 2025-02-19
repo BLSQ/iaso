@@ -54,6 +54,8 @@
     "iaso.changeRequest.addRejectionComment": "Ajouter un commentaire pour le rejet",
     "iaso.changeRequest.closingDate": "Date de fermeture",
     "iaso.changeRequest.comment": "Commentaire",
+    "iaso.changeRequest.confirmAcceptChangeRequest": "Vous allez remplacer la version originale (à gauche) par la version modifiée (à droite).",
+    "iaso.changeRequest.confirmMessage": "Confirmez-vous ces changements ?",
     "iaso.changeRequest.newValue": "Version modifiée",
     "iaso.changeRequest.oldValue": "Version originale",
     "iaso.changeRequest.openingDate": "Date d'ouverture",

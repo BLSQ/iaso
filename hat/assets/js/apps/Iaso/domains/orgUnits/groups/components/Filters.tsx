@@ -9,10 +9,12 @@ import { Grid, Button } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useFilterState } from '../../../../hooks/useFilterState';
-import { useDataSourceVersions } from '../../../dataSources/requests';
-import { useGetDataSources } from '../../../dataSources/useGetDataSources';
+import {
+    useSourceVersionDropDown,
+    useDataSourcesDropDown,
+} from '../../../dataSources/requests';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
-import { Project, Version } from '../../types/dataSources';
+import { Version } from '../../types/dataSources';
 import { baseUrl } from '../config';
 import MESSAGES from '../messages';
 
@@ -33,7 +35,6 @@ type DataSource = {
     label: string;
     value: string;
     projectIds?: string[];
-    projects?: Project[];
 };
 
 const Filters: FunctionComponent<Props> = ({ params }) => {
@@ -45,10 +46,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const { data: projects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
     const { data: dataSources, isLoading: areSourcesLoading } =
-        useGetDataSources({ ...params, pageSize: undefined, ...filters });
-
+        useDataSourcesDropDown();
     const { data: sourceVersions, isLoading: areSourceVersionsLoading } =
-        useDataSourceVersions();
+        useSourceVersionDropDown();
 
     const [projectId, setProjectId] = useState<string | undefined>(
         filters?.project_ids,
@@ -61,19 +61,15 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     );
 
     const dataSourceDropDown = useMemo(() => {
-        const allDataSources: DataSource[] = dataSources?.sources?.map(
-            source => {
-                const allProjects: Project[] = source.projects.flat();
-                const projectIds = allProjects.map(project =>
-                    project?.id?.toString(),
-                );
-                return {
-                    label: source?.name,
-                    value: `${source?.id}`,
-                    projectIds,
-                };
-            },
-        );
+        const allDataSources: DataSource[] = dataSources?.map(source => {
+            return {
+                label: source?.name,
+                value: `${source?.id}`,
+                projectIds: source?.projects?.map(project =>
+                    project?.toString(),
+                ),
+            };
+        });
         if (projectId) {
             return allDataSources?.filter(source =>
                 source?.projectIds?.includes(projectId),

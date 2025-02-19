@@ -6,10 +6,18 @@ import React, {
 } from 'react';
 
 import { Box } from '@mui/material';
-import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
+import {
+    ConfirmCancelModal,
+    useRedirectTo,
+    useSafeIntl,
+} from 'bluesquare-components';
 
 import InputComponent from '../../../../components/forms/InputComponent';
+import { baseUrls } from '../../../../constants/urls';
 import { DropdownOptions } from '../../../../types/utils';
+import * as Permission from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
+import { userHasPermission } from '../../../users/utils';
 import { Selection } from '../../types/selection';
 import { useBulkSaveChangeRequestStatus } from '../hooks/api/useBulkSaveChangeRequestStatus';
 import MESSAGES from '../messages';
@@ -31,6 +39,7 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { selectCount } = selection;
 
+    const redirectTo = useRedirectTo();
     const [status, setStatus] = useState<
         ChangeRequestValidationStatus | undefined
     >(undefined);
@@ -56,6 +65,21 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
         status,
         comment,
     ]);
+    const onRedirect = useCallback(async () => {
+        if (!status) {
+            return;
+        }
+        await bulkSaveStatus({
+            ...selection,
+            status,
+            rejection_comment: comment,
+        });
+        closeDialog();
+        redirectTo(baseUrls.tasks, {
+            order: '-created_at',
+        });
+    }, [status, bulkSaveStatus, selection, comment, closeDialog, redirectTo]);
+
     const statusOptions: DropdownOptions<string>[] = useMemo(
         () => [
             {
@@ -74,6 +98,11 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
             setStatus(value);
         },
         [setStatus],
+    );
+    const currentUser = useCurrentUser();
+    const hasTaskPermission = userHasPermission(
+        Permission.DATA_TASKS,
+        currentUser,
     );
     if (!open) {
         return null;
@@ -94,10 +123,15 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
             cancelMessage={MESSAGES.cancel}
             closeOnConfirm={false}
             allowConfirm={!!status}
+            allowConfirmAdditionalButton={!!status && hasTaskPermission}
+            additionalButton={hasTaskPermission}
+            additionalMessage={
+                hasTaskPermission ? MESSAGES.goToCurrentTask : undefined
+            }
+            onAdditionalButtonClick={hasTaskPermission ? onRedirect : undefined}
         >
             <InputComponent
                 type="select"
-                multi
                 clearable
                 keyValue="status"
                 value={status}
@@ -106,7 +140,7 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
                 labelString={formatMessage(MESSAGES.status)}
             />
             {status === 'rejected' && (
-                <Box mt={1}>
+                <Box mt={2}>
                     <InputComponent
                         type="textarea"
                         keyValue=""
@@ -114,6 +148,9 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
                         onChange={(_, newComment) => setComment(newComment)}
                         debounceTime={0}
                         withMarginTop={false}
+                        labelString={formatMessage(
+                            MESSAGES.addRejectionComment,
+                        )}
                     />
                 </Box>
             )}

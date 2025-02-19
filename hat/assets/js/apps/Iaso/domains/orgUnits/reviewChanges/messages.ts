@@ -265,6 +265,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'The modifications to the change requests will take a few moments to take effect',
     },
+    goToCurrentTask: {
+        id: 'iaso.label.goToCurrentTask',
+        defaultMessage: 'Launch and show task',
+    },
 });
 
 export default MESSAGES;

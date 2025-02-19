@@ -251,7 +251,9 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 params={params}
                 rowProps={getRowProps}
                 extraProps={{ loading: isFetching }}
-                multiSelect
+                multiSelect={Boolean(
+                    data?.select_all_count && data?.select_all_count > 0,
+                )}
                 selection={selection}
                 selectionActions={selectionActions}
                 selectAllCount={data?.select_all_count ?? 0}

@@ -5,15 +5,27 @@ import React, {
     useState,
 } from 'react';
 
-import { Box } from '@mui/material';
+import ReportIcon from '@mui/icons-material/Report';
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    Typography,
+} from '@mui/material';
 import {
     ConfirmCancelModal,
+    formatThousand,
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
+import { SxStyles } from '../../../../types/general';
 import { DropdownOptions } from '../../../../types/utils';
 import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
@@ -30,6 +42,33 @@ type Props = {
     resetSelection: () => void;
 };
 
+const styles: SxStyles = {
+    title: {
+        paddingBottom: 0,
+    },
+    content: {
+        overflow: 'visible',
+        paddingBottom: theme => theme.spacing(2),
+    },
+    action: {
+        paddingBottom: theme => theme.spacing(2),
+        paddingRight: theme => theme.spacing(2),
+    },
+    warningTitle: {
+        display: 'flex',
+        alignItems: 'center',
+    },
+    warningIcon: {
+        display: 'inline-block',
+        marginLeft: theme => theme.spacing(1),
+        marginRight: theme => theme.spacing(1),
+    },
+    warningMessage: {
+        display: 'flex',
+        justifyContent: 'center',
+    },
+};
+
 export const MultiActionsDialog: FunctionComponent<Props> = ({
     open,
     closeDialog,
@@ -38,6 +77,7 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { selectCount } = selection;
+    const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
     const redirectTo = useRedirectTo();
     const [status, setStatus] = useState<
@@ -117,18 +157,12 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
                 count: selectCount,
             })}
             closeDialog={closeDialog}
-            onConfirm={handleSave}
+            onConfirm={() => setOpenConfirmDialog(true)}
             onCancel={() => null}
             confirmMessage={MESSAGES.save}
             cancelMessage={MESSAGES.cancel}
             closeOnConfirm={false}
             allowConfirm={!!status}
-            allowConfirmAdditionalButton={!!status && hasTaskPermission}
-            additionalButton={hasTaskPermission}
-            additionalMessage={
-                hasTaskPermission ? MESSAGES.goToCurrentTask : undefined
-            }
-            onAdditionalButtonClick={hasTaskPermission ? onRedirect : undefined}
         >
             <InputComponent
                 type="select"
@@ -154,6 +188,61 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
                     />
                 </Box>
             )}
+
+            <Dialog
+                open={openConfirmDialog}
+                onClose={(event, reason) => {
+                    if (reason === 'backdropClick') {
+                        setOpenConfirmDialog(false);
+                    }
+                }}
+            >
+                <DialogTitle>
+                    <Box sx={styles.warningTitle}>
+                        <ReportIcon
+                            sx={styles.warningIcon}
+                            color="error"
+                            fontSize="large"
+                        />
+                        {formatMessage(MESSAGES.confirmMultiChange)}
+                        <ReportIcon
+                            sx={styles.warningIcon}
+                            color="error"
+                            fontSize="large"
+                        />
+                    </Box>
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        <Typography
+                            variant="body2"
+                            color="error"
+                            component="span"
+                            sx={styles.warningMessage}
+                        >
+                            {formatMessage(MESSAGES.bulkChangeCount, {
+                                count: `${formatThousand(selectCount)}`,
+                            })}
+                        </Typography>
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => setOpenConfirmDialog(false)}
+                        color="primary"
+                    >
+                        {formatMessage(MESSAGES.no)}
+                    </Button>
+                    <Button onClick={handleSave} color="primary" autoFocus>
+                        {formatMessage(MESSAGES.yes)}
+                    </Button>
+                    {hasTaskPermission && (
+                        <Button onClick={onRedirect} color="primary" autoFocus>
+                            {formatMessage(MESSAGES.goToCurrentTask)}
+                        </Button>
+                    )}
+                </DialogActions>
+            </Dialog>
         </ConfirmCancelModal>
     );
 };

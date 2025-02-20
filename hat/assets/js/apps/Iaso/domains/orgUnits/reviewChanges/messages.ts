@@ -269,6 +269,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.goToCurrentTask',
         defaultMessage: 'Launch and show task',
     },
+    confirmMultiChange: {
+        defaultMessage: 'Confirm mass changes ?',
+        id: 'iaso.orgUnits.confirmMultiChange',
+    },
+    yes: {
+        defaultMessage: 'Yes',
+        id: 'iaso.label.yes',
+    },
+    no: {
+        defaultMessage: 'No',
+        id: 'iaso.label.no',
+    },
+    bulkChangeCount: {
+        id: 'iaso.orgUnits.bulkChangeCount',
+        defaultMessage: 'You are about to change {count} Org units',
+    },
 });
 
 export default MESSAGES;

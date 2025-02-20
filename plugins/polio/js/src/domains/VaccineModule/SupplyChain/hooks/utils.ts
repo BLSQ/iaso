@@ -31,6 +31,7 @@ export const createEmptyArrivalReport = (vaccineType?: string) => {
         doses_received: undefined,
         to_delete: false,
         doses_per_vial,
+        can_edit: true,
     };
 };
 
@@ -47,6 +48,7 @@ export const createEmptyPreAlert = (vaccineType?: string) => {
         lot_numbers: undefined,
         to_delete: false,
         id: undefined,
+        can_edit: true,
     };
 };
 

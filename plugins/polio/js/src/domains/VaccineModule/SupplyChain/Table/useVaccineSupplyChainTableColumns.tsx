@@ -131,21 +131,19 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                                 POLIO_SUPPLY_CHAIN_READ,
                             ]}
                         >
-                            {original.can_edit && (
-                                <>
-                                    <IconButton
-                                        icon="edit"
-                                        overrideIcon={EditIcon}
-                                        tooltipMessage={MESSAGES.edit}
-                                        url={`/${baseUrls.vaccineSupplyChainDetails}/id/${original.id}`}
-                                    />
-                                    <DeleteDialog
-                                        titleMessage={MESSAGES.deleteVRF}
-                                        message={MESSAGES.deleteVRFWarning}
-                                        onConfirm={() => deleteVrf(original.id)}
-                                    />
-                                </>
-                            )}
+                            <>
+                                <IconButton
+                                    icon="edit"
+                                    overrideIcon={EditIcon}
+                                    tooltipMessage={MESSAGES.edit}
+                                    url={`/${baseUrls.vaccineSupplyChainDetails}/id/${original.id}`}
+                                />
+                                <DeleteDialog
+                                    titleMessage={MESSAGES.deleteVRF}
+                                    message={MESSAGES.deleteVRFWarning}
+                                    onConfirm={() => deleteVrf(original.id)}
+                                />
+                            </>
                         </DisplayIfUserHasPerm>
                     );
                 },

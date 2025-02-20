@@ -17,11 +17,7 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
-from plugins.polio.api.vaccines.common import (
-    VaccineStockManagementPermission,
-    can_edit_helper_date,
-    can_edit_helper_datetime,
-)
+from plugins.polio.api.vaccines.common import VaccineStockManagementPermission, can_edit_helper
 from plugins.polio.models import (
     DOSES_PER_VIAL,
     Campaign,
@@ -715,7 +711,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         return obj.round.number if obj.round else None
 
     def get_can_edit(self, obj):
-        return can_edit_helper_date(self.context["request"].user, obj.report_date)
+        return can_edit_helper(self.context["request"].user, obj.created_at)
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -747,8 +743,6 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         lambda: VaccineStockManagementPermission(
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            datetime_field="report_date",
-            datetime_now_today=datetime.date.today,
         )
     ]
 
@@ -789,7 +783,7 @@ class IncidentReportSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_can_edit(self, obj):
-        return can_edit_helper_date(self.context["request"].user, obj.date_of_incident_report)
+        return can_edit_helper(self.context["request"].user, obj.created_at)
 
 
 class IncidentReportViewSet(VaccineStockSubitemBase):
@@ -799,8 +793,6 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
         lambda: VaccineStockManagementPermission(
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            datetime_field="date_of_incident_report",
-            datetime_now_today=datetime.date.today,
         )
     ]
 
@@ -814,7 +806,7 @@ class DestructionReportSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_can_edit(self, obj):
-        return can_edit_helper_date(self.context["request"].user, obj.destruction_report_date)
+        return can_edit_helper(self.context["request"].user, obj.created_at)
 
 
 class DestructionReportViewSet(VaccineStockSubitemBase):
@@ -824,8 +816,6 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
         lambda: VaccineStockManagementPermission(
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            datetime_field="destruction_report_date",
-            datetime_now_today=datetime.date.today,
         )
     ]
 
@@ -853,7 +843,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
         ]
 
     def get_can_edit(self, obj):
-        return can_edit_helper_datetime(self.context["request"].user, obj.created_at)
+        return can_edit_helper(self.context["request"].user, obj.created_at)
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -882,8 +872,6 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
         lambda: VaccineStockManagementPermission(
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            datetime_field="created_at",
-            datetime_now_today=timezone.now,
         )
     ]
 

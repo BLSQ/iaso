@@ -15,13 +15,9 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import GenericReadWritePerm, ModelViewSet, parse_comma_separated_numeric_values
+from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
-from plugins.polio.api.vaccines.common import (
-    VaccineStockManagementPermission,
-    can_edit_helper_date,
-    can_edit_helper_datetime,
-)
+from plugins.polio.api.vaccines.common import VaccineStockManagementPermission, can_edit_helper
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
 logger = getLogger(__name__)
@@ -145,7 +141,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         return super().validate(attrs)
 
     def get_can_edit(self, obj):
-        return can_edit_helper_date(self.context["request"].user, obj.date_pre_alert_reception)
+        return can_edit_helper(self.context["request"].user, obj.created_at)
 
 
 class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
@@ -193,7 +189,7 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         return validated_data
 
     def get_can_edit(self, obj):
-        return can_edit_helper_date(self.context["request"].user, obj.arrival_report_date)
+        return can_edit_helper(self.context["request"].user, obj.created_at)
 
 
 class PostPreAlertSerializer(serializers.Serializer):
@@ -232,7 +228,13 @@ class PatchPreAlertSerializer(serializers.Serializer):
                         setattr(ar, key, item[key])
 
                 if is_different:
-                    ar.save()
+                    if can_edit_helper(self.context["request"].user, ar.created_at):
+                        try:
+                            ar.save()
+                        except IntegrityError as e:
+                            raise serializers.ValidationError(str(e))
+                    else:
+                        raise serializers.ValidationError(f"You are not allowed to edit the pre-alert with id {ar.id}")
 
                 pre_alerts.append(ar)
 
@@ -276,10 +278,15 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                         setattr(ar, key, item[key])
 
                 if is_different:
-                    try:
-                        ar.save()
-                    except IntegrityError as e:
-                        raise serializers.ValidationError(str(e))
+                    if can_edit_helper(self.context["request"].user, ar.created_at):
+                        try:
+                            ar.save()
+                        except IntegrityError as e:
+                            raise serializers.ValidationError(str(e))
+                    else:
+                        raise serializers.ValidationError(
+                            f"You are not allowed to edit the arrival report with id {ar.id}"
+                        )
 
                 arrival_reports.append(ar)
 
@@ -388,6 +395,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
     obr_name = serializers.CharField(source="campaign.obr_name")
     rounds = NestedRoundSerializer(many=True)
     document = serializers.FileField(required=False)
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineRequestForm
@@ -416,7 +424,11 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
             "target_population",
             "vrf_type",
             "document",
+            "can_edit",
         ]
+
+    def get_can_edit(self, obj):
+        return can_edit_helper(self.context["request"].user, obj.created_at)
 
 
 class VaccineRequestFormListSerializer(serializers.ModelSerializer):
@@ -455,7 +467,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
         ]
 
     def get_can_edit(self, obj):
-        return can_edit_helper_datetime(self.context["request"].user, obj.created_at)
+        return can_edit_helper(self.context["request"].user, obj.created_at)
 
     def get_prefetched_data(self, obj):
         # Prefetch vaccine pre_alert and vaccinearrival_report to reduce the number of queries in the DB

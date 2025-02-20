@@ -1,3 +1,5 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.clickjacking import xframe_options_exempt
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.response import Response
@@ -14,6 +16,7 @@ class PowerBIRefreshSerializer(serializers.Serializer):
 class LaunchPowerBIRefreshViewSet(viewsets.ViewSet):
     serializer_class = PowerBIRefreshSerializer
 
+    @method_decorator(xframe_options_exempt)
     def create(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)

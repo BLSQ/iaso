@@ -9,12 +9,14 @@ type DocumentUploadWithPreviewProps = {
     errors: string[] | undefined;
     onFilesSelect: (files: File[]) => void;
     document?: File[] | string;
+    disabled?: boolean;
 };
 
 const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
     errors,
     onFilesSelect,
     document,
+    disabled = false,
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -34,14 +36,28 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
     return (
         <Grid container spacing={2} alignItems="center">
             <Grid item xs={document ? 10 : 12}>
-                <FilesUpload
-                    accept={acceptPDF}
-                    files={document ? [document as unknown as File] : []}
-                    onFilesSelect={onFilesSelect}
-                    multi={false}
-                    errors={errors}
-                    placeholder={formatMessage(MESSAGES.document)}
-                />
+                {disabled ? (
+                    <input
+                        type="text"
+                        value={
+                            pdfUrl
+                                ? 'Document attached'
+                                : 'No document attached'
+                        }
+                        disabled
+                        placeholder={formatMessage(MESSAGES.document)}
+                        style={{ width: '100%' }}
+                    />
+                ) : (
+                    <FilesUpload
+                        accept={acceptPDF}
+                        files={document ? [document as unknown as File] : []}
+                        onFilesSelect={onFilesSelect}
+                        multi={false}
+                        errors={errors}
+                        placeholder={formatMessage(MESSAGES.document)}
+                    />
+                )}
             </Grid>
             {pdfUrl && (
                 <Grid item xs={2} sx={{ textAlign: 'right' }}>

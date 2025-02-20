@@ -5,7 +5,10 @@ import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/com
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import { PdfPreview } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/PdfPreview';
-import { STOCK_MANAGEMENT_WRITE } from '../../../../../constants/permissions';
+import {
+    STOCK_MANAGEMENT_WRITE,
+    STOCK_MANAGEMENT_READ,
+} from '../../../../../constants/permissions';
 import { VaccineForStock } from '../../../../../constants/types';
 import MESSAGES from '../../messages';
 import { EditDestruction } from '../Modals/CreateEditDestruction';
@@ -101,29 +104,39 @@ export const useFormATableColumns = (
                                 pdfUrl={settings.row.original.document}
                             />
                             <DisplayIfUserHasPerm
-                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
                             >
-                                <>
-                                    <EditFormA
-                                        id={settings.row.original.id}
-                                        formA={settings.row.original}
-                                        iconProps={{ overrideIcon: EditIcon }}
-                                        countryName={countryName}
-                                        vaccine={vaccine}
-                                        vaccineStockId={
-                                            settings.row.original.vaccine_stock
-                                        }
-                                    />
-                                    <DeleteDialog
-                                        titleMessage={MESSAGES.deleteFormA}
-                                        message={MESSAGES.deleteFormAWarning}
-                                        onConfirm={() =>
-                                            deleteFormA(
-                                                settings.row.original.id,
-                                            )
-                                        }
-                                    />
-                                </>
+                                {settings.row.original.can_edit && (
+                                    <>
+                                        <EditFormA
+                                            id={settings.row.original.id}
+                                            formA={settings.row.original}
+                                            iconProps={{
+                                                overrideIcon: EditIcon,
+                                            }}
+                                            countryName={countryName}
+                                            vaccine={vaccine}
+                                            vaccineStockId={
+                                                settings.row.original
+                                                    .vaccine_stock
+                                            }
+                                        />
+                                        <DeleteDialog
+                                            titleMessage={MESSAGES.deleteFormA}
+                                            message={
+                                                MESSAGES.deleteFormAWarning
+                                            }
+                                            onConfirm={() =>
+                                                deleteFormA(
+                                                    settings.row.original.id,
+                                                )
+                                            }
+                                        />
+                                    </>
+                                )}
                             </DisplayIfUserHasPerm>
                         </>
                     );
@@ -187,33 +200,41 @@ export const useDestructionTableColumns = (
                                 pdfUrl={settings.row.original.document}
                             />
                             <DisplayIfUserHasPerm
-                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
                             >
-                                <>
-                                    <EditDestruction
-                                        id={settings.row.original.id}
-                                        destruction={settings.row.original}
-                                        iconProps={{ overrideIcon: EditIcon }}
-                                        countryName={countryName}
-                                        vaccine={vaccine}
-                                        vaccineStockId={
-                                            settings.row.original.vaccine_stock
-                                        }
-                                    />
-                                    <DeleteDialog
-                                        titleMessage={
-                                            MESSAGES.deleteDestruction
-                                        }
-                                        message={
-                                            MESSAGES.deleteDestructionWarning
-                                        }
-                                        onConfirm={() =>
-                                            deleteDestruction(
-                                                settings.row.original.id,
-                                            )
-                                        }
-                                    />
-                                </>
+                                {settings.row.original.can_edit && (
+                                    <>
+                                        <EditDestruction
+                                            id={settings.row.original.id}
+                                            destruction={settings.row.original}
+                                            iconProps={{
+                                                overrideIcon: EditIcon,
+                                            }}
+                                            countryName={countryName}
+                                            vaccine={vaccine}
+                                            vaccineStockId={
+                                                settings.row.original
+                                                    .vaccine_stock
+                                            }
+                                        />
+                                        <DeleteDialog
+                                            titleMessage={
+                                                MESSAGES.deleteDestruction
+                                            }
+                                            message={
+                                                MESSAGES.deleteDestructionWarning
+                                            }
+                                            onConfirm={() =>
+                                                deleteDestruction(
+                                                    settings.row.original.id,
+                                                )
+                                            }
+                                        />
+                                    </>
+                                )}
                             </DisplayIfUserHasPerm>
                         </>
                     );
@@ -295,29 +316,41 @@ export const useIncidentTableColumns = (
                             />
 
                             <DisplayIfUserHasPerm
-                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
                             >
-                                <>
-                                    <EditIncident
-                                        id={settings.row.original.id}
-                                        incident={settings.row.original}
-                                        iconProps={{ overrideIcon: EditIcon }}
-                                        countryName={countryName}
-                                        vaccine={vaccine}
-                                        vaccineStockId={
-                                            settings.row.original.vaccine_stock
-                                        }
-                                    />
-                                    <DeleteDialog
-                                        titleMessage={MESSAGES.deleteIncident}
-                                        message={MESSAGES.deleteIncidentWarning}
-                                        onConfirm={() =>
-                                            deleteIncident(
-                                                settings.row.original.id,
-                                            )
-                                        }
-                                    />
-                                </>
+                                {settings.row.original.can_edit && (
+                                    <>
+                                        <EditIncident
+                                            id={settings.row.original.id}
+                                            incident={settings.row.original}
+                                            iconProps={{
+                                                overrideIcon: EditIcon,
+                                            }}
+                                            countryName={countryName}
+                                            vaccine={vaccine}
+                                            vaccineStockId={
+                                                settings.row.original
+                                                    .vaccine_stock
+                                            }
+                                        />
+                                        <DeleteDialog
+                                            titleMessage={
+                                                MESSAGES.deleteIncident
+                                            }
+                                            message={
+                                                MESSAGES.deleteIncidentWarning
+                                            }
+                                            onConfirm={() =>
+                                                deleteIncident(
+                                                    settings.row.original.id,
+                                                )
+                                            }
+                                        />
+                                    </>
+                                )}
                             </DisplayIfUserHasPerm>
                         </>
                     );
@@ -408,29 +441,36 @@ export const useEarmarkedTableColumns = (
                     }
                     return (
                         <DisplayIfUserHasPerm
-                            permissions={[STOCK_MANAGEMENT_WRITE]}
+                            permissions={[
+                                STOCK_MANAGEMENT_WRITE,
+                                STOCK_MANAGEMENT_READ,
+                            ]}
                         >
-                            <>
-                                <EditEarmarked
-                                    id={settings.row.original.id}
-                                    earmark={settings.row.original}
-                                    iconProps={{ overrideIcon: EditIcon }}
-                                    countryName={countryName}
-                                    vaccine={vaccine}
-                                    vaccineStockId={
-                                        settings.row.original.vaccine_stock
-                                    }
-                                />
-                                <DeleteDialog
-                                    titleMessage={MESSAGES.deleteEarmarked}
-                                    message={MESSAGES.deleteEarmarkedWarning}
-                                    onConfirm={() =>
-                                        deleteEarmarked(
-                                            settings.row.original.id,
-                                        )
-                                    }
-                                />
-                            </>
+                            {settings.row.original.can_edit && (
+                                <>
+                                    <EditEarmarked
+                                        id={settings.row.original.id}
+                                        earmark={settings.row.original}
+                                        iconProps={{ overrideIcon: EditIcon }}
+                                        countryName={countryName}
+                                        vaccine={vaccine}
+                                        vaccineStockId={
+                                            settings.row.original.vaccine_stock
+                                        }
+                                    />
+                                    <DeleteDialog
+                                        titleMessage={MESSAGES.deleteEarmarked}
+                                        message={
+                                            MESSAGES.deleteEarmarkedWarning
+                                        }
+                                        onConfirm={() =>
+                                            deleteEarmarked(
+                                                settings.row.original.id,
+                                            )
+                                        }
+                                    />
+                                </>
+                            )}
                         </DisplayIfUserHasPerm>
                     );
                 },

@@ -169,7 +169,7 @@ export const supplychainDetailsPath: RoutePath = {
     baseUrl: baseUrls.vaccineSupplyChainDetails,
     routerUrl: `${baseUrls.vaccineSupplyChainDetails}/*`,
     element: <VaccineSupplyChainDetails />,
-    permissions: [SUPPLYCHAIN_WRITE],
+    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE],
 };
 
 export const stockManagementPath: RoutePath = {

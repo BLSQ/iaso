@@ -220,7 +220,10 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                     shrinkLabel={false}
                                     freeSolo
                                     options={poNumberOptions}
-                                    disabled={markedForDeletion}
+                                    disabled={
+                                        markedForDeletion ||
+                                        !arrival_reports?.[index].can_edit
+                                    }
                                     required
                                     onChange={handleChangePoNumber}
                                 />
@@ -229,7 +232,10 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 label={formatMessage(MESSAGES.vials_shipped)}
                                 name={`${VAR}[${index}].vials_shipped`}
                                 component={NumberInput}
-                                disabled={markedForDeletion}
+                                disabled={
+                                    markedForDeletion ||
+                                    !arrival_reports?.[index].can_edit
+                                }
                                 onFocus={onVialsShippedFocused}
                                 onBlur={onVialsShippedBlur}
                                 onChange={handleVialsShippededUpdate}
@@ -243,14 +249,20 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 )}
                                 name={`${VAR}[${index}].arrival_report_date`}
                                 component={DateInput}
-                                disabled={markedForDeletion}
+                                disabled={
+                                    markedForDeletion ||
+                                    !arrival_reports?.[index].can_edit
+                                }
                                 required
                             />
                             <Field
                                 label={formatMessage(MESSAGES.vials_received)}
                                 name={`${VAR}[${index}].vials_received`}
                                 component={NumberInput}
-                                disabled={markedForDeletion}
+                                disabled={
+                                    markedForDeletion ||
+                                    !arrival_reports?.[index].can_edit
+                                }
                                 onFocus={onVialsReceivedFocused}
                                 onBlur={onVialsReceivedBlur}
                                 onChange={handleVialsReceivedUpdate}
@@ -262,7 +274,10 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 label={formatMessage(MESSAGES.doses_shipped)}
                                 name={`${VAR}[${index}].doses_shipped`}
                                 component={NumberInput}
-                                disabled={markedForDeletion}
+                                disabled={
+                                    markedForDeletion ||
+                                    !arrival_reports?.[index].can_edit
+                                }
                                 onFocus={onDosesShippedFocused}
                                 onBlur={onDosesShippedBlur}
                                 onChange={handleDosesShippedUpdate}
@@ -284,7 +299,10 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 label={formatMessage(MESSAGES.doses_received)}
                                 name={`${VAR}[${index}].doses_received`}
                                 component={NumberInput}
-                                disabled={markedForDeletion}
+                                disabled={
+                                    markedForDeletion ||
+                                    !arrival_reports?.[index].can_edit
+                                }
                                 onFocus={onDosesReceivedFocused}
                                 onBlur={onDosesReceivedBlur}
                                 onChange={handleDosesReceivedUpdate}
@@ -295,43 +313,48 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                 </Grid>
             </Paper>
             {/* Box is necessay to avoid bad tooltip placemement */}
-            <Box ml={2}>
-                {!arrival_reports?.[index].to_delete && (
-                    <DeleteIconButton
-                        onClick={() => {
-                            if (values?.arrival_reports?.[index].id) {
+            {arrival_reports?.[index].can_edit && (
+                <Box ml={2}>
+                    {!arrival_reports?.[index].to_delete && (
+                        <DeleteIconButton
+                            onClick={() => {
+                                if (values?.arrival_reports?.[index].id) {
+                                    setFieldValue(
+                                        `${VAR}[${index}].to_delete`,
+                                        true,
+                                    );
+                                    setFieldTouched(
+                                        `${VAR}[${index}].to_delete`,
+                                        true,
+                                    );
+                                } else {
+                                    const copy = [
+                                        ...(values?.arrival_reports ?? []),
+                                    ];
+                                    // checking the length to avoid splicing outside of array range
+                                    if (copy.length >= index + 1) {
+                                        copy.splice(index, 1);
+                                        setFieldValue(VAR, copy);
+                                    }
+                                }
+                            }}
+                            message={MESSAGES.markForDeletion}
+                        />
+                    )}
+                    {arrival_reports?.[index].to_delete && (
+                        <IconButton
+                            onClick={() => {
                                 setFieldValue(
                                     `${VAR}[${index}].to_delete`,
-                                    true,
+                                    false,
                                 );
-                                setFieldTouched(
-                                    `${VAR}[${index}].to_delete`,
-                                    true,
-                                );
-                            } else {
-                                const copy = [
-                                    ...(values?.arrival_reports ?? []),
-                                ];
-                                // checking the length to avoid splicing outside of array range
-                                if (copy.length >= index + 1) {
-                                    copy.splice(index, 1);
-                                    setFieldValue(VAR, copy);
-                                }
-                            }
-                        }}
-                        message={MESSAGES.markForDeletion}
-                    />
-                )}
-                {arrival_reports?.[index].to_delete && (
-                    <IconButton
-                        onClick={() => {
-                            setFieldValue(`${VAR}[${index}].to_delete`, false);
-                        }}
-                        overrideIcon={RestoreFromTrashIcon}
-                        tooltipMessage={MESSAGES.cancelDeletion}
-                    />
-                )}
-            </Box>
+                            }}
+                            overrideIcon={RestoreFromTrashIcon}
+                            tooltipMessage={MESSAGES.cancelDeletion}
+                        />
+                    )}
+                </Box>
+            )}
         </div>
     );
 };

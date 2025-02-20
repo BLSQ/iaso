@@ -206,7 +206,7 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     const columns = useColumns();
 
     const { selection, handleTableSelection, handleUnselectAll } =
-        useTableSelection<OrgUnitChangeRequest>(data?.count ?? 0);
+        useTableSelection<OrgUnitChangeRequest>(data?.select_all_count ?? 0);
 
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
@@ -258,8 +258,12 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 selectionActions={selectionActions}
                 selectAllCount={data?.select_all_count ?? 0}
                 getIsSelectionDisabled={getIsSelectionDisabled}
-                setTableSelection={(selectionType, items, totalCount) =>
-                    handleTableSelection(selectionType, items, totalCount)
+                setTableSelection={(selectionType, items) =>
+                    handleTableSelection(
+                        selectionType,
+                        items,
+                        data?.select_all_count,
+                    )
                 }
             />
         </>

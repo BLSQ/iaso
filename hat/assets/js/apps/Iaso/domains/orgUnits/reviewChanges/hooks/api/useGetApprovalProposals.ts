@@ -1,13 +1,13 @@
 import { UseQueryResult } from 'react-query';
-import { makeUrlWithParams } from '../../../../../libs/utils';
 import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
+import { makeUrlWithParams } from '../../../../../libs/utils';
+import { useLocale } from '../../../../app/contexts/LocaleContext';
+import { apiUrl } from '../../constants';
 import {
     OrgUnitChangeRequestsPaginated,
     ApproveOrgUnitParams,
 } from '../../types';
-import { apiUrl } from '../../constants';
-import { useLocale } from '../../../../app/contexts/LocaleContext';
 
 const getOrgUnitChangeProposals = (url: string) => {
     return getRequest(url) as Promise<OrgUnitChangeRequestsPaginated>;

@@ -58,13 +58,20 @@ class SubActivityCreateUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Both round_number and campaign must be provided.")
 
         sub_activity = super().create(validated_data)
+        org_units_in_parent_rnd_scope = sub_activity.round.actual_scopes.all().values_list(
+            "group__org_units__id", flat=True
+        )
 
         for scope_data in scopes_data:
             group_data = scope_data.pop("group")
             group_data["source_version"] = self.context["request"].user.iaso_profile.account.default_version
             group_org_units = group_data.pop("org_units", [])
+            eligible_group_org_units = [
+                org_unit for org_unit in group_org_units if org_unit in org_units_in_parent_rnd_scope
+            ]
             group = Group.objects.create(**group_data)
-            group.org_units.set(group_org_units)
+            group.org_units.set(eligible_group_org_units)
+            # TODO filter out scope outside of round scope
             new_scope = SubActivityScope.objects.create(subactivity=sub_activity, group=group, **scope_data)
             group.name = f"scope {new_scope.id} for sub-activity {sub_activity.id} for round {round_number} of campaign {campaign}"
             group.save()
@@ -85,13 +92,19 @@ class SubActivityCreateUpdateSerializer(serializers.ModelSerializer):
             for group in groups_to_check:
                 if not SubActivityScope.objects.filter(group=group).exists():
                     group.delete()
-
+            # TODO remove scope outside of round scope
+            org_units_in_parent_rnd_scope = instance.round.actual_scopes.all().values_list(
+                "group__org_units__id", flat=True
+            )
             for scope_data in scopes_data:
                 group_data = scope_data.pop("group")
                 group_data["source_version"] = self.context["request"].user.iaso_profile.account.default_version
                 group_org_units = group_data.pop("org_units", [])
+                eligible_group_org_units = [
+                    org_unit for org_unit in group_org_units if org_unit in org_units_in_parent_rnd_scope
+                ]
                 group = Group.objects.create(**group_data)
-                group.org_units.set(group_org_units)
+                group.org_units.set(eligible_group_org_units)
                 SubActivityScope.objects.create(subactivity=instance, group=group, **scope_data)
 
         return super().update(instance, validated_data)

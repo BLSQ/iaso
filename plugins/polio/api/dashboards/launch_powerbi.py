@@ -24,7 +24,10 @@ class LaunchPowerBIRefreshViewSet(viewsets.ViewSet):
         data_set_id = serializer.validated_data["data_set_id"]
         group_id = serializer.validated_data["group_id"]
         # Perform actions using uuid1 and uuid2
-        response_data = {"message": f"Received data_set_id: {data_set_id}, group_id: {group_id}"}
         launch_dataset_refresh(group_id, data_set_id)
 
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        response_data = {"message": f"Received data_set_id: {data_set_id}, group_id: {group_id}"}
+        response = Response(response_data, status=status.HTTP_201_CREATED)
+        response["Content-Security-Policy"] = "frame-ancestors 'self' afro-rrt-who.hub.arcgis.com"
+
+        return response

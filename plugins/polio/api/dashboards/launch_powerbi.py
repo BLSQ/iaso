@@ -1,5 +1,5 @@
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import serializers, status, viewsets
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.response import Response
 
 from iaso.utils.powerbi import launch_dataset_refresh
@@ -13,6 +13,8 @@ class PowerBIRefreshSerializer(serializers.Serializer):
 @swagger_auto_schema()
 class LaunchPowerBIRefreshViewSet(viewsets.ViewSet):
     serializer_class = PowerBIRefreshSerializer
+    # Open to all to make it work while calling this api from a iframe in RRT
+    permission_classes = [permissions.AllowAny]
 
     def create(self, request):
         serializer = self.serializer_class(data=request.data)

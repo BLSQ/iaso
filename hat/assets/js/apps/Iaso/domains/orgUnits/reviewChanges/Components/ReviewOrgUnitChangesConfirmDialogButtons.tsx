@@ -1,11 +1,6 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Button } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, {
-    Dispatch,
-    FunctionComponent,
-    SetStateAction,
-    useCallback,
-} from 'react';
 import { UseSaveChangeRequestQueryData } from '../hooks/api/useSaveChangeRequest';
 import MESSAGES from '../messages';
 
@@ -13,24 +8,30 @@ type SubmitChangeRequest = (variables: UseSaveChangeRequestQueryData) => void;
 
 type Props = {
     comment?: string;
-    setIsCommentDialogOpen: Dispatch<SetStateAction<boolean>>;
+    onClose: () => void;
     submitChangeRequest: SubmitChangeRequest;
+    isApproved: boolean;
     isPartiallyApproved: boolean;
     approvedFields: string[];
 };
-export const ReviewOrgUnitChangesCommentDialogButtons: FunctionComponent<
+export const ReviewOrgUnitChangesConfirmDialogButtons: FunctionComponent<
     Props
 > = ({
     comment,
-    setIsCommentDialogOpen,
+    onClose,
     submitChangeRequest,
+    isApproved,
     isPartiallyApproved,
     approvedFields,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const needsComment = Boolean(!isApproved || isPartiallyApproved);
+    const confirmButtonDisabled = Boolean(
+        needsComment && (!comment || comment.length === 0),
+    );
     const handleConfirm = useCallback(() => {
-        setIsCommentDialogOpen(false);
-        if (isPartiallyApproved) {
+        onClose();
+        if (isApproved) {
             submitChangeRequest({
                 status: 'approved',
                 approved_fields: approvedFields,
@@ -42,19 +43,13 @@ export const ReviewOrgUnitChangesCommentDialogButtons: FunctionComponent<
                 rejection_comment: comment,
             });
         }
-    }, [
-        approvedFields,
-        comment,
-        isPartiallyApproved,
-        setIsCommentDialogOpen,
-        submitChangeRequest,
-    ]);
+    }, [approvedFields, comment, isApproved, onClose, submitChangeRequest]);
     return (
         <>
             <Box pl={1} display="inline-block">
                 <Button
                     data-test="cancel-comment-button"
-                    onClick={() => setIsCommentDialogOpen(false)}
+                    onClick={() => onClose()}
                     autoFocus
                 >
                     {formatMessage(MESSAGES.cancel)}
@@ -67,7 +62,7 @@ export const ReviewOrgUnitChangesCommentDialogButtons: FunctionComponent<
                     variant="contained"
                     color="primary"
                     autoFocus
-                    disabled={!comment || comment.length === 0}
+                    disabled={confirmButtonDisabled}
                 >
                     {formatMessage(MESSAGES.confirm)}
                 </Button>

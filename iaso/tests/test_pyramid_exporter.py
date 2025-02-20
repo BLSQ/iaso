@@ -73,6 +73,10 @@ class CommandTests(TestCase):
         parent.name = "modified Gorama Mende"
         parent.save()
 
+        # add group
+        public_facilities_group = Group.objects.get(source_ref="oRVt7g429ZO", source_version=version_ref)
+        parent.groups.add(public_facilities_group)
+
         # add new chiefdom
         org_unit_chief = OrgUnit()
         org_unit_chief.name = "new Chiefdom"
@@ -176,7 +180,7 @@ class CommandTests(TestCase):
                 status=200,
             )
 
-        for group_id in ["f25dqv3Y7Z0"]:
+        for group_id in ["oRVt7g429ZO", "f25dqv3Y7Z0"]:
             responses.add(
                 responses.PUT,
                 "https://play.dhis2.org/2.30/api/organisationUnitGroups/" + group_id,
@@ -196,6 +200,7 @@ class CommandTests(TestCase):
             dhis2_url="https://play.dhis2.org/2.30",
             dhis2_user="admin",
             dhis2_password="district",
+            ignore_groups=False,
         )
         new_chief_dom = OrgUnit.objects.get(name="new Chiefdom", version=version_ref)
         new_children = OrgUnit.objects.get(name="new children", version=version_ref)

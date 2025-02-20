@@ -7,14 +7,17 @@ VACCINE_STOCK_MANAGEMENT_DAYS_OPEN = 7
 
 
 def can_edit_helper(user, the_date, now_today):
+    if the_date is None:
+        return False
+
     if user.has_perm(permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE) or user.is_superuser:
         return True
-    else:
-        if user.has_perm(permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ):
-            end_of_open_time = now_today - datetime.timedelta(days=VACCINE_STOCK_MANAGEMENT_DAYS_OPEN)
-            return the_date >= end_of_open_time
-        else:
-            return False
+
+    if user.has_perm(permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ):
+        end_of_open_time = now_today - datetime.timedelta(days=VACCINE_STOCK_MANAGEMENT_DAYS_OPEN)
+        return the_date >= end_of_open_time
+
+    return False
 
 
 def can_edit_helper_date(user, the_date):

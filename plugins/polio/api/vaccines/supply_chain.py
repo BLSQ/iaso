@@ -17,6 +17,11 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
+from plugins.polio.api.vaccines.common import (
+    VaccineStockManagementPermission,
+    can_edit_helper_date,
+    can_edit_helper_datetime,
+)
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
 logger = getLogger(__name__)
@@ -79,11 +84,6 @@ def validate_rounds_and_campaign(data, current_user=None, force_rounds=True, for
     return data
 
 
-class VaccineSupplyChainReadWritePerm(GenericReadWritePerm):
-    read_perm = permission.POLIO_VACCINE_SUPPLY_CHAIN_READ
-    write_perm = permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE
-
-
 class NestedRoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
@@ -133,15 +133,19 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     doses_per_vial = serializers.IntegerField(required=False, read_only=True)
     vials_shipped = serializers.IntegerField(required=False, read_only=True)
     document = serializers.FileField(required=False)
+    can_edit = serializers.SerializerMethodField()
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
-        fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id"]
+        fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id", "can_edit"]
 
     def validate(self, attrs: Any) -> Any:
         # at least one of the other fields must be present
         if not any(key in attrs.keys() for key in NestedVaccinePreAlertSerializerForPost.Meta.fields):
             raise serializers.ValidationError("At least one of the fields must be present.")
         return super().validate(attrs)
+
+    def get_can_edit(self, obj):
+        return can_edit_helper_date(self.context["request"].user, obj.date_pre_alert_reception)
 
 
 class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
@@ -173,9 +177,10 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
     doses_per_vial = serializers.IntegerField(required=False, read_only=True)
     vials_received = serializers.IntegerField(required=False, read_only=True)
     vials_shipped = serializers.IntegerField(required=False, read_only=True)
+    can_edit = serializers.SerializerMethodField()
 
     class Meta(NestedVaccineArrivalReportSerializerForPost.Meta):
-        fields = NestedVaccineArrivalReportSerializerForPost.Meta.fields + ["id"]
+        fields = NestedVaccineArrivalReportSerializerForPost.Meta.fields + ["id", "can_edit"]
 
     def validate(self, attrs: Any) -> Any:
         # at least one of the other fields must be present
@@ -186,6 +191,9 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
             raise serializers.ValidationError("PO number should not be prefixed")
         return validated_data
+
+    def get_can_edit(self, obj):
+        return can_edit_helper_date(self.context["request"].user, obj.arrival_report_date)
 
 
 class PostPreAlertSerializer(serializers.Serializer):
@@ -422,6 +430,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     doses_received = serializers.SerializerMethodField()
     eta = serializers.SerializerMethodField()
     var = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineRequestForm
@@ -442,7 +451,11 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "vrf_type",
+            "can_edit",
         ]
+
+    def get_can_edit(self, obj):
+        return can_edit_helper_datetime(self.context["request"].user, obj.created_at)
 
     def get_prefetched_data(self, obj):
         # Prefetch vaccine pre_alert and vaccinearrival_report to reduce the number of queries in the DB
@@ -656,7 +669,12 @@ class VaccineRequestFormViewSet(ModelViewSet):
     # feature flag
     # - add GET arrival reports and pre alerts
 
-    permission_classes = [VaccineSupplyChainReadWritePerm]
+    permission_classes = [
+        lambda: VaccineStockManagementPermission(
+            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+        )
+    ]
     http_method_names = ["get", "post", "delete", "patch"]
     parser_classes = (JSONParser, DrfNestedParser)
 
@@ -708,12 +726,12 @@ class VaccineRequestFormViewSet(ModelViewSet):
         rel_objs_qs = getattr(request_form, get_attr_name)
         rel_objs = list(rel_objs_qs.all().order_by("id").distinct())
 
-        serializer = serializer_class(rel_objs, many=True)
+        serializer = serializer_class(rel_objs, many=True, context={"request": request})
         return Response({res_name: serializer.data}, status=status.HTTP_200_OK)
 
     def _do_generic_add(self, request, serializer_class, set_attr_name, res_name):
         instance = self.get_object()
-        serializer = serializer_class(data=request.data, context={"vaccine_request_form": instance})
+        serializer = serializer_class(data=request.data, context={"vaccine_request_form": instance, "request": request})
         if serializer.is_valid():
             rel_objs = serializer.save()
             the_set = getattr(instance, set_attr_name)
@@ -724,7 +742,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     def _do_generic_update(self, request, serializer_class, set_attr_name):
         instance = self.get_object()
-        serializer = serializer_class(data=request.data, context={"vaccine_request_form": instance})
+        serializer = serializer_class(data=request.data, context={"vaccine_request_form": instance, "request": request})
         if serializer.is_valid():
             rel_objs = serializer.save()
             return Response(status=status.HTTP_200_OK, data=serializer.data)

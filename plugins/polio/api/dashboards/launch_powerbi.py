@@ -30,4 +30,8 @@ class LaunchPowerBIRefreshViewSet(viewsets.ViewSet):
         response = Response(response_data, status=status.HTTP_201_CREATED)
         response["Content-Security-Policy"] = "frame-ancestors 'self' afro-rrt-who.hub.arcgis.com"
 
+        # Set SameSite attribute for cookies
+        response.set_cookie("sessionid", request.COOKIES.get("sessionid"), samesite="None", secure=True)
+        response.set_cookie("csrftoken", request.COOKIES.get("csrftoken"), samesite="None", secure=True)
+
         return response

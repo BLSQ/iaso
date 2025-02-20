@@ -3,13 +3,25 @@ def projects_mapper(account_name):
         {
             "name": "Planning",
             "app_id": f"{account_name}.planning",
-            "feature_flags": ["REQUIRE_AUTHENTICATION", "TAKE_GPS_ON_FORM", "FORMS_AUTO_UPLOAD", "PLANNING"],
+            "feature_flags": [
+                "REQUIRE_AUTHENTICATION",
+                "FORMS_AUTO_UPLOAD",
+                "TAKE_GPS_ON_FORM",
+                "GPS_TRACKING",
+                "SHOW_DETAIL_MAP_ON_MOBILE",
+                "PLANNING",
+            ],
             "linked_forms": ["Equipment/Pop/Social mob./Microplans"],
         },
         {
             "name": "Georegistry/Géoregistre",
             "app_id": f"{account_name}.georegistry",
-            "feature_flags": ["REQUIRE_AUTHENTICATION", "TAKE_GPS_ON_FORM", "MOBILE_ORG_UNIT_REGISTRY"],
+            "feature_flags": [
+                "REQUIRE_AUTHENTICATION",
+                "TAKE_GPS_ON_FORM",
+                "MOBILE_ORG_UNIT_REGISTRY",
+                "DATA_COLLECTION",
+            ],
             "linked_forms": [
                 "Registry - Population Health area",
                 "Data for Health facility/Données Formation sanitaire",
@@ -19,7 +31,33 @@ def projects_mapper(account_name):
             "name": "Vaccination",
             "app_id": f"{account_name}.children",
             "feature_flags": ["REQUIRE_AUTHENTICATION", "ENTITY"],
-            "linked_forms": ["Child/Enfant - Registration/Enregistrement", "Child/Enfant - Follow-up/Suivi"],
+            "linked_forms": [
+                "Child/Enfant - Registration/Enregistrement",
+                "Child/Enfant - Follow-up/Suivi",
+                "Dénombrement / Enumeration",
+                "Pregnant women follow-up",
+                "Registration Vaccination Pregnant Women",
+            ],
+        },
+        {
+            "name": "LLIN campaign",
+            "app_id": f"{account_name}.campaign",
+            "feature_flags": [
+                "REQUIRE_AUTHENTICATION",
+                "TAKE_GPS_ON_FORM",
+                "MOBILE_ENTITY_WARN_WHEN_FOUND",
+                "DATA_COLLECTION",
+                "ENTITY",
+            ],
+            "linked_forms": [
+                "Child/Enfant - Registration/Enregistrement",
+                "Child/Enfant - Follow-up/Suivi",
+                "Dénombrement / Enumeration",
+                "Distribution",
+                "Pregnant women follow-up",
+                "Registration Vaccination Pregnant Women",
+                "Registry - Population Health area",
+            ],
         },
     ]
     return projects

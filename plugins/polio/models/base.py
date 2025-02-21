@@ -1506,6 +1506,9 @@ class OutgoingStockMovement(models.Model):
         storage=CustomPublicStorage(), upload_to="public_documents/forma/", null=True, blank=True
     )
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
 class DestructionReport(models.Model):
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
@@ -1519,6 +1522,9 @@ class DestructionReport(models.Model):
     document = models.FileField(
         storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/", null=True, blank=True
     )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [
@@ -1554,6 +1560,9 @@ class IncidentReport(models.Model):
     document = models.FileField(
         storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/", null=True, blank=True
     )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [

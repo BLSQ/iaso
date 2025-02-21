@@ -11,6 +11,8 @@ const STOCK_MANAGEMENT_WRITE = 'iaso_polio_vaccine_stock_management_write';
 const NOTIFICATION = 'iaso_polio_notifications';
 const CHRONOGRAM = 'iaso_polio_chronogram';
 const CHRONOGRAM_RESTRICTED_WRITE = 'iaso_polio_chronogram_restricted_write';
+const STOCK_EARMARKS_NONADMIN = 'iaso_polio_vaccine_stock_earmarks_nonadmin';
+const STOCK_EARMARKS_ADMIN = 'iaso_polio_vaccine_stock_earmarks_admin';
 
 export {
     POLIO,
@@ -26,4 +28,6 @@ export {
     NOTIFICATION,
     CHRONOGRAM,
     CHRONOGRAM_RESTRICTED_WRITE,
+    STOCK_EARMARKS_NONADMIN,
+    STOCK_EARMARKS_ADMIN,
 };

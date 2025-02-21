@@ -180,8 +180,8 @@ class PreAlertDashboardViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [
         lambda: VaccineStockManagementPermission(
-            non_admin_perm=permission.POLIO_SUPPLY_CHAIN_READ,
-            admin_perm=permission.POLIO_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
         )
     ]
     model = VaccinePreAlert
@@ -207,8 +207,8 @@ class VaccineArrivalReportDashboardViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [
         lambda: VaccineStockManagementPermission(
-            non_admin_perm=permission.POLIO_SUPPLY_CHAIN_READ,
-            admin_perm=permission.POLIO_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
         )
     ]
     model = VaccinePreAlert

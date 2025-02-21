@@ -2,12 +2,11 @@ import datetime
 import enum
 
 from django.db.models import Exists, OuterRef, Q, Subquery, Sum
-from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django_filters.rest_framework import FilterSet, NumberFilter
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import filters, permissions, serializers, status
+from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -15,9 +14,13 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
+from iaso.api.common import ModelViewSet, Paginator
 from iaso.models import OrgUnit
-from plugins.polio.api.vaccines.common import VaccineStockManagementPermission, can_edit_helper
+from plugins.polio.api.vaccines.common import (
+    VaccineStockManagementPermission,
+    VaccineStockEarmarkPermission,
+    can_edit_helper,
+)
 from plugins.polio.models import (
     DOSES_PER_VIAL,
     Campaign,
@@ -889,7 +892,7 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     model_class = EarmarkedStock
     filterset_class = EarmarkedStockFilter
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
+        lambda: VaccineStockEarmarkPermission(
             non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
             admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
         )

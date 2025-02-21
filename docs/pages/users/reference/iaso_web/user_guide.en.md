@@ -595,7 +595,7 @@ We call an “**Entity**” anything that can move or be moved and that we want 
 To differentiate between different kinds of entities, IASO has a concept of “**Entity Type**”.   
 IASO heavily relies on [XLSForms](https://xlsform.org), and entities are no exceptions. Therefore, an entity is represented by a submission to a form. This submission is referred to as the **profile**. The entity type defines which form has to be filled in.
 
-### Create an entity
+### How to create an entity
 
 **Enable the feature**
 
@@ -649,23 +649,23 @@ Within the entity type’s configuration, it is possible for administrators to d
 
 This impacts how the web and mobile applications display entities, as shown below.
 
-### **In the web interface** 
+#### **In the web interface** 
 
-#### In the list 
+##### In the list 
 
 ![image](https://github.com/user-attachments/assets/fe377ed2-d6e7-4f86-8d51-56c11499ee19)
 
-#### In the details screen
+##### In the details screen
 
 ![image](https://github.com/user-attachments/assets/30ba9e4f-f282-40c6-9594-ed324c97145e)
 
-### **In the mobile application** 
+#### **In the mobile application** 
 
-#### In the list
+##### In the list
 
 ![image](https://github.com/user-attachments/assets/bfe20c8e-8285-4416-a276-d59404678312)
 
-#### In the details screen
+##### In the details screen
 
 ![image](https://github.com/user-attachments/assets/4303f3ac-9784-4f6e-b520-8c6941766564)
 

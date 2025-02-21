@@ -72,6 +72,17 @@ function TopBar(props) {
             elevation={disableShadow ? 0 : 4}
         >
             <Toolbar className={classes.root}>
+                {Disclaimer && (
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            bottom: theme.spacing(0.25),
+                            right: theme.spacing(7),
+                        }}
+                    >
+                        <Disclaimer />
+                    </Box>
+                )}
                 <Grid
                     container
                     justifyContent="space-between"
@@ -146,17 +157,6 @@ function TopBar(props) {
                         </Grid>
                     )}
                 </Grid>
-                {Disclaimer && (
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            bottom: theme.spacing(0.25),
-                            right: theme.spacing(7),
-                        }}
-                    >
-                        <Disclaimer />
-                    </Box>
-                )}
             </Toolbar>
             {children}
         </AppBar>

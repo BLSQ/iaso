@@ -8,6 +8,8 @@ import { PdfPreview } from '../../../../../../../../../hat/assets/js/apps/Iaso/c
 import {
     STOCK_MANAGEMENT_WRITE,
     STOCK_MANAGEMENT_READ,
+    STOCK_EARMARKS_NONADMIN,
+    STOCK_EARMARKS_ADMIN,
 } from '../../../../../constants/permissions';
 import { VaccineForStock } from '../../../../../constants/types';
 import MESSAGES from '../../messages';
@@ -442,8 +444,8 @@ export const useEarmarkedTableColumns = (
                     return (
                         <DisplayIfUserHasPerm
                             permissions={[
-                                STOCK_MANAGEMENT_WRITE,
-                                STOCK_MANAGEMENT_READ,
+                                STOCK_EARMARKS_NONADMIN,
+                                STOCK_EARMARKS_ADMIN,
                             ]}
                         >
                             {settings.row.original.can_edit && (

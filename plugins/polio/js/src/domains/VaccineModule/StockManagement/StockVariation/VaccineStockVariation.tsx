@@ -15,6 +15,8 @@ import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso
 import {
     STOCK_MANAGEMENT_WRITE,
     STOCK_MANAGEMENT_READ,
+    STOCK_EARMARKS_NONADMIN,
+    STOCK_EARMARKS_ADMIN,
 } from '../../../../constants/permissions';
 import { baseUrls } from '../../../../constants/urls';
 import { DESTRUCTION, EARMARKED, FORM_A, INCIDENT } from '../constants';
@@ -191,8 +193,8 @@ export const VaccineStockVariation: FunctionComponent = () => {
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
                                 permissions={[
-                                    STOCK_MANAGEMENT_WRITE,
-                                    STOCK_MANAGEMENT_READ,
+                                    STOCK_EARMARKS_NONADMIN,
+                                    STOCK_EARMARKS_ADMIN,
                                 ]}
                             >
                                 {tab === EARMARKED && (

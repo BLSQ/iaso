@@ -1506,7 +1506,7 @@ class OutgoingStockMovement(models.Model):
         storage=CustomPublicStorage(), upload_to="public_documents/forma/", null=True, blank=True
     )
 
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 
@@ -1523,7 +1523,7 @@ class DestructionReport(models.Model):
         storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/", null=True, blank=True
     )
 
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -1561,7 +1561,7 @@ class IncidentReport(models.Model):
         storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/", null=True, blank=True
     )
 
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

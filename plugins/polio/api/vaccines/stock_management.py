@@ -711,7 +711,12 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         return obj.round.number if obj.round else None
 
     def get_can_edit(self, obj):
-        return can_edit_helper(self.context["request"].user, obj.created_at)
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+        )
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -783,7 +788,12 @@ class IncidentReportSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_can_edit(self, obj):
-        return can_edit_helper(self.context["request"].user, obj.created_at)
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+        )
 
 
 class IncidentReportViewSet(VaccineStockSubitemBase):
@@ -806,7 +816,12 @@ class DestructionReportSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_can_edit(self, obj):
-        return can_edit_helper(self.context["request"].user, obj.created_at)
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+        )
 
 
 class DestructionReportViewSet(VaccineStockSubitemBase):
@@ -843,7 +858,12 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
         ]
 
     def get_can_edit(self, obj):
-        return can_edit_helper(self.context["request"].user, obj.created_at)
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+        )
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -870,8 +890,8 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     filterset_class = EarmarkedStockFilter
     permission_classes = [
         lambda: VaccineStockManagementPermission(
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+            admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
         )
     ]
 

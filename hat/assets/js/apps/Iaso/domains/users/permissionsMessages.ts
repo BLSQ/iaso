@@ -377,6 +377,24 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_polio_vaccine_supply_chain_read',
         defaultMessage: 'Polio vaccine supply chain - Read',
     },
+    iaso_polio_vaccine_stock_earmarks_nonadmin: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_earmarks_nonadmin',
+        defaultMessage: 'Polio vaccine stock earmarks - Non-admin',
+    },
+    iaso_polio_vaccine_stock_earmarks_nonadmin_tooltip: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_earmarks_nonadmin_tooltip',
+        defaultMessage:
+            'See summary of vaccine stock earmarks, by country and vaccine',
+    },
+    iaso_polio_vaccine_stock_earmarks_admin: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_earmarks_admin',
+        defaultMessage: 'Polio vaccine stock earmarks - Admin',
+    },
+    iaso_polio_vaccine_stock_earmarks_admin_tooltip: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_earmarks_admin_tooltip',
+        defaultMessage: 'Edit and add vaccine stock earmarks data',
+    },
+
     iaso_polio_vaccine_supply_chain_read_tooltip: {
         id: 'iaso.permissions.iaso_polio_vaccine_supply_chain_read_tooltip',
         defaultMessage:
@@ -609,7 +627,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     no_admin: {
         id: 'iaso.permissions.readEdit.no_admin',
-        defaultMessage: 'No-admin',
+        defaultMessage: 'Non-admin',
     },
     all: {
         id: 'iaso.permissions.readEdit.all',
@@ -723,6 +741,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.readEdit.tooltip.polio_vaccine_authorization_permissions',
         defaultMessage:
             'Admin and no-admin permission on managing polio vaccine authorizations',
+    },
+    iaso_polio_vaccine_stock_earmarks_permissions: {
+        id: 'iaso.permissions.readEdit.polio_vaccine_stock_earmarks_permissions',
+        defaultMessage: 'Polio vaccine stock earmarks',
+    },
+    iaso_polio_vaccine_stock_earmarks_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.polio_vaccine_stock_earmarks_permissions',
+        defaultMessage: 'Manage vaccine stock earmarks',
     },
     iaso_user_permissions: {
         id: 'iaso.permissions.readEdit.user_permissions',

@@ -141,7 +141,12 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         return super().validate(attrs)
 
     def get_can_edit(self, obj):
-        return can_edit_helper(self.context["request"].user, obj.created_at)
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+        )
 
 
 class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
@@ -189,7 +194,12 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         return validated_data
 
     def get_can_edit(self, obj):
-        return can_edit_helper(self.context["request"].user, obj.created_at)
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+        )
 
 
 class PostPreAlertSerializer(serializers.Serializer):
@@ -228,7 +238,12 @@ class PatchPreAlertSerializer(serializers.Serializer):
                         setattr(ar, key, item[key])
 
                 if is_different:
-                    if can_edit_helper(self.context["request"].user, ar.created_at):
+                    if can_edit_helper(
+                        self.context["request"].user,
+                        ar.created_at,
+                        admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+                        non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+                    ):
                         try:
                             ar.save()
                         except IntegrityError as e:
@@ -278,7 +293,12 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                         setattr(ar, key, item[key])
 
                 if is_different:
-                    if can_edit_helper(self.context["request"].user, ar.created_at):
+                    if can_edit_helper(
+                        self.context["request"].user,
+                        ar.created_at,
+                        admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+                        non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+                    ):
                         try:
                             ar.save()
                         except IntegrityError as e:
@@ -428,7 +448,12 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
         ]
 
     def get_can_edit(self, obj):
-        return can_edit_helper(self.context["request"].user, obj.created_at)
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+        )
 
 
 class VaccineRequestFormListSerializer(serializers.ModelSerializer):
@@ -467,7 +492,12 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
         ]
 
     def get_can_edit(self, obj):
-        return can_edit_helper(self.context["request"].user, obj.created_at)
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+        )
 
     def get_prefetched_data(self, obj):
         # Prefetch vaccine pre_alert and vaccinearrival_report to reduce the number of queries in the DB

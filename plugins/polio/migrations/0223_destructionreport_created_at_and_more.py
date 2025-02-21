@@ -2,6 +2,20 @@
 
 from django.db import migrations, models
 import django.utils.timezone
+from datetime import timedelta
+
+
+def set_initial_dates(apps, schema_editor):
+    # Get 8 days ago date so that all records are more than 7 days old and non editable by non admins
+    eight_days_ago = django.utils.timezone.now() - timedelta(days=8)
+
+    # Update all existing records
+    DestructionReport = apps.get_model("polio", "DestructionReport")
+    IncidentReport = apps.get_model("polio", "IncidentReport")
+    OutgoingStockMovement = apps.get_model("polio", "OutgoingStockMovement")
+
+    for Model in [DestructionReport, IncidentReport, OutgoingStockMovement]:
+        Model.objects.all().update(created_at=eight_days_ago, updated_at=eight_days_ago)
 
 
 class Migration(migrations.Migration):
@@ -10,32 +24,66 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # First add the fields with null=True
         migrations.AddField(
             model_name="destructionreport",
             name="created_at",
-            field=models.DateTimeField(default=django.utils.timezone.now),
+            field=models.DateTimeField(null=True),
         ),
         migrations.AddField(
             model_name="destructionreport",
             name="updated_at",
-            field=models.DateTimeField(auto_now=True),
+            field=models.DateTimeField(null=True),
         ),
         migrations.AddField(
             model_name="incidentreport",
             name="created_at",
-            field=models.DateTimeField(default=django.utils.timezone.now),
+            field=models.DateTimeField(null=True),
         ),
         migrations.AddField(
             model_name="incidentreport",
             name="updated_at",
-            field=models.DateTimeField(auto_now=True),
+            field=models.DateTimeField(null=True),
         ),
         migrations.AddField(
             model_name="outgoingstockmovement",
             name="created_at",
-            field=models.DateTimeField(default=django.utils.timezone.now),
+            field=models.DateTimeField(null=True),
         ),
         migrations.AddField(
+            model_name="outgoingstockmovement",
+            name="updated_at",
+            field=models.DateTimeField(null=True),
+        ),
+        # Run the data migration
+        migrations.RunPython(set_initial_dates),
+        # Now alter the fields to make them non-nullable with the desired defaults
+        migrations.AlterField(
+            model_name="destructionreport",
+            name="created_at",
+            field=models.DateTimeField(auto_now_add=True),
+        ),
+        migrations.AlterField(
+            model_name="destructionreport",
+            name="updated_at",
+            field=models.DateTimeField(auto_now=True),
+        ),
+        migrations.AlterField(
+            model_name="incidentreport",
+            name="created_at",
+            field=models.DateTimeField(auto_now_add=True),
+        ),
+        migrations.AlterField(
+            model_name="incidentreport",
+            name="updated_at",
+            field=models.DateTimeField(auto_now=True),
+        ),
+        migrations.AlterField(
+            model_name="outgoingstockmovement",
+            name="created_at",
+            field=models.DateTimeField(auto_now_add=True),
+        ),
+        migrations.AlterField(
             model_name="outgoingstockmovement",
             name="updated_at",
             field=models.DateTimeField(auto_now=True),

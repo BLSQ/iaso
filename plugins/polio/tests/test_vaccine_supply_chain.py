@@ -288,21 +288,39 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_user_without_write_permission_cannot_post_new_request_form(self):
+    def test_user_with_read_permission_can_post_new_request_form(self):
         self.client.force_authenticate(user=self.user_ro_perm)
+
+        campaign_test = pm.Campaign.objects.create(
+            obr_name="TEST_CAMPAIGN",
+            country=self.org_unit_DRC,
+            account=self.account,
+        )
+
+        campaign_test_round_1 = pm.Round.objects.create(
+            campaign=campaign_test,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+
         response = self.client.post(
             BASE_URL,
             data={
-                "campaign": self.campaign_rdc_1.id,
+                "campaign": campaign_test.obr_name,
                 "vaccine_type": pm.VACCINES[0][0],
-                "date_vrf_reception": self.now - datetime.timedelta(days=1),
-                "date_vrf_signature": self.now,
-                "date_dg_approval": self.now,
+                "date_vrf_reception": "2021-01-01",
+                "date_vrf_signature": "2021-01-02",
+                "date_dg_approval": "2021-01-03",
                 "quantities_ordered_in_doses": 1000000,
+                "rounds": [{"number": campaign_test_round_1.number}],
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 201)
+        res = response.data
+        self.assertEqual(res["campaign"], str(campaign_test.id))
+        self.assertEqual(res["vaccine_type"], pm.VACCINES[0][0])
 
     def test_user_with_write_permission_can_post_new_request_form(self):
         self.client.force_authenticate(user=self.user_rw_perm)

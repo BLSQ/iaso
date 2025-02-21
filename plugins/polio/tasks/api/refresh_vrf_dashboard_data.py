@@ -3,7 +3,6 @@ from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import RUNNING, Task
 from rest_framework.response import Response
 from datetime import datetime
-from django.contrib.auth.models import User
 
 
 VRF_TASK_NAME = "Refresh VRF dashboard data"

@@ -98,4 +98,19 @@ class SourceVersionAPITestCase(APITestCase):
         self.user.user_permissions.set([Permission.objects.get(codename=permission._SOURCES)])
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/sourceversions/dropdown/")
-        self.assertJSONResponse(response, 200)
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data), 1)
+        version = data[0]
+        self.assertEqual(version["id"], self.version.pk)
+        self.assertEqual(version["data_source"], self.data_source.pk)
+        self.assertEqual(version["number"], self.version.number)
+        self.assertEqual(version["data_source_name"], self.data_source.name)
+
+    def test_dropdown_sourceversions_without_user_authentication(self):
+        response = self.client.get("/api/sourceversions/dropdown/")
+        self.assertJSONResponse(response, 401)
+
+    def test_dropdown_sourceversions_with_user_without_permission(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get("/api/sourceversions/dropdown/")
+        self.assertJSONResponse(response, 403)

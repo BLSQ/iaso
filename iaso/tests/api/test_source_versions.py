@@ -93,3 +93,9 @@ class SourceVersionAPITestCase(APITestCase):
         self.assertEqual(version["is_default"], False)
         self.assertEqual(version["org_units_count"], 0)
         self.assertEqual(version["tree_config_status_fields"], [])
+
+    def test_dropdown_sourceversions(self):
+        self.user.user_permissions.set([Permission.objects.get(codename=permission._SOURCES)])
+        self.client.force_authenticate(self.user)
+        response = self.client.get("/api/sourceversions/dropdown/")
+        self.assertJSONResponse(response, 200)

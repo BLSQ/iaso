@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { IconButton as MuiIconButton, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import HomeIcon from '@mui/icons-material/Home';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from './messages';
@@ -30,7 +30,7 @@ export const HomePageButton: FunctionComponent<Props> = ({
                 href={`/dashboard/${baseUrls.home}`}
                 id="top-bar-home-page-button"
             >
-                <HomeIcon />
+                <HomeOutlinedIcon />
             </MuiIconButton>
         </Tooltip>
     );

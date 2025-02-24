@@ -1,18 +1,19 @@
 # Create forms for entities
 
-This document explains how to create forms for [entities](../../../users/reference/iaso_concepts/iaso_concepts.en.md#entities) and their [workflows](../../../users/reference/iaso_concepts/iaso_concepts.en.md#workflows).
+This document explains how to create ODK forms for [entities](../../../users/reference/iaso_concepts/iaso_concepts.en.md#entities) and their [workflows](../../../users/reference/iaso_concepts/iaso_concepts.en.md#workflows).
 
-## The profile
+## The entity's profile
 
 The profile (or reference form) is an [ODK form](../../../users/reference/iaso_concepts/iaso_concepts.en.md#questionnaires-or-xls-data-collection-forms) that contains all the entity's information.
 Those information can be divided in two groups:
-- General information (E.g.: first name, last name, address, phone number, license plate, vaccination card number, etc.)
-- State information (E.g.: what program does this entity belongs to, how many kilometers has this entity traveled over time, etc.)
+- General information - which is static and does not change over time (E.g.: first name, last name, address, phone number, license plate, vaccination card number, etc.)
+- State information - which can vary over time (E.g.: weight, health program a beneficiary belongs to, status, etc.)
 
-General information are usually entered by the user and are regular displayed questions in the forms (text, choices, etc.)
-State information are [`calculate`](https://docs.getodk.org/form-logic/#calculations) questions with a default calculation (E.g.: `""`, `0`, etc.)
+General information is usually entered by the user and is referenced throughout the forms' questions of a given workflow
+State information is [`calculate`](https://docs.getodk.org/form-logic/#calculations) questions with a default calculation (E.g.: `""`, `0`, etc.)
 
 As a good practice, we keep the general information questions together at the top and state information questions together at the bottom.
+Without including them to any group (`begin_group` / `end_group`) so they don't appear when opening the form but their values can be references in the questions of the given form.
 
 ### Example
 
@@ -33,11 +34,12 @@ Follow-up forms are forms which are presented based on the profile's value like 
 A follow-up form can access values from the profile and also override values in the profile (based on the changes configured in the workflow).
 
 We usually split the follow-up forms in three parts:
-- The `calculate` questions which declares the information we want to retrieve from the profile
+- The `calculate` questions which declare the information we want to retrieve from the profile
 - The form itself. In other words, the questions we want to ask the user.
-- The `calculate` questions which declares the changes we want to apply to the profile
+- The `calculate` questions which declare the changes we want to apply to the profile
 
 There is also an extra optional part which is a list of `note` questions which display the `calculate` questions that will override the profile.
+The `note` question allows the mobile application user to read from the ODK form the result of the calculation.
 This last part is optional but very useful to have a quick overview of what the values will be.
 
 ### Example
@@ -78,6 +80,14 @@ However, most "real" `calculate` questions can often be ignored (since their inf
 Questions that can safely be ignored (question which can be recalculated) can pre prefixed by an underscore (`_`) to strip them from the binary stored on the NFC card.
 
 Also, some questions like `first_name` in the previous example, which are just cosmetic, can be marked as omitted with the underscore to save space on the NFC card.
+
+##### Example
+
+| type              | name                            | label         | calculation                                      |
+|-------------------|---------------------------------|---------------|--------------------------------------------------|
+| calculate         | date_of_birth                   | Date of birth | ""                                               |
+| calculate         | _current_age                    | Age in months | int((today()- date(${date_of_birth})) div 30.44) |
+
 
 #### Choices values
 

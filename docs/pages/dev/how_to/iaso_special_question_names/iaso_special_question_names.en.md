@@ -1,4 +1,4 @@
-# Iaso special question names
+# IASO special question names
 
 On top of providing a way to receive the profile's value in follow-up forms (See [Create forms for entities](../create_forms_for_entities/create_forms_for_entities.en.md#follow-up-forms)), 
 IASO has a few question names that are filled-in automatically.

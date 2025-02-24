@@ -107,4 +107,9 @@ export const getGlobalOverrides = theme => ({
     '& .MuiTablePagination-root .MuiTablePagination-selectLabel + div': {
         display: 'none !important',
     },
+    // SNT Malaria
+    '#top-bar': {
+        color: theme.palette.text.primary,
+        backgroundColor: 'white !important',
+    },
 });

@@ -104,36 +104,14 @@ export const useDataSourceVersions = () => {
 };
 
 export const useDataSourcesDropDown = () => {
-    return useSnackQuery(
-        ['sources'],
-        () => getRequest('/api/datasources/dropdown/?order=name'),
-        undefined,
-        {
-            select: data =>
-                data?.map(version => {
-                    return {
-                        ...version,
-                        id: version.id.toString(),
-                    };
-                }),
-        },
+    return useSnackQuery(['sources'], () =>
+        getRequest('/api/datasources/dropdown/?order=name'),
     );
 };
 
 export const useSourceVersionDropDown = () => {
-    return useSnackQuery(
-        ['dataSourceVersions'],
-        () => getRequest('/api/sourceversions/dropdown/'),
-        undefined,
-        {
-            select: data =>
-                data?.map(version => {
-                    return {
-                        ...version,
-                        id: version.id.toString(),
-                    };
-                }),
-        },
+    return useSnackQuery(['dataSourceVersions'], () =>
+        getRequest('/api/sourceversions/dropdown/'),
     );
 };
 const adaptForApi = data => {

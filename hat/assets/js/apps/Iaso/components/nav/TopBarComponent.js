@@ -146,14 +146,14 @@ function TopBar(props) {
                             <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />
                             </Box>
-                            <Box
+                            {/* <Box
                                 display="flex"
                                 justifyContent="center"
                                 alignItems="center"
                                 pl={1}
                             >
                                 <LangSwitch />
-                            </Box>
+                            </Box> */}
                         </Grid>
                     )}
                 </Grid>

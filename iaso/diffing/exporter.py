@@ -113,8 +113,13 @@ class Exporter:
                 "shortName": name_comparison.after[:50],
                 "openingDate": "1960-08-03T00:00:00.000",
             }
+
+            if to_create.org_unit.opening_date:
+                payload["openingDate"] = to_create.org_unit.opening_date.strftime("%Y-%m-%d") + "T00:00:00.000"
+
             if to_create.org_unit.parent:
                 payload["parent"] = {"id": to_create.org_unit.parent.source_ref}
+
             self.fill_geometry_or_coordinates(to_create.comparison("geometry"), payload)
 
             self.iaso_logger.info("will post ", payload)
@@ -184,7 +189,7 @@ class Exporter:
                     )
                 diff = diff[0]
                 for comparison in diff.comparisons:  # type: ignore
-                    if comparison.status != "same" and not comparison.field.startswith("groupset:"):
+                    if comparison.status != "same" and not comparison.field.startswith(("group:", "groupset:")):
                         self.apply_comparison(dhis2_payload, comparison)
             self.iaso_logger.info(f"will post slice for {', '.join(ids)}")
             # pprint([{k: (v if k != "geometry" else "...") for k, v in payload.items()} for payload in dhis2_payloads])

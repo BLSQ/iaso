@@ -449,6 +449,149 @@ Si vous préférez utiliser l'onglet Liste, le processus est similaire. La princ
 
 Vous pouvez trier les unités d'organisation et les parents en cliquant sur le nom des colonnes.
 
+Voici la traduction en français tout en conservant la mise en forme Markdown :  
+
+---
+
+## Entités
+
+Nous appelons une "**Entité**" tout ce qui peut se déplacer ou être déplacé et que nous voulons suivre dans le temps et les unités organisationnelles. Par exemple, un bénéficiaire, une voiture, etc.
+
+Pour différencier les différents types d’entités, IASO utilise le concept de "**Type d’entité**".   
+IASO repose fortement sur [XLSForms](https://xlsform.org), et les entités ne font pas exception. Ainsi, une entité est représentée par une soumission à un formulaire. Cette soumission est appelée **profil**. Le type d’entité définit quel formulaire doit être rempli.
+
+### Comment créer une entité  
+
+**Activer la fonctionnalité**  
+
+Pour créer une entité, votre projet doit d’abord activer le drapeau de fonctionnalité des entités. Vous pouvez activer ce drapeau lors de la création du projet ou en le mettant à jour ultérieurement.  
+
+![image](https://github.com/user-attachments/assets/81cf73cc-3027-453b-9d4b-8d94c6866196)  
+
+**Créer et téléverser le formulaire de profil**  
+
+En utilisant l'application de tableur de votre choix, créez un formulaire XLSForm contenant toutes les questions liées à votre entité, qu'elles soient fixes (ex. : prénom et nom) ou évolutives dans le temps (ex. : un programme auquel une entité peut être affiliée).  
+Téléversez-le sur le serveur en utilisant l’application web.  
+
+| Remarque : Les questions susceptibles d'évoluer dans le temps ne doivent pas être modifiables. |
+| :---- |  
+
+#### **Créer le type d'entité**  
+
+Dans l’écran des types d’entités, cliquez sur le bouton “CRÉER”. Donnez un nom au type d’entité et sélectionnez le formulaire récemment téléversé comme formulaire de référence :  
+
+![image](https://github.com/user-attachments/assets/cb592428-b7b0-49c5-9833-026f06707ec6)  
+
+| Remarque : Nous verrons plus tard ce que sont les "Champs de liste" et les "Champs d’informations détaillées". |
+| :---- |  
+
+#### **Créer une entité**  
+
+Dans l’application mobile, assurez-vous que les données ont été rafraîchies et sont à jour avec le serveur backend. Vous pourrez alors voir l’écran des entités.  
+
+À ce jour, il n’est pas possible de créer une entité via une interface web.  
+
+Cliquez sur le bouton "Ajouter" dans l’application.  
+
+![image](https://github.com/user-attachments/assets/17504dfd-dc50-43af-8d7e-2a380a62cf36)  
+
+Sélectionnez le type d’entité que vous souhaitez créer.  
+
+![image](https://github.com/user-attachments/assets/bf54deca-920e-47e7-a356-819d8284a054)  
+
+Une confirmation de votre sélection vous sera demandée.  
+
+![image](https://github.com/user-attachments/assets/53717a3b-ffc6-40a5-958b-97aec46abf1e)  
+
+Vous pouvez alors remplir le formulaire pour finaliser votre première entité.  
+
+### Comment configurer l'affichage d'une entité ?  
+
+Dans la configuration du type d’entité, les administrateurs peuvent définir quelles questions s'affichent dans les listes et dans l’écran de détails.  
+
+![image](https://github.com/user-attachments/assets/160da5f1-bb8e-4fce-bf04-5bb85ad5e28b)  
+
+Cela influence la manière dont les applications web et mobiles affichent les entités, comme illustré ci-dessous.  
+
+#### **Dans l’interface web**  
+
+##### Dans la liste  
+
+![image](https://github.com/user-attachments/assets/fe377ed2-d6e7-4f86-8d51-56c11499ee19)  
+
+##### Dans l’écran de détails  
+
+![image](https://github.com/user-attachments/assets/30ba9e4f-f282-40c6-9594-ed324c97145e)  
+
+#### **Dans l’application mobile**  
+
+##### Dans la liste  
+
+![image](https://github.com/user-attachments/assets/bfe20c8e-8285-4416-a276-d59404678312)  
+
+##### Dans l’écran de détails  
+
+![image](https://github.com/user-attachments/assets/4303f3ac-9784-4f6e-b520-8c6941766564)  
+
+### Recherche d'une entité  
+
+#### **Sur le web**  
+
+Dans la liste des bénéficiaires, vous pouvez filtrer par type et/ou saisir une requête pour filtrer en fonction de l'identifiant ou de toute valeur des champs de liste.  
+
+![image](https://github.com/user-attachments/assets/0adb7323-867d-43c4-91cf-dee6fccd878c)  
+
+#### **Dans l’application**  
+
+En cliquant sur l'icône de loupe sur l’écran des entités, vous accéderez à la liste de toutes les entités et pourrez les filtrer rapidement en fonction de l’identifiant ou de toute valeur des champs de liste.  
+Si vous avez besoin d'une sélection plus fine, cliquez sur l’icône d’entonnoir, sélectionnez un type et remplissez le formulaire de recherche (deuxième image).  
+
+![image](https://github.com/user-attachments/assets/dd266fd9-3470-4e3a-82bd-e1d0af54297b)  
+
+### Qu'est-ce qu'un workflow ?  
+
+Comme mentionné précédemment, une entité est suivie dans le temps et les unités organisationnelles. Pour cela, IASO relie les soumissions successives d’une entité et permet aux nouvelles soumissions de modifier le profil. Pour définir les formulaires qui doivent être présentés ensuite et quelles valeurs doivent modifier le profil, vous pouvez définir un workflow.  
+
+#### **Créer un workflow**  
+
+Dans la liste des types d’entités, cliquez sur l’icône de workflow.  
+
+![image](https://github.com/user-attachments/assets/d41d0047-497e-45be-8490-25260755ba74)  
+
+Dans la liste des versions du workflow, cliquez sur le bouton “CRÉER” et donnez un nom à la version :  
+
+![image](https://github.com/user-attachments/assets/50a8eeab-399f-446b-90cf-10da40d13018)  
+
+### **Suivis et modifications**  
+
+#### Suivis  
+
+Ils représentent les prochains formulaires possibles en fonction de l’état du profil. Ils sont basés sur une condition.  
+Dans l’exemple suivant, l’application mobile proposera "Inscription U5 WFP" comme prochain formulaire possible si le prénom est "Bill".  
+
+![image](https://github.com/user-attachments/assets/e21d8940-8fde-4d21-b14b-256f261bffca)  
+
+| Rappel : "Prénom" est l’une des questions du formulaire du type d’entité. |
+| :---- |  
+
+#### Modifications  
+
+Elles représentent le mapping des valeurs d’un formulaire vers les valeurs du profil.  
+
+Dans l’exemple ci-dessous, le “Formulaire cible” est le formulaire du type d’entité, et le “Formulaire source” est la soumission suivante.  
+Lorsque le formulaire "Inscription U5 WFP" est rempli, la valeur entrée dans "Âge de l’enfant en mois" sera copiée dans la question "Âge (mois)" du profil. Et la valeur saisie dans "Nom de l’enfant" sera copiée dans la question "Prénom" du profil.  
+
+![image](https://github.com/user-attachments/assets/b6676c6d-92c6-4059-82e4-21675f2ecd47)  
+
+### **Utilisation des valeurs du profil dans les formulaires suivants**  
+
+Si vous souhaitez qu’un formulaire ultérieur utilise des valeurs du profil, ajoutez une question avec le même identifiant et le même type que la valeur du profil.  
+
+### **Publication des workflows**  
+
+Une fois qu’une version de workflow est publiée, elle est marquée comme finalisée et ne peut plus être modifiée. Seuls les workflows en mode "brouillon" peuvent être édités.  
+Si vous souhaitez modifier un workflow finalisé, dupliquez-le avec le bouton "Copier la version". Une nouvelle version brouillon sera alors créée avec le même contenu.
+
 
 ## Admin
 

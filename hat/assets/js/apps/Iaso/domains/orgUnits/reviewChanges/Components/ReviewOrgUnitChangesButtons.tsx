@@ -1,16 +1,11 @@
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Box, Button } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
 import { UseSaveChangeRequestQueryData } from '../hooks/api/useSaveChangeRequest';
 import { NewOrgUnitField } from '../hooks/useNewFields';
 import MESSAGES from '../messages';
 import { OrgUnitChangeRequestDetails } from '../types';
-import { ReviewOrgUnitChangesCommentDialog } from './ReviewOrgUnitChangesCommentDialog';
+import { ReviewOrgUnitChangesConfirmDialog } from './ReviewOrgUnitChangesConfirmDialog';
 
 type SubmitChangeRequest = (variables: UseSaveChangeRequestQueryData) => void;
 
@@ -32,10 +27,8 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const selectedFields = newFields.filter(field => field.isSelected);
 
-    const [isCommentDialogOpen, setIsCommentDialogOpen] =
+    const [isConfirmDialogOpen, setIsConfirmDialogOpen] =
         useState<boolean>(false);
-
-    const [dialogTitleMessage, setDialogTitleMessage] = useState<string>('');
 
     const approvedFields: string[] = useMemo(() => {
         return isNewOrgUnit && changeRequest
@@ -43,40 +36,23 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
             : selectedFields.map(field => `new_${field.key}`);
     }, [isNewOrgUnit, changeRequest, selectedFields]);
 
+    const [isApproved, setIsApproved] = useState<boolean>(false);
     const isPartiallyApproved = Boolean(
         changeRequest?.requested_fields &&
             changeRequest?.requested_fields.length > approvedFields.length &&
             approvedFields.length > 0,
     );
-    const handleConfirm = useCallback(() => {
-        if (isPartiallyApproved) {
-            setIsCommentDialogOpen(true);
-            setDialogTitleMessage(
-                formatMessage(MESSAGES.addPartiallyApprovedComment),
-            );
-        } else {
-            submitChangeRequest({
-                status: 'approved',
-                approved_fields: approvedFields,
-            });
-        }
-    }, [
-        isPartiallyApproved,
-        formatMessage,
-        submitChangeRequest,
-        approvedFields,
-    ]);
 
     const allowConfirm = isNewOrgUnit || selectedFields.length > 0;
     return (
         <>
-            <ReviewOrgUnitChangesCommentDialog
+            <ReviewOrgUnitChangesConfirmDialog
                 submitChangeRequest={submitChangeRequest}
-                isCommentDialogOpen={isCommentDialogOpen}
-                setIsCommentDialogOpen={setIsCommentDialogOpen}
+                open={isConfirmDialogOpen}
+                onClose={() => setIsConfirmDialogOpen(false)}
                 isPartiallyApproved={isPartiallyApproved}
+                isApproved={isApproved}
                 approvedFields={approvedFields}
-                titleMessage={dialogTitleMessage}
             />
             <Box display="flex" justifyContent="flex-end" m={2}>
                 {isNew && (
@@ -85,12 +61,8 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                             <Button
                                 data-test="reject-button"
                                 onClick={() => {
-                                    setDialogTitleMessage(
-                                        formatMessage(
-                                            MESSAGES.addRejectionComment,
-                                        ),
-                                    );
-                                    setIsCommentDialogOpen(true);
+                                    setIsApproved(false);
+                                    setIsConfirmDialogOpen(true);
                                 }}
                                 variant="contained"
                                 color="error"
@@ -102,7 +74,10 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                         <Box pl={1} display="inline-block">
                             <Button
                                 data-test="confirm-button"
-                                onClick={handleConfirm}
+                                onClick={() => {
+                                    setIsApproved(true);
+                                    setIsConfirmDialogOpen(true);
+                                }}
                                 variant="contained"
                                 color="primary"
                                 autoFocus

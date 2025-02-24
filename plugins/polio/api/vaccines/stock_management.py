@@ -9,7 +9,9 @@ from plugins.polio.api.vaccines.common import sort_results
 from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
+from django_filters.rest_framework import FilterSet, NumberFilter
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.utils.dateparse import parse_date
@@ -567,6 +569,7 @@ class VaccineStockSerializer(serializers.ModelSerializer):
     stock_of_usable_vials = serializers.SerializerMethodField()
     stock_of_unusable_vials = serializers.SerializerMethodField()
     vials_destroyed = serializers.SerializerMethodField()
+    stock_of_earmarked_vials = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineStock
@@ -579,6 +582,7 @@ class VaccineStockSerializer(serializers.ModelSerializer):
             "vials_used",
             "stock_of_usable_vials",
             "stock_of_unusable_vials",
+            "stock_of_earmarked_vials",
             "vials_destroyed",
         ]
         list_serializer_class = VaccineStockListSerializer
@@ -597,6 +601,9 @@ class VaccineStockSerializer(serializers.ModelSerializer):
 
     def get_vials_destroyed(self, obj):
         return obj.calculator.get_vials_destroyed()
+
+    def get_stock_of_earmarked_vials(self, obj):
+        return obj.calculator.get_total_of_earmarked()[0]
 
 
 class VaccineStockCreateSerializer(serializers.ModelSerializer):
@@ -853,9 +860,18 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
         return None
 
 
+class EarmarkedStockFilter(FilterSet):
+    vaccine_stock = NumberFilter(field_name="vaccine_stock_id")
+
+    class Meta:
+        model = EarmarkedStock
+        fields = ["vaccine_stock"]
+
+
 class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     serializer_class = EarmarkedStockSerializer
     model_class = EarmarkedStock
+    filterset_class = EarmarkedStockFilter
 
     def get_queryset(self):
         return EarmarkedStock.objects.filter(
@@ -1157,7 +1173,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
             VaccineStock.objects.filter(
                 account=self.request.user.iaso_profile.account, country__id__in=accessible_org_units_ids
             )
-            .prefetch_related("destructionreport_set", "incidentreport_set", "outgoingstockmovement_set")
+            .prefetch_related(
+                "destructionreport_set", "incidentreport_set", "outgoingstockmovement_set", "earmarked_stocks"
+            )
             .distinct()
             .order_by("id")
         )

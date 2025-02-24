@@ -128,8 +128,10 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
             if view.action in [
                 "add_pre_alerts",
                 "update_pre_alerts",
+                "delete_pre_alerts",
                 "add_arrival_reports",
                 "update_arrival_reports",
+                "delete_arrival_reports",
             ]:
                 return True  # There are multiple objects in one request for those so this is checked in the serializer
             else:

@@ -117,6 +117,7 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
         validated_data = super().validate(attrs)
         if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
             raise serializers.ValidationError("PO number should not be prefixed")
+
         return validated_data
 
 
@@ -138,6 +139,13 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         # at least one of the other fields must be present
         if not any(key in attrs.keys() for key in NestedVaccinePreAlertSerializerForPost.Meta.fields):
             raise serializers.ValidationError("At least one of the fields must be present.")
+
+        # Check if user has edit permission, if not raise 403
+        if not self.get_can_edit(VaccinePreAlert.objects.get(id=attrs["id"])):
+            raise serializers.ValidationError(
+                {"detail": "You do not have permission to edit this pre-alert"}, code="permission_denied"
+            )
+
         return super().validate(attrs)
 
     def get_can_edit(self, obj):
@@ -191,6 +199,13 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         validated_data = super().validate(attrs)
         if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
             raise serializers.ValidationError("PO number should not be prefixed")
+
+        # Check if user has edit permission, if not raise 403
+        if not self.get_can_edit(VaccineArrivalReport.objects.get(id=attrs["id"])):
+            raise serializers.ValidationError(
+                {"detail": "You do not have permission to edit this arrival report"}, code="permission_denied"
+            )
+
         return validated_data
 
     def get_can_edit(self, obj):

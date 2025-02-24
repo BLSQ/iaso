@@ -422,7 +422,7 @@ export const useMenuItems = (): MenuItems => {
 
     const items: MenuItems = useMemo(() => {
         const menuItemsTemp = [
-            ...(basicItems as MenuItems),
+            // ...(basicItems as MenuItems),
             ...(pluginsMenu as MenuItems),
         ];
         if (admin) {

@@ -185,8 +185,6 @@ class VaccineStockCalculator:
         for report in arrival_reports:
             results.append(
                 {
-                    "country": report.request_form.get_country().name,
-                    "vaccine": report.request_form.vaccine_type,
                     "date": report.arrival_report_date,
                     "action": "PO #" + report.po_number if report.po_number else "Stock Arrival",
                     "vials_in": report.vials_received or 0,
@@ -212,8 +210,6 @@ class VaccineStockCalculator:
                 real_vials_used = movement.usable_vials_used - earmarked_stock_vials
                 results.append(
                     {
-                        "country": movement.campaign.country.name,
-                        "vaccine": movement.vaccine_stock.vaccine,
                         "date": movement.report_date,
                         "action": f"Form A - Vials Used ({earmarked_stock_vials} vials from Earmarked, {real_vials_used} vials used from stock)",
                         "vials_in": None,
@@ -227,8 +223,6 @@ class VaccineStockCalculator:
                 if movement.usable_vials_used > 0:
                     results.append(
                         {
-                            "country": movement.campaign.country.name,
-                            "vaccine": movement.vaccine_stock.vaccine,
                             "date": movement.report_date,
                             "action": "Form A - Vials Used",
                             "vials_in": None,
@@ -242,8 +236,6 @@ class VaccineStockCalculator:
                 if movement.missing_vials > 0:
                     results.append(
                         {
-                            "country": movement.campaign.country.name,
-                            "vaccine": movement.vaccine_stock.vaccine,
                             "date": movement.report_date,
                             "action": "Form A - Missing Vials",
                             "vials_in": None,
@@ -267,8 +259,6 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
-                        "country": report.vaccine_stock.country.name,
-                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,
                         "vials_in": report.usable_vials or 0,
@@ -284,8 +274,6 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
-                        "country": report.vaccine_stock.country.name,
-                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,
                         "vials_in": None,
@@ -303,8 +291,6 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
-                        "country": report.vaccine_stock.country.name,
-                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,
                         "vials_in": None,
@@ -321,8 +307,6 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
-                        "country": report.vaccine_stock.country.name,
-                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,
                         "vials_in": None,
@@ -341,8 +325,6 @@ class VaccineStockCalculator:
             if stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.CREATED:
                 results.append(
                     {
-                        "country": stock.campaign.country.name,
-                        "vaccine": stock.vaccine_stock.vaccine,
                         "date": stock.created_at.date(),
                         "action": f"Earmarked created for {stock.campaign.obr_name} Round {stock.round.number}",
                         "vials_in": None,
@@ -355,8 +337,6 @@ class VaccineStockCalculator:
             elif stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.RETURNED:
                 results.append(
                     {
-                        "country": stock.campaign.country.name,
-                        "vaccine": stock.vaccine_stock.vaccine,
                         "date": stock.created_at.date(),
                         "action": f"Earmarked returned for {stock.campaign.obr_name} Round {stock.round.number}",
                         "vials_in": stock.vials_earmarked,
@@ -388,8 +368,6 @@ class VaccineStockCalculator:
 
                 results.append(
                     {
-                        "country": movement.campaign.country.name,
-                        "vaccine": movement.vaccine_stock.vaccine,
                         "date": movement.report_date,
                         "action": desc_text,
                         "vials_out": None,
@@ -419,8 +397,6 @@ class VaccineStockCalculator:
         for report in destruction_reports:
             results.append(
                 {
-                    "country": report.vaccine_stock.country.name,
-                    "vaccine": report.vaccine_stock.vaccine,
                     "date": report.destruction_report_date,
                     "action": (f"{report.action}" if len(report.action) > 0 else f"Destruction report"),
                     "vials_in": None,
@@ -442,8 +418,6 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
-                        "country": report.vaccine_stock.country.name,
-                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,  # for every field FOO that has choices set, the object will have a get_FOO_display() method
                         "vials_in": report.unusable_vials or 0,
@@ -458,8 +432,6 @@ class VaccineStockCalculator:
             ):
                 results.append(
                     {
-                        "country": report.vaccine_stock.country.name,
-                        "vaccine": report.vaccine_stock.vaccine,
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,  # for every field FOO that has choices set, the object will have a get_FOO_display() method
                         "vials_in": None,
@@ -484,8 +456,6 @@ class VaccineStockCalculator:
             ):  # if FormA is not None, it's accounted by the FormA, no need to repeat
                 results.append(
                     {
-                        "country": stock.vaccine_stock.country.name,
-                        "vaccine": stock.vaccine_stock.vaccine,
                         "date": stock.created_at.date(),
                         "action": f"Earmarked stock used for {stock.campaign.obr_name} Round {stock.round.number}",
                         "vials_in": stock.vials_earmarked,
@@ -517,8 +487,6 @@ class VaccineStockCalculator:
 
                 results.append(
                     {
-                        "country": movement.vaccine_stock.country.name,
-                        "vaccine": movement.vaccine_stock.vaccine,
                         "date": movement.created_at.date(),
                         "action": action_text,
                         "vials_out": movement.vials_earmarked,
@@ -531,8 +499,6 @@ class VaccineStockCalculator:
             else:
                 results.append(
                     {
-                        "country": movement.vaccine_stock.country.name,
-                        "vaccine": movement.vaccine_stock.vaccine,
                         "date": movement.created_at.date(),
                         "action": f"Earmarked stock reserved for {movement.campaign.obr_name} Round {movement.round.number}",
                         "vials_in": movement.vials_earmarked,
@@ -1021,6 +987,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "Unusable": lambda: calc.get_list_of_unusable_vials(end_date),
                     "Earmarked": lambda: calc.get_list_of_earmarked(end_date),
                 },
+                vaccine_stock,
                 "Usable",
             )
             with NamedTemporaryFile() as tmp:
@@ -1078,6 +1045,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "Usable": lambda: calc.get_list_of_usable_vials(end_date),
                     "Earmarked": lambda: calc.get_list_of_earmarked(end_date),
                 },
+                vaccine_stock,
                 "Unusable",
             )
             with NamedTemporaryFile() as tmp:
@@ -1131,6 +1099,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "Usable": lambda: calc.get_list_of_usable_vials(end_date),
                     "Unusable": lambda: calc.get_list_of_unusable_vials(end_date),
                 },
+                vaccine_stock,
                 "Earmarked",
             )
 

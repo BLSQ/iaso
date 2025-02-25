@@ -1,13 +1,13 @@
 from enum import Enum
-from typing import Optional, Dict, Any
+from logging import getLogger
+from typing import Any, Dict, Optional
 
 from gspread.utils import absolute_range_name, rowcol_to_a1
 
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError
-from plugins.polio.preparedness.spread_cache import CachedSpread, CachedSheet
-from logging import getLogger
+from plugins.polio.preparedness.spread_cache import CachedSheet, CachedSpread
 
 logger = getLogger(__name__)
 
@@ -45,7 +45,8 @@ NATIONAL_INDICATORS = {
     "pharmacovigilance_committee": "E51",
 }
 
-# indicator row in Region sheet, sometime it can be shifted because of an extra empty row but we get the correction later
+# indicator row in Region sheet, sometime it can be shifted because of an extra empty row
+# but we get the correction later
 REGIONAL_DISTRICT_INDICATORS = {
     "operational_fund": 8,
     "vaccine_and_droppers_received": 34,
@@ -217,7 +218,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
             for indicator_key, indicator_row in REGIONAL_DISTRICT_INDICATORS.items():
                 shift = 0
                 # some sheet have an extra empty row
-                if sheet.get_a1("B14") == None and indicator_row >= 14:
+                if sheet.get_a1("B14") is None and indicator_row >= 14:
                     shift = 1
                 value = sheet.get_rc(indicator_row + shift, colnum)
                 if indicator_key == "communication_sm_activities":

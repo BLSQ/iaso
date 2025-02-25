@@ -14,12 +14,16 @@ from typing import Optional
 import gspread  # type: ignore
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.translation import gettext_lazy as _
-from gspread.utils import rowcol_to_a1, Dimension, a1_range_to_grid_range  # type: ignore
+from gspread.utils import (  # type: ignore
+    Dimension,
+    a1_range_to_grid_range,
+    rowcol_to_a1,
+)
 from rest_framework import exceptions
 
 from hat.__version__ import VERSION
 from iaso.models import OrgUnit
-from plugins.polio.models import CountryUsersGroup, Campaign
+from plugins.polio.models import Campaign, CountryUsersGroup
 from plugins.polio.preparedness.client import get_client, get_google_config
 
 logger = getLogger(__name__)
@@ -29,19 +33,22 @@ PREPAREDNESS_TEMPLATE_CONFIG_KEY = "preparedness_template_id"
 TEMPLATE_VERSION = "v3.3"
 
 
-def create_spreadsheet(title: str, lang: str):
-    client = get_client()
+def get_config_for_country(config, country):
     config = get_google_config(PREPAREDNESS_TEMPLATE_CONFIG_KEY)
+    if str(country.id) in config:
+        return config[str(country.id)], str(country.id)
+    elif TEMPLATE_VERSION not in config:
+        raise Exception(f"Template config for {TEMPLATE_VERSION} not found")
+    else:
+        return config[TEMPLATE_VERSION], TEMPLATE_VERSION
+
+
+def create_spreadsheet(title: str, lang: str, config_for_country):
+    client = get_client()
     if lang not in ("EN", "FR", "PT"):
         # We allow it for future dev but display an error to avoid carelessly adding new language
         logger.error("Unsupported lang for preparedness template")
-    if TEMPLATE_VERSION not in config:
-        raise Exception(f"Template config for {TEMPLATE_VERSION} not found")
-
-    template = config[TEMPLATE_VERSION].get(lang.lower())
-
-    if not template:
-        raise Exception(f"Template for {lang} and version {TEMPLATE_VERSION} not found")
+    template = config_for_country.get(lang.lower())
     logger.info(f"Creating spreadsheet {title} from {template}")
 
     spreadsheet = client.copy(template, title)
@@ -98,16 +105,18 @@ def duplicate_cells(sheet, template_range, num_time):
     sheet.spreadsheet.batch_update(body)
 
 
-def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region_districts):
+def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region_districts, config_for_country):
+    general_cells = config_for_country.get("general", "E6:E70")
+    summary_cells = config_for_country.get("summary", "C73:C79")
     district_names = [d.name for d in region_districts]
     num_district = len(district_names)
     district_name_range = f"{rowcol_to_a1(7, 6)}:{rowcol_to_a1(7, 6 + num_district)}"
     updates = [{"range": "c4", "values": [[region_name]]}, {"range": district_name_range, "values": [district_names]}]
     # Make a columns for each district
     # General
-    duplicate_cells(sheet, "E6:E70", num_district)
+    duplicate_cells(sheet, general_cells, num_district)  # E6:E66
     # Summary
-    duplicate_cells(sheet, "C73:C79", num_district)
+    duplicate_cells(sheet, summary_cells, num_district)  # C69:C75
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
 
@@ -158,7 +167,9 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
     except Exception as e:
         logger.exception(e)
         logger.error(f"Could not find template language for {campaign}")
-    spreadsheet = create_spreadsheet(campaign.obr_name, lang)
+    config = get_google_config(PREPAREDNESS_TEMPLATE_CONFIG_KEY)
+    config_for_country, template_version = get_config_for_country(config=config, country=country)
+    spreadsheet = create_spreadsheet(campaign.obr_name, lang, config_for_country)
 
     # set some meta data for debugging
     domain = get_current_site(None).domain
@@ -166,7 +177,7 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
         [
             {"range": "A28", "values": [[domain]]},
             {"range": "B28", "values": [[VERSION]]},
-            {"range": "B29", "values": [[TEMPLATE_VERSION]]},
+            {"range": "B29", "values": [[template_version]]},
         ]
     )
     update_national_worksheet(
@@ -187,7 +198,7 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
         regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)
         batched_requests += copy_protected_range_to_sheet(template_range, regional_worksheet)
         region_districts = districts.filter(parent=region)
-        update_regional_worksheet(regional_worksheet, region.name, region_districts)
+        update_regional_worksheet(regional_worksheet, region.name, region_districts, config_for_country)
         current_index += 1
     spreadsheet.batch_update({"requests": batched_requests})
     spreadsheet.del_worksheet(regional_template_worksheet)

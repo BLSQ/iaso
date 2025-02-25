@@ -2,15 +2,14 @@ import datetime
 from django.utils import timezone
 from hat.menupermissions import models as permission
 from rest_framework import permissions
+from plugins.polio.models import VaccineStock
 
-VACCINE_STOCK_MANAGEMENT_DAYS_OPEN = 7
 
-
-def can_edit_helper(user, the_date, admin_perm, non_admin_perm, days_open=VACCINE_STOCK_MANAGEMENT_DAYS_OPEN):
+def can_edit_helper(user, the_date, admin_perm, non_admin_perm, days_open=VaccineStock.MANAGEMENT_DAYS_OPEN):
     if the_date is None:
         return False
 
-    if user.has_perm(admin_perm) or user.is_superuser:
+    if user.has_perm(admin_perm):
         return True
 
     if user.has_perm(non_admin_perm):
@@ -25,7 +24,7 @@ class VaccineStockManagementPermission(permissions.BasePermission):
         self,
         admin_perm,
         non_admin_perm,
-        days_open=VACCINE_STOCK_MANAGEMENT_DAYS_OPEN,
+        days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
         datetime_field="created_at",
         datetime_now_today=timezone.now,
         *args,
@@ -40,18 +39,14 @@ class VaccineStockManagementPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         # For write operations, require appropriate permissions
-        if (
-            request.user.has_perm(self.admin_perm)
-            or request.user.has_perm(self.non_admin_perm)
-            or request.user.is_superuser
-        ):
+        if request.user.has_perm(self.admin_perm) or request.user.has_perm(self.non_admin_perm):
             return True
 
         return False
 
     def has_object_permission(self, request, view, obj):
         # Users with write permission can do anything
-        if request.user.has_perm(self.admin_perm) or request.user.is_superuser:
+        if request.user.has_perm(self.admin_perm):
             return True
 
         if request.user.has_perm(self.non_admin_perm):
@@ -82,7 +77,7 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
         self,
         admin_perm,
         non_admin_perm,
-        days_open=VACCINE_STOCK_MANAGEMENT_DAYS_OPEN,
+        days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
         datetime_field="created_at",
         datetime_now_today=timezone.now,
         *args,
@@ -101,18 +96,14 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
             return True
 
         # For write operations, require appropriate permissions
-        if (
-            request.user.has_perm(self.admin_perm)
-            or request.user.has_perm(self.non_admin_perm)
-            or request.user.is_superuser
-        ):
+        if request.user.has_perm(self.admin_perm) or request.user.has_perm(self.non_admin_perm):
             return True
 
         return False
 
     def has_object_permission(self, request, view, obj):
         # Users with write permission can do anything
-        if request.user.has_perm(self.admin_perm) or request.user.is_superuser:
+        if request.user.has_perm(self.admin_perm):
             return True
 
         # Users without any permission can read anything

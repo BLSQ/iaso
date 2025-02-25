@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, Paginator
 from iaso.models import OrgUnit
-from plugins.polio.api.vaccines.common import (
+from plugins.polio.api.vaccines.permissions import (
     VaccineStockManagementPermission,
     VaccineStockEarmarkPermission,
     can_edit_helper,
@@ -749,8 +749,8 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     model_class = OutgoingStockMovement
     permission_classes = [
         lambda: VaccineStockManagementPermission(
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
         )
     ]
 
@@ -804,8 +804,8 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
     model_class = IncidentReport
     permission_classes = [
         lambda: VaccineStockManagementPermission(
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
         )
     ]
 
@@ -832,8 +832,8 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
     model_class = DestructionReport
     permission_classes = [
         lambda: VaccineStockManagementPermission(
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
         )
     ]
 
@@ -893,8 +893,8 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     filterset_class = EarmarkedStockFilter
     permission_classes = [
         lambda: VaccineStockEarmarkPermission(
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
             admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
         )
     ]
 
@@ -941,8 +941,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     permission_classes = [
         lambda: VaccineStockManagementPermission(
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
         )
     ]
     serializer_class = VaccineStockSerializer

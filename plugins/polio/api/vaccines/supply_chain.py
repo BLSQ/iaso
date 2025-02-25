@@ -17,7 +17,7 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
-from plugins.polio.api.vaccines.common import VaccineStockManagementPermission, can_edit_helper
+from plugins.polio.api.vaccines.permissions import VaccineStockManagementPermission, can_edit_helper
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
 logger = getLogger(__name__)
@@ -728,8 +728,8 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     permission_classes = [
         lambda: VaccineStockManagementPermission(
-            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
         )
     ]
     http_method_names = ["get", "post", "delete", "patch"]

@@ -1429,6 +1429,7 @@ class VaccineArrivalReport(models.Model):
 
 
 class VaccineStock(models.Model):
+    MANAGEMENT_DAYS_OPEN = 7
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="vaccine_stocks")
     country = models.ForeignKey(
         "iaso.orgunit",

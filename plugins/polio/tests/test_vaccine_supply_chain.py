@@ -432,6 +432,9 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         pre_alert.created_at = timezone.now() - datetime.timedelta(days=8)
         pre_alert.save()
 
+        # need to change at least one field to trigger the edit permission check
+        update_data = {"pre_alerts": [{"id": pre_alert_id, "doses_shipped": 650000, "po_number": "5678"}]}
+
         # Non-admin cannot edit after 7 days
         response = self.client.patch(BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json")
         self.assertEqual(response.status_code, 400)
@@ -523,6 +526,9 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         arrival_report.created_at = timezone.now() - datetime.timedelta(days=8)
         arrival_report.doses_received = 8888
         arrival_report.save()
+
+        # need to change at least one field to trigger the edit permission check
+        update_data = {"arrival_reports": [{"id": arrival_report_id, "doses_received": 9999}]}
 
         # Non-admin cannot edit after 7 days
         response = self.client.patch(

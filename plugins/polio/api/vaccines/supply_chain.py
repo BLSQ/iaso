@@ -140,13 +140,27 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         if not any(key in attrs.keys() for key in NestedVaccinePreAlertSerializerForPost.Meta.fields):
             raise serializers.ValidationError("At least one of the fields must be present.")
 
-        # Check if user has edit permission, if not raise 403
-        if not self.get_can_edit(VaccinePreAlert.objects.get(id=attrs["id"])):
+        validated_data = super().validate(attrs)
+        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
+            raise serializers.ValidationError("PO number should not be prefixed")
+
+        # Get current object
+        current_obj = VaccinePreAlert.objects.get(id=attrs["id"])
+
+        # Check if any values are actually different
+        has_changes = False
+        for key in attrs.keys():
+            if hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
+                has_changes = True
+                break
+
+        # Only check edit permission if there are actual changes
+        if has_changes and not self.get_can_edit(current_obj):
             raise serializers.ValidationError(
                 {"detail": "You do not have permission to edit this pre-alert"}, code="permission_denied"
             )
 
-        return super().validate(attrs)
+        return validated_data
 
     def get_can_edit(self, obj):
         return can_edit_helper(
@@ -200,8 +214,18 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
             raise serializers.ValidationError("PO number should not be prefixed")
 
-        # Check if user has edit permission, if not raise 403
-        if not self.get_can_edit(VaccineArrivalReport.objects.get(id=attrs["id"])):
+        # Get current object
+        current_obj = VaccineArrivalReport.objects.get(id=attrs["id"])
+
+        # Check if any values are actually different
+        has_changes = False
+        for key in attrs.keys():
+            if hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
+                has_changes = True
+                break
+
+        # Only check edit permission if there are actual changes
+        if has_changes and not self.get_can_edit(current_obj):
             raise serializers.ValidationError(
                 {"detail": "You do not have permission to edit this arrival report"}, code="permission_denied"
             )

@@ -86,8 +86,10 @@ class DataSourceSerializer(serializers.ModelSerializer):
         return ds
 
     def update(self, data_source, validated_data):
-        credentials = self.context["request"].data.get("credentials", None)
-        account = self.context["request"].user.iaso_profile.account
+        request = self.context["request"]
+
+        credentials = request.data.get("credentials", None)
+        account = request.user.iaso_profile.account
 
         if credentials:
             if data_source.credentials:
@@ -109,31 +111,37 @@ class DataSourceSerializer(serializers.ModelSerializer):
             data_source.credentials = new_credentials
 
         name = validated_data.pop("name", None)
-        read_only = validated_data.pop("read_only", None)
-        description = validated_data.pop("description", None)
-        default_version_id = self.context["request"].data["default_version_id"]
-        projects = account.project_set.filter(id__in=self.context["request"].data.get("project_ids", None))
-        if name is not None:
+        if name:
             data_source.name = name
-        if read_only is not None:
+
+        read_only = validated_data.pop("read_only", None)
+        if read_only:
             data_source.read_only = read_only
-        if description is not None:
+
+        description = validated_data.pop("description", None)
+        if description:
             data_source.description = description
-        if default_version_id is not None:
-            sourceVersion = get_object_or_404(
-                SourceVersion,
-                id=default_version_id,
-            )
-            data_source.default_version = sourceVersion
+
+        default_version_id = request.data["default_version_id"]
+        if default_version_id:
+            source_version = get_object_or_404(SourceVersion, id=default_version_id)
+
+            new_default_version: bool = data_source.default_version_id != source_version.id
+            if new_default_version and not request.user.has_perm(permission.SOURCES_CAN_CHANGE_DEFAULT_VERSION):
+                raise serializers.ValidationError(
+                    "User doesn't have the permission to change the default version of a data source."
+                )
+
+            data_source.default_version = source_version
         else:
             data_source.default_version = None
 
         data_source.save()
 
-        if projects is not None:
-            data_source.projects.clear()
-            for project in projects:
-                data_source.projects.add(project)
+        projects = account.project_set.filter(id__in=request.data.get("project_ids"))
+        if projects:
+            data_source.projects.set(projects, clear=True)
+
         return data_source
 
 

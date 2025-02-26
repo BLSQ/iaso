@@ -136,8 +136,8 @@ class Under5:
 
         return ETL().save_entity_journey(journey, beneficiary, record, "U5")
 
-    def run(self):
-        entity_type = ETL(["child_under_5_1"])
+    def run(self, type):
+        entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
         beneficiaries = entity_type.retrieve_entities()
         logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()} for {account}")

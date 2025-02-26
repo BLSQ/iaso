@@ -91,7 +91,7 @@ jobs:
         runs-on: ubuntu-20.04
         services:
             postgres:
-                image: postgis/postgis:12-3.3
+                image: postgis/postgis:16-3.5
                 env:
                     POSTGRES_USER: postgres
                     POSTGRES_PASSWORD: postgres
@@ -108,7 +108,7 @@ jobs:
                   python-version: 3.9
             - name: Install GDAL and gettext
               run: sudo apt-get update && sudo apt install gdal-bin gettext
-            - uses: actions/cache@v2
+            - uses: actions/cache@v4
               id: cache-venv
               with:
                   path: ./venv/

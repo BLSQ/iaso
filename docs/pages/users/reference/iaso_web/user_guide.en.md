@@ -588,6 +588,155 @@ the item name, in the “Assignment” column.
 
 You can sort Org units and Parents by clicking on the column name.
 
+## Entities
+
+We call an “**Entity**” anything that can move or be moved and that we want to track through time and Org Units. For example, a beneficiary, a car, etc.
+
+To differentiate between different kinds of entities, IASO has a concept of “**Entity Type**”.   
+IASO heavily relies on [XLSForms](https://xlsform.org), and entities are no exceptions. Therefore, an entity is represented by a submission to a form. This submission is referred to as the **profile**. The entity type defines which form has to be filled in.
+
+### How to create an entity
+
+**Enable the feature**
+
+In order to create an entity, your project must first enable the entity feature flag. You can set this flag either during its creation or by updating it later. 
+
+![image](https://github.com/user-attachments/assets/81cf73cc-3027-453b-9d4b-8d94c6866196)
+
+**Create and upload the profile form**
+
+Using the sheet application of your choosing, create an XLSForm which will contain all the questions related to your entity that are either fixed (I.e., first name and last name) or can evolve through time (I.e., a program to which an entity can be affiliated to).  
+Upload it on the server using the web application.
+
+| Note: The questions that can evolve through time should not be editable. |
+| :---- |
+
+#### **Create the entity type**
+
+In the entity types screen, click on the “CREATE” button. Give the entity type a name and select the newly uploaded form as a reference form:  
+
+![image](https://github.com/user-attachments/assets/cb592428-b7b0-49c5-9833-026f06707ec6)
+
+
+| Note: We’ll see later what “List fields” and “Detail info fields” are. |
+| :---- |
+
+#### **Create an entity**
+
+In the mobile application, make sure that the data has been refreshed and are up to date with the backend server. You will now be able to see the entity screen.
+
+At the moment, it is not possible to create an Entity from a web interface.
+
+Click the “Add” button in the application.  
+
+![image](https://github.com/user-attachments/assets/17504dfd-dc50-43af-8d7e-2a380a62cf36)
+
+Select the entity type you want to create.
+
+![image](https://github.com/user-attachments/assets/bf54deca-920e-47e7-a356-819d8284a054)
+
+You will be prompted to confirm your selection.  
+
+![image](https://github.com/user-attachments/assets/53717a3b-ffc6-40a5-958b-97aec46abf1e)
+
+You can then fill out the form to finalize your first entity.
+
+### How to configure how we display an entity? 
+
+Within the entity type’s configuration, it is possible for administrators to define which questions are displayed within lists and within the details screen.   
+
+![image](https://github.com/user-attachments/assets/160da5f1-bb8e-4fce-bf04-5bb85ad5e28b)
+
+This impacts how the web and mobile applications display entities, as shown below.
+
+#### **In the web interface** 
+
+##### In the list 
+
+![image](https://github.com/user-attachments/assets/fe377ed2-d6e7-4f86-8d51-56c11499ee19)
+
+##### In the details screen
+
+![image](https://github.com/user-attachments/assets/30ba9e4f-f282-40c6-9594-ed324c97145e)
+
+#### **In the mobile application** 
+
+##### In the list
+
+![image](https://github.com/user-attachments/assets/bfe20c8e-8285-4416-a276-d59404678312)
+
+##### In the details screen
+
+![image](https://github.com/user-attachments/assets/4303f3ac-9784-4f6e-b520-8c6941766564)
+
+
+### Searching for an entity 
+
+#### **On the web**
+
+In the beneficiary list, you can filter by type and/or enter a query to filter based on the identifier or any of the list fields values.  
+
+![image](https://github.com/user-attachments/assets/0adb7323-867d-43c4-91cf-dee6fccd878c)
+
+
+#### **In the application** 
+
+Clicking on the magnifying glass icon on the entity screen will lead you to the list of all entities and allow you to filter them quickly based on the identifier or any of the list fields values.  
+If you need a more fine-grained selection, you can click on the funnel icon, select a type and fill out the search form (second picture)  
+
+![image](https://github.com/user-attachments/assets/dd266fd9-3470-4e3a-82bd-e1d0af54297b)
+
+
+### What are workflows? 
+
+As stated before, an entity is tracked through time and Org Units. In order to achieve this, Iaso links the subsequent submissions for an entity together and allows subsequent submissions to change the profile. In order for you to choose which forms should be presented next and what values override the properties of the profile, you can define a workflow.
+
+#### **Create a workflow** 
+
+In the entity types’ list, click on the workflow icon
+
+![image](https://github.com/user-attachments/assets/d41d0047-497e-45be-8490-25260755ba74)
+
+
+In the list of the workflow versions, create the “CREATE” button and give the version a name:  
+
+![image](https://github.com/user-attachments/assets/50a8eeab-399f-446b-90cf-10da40d13018)
+
+
+### **Follow-ups and changes** 
+
+#### Follow-ups 
+
+They represent the next possible forms based on the state of the profile. They are based on a condition.  
+In the following example, the mobile application will offer “U5 Registration WFP” as the next possible form if the first name is “Bill”.  
+
+![image](https://github.com/user-attachments/assets/e21d8940-8fde-4d21-b14b-256f261bffca)
+
+| Reminder: “First Name” is one of the questions in the Entity Type’s form. |
+| :---- |
+
+#### Changes 
+
+They represent the mapping of what value from a form will change the values in the profile.
+
+In the example below, the “Target form” is the Entity Type’s form, and the “Source form” is the subsequent submission.  
+When a “U5 Registration WFP” form is filled out, the value entered in “Child’s Age in months” will be copied into the profile’s “Age (Months)” question. And the value entered in “Child’s Name” will be copied into the profile’s “First Name” question.  
+
+![image](https://github.com/user-attachments/assets/b6676c6d-92c6-4059-82e4-21675f2ecd47)
+
+
+### **Using values from the profile in subsequent forms**
+
+Sometimes, you want a subsequent form to use values from the profile. In order to do so, just add a question with the same identifier and type as the value from the profile.
+
+I.e., Let’s assume the profile has 2 questions of type “text”: first\_name and last\_name. By adding a read-only similar question in your subsequent forms, the value will be available to you.
+
+### **Publishing workflows** 
+
+Once a workflow version has been published, it is marked as finalized, and it cannot be edited anymore. Only workflows in “draft” can be edited.  
+If you want to edit a finalized workflow, you first need to duplicate it using the “Copy version” button. A new draft version is then created with the same content.
+
+
 ## Admin
 
 The Admin part of IASO comprises several parts, which will appear or not depending on the user's permissions:

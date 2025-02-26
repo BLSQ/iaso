@@ -130,6 +130,7 @@ class SourceVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.user2)
         response = self.client.get("/api/sourceversions/dropdown/")
         data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data), 1)
         version = data[0]
         self.assertEqual(version["id"], self.version2.pk)
         self.assertEqual(version["data_source"], self.data_source2.pk)

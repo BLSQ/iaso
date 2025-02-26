@@ -1092,6 +1092,8 @@
     "iaso.permissions.readEdit.user_permissions": "User management",
     "iaso.permissions.readEdit.write": "Write",
     "iaso.permissions.sources": "Geo data sources - Read only",
+    "iaso.permissions.sourcesCanChangeDefaultVersion": "Geo data sources default version",
+    "iaso.permissions.sourcesCanChangeDefaultVersionTooltip": "Allows to change the default version of a geo data source",
     "iaso.permissions.submissions": "Forms and submissions - Read only",
     "iaso.permissions.teams": "Teams management",
     "iaso.permissions.tooltip.assignments": "Assign tasks to specific users/teams via the Planning interface",

@@ -759,6 +759,15 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'Managed (Edition rights limited to the users linked to the children org units of the current user.) and admin permissions on managing users of the account: create or edit users (user name, email, password, permissions/location/language/project/user role)',
     },
+    iaso_sources_can_change_default_version: {
+        id: 'iaso.permissions.sourcesCanChangeDefaultVersion',
+        defaultMessage: 'Geo data sources default version',
+    },
+    iaso_sources_can_change_default_version_tooltip: {
+        id: 'iaso.permissions.sourcesCanChangeDefaultVersionTooltip',
+        defaultMessage:
+            'Allows to change the default version of a geo data source',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

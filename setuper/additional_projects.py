@@ -1,3 +1,6 @@
+from create_xls_forms import xls_forms_mapper
+
+
 def projects_mapper(account_name):
     projects = [
         {
@@ -125,10 +128,11 @@ def link_forms_to_new_projects(projects, forms, iaso_client):
             iaso_client.patch(f"/api/forms/{current_form['id']}/", json=current_form)
 
 
-def forms_mapper(projects, iaso_client):
+def forms_mapper(projects, iaso_client, account_name):
     forms = [project["linked_forms"] for project in projects]
     all_forms = [sub_form for sub_forms in forms for sub_form in sub_forms]
     uniq_forms = list(set(all_forms))
+    xls_forms_mapper(iaso_client, account_name)
     link_forms_to_new_projects(projects, uniq_forms, iaso_client)
 
 
@@ -143,4 +147,4 @@ def link_new_projects_to_main_data_source(account_name, iaso_client):
         if len(current_project) > 0:
             project["id"] = current_project[0]["id"]
         all_projects.append(project)
-    forms_mapper(all_projects, iaso_client)
+    forms_mapper(all_projects, iaso_client, account_name)

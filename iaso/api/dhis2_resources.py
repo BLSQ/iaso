@@ -1,8 +1,7 @@
 from time import process_time
 
 from dhis2 import Api
-from rest_framework import status, permissions
-from rest_framework import viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
 from iaso.models import DataSource

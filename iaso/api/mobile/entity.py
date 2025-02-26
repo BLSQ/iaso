@@ -208,7 +208,7 @@ class DeletedMobileEntitySerializer(serializers.ModelSerializer):
 
 
 class MobileEntityDeletedViewSet(ModelViewSet):
-    f"""Entity API for mobile
+    """Entity API for mobile
 
     list: /api/mobile/entities/deleted
 

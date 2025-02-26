@@ -98,7 +98,7 @@ class GroupsAPITestCase(APITestCase):
         """GET /groups/<group_id>: id does not exist"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/groups/292003030/")
+        response = self.client.get("/api/groups/292003030/")
         self.assertJSONResponse(response, 404)
 
     def test_groups_retrieve_ok_1(self):
@@ -113,21 +113,21 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_create_without_auth(self):
         """POST /groups/ without auth: 401"""
 
-        response = self.client.post(f"/api/groups/", data={"name": "test group"}, format="json")
+        response = self.client.post("/api/groups/", data={"name": "test group"}, format="json")
         self.assertJSONResponse(response, 401)
 
     def test_groups_create_no_source_version(self):
         """POST /groups/ (user has no source version, cannot work)"""
 
         self.client.force_authenticate(self.raccoon)
-        response = self.client.post(f"/api/groups/", data={"name": "test group"}, format="json")
+        response = self.client.post("/api/groups/", data={"name": "test group"}, format="json")
         self.assertJSONResponse(response, 400)
 
     def test_groups_create_ok(self):
         """POST /groups/ happy path"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/groups/", data={"name": "test group"}, format="json")
+        response = self.client.post("/api/groups/", data={"name": "test group"}, format="json")
         self.assertJSONResponse(response, 201)
 
         response_data = response.json()
@@ -138,7 +138,7 @@ class GroupsAPITestCase(APITestCase):
         """POST /groups/ with missing data"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/groups/", data={}, format="json")
+        response = self.client.post("/api/groups/", data={}, format="json")
         self.assertJSONResponse(response, 400)
 
         response_data = response.json()

@@ -1,11 +1,12 @@
 import datetime
+
 import time_machine
 
 from django.utils import timezone
 
 from iaso import models as m
-from iaso.models.base import ERRORED, QUEUED, RUNNING, EXPORTED, SUCCESS
 from iaso.api.tasks.serializers import TaskSerializer
+from iaso.models.base import ERRORED, EXPORTED, QUEUED, RUNNING, SUCCESS
 from iaso.test import APITestCase, TestCase
 
 

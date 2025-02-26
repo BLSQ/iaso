@@ -1,9 +1,11 @@
 import json
 import urllib.parse
 
+from urllib.parse import parse_qs
+
 import responses
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.files.uploadedfile import UploadedFile
+
+from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
 
 from hat.audit.models import Modification
@@ -11,7 +13,6 @@ from iaso import models as m
 from iaso.models import Instance
 from iaso.test import APITestCase
 
-from urllib.parse import parse_qs
 
 enketo_test_settings = {
     "ENKETO_API_TOKEN": "ENKETO_API_TOKEN_TEST",
@@ -243,7 +244,7 @@ class EnketoAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_when_anonymous_head_submission_should_work(self):
-        response = self.client.head(f"/api/enketo/submission")
+        response = self.client.head("/api/enketo/submission")
 
         self.assertXmlResponse(response, 204)
         self.assertEqual("100000000", response.get("x-openrosa-accept-content-length"))
@@ -279,7 +280,7 @@ class EnketoAPITestCase(APITestCase):
                 .replace("REPLACEuserID", str(self.yoda.id))
                 .encode(),
             )
-            self.client.post(f"/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f})
+            self.client.post("/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f})
 
             instance = self.form_1.instances.first()
 
@@ -308,7 +309,7 @@ class EnketoAPITestCase(APITestCase):
                 .encode(),
             )
             response = self.client.post(
-                f"/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}
+                "/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}
             )
 
             instance = self.form_1.instances.first()

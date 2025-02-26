@@ -2,6 +2,7 @@ import datetime
 import json
 import math
 import os
+
 from collections import defaultdict
 from datetime import date
 from typing import Any, Optional, Tuple, Union
@@ -9,6 +10,7 @@ from uuid import uuid4
 
 import django.db.models.manager
 import pandas as pd
+
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
@@ -16,8 +18,8 @@ from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import Q, QuerySet, Subquery, Sum
 from django.db.models.expressions import RawSQL
-from django.db.models import Q, QuerySet, Sum, Subquery
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -35,6 +37,7 @@ from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
+
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -120,8 +123,9 @@ class DelayReasons(models.TextChoices):
     VRF_NOT_SIGNED = "VRF_NOT_SIGNED", _("vrf_not_signed")
     FOUR_WEEKS_GAP_BETWEEN_ROUNDS = "FOUR_WEEKS_GAP_BETWEEN_ROUNDS", _("four_weeks_gap_betwenn_rounds")
     OTHER_VACCINATION_CAMPAIGNS = "OTHER_VACCINATION_CAMPAIGNS", _("other_vaccination_campaigns")
-    PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING = "PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING", _(
-        "pending_liquidation_of_previous_sia_funding"
+    PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING = (
+        "PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING",
+        _("pending_liquidation_of_previous_sia_funding"),
     )
 
 
@@ -433,8 +437,7 @@ class Round(models.Model):
         """
         if self.campaign.separate_scopes_per_round:
             return self.scopes
-        else:
-            return self.campaign.scopes
+        return self.campaign.scopes
 
     @property
     def vaccine_list(self):
@@ -1455,7 +1458,7 @@ class VaccineStock(models.Model):
 class VaccineStockHistoryQuerySet(models.QuerySet):
     def filter_for_user(self, user: Optional[Union[User, AnonymousUser]]):
         if not user or not user.is_authenticated:
-            raise UserNotAuthError(f"User not Authenticated")
+            raise UserNotAuthError("User not Authenticated")
 
         profile = user.iaso_profile
         self = self.filter(vaccine_stock__account=profile.account)
@@ -1664,8 +1667,9 @@ class Notification(models.Model):
         WPV1 = "wpv1", _("WPV1")
 
     class Sources(models.TextChoices):
-        AFP = "accute_flaccid_paralysis", _(
-            "Accute Flaccid Paralysis"
+        AFP = (
+            "accute_flaccid_paralysis",
+            _("Accute Flaccid Paralysis"),
         )  # A case of someone who got paralyzed because of polio.
         CC = "contact_case", _("Contact Case")
         COMMUNITY = "community", _("Community")

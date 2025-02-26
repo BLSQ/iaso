@@ -1,9 +1,8 @@
 from django.db.models import Q
 from django.db.models.functions import Greatest, Least
-
 from rest_framework import filters
 
-from iaso.utils.date_and_time import date_string_to_start_of_day, date_string_to_end_of_day
+from iaso.utils.date_and_time import date_string_to_end_of_day, date_string_to_start_of_day
 
 
 class UsersFilterBackend(filters.BaseFilterBackend):

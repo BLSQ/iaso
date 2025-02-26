@@ -1,5 +1,3 @@
-from sys import version
-
 from django.contrib.auth.models import Permission
 
 from hat.menupermissions import models as permission

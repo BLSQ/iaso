@@ -1,9 +1,11 @@
 import math
 import sqlite3
+
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, Union
 
 import fiona  # type: ignore
+
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
@@ -12,6 +14,7 @@ from hat.audit import models as audit_models
 from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.models.org_unit import get_or_create_org_unit_type
 from iaso.utils.gis import simplify_geom
+
 
 try:  # only in 3.8
     from typing import TypedDict  # type: ignore
@@ -239,7 +242,7 @@ def import_gpkg_file2(
             row["type"] = org_unit_type
             ref = row["properties"]["ref"]
 
-            existing_ou = ref_ou.get(ref, None)
+            existing_ou = ref_ou.get(ref)
             orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group)
 
             if task and total_org_unit % 500 == 0:

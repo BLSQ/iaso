@@ -1,13 +1,13 @@
 from copy import deepcopy
 from time import time
-from typing import Optional, List
+from typing import List, Optional
 
 from django.db import transaction
 
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from iaso.api.org_unit_search import build_org_units_queryset
-from iaso.models import Task, OrgUnit, DataSource, OrgUnitType, Group
+from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Task
 
 
 def update_single_unit_from_bulk(
@@ -92,11 +92,9 @@ def org_units_bulk_update(
                 prefetched_editable_org_unit_type_ids=editable_org_unit_type_ids,
             ):
                 skipped_messages.append(
-                    (
-                        f"Org unit `{org_unit.name}` (#{org_unit.pk}) silently skipped "
-                        f"because user `{user.username}` (#{user.pk}) cannot edit "
-                        f"an org unit of type `{org_unit.org_unit_type.name}` (#{org_unit.org_unit_type.pk})."
-                    )
+                    f"Org unit `{org_unit.name}` (#{org_unit.pk}) silently skipped "
+                    f"because user `{user.username}` (#{user.pk}) cannot edit "
+                    f"an org unit of type `{org_unit.org_unit_type.name}` (#{org_unit.org_unit_type.pk})."
                 )
                 continue
 

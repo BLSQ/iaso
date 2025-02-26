@@ -4,11 +4,12 @@ import typing
 
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.db import connection
-from iaso.utils.gis import simplify_geom
+
 from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
+from iaso.utils.gis import simplify_geom
 
 
 class OrgUnitAPITestCase(APITestCase):
@@ -437,7 +438,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_org_unit_list_without_auth_or_app_id(self):
         """GET /api/orgunits/ with no auth or app id -> 200 with 0 org unit"""
 
-        response = self.client.get(f"/api/orgunits/")
+        response = self.client.get("/api/orgunits/")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -447,7 +448,7 @@ class OrgUnitAPITestCase(APITestCase):
         """GET /api/orgunits/ happy path"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/orgunits/")
+        response = self.client.get("/api/orgunits/")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -457,7 +458,7 @@ class OrgUnitAPITestCase(APITestCase):
         """GET /api/orgunits/ happy path"""
 
         self.client.force_authenticate(self.luke)
-        response = self.client.get(f"/api/orgunits/")
+        response = self.client.get("/api/orgunits/")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -467,7 +468,7 @@ class OrgUnitAPITestCase(APITestCase):
         """GET /api/orgunits/?rootsForUser=true"""
 
         self.client.force_authenticate(self.luke)
-        response = self.client.get(f"/api/orgunits/?rootsForUser=true")
+        response = self.client.get("/api/orgunits/?rootsForUser=true")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -478,7 +479,7 @@ class OrgUnitAPITestCase(APITestCase):
         """GET /api/orgunits/?rootsForUser=true"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/orgunits/?rootsForUser=true")
+        response = self.client.get("/api/orgunits/?rootsForUser=true")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -582,7 +583,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get(f"/api/orgunits/?csv=true")
+        response = self.client.get("/api/orgunits/?csv=true")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
 
@@ -628,7 +629,7 @@ class OrgUnitAPITestCase(APITestCase):
 
     def set_up_org_unit_creation(self):
         return self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,
@@ -684,7 +685,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_create_org_unit_opening_date_not_anterior_to_closed_date(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,
@@ -707,7 +708,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_create_org_unit_minimal(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "opening_date": "01-01-2024"},
         )
@@ -728,7 +729,7 @@ class OrgUnitAPITestCase(APITestCase):
         # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "name": "Test ou",
@@ -744,7 +745,7 @@ class OrgUnitAPITestCase(APITestCase):
         # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [34]},
         )
@@ -756,7 +757,7 @@ class OrgUnitAPITestCase(APITestCase):
         group = m.Group.objects.create(name="bla")
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "name": "Test ou",
@@ -775,7 +776,7 @@ class OrgUnitAPITestCase(APITestCase):
         group = m.Group.objects.create(name="bla")
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "name": "Test ou",
@@ -795,7 +796,7 @@ class OrgUnitAPITestCase(APITestCase):
         group_2 = m.Group.objects.create(name="bla2", source_version=self.star_wars.default_version)
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "name": "Test ou",
@@ -821,7 +822,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_create_org_unit_with_reference_instance(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,
@@ -847,7 +848,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_create_org_unit_with_not_linked_reference_instance(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,

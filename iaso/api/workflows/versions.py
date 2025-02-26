@@ -40,7 +40,7 @@ class WorkflowVersionViewSet(ModelViewSet):
         Creates a new workflow version by copying the exiting version given by {version_id}
         """
 
-        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
+        version_id = request.query_params.get("version_id", kwargs.get("version_id"))
         wv_orig = WorkflowVersion.objects.get(pk=version_id)
         new_vw = utils.make_deep_copy_with_relations(wv_orig)
         serialized_data = ser.WorkflowVersionSerializer(new_vw).data
@@ -48,7 +48,7 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     @swagger_auto_schema(request_body=ser.WorkflowPartialUpdateSerializer)
     def partial_update(self, request, *args, **kwargs):
-        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
+        version_id = request.query_params.get("version_id", kwargs.get("version_id"))
         wv_orig = get_object_or_404(WorkflowVersion, pk=version_id)
 
         serializer = ser.WorkflowPartialUpdateSerializer(data=request.data, context={"request": request}, partial=True)

@@ -1,21 +1,20 @@
 import importlib
 import typing
+
 from unittest import mock
 
-from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
-from django.contrib.auth.models import AnonymousUser
-
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import AnonymousUser, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
-from django.http import StreamingHttpResponse, HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase
 from django.urls import clear_url_caches
 from django.utils import timezone
+from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
-from hat.menupermissions.models import CustomPermissionSupport
 from hat.api_import.models import APIImport
+from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
 
 

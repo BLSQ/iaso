@@ -11,13 +11,14 @@ export const useGetLegend = (threshold?: ScaleThreshold): any => {
 
 type Props = {
     threshold: ScaleThreshold;
+    unit?: string;
 };
 
-export const Legend: FunctionComponent<Props> = ({ threshold }) => {
+export const Legend: FunctionComponent<Props> = ({ threshold, unit }) => {
     const theme = useTheme();
     const getLegend = useGetLegend(threshold);
     const legendLabels = useMemo(
-        () => getThresHoldLabels(threshold),
+        () => getThresHoldLabels(threshold, unit),
         [threshold],
     );
     return (

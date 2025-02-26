@@ -19,29 +19,28 @@ from .common import ModelViewSet
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
+    credentials = serializers.SerializerMethodField()
+    default_version = serializers.SerializerMethodField()
+    projects = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
+    versions = serializers.SerializerMethodField()
+
     class Meta:
         model = DataSource
-
         fields = [
             "id",
             "name",
             "read_only",
+            "credentials",
             "description",
             "created_at",
             "updated_at",
+            "default_version",
+            "tree_config_status_fields",
+            "projects",
             "versions",
             "url",
-            "projects",
-            "default_version",
-            "credentials",
-            "tree_config_status_fields",
         ]
-
-    url = serializers.SerializerMethodField()
-    versions = serializers.SerializerMethodField()
-    default_version = serializers.SerializerMethodField()
-    projects = serializers.SerializerMethodField()
-    credentials = serializers.SerializerMethodField()
 
     @staticmethod
     def get_credentials(obj: DataSource):
@@ -88,7 +87,7 @@ class DataSourceSerializer(serializers.ModelSerializer):
     def update(self, data_source, validated_data):
         request = self.context["request"]
 
-        credentials = request.data.get("credentials", None)
+        credentials = request.data.get("credentials")
         account = request.user.iaso_profile.account
 
         if credentials:
@@ -110,19 +109,20 @@ class DataSourceSerializer(serializers.ModelSerializer):
             new_credentials.save()
             data_source.credentials = new_credentials
 
-        name = validated_data.pop("name", None)
+        name = validated_data.get("name")
         if name:
             data_source.name = name
 
-        read_only = validated_data.pop("read_only", None)
+        read_only = validated_data.get("read_only")
         if read_only:
             data_source.read_only = read_only
 
-        description = validated_data.pop("description", None)
+        description = validated_data.get("description")
         if description:
             data_source.description = description
 
-        default_version_id = request.data["default_version_id"]
+        # TODO: `default_version_id` should be part of the serializer.
+        default_version_id = request.data.get("default_version_id")
         if default_version_id:
             source_version = get_object_or_404(data_source.versions, id=default_version_id)
 
@@ -138,9 +138,12 @@ class DataSourceSerializer(serializers.ModelSerializer):
 
         data_source.save()
 
-        projects = account.project_set.filter(id__in=request.data.get("project_ids"))
-        if projects:
-            data_source.projects.set(projects, clear=True)
+        # TODO: `project_ids` should be part of the serializer.
+        project_ids = request.data.get("project_ids")
+        if project_ids:
+            projects = account.project_set.filter(id__in=project_ids)
+            if projects:
+                data_source.projects.set(projects, clear=True)
 
         return data_source
 

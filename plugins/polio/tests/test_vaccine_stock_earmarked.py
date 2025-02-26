@@ -1,10 +1,13 @@
 import datetime
+
 import time_machine
 from django.contrib.auth.models import AnonymousUser
+from django.utils import timezone
+
+import hat.menupermissions.models as permissions
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio import models as pm
-import hat.menupermissions.models as permissions
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
 BASE_URL_SUB_RESOURCES = "/api/polio/vaccine/stock/"
@@ -34,7 +37,8 @@ class VaccineStockEarmarkedTests(APITestCase):
             account=cls.account,
             permissions=[
                 permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+                permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+                permissions._POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
             ],
         )
 
@@ -373,3 +377,66 @@ class VaccineStockEarmarkedTests(APITestCase):
 
         # This time it should NOT create a new USED stock because there are no more earmarked stocks left
         self.assertEqual(used_stocks.count(), 3)
+
+    # Test permissions for earmarked stock management
+    def test_earmarked_stock_permissions(self):
+        # Create a non-admin user with basic permissions
+        non_admin = self.create_user_with_profile(
+            username="non_admin",
+            account=self.account,
+            permissions=[
+                permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+                permissions._POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+            ],
+        )
+        self.client.force_authenticate(non_admin)
+
+        # Non-admin can create earmarked stock
+        earmarked_data = {
+            "campaign": self.campaign.obr_name,
+            "vaccine_stock": self.vaccine_stock.id,
+            "round_number": self.round.number,
+            "earmarked_stock_type": "created",
+            "vials_earmarked": 100,
+            "doses_earmarked": 2000,
+            "comment": "Test earmarked stock",
+        }
+
+        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}earmarked_stock/", earmarked_data, format="json")
+        self.assertEqual(response.status_code, 201)
+        earmarked_id = response.data["id"]
+
+        # Non-admin can edit within 7 days
+        update_data = {
+            "campaign": self.campaign.obr_name,
+            "round_number": self.round.number,
+            "comment": "Updated comment",
+        }
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{earmarked_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Simulate passage of 8 days
+        earmarked = pm.EarmarkedStock.objects.get(id=earmarked_id)
+        earmarked.created_at = timezone.now() - datetime.timedelta(days=8)
+        earmarked.save()
+
+        # Non-admin cannot edit after 7 days
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{earmarked_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+        # Switch to admin
+        self.client.force_authenticate(self.user_rw_perms)
+
+        # Admin can edit regardless of time passed
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{earmarked_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Admin can delete regardless of time passed
+        response = self.client.delete(f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{earmarked_id}/")
+        self.assertEqual(response.status_code, 204)

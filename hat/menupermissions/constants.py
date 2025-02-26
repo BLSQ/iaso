@@ -49,6 +49,8 @@ MODULE_PERMISSIONS = {
         "iaso_polio_notifications",
         "iaso_polio_vaccine_authorizations_read_only",
         "iaso_polio_vaccine_authorizations_admin",
+        "iaso_polio_vaccine_stock_earmarks_nonadmin",
+        "iaso_polio_vaccine_stock_earmarks_admin",
     ],
     "REGISTRY": [
         "iaso_registry_write",
@@ -177,6 +179,8 @@ PERMISSIONS_PRESENTATION = {
         "iaso_polio_notifications",
         "iaso_polio_vaccine_authorizations_read_only",
         "iaso_polio_vaccine_authorizations_admin",
+        "iaso_polio_vaccine_stock_earmarks_nonadmin",
+        "iaso_polio_vaccine_stock_earmarks_admin",
     ],
     "trypelim": [
         "iaso_trypelim_anonymous",
@@ -256,6 +260,10 @@ READ_EDIT_PERMISSIONS = {
     "iaso_polio_vaccine_authorization_permissions": {
         "no_admin": "iaso_polio_vaccine_authorizations_read_only",
         "admin": "iaso_polio_vaccine_authorizations_admin",
+    },
+    "iaso_polio_vaccine_stock_earmarks_permissions": {
+        "no_admin": "iaso_polio_vaccine_stock_earmarks_nonadmin",
+        "admin": "iaso_polio_vaccine_stock_earmarks_admin",
     },
     "iaso_user_permissions": {"geo_limited": "iaso_users_managed", "all": "iaso_users"},
 }

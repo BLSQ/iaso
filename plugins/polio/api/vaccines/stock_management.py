@@ -1,7 +1,10 @@
 import enum
 from tempfile import NamedTemporaryFile
 from django.http import HttpResponse
-from django.db.models import OuterRef, Subquery, Exists, Q, Sum
+
+from django.db.models import Exists, OuterRef, Q, Subquery, Sum
+from django.utils.dateparse import parse_date
+from django_filters.rest_framework import FilterSet, NumberFilter
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
@@ -9,26 +12,30 @@ from plugins.polio.api.vaccines.common import sort_results
 from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
-from django_filters.rest_framework import FilterSet, NumberFilter
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
-from django.utils.dateparse import parse_date
+
 from hat.menupermissions import models as permission
-from iaso.api.common import CONTENT_TYPE_XLSX, GenericReadWritePerm, ModelViewSet, Paginator
+from iaso.api.common import CONTENT_TYPE_XLSX, ModelViewSet, Paginator
 from iaso.models import OrgUnit
+from plugins.polio.api.vaccines.permissions import (
+    VaccineStockManagementPermission,
+    VaccineStockEarmarkPermission,
+    can_edit_helper,
+)
 from plugins.polio.models import (
     DOSES_PER_VIAL,
     Campaign,
     DestructionReport,
+    EarmarkedStock,
     IncidentReport,
     OutgoingStockMovement,
     Round,
     VaccineArrivalReport,
     VaccineRequestForm,
     VaccineStock,
-    EarmarkedStock,
 )
 
 vaccine_stock_id_param = openapi.Parameter(
@@ -583,11 +590,6 @@ class VaccineStockCreateSerializer(serializers.ModelSerializer):
         return VaccineStock.objects.create(**validated_data)
 
 
-class VaccineStockManagementReadWritePerm(GenericReadWritePerm):
-    read_perm = permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ
-    write_perm = permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE
-
-
 class StockManagementCustomFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, _view):
         country_id = request.GET.get("country_id")
@@ -621,7 +623,6 @@ class StockManagementCustomFilter(filters.BaseFilterBackend):
 
 class VaccineStockSubitemBase(ModelViewSet):
     allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
-    permission_classes = [VaccineStockManagementReadWritePerm]
     model_class = None
 
     @swagger_auto_schema(
@@ -693,6 +694,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name")
     document = serializers.FileField(required=False)
     round_number = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = OutgoingStockMovement
@@ -709,10 +711,19 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "comment",
             "round",
             "round_number",
+            "can_edit",
         ]
 
     def get_round_number(self, obj):
         return obj.round.number if obj.round else None
+
+    def get_can_edit(self, obj):
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+        )
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -740,6 +751,12 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     serializer_class = OutgoingStockMovementSerializer
     model_class = OutgoingStockMovement
+    permission_classes = [
+        lambda: VaccineStockManagementPermission(
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+        )
+    ]
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
@@ -771,33 +788,64 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
 
 class IncidentReportSerializer(serializers.ModelSerializer):
     document = serializers.FileField(required=False)
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = IncidentReport
         fields = "__all__"
 
+    def get_can_edit(self, obj):
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+        )
+
 
 class IncidentReportViewSet(VaccineStockSubitemBase):
     serializer_class = IncidentReportSerializer
     model_class = IncidentReport
+    permission_classes = [
+        lambda: VaccineStockManagementPermission(
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+        )
+    ]
 
 
 class DestructionReportSerializer(serializers.ModelSerializer):
     document = serializers.FileField(required=False)
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = DestructionReport
         fields = "__all__"
 
+    def get_can_edit(self, obj):
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+        )
+
 
 class DestructionReportViewSet(VaccineStockSubitemBase):
     serializer_class = DestructionReportSerializer
     model_class = DestructionReport
+    permission_classes = [
+        lambda: VaccineStockManagementPermission(
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+        )
+    ]
 
 
 class EarmarkedStockSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name")
     round_number = serializers.IntegerField(source="round.number")
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = EarmarkedStock
@@ -813,7 +861,16 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             "comment",
             "created_at",
             "updated_at",
+            "can_edit",
         ]
+
+    def get_can_edit(self, obj):
+        return can_edit_helper(
+            self.context["request"].user,
+            obj.created_at,
+            admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+        )
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -838,6 +895,12 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     serializer_class = EarmarkedStockSerializer
     model_class = EarmarkedStock
     filterset_class = EarmarkedStockFilter
+    permission_classes = [
+        lambda: VaccineStockEarmarkPermission(
+            admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+        )
+    ]
 
     def get_queryset(self):
         return EarmarkedStock.objects.filter(
@@ -880,7 +943,12 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     """
 
-    permission_classes = [VaccineStockManagementReadWritePerm]
+    permission_classes = [
+        lambda: VaccineStockManagementPermission(
+            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+        )
+    ]
     serializer_class = VaccineStockSerializer
     http_method_names = ["get", "head", "options", "post", "delete"]
 

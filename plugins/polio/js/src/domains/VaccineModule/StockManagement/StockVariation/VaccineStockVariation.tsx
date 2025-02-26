@@ -12,7 +12,12 @@ import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { STOCK_MANAGEMENT_WRITE } from '../../../../constants/permissions';
+import {
+    STOCK_MANAGEMENT_WRITE,
+    STOCK_MANAGEMENT_READ,
+    STOCK_EARMARKS_NONADMIN,
+    STOCK_EARMARKS_ADMIN,
+} from '../../../../constants/permissions';
 import { baseUrls } from '../../../../constants/urls';
 import { DESTRUCTION, EARMARKED, FORM_A, INCIDENT } from '../constants';
 import MESSAGES from '../messages';
@@ -142,7 +147,10 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                 {formatMessage(MESSAGES[`${tab}Reports`])}
                             </Typography>
                             <DisplayIfUserHasPerm
-                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
                             >
                                 {tab === FORM_A && (
                                     <CreateFormA
@@ -154,7 +162,10 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                 )}
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
-                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
                             >
                                 {tab === DESTRUCTION && (
                                     <CreateDestruction
@@ -166,7 +177,10 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                 )}
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
-                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
                             >
                                 {tab === INCIDENT && (
                                     <CreateIncident
@@ -178,7 +192,10 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                 )}
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
-                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                                permissions={[
+                                    STOCK_EARMARKS_NONADMIN,
+                                    STOCK_EARMARKS_ADMIN,
+                                ]}
                             >
                                 {tab === EARMARKED && (
                                     <CreateEarmarked

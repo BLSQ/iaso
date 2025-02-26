@@ -16,8 +16,8 @@ from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import Q, QuerySet, Subquery, Sum
 from django.db.models.expressions import RawSQL
-from django.db.models import Q, QuerySet, Sum, Subquery
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -32,7 +32,10 @@ from iaso.models.base import Account, Task
 from iaso.models.entity import UserNotAuthError
 from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
-from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    SoftDeletableModel,
+)
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -828,7 +831,7 @@ class Campaign(SoftDeletableModel):
         return districts
 
     def get_campaign_scope_districts_qs(self):
-        # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
+        # Get districts on campaign scope, make only sense if separate_scopes_per_round=False
         return (
             OrgUnit.objects.filter(groups__campaignScope__campaign=self)
             .filter(validation_status="VALID")

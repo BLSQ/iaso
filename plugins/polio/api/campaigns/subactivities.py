@@ -71,7 +71,6 @@ class SubActivityCreateUpdateSerializer(serializers.ModelSerializer):
             ]
             group = Group.objects.create(**group_data)
             group.org_units.set(eligible_group_org_units)
-            # TODO filter out scope outside of round scope
             new_scope = SubActivityScope.objects.create(subactivity=sub_activity, group=group, **scope_data)
             group.name = f"scope {new_scope.id} for sub-activity {sub_activity.id} for round {round_number} of campaign {campaign}"
             group.save()
@@ -92,7 +91,6 @@ class SubActivityCreateUpdateSerializer(serializers.ModelSerializer):
             for group in groups_to_check:
                 if not SubActivityScope.objects.filter(group=group).exists():
                     group.delete()
-            # TODO remove scope outside of round scope
             org_units_in_parent_rnd_scope = instance.round.actual_scopes.all().values_list(
                 "group__org_units__id", flat=True
             )
@@ -100,6 +98,7 @@ class SubActivityCreateUpdateSerializer(serializers.ModelSerializer):
                 group_data = scope_data.pop("group")
                 group_data["source_version"] = self.context["request"].user.iaso_profile.account.default_version
                 group_org_units = group_data.pop("org_units", [])
+                # We need to make this check here because
                 eligible_group_org_units = [
                     org_unit for org_unit in group_org_units if org_unit in org_units_in_parent_rnd_scope
                 ]

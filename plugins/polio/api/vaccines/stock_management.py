@@ -1,8 +1,12 @@
-import datetime
 import enum
+from tempfile import NamedTemporaryFile
+from django.http import HttpResponse
 from django.db.models import OuterRef, Subquery, Exists, Q, Sum
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+
+from plugins.polio.api.vaccines.common import sort_results
+from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -12,7 +16,7 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from django.utils.dateparse import parse_date
 from hat.menupermissions import models as permission
-from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
+from iaso.api.common import CONTENT_TYPE_XLSX, GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
 from plugins.polio.models import (
     DOSES_PER_VIAL,
@@ -483,7 +487,7 @@ class VaccineStockCalculator:
 
                 results.append(
                     {
-                        "date": movement.created_at,
+                        "date": movement.created_at.date(),
                         "action": action_text,
                         "vials_out": movement.vials_earmarked,
                         "doses_out": movement.doses_earmarked,
@@ -495,7 +499,7 @@ class VaccineStockCalculator:
             else:
                 results.append(
                     {
-                        "date": movement.created_at,
+                        "date": movement.created_at.date(),
                         "action": f"Earmarked stock reserved for {movement.campaign.obr_name} Round {movement.round.number}",
                         "vials_in": movement.vials_earmarked,
                         "doses_in": movement.doses_earmarked,
@@ -969,7 +973,31 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_usable_vials(end_date)
-        results = self._sort_results(request, results)
+        results = sort_results(request, results)
+
+        export_xlsx = request.query_params.get("export_xlsx", False)
+
+        if export_xlsx:
+            filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
+            workbook = download_xlsx_stock_variants(
+                request,
+                filename,
+                results,
+                {
+                    "Unusable": lambda: calc.get_list_of_unusable_vials(end_date),
+                    "Earmarked": lambda: calc.get_list_of_earmarked(end_date),
+                },
+                vaccine_stock,
+                "Usable",
+            )
+            with NamedTemporaryFile() as tmp:
+                workbook.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+
+            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+            response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            return response
 
         paginator = Paginator()
         page = paginator.paginate_queryset(results, request)
@@ -986,6 +1014,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
         that resulted in unusable vials, with each movement timestamped and including
         the number of vials and doses affected.
         """
+
         if pk is None:
             return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1002,7 +1031,31 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_unusable_vials(end_date)
-        results = self._sort_results(request, results)
+        results = sort_results(request, results)
+
+        export_xlsx = request.query_params.get("export_xlsx", False)
+
+        if export_xlsx:
+            filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
+            workbook = download_xlsx_stock_variants(
+                request,
+                filename,
+                results,
+                {
+                    "Usable": lambda: calc.get_list_of_usable_vials(end_date),
+                    "Earmarked": lambda: calc.get_list_of_earmarked(end_date),
+                },
+                vaccine_stock,
+                "Unusable",
+            )
+            with NamedTemporaryFile() as tmp:
+                workbook.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+
+            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+            response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            return response
 
         paginator = Paginator()
         page = paginator.paginate_queryset(results, request)
@@ -1032,7 +1085,32 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_earmarked(end_date)
-        results = self._sort_results(request, results)
+        results = sort_results(request, results)
+
+        export_xlsx = request.query_params.get("export_xlsx", False)
+
+        if export_xlsx:
+            filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
+            workbook = download_xlsx_stock_variants(
+                request,
+                filename,
+                results,
+                {
+                    "Usable": lambda: calc.get_list_of_usable_vials(end_date),
+                    "Unusable": lambda: calc.get_list_of_unusable_vials(end_date),
+                },
+                vaccine_stock,
+                "Earmarked",
+            )
+
+            with NamedTemporaryFile() as tmp:
+                workbook.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+
+            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+            response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            return response
 
         paginator = Paginator()
         page = paginator.paginate_queryset(results, request)
@@ -1070,25 +1148,3 @@ class VaccineStockManagementViewSet(ModelViewSet):
             .distinct()
             .order_by("id")
         )
-
-    def _sort_results(self, request: Request, results: list[dict]) -> list[dict]:
-        order = request.query_params.get(OrderingFilter.ordering_param)
-        reverse = False
-
-        if order and order.startswith("-"):
-            reverse = True
-            order = order.removeprefix("-")
-
-        valid_order_keys_and_defaults = {
-            "date": datetime.datetime.min,
-            "action": "",
-            "vials_in": 0,
-            "vials_out": 0,
-            "doses_in": 0,
-            "doses_out": 0,
-        }
-
-        if order not in valid_order_keys_and_defaults.keys():
-            return sorted(results, key=lambda d: d["date"])
-
-        return sorted(results, key=lambda d: d[order] or valid_order_keys_and_defaults[order], reverse=reverse)

@@ -1,9 +1,9 @@
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box, TableCell, TableRow } from '@mui/material';
 import { some, sortBy, uniqBy } from 'lodash';
-import React, { FunctionComponent, useMemo } from 'react';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { ReviewOrgUnitChangesDetailsTableRow } from '../Tables/details/ReviewOrgUnitChangesDetailsTableRow';
 import { NewOrgUnitField } from '../hooks/useNewFields';
+import { ReviewOrgUnitChangesDetailsTableRow } from '../Tables/details/ReviewOrgUnitChangesDetailsTableRow';
 import {
     ExtendedNestedGroup,
     NestedGroup,
@@ -41,6 +41,9 @@ export const HighlightFields: FunctionComponent<Props> = ({
         if (fieldType && fieldType === 'array') {
             changedFieldWithOldValues = sortBy(oldFieldValues, 'name');
             changedFieldWithNewValues = sortBy(newFieldValues, 'name');
+            if (newFieldValues?.length === 0) {
+                changedFieldWithNewValues = changedFieldWithOldValues;
+            }
         }
         const changedFieldValues = uniqBy(
             changedFieldWithOldValues.concat(changedFieldWithNewValues),
@@ -63,6 +66,7 @@ export const HighlightFields: FunctionComponent<Props> = ({
             };
         });
     }, [fieldType, oldFieldValues, newFieldValues]);
+
     return (
         <TableRow sx={{ verticalAlign: 'top' }}>
             <TableCell>{field.label}</TableCell>

@@ -124,7 +124,7 @@ class DataSourceSerializer(serializers.ModelSerializer):
 
         default_version_id = request.data["default_version_id"]
         if default_version_id:
-            source_version = get_object_or_404(SourceVersion, id=default_version_id)
+            source_version = get_object_or_404(data_source.versions, id=default_version_id)
 
             new_default_version: bool = data_source.default_version_id != source_version.id
             if new_default_version and not request.user.has_perm(permission.SOURCES_CAN_CHANGE_DEFAULT_VERSION):

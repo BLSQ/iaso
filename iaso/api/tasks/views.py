@@ -159,7 +159,8 @@ class ExternalTaskModelViewSet(ModelViewSet):
     # config is the pipeline specific config (the args of the pipeline method grouped in a dict)
     # task_id will be passed by the task decorator
     # id_field is a field to filter from to find the relevant active run, eg: a country id for lqas refresh
-    def launch_task(self, slug, config={}, task_id=None, id_field=None):
+    @staticmethod
+    def launch_task(slug, config={}, task_id=None, id_field=None):
         try:
             # The config Model should be moved to Iaso as well
             pipeline_config = get_object_or_404(Config, slug=slug)

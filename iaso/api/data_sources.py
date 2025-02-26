@@ -225,6 +225,13 @@ class DataSourcePermission(permissions.BasePermission):
         return request.user and any(request.user.has_perm(perm) for perm in write_perms)
 
 
+class DataSourceDropdownSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DataSource
+        fields = ["id", "name", "projects"]
+        read_only_fields = ["id", "name", "projects"]
+
+
 class DataSourceViewSet(ModelViewSet):
     f"""Data source API
 
@@ -277,3 +284,14 @@ class DataSourceViewSet(ModelViewSet):
         serializer.test_api()
 
         return Response({"test": "ok"})
+
+    @action(methods=["GET"], detail=False, serializer_class=DataSourceDropdownSerializer)
+    def dropdown(self, request, *args):
+        """To be used in dropdowns (filters)
+
+        * Read only
+        """
+
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

@@ -1,19 +1,19 @@
 import React from 'react';
+import { Chip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     formatThousand,
     IconButton,
     textPlaceholder,
     LinkWithLocation,
 } from 'bluesquare-components';
-import { Chip } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { useNavigate } from 'react-router-dom';
-import GroupsDialog from './components/GroupsDialog';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import MESSAGES from './messages';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { baseUrls } from '../../../constants/urls';
 import { filterOrgUnitsByGroupUrl } from '../utils';
+import GroupsDialog from './components/GroupsDialog';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(() => ({
     groupSetChip: {
@@ -41,7 +41,6 @@ const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
     {
         Header: formatMessage(MESSAGES.sourceVersion),
         accessor: 'source_version',
-        sortable: false,
         Cell: settings =>
             settings.value !== null
                 ? `${settings.value.data_source.name} - ${settings.value.number}`

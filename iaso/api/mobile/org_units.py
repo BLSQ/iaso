@@ -11,7 +11,7 @@ from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, serializers
+from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
@@ -22,6 +22,7 @@ from iaso.api.common import ModelViewSet, Paginator, TimestampField, get_timesta
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, Instance, OrgUnit, Project
+from iaso.permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 
 
 class MobileOrgUnitsSetPagination(Paginator):
@@ -121,7 +122,7 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
         return org_unit.location.z if org_unit.location else None
 
 
-class HasOrgUnitPermission(permissions.BasePermission):
+class HasOrgUnitPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
     def has_object_permission(self, request, view, obj):
         if not (
             request.user.is_authenticated

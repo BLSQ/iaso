@@ -18,15 +18,16 @@ from hat.menupermissions import models as permission
 from iaso.models import Form, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
+from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
 
 
-class HasFormPermission(permissions.BasePermission):
+class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
-            return True
+            return super().has_permission(request, view)
 
         return request.user.is_authenticated and request.user.has_perm(permission.FORMS)
 

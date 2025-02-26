@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib.auth.models import AnonymousUser
+from django.utils import timezone
 from django.utils.timezone import now
 
 import hat.menupermissions.models as permissions
@@ -290,24 +291,8 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_user_without_write_permission_cannot_post_new_request_form(self):
+    def test_user_with_read_permission_can_post_new_request_form(self):
         self.client.force_authenticate(user=self.user_ro_perm)
-        response = self.client.post(
-            BASE_URL,
-            data={
-                "campaign": self.campaign_rdc_1.id,
-                "vaccine_type": pm.VACCINES[0][0],
-                "date_vrf_reception": self.now - datetime.timedelta(days=1),
-                "date_vrf_signature": self.now,
-                "date_dg_approval": self.now,
-                "quantities_ordered_in_doses": 1000000,
-            },
-            format="json",
-        )
-        self.assertEqual(response.status_code, 403)
-
-    def test_user_with_write_permission_can_post_new_request_form(self):
-        self.client.force_authenticate(user=self.user_rw_perm)
 
         campaign_test = pm.Campaign.objects.create(
             obr_name="TEST_CAMPAIGN",
@@ -340,68 +325,132 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(res["campaign"], str(campaign_test.id))
         self.assertEqual(res["vaccine_type"], pm.VACCINES[0][0])
 
-    def test_user_with_write_permission_can_modify_existing_request_form(self):
-        self.client.force_authenticate(user=self.user_rw_perm)
+    def test_vaccine_request_form_permissions(self):
+        # Create a non-admin user with basic permissions
+
+        self.client.force_authenticate(self.user_ro_perm)
+
+        # Non-admin can create request form
+        campaign_test = pm.Campaign.objects.create(
+            obr_name="TEST_CAMPAIGN",
+            country=self.org_unit_DRC,
+            account=self.account,
+        )
+
+        campaign_test_round_1 = pm.Round.objects.create(
+            campaign=campaign_test,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+
+        request_form_data = {
+            "campaign": campaign_test.obr_name,
+            "vaccine_type": pm.VACCINES[0][0],
+            "date_vrf_reception": "2021-01-01",
+            "date_vrf_signature": "2021-01-02",
+            "date_dg_approval": "2021-01-03",
+            "quantities_ordered_in_doses": 1000000,
+            "rounds": [{"number": campaign_test_round_1.number}],
+        }
+
+        response = self.client.post(BASE_URL, request_form_data, format="json")
+        self.assertEqual(response.status_code, 201)
+        request_form_id = response.data["id"]
+
+        # Non-admin can edit within 7 days
+        update_data = {
+            "campaign": campaign_test.obr_name,
+            "vaccine_type": pm.VACCINES[1][0],
+            "date_vrf_reception": "2021-02-01",
+            "date_vrf_signature": "2021-02-02",
+            "date_dg_approval": "2021-02-03",
+            "quantities_ordered_in_doses": 2000000,
+            "rounds": [{"number": campaign_test_round_1.number}],
+        }
+
+        response = self.client.patch(f"{BASE_URL}{request_form_id}/", update_data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        # Simulate passage of 8 days
+        request_form = pm.VaccineRequestForm.objects.get(id=request_form_id)
+        request_form.created_at = timezone.now() - datetime.timedelta(days=8)
+        request_form.save()
+
+        # Non-admin cannot edit after 7 days
+        response = self.client.patch(f"{BASE_URL}{request_form_id}/", update_data, format="json")
+        self.assertEqual(response.status_code, 403)
+
+        # Switch to admin user
+        self.client.force_authenticate(self.user_rw_perm)
+
+        # Admin can edit regardless of time passed
+        response = self.client.patch(f"{BASE_URL}{request_form_id}/", update_data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        # Admin can delete regardless of time passed
+        response = self.client.delete(f"{BASE_URL}{request_form_id}/")
+        self.assertEqual(response.status_code, 204)
+
+    def test_pre_alerts_permissions(self):
+        # Use a non-admin user
+        self.client.force_authenticate(self.user_ro_perm)
 
         # Get the first request form
         request_form = pm.VaccineRequestForm.objects.first()
 
-        # Modify the request form
-        response = self.client.patch(
-            BASE_URL + f"{request_form.id}/",
-            data={
-                "campaign": str(request_form.campaign.obr_name),
-                "vaccine_type": pm.VACCINES[1][0],  # Change the vaccine type
-                "date_vrf_reception": "2021-02-01",  # Change the date of vrf reception
-                "date_vrf_signature": "2021-02-02",  # Change the date of vrf signature
-                "date_dg_approval": "2021-02-03",  # Change the date of dg approval
-                "quantities_ordered_in_doses": 2000000,  # Change the quantities ordered in doses
-                "rounds": [{"number": request_form.rounds.first().number}],
-            },
-            format="json",
-        )
+        pre_alert_data = {
+            "pre_alerts": [
+                {
+                    "date_pre_alert_reception": "2021-01-01",
+                    "estimated_arrival_time": "2021-01-02",
+                    "doses_shipped": 500000,
+                    "po_number": "1234698",
+                    "lot_numbers": ["LOT-1234", "LOT-5678"],
+                }
+            ],
+        }
 
-        # Check the status code
+        # Non-admin can create pre-alert
+        response = self.client.post(BASE_URL + f"{request_form.id}/add_pre_alerts/", data=pre_alert_data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Get pre-alerts to find the ID
+        response = self.client.get(BASE_URL + f"{request_form.id}/get_pre_alerts/")
         self.assertEqual(response.status_code, 200)
 
-        # Check the modified data
-        res = response.data
-        self.assertEqual(res["campaign"], str(request_form.campaign.id))
-        self.assertEqual(res["vaccine_type"], pm.VACCINES[1][0])
-        self.assertEqual(res["date_vrf_reception"], "2021-02-01")
-        self.assertEqual(res["date_vrf_signature"], "2021-02-02")
-        self.assertEqual(res["date_dg_approval"], "2021-02-03")
-        self.assertEqual(res["quantities_ordered_in_doses"], 2000000)
-        self.assertEqual(len(res["rounds"]), 1)
+        # Find the pre-alert with matching PO number
+        pre_alerts = response.data["pre_alerts"]
+        pre_alert = next(pa for pa in pre_alerts if pa["po_number"] == "1234698")
+        pre_alert_id = pre_alert["id"]
 
-    def test_can_add_request_form_vaccine_prealerts(self):
-        self.client.force_authenticate(user=self.user_rw_perm)
+        # Non-admin can edit within 7 days
+        update_data = {"pre_alerts": [{"id": pre_alert_id, "doses_shipped": 600000, "po_number": "5678"}]}
+        response = self.client.patch(BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json")
+        self.assertEqual(response.status_code, 200)
 
-        # Get the first request form and its pre-alerts
-        request_form = pm.VaccineRequestForm.objects.first()
+        # Simulate passage of 8 days
+        pre_alert = pm.VaccinePreAlert.objects.get(id=pre_alert_id)
+        pre_alert.created_at = timezone.now() - datetime.timedelta(days=8)
+        pre_alert.save()
 
-        response = self.client.post(
-            BASE_URL + f"{request_form.id}/add_pre_alerts/",
-            data={
-                "pre_alerts": [
-                    {
-                        "date_pre_alert_reception": "2021-01-01",
-                        "estimated_arrival_time": "2021-01-02",
-                        "doses_shipped": 500000,
-                        "po_number": "1234",
-                        "lot_numbers": ["LOT-1234", "LOT-5678"],
-                    }
-                ],
-            },
-            format="json",
-        )
+        # need to change at least one field to trigger the edit permission check
+        update_data = {"pre_alerts": [{"id": pre_alert_id, "doses_shipped": 650000, "po_number": "5678"}]}
 
-        self.assertEqual(response.status_code, 201)
-        res = response.data
+        # Non-admin cannot edit after 7 days
+        response = self.client.patch(BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json")
+        self.assertEqual(response.status_code, 400)
 
-        self.assertEqual(len(res["pre_alerts"]), 1)
-        self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 500000)
-        self.assertEqual(res["pre_alerts"][0]["po_number"], "1234")
+        # Switch to admin user
+        self.client.force_authenticate(self.user_rw_perm)
+
+        # Admin can edit regardless of time passed
+        response = self.client.patch(BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        # Admin can delete regardless of time passed
+        response = self.client.delete(BASE_URL + f"{request_form.id}/delete_pre_alerts/?id={pre_alert_id}")
+        self.assertEqual(response.status_code, 204)
 
     def test_bad_po_number_raises_error(self):
         self.client.force_authenticate(user=self.user_rw_perm)
@@ -427,31 +476,80 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    def test_can_add_request_form_vaccine_arrival_reports(self):
-        self.client.force_authenticate(user=self.user_rw_perm)
+    def test_arrival_reports_permissions(self):
+        # Use a non-admin user
+        self.client.force_authenticate(self.user_ro_perm)
 
-        # Get the first request form and its arrival reports
+        # Get the first request form
         request_form = pm.VaccineRequestForm.objects.first()
 
+        arrival_report_data = {
+            "arrival_reports": [
+                {
+                    "arrival_report_date": "2021-01-01",
+                    "doses_received": 1000,
+                    "po_number": "1234698",
+                }
+            ],
+        }
+
+        # Non-admin can create arrival report
         response = self.client.post(
-            BASE_URL + f"{request_form.id}/add_arrival_reports/",
-            data={
-                "arrival_reports": [
-                    {
-                        "arrival_report_date": "2021-01-01",
-                        "doses_received": 1000,
-                    }
-                ],
-            },
-            format="json",
+            BASE_URL + f"{request_form.id}/add_arrival_reports/", data=arrival_report_data, format="json"
         )
-
         self.assertEqual(response.status_code, 201)
-        res = response.data
 
-        self.assertEqual(len(res["arrival_reports"]), 1)
-        self.assertEqual(res["arrival_reports"][0]["doses_received"], 1000)
-        self.assertEqual(res["arrival_reports"][0]["arrival_report_date"], "2021-01-01")
+        # Get arrival reports to find the ID
+        response = self.client.get(BASE_URL + f"{request_form.id}/get_arrival_reports/")
+        self.assertEqual(response.status_code, 200)
+
+        # Find the arrival report with matching PO number
+        arrival_reports = response.data["arrival_reports"]
+        arrival_report = next(ar for ar in arrival_reports if ar["po_number"] == "1234698")
+        arrival_report_id = arrival_report["id"]
+
+        # Non-admin can edit within 7 days
+        update_data = {
+            "arrival_reports": [
+                {
+                    "id": arrival_report_id,
+                    "doses_received": 2000,
+                }
+            ]
+        }
+
+        response = self.client.patch(
+            BASE_URL + f"{request_form.id}/update_arrival_reports/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Simulate passage of 8 days
+        arrival_report = pm.VaccineArrivalReport.objects.get(id=arrival_report_id)
+        arrival_report.created_at = timezone.now() - datetime.timedelta(days=8)
+        arrival_report.doses_received = 8888
+        arrival_report.save()
+
+        # need to change at least one field to trigger the edit permission check
+        update_data = {"arrival_reports": [{"id": arrival_report_id, "doses_received": 9999}]}
+
+        # Non-admin cannot edit after 7 days
+        response = self.client.patch(
+            BASE_URL + f"{request_form.id}/update_arrival_reports/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+
+        # Switch to admin user
+        self.client.force_authenticate(self.user_rw_perm)
+
+        # Admin can edit regardless of time passed
+        response = self.client.patch(
+            BASE_URL + f"{request_form.id}/update_arrival_reports/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Admin can delete regardless of time passed
+        response = self.client.delete(BASE_URL + f"{request_form.id}/delete_arrival_reports/?id={arrival_report_id}")
+        self.assertEqual(response.status_code, 204)
 
     def test_can_get_request_form_vaccine_prealerts(self):
         self.client.force_authenticate(user=self.user_rw_perm)
@@ -507,55 +605,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(res["arrival_reports"][0]["id"], arrival_report.id)
         self.assertEqual(res["arrival_reports"][0]["arrival_report_date"], "2022-01-01")
         self.assertEqual(res["arrival_reports"][0]["doses_received"], 2000)
-
-    def test_can_modify_request_form_vaccine_arrival_reports(self):
-        self.client.force_authenticate(user=self.user_rw_perm)
-
-        # Get the first request form and its arrival reports
-        request_form = pm.VaccineRequestForm.objects.first()
-
-        arrival_report = pm.VaccineArrivalReport.objects.create(
-            request_form=request_form,
-            arrival_report_date="2022-01-01",
-            doses_received=2000,
-        )
-
-        response = self.client.patch(
-            BASE_URL + f"{request_form.id}/update_arrival_reports/",
-            data={"arrival_reports": [{"id": arrival_report.id, "doses_received": 3333}]},
-            format="json",
-        )
-
-        self.assertEqual(response.status_code, 200)
-        res = response.data
-
-        self.assertEqual(res["arrival_reports"][0]["doses_received"], 3333)
-
-    def test_can_modify_request_form_vaccine_prealerts(self):
-        self.client.force_authenticate(user=self.user_rw_perm)
-
-        # Get the first request form and its pre-alerts
-        request_form = pm.VaccineRequestForm.objects.first()
-
-        pre_alert = pm.VaccinePreAlert.objects.create(
-            request_form=request_form,
-            date_pre_alert_reception="2021-01-01",
-            estimated_arrival_time="2021-01-02",
-            doses_shipped=1000,
-            po_number="PO-1234",
-            lot_numbers=["LOT-1234", "LOT-5678"],
-        )
-
-        response = self.client.patch(
-            BASE_URL + f"{request_form.id}/update_pre_alerts/",
-            data={"pre_alerts": [{"id": pre_alert.id, "doses_shipped": 4444}]},
-            format="json",
-        )
-
-        self.assertEqual(response.status_code, 200)
-        res = response.data
-
-        self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 4444)
 
     def test_can_delete_request_form(self):
         self.client.force_authenticate(user=self.user_rw_perm)

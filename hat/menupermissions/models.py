@@ -80,6 +80,8 @@ _POLIO_VACCINE_SUPPLY_CHAIN_READ = "iaso_polio_vaccine_supply_chain_read"
 _POLIO_VACCINE_SUPPLY_CHAIN_WRITE = "iaso_polio_vaccine_supply_chain_write"
 _POLIO_VACCINE_STOCK_MANAGEMENT_READ = "iaso_polio_vaccine_stock_management_read"
 _POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = "iaso_polio_vaccine_stock_management_write"
+_POLIO_VACCINE_STOCK_EARMARKS_NONADMIN = "iaso_polio_vaccine_stock_earmarks_nonadmin"
+_POLIO_VACCINE_STOCK_EARMARKS_ADMIN = "iaso_polio_vaccine_stock_earmarks_admin"
 
 # Trypelim
 _ANONYMOUS_VIEW = "iaso_trypelim_anonymous"
@@ -160,6 +162,8 @@ POLIO_VACCINE_STOCK_MANAGEMENT_READ = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_
 POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_WRITE
 POLIO_VACCINE_SUPPLY_CHAIN_READ = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_READ
 POLIO_VACCINE_SUPPLY_CHAIN_WRITE = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_WRITE
+POLIO_VACCINE_STOCK_EARMARKS_NONADMIN = _PREFIX + _POLIO_VACCINE_STOCK_EARMARKS_NONADMIN
+POLIO_VACCINE_STOCK_EARMARKS_ADMIN = _PREFIX + _POLIO_VACCINE_STOCK_EARMARKS_ADMIN
 PROJECTS = _PREFIX + _PROJECTS
 REGISTRY_WRITE = _PREFIX + _REGISTRY_WRITE
 REGISTRY_READ = _PREFIX + _REGISTRY_READ
@@ -296,6 +300,8 @@ class CustomPermissionSupport(models.Model):
             (_POLIO_VACCINE_SUPPLY_CHAIN_WRITE, _("Polio Vaccine Supply Chain Write")),
             (_POLIO_VACCINE_STOCK_MANAGEMENT_READ, _("Polio Vaccine Stock Management Read")),
             (_POLIO_VACCINE_STOCK_MANAGEMENT_WRITE, _("Polio Vaccine Stock Management Write")),
+            (_POLIO_VACCINE_STOCK_EARMARKS_NONADMIN, _("Polio Vaccine Stock Earmarks Non Admin")),
+            (_POLIO_VACCINE_STOCK_EARMARKS_ADMIN, _("Polio Vaccine Stock Earmarks Admin")),
             # Trypelim
             (_ANONYMOUS_VIEW, "Anonymisation des patients"),
             (_AREAS, _("Areas")),

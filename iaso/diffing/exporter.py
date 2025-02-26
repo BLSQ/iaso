@@ -191,7 +191,7 @@ class Exporter:
                     )
                 diff = diff[0]
                 for comparison in diff.comparisons:  # type: ignore
-                    if comparison.status != "same" and not comparison.field.startswith("groupset:"):
+                    if comparison.status != "same" and not comparison.field.startswith(("group:", "groupset:")):
                         self.apply_comparison(dhis2_payload, comparison)
             self.iaso_logger.info(f"will post slice for {', '.join(ids)}")
             # pprint([{k: (v if k != "geometry" else "...") for k, v in payload.items()} for payload in dhis2_payloads])

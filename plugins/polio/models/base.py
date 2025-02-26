@@ -1432,6 +1432,7 @@ class VaccineArrivalReport(models.Model):
 
 
 class VaccineStock(models.Model):
+    MANAGEMENT_DAYS_OPEN = 7
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="vaccine_stocks")
     country = models.ForeignKey(
         "iaso.orgunit",
@@ -1509,6 +1510,9 @@ class OutgoingStockMovement(models.Model):
         storage=CustomPublicStorage(), upload_to="public_documents/forma/", null=True, blank=True
     )
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
 class DestructionReport(models.Model):
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
@@ -1522,6 +1526,9 @@ class DestructionReport(models.Model):
     document = models.FileField(
         storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/", null=True, blank=True
     )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [
@@ -1557,6 +1564,9 @@ class IncidentReport(models.Model):
     document = models.FileField(
         storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/", null=True, blank=True
     )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [

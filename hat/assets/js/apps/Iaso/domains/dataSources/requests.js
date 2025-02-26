@@ -1,4 +1,6 @@
 /* eslint-disable no-else-return */
+import React from 'react';
+import { useMutation, useQueryClient } from 'react-query';
 import {
     getRequest,
     iasoFetch,
@@ -6,8 +8,6 @@ import {
     putRequest,
 } from 'Iaso/libs/Api.ts';
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import React from 'react';
-import { useMutation, useQueryClient } from 'react-query';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher.ts';
 import snackBarMessages from '../../components/snackBars/messages';
 import { errorSnackBar } from '../../constants/snackBars';
@@ -103,6 +103,27 @@ export const useDataSourceVersions = () => {
     );
 };
 
+export const useDataSourcesDropDown = () => {
+    return useSnackQuery(
+        ['sourcesDropdown'],
+        () => getRequest('/api/datasources/dropdown/?order=name'),
+        undefined,
+        {
+            staleTime: 60000,
+        },
+    );
+};
+
+export const useSourceVersionDropDown = () => {
+    return useSnackQuery(
+        ['sourceVersionsDropdown'],
+        () => getRequest('/api/sourceversions/dropdown/'),
+        undefined,
+        {
+            staleTime: 60000,
+        },
+    );
+};
 const adaptForApi = data => {
     const adaptedData = { ...data };
     if (data.ref_status === 'all') {

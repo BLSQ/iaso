@@ -194,3 +194,12 @@ class DataSourcesAPITestCase(APITestCase):
         self.assertEqual(data[0]["id"], self.data_source.pk)
         self.assertEqual(data[0]["name"], self.data_source.name)
         self.assertEqual(data[0]["projects"], [self.project.pk])
+
+    def test_dropdown_datasource_without_user_authentication(self):
+        response = self.client.get("/api/datasources/dropdown/?order=name")
+        self.assertJSONResponse(response, 401)
+
+    def test_dropdown_datasource_with_user_without_permission(self):
+        self.client.force_authenticate(self.jim)
+        response = self.client.get("/api/datasources/dropdown/?order=name")
+        self.assertJSONResponse(response, 403)

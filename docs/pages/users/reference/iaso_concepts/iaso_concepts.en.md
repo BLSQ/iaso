@@ -45,7 +45,7 @@ Good to know:
 - Every Form has to be linked to one or several Project(s)
 
 ## Entities
-In IASO, an “**Entity**” is anything that can move or be moved and that we want to track through time and Org Units. For example, a beneficiary, a car, a vaccination card, etc.
+In IASO, an “**Entity**” is anything that can move or be moved and that we want to track through time and Org Units. For example, an person, a car, a parcel, etc.
 
 To differentiate between different kinds of entities, IASO has a concept of “**Entity Type**”.
 

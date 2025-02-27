@@ -57,6 +57,7 @@ _REGISTRY_READ = "iaso_registry_read"
 _REPORTS = "iaso_reports"
 _SOURCE_WRITE = "iaso_write_sources"
 _SOURCES = "iaso_sources"
+_SOURCES_CAN_CHANGE_DEFAULT_VERSION = "iaso_sources_can_change_default_version"
 _STORAGE = "iaso_storages"
 _SUBMISSIONS = "iaso_submissions"
 _SUBMISSIONS_UPDATE = "iaso_update_submission"
@@ -170,6 +171,7 @@ REGISTRY_READ = _PREFIX + _REGISTRY_READ
 REPORTS = _PREFIX + _REPORTS
 SOURCE_WRITE = _PREFIX + _SOURCE_WRITE
 SOURCES = _PREFIX + _SOURCES
+SOURCES_CAN_CHANGE_DEFAULT_VERSION = _PREFIX + _SOURCES_CAN_CHANGE_DEFAULT_VERSION
 STORAGE = _PREFIX + _STORAGE
 SUBMISSIONS = _PREFIX + _SUBMISSIONS
 SUBMISSIONS_UPDATE = _PREFIX + _SUBMISSIONS_UPDATE
@@ -260,6 +262,7 @@ class CustomPermissionSupport(models.Model):
             (_PAGES, _("Pages")),
             (_PROJECTS, _("Projets")),
             (_SOURCES, _("Sources")),
+            (_SOURCES_CAN_CHANGE_DEFAULT_VERSION, _("Can change the default version of a data source")),
             (_DATA_TASKS, _("Tâches")),
             (_SUBMISSIONS, _("Soumissions")),
             (_SUBMISSIONS_UPDATE, _("Editer soumissions")),

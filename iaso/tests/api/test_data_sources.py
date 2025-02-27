@@ -1,7 +1,6 @@
 from django.contrib.auth.models import Permission
 
 from hat.menupermissions import models as permission
-
 from iaso import models as m
 from iaso.test import APITestCase
 

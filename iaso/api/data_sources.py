@@ -11,7 +11,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.models import DataSource, ExternalCredentials, OrgUnit, SourceVersion
+from iaso.models import DataSource, ExternalCredentials, OrgUnit
 
 from ..dhis2.url_helper import clean_url
 from ..tasks.dhis2_ou_importer import get_api

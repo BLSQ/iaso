@@ -6,6 +6,7 @@ from submissions import (
     submission_org_unit_gps_point,
     create_default_reference_submission,
 )
+from names_generator import generate_name
 import random
 
 
@@ -83,7 +84,7 @@ def create_submission_with_picture(account_name, iaso_client):
                 "start": "2022-09-07T17:54:55.805+02:00",
                 "end": "2022-09-07T17:55:31.192+02:00",
                 "geo_group": {
-                    "responsable_fosa": random.choice(["Nom 1", "Nom 2", "Nom 3"]),
+                    "responsable_fosa": generate_name(style="capital"),
                     "statut_fosa": random.choice(
                         ["public", "prive_confessionel", "prive_laic", "militaire", "ong", "autre"]
                     ),

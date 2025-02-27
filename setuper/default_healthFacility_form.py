@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from names_generator import generate_name
 from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point
 import random
 
@@ -86,7 +87,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                             "start": "2022-09-07T17:54:55.805+02:00",
                             "end": "2022-09-07T17:55:31.192+02:00",
                             "geo_group": {
-                                "responsable_fosa": random.choice(["Respo 1", "Respo 2", "Respo 3"]),
+                                "responsable_fosa": generate_name(style="capital"),
                                 "statut_fosa": random.choice(
                                     ["public", "prive_confessionel", "prive_laic", "militaire", "ong", "autre"]
                                 ),

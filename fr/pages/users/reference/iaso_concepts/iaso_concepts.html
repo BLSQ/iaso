@@ -374,6 +374,26 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#entites" class="md-nav__link">
+    Entités
+  </a>
+  
+    <nav class="md-nav" aria-label="Entités">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflows" class="md-nav__link">
+    Workflows
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -877,6 +897,26 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#entites" class="md-nav__link">
+    Entités
+  </a>
+  
+    <nav class="md-nav" aria-label="Entités">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflows" class="md-nav__link">
+    Workflows
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -907,7 +947,7 @@
 IASO utilise les <a href="https://xlsform.org/en/">XLS forms</a> pour ses questionnaires, qui sont donc prédéfinis à l'aide d'un fichier Excel.</p>
 <p>Dans IASO, les formulaires de collecte de données sont <strong>versionnés</strong>, ce qui signifie qu'à chaque fois qu'une nouvelle version est créée, l'ancienne version est conservée et reste disponible dans le système. Il est possible d'y revenir aisément.</p>
 <h2 id="unites-dorganisation">Unités d'organisation<a class="headerlink" href="#unites-dorganisation" title="Permanent link">#</a></h2>
-<p>IASO utilise la notion d'<strong>Unités Od'organisation (Org unit ou OU)</strong> pour gérer les données géographiques.\
+<p>IASO utilise la notion d'<strong>Unités d'organisation (Org unit ou OU)</strong> pour gérer les données géographiques.\
 Les <strong>types d'unité d'organisation (OUT)</strong> représentent les niveaux dans la hiérarchie.</p>
 <h3 id="exemple">Exemple :<a class="headerlink" href="#exemple" title="Permanent link">#</a></h3>
 <ul>
@@ -936,6 +976,16 @@ Les utilisateurs peuvent être liés à un ou plusieurs Projet(s).</p>
 <li>Chaque Type d'Unité Organisationnelle doit être lié à un ou plusieurs Projet(s)</li>
 <li>Chaque Formulaire doit être lié à un ou plusieurs Projet(s)</li>
 </ul>
+<h2 id="entites">Entités<a class="headerlink" href="#entites" title="Permanent link">#</a></h2>
+<p>Dans IASO, une “<strong>Entité</strong>” représente n'importe quel personne ou object qui peut bouger ou être bougé et que nous souhaions suivre à travers le temps ou les <a href="#Unités-dorganisation">Unités d'organisation</a>. 
+Par exemple, un bénéficiaire, une voiture, une carte de vaccination, etc.</p>
+<p>Pour différencier les différents types d'entités, IASO a un concept de “<strong>Type d'Entité</strong>”.</p>
+<p>Une entité est représentée par une soumission de <a href="#Formulaires-de-collecte-de-données-XLS">formulaire</a>. 
+Cette soumission est aussi appelée le <strong>profil</strong>.
+Le type d'entité définit quel formulaire doit être complété afin de créer une nouvelle entité.</p>
+<h3 id="workflows">Workflows<a class="headerlink" href="#workflows" title="Permanent link">#</a></h3>
+<p>Sur base du profile d'une entité, il est possible de proposer plusieurs formulaires différents et de définir comment chaque soumission impacte le profil.
+Les règles qui définissent quels formulaires et comments chaque soumission impacte le profil sont appelées un "<strong>Workflow</strong>." </p>
 
 
 

@@ -22,6 +22,13 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/add_new_permission/add_new_permission.html"/>
     </url>
     <url>
+        <loc>Nonepages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html</loc>
+        <lastmod>2025-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html</loc>
         <lastmod>2025-02-27</lastmod>
         <changefreq>daily</changefreq>
@@ -41,6 +48,20 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html"/>
+    </url>
+    <url>
+        <loc>Nonepages/dev/how_to/create_entity_workflow/create_entity_workflow.html</loc>
+        <lastmod>2025-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_entity_workflow/create_entity_workflow.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_entity_workflow/create_entity_workflow.html"/>
+    </url>
+    <url>
+        <loc>Nonepages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html</loc>
+        <lastmod>2025-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
     </url>
     <url>
         <loc>Nonepages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html</loc>
@@ -69,6 +90,20 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html"/>
+    </url>
+    <url>
+        <loc>Nonepages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html</loc>
+        <lastmod>2025-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html"/>
+    </url>
+    <url>
+        <loc>Nonepages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html</loc>
+        <lastmod>2025-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html"/>
     </url>
     <url>
         <loc>Nonepages/dev/how_to/manually_test_enketo/manually_test_enketo.html</loc>
@@ -365,6 +400,13 @@
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/add_new_permission/add_new_permission.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html</loc>
+        <lastmod>2025-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/attach_file_to_forms/attach_file_to_forms.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/dev/how_to/configure_black_on_vsc/configure_black_on_vsc.html</loc>
         <lastmod>2025-02-27</lastmod>
         <changefreq>daily</changefreq>
@@ -384,6 +426,20 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_entities_in_web_ui/create_entities_in_web_ui.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/dev/how_to/create_entity_workflow/create_entity_workflow.html</loc>
+        <lastmod>2025-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_entity_workflow/create_entity_workflow.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_entity_workflow/create_entity_workflow.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html</loc>
+        <lastmod>2025-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html</loc>
@@ -412,6 +468,20 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/exclude_featureflag_related_module/exclude_featureflag_related_module.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html</loc>
+        <lastmod>2025-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/iaso_special_question_names/iaso_special_question_names.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html</loc>
+        <lastmod>2025-02-27</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/iaso_specific_intents/iaso_specific_intents.html"/>
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/manually_test_enketo/manually_test_enketo.html</loc>

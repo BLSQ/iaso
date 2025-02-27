@@ -14,7 +14,10 @@ IASO is organized according to Modules, which are groups of functionalities whic
 - Visualize on a dynamic map data collected at the different levels of the hierarchy (e.g. Country, Region, District, facility)
 - Validate changes on Organization Units (Name, Type, GPS coordinates, opening/closing dates) submitted from the field via the mobile application
 - Validate data submitted via data collection forms that are linked to specific Organization Units types, called "Reference forms"
+
+##Payments
 - Based on the validated proposed changes per user, generate payment lots to send to Mobile Money provider
+- Indicate the status of the payments lots (pending, sent to Mobile Money provider, etc.)
 
 ## DHIS2 bi-directional integration 
 - Manage the mappings with DHIS2 data elements for import/export of data

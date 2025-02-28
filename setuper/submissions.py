@@ -59,9 +59,11 @@ def create_default_reference_submission(account_name, iaso_client, org_unit_id, 
 
 
 def instance_json_by_form(form, instance_id):
-    random_day = random.randint(1, 30)
-    registration_date = datetime.now() - timedelta(days=random_day)
-
+    beneficiary_name = generate_name(style="capital")
+    registration_date = datetime.now()
+    code = random.randint(1000000000, 9999999999)
+    ticket_number = random.randint(10000, 99999)
+    instance_json = None
     if form["form_id"] == "pregnant_women_followup":
         instance_json = {
             "visit": {
@@ -72,16 +74,9 @@ def instance_json_by_form(form, instance_id):
         }
     elif form["form_id"] == "entity-child_registration_vaccination":
         age_entry = random.choice(["years", "birthdate"])
-        name = f"Name {random.randint(1, 30)}"
-        default_year = random.randint(10, 50)
-        age = {
-            "age_years": None,
-            "birthday": None,
-        }
-        if age_entry == "years":
-            age["age_years"] = default_year
-        elif age_entry == "birthdate":
-            age["birthday"] = datetime.now() - timedelta(days=(default_year * 365.25))
+        name = beneficiary_name.split(" ")
+        age_years = random.randint(10, 50)
+        birth_date = (datetime.now() - timedelta(days=(age_years * 365.25))).date()
         food_assistance = random.choice(["yes", "no"])
         assistance_type = None
         if food_assistance == "yes":
@@ -94,24 +89,29 @@ def instance_json_by_form(form, instance_id):
                 ]
             )
         instance_json = {
-            "beneficiary": {
-                "registration_date": registration_date,
-                "first_name": name,
-                "last_name": f"Other {name}",
-                "gender": "female",
-            },
-            "age_group": {
-                "age_entry": age_entry,
-                "age_years": age["age_years"],
-                "birth_date": age["birthday"],
-            },
-            "card": {
-                "record_book_or_vaccination_card": random.choice(["vaccination_book", "antenatal_record_book"]),
-                "card_number": f"{random.randint(454, 524785)}",
-            },
-            "food_assistance": {
-                "general_food_assistance": random.choice(["yes", "no"]),
-                "assistance_type": assistance_type,
+            "consent_given": {
+                "beneficiary": {
+                    "registration_date": registration_date,
+                    "first_name": name[0],
+                    "last_name": name[1],
+                    "gender": "female",
+                },
+                "age_group": {
+                    "age_entry": age_entry,
+                    "age_years": age_years,
+                    "birth_date": birth_date,
+                    "birthday": birth_date,
+                    "age__int__": age_years,
+                    "actual_birthday__date__": birth_date,
+                },
+                "card": {
+                    "record_book_or_vaccination_card": random.choice(["vaccination_book", "antenatal_record_book"]),
+                    "card_number": ticket_number,
+                },
+                "food_assistance": {
+                    "general_food_assistance": food_assistance,
+                    "assistance_type": assistance_type,
+                },
             },
             "meta": instance_id,
         }
@@ -119,36 +119,43 @@ def instance_json_by_form(form, instance_id):
     elif form["form_id"] == "cahier_de_denombrement_v1.1":
         number = random.randint(1, 15)
         child_number = random.randint(1, 5)
-        beneficiary_name = generate_name(style="capital")
-        print("BENEFICIARY NAME ...:", beneficiary_name)
+        default_number = random.randint(0, 2)
+        total = number + default_number + child_number + child_number
 
         instance_json = {
             "group_theme": {
-                "code_barre": random.randint(1000000000000, 9999999999999),
-                "numero_ticket": random.randint(10000, 99999),
+                "code_barre": code,
+                "numero_ticket": ticket_number,
                 "nom_prenoms": beneficiary_name.upper(),
-                "contact": random.randint(1000000000, 9999999999),
-                "nombre_personne": number,
+                "contact": random.randint(ticket_number, code),
+                "nombre_personne": total,
                 "nombre_couchage": number,
                 "enfants": child_number,
                 "enfants1": child_number,
-                "femme_enceinte": random.randint(0, 3),
+                "femme_enceinte": default_number,
+                "somme_enfant_fe": total - number,
+                "nombre_milda_donne": round(total * 0.5),
+                "milda_recu_": round(total * 0.5),
+                "a_recu_ses_mildas": round(total * 0.5),
+                "milda_recu_note": "",
             },
             "meta": instance_id,
         }
 
-    elif form["form_id"] == "cahier_de_distribution_v1":
-        milda = random.choice(["yes", "no"])
+    elif form["form_id"] == "cahier_de_distribution_v1.1":
+        milda = random.choice(["1", "2"])
         received_milda = 0
-        if milda == "yes":
-            received_milda = (random.randint(1, 5),)
+        if milda == "1":
+            received_milda = random.randint(1, 5)
         instance_json = {
             "group_theme": {
-                "codeQR": random.randint(1000000000000, 9999999999999),
+                "codeQR": code,
                 "recu": milda,
                 "milda_recu": received_milda,
+                "milda_recu_": received_milda,
+                "a_recu_ses_mildas": 0 if received_milda < 1 else 1,
+                "milda_recu_note": "",
             },
             "meta": instance_id,
         }
-    print("INSTANCE JSON ", instance_json)
     return instance_json

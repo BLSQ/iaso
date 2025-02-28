@@ -1,8 +1,6 @@
 import uuid
-from datetime import datetime, timedelta
-from names_generator import generate_name
-from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point, instance_json_by_form
-import random
+from datetime import datetime
+from submissions import submission2xml, org_unit_gps_point, instance_json_by_form
 
 
 def create_form_submissions(account_name, iaso_client, form, orgunit):
@@ -11,8 +9,6 @@ def create_form_submissions(account_name, iaso_client, form, orgunit):
     local_path = "generated/%s" % file_name
     current_datetime = int(datetime.now().timestamp())
 
-    print("ALL FORM DATA ", form, "\n", orgunit)
-
     instance_body = [
         {
             **org_unit_gps_point(orgunit),
@@ -20,19 +16,19 @@ def create_form_submissions(account_name, iaso_client, form, orgunit):
             "created_at": current_datetime,
             "updated_at": current_datetime,
             "orgUnitId": orgunit["id"],
-            "formId": form["form_id"],
+            "formId": form["id"],
             "accuracy": 0,
             "imgUrl": "imgUrl",
             "file": local_path,
             "name": file_name,
         }
     ]
-    iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
+    iaso_client.post(f"/api/instances/?app_id={account_name}.campaign", json=instance_body)
 
     instance_id = {"instanceID": "uuid:" + the_uuid}
     instance_json = instance_json_by_form(form, instance_id)
 
-    upload_submission = iaso_client.post(
+    iaso_client.post(
         "/sync/form_upload/",
         files={
             "xml_submission_file": (
@@ -45,15 +41,13 @@ def create_form_submissions(account_name, iaso_client, form, orgunit):
             )
         },
     )
-    print("UPDALED SUBMISSION ...:", upload_submission)
 
 
-def get_org_units(account_name, iaso_client, facility_type_id, form):
+def create_org_units_submissions(account_name, iaso_client, facility_type_id, form):
     limit = 20
     orgUnits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": facility_type_id})["orgunits"]
 
     for orgUnit in orgUnits:
-        print("EACH ORG UNIT ...:", orgUnit, "\n Linked form :", form)
         create_form_submissions(account_name, iaso_client, form, orgUnit)
 
 
@@ -79,7 +73,7 @@ def new_llin_forms():
     return forms
 
 
-def xls_forms_mapper(iaso_client, account_name):
+def llin_forms(iaso_client, account_name):
     forms = new_llin_forms()
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
@@ -110,5 +104,4 @@ def xls_forms_mapper(iaso_client, account_name):
         form["id"] = form_id
         form["version"] = iaso_client.post("/api/formversions/", files=form_files, data=data)
 
-        print("GOT FORMS ...:", form)
-        get_org_units(account_name, iaso_client, org_unit_type_id, form)
+        create_org_units_submissions(account_name, iaso_client, org_unit_type_id, form)

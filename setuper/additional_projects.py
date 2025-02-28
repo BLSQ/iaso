@@ -1,4 +1,4 @@
-from create_xls_forms import xls_forms_mapper
+from create_llin_campaign_forms_submissions import llin_forms
 
 
 def projects_mapper(account_name):
@@ -132,7 +132,7 @@ def forms_mapper(projects, iaso_client, account_name):
     forms = [project["linked_forms"] for project in projects]
     all_forms = [sub_form for sub_forms in forms for sub_form in sub_forms]
     uniq_forms = list(set(all_forms))
-    xls_forms_mapper(iaso_client, account_name)
+    llin_forms(iaso_client, account_name)
     link_forms_to_new_projects(projects, uniq_forms, iaso_client)
 
 

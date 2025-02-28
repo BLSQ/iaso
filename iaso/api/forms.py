@@ -20,12 +20,13 @@ from iaso.utils.date_and_time import timestamp_to_datetime
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
+from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 
 
-class HasFormPermission(permissions.BasePermission):
+class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
-            return True
+            return super().has_permission(request, view)
 
         return request.user.is_authenticated and request.user.has_perm(permission.FORMS)
 
@@ -148,7 +149,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def get_latest_form_version(obj: Form):
-        return obj.latest_version.as_dict() if obj.latest_version is not None else None
+        return obj.latest_version.as_dict() if obj.latest_version else None
 
     @staticmethod
     def get_org_unit_types(obj: Form):
@@ -334,6 +335,21 @@ class FormsViewSet(ModelViewSet):
         search = self.request.query_params.get("search", None)
         if search:
             queryset = queryset.filter(name__icontains=search)
+
+        # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
+        queryset = queryset.prefetch_related(
+            "form_versions",
+            "projects",
+            "projects__feature_flags",
+            "reference_of_org_unit_types",
+            "org_unit_types",
+            "org_unit_types__reference_forms",
+            "org_unit_types__sub_unit_types",
+            "org_unit_types__allow_creating_sub_unit_types",
+        )
+
+        # optimize latest version loading to not trigger a select n+1 on form_version
+        queryset = queryset.with_latest_version()
 
         # TODO: allow this only from a predefined list for security purposes
         order = self.request.query_params.get("order", "instance_updated_at").split(",")

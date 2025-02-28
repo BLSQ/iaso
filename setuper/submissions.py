@@ -58,7 +58,7 @@ def create_default_reference_submission(account_name, iaso_client, org_unit_id, 
     iaso_client.patch(f"/api/orgunits/{org_unit_id}/", json=org_unit_reference_submission)
 
 
-def instance_json_by_form(form, instance_id):
+def instance_by_LLIN_campaign_form(form, instance_id):
     beneficiary_name = generate_name(style="capital")
     registration_date = datetime.now()
     code = random.randint(1000000000, 9999999999)
@@ -69,8 +69,7 @@ def instance_json_by_form(form, instance_id):
             "visit": {
                 "oedema": random.choice([0, 1]),
                 "need_followup": random.choice([0, 1]),
-            },
-            "meta": instance_id,
+            }
         }
     elif form["form_id"] == "entity-child_registration_vaccination":
         age_entry = random.choice(["years", "birthdate"])
@@ -112,8 +111,7 @@ def instance_json_by_form(form, instance_id):
                     "general_food_assistance": food_assistance,
                     "assistance_type": assistance_type,
                 },
-            },
-            "meta": instance_id,
+            }
         }
 
     elif form["form_id"] == "cahier_de_denombrement_v1.1":
@@ -138,8 +136,7 @@ def instance_json_by_form(form, instance_id):
                 "milda_recu_": round(total * 0.5),
                 "a_recu_ses_mildas": round(total * 0.5),
                 "milda_recu_note": "",
-            },
-            "meta": instance_id,
+            }
         }
 
     elif form["form_id"] == "cahier_de_distribution_v1.1":
@@ -155,7 +152,7 @@ def instance_json_by_form(form, instance_id):
                 "milda_recu_": received_milda,
                 "a_recu_ses_mildas": 0 if received_milda < 1 else 1,
                 "milda_recu_note": "",
-            },
-            "meta": instance_id,
+            }
         }
+    instance_json["meta"] = instance_id
     return instance_json

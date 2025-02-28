@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from submissions import submission2xml, org_unit_gps_point, instance_json_by_form
+from submissions import submission2xml, org_unit_gps_point, instance_by_LLIN_campaign_form
 
 
 def create_form_submissions(account_name, iaso_client, form, orgunit):
@@ -26,7 +26,7 @@ def create_form_submissions(account_name, iaso_client, form, orgunit):
     iaso_client.post(f"/api/instances/?app_id={account_name}.campaign", json=instance_body)
 
     instance_id = {"instanceID": "uuid:" + the_uuid}
-    instance_json = instance_json_by_form(form, instance_id)
+    instance_json = instance_by_LLIN_campaign_form(form, instance_id)
 
     iaso_client.post(
         "/sync/form_upload/",

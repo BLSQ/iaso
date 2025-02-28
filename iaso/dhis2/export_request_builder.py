@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator
 from django.db import transaction
 
-from iaso.models import Instance, ExportRequest, ExportStatus, DERIVED, ALIVE_STATUSES
+from iaso.models import ALIVE_STATUSES, DERIVED, ExportRequest, ExportStatus, Instance
 
 
 class NothingToExportError(Exception):

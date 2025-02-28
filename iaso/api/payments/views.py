@@ -1,30 +1,33 @@
 from typing import Dict, Tuple
 
 import django_filters
+
 from django.db import models, transaction
-from django.db.models import Count, OuterRef, Prefetch, Subquery, Q
+from django.db.models import Count, OuterRef, Prefetch, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.translation import gettext as _
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, status
-from rest_framework.exceptions import NotFound
-from rest_framework.response import Response
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
 from hat.menupermissions import models as permission
 from iaso.api.common import DropdownOptionsListViewSet, DropdownOptionsSerializer, HasPermission, ModelViewSet
-from iaso.api.payments.filters import payments_lots as payments_lots_filters
-from iaso.api.payments.filters import potential_payments as potential_payments_filters
+from iaso.api.payments.filters import (
+    payments_lots as payments_lots_filters,
+    potential_payments as potential_payments_filters,
+)
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.models.org_unit import OrgUnit
 from iaso.models.payments import PaymentStatuses
 from iaso.tasks.create_payment_lot import create_payment_lot
-from rest_framework.exceptions import ValidationError
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
 
 from .serializers import (
@@ -271,7 +274,7 @@ class PaymentLotsViewSet(ModelViewSet):
 
             if csv_format:
                 return self.retrieve_to_csv(payment_lot, payments, forms, forms_count_by_payment)
-            elif xlsx_format:
+            if xlsx_format:
                 return self.retrieve_to_xlsx(payment_lot, payments, forms, forms_count_by_payment)
 
         return super().retrieve(request, *args, **kwargs)

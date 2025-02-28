@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 import iaso.models as m
+
 from iaso.dhis2.datavalue_exporter import DataValueExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
 

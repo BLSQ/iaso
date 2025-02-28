@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from iaso.models import Account
 
+
 RAW = "RAW"
 TEXT = "TEXT"
 IFRAME = "IFRAME"

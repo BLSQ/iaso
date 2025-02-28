@@ -1,9 +1,9 @@
-from .common import ModelViewSet, HasPermission, TimestampField
-from rest_framework import serializers, permissions
+from rest_framework import permissions, serializers
 
-from iaso.models import Device, DeviceOwnership, Instance
-from .common import ModelViewSet, HasPermission, TimestampField
 from hat.menupermissions import models as permission
+from iaso.models import Device, DeviceOwnership, Instance
+
+from .common import HasPermission, ModelViewSet, TimestampField
 
 
 class DeviceSerializer(serializers.ModelSerializer):

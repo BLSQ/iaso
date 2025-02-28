@@ -1,5 +1,7 @@
 from django.db import models
+
 from iaso.models import Account, OrgUnit
+
 
 """
 Store data in JSON format. 

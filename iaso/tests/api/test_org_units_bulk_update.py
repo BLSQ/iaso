@@ -1,11 +1,11 @@
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.test import tag
 
 from beanstalk_worker.services import TestTaskService
 from hat.audit import models as am
 from iaso import models as m
-from iaso.models import Task, QUEUED
+from iaso.models import QUEUED, Task
 from iaso.test import APITestCase
 
 
@@ -124,7 +124,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         """POST /orgunits/bulkupdate, no auth -> 401"""
 
         response = self.client.post(
-            f"/api/tasks/create/orgunitsbulkupdate/",
+            "/api/tasks/create/orgunitsbulkupdate/",
             data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
@@ -138,7 +138,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.post(
-            f"/api/tasks/create/orgunitsbulkupdate/",
+            "/api/tasks/create/orgunitsbulkupdate/",
             data={
                 "select_all": False,
                 "selected_ids": [self.jedi_council_brussels.pk, self.jedi_council_endor.pk],
@@ -165,7 +165,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.post(
-            f"/api/tasks/create/orgunitsbulkupdate/",
+            "/api/tasks/create/orgunitsbulkupdate/",
             data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
@@ -193,7 +193,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             "groups_added": [self.unofficial_group.pk],
             "validation_status": m.OrgUnit.VALIDATION_REJECTED,
         }
-        response = self.client.post(f"/api/tasks/create/orgunitsbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/orgunitsbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -227,7 +227,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/tasks/create/orgunitsbulkupdate/",
+            "/api/tasks/create/orgunitsbulkupdate/",
             data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_VALID},
             format="json",
         )
@@ -259,7 +259,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.post(
-            f"/api/tasks/create/orgunitsbulkupdate/",
+            "/api/tasks/create/orgunitsbulkupdate/",
             data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
@@ -293,7 +293,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/tasks/create/orgunitsbulkupdate/",
+            "/api/tasks/create/orgunitsbulkupdate/",
             data={
                 "select_all": True,
                 "validation_status": m.OrgUnit.VALIDATION_REJECTED,
@@ -324,7 +324,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/tasks/create/orgunitsbulkupdate/",
+            "/api/tasks/create/orgunitsbulkupdate/",
             data={
                 "select_all": True,
                 "validation_status": m.OrgUnit.VALIDATION_REJECTED,
@@ -356,7 +356,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         """POST /orgunits/bulkupdate happy path (select all, but with multiple searches)"""
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/tasks/create/orgunitsbulkupdate/",
+            "/api/tasks/create/orgunitsbulkupdate/",
             data={
                 "select_all": True,
                 "groups_added": [self.another_group.pk],
@@ -384,7 +384,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/tasks/create/orgunitsbulkupdate/",
+            "/api/tasks/create/orgunitsbulkupdate/",
             data={
                 "select_all": True,
                 "groups_added": [self.another_group.pk],

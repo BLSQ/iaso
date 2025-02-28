@@ -1,14 +1,17 @@
 import datetime
+
 import jsonschema
 import time_machine
 
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
+
+import hat.menupermissions.models as permissions
 
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio import models as pm
-import hat.menupermissions.models as permissions
 
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
@@ -176,7 +179,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 403)
 
-    def test_user_with_read_only_can_see_list(self):
+    def test_user_with_read_can_see_list(self):
         # Test the vaccine stock list API
         self.client.force_authenticate(user=self.user_ro_perms)
         response = self.client.get(BASE_URL)
@@ -194,6 +197,158 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(stock["stock_of_unusable_vials"], 27)
         self.assertEqual(stock["stock_of_earmarked_vials"], 0)
         self.assertEqual(stock["vials_destroyed"], 3)  # 3 destroyed
+
+    def test_vaccine_stock_management_permissions_outgoing_stock_movement(self):
+        # Use a non-admin user
+        self.client.force_authenticate(self.user_ro_perms)
+
+        # Non-admin can create outgoing stock movement
+        osm_data = {
+            "campaign": self.campaign.obr_name,
+            "vaccine_stock": self.vaccine_stock.id,
+            "report_date": "2024-01-01",
+            "form_a_reception_date": "2024-01-02",
+            "usable_vials_used": 50,
+            "lot_numbers": ["LOT1", "LOT2"],
+            "missing_vials": 2,
+            "round": self.campaign_round_1.id,
+            "comment": "Test OSM",
+        }
+
+        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", osm_data, format="json")
+        self.assertEqual(response.status_code, 201)
+        osm_id = response.data["id"]
+
+        # Non-admin can edit within 7 days
+        update_data = {"comment": "Updated comment"}
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Simulate passage of 8 days
+        osm = pm.OutgoingStockMovement.objects.get(id=osm_id)
+        osm.created_at = timezone.now() - datetime.timedelta(days=8)
+        osm.save()
+
+        # Non-admin cannot edit after 7 days
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+        # Switch to admin user
+        self.client.force_authenticate(self.user_rw_perms)
+
+        # Admin can edit regardless of time passed
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Admin can delete regardless of time passed
+        response = self.client.delete(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/")
+        self.assertEqual(response.status_code, 204)
+
+    def test_vaccine_stock_management_permissions_incident_report(self):
+        # Use a non-admin user
+        self.client.force_authenticate(self.user_ro_perms)
+
+        # Non-admin can create incident report
+        incident_data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "stock_correction": "broken",
+            "date_of_incident_report": "2024-01-01",
+            "incident_report_received_by_rrt": "2024-01-02",
+            "unusable_vials": 5,
+            "usable_vials": 0,
+            "comment": "Test incident",
+        }
+
+        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}incident_report/", incident_data, format="json")
+        self.assertEqual(response.status_code, 201)
+        incident_id = response.data["id"]
+
+        # Non-admin can edit within 7 days
+        update_data = {"comment": "Updated comment"}
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}incident_report/{incident_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Simulate passage of 8 days
+        incident = pm.IncidentReport.objects.get(id=incident_id)
+        incident.created_at = timezone.now() - datetime.timedelta(days=8)
+        incident.save()
+
+        # Non-admin cannot edit after 7 days
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}incident_report/{incident_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+        # Switch to admin user
+        self.client.force_authenticate(self.user_rw_perms)
+
+        # Admin can edit regardless of time passed
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}incident_report/{incident_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Admin can delete regardless of time passed
+        response = self.client.delete(f"{BASE_URL_SUB_RESOURCES}incident_report/{incident_id}/")
+        self.assertEqual(response.status_code, 204)
+
+    def test_vaccine_stock_management_permissions_destruction_report(self):
+        # Use a non-admin user
+        self.client.force_authenticate(self.user_ro_perms)
+
+        # Non-admin can create destruction report
+        destruction_data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "stock_correction": "destroyed",
+            "destruction_report_date": "2024-01-01",
+            "rrt_destruction_report_reception_date": "2024-01-02",
+            "unusable_vials_destroyed": 5,
+            "action": "Destroyed due to expiration",
+            "comment": "Test destruction",
+        }
+
+        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}destruction_report/", destruction_data, format="json")
+        self.assertEqual(response.status_code, 201)
+        destruction_id = response.data["id"]
+
+        # Non-admin can edit within 7 days
+        update_data = {"comment": "Updated comment"}
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/{destruction_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Simulate passage of 8 days
+        destruction = pm.DestructionReport.objects.get(id=destruction_id)
+        destruction.created_at = timezone.now() - datetime.timedelta(days=8)
+        destruction.save()
+
+        # Non-admin cannot edit after 7 days
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/{destruction_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+        # Switch to admin user
+        self.client.force_authenticate(self.user_rw_perms)
+
+        # Admin can edit regardless of time passed
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/{destruction_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Admin can delete regardless of time passed
+        response = self.client.delete(f"{BASE_URL_SUB_RESOURCES}destruction_report/{destruction_id}/")
+        self.assertEqual(response.status_code, 204)
 
     def test_usable_vials_endpoint(self):
         # Authenticate and make request to the API

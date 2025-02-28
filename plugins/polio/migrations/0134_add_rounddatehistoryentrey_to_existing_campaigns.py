@@ -1,4 +1,4 @@
-from django.db import migrations, models
+from django.db import migrations
 
 
 def add_date_logs_to_existing_campaigns(apps, schema_editor):

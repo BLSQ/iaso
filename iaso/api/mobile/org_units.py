@@ -1,6 +1,6 @@
+from typing import Any, Dict, Optional
+
 import django_filters
-from typing import Dict, Any
-from typing import Optional
 
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
@@ -11,18 +11,17 @@ from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions
+from rest_framework import serializers
+from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework import serializers
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
-from iaso.api.query_params import APP_ID, LIMIT, PAGE, IDS
-from iaso.api.serializers import AppIdSerializer
-from iaso.models import Instance, OrgUnit, Project, FeatureFlag
 from hat.menupermissions import models as permission
+from iaso.api.common import ModelViewSet, Paginator, TimestampField, get_timestamp, safe_api_import
+from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
+from iaso.api.serializers import AppIdSerializer
+from iaso.models import FeatureFlag, Instance, OrgUnit, Project
 from iaso.permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 
 

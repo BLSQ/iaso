@@ -1,13 +1,13 @@
+import random
 import uuid
 from datetime import datetime
 from submissions import (
-    submission2xml,
-    org_unit_gps_point,
-    submission_org_unit_gps_point,
     create_default_reference_submission,
+    org_unit_gps_point,
+    submission2xml,
+    submission_org_unit_gps_point,
 )
 from names_generator import generate_name
-import random
 
 
 def define_health_facility_reference_form(iaso_client):

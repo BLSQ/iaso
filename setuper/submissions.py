@@ -1,5 +1,6 @@
+import random
+import uuid
 from dict2xml import dict2xml
-import uuid, random
 from datetime import datetime, timedelta
 from names_generator import generate_name
 

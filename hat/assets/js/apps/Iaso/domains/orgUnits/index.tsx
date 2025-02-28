@@ -1,3 +1,9 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { Box, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -6,48 +12,27 @@ import {
     makeRedirectionUrl,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
-
-// COMPONENTS
 import { useNavigate } from 'react-router-dom';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
+import { getChipColors } from '../../constants/chipColors';
+import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import { OrgUnitsMap } from './components/OrgUnitsMap';
 import { TableList } from './components/TableList';
-// COMPONENTS
-
-// TYPES
-import { OrgUnitParams } from './types/orgUnit';
-import { Search } from './types/search';
-// TYPES
-
-// UTILS
-import { getChipColors } from '../../constants/chipColors';
-import { convertObjectToString } from '../../utils/dataManipulation';
-import { decodeSearch } from './utils';
-// UTILS
-
-// CONSTANTS
-import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
-import { baseUrls } from '../../constants/urls';
-import MESSAGES from './messages';
-// CONSTANTS
-
-// HOOKS
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import {
     useGetOrgUnits,
     useGetOrgUnitsLocations,
 } from './hooks/requests/useGetOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
-// HOOKS
+import MESSAGES from './messages';
+import { OrgUnitParams } from './types/orgUnit';
+import { Search } from './types/search';
+
+import { decodeSearch } from './utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -88,9 +73,6 @@ export const OrgUnits: FunctionComponent = () => {
     // HOOKS
 
     // STATE
-    const [resetPageToOne, setResetPageToOne] = useState<string>(
-        convertObjectToString(params),
-    );
     const [tab, setTab] = useState<string>(params.tab ?? 'list');
     // STATE
 
@@ -121,7 +103,6 @@ export const OrgUnits: FunctionComponent = () => {
             params: apiParams,
             isSearchActive,
             enabled: isSearchActive, // this is required to count result in search tab
-            resetPageToOne,
         });
     const {
         data: orgUnitsDataLocation,
@@ -131,7 +112,6 @@ export const OrgUnits: FunctionComponent = () => {
         searches,
         isSearchActive,
         enabled: tab === 'map' && isSearchActive,
-        resetPageToOne,
     });
     // REQUESTS HOOKS
 
@@ -161,7 +141,6 @@ export const OrgUnits: FunctionComponent = () => {
             if (newParams.searchActive !== 'true') {
                 tempParams.searchActive = true;
             }
-            setResetPageToOne(convertObjectToString(tempParams));
             navigate(makeRedirectionUrl(baseUrl, tempParams), {
                 replace: true,
             });
@@ -242,9 +221,7 @@ export const OrgUnits: FunctionComponent = () => {
                             <TableList
                                 params={params}
                                 saveMulti={saveMulti}
-                                resetPageToOne={resetPageToOne}
                                 orgUnitsData={orgUnitsData}
-                                setResetPageToOne={setResetPageToOne}
                             />
                         )}
 

@@ -6,14 +6,12 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
-
 import PropTypes from 'prop-types';
-
 import { useSidebar } from '../../domains/app/contexts/SideBarContext.tsx';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
-import { useFindCustomComponent } from '../../utils/CustomComponents.tsx';
+import { LangSwitch } from '../../domains/home/components/LangSwitch';
+import { useFindCustomComponent } from '../../utils/CustomComponents';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
-
 import { CurrentUserInfos } from './CurrentUser/index.tsx';
 import { HomePageButton } from './HomePageButton.tsx';
 import { LogoutButton } from './LogoutButton.tsx';
@@ -74,6 +72,17 @@ function TopBar(props) {
             elevation={disableShadow ? 0 : 4}
         >
             <Toolbar className={classes.root}>
+                {Disclaimer && (
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            bottom: theme.spacing(0.25),
+                            right: theme.spacing(7),
+                        }}
+                    >
+                        <Disclaimer />
+                    </Box>
+                )}
                 <Grid
                     container
                     justifyContent="space-between"
@@ -137,20 +146,17 @@ function TopBar(props) {
                             <Box display="flex" justifyContent="center" pl={1}>
                                 <LogoutButton />
                             </Box>
+                            <Box
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                                pl={1}
+                            >
+                                <LangSwitch />
+                            </Box>
                         </Grid>
                     )}
                 </Grid>
-                {Disclaimer && (
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            bottom: theme.spacing(0.25),
-                            right: theme.spacing(7),
-                        }}
-                    >
-                        <Disclaimer />
-                    </Box>
-                )}
             </Toolbar>
             {children}
         </AppBar>

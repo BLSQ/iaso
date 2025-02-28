@@ -29,7 +29,7 @@ def remove_out_of_scope_org_units_from_sub_activities(campaign: Campaign):
     if campaign.separate_scopes_per_round:
         rnds = campaign.rounds.all()
         for rnd in rnds:
-            org_units_in_scope = OrgUnit.objects.filter(group__roundScope__round=rnd).values_list("id", flat=True)
+            org_units_in_scope = OrgUnit.objects.filter(groups__roundScope__round=rnd).values_list("id", flat=True)
             scopes = SubActivityScope.objects.filter(subactivity__round=rnd)
             _align_scopes(scopes, org_units_in_scope)
     else:

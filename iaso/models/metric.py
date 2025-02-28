@@ -5,11 +5,14 @@ from iaso.models import OrgUnit
 
 class MetricType(models.Model):
     class Meta:
-        ordering = ["name"]
-        unique_together = [["account", "name"]]
+        unique_together = [
+            ["account", "name"],
+            # ["account", "code"], TODO
+        ]
 
     account = models.ForeignKey("iaso.Account", on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    code = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     source = models.CharField(max_length=255, blank=True)
     units = models.CharField(max_length=255, blank=True)

@@ -97,7 +97,7 @@ def llin_forms(iaso_client, account_name):
         if out["name"] == "Health facility/Formation sanitaire - HF"
     ]
 
-    print(f"--- Creating LLIN campaign forms ---")
+    print("--- Creating LLIN campaign forms ---")
     for form in forms:
         form_params = {
             "id": None,

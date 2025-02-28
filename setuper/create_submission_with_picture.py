@@ -3,13 +3,13 @@ import uuid
 
 from datetime import datetime
 
+from names_generator import generate_name
 from submissions import (
     create_default_reference_submission,
     org_unit_gps_point,
     submission2xml,
     submission_org_unit_gps_point,
 )
-from names_generator import generate_name
 
 
 def define_health_facility_reference_form(iaso_client):

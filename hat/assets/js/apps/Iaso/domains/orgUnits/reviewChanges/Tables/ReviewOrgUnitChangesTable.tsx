@@ -1,16 +1,18 @@
+import React, { FunctionComponent, ReactElement, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import Color from 'color';
-import React, { FunctionComponent, ReactElement, useMemo } from 'react';
 import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import { UserCell } from '../../../../components/Cells/UserCell';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
 import { ColumnCell } from '../../../../types/general';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
-import { IconButton } from '../details';
 import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
+import { PAYMENTS_MODULE } from '../constants';
+import { IconButton } from '../details';
 import MESSAGES from '../messages';
 import {
     ApproveOrgUnitParams,
@@ -21,8 +23,11 @@ import {
 
 const useColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    return useMemo(
-        () => [
+    const currentUser = useCurrentUser();
+    const { modules } = currentUser.account;
+
+    return useMemo(() => {
+        const columns = [
             {
                 Header: 'id',
                 id: 'id',
@@ -152,9 +157,15 @@ const useColumns = (): Column[] => {
                     );
                 },
             },
-        ],
-        [formatMessage],
-    );
+        ];
+
+        // Remove payment status column when the current account has no payments module
+        if (!modules.includes(PAYMENTS_MODULE)) {
+            return columns.filter(column => column.id !== 'payment_status');
+        }
+
+        return columns;
+    }, [formatMessage, modules]);
 };
 
 const getRowProps = (row: { original: OrgUnitChangeRequest }) => {

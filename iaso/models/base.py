@@ -168,6 +168,7 @@ class Account(models.Model):
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
             "user_manual_path": self.user_manual_path,
             "analytics_script": self.analytics_script,
+            "modules": self.modules,
         }
 
     def __str__(self):

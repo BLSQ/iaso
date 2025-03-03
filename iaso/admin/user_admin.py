@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis import forms
 from django.db import transaction
 from django.db.models import Exists, OuterRef
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import path
 
 from iaso.admin.base import admin_attr_decorator
@@ -38,8 +38,8 @@ class UserAdmin(AuthUserAdmin):
                 tu.account_user.iaso_profile and tu.account_user.iaso_profile.account.name
                 for tu in user.tenant_users.all()
             ]
-        else:  # Regular user
-            return user.iaso_profile and user.iaso_profile.account
+        # Regular user
+        return user.iaso_profile and user.iaso_profile.account
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -105,17 +105,16 @@ class UserAdmin(AuthUserAdmin):
 
             return redirect("admin:auth_user_change", user_id=user.id)
 
+        if user.tenant_users.exists():  # Multi-account user
+            linked_accounts = [
+                tu.account_user.iaso_profile and tu.account_user.iaso_profile.account
+                for tu in user.tenant_users.all()
+            ]
+        elif hasattr(user, "iaso_profile"):  # Regular user
+            linked_accounts = [user.iaso_profile.account]
         else:
-            if user.tenant_users.exists():  # Multi-account user
-                linked_accounts = [
-                    tu.account_user.iaso_profile and tu.account_user.iaso_profile.account
-                    for tu in user.tenant_users.all()
-                ]
-            elif hasattr(user, "iaso_profile"):  # Regular user
-                linked_accounts = [user.iaso_profile.account]
-            else:
-                linked_accounts = []
-            form = MultiAccountForm(existing_accounts=linked_accounts)
+            linked_accounts = []
+        form = MultiAccountForm(existing_accounts=linked_accounts)
 
         return render(
             request,

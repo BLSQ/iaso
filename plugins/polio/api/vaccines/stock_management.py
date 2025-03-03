@@ -61,16 +61,21 @@ class VaccineStockCalculator:
 
         self.vaccine_stock = vaccine_stock
         self.arrival_reports = VaccineArrivalReport.objects.filter(
-            request_form__campaign__country=vaccine_stock.country, request_form__vaccine_type=vaccine_stock.vaccine
+            request_form__campaign__country=vaccine_stock.country,
+            request_form__vaccine_type=vaccine_stock.vaccine,
         )
-        self.destruction_reports = DestructionReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
-            "destruction_report_date"
-        )
-        self.incident_reports = IncidentReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
-            "date_of_incident_report"
-        )
-        self.stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock).order_by("report_date")
-        self.earmarked_stocks = EarmarkedStock.objects.filter(vaccine_stock=vaccine_stock).order_by("created_at")
+        self.destruction_reports = DestructionReport.objects.filter(
+            vaccine_stock=vaccine_stock
+        ).order_by("destruction_report_date")
+        self.incident_reports = IncidentReport.objects.filter(
+            vaccine_stock=vaccine_stock
+        ).order_by("date_of_incident_report")
+        self.stock_movements = OutgoingStockMovement.objects.filter(
+            vaccine_stock=vaccine_stock
+        ).order_by("report_date")
+        self.earmarked_stocks = EarmarkedStock.objects.filter(
+            vaccine_stock=vaccine_stock
+        ).order_by("created_at")
 
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.vaccine_stock.vaccine]
@@ -88,8 +93,12 @@ class VaccineStockCalculator:
             return 0
         destruction_reports = self.destruction_reports
         if end_date:
-            destruction_reports = destruction_reports.filter(destruction_report_date__lte=end_date)
-        return sum(report.unusable_vials_destroyed or 0 for report in destruction_reports)
+            destruction_reports = destruction_reports.filter(
+                destruction_report_date__lte=end_date
+            )
+        return sum(
+            report.unusable_vials_destroyed or 0 for report in destruction_reports
+        )
 
     def get_total_of_usable_vials(self, end_date=None):
         results = self.get_list_of_usable_vials(end_date)
@@ -161,7 +170,8 @@ class VaccineStockCalculator:
         """
         # First find the corresponding VaccineRequestForms
         vrfs = VaccineRequestForm.objects.filter(
-            campaign__country=self.vaccine_stock.country, vaccine_type=self.vaccine_stock.vaccine
+            campaign__country=self.vaccine_stock.country,
+            vaccine_type=self.vaccine_stock.vaccine,
         )
         if end_date:
             eligible_rounds = (
@@ -171,7 +181,10 @@ class VaccineStockCalculator:
                         Q(campaign__separate_scopes_per_round=False)
                         & Q(campaign__scopes__vaccine=self.vaccine_stock.vaccine)
                     )
-                    | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=self.vaccine_stock.vaccine))
+                    | (
+                        Q(campaign__separate_scopes_per_round=True)
+                        & Q(scopes__vaccine=self.vaccine_stock.vaccine)
+                    )
                 )
                 .filter(ended_at__lte=end_date)
                 .filter(id__in=OuterRef("rounds"))
@@ -184,7 +197,9 @@ class VaccineStockCalculator:
             # Then find the corresponding VaccineArrivalReports
             arrival_reports = VaccineArrivalReport.objects.filter(request_form__in=vrfs)
             if end_date:
-                arrival_reports = arrival_reports.filter(arrival_report_date__lte=end_date)
+                arrival_reports = arrival_reports.filter(
+                    arrival_report_date__lte=end_date
+                )
             if not arrival_reports.exists():
                 arrival_reports = []
         results = []
@@ -193,7 +208,11 @@ class VaccineStockCalculator:
             results.append(
                 {
                     "date": report.arrival_report_date,
-                    "action": "PO #" + report.po_number if report.po_number else "Stock Arrival",
+                    "action": (
+                        "PO #" + report.po_number
+                        if report.po_number
+                        else "Stock Arrival"
+                    ),
                     "vials_in": report.vials_received or 0,
                     "doses_in": report.doses_received or 0,
                     "vials_out": None,
@@ -208,12 +227,19 @@ class VaccineStockCalculator:
         results = self.get_list_of_vaccines_received(end_date)
 
         # Add stock movements (used and missing vials)
-        stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock).order_by("report_date")
+        stock_movements = OutgoingStockMovement.objects.filter(
+            vaccine_stock=self.vaccine_stock
+        ).order_by("report_date")
         if end_date:
             stock_movements = stock_movements.filter(report_date__lte=end_date)
         for movement in stock_movements:
             if movement.earmarked_stocks.count() > 0:
-                earmarked_stock_vials = movement.earmarked_stocks.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+                earmarked_stock_vials = (
+                    movement.earmarked_stocks.aggregate(total=Sum("vials_earmarked"))[
+                        "total"
+                    ]
+                    or 0
+                )
                 real_vials_used = movement.usable_vials_used - earmarked_stock_vials
                 results.append(
                     {
@@ -235,7 +261,8 @@ class VaccineStockCalculator:
                             "vials_in": None,
                             "doses_in": None,
                             "vials_out": movement.usable_vials_used or 0,
-                            "doses_out": (movement.usable_vials_used or 0) * self.get_doses_per_vial(),
+                            "doses_out": (movement.usable_vials_used or 0)
+                            * self.get_doses_per_vial(),
                             "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                         }
                     )
@@ -248,28 +275,33 @@ class VaccineStockCalculator:
                             "vials_in": None,
                             "doses_in": None,
                             "vials_out": movement.missing_vials or 0,
-                            "doses_out": (movement.missing_vials or 0) * self.get_doses_per_vial(),
+                            "doses_out": (movement.missing_vials or 0)
+                            * self.get_doses_per_vial(),
                             "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                         }
                     )
 
         # Add incident reports (IN movements then OUT movements)
-        incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
-            "date_of_incident_report"
-        )
+        incident_reports = IncidentReport.objects.filter(
+            vaccine_stock=self.vaccine_stock
+        ).order_by("date_of_incident_report")
         if end_date:
-            incident_reports = incident_reports.filter(date_of_incident_report__lte=end_date)
+            incident_reports = incident_reports.filter(
+                date_of_incident_report__lte=end_date
+            )
         for report in incident_reports:
             if (
                 report.usable_vials > 0
-                and report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD
+                and report.stock_correction
+                == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD
             ):
                 results.append(
                     {
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,
                         "vials_in": report.usable_vials or 0,
-                        "doses_in": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                        "doses_in": (report.usable_vials or 0)
+                        * self.get_doses_per_vial(),
                         "vials_out": None,
                         "doses_out": None,
                         "type": MovementTypeEnum.INCIDENT_REPORT.value,
@@ -277,7 +309,8 @@ class VaccineStockCalculator:
                 )
             if (
                 report.usable_vials > 0
-                and report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_REMOVE
+                and report.stock_correction
+                == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_REMOVE
             ):
                 results.append(
                     {
@@ -286,15 +319,19 @@ class VaccineStockCalculator:
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": report.usable_vials or 0,
-                        "doses_out": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                        "doses_out": (report.usable_vials or 0)
+                        * self.get_doses_per_vial(),
                         "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     }
                 )
             if report.usable_vials > 0 and (
                 report.stock_correction == IncidentReport.StockCorrectionChoices.LOSSES
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.RETURN
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.STEALING
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
+                or report.stock_correction
+                == IncidentReport.StockCorrectionChoices.RETURN
+                or report.stock_correction
+                == IncidentReport.StockCorrectionChoices.STEALING
+                or report.stock_correction
+                == IncidentReport.StockCorrectionChoices.BROKEN
             ):
                 results.append(
                     {
@@ -303,14 +340,18 @@ class VaccineStockCalculator:
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": report.usable_vials or 0,
-                        "doses_out": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                        "doses_out": (report.usable_vials or 0)
+                        * self.get_doses_per_vial(),
                         "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     }
                 )
             if report.unusable_vials > 0 and (
-                report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
+                report.stock_correction
+                == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
+                or report.stock_correction
+                == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+                or report.stock_correction
+                == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
             ):
                 results.append(
                     {
@@ -319,7 +360,8 @@ class VaccineStockCalculator:
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": report.unusable_vials or 0,
-                        "doses_out": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                        "doses_out": (report.unusable_vials or 0)
+                        * self.get_doses_per_vial(),
                         "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     }
                 )
@@ -329,7 +371,10 @@ class VaccineStockCalculator:
             earmarked_stocks = earmarked_stocks.filter(created_at__lte=end_date)
 
         for stock in earmarked_stocks:
-            if stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.CREATED:
+            if (
+                stock.earmarked_stock_type
+                == EarmarkedStock.EarmarkedStockChoices.CREATED
+            ):
                 results.append(
                     {
                         "date": stock.created_at.date(),
@@ -341,7 +386,10 @@ class VaccineStockCalculator:
                         "type": "earmarked_stock__created",
                     }
                 )
-            elif stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.RETURNED:
+            elif (
+                stock.earmarked_stock_type
+                == EarmarkedStock.EarmarkedStockChoices.RETURNED
+            ):
                 results.append(
                     {
                         "date": stock.created_at.date(),
@@ -358,7 +406,9 @@ class VaccineStockCalculator:
 
     def get_list_of_used_vials(self, end_date=None):
         # Used vials are those related to formA outgoing movements. Vials with e.g expired date become unusable, but have not been used
-        outgoing_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock)
+        outgoing_movements = OutgoingStockMovement.objects.filter(
+            vaccine_stock=self.vaccine_stock
+        )
         if end_date:
             outgoing_movements = outgoing_movements.filter(report_date__lte=end_date)
         results = []
@@ -366,7 +416,10 @@ class VaccineStockCalculator:
             if movement.usable_vials_used > 0:
                 if movement.earmarked_stocks.count() > 0:
                     earmarked_stock_vials = (
-                        movement.earmarked_stocks.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+                        movement.earmarked_stocks.aggregate(
+                            total=Sum("vials_earmarked")
+                        )["total"]
+                        or 0
                     )
                     desc_text = f"Form A - Vials Used ({earmarked_stock_vials} vials from Earmarked)"
 
@@ -380,7 +433,8 @@ class VaccineStockCalculator:
                         "vials_out": None,
                         "doses_out": None,
                         "vials_in": movement.usable_vials_used or 0,
-                        "doses_in": (movement.usable_vials_used or 0) * self.get_doses_per_vial(),
+                        "doses_in": (movement.usable_vials_used or 0)
+                        * self.get_doses_per_vial(),
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
@@ -391,25 +445,36 @@ class VaccineStockCalculator:
         results = self.get_list_of_used_vials(end_date)
 
         # Get all IncidentReports and Destruction reports for the VaccineStock
-        incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock)
-        if end_date:
-            incident_reports = incident_reports.filter(date_of_incident_report__lte=end_date)
-
-        destruction_reports = DestructionReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
-            "destruction_report_date"
+        incident_reports = IncidentReport.objects.filter(
+            vaccine_stock=self.vaccine_stock
         )
         if end_date:
-            destruction_reports = destruction_reports.filter(destruction_report_date__lte=end_date)
+            incident_reports = incident_reports.filter(
+                date_of_incident_report__lte=end_date
+            )
+
+        destruction_reports = DestructionReport.objects.filter(
+            vaccine_stock=self.vaccine_stock
+        ).order_by("destruction_report_date")
+        if end_date:
+            destruction_reports = destruction_reports.filter(
+                destruction_report_date__lte=end_date
+            )
 
         for report in destruction_reports:
             results.append(
                 {
                     "date": report.destruction_report_date,
-                    "action": (f"{report.action}" if len(report.action) > 0 else "Destruction report"),
+                    "action": (
+                        f"{report.action}"
+                        if len(report.action) > 0
+                        else "Destruction report"
+                    ),
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials_destroyed or 0,
-                    "doses_out": (report.unusable_vials_destroyed or 0) * self.get_doses_per_vial(),
+                    "doses_out": (report.unusable_vials_destroyed or 0)
+                    * self.get_doses_per_vial(),
                     "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
                 }
             )
@@ -417,25 +482,32 @@ class VaccineStockCalculator:
         # Add unusable vials from IncidentReports
         for report in incident_reports:
             if report.unusable_vials > 0 and (
-                report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
-                or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
+                report.stock_correction
+                == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD
+                or report.stock_correction
+                == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
+                or report.stock_correction
+                == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+                or report.stock_correction
+                == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
+                or report.stock_correction
+                == IncidentReport.StockCorrectionChoices.BROKEN
             ):
                 results.append(
                     {
                         "date": report.date_of_incident_report,
                         "action": report.stock_correction,  # for every field FOO that has choices set, the object will have a get_FOO_display() method
                         "vials_in": report.unusable_vials or 0,
-                        "doses_in": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                        "doses_in": (report.unusable_vials or 0)
+                        * self.get_doses_per_vial(),
                         "vials_out": None,
                         "doses_out": None,
                         "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     }
                 )
             if report.unusable_vials > 0 and (
-                report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_REMOVE
+                report.stock_correction
+                == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_REMOVE
             ):
                 results.append(
                     {
@@ -444,14 +516,16 @@ class VaccineStockCalculator:
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": report.unusable_vials or 0,
-                        "doses_out": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                        "doses_out": (report.unusable_vials or 0)
+                        * self.get_doses_per_vial(),
                         "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     }
                 )
 
         # Add earmarked stock movements of type USED
         earmarked_stocks = self.earmarked_stocks.filter(
-            vaccine_stock=self.vaccine_stock, earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.USED
+            vaccine_stock=self.vaccine_stock,
+            earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.USED,
         )
 
         if end_date:
@@ -459,7 +533,8 @@ class VaccineStockCalculator:
 
         for stock in earmarked_stocks:
             if (
-                stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.USED and stock.form_a is None
+                stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.USED
+                and stock.form_a is None
             ):  # if FormA is not None, it's accounted by the FormA, no need to repeat
                 results.append(
                     {
@@ -542,7 +617,6 @@ class VaccineStockSerializer(serializers.ModelSerializer):
     stock_of_usable_vials = serializers.SerializerMethodField()
     stock_of_unusable_vials = serializers.SerializerMethodField()
     vials_destroyed = serializers.SerializerMethodField()
-    stock_of_earmarked_vials = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineStock
@@ -555,7 +629,6 @@ class VaccineStockSerializer(serializers.ModelSerializer):
             "vials_used",
             "stock_of_usable_vials",
             "stock_of_unusable_vials",
-            "stock_of_earmarked_vials",
             "vials_destroyed",
         ]
         list_serializer_class = VaccineStockListSerializer
@@ -602,7 +675,9 @@ class StockManagementCustomFilter(filters.BaseFilterBackend):
             queryset = queryset.filter(vaccine=vaccine_type)
         if country_blocks:
             try:
-                queryset = queryset.filter(country__groups__in=country_blocks.split(","))
+                queryset = queryset.filter(
+                    country__groups__in=country_blocks.split(",")
+                )
             except:
                 pass
 
@@ -638,7 +713,9 @@ class VaccineStockSubitemBase(ModelViewSet):
         if self.model_class is None:
             raise NotImplementedError("model_class must be defined")
 
-        queryset = self.model_class.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
+        queryset = self.model_class.objects.filter(
+            vaccine_stock__account=self.request.user.iaso_profile.account
+        )
 
         if vaccine_stock_id is not None:
             queryset = queryset.filter(vaccine_stock=vaccine_stock_id)
@@ -659,7 +736,9 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
         round_number = serializer.validated_data.get("round").get("number")
 
         # Get campaign and round objects
-        campaign = Campaign.objects.get(obr_name=campaign_obr_name, account=request.user.iaso_profile.account)
+        campaign = Campaign.objects.get(
+            obr_name=campaign_obr_name, account=request.user.iaso_profile.account
+        )
         _round = campaign.rounds.get(number=round_number)
 
         # Update validated data
@@ -668,7 +747,9 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -680,7 +761,9 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
         round_number = serializer.validated_data.get("round").get("number")
 
         # Get campaign and round objects
-        campaign = Campaign.objects.get(obr_name=campaign_obr_name, account=request.user.iaso_profile.account)
+        campaign = Campaign.objects.get(
+            obr_name=campaign_obr_name, account=request.user.iaso_profile.account
+        )
         _round = campaign.rounds.get(number=round_number)
 
         serializer.validated_data["campaign"] = campaign
@@ -730,7 +813,8 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         if campaign_data:
             campaign_obr_name = campaign_data.get("obr_name")
             campaign = Campaign.objects.get(
-                obr_name=campaign_obr_name, account=self.context["request"].user.iaso_profile.account
+                obr_name=campaign_obr_name,
+                account=self.context["request"].user.iaso_profile.account,
             )
             return campaign
         return None
@@ -766,10 +850,17 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         if response.status_code == 201:
             movement = OutgoingStockMovement.objects.get(id=response.data["id"])
             if movement and movement.round and movement.vaccine_stock:
-                total_vials_usable = EarmarkedStock.get_available_vials_count(movement.vaccine_stock, movement.round)
+                total_vials_usable = EarmarkedStock.get_available_vials_count(
+                    movement.vaccine_stock, movement.round
+                )
 
-                vials_earmarked_used = min(total_vials_usable, movement.usable_vials_used)
-                doses_earmarked_used = vials_earmarked_used * DOSES_PER_VIAL[movement.vaccine_stock.vaccine]
+                vials_earmarked_used = min(
+                    total_vials_usable, movement.usable_vials_used
+                )
+                doses_earmarked_used = (
+                    vials_earmarked_used
+                    * DOSES_PER_VIAL[movement.vaccine_stock.vaccine]
+                )
 
                 if vials_earmarked_used > 0:
                     EarmarkedStock.objects.create(
@@ -877,7 +968,8 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
         if campaign_data:
             campaign_obr_name = campaign_data.get("obr_name")
             campaign = Campaign.objects.get(
-                obr_name=campaign_obr_name, account=self.context["request"].user.iaso_profile.account
+                obr_name=campaign_obr_name,
+                account=self.context["request"].user.iaso_profile.account,
             )
             return campaign
         return None
@@ -963,7 +1055,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
         if isinstance(instance, VaccineStock):
             instance.calculator = VaccineStockCalculator(instance)
         else:
-            return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND
+            )
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -974,11 +1068,15 @@ class VaccineStockManagementViewSet(ModelViewSet):
         This endpoint is used to add a new VaccineStock to the database.
         The request body should include the country ID and vaccine type.
         """
-        serializer = VaccineStockCreateSerializer(data=request.data, context={"request": request})
+        serializer = VaccineStockCreateSerializer(
+            data=request.data, context={"request": request}
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=True, methods=["get"])
     def summary(self, request, pk=None):
@@ -989,18 +1087,25 @@ class VaccineStockManagementViewSet(ModelViewSet):
         and corresponding doses.
         """
         if pk is None:
-            return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "No VaccineStock ID provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             vaccine_stock = self.get_queryset().get(id=pk)
         except VaccineStock.DoesNotExist:
-            return Response({"error": "VaccineStock not found for "}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "VaccineStock not found for "},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         calculator = VaccineStockCalculator(vaccine_stock)
 
         total_usable_vials, total_usable_doses = calculator.get_total_of_usable_vials()
-        total_unusable_vials, total_unusable_doses = calculator.get_total_of_unusable_vials()
-        total_earmarked_vials, total_earmarked_doses = calculator.get_total_of_earmarked()
+        total_unusable_vials, total_unusable_doses = (
+            calculator.get_total_of_unusable_vials()
+        )
 
         summary_data = {
             "country_id": vaccine_stock.country.id,
@@ -1009,8 +1114,6 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "total_usable_vials": total_usable_vials,
             "total_unusable_vials": total_unusable_vials,
             "total_usable_doses": total_usable_doses,
-            "total_earmarked_vials": total_earmarked_vials,
-            "total_earmarked_doses": total_earmarked_doses,
             "total_unusable_doses": total_unusable_doses,
         }
 
@@ -1025,18 +1128,25 @@ class VaccineStockManagementViewSet(ModelViewSet):
         Each movement is timestamped and includes the number of vials and doses affected.
         """
         if pk is None:
-            return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "No VaccineStock ID provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             vaccine_stock = self.get_queryset().get(id=pk)
         except VaccineStock.DoesNotExist:
-            return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         end_date = request.query_params.get("end_date", None)
         if end_date:
             parsed_end_date = parse_date(end_date)
             if not parsed_end_date:
-                raise ValidationError("The 'end_date' query parameter is not a valid date.")
+                raise ValidationError(
+                    "The 'end_date' query parameter is not a valid date."
+                )
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_usable_vials(end_date)
@@ -1045,7 +1155,12 @@ class VaccineStockManagementViewSet(ModelViewSet):
         export_xlsx = request.query_params.get("export_xlsx", False)
 
         if export_xlsx:
-            filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
+            filename = (
+                vaccine_stock.country.name
+                + "-"
+                + vaccine_stock.vaccine
+                + "-stock_details"
+            )
             workbook = download_xlsx_stock_variants(
                 request,
                 filename,
@@ -1063,7 +1178,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 stream = tmp.read()
 
             response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
-            response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            response["Content-Disposition"] = (
+                "attachment; filename=%s" % filename + ".xlsx"
+            )
             return response
 
         paginator = Paginator()
@@ -1083,18 +1200,25 @@ class VaccineStockManagementViewSet(ModelViewSet):
         """
 
         if pk is None:
-            return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "No VaccineStock ID provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             vaccine_stock = self.get_queryset().get(id=pk)
         except VaccineStock.DoesNotExist:
-            return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         end_date = request.query_params.get("end_date", None)
         if end_date:
             parsed_end_date = parse_date(end_date)
             if not parsed_end_date:
-                raise ValidationError("The 'end_date' query parameter is not a valid date.")
+                raise ValidationError(
+                    "The 'end_date' query parameter is not a valid date."
+                )
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_unusable_vials(end_date)
@@ -1103,7 +1227,12 @@ class VaccineStockManagementViewSet(ModelViewSet):
         export_xlsx = request.query_params.get("export_xlsx", False)
 
         if export_xlsx:
-            filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
+            filename = (
+                vaccine_stock.country.name
+                + "-"
+                + vaccine_stock.vaccine
+                + "-stock_details"
+            )
             workbook = download_xlsx_stock_variants(
                 request,
                 filename,
@@ -1121,7 +1250,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 stream = tmp.read()
 
             response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
-            response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            response["Content-Disposition"] = (
+                "attachment; filename=%s" % filename + ".xlsx"
+            )
             return response
 
         paginator = Paginator()
@@ -1148,7 +1279,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
         if end_date:
             parsed_end_date = parse_date(end_date)
             if not parsed_end_date:
-                raise ValidationError("The 'end_date' query parameter is not a valid date.")
+                raise ValidationError(
+                    "The 'end_date' query parameter is not a valid date."
+                )
 
         calc = VaccineStockCalculator(vaccine_stock)
         results = calc.get_list_of_earmarked(end_date)
@@ -1157,7 +1290,12 @@ class VaccineStockManagementViewSet(ModelViewSet):
         export_xlsx = request.query_params.get("export_xlsx", False)
 
         if export_xlsx:
-            filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
+            filename = (
+                vaccine_stock.country.name
+                + "-"
+                + vaccine_stock.vaccine
+                + "-stock_details"
+            )
             workbook = download_xlsx_stock_variants(
                 request,
                 filename,
@@ -1176,7 +1314,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 stream = tmp.read()
 
             response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
-            response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+            response["Content-Disposition"] = (
+                "attachment; filename=%s" % filename + ".xlsx"
+            )
             return response
 
         paginator = Paginator()
@@ -1206,10 +1346,14 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         return (
             VaccineStock.objects.filter(
-                account=self.request.user.iaso_profile.account, country__id__in=accessible_org_units_ids
+                account=self.request.user.iaso_profile.account,
+                country__id__in=accessible_org_units_ids,
             )
             .prefetch_related(
-                "destructionreport_set", "incidentreport_set", "outgoingstockmovement_set", "earmarked_stocks"
+                "destructionreport_set",
+                "incidentreport_set",
+                "outgoingstockmovement_set",
+                "earmarked_stocks",
             )
             .distinct()
             .order_by("id")

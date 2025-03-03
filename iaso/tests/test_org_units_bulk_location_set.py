@@ -1,6 +1,6 @@
 import unittest
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import User
 
 from iaso.models import Account
 

@@ -1,16 +1,17 @@
 from copy import deepcopy
 from logging import getLogger
 from time import time
-from typing import Optional, List
+from typing import List, Optional
 
 from django.contrib.auth.models import User
 from django.db import transaction
 
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
-from iaso.models import Task, Instance
+from iaso.models import Instance, Task
 from iaso.utils.gis import convert_2d_point_to_3d
 from iaso.utils.models.common import check_instance_bulk_gps_push
+
 
 logger = getLogger(__name__)
 

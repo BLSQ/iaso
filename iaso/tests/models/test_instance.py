@@ -1,13 +1,11 @@
+from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
-from django.utils import timezone
 from django.utils.timezone import now
-from django.core.exceptions import ValidationError
 
-from hat.audit.models import Modification, INSTANCE_API
 from iaso import models as m
 from iaso.odk import parsing
-from iaso.test import TestCase, APITestCase, IasoTestCaseMixin
+from iaso.test import APITestCase, IasoTestCaseMixin, TestCase
 
 
 class InstanceBase(IasoTestCaseMixin):

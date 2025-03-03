@@ -6,6 +6,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import connection
 
 import iaso.models.base as base
+
 from beanstalk_worker.services import TestTaskService
 from iaso import models as m
 from iaso.models.deduplication import ValidationStatus
@@ -290,7 +291,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(response_data["parameters"], {})
         self.assertEqual(response_data["created_by"]["id"], self.user_with_default_ou_rw.id)
 
-        response_duplicate = self.client.get(f"/api/entityduplicates/")
+        response_duplicate = self.client.get("/api/entityduplicates/")
 
         self.assertEqual(response_duplicate.status_code, 200)
         assert len(response_duplicate.data["results"]) == 6
@@ -449,7 +450,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(duplicate.validation_status, ValidationStatus.PENDING)
 
         response = self.client.post(
-            f"/api/entityduplicates/",
+            "/api/entityduplicates/",
             data={
                 "ignore": True,
                 "reason": "test",
@@ -477,7 +478,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         # we cant ignore it again
         response = self.client.post(
-            f"/api/entityduplicates/",
+            "/api/entityduplicates/",
             data={"ignore": True, "entity1_id": duplicate.entity1.id, "entity2_id": duplicate.entity2.id},
             format="json",
         )
@@ -487,7 +488,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         # we can't merge it after it was ignored
         merged_data = {i: duplicate.entity1.id for i in duplicate.analyze.metadata["fields"]}
         response = self.client.post(
-            f"/api/entityduplicates/",
+            "/api/entityduplicates/",
             data={"merge": merged_data, "entity1_id": duplicate.entity1.id, "entity2_id": duplicate.entity2.id},
             format="json",
         )
@@ -521,7 +522,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         merged_data = {i: entity1.id for i in duplicate.analyze.metadata["fields"]}
 
         response = self.client.post(
-            f"/api/entityduplicates/",
+            "/api/entityduplicates/",
             data={"merge": merged_data, "entity1_id": entity1.id, "entity2_id": entity2.id},
             format="json",
         )
@@ -566,7 +567,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         task_service = TestTaskService()
         task_service.run_all()
 
-        resp = self.client.get(f"/api/entityduplicates/?search=iaso")
+        resp = self.client.get("/api/entityduplicates/?search=iaso")
 
         resp_json = resp.json()
 
@@ -638,7 +639,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         self.assertEqual(response_analyze.status_code, 200)
 
-        response = self.client.get(f"/api/entityduplicates/")
+        response = self.client.get("/api/entityduplicates/")
 
         self.assertNotEqual(response.data["results"], [])
 
@@ -653,7 +654,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         # Authenticate as user2 and check if we see the duplicate
         self.client.force_authenticate(user2)
 
-        response = self.client.get(f"/api/entityduplicates/")
+        response = self.client.get("/api/entityduplicates/")
 
         self.assertEqual(response.data["results"], [])
 
@@ -697,7 +698,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         merged_data = {i: entity1.id for i in duplicate.analyze.metadata["fields"]}
 
         response = self.client.post(
-            f"/api/entityduplicates/",
+            "/api/entityduplicates/",
             data={"merge": merged_data, "entity1_id": entity1.id, "entity2_id": entity2.id},
             format="json",
         )

@@ -5,7 +5,7 @@ from rest_framework import status
 
 from hat.menupermissions import models as am
 from iaso import models as m
-from iaso.models import Task, QUEUED
+from iaso.models import QUEUED, Task
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 

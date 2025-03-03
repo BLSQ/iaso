@@ -2,7 +2,6 @@ import logging
 
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
-from iaso.utils.module_permissions import account_module_permissions
 from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
@@ -10,7 +9,9 @@ from rest_framework.viewsets import GenericViewSet
 from hat.menupermissions.constants import MODULES
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import IsAdminOrSuperUser
-from iaso.models import Account, DataSource, SourceVersion, Profile, Project, OrgUnitType
+from iaso.models import Account, DataSource, Profile, Project, SourceVersion
+from iaso.utils.module_permissions import account_module_permissions
+
 
 logger = logging.getLogger(__name__)
 
@@ -43,11 +44,10 @@ class SetupAccountSerializer(serializers.Serializer):
     def validate_modules(self, modules):
         if len(modules) == 0:
             raise serializers.ValidationError("modules_empty")
-        else:
-            module_codenames = [module["codename"] for module in MODULES]
-            for module_codename in modules:
-                if module_codename not in module_codenames:
-                    raise serializers.ValidationError("module_not_exist")
+        module_codenames = [module["codename"] for module in MODULES]
+        for module_codename in modules:
+            if module_codename not in module_codenames:
+                raise serializers.ValidationError("module_not_exist")
         return modules
 
     def create(self, validated_data):

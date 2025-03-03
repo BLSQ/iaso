@@ -1,5 +1,3 @@
-import logging
-
 from django.db import migrations
 
 from iaso.models.forms import _reformat_questions

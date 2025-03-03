@@ -7,7 +7,7 @@ from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.models import Workflow, WorkflowVersion
-from iaso.models.workflow import WorkflowVersionsStatus, WorkflowChange, WorkflowFollowup
+from iaso.models.workflow import WorkflowChange, WorkflowFollowup, WorkflowVersionsStatus
 from iaso.test import APITestCase
 
 

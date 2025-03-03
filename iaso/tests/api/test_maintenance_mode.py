@@ -7,11 +7,11 @@ class MaintenanceModeTestCase(APITestCase):
         urlconfs = ["hat.urls", "iaso.urls"]
         with self.settings(MAINTENANCE_MODE=True):
             self.reload_urls(urlconfs)
-            response = self.client.get(f"/login/")
+            response = self.client.get("/login/")
             self.assertEqual(response.status_code, 404)
-            response = self.client.get(f"/_health/")
+            response = self.client.get("/_health/")
             self.assertEqual(response.status_code, 200)
-            response = self.client.get(f"/api/")
+            response = self.client.get("/api/")
             self.assertEqual(response.status_code, 404)
         self.reload_urls(urlconfs)
 
@@ -20,10 +20,10 @@ class MaintenanceModeTestCase(APITestCase):
         urlconfs = ["hat.urls", "iaso.urls"]
         with self.settings(MAINTENANCE_MODE=False):
             self.reload_urls(urlconfs)
-            response = self.client.get(f"/login/")
+            response = self.client.get("/login/")
             self.assertEqual(response.status_code, 200)
-            response = self.client.get(f"/_health/")
+            response = self.client.get("/_health/")
             self.assertEqual(response.status_code, 200)
-            response = self.client.get(f"/api/")
+            response = self.client.get("/api/")
             self.assertEqual(response.status_code, 401)
         self.reload_urls(urlconfs)

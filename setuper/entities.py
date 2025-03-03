@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta
 import uuid
 
-from fake import fake_person
-from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point
+from datetime import datetime, timedelta
 from random import randint
+
+from fake import fake_person
+from submissions import org_unit_gps_point, submission2xml, submission_org_unit_gps_point
 
 
 def setup_entities(account_name, iaso_client):
@@ -171,7 +172,7 @@ def setup_entities(account_name, iaso_client):
 
         current_datetime = int(datetime.now().timestamp())
 
-        for i in range(0, randint(0, 5)):
+        for i in range(randint(0, 5)):
             the_uuid = str(uuid.uuid4())
             file_name = "example_%s.xml" % the_uuid
 

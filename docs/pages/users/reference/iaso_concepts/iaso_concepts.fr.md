@@ -9,7 +9,7 @@ Dans IASO, les formulaires de collecte de données sont **versionnés**, ce qui 
 
 ## Unités d'organisation
 
-IASO utilise la notion d'**Unités Od'organisation (Org unit ou OU)** pour gérer les données géographiques.\
+IASO utilise la notion d'**Unités d'organisation (Org unit ou OU)** pour gérer les données géographiques.\
 Les **types d'unité d'organisation (OUT)** représentent les niveaux dans la hiérarchie.
 
 ### Exemple :
@@ -42,3 +42,17 @@ Les utilisateurs peuvent être liés à un ou plusieurs Projet(s).
 -   Certains utilisateurs peuvent être limités à un ou plusieurs Projet(s)/ID(s) d'application -- cela peut être défini dans la gestion des utilisateurs
 -   Chaque Type d'Unité Organisationnelle doit être lié à un ou plusieurs Projet(s)
 -   Chaque Formulaire doit être lié à un ou plusieurs Projet(s)
+
+## Entités
+Dans IASO, une “**Entité**” représente n'importe quel personne ou object qui peut bouger ou être bougé et que nous souhaions suivre à travers le temps ou les [Unités d'organisation](#Unités-dorganisation). 
+Par exemple, un bénéficiaire, une voiture, une carte de vaccination, etc.
+
+Pour différencier les différents types d'entités, IASO a un concept de “**Type d'Entité**”.
+
+Une entité est représentée par une soumission de [formulaire](#Formulaires-de-collecte-de-données-XLS). 
+Cette soumission est aussi appelée le **profil**.
+Le type d'entité définit quel formulaire doit être complété afin de créer une nouvelle entité.
+
+### Workflows
+Sur base du profile d'une entité, il est possible de proposer plusieurs formulaires différents et de définir comment chaque soumission impacte le profil.
+Les règles qui définissent quels formulaires et comments chaque soumission impacte le profil sont appelées un "**Workflow**." 

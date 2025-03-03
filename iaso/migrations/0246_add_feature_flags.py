@@ -1,5 +1,6 @@
 from django.db import migrations
 
+
 feature_flags = [
     {
         "code": "CHECK_POSITION_FOR_FORMS",

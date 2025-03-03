@@ -1,7 +1,6 @@
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.response import Response
-
-from django.contrib.auth.password_validation import validate_password
 
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission

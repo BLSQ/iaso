@@ -1,10 +1,9 @@
 from django.contrib.gis.geos import Point
-from django.db import IntegrityError, InternalError, connections
+from django.db import InternalError, connections
 from django.db.models import Q
 
 from iaso import models as m
 from iaso.test import TestCase
-from iaso.models.data_store import JsonDataStore
 
 
 class OrgUnitTypeModelTestCase(TestCase):

@@ -5,12 +5,13 @@ from rest_framework import filters, permissions, serializers, status, viewsets
 from rest_framework.response import Response
 
 import iaso.models.base as base
+
+from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, Paginator
 from iaso.models import Entity, EntityDuplicateAnalyzis, EntityType, Form
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
 
 from .algos import POSSIBLE_ALGORITHMS  # type: ignore
-from hat.menupermissions import models as permission
 
 
 def field_exists(f: Form, field_name: str) -> bool:
@@ -36,7 +37,7 @@ class AnalyzePostBodySerializer(serializers.Serializer):
         try:
             e_type = EntityType.objects.get(pk=data["entity_type_id"])
         except Entity.DoesNotExist:
-            raise serializers.ValidationError(f"Entity type does not exist")
+            raise serializers.ValidationError("Entity type does not exist")
 
         for f_name in data["fields"]:
             if not field_exists(e_type.reference_form, f_name):
@@ -113,9 +114,6 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
     serializer_class = EntityDuplicateAnalyzisSerializer
     pagination_class = Paginator
 
-    def get_results_key(self):
-        return self.results_key
-
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
         return EntityDuplicateAnalyzis.objects.filter(task__account=user_account)
@@ -133,7 +131,7 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
             return self.get_paginated_response(serializer.data)
 
         serializer = EntityDuplicateAnalyzisSerializer(queryset, many=True)
-        return Response(data={self.get_results_key(): serializer.data})
+        return Response(data={self.results_key: serializer.data})
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         """
@@ -205,18 +203,17 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
             eda.task.save()
             return Response(status=status.HTTP_200_OK)
 
-        elif eda.task.status in [base.QUEUED, base.RUNNING] and request.data["status"] == base.KILLED:
+        if eda.task.status in [base.QUEUED, base.RUNNING] and request.data["status"] == base.KILLED:
             eda.task.status = base.KILLED
             eda.task.save()
             return Response(status=status.HTTP_200_OK)
 
-        else:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST,
-                data={
-                    "error": "Invalid status transition, only allowed are KILLED -> QUEUED and QUEUED, RUNNING -> KILLED"
-                },
-            )
+        return Response(
+            status=status.HTTP_400_BAD_REQUEST,
+            data={
+                "error": "Invalid status transition, only allowed are KILLED -> QUEUED and QUEUED, RUNNING -> KILLED"
+            },
+        )
 
     def destroy(self, request, pk=None, *args, **kwargs):
         """

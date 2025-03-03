@@ -113,7 +113,7 @@ class ExportRequestsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        response = self.client.post(f"/api/exportrequests/", data={"period_ids": "201901,201902"})
+        response = self.client.post("/api/exportrequests/", data={"period_ids": "201901,201902"})
 
         self.assertEqual(201, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
@@ -122,7 +122,7 @@ class ExportRequestsAPITestCase(APITestCase):
         self.build_instance(self.village_1, self.uuid(1), "201901")
         self.client.force_authenticate(self.user)
 
-        response = self.client.post(f"/api/exportrequests/", data={"period_ids": "204112"})
+        response = self.client.post("/api/exportrequests/", data={"period_ids": "204112"})
 
         self.assertEqual(400, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
@@ -136,7 +136,7 @@ class ExportRequestsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        response = self.client.post(f"/api/exportrequests/", data={"period_ids": "201901"})
+        response = self.client.post("/api/exportrequests/", data={"period_ids": "201901"})
 
         self.assertEqual(400, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])

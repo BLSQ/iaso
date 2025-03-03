@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from hat.audit.audit_logger import AuditLogger
-from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API, Modification
+from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API
 from iaso.api.common import TimestampField
 from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
@@ -344,7 +344,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
 
         if (new_opening_date and new_closed_date) and (new_closed_date <= new_opening_date):
             raise serializers.ValidationError("`new_closed_date` must be later than `new_opening_date`.")
-        elif (org_unit.closed_date and new_opening_date) and (new_opening_date >= org_unit.closed_date):
+        if (org_unit.closed_date and new_opening_date) and (new_opening_date >= org_unit.closed_date):
             raise serializers.ValidationError("`new_opening_date` must be before the current org_unit closed date.")
 
         if org_unit and new_parent:

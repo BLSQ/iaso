@@ -1,4 +1,5 @@
 import datetime
+
 from unittest.mock import patch
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon

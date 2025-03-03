@@ -11,7 +11,7 @@ from plugins.polio.api.shared_serializers import (
     GroupSerializer,
     RoundDateHistoryEntryForRoundSerializer,
 )
-from plugins.polio.models import ReasonForDelay, Round, RoundDateHistoryEntry, RoundScope, Campaign
+from plugins.polio.models import Campaign, ReasonForDelay, Round, RoundDateHistoryEntry, RoundScope
 from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
 
 
@@ -148,7 +148,6 @@ class RoundViewSet(ModelViewSet):
         """Don't PATCH this way, it will not do anything
         Overriding to prevent patching the whole round which is error prone, due to nested fields among others.
         """
-        pass
 
     # Endpoint used to update lqas passed and failed fields by OpenHexa pipeline
     @action(detail=False, methods=["patch"], serializer_class=LqasDistrictsUpdateSerializer)

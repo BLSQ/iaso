@@ -1,12 +1,14 @@
 from datetime import datetime
+from unittest.mock import patch
+
 from iaso import models as m
 from iaso.api.tasks.views import ExternalTaskModelViewSet
-from iaso.test import APITestCase
-from iaso.models.base import RUNNING, KILLED, SUCCESS, SKIPPED
+from iaso.models.base import RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
+from iaso.test import APITestCase
 from iaso.utils.powerbi import get_openhexa_config_for_data_set_id, launch_external_task, monitor_task_and_raise_if_fail
-from plugins.polio.tasks.api.refresh_lqas_data import LQAS_CONFIG_SLUG, RefreshLQASDataViewset
-from unittest.mock import patch
+from plugins.polio.tasks.api.refresh_lqas_data import LQAS_CONFIG_SLUG
+
 
 # ('/api/polio/powerbirefresh/', {
 #           method: 'POST',

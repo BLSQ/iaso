@@ -181,6 +181,8 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
         return [{"id": group.id, "name": group.name} for group in obj.org_unit.groups.all()]
 
     def get_current_org_unit_type_projects(self, obj: OrgUnitChangeRequest):
+        if obj.org_unit.org_unit_type is None:
+            return []
         return [{"id": project.id, "name": project.name} for project in obj.org_unit.org_unit_type.projects.all()]
 
     def get_payment_status(self, obj: OrgUnitChangeRequest):
@@ -415,7 +417,6 @@ class OrgUnitChangeRequestBulkReviewSerializer(serializers.Serializer):
     unselected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=[])
     # Review data.
     status = serializers.ChoiceField(choices=OrgUnitChangeRequest.Statuses, default=None)
-    approved_fields = serializers.MultipleChoiceField(choices=OrgUnitChangeRequest.get_new_fields(), default=None)
     rejection_comment = serializers.CharField(required=False, allow_blank=True, default="")
 
     def validate_status(self, value):
@@ -432,7 +433,6 @@ class OrgUnitChangeRequestBulkReviewSerializer(serializers.Serializer):
         unselected_ids = validated_data["unselected_ids"]
         # Review data.
         status = validated_data["status"]
-        approved_fields = validated_data["approved_fields"]
         rejection_comment = validated_data["rejection_comment"]
 
         if select_all and selected_ids:
@@ -443,9 +443,6 @@ class OrgUnitChangeRequestBulkReviewSerializer(serializers.Serializer):
 
         if status == OrgUnitChangeRequest.Statuses.REJECTED and not rejection_comment:
             raise serializers.ValidationError("A `rejection_comment` must be provided.")
-
-        if status == OrgUnitChangeRequest.Statuses.APPROVED and not approved_fields:
-            raise serializers.ValidationError("At least one `approved_fields` must be provided.")
 
         return validated_data
 

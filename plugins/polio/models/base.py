@@ -34,7 +34,10 @@ from iaso.models.base import Account, Task
 from iaso.models.entity import UserNotAuthError
 from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
-from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    SoftDeletableModel,
+)
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -831,7 +834,7 @@ class Campaign(SoftDeletableModel):
         return districts
 
     def get_campaign_scope_districts_qs(self):
-        # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
+        # Get districts on campaign scope, make only sense if separate_scopes_per_round=False
         return (
             OrgUnit.objects.filter(groups__campaignScope__campaign=self)
             .filter(validation_status="VALID")

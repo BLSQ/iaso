@@ -32,7 +32,10 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.models import Group, OrgUnit
-from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
+from plugins.polio.api.campaigns.campaigns_log import (
+    log_campaign_modification,
+    serialize_campaign,
+)
 from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
     missing_vaccine_authorization_for_campaign_email_alert,
 )
@@ -53,9 +56,15 @@ from plugins.polio.models import (
 from plugins.polio.models.base import SubActivity, SubActivityScope
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.parser import InvalidFormatError, get_preparedness
-from plugins.polio.preparedness.spreadsheet_manager import Campaign, generate_spreadsheet_for_campaign
+from plugins.polio.preparedness.spreadsheet_manager import (
+    Campaign,
+    generate_spreadsheet_for_campaign,
+)
 from plugins.polio.preparedness.summary import preparedness_summary
-from plugins.polio.services.campaign import delete_old_scopes_after_scope_level_switch
+from plugins.polio.services.campaign import (
+    delete_old_scopes_after_scope_level_switch,
+    remove_out_of_scope_org_units_from_sub_activities,
+)
 
 
 # Don't display the url for Anonymous users
@@ -408,6 +417,9 @@ class CampaignSerializer(serializers.ModelSerializer):
         campaign = super().update(instance, validated_data)
         campaign.update_geojson_field()
         campaign.save()
+
+        # Check if there are no subactivities with org units not in their current parent round scope
+        remove_out_of_scope_org_units_from_sub_activities(campaign)
 
         # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
         c_rounds = [r for r in campaign.rounds.all()]

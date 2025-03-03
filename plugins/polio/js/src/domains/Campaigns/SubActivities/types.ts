@@ -1,3 +1,4 @@
+import { Nullable } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Scope } from '../../../constants/types';
 
 export type SubActivityFormValues = {
@@ -5,6 +6,8 @@ export type SubActivityFormValues = {
     campaign?: string; // obr name
     id?: number;
     name: string;
+    round_start_date?: Nullable<string>; // date
+    round_end_date?: Nullable<string>; // date
     start_date: string; // date
     end_date: string; // date
     lqas_started_at?: string; // date

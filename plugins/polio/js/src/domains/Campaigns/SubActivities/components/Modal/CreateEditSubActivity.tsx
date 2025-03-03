@@ -46,10 +46,15 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
     const ageRangeOptions = useAgeRangeOptions();
     const validationSchema = useSubActivityValidation();
 
+    // TODO Add parent round dates to formik to enable validation
+    // Then remove them before sending to API
+
     const formik = useFormik<SubActivityFormValues>({
         initialValues: {
             id: subActivity?.id,
             round_number: round?.number,
+            round_start_date: round?.started_at,
+            round_end_date: round?.ended_at,
             campaign: campaign.obr_name,
             name: subActivity?.name,
             start_date: subActivity?.start_date,

@@ -1,8 +1,8 @@
 // @ts-ignore
+import { UseMutationResult, useMutation, useQueryClient } from 'react-query';
 import { postRequest, putRequest } from 'Iaso/libs/Api.ts';
 // @ts-ignore
 import { commaSeparatedIdsToStringArray } from 'Iaso/utils/forms';
-import { UseMutationResult, useMutation, useQueryClient } from 'react-query';
 import { openSnackBar } from '../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     errorSnackBar,
@@ -30,6 +30,8 @@ const dispatchError = (message, error) => {
 const saveSubActivity = values => {
     if (!values) return null;
     const { id, ...body } = values;
+    delete body.round_start_date;
+    delete body.round_end_date;
     if (id) {
         return putRequest(`${subActivityUrl}${id}/`, body);
     }

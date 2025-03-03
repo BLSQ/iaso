@@ -26,8 +26,8 @@ const useColumns = (): Column[] => {
     const currentUser = useCurrentUser();
     const { modules } = currentUser.account;
 
-    return useMemo(
-        () => [
+    return useMemo(() => {
+        const columns = [
             {
                 Header: 'id',
                 id: 'id',
@@ -123,16 +123,12 @@ const useColumns = (): Column[] => {
                 accessor: 'created_by',
                 Cell: UserCell,
             },
-            ...(modules.includes(PAYMENTS_MODULE)
-                ? [
-                      {
-                          Header: formatMessage(MESSAGES.paymentStatus),
-                          id: 'payment_status',
-                          accessor: 'payment_status',
-                          Cell: BreakWordCell,
-                      },
-                  ]
-                : []),
+            {
+                Header: formatMessage(MESSAGES.paymentStatus),
+                id: 'payment_status',
+                accessor: 'payment_status',
+                Cell: BreakWordCell,
+            },
             {
                 Header: formatMessage(MESSAGES.updated_at),
                 id: 'updated_at',
@@ -161,9 +157,15 @@ const useColumns = (): Column[] => {
                     );
                 },
             },
-        ],
-        [formatMessage, modules],
-    );
+        ];
+
+        // Remove payment status column when the current account has no payments module
+        if (!modules.includes(PAYMENTS_MODULE)) {
+            return columns.filter(column => column.id !== 'payment_status');
+        }
+
+        return columns;
+    }, [formatMessage, modules]);
 };
 
 const getRowProps = (row: { original: OrgUnitChangeRequest }) => {

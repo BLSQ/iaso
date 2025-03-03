@@ -58,7 +58,7 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(null=True),
         ),
         # Run the data migration
-        migrations.RunPython(set_initial_dates),
+        migrations.RunPython(set_initial_dates, migrations.RunPython.noop),
         # Now alter the fields to make them non-nullable with the desired defaults
         migrations.AlterField(
             model_name="destructionreport",

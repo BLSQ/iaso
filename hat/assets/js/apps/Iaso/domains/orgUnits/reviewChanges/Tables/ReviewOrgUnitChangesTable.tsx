@@ -11,6 +11,7 @@ import { ColumnCell } from '../../../../types/general';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
+import { PAYMENTS_MODULE } from '../constants';
 import { IconButton } from '../details';
 import MESSAGES from '../messages';
 import {
@@ -122,7 +123,7 @@ const useColumns = (): Column[] => {
                 accessor: 'created_by',
                 Cell: UserCell,
             },
-            ...(modules.includes('PAYMENTS')
+            ...(modules.includes(PAYMENTS_MODULE)
                 ? [
                       {
                           Header: formatMessage(MESSAGES.paymentStatus),

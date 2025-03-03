@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-05 15:03+0000\n"
+"POT-Creation-Date: 2025-03-03 10:30+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -19,12 +19,12 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
 
-#: iaso/api/comment.py:24
+#: iaso/api/comment.py:23
 #, python-brace-format
 msgid "Model {value} does not exist."
 msgstr "Le modèle {value} n'existe pas."
 
-#: iaso/api/comment.py:25
+#: iaso/api/comment.py:24
 msgid "Invalid value."
 msgstr "Valeur invalide"
 
@@ -32,12 +32,12 @@ msgstr "Valeur invalide"
 msgid "Created at greater than or equal to"
 msgstr "Créé à une date supérieure ou égale à"
 
-#: iaso/api/enketo.py:123 iaso/api/enketo.py:132 iaso/api/logs.py:130
-#: iaso/api/logs.py:157
+#: iaso/api/enketo.py:122 iaso/api/enketo.py:131 iaso/api/logs.py:130
+#: iaso/api/logs.py:156
 msgid "Unauthorized"
 msgstr "Non autorisé"
 
-#: iaso/api/enketo.py:151
+#: iaso/api/enketo.py:150
 msgid ""
 "There are multiple submissions for this period and organizational unit, "
 "please log in the dashboard to fix."
@@ -45,19 +45,19 @@ msgstr ""
 "Il y a plusieurs soumissions pour cette période et cette unité "
 "organisationnelle, veuillez vous connecter au tableau de bord pour corriger."
 
-#: iaso/api/group_sets/filters.py:24
+#: iaso/api/group_sets/filters.py:23
 msgid "Search by groupset's name"
 msgstr "Rechercher par nom de groupe"
 
-#: iaso/api/group_sets/filters.py:27
+#: iaso/api/group_sets/filters.py:26
 msgid "SourceVersion id"
 msgstr "ID de version source"
 
-#: iaso/api/group_sets/filters.py:30
+#: iaso/api/group_sets/filters.py:29
 msgid "Limit to default version source"
 msgstr "Limiter à la version source par défaut"
 
-#: iaso/api/group_sets/filters.py:34
+#: iaso/api/group_sets/filters.py:33
 msgid "Limit search to coma seperated project ids"
 msgstr "Limiter la recherche aux IDs de projets séparés par des virgules"
 
@@ -69,99 +69,99 @@ msgstr ""
 "Les paramètres objectId et contentType sont requis. contentType peut être "
 "l'un des suivants : iaso.orgunit, iaso.form, iaso.instance"
 
-#: iaso/api/org_unit_change_request_configurations/filters.py:9
-#: iaso/api/org_unit_change_requests/filters.py:26
+#: iaso/api/org_unit_change_request_configurations/filters.py:10
+#: iaso/api/org_unit_change_requests/filters.py:27
 msgid "Project ID"
 msgstr "ID du projet"
 
-#: iaso/api/org_unit_change_request_configurations/filters.py:10
-#: iaso/api/org_unit_change_requests/filters.py:23
+#: iaso/api/org_unit_change_request_configurations/filters.py:11
+#: iaso/api/org_unit_change_requests/filters.py:24
 msgid "Org unit type ID"
 msgstr "ID du type d'unité organisationnelle"
 
-#: iaso/api/org_unit_change_request_configurations/filters.py:12
+#: iaso/api/org_unit_change_request_configurations/filters.py:13
 msgid "Created by - Users IDs (comma-separated)"
 msgstr "Créé par - IDs utilisateurs (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:22
+#: iaso/api/org_unit_change_requests/filters.py:23
 msgid "Org unit ID"
 msgstr "ID de l'unité organisationnelle"
 
-#: iaso/api/org_unit_change_requests/filters.py:24
-#: iaso/api/org_unit_tree/filters.py:14
+#: iaso/api/org_unit_change_requests/filters.py:25
+#: iaso/api/org_unit_tree/filters.py:13
 msgid "Parent ID"
 msgstr "ID du parent"
 
-#: iaso/api/org_unit_change_requests/filters.py:25
+#: iaso/api/org_unit_change_requests/filters.py:26
 msgid "Groups IDs (comma-separated)"
 msgstr "IDs des groupes (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:29
+#: iaso/api/org_unit_change_requests/filters.py:30
 msgid "Data source synchronization ID"
 msgstr "ID de synchronisation de source de données"
 
-#: iaso/api/org_unit_change_requests/filters.py:32
+#: iaso/api/org_unit_change_requests/filters.py:33
 msgid "Forms IDs (comma-separated)"
 msgstr "IDs des formulaires (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:33
+#: iaso/api/org_unit_change_requests/filters.py:34
 msgid "Users IDs (comma-separated)"
 msgstr "IDs des utilisateurs (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:34
+#: iaso/api/org_unit_change_requests/filters.py:35
 msgid "User roles IDs (comma-separated)"
 msgstr "IDs des rôles utilisateurs (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:35
+#: iaso/api/org_unit_change_requests/filters.py:36
 msgid "With or without location"
 msgstr "Avec ou sans localisation"
 
-#: iaso/api/org_unit_change_requests/filters.py:36
+#: iaso/api/org_unit_change_requests/filters.py:37
 msgid "Status (comma-separated)"
 msgstr "Statut (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:37
+#: iaso/api/org_unit_change_requests/filters.py:38
 msgid "Projects IDs (comma-separated)"
 msgstr "IDs des projets (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:38
+#: iaso/api/org_unit_change_requests/filters.py:39
 msgid "Payment status"
 msgstr "Statut de paiement"
 
-#: iaso/api/org_unit_change_requests/filters.py:39
+#: iaso/api/org_unit_change_requests/filters.py:40
 msgid "Payment IDs (comma-separated)"
 msgstr "IDs des paiements (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:41
+#: iaso/api/org_unit_change_requests/filters.py:42
 msgid "Potential Payment IDs (comma-separated)"
 msgstr "IDs des paiements potentiels (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:43
+#: iaso/api/org_unit_change_requests/filters.py:44
 msgid "Source version ID"
 msgstr "ID de version source"
 
-#: iaso/api/org_unit_tree/filters.py:13
+#: iaso/api/org_unit_tree/filters.py:12
 msgid "Ignore empty names"
 msgstr "Ignorer les noms vides"
 
-#: iaso/api/org_unit_tree/filters.py:15
+#: iaso/api/org_unit_tree/filters.py:14
 msgid "Data source ID"
 msgstr "ID de source de données"
 
-#: iaso/api/org_unit_tree/filters.py:17
+#: iaso/api/org_unit_tree/filters.py:16
 msgid "Validation status"
 msgstr "Statut de validation"
 
-#: iaso/api/org_units.py:434 iaso/api/org_units.py:717
+#: iaso/api/org_units.py:434 iaso/api/org_units.py:716
 msgid "You cannot create or edit an Org unit of this type"
 msgstr ""
 "Vous ne pouvez pas créer ou modifier une unité organisationnelle de ce type"
 
-#: iaso/api/org_units.py:544 iaso/api/org_units.py:730
+#: iaso/api/org_units.py:544 iaso/api/org_units.py:729
 msgid "You cannot create an Org Unit without a parent"
 msgstr "Vous ne pouvez pas créer une unité organisationnelle sans parent"
 
-#: iaso/api/org_units.py:560 iaso/api/org_units.py:738
+#: iaso/api/org_units.py:560 iaso/api/org_units.py:737
 msgid "Group must be in the same source version"
 msgstr "Le groupe doit être dans la même version source"
 
@@ -169,209 +169,209 @@ msgstr "Le groupe doit être dans la même version source"
 msgid "InstanceFile with id {} does not exist"
 msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
-#: iaso/api/org_units.py:642
+#: iaso/api/org_units.py:641
 msgid "Unauthorized version id"
 msgstr "ID de version non autorisé"
 
-#: iaso/api/org_units.py:653
+#: iaso/api/org_units.py:652
 msgid "Org unit name is required"
 msgstr "Le nom de l'unité organisationnelle est requis"
 
-#: iaso/api/org_units.py:678
+#: iaso/api/org_units.py:677
 msgid "Opening date must be anterior to closed date"
 msgstr "La date d'ouverture doit être antérieure à la date de fermeture"
 
-#: iaso/api/org_units.py:700
+#: iaso/api/org_units.py:699
 msgid "Can't parse geom"
 msgstr "Impossible d'analyser la géométrie"
 
-#: iaso/api/org_units.py:711
+#: iaso/api/org_units.py:710
 msgid "Org unit type is required"
 msgstr "Le type d'unité organisationnelle est requis"
 
-#: iaso/api/org_units.py:724
+#: iaso/api/org_units.py:723
 msgid "Parent is not in the same version"
 msgstr "Le parent n'est pas dans la même version"
 
-#: iaso/api/pages.py:38
+#: iaso/api/pages.py:37
 msgid "Limit result by name or slug"
 msgstr "Limiter les résultats par nom ou slug"
 
-#: iaso/api/pages.py:40
+#: iaso/api/pages.py:39
 msgid "Limit on authentication required or not"
 msgstr "Limiter selon si l'authentification est requise ou non"
 
-#: iaso/api/pages.py:42 iaso/api/payments/views.py:345
-#: iaso/api/payments/views.py:376
+#: iaso/api/pages.py:41 iaso/api/payments/views.py:348
+#: iaso/api/payments/views.py:379
 msgid "User ID"
 msgstr "ID utilisateur"
 
-#: iaso/api/payments/views.py:343 iaso/api/payments/views.py:374
+#: iaso/api/payments/views.py:346 iaso/api/payments/views.py:377
 msgid "ID"
 msgstr "ID"
 
-#: iaso/api/payments/views.py:344 iaso/api/payments/views.py:375
+#: iaso/api/payments/views.py:347 iaso/api/payments/views.py:378
 msgid "Status"
 msgstr "Statut"
 
-#: iaso/api/payments/views.py:346 iaso/api/payments/views.py:377
+#: iaso/api/payments/views.py:349 iaso/api/payments/views.py:380
 msgid "User Username"
 msgstr "Nom d'utilisateur"
 
-#: iaso/api/payments/views.py:347 iaso/api/payments/views.py:378
+#: iaso/api/payments/views.py:350 iaso/api/payments/views.py:381
 msgid "User Phone"
 msgstr "Téléphone de l'utilisateur"
 
-#: iaso/api/payments/views.py:348 iaso/api/payments/views.py:379
+#: iaso/api/payments/views.py:351 iaso/api/payments/views.py:382
 msgid "User Last Name"
 msgstr "Nom de famille de l'utilisateur"
 
-#: iaso/api/payments/views.py:349 iaso/api/payments/views.py:380
+#: iaso/api/payments/views.py:352 iaso/api/payments/views.py:383
 msgid "User First Name"
 msgstr "Prénom de l'utilisateur"
 
-#: iaso/api/payments/views.py:350 iaso/api/payments/views.py:381
+#: iaso/api/payments/views.py:353 iaso/api/payments/views.py:384
 msgid "Change Requests"
 msgstr "Demandes de modification"
 
-#: iaso/api/payments/views.py:351 iaso/api/payments/views.py:382
+#: iaso/api/payments/views.py:354 iaso/api/payments/views.py:385
 msgid "Total Change Requests Count"
 msgstr "Nombre total de demandes de modification"
 
-#: iaso/api/payments/views.py:352 iaso/api/payments/views.py:383
+#: iaso/api/payments/views.py:355 iaso/api/payments/views.py:386
 msgid "Org Unit Creation Count"
 msgstr "Nombre de créations d'unités organisationnelles"
 
-#: iaso/api/payments/views.py:353 iaso/api/payments/views.py:384
+#: iaso/api/payments/views.py:356 iaso/api/payments/views.py:387
 msgid "Org Unit Change Count"
 msgstr "Nombre de modifications d'unités organisationnelles"
 
-#: iaso/api/payments/views.py:356 iaso/api/payments/views.py:387
+#: iaso/api/payments/views.py:359 iaso/api/payments/views.py:390
 #, python-format
 msgid "Form: %(name)s"
 msgstr "Formulaire : %(name)s"
 
-#: iaso/api/profiles/profile_logs.py:29
+#: iaso/api/profiles/profile_logs.py:30
 msgid "User IDs"
 msgstr "IDs utilisateurs"
 
-#: iaso/api/profiles/profile_logs.py:30
+#: iaso/api/profiles/profile_logs.py:31
 msgid "Modified by"
 msgstr "Modifié par"
 
-#: iaso/api/profiles/profile_logs.py:31
+#: iaso/api/profiles/profile_logs.py:32
 msgid "Location"
 msgstr "Localisation"
 
-#: iaso/api/profiles/profiles.py:345 iaso/api/profiles/profiles.py:635
+#: iaso/api/profiles/profiles.py:346 iaso/api/profiles/profiles.py:632
 msgid "Nom d'utilisateur requis"
 msgstr "Nom d'utilisateur requis"
 
-#: iaso/api/profiles/profiles.py:350 iaso/api/profiles/profiles.py:367
-#: iaso/api/profiles/profiles.py:640
+#: iaso/api/profiles/profiles.py:349 iaso/api/profiles/profiles.py:365
+#: iaso/api/profiles/profiles.py:637
 msgid "Nom d'utilisateur existant"
 msgstr "Nom d'utilisateur existant"
 
-#: iaso/api/profiles/profiles.py:353
+#: iaso/api/profiles/profiles.py:351
 msgid "Mot de passe requis"
 msgstr "Mot de passe requis"
 
-#: iaso/api/profiles/profiles.py:775
+#: iaso/api/profiles/profiles.py:772
 msgid "Both phone number and country code must be provided"
 msgstr "Le numéro de téléphone et le code pays doivent être fournis"
 
-#: iaso/api/profiles/profiles.py:785 iaso/tests/api/test_profiles.py:1300
+#: iaso/api/profiles/profiles.py:781 iaso/tests/api/test_profiles.py:1302
 msgid "Invalid phone number"
 msgstr "Numéro de téléphone invalide"
 
-#: iaso/models/base.py:61
+#: iaso/models/base.py:64
 msgid "Aggregate"
 msgstr "Agrégé"
 
-#: iaso/models/base.py:62
+#: iaso/models/base.py:65
 msgid "Event"
 msgstr "Événement"
 
-#: iaso/models/base.py:63
+#: iaso/models/base.py:66
 msgid "Event Tracker"
 msgstr "Suivi d'événement"
 
-#: iaso/models/base.py:64
+#: iaso/models/base.py:67
 msgid "Derived"
 msgstr "Dérivé"
 
-#: iaso/models/base.py:76
+#: iaso/models/base.py:79
 msgid "Queued"
 msgstr "En file d'attente"
 
-#: iaso/models/base.py:77
+#: iaso/models/base.py:80
 msgid "Running"
 msgstr "En cours"
 
-#: iaso/models/base.py:78
+#: iaso/models/base.py:81
 msgid "Exported"
 msgstr "Exporté"
 
-#: iaso/models/base.py:79
+#: iaso/models/base.py:82
 msgid "Errored"
 msgstr "En erreur"
 
-#: iaso/models/base.py:80
+#: iaso/models/base.py:83
 msgid "Skipped"
 msgstr "Ignoré"
 
-#: iaso/models/base.py:81
+#: iaso/models/base.py:84
 msgid "Killed"
 msgstr "Arrêté"
 
-#: iaso/models/base.py:82
+#: iaso/models/base.py:85
 msgid "Success"
 msgstr "Succès"
 
-#: iaso/models/base.py:428
+#: iaso/models/base.py:431
 msgid "Polio"
 msgstr "Polio"
 
-#: iaso/models/base.py:550
+#: iaso/models/base.py:553
 msgid "SINGLE"
 msgstr "UNIQUE"
 
-#: iaso/models/base.py:551
+#: iaso/models/base.py:554
 msgid "MULTIPLE"
 msgstr "MULTIPLE"
 
-#: iaso/models/base.py:1079
+#: iaso/models/base.py:1082
 msgid "The Instance must be linked to a Form."
 msgstr "L'instance doit être liée à un formulaire."
 
-#: iaso/models/base.py:1081
+#: iaso/models/base.py:1084
 msgid "The OrgUnit must be linked to a OrgUnitType."
 msgstr ""
 "L'unité organisationnelle doit être liée à un type d'unité organisationnelle."
 
-#: iaso/models/base.py:1083
+#: iaso/models/base.py:1086
 msgid "The submission must be an instance of a reference form."
 msgstr "La soumission doit être une instance d'un formulaire de référence."
 
-#: iaso/models/base.py:1674
+#: iaso/models/base.py:1673
 msgid "Immediate export of instances to DHIS2"
 msgstr "Export immédiat des instances vers DHIS2"
 
-#: iaso/models/base.py:1679
+#: iaso/models/base.py:1678
 msgid "GPS localization on start of instance on mobile"
 msgstr "Localisation GPS au démarrage de l'instance sur mobile"
 
-#: iaso/models/base.py:1684
+#: iaso/models/base.py:1683
 msgid "Require authentication on mobile"
 msgstr "Authentification requise sur mobile"
 
-#: iaso/models/base.py:1691
+#: iaso/models/base.py:1690
 msgid "Mobile: Limit download of orgunit to what the user has access to"
 msgstr ""
 "Mobile : Limiter le téléchargement des unités organisationnelles à celles "
 "auxquelles l'utilisateur a accès"
 
-#: iaso/models/base.py:1699
+#: iaso/models/base.py:1698
 msgid ""
 "Saving a form as finalized on mobile triggers an upload attempt immediately "
 "+ everytime network becomes available"
@@ -437,27 +437,27 @@ msgstr ""
 msgid "Data source synchronization"
 msgstr "Synchronisation de source de données"
 
-#: iaso/models/deduplication.py:20 iaso/models/payments.py:7
+#: iaso/models/deduplication.py:8 iaso/models/payments.py:7
 msgid "Pending"
 msgstr "En attente"
 
-#: iaso/models/deduplication.py:21
+#: iaso/models/deduplication.py:9
 msgid "Validated"
 msgstr "Validé"
 
-#: iaso/models/deduplication.py:22
+#: iaso/models/deduplication.py:10
 msgid "Ignored"
 msgstr "Ignoré"
 
-#: iaso/models/deduplication.py:26
+#: iaso/models/deduplication.py:14
 msgid "Duplicate"
 msgstr "Doublon"
 
-#: iaso/models/deduplication.py:27
+#: iaso/models/deduplication.py:15
 msgid "Cousin"
 msgstr "Cousin"
 
-#: iaso/models/deduplication.py:28
+#: iaso/models/deduplication.py:16
 msgid "Produced"
 msgstr "Produit"
 
@@ -473,93 +473,93 @@ msgstr "À pied"
 msgid "Truc"
 msgstr "Truc"
 
-#: iaso/models/forms.py:70
+#: iaso/models/forms.py:88
 msgid "Day"
 msgstr "Jour"
 
-#: iaso/models/forms.py:71
+#: iaso/models/forms.py:89
 msgid "Month"
 msgstr "Mois"
 
-#: iaso/models/forms.py:72
+#: iaso/models/forms.py:90
 msgid "Quarter"
 msgstr "Trimestre"
 
-#: iaso/models/forms.py:73
+#: iaso/models/forms.py:91
 msgid "Quarter Nov"
 msgstr "Trimestre Nov"
 
-#: iaso/models/forms.py:74
+#: iaso/models/forms.py:92
 msgid "Six-month"
 msgstr "Semestre"
 
-#: iaso/models/forms.py:75
+#: iaso/models/forms.py:93
 msgid "Year"
 msgstr "Année"
 
-#: iaso/models/forms.py:76
+#: iaso/models/forms.py:94
 msgid "Financial Nov"
 msgstr "Financier Nov"
 
-#: iaso/models/forms.py:80
+#: iaso/models/forms.py:98
 msgid "No change request"
 msgstr "Pas de demande de modification"
 
-#: iaso/models/forms.py:81
+#: iaso/models/forms.py:99
 msgid "Create change request if form is reference form"
 msgstr ""
 "Créer une demande de modification si le formulaire est un formulaire de "
 "référence"
 
-#: iaso/models/org_unit.py:118
+#: iaso/models/org_unit.py:119
 msgid "Country"
 msgstr "Pays"
 
-#: iaso/models/org_unit.py:119
+#: iaso/models/org_unit.py:120
 msgid "Region"
 msgstr "Région"
 
-#: iaso/models/org_unit.py:120
+#: iaso/models/org_unit.py:121
 msgid "District"
 msgstr "District"
 
-#: iaso/models/org_unit.py:121
+#: iaso/models/org_unit.py:122
 msgid "Health Facility"
 msgstr "Établissement de santé"
 
-#: iaso/models/org_unit.py:265
+#: iaso/models/org_unit.py:266
 msgid "new"
 msgstr "nouveau"
 
-#: iaso/models/org_unit.py:266
+#: iaso/models/org_unit.py:267
 msgid "valid"
 msgstr "valide"
 
-#: iaso/models/org_unit.py:267
+#: iaso/models/org_unit.py:268
 msgid "rejected"
 msgstr "rejeté"
 
-#: iaso/models/org_unit.py:651
+#: iaso/models/org_unit.py:653
 msgid "Org Unit Creation"
 msgstr "Création d'unité organisationnelle"
 
-#: iaso/models/org_unit.py:652
+#: iaso/models/org_unit.py:654
 msgid "Org Unit Change"
 msgstr "Modification d'unité organisationnelle"
 
-#: iaso/models/org_unit.py:655 iaso/models/payments.py:59
+#: iaso/models/org_unit.py:657 iaso/models/payments.py:59
 msgid "New"
 msgstr "Nouveau"
 
-#: iaso/models/org_unit.py:656 iaso/models/payments.py:9
+#: iaso/models/org_unit.py:658 iaso/models/payments.py:9
 msgid "Rejected"
 msgstr "Rejeté"
 
-#: iaso/models/org_unit.py:657
+#: iaso/models/org_unit.py:659
 msgid "Approved"
 msgstr "Approuvé"
 
-#: iaso/models/org_unit.py:737
+#: iaso/models/org_unit.py:739
 msgid "Org unit change request"
 msgstr "Demande de modification d'unité organisationnelle"
 
@@ -567,23 +567,23 @@ msgstr "Demande de modification d'unité organisationnelle"
 msgid "Org unit change request configuration"
 msgstr "Configuration de demande de modification d'unité organisationnelle"
 
-#: iaso/models/pages.py:14
+#: iaso/models/pages.py:15
 msgid "Raw html"
 msgstr "HTML brut"
 
-#: iaso/models/pages.py:15
+#: iaso/models/pages.py:16
 msgid "Text"
 msgstr "Texte"
 
-#: iaso/models/pages.py:16
+#: iaso/models/pages.py:17
 msgid "Iframe"
 msgstr "Iframe"
 
-#: iaso/models/pages.py:17
+#: iaso/models/pages.py:18
 msgid "PowerBI report"
 msgstr "Rapport PowerBI"
 
-#: iaso/models/pages.py:18
+#: iaso/models/pages.py:19
 msgid "Superset dashboard"
 msgstr "Tableau de bord Superset"
 
@@ -595,13 +595,13 @@ msgstr "Envoyé"
 msgid "Paid"
 msgstr "Payé"
 
-#: iaso/models/payments.py:63
+#: iaso/models/payments.py:64
 msgid "Partially Paid"
 msgstr "Partiellement payé"
 
-#: iaso/tasks/copy_version.py:40
-#: iaso/tasks/export_mobile_app_setup_for_user.py:52
-#: iaso/tasks/process_mobile_bulk_upload.py:51
+#: iaso/tasks/copy_version.py:41
+#: iaso/tasks/export_mobile_app_setup_for_user.py:55
+#: iaso/tasks/process_mobile_bulk_upload.py:52
 msgid "Starting"
 msgstr "Démarrage"
 
@@ -617,22 +617,22 @@ msgstr "Copie des unités organisationnelles"
 msgid "Fixing parents"
 msgstr "Correction des parents"
 
-#: iaso/utils/serializer/id_or_uuid_field.py:13
+#: iaso/utils/serializer/id_or_uuid_field.py:12
 msgid "This field is required."
 msgstr "Ce champ est requis."
 
-#: iaso/utils/serializer/id_or_uuid_field.py:14
+#: iaso/utils/serializer/id_or_uuid_field.py:13
 #, python-brace-format
 msgid "Invalid pk or uuid \"{pk_value}\" - object does not exist."
 msgstr "Clé primaire ou uuid invalide \"{pk_value}\" - l'objet n'existe pas."
 
-#: iaso/utils/serializer/id_or_uuid_field.py:15
+#: iaso/utils/serializer/id_or_uuid_field.py:14
 #, python-brace-format
 msgid "Incorrect type. Expected pk or uuid value, received {data_type}."
 msgstr ""
 "Type incorrect. Valeur de clé primaire ou uuid attendue, reçu {data_type}."
 
-#: iaso/utils/serializer/three_dim_point_field.py:19
+#: iaso/utils/serializer/three_dim_point_field.py:18
 msgid "Enter a valid location."
 msgstr "Entrez une localisation valide."
 

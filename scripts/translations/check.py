@@ -20,7 +20,7 @@ def check_po_file(po_path):
     print(f"\n{Colors.BLUE}Checking{Colors.ENDC} {Colors.BOLD}{po_path}{Colors.ENDC}")
     missing = []
 
-    with open(po_path, "r", encoding="utf-8") as f:
+    with open(po_path, encoding="utf-8") as f:
         content = f.read()
 
     current_msgid = []

@@ -2,6 +2,7 @@ import math
 import sqlite3
 
 from copy import deepcopy
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
 import fiona  # type: ignore
@@ -37,6 +38,8 @@ class PropertyDict(TypedDict):
     parent_ref: str
     ref: str
     group_refs: str
+    opening_date: Optional[str]
+    closed_date: Optional[str]
 
 
 class GeomDict(TypedDict):
@@ -98,6 +101,7 @@ def create_or_update_orgunit(
     source_version: SourceVersion,
     validation_status: str,
     ref_group: Dict[str, Group],
+    task=None,
 ) -> OrgUnit:
     props = data["properties"]
     geometry = data["geometry"]
@@ -114,6 +118,28 @@ def create_or_update_orgunit(
         orgunit.validation_status = validation_status
     orgunit.source_ref = props["ref"]
     orgunit.version = source_version
+
+    # Import dates if they exist in properties
+    opening_date = props.get("opening_date")
+    closed_date = props.get("closed_date")
+
+    if opening_date:
+        try:
+            orgunit.opening_date = datetime.strptime(opening_date, "%Y-%m-%d").date()
+        except (ValueError, TypeError) as e:
+            if task:
+                task.report_progress_and_stop_if_killed(
+                    progress_message=f"Error parsing opening_date for {orgunit.name}: {e}"
+                )
+
+    if closed_date:
+        try:
+            orgunit.closed_date = datetime.strptime(closed_date, "%Y-%m-%d").date()
+        except (ValueError, TypeError) as e:
+            if task:
+                task.report_progress_and_stop_if_killed(
+                    progress_message=f"Error parsing closed_date for {orgunit.name}: {e}"
+                )
 
     if geometry:
         geom = convert_to_geography(geometry["type"], geometry["coordinates"])
@@ -243,7 +269,7 @@ def import_gpkg_file2(
             ref = row["properties"]["ref"]
 
             existing_ou = ref_ou.get(ref)
-            orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group)
+            orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group, task)
 
             if task and total_org_unit % 500 == 0:
                 task.report_progress_and_stop_if_killed(

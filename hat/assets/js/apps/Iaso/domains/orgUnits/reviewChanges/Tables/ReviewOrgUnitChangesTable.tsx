@@ -1,16 +1,17 @@
+import React, { FunctionComponent, ReactElement, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import Color from 'color';
-import React, { FunctionComponent, ReactElement, useMemo } from 'react';
 import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import { UserCell } from '../../../../components/Cells/UserCell';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
 import { ColumnCell } from '../../../../types/general';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
-import { IconButton } from '../details';
 import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
+import { IconButton } from '../details';
 import MESSAGES from '../messages';
 import {
     ApproveOrgUnitParams,
@@ -21,6 +22,9 @@ import {
 
 const useColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
+    const { modules } = currentUser.account;
+
     return useMemo(
         () => [
             {
@@ -118,12 +122,16 @@ const useColumns = (): Column[] => {
                 accessor: 'created_by',
                 Cell: UserCell,
             },
-            {
-                Header: formatMessage(MESSAGES.paymentStatus),
-                id: 'payment_status',
-                accessor: 'payment_status',
-                Cell: BreakWordCell,
-            },
+            ...(modules.includes('PAYMENTS')
+                ? [
+                      {
+                          Header: formatMessage(MESSAGES.paymentStatus),
+                          id: 'payment_status',
+                          accessor: 'payment_status',
+                          Cell: BreakWordCell,
+                      },
+                  ]
+                : []),
             {
                 Header: formatMessage(MESSAGES.updated_at),
                 id: 'updated_at',
@@ -153,7 +161,7 @@ const useColumns = (): Column[] => {
                 },
             },
         ],
-        [formatMessage],
+        [formatMessage, modules],
     );
 };
 

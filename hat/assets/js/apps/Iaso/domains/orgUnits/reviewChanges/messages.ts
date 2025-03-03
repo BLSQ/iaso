@@ -258,12 +258,12 @@ const MESSAGES = defineMessages({
 
     changeSelectedChangeRequests: {
         id: 'iaso.changeRequest.changeSelectedChangeRequests',
-        defaultMessage: 'Edit {count} selected change requests',
+        defaultMessage: 'Edit {count} selected change requests.',
     },
     changeSelectedChangeRequestsLaunched: {
         id: 'iaso.snackBar.changeSelectedChangeRequestsLaunched',
         defaultMessage:
-            'The modifications to the change requests will take a few moments to take effect',
+            'The modifications to the change requests will take a few moments to take effect.',
     },
     goToCurrentTask: {
         id: 'iaso.label.goToCurrentTask',

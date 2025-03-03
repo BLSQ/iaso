@@ -1,5 +1,5 @@
-import { UrlParams, useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { UrlParams, useSafeIntl } from 'bluesquare-components';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import {
     FormattedApiParams,
@@ -15,11 +15,6 @@ import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import {
-    StockManagementDetailsParams,
-    StockManagementListParams,
-    StockVariationParams,
-} from '../types';
 
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { commaSeparatedIdsToStringArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
@@ -29,6 +24,11 @@ import {
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
 import { patchRequest2, postRequest2 } from '../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
+import {
+    StockManagementDetailsParams,
+    StockManagementListParams,
+    StockVariationParams,
+} from '../types';
 
 const defaults = {
     order: 'country',
@@ -128,35 +128,6 @@ export const useGetUnusableVials = (
     return useSnackQuery({
         queryKey: ['unusable-vials', queryString, id],
         queryFn: () => getUnusableVials(id, queryString),
-        options: { ...options, enabled },
-    });
-};
-
-const getEarmarked = async (id: string, queryString: string) => {
-    return getRequest(`${apiUrl}${id}/get_earmarked_stock/?${queryString}`);
-};
-// Need to pass id to apiUrl
-// Splitting hooks to be able to store both payloads in the cache and avoid refetching with each tab change
-export const useGetEarmarked = (
-    params: StockManagementDetailsParams,
-    enabled: boolean,
-): UseQueryResult<any, any> => {
-    const {
-        earmarkedOrder: order,
-        earmarkedPage: page,
-        earmarkedPageSize: pageSize,
-    } = params;
-    const safeParams = useUrlParams({
-        order,
-        page,
-        pageSize,
-    } as Partial<UrlParams>);
-    const { id } = params;
-    const apiParams = useApiParams(safeParams);
-    const queryString = new URLSearchParams(apiParams).toString();
-    return useSnackQuery({
-        queryKey: ['earmarked', queryString, id],
-        queryFn: () => getEarmarked(id, queryString),
         options: { ...options, enabled },
     });
 };

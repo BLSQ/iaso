@@ -13,9 +13,8 @@ import ExcellSvg from '../../../../../../../../hat/assets/js/apps/Iaso/component
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../../../constants/urls';
-import { EARMARKED, UNUSABLE_VIALS, USABLE_VIALS } from '../constants';
+import { UNUSABLE_VIALS, USABLE_VIALS } from '../constants';
 import {
-    useGetEarmarked,
     useGetStockManagementSummary,
     useGetUnusableVials,
     useGetUsableVials,
@@ -62,9 +61,6 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
     const { data: unusableVials, isFetching: isFetchingUnusable } =
         useGetUnusableVials(params, tab === UNUSABLE_VIALS);
 
-    const { data: earmarked, isFetching: isFetchingEarmarked } =
-        useGetEarmarked(params, tab === EARMARKED);
-
     const { data: summary, isLoading: isLoadingSummary } =
         useGetStockManagementSummary(params.id);
 
@@ -89,9 +85,6 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                 xlsxUrl = `${xlsxUrl}/usable_vials/?export_xlsx=true`;
                 break;
             case UNUSABLE_VIALS:
-                xlsxUrl = `${xlsxUrl}/get_unusable_vials/?export_xlsx=true`;
-                break;
-            case EARMARKED:
                 xlsxUrl = `${xlsxUrl}/get_unusable_vials/?export_xlsx=true`;
                 break;
             default:
@@ -164,11 +157,6 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                             label={formatMessage(MESSAGES.unusable)}
                         />
                     )}
-                    <Tab
-                        key={EARMARKED}
-                        value={EARMARKED}
-                        label={formatMessage(MESSAGES.earmarked)}
-                    />
                 </Tabs>
                 <Paper elevation={2} className={classes.marginTop}>
                     <Box pt={2} px={2}>
@@ -191,14 +179,6 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                                 paramsPrefix={tab}
                                 data={unusableVials}
                                 isFetching={isFetchingUnusable}
-                            />
-                        )}
-                        {tab === EARMARKED && (
-                            <VaccineStockManagementDetailsTableUnusable
-                                params={params}
-                                paramsPrefix={tab}
-                                data={earmarked}
-                                isFetching={isFetchingEarmarked}
                             />
                         )}
                     </Box>

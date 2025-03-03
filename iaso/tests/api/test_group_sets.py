@@ -1,10 +1,10 @@
 from django.utils.timezone import now
 from rest_framework import status
 
-from iaso import models as m
-from iaso.models import GroupSet, SourceVersion
-from iaso.test import APITestCase
 from hat.audit.models import Modification
+from iaso import models as m
+from iaso.models import GroupSet
+from iaso.test import APITestCase
 
 
 class GroupSetsAPITestCase(APITestCase):
@@ -419,7 +419,7 @@ class GroupSetsAPITestCase(APITestCase):
     def test_list_groupsets_search_return_dynamic_fields(self):
         record_1, record_2 = self.seed_list()
 
-        resp = self.client.get(f"/api/group_sets/?fields=id")
+        resp = self.client.get("/api/group_sets/?fields=id")
         self.assertEqual(resp.json()["group_sets"], [{"id": record_1["id"]}, {"id": record_2["id"]}])
 
     def test_list_groupsets_search_return_dynamic_fields_groups(self):

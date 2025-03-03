@@ -1,33 +1,50 @@
-import traceback
 import datetime
+import traceback
+
 from collections import defaultdict
 
 import django
+
 from django.contrib.auth.models import User
-from django.contrib.sessions.models import Session
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sessions.models import Session
 from django.core.management.base import BaseCommand
 from django.db import connection
-from django.db.models import Count
-from django.db.models import Q
-from django.db.models import TextField
+from django.db.models import Count, Q, TextField
 from django.db.models.functions import Cast
+from django_sql_dashboard.models import Dashboard
 
 from hat.audit.models import Modification
-from iaso.models import Account, OrgUnitType, CommentIaso, StoragePassword, StorageDevice, StorageLogEntry, TenantUser
-from iaso.models import BulkCreateUserCsvFile
-from iaso.models import ExportLog
-from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping, Profile, InstanceFile, InstanceLock
-from iaso.models.base import Task, QUEUED, KILLED
+from iaso.models import (
+    Account,
+    BulkCreateUserCsvFile,
+    CommentIaso,
+    ExportLog,
+    OrgUnitType,
+    StorageDevice,
+    StorageLogEntry,
+    StoragePassword,
+    TenantUser,
+)
+from iaso.models.base import (
+    KILLED,
+    QUEUED,
+    DataSource,
+    ExternalCredentials,
+    Instance,
+    InstanceFile,
+    InstanceLock,
+    Mapping,
+    Profile,
+    Task,
+)
+from iaso.models.device import Device
 from iaso.models.entity import Entity, EntityType
 from iaso.models.forms import Form
-from iaso.models.microplanning import Assignment, Team, Planning
+from iaso.models.microplanning import Assignment, Planning, Team
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.models.pages import Page
 from iaso.models.project import Project
-from iaso.models.device import Device
-
-from django_sql_dashboard.models import Dashboard
 
 
 def flatten(l):

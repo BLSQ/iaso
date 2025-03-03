@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
@@ -59,8 +59,9 @@ class PaymentLot(models.Model):
         NEW = "new", _("New")  # Default status, indicating a newly created lot or a lot with no payments sent.
         SENT = "sent", _("Sent")  # Indicates that all payments in the lot have been sent.
         PAID = "paid", _("Paid")  # Indicates that all payments in the lot have been paid.
-        PARTIALLY_PAID = "partially_paid", _(
-            "Partially Paid"
+        PARTIALLY_PAID = (
+            "partially_paid",
+            _("Partially Paid"),
         )  # Indicates that some, but not all, payments in the lot have been paid.
 
     name = models.CharField(max_length=255)
@@ -84,12 +85,11 @@ class PaymentLot(models.Model):
 
         if paid_payments == total_payments:
             return self.Statuses.PAID
-        elif paid_payments > 0:
+        if paid_payments > 0:
             return self.Statuses.PARTIALLY_PAID
-        elif sent_payments == total_payments:
+        if sent_payments == total_payments:
             return self.Statuses.SENT
-        else:
-            return self.Statuses.NEW
+        return self.Statuses.NEW
 
     def __str__(self):
         return "%s - %s" % (self.name, self.created_at.strftime("%Y-%m-%d %H:%M:%S"))

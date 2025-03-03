@@ -1,12 +1,15 @@
 import io
+
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.management import call_command
 from django.http import HttpResponse
-from iaso.models import Entity
-from .models import Beneficiary
 from django.shortcuts import get_object_or_404
 from django.template import loader
-from django.contrib.admin.views.decorators import staff_member_required
+
+from iaso.models import Entity
+
 from .common import ETL
-from django.core.management import call_command
+from .models import Beneficiary
 
 
 @staff_member_required

@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 from django.urls import re_path
 
 from hat.dashboard import views
+
 
 app_name = "registry"
 urlpatterns = [

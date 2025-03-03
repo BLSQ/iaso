@@ -1,14 +1,14 @@
-"""Exporting to a gpkg a whole Data source version (OrgUnit hierarchy and Groups) see README.md
-
-"""
+"""Exporting to a gpkg a whole Data source version (OrgUnit hierarchy and Groups) see README.md"""
 
 import os
 import sqlite3
 import tempfile
 import uuid
+
 from typing import Optional
 
 import geopandas as gpd  # type: ignore
+
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import QuerySet
 from pandas import DataFrame
@@ -17,6 +17,7 @@ from shapely.geometry.base import BaseGeometry  # type: ignore
 
 from iaso.gpkg.import_gpkg import get_ref
 from iaso.models import Group, OrgUnit, SourceVersion
+
 
 OUT_COLUMNS = [
     "name",
@@ -80,7 +81,7 @@ def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
     df["parent"] = df["parent__name"] + " (" + df["parent__org_unit_type__name"] + ")"
     # Calculate alternative parent ref if we have a parent
     df.loc[df["parent__id"].notnull(), "alt_parent_ref"] = df["parent__id"].apply(
-        lambda x: "iaso#{:.0f}".format(x) if x else None
+        lambda x: f"iaso#{x:.0f}" if x else None
     )
     # fill parent ref with alternative if we don't have one.
     df["parent_ref"] = df["parent__source_ref"].fillna(df["alt_parent_ref"])

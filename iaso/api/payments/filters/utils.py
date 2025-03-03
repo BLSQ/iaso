@@ -1,7 +1,7 @@
 from rest_framework.exceptions import ValidationError
 
 from iaso.models import OrgUnit
-from iaso.utils.date_and_time import date_string_to_start_of_day, date_string_to_end_of_day
+from iaso.utils.date_and_time import date_string_to_end_of_day, date_string_to_start_of_day
 
 
 def filter_by_forms(request, queryset, key=None):

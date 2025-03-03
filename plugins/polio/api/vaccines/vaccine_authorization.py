@@ -1,6 +1,7 @@
 import datetime
 import datetime as dt
 import itertools
+
 from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -12,12 +13,12 @@ from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
 from iaso.api.common import (
+    Custom403Exception,
     DeletionFilterBackend,
     GenericReadWritePerm,
     ModelViewSet,
     Paginator,
     TimestampField,
-    Custom403Exception,
 )
 from iaso.models import OrgUnit
 from plugins.polio.models import Group, VaccineAuthorization
@@ -30,7 +31,7 @@ def check_for_already_validated_authorization(status, country):
             status="VALIDATED", country=country, deleted_at__isnull=True
         )
         if validated_vaccine_auth:
-            raise Custom403Exception({"error": f"A vaccine authorization is already validated for this country"})
+            raise Custom403Exception({"error": "A vaccine authorization is already validated for this country"})
 
 
 class CountryForVaccineSerializer(serializers.ModelSerializer):

@@ -1,7 +1,8 @@
 """API endpoints and serializers for vaccine repository management."""
 
 from datetime import timedelta
-from django.db.models import Max, Min, OuterRef, Subquery
+
+from django.db.models import Case, CharField, Exists, Max, Min, OuterRef, Q, Subquery, When
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, serializers
@@ -9,7 +10,6 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from django.db.models import OuterRef, Subquery, Q, Case, When, CharField, Exists
 
 from iaso.api.common import Paginator
 from plugins.polio.models import (

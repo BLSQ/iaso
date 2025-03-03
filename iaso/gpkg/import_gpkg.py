@@ -131,7 +131,6 @@ def create_or_update_orgunit(
                 task.report_progress_and_stop_if_killed(
                     progress_message=f"Error parsing opening_date for {orgunit.name}: {e}"
                 )
-            pass
 
     if closed_date:
         try:
@@ -141,7 +140,6 @@ def create_or_update_orgunit(
                 task.report_progress_and_stop_if_killed(
                     progress_message=f"Error parsing closed_date for {orgunit.name}: {e}"
                 )
-            pass
 
     if geometry:
         geom = convert_to_geography(geometry["type"], geometry["coordinates"])
@@ -270,7 +268,7 @@ def import_gpkg_file2(
             row["type"] = org_unit_type
             ref = row["properties"]["ref"]
 
-            existing_ou = ref_ou.get(ref, None)
+            existing_ou = ref_ou.get(ref)
             orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group, task)
 
             if task and total_org_unit % 500 == 0:

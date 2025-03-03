@@ -3,11 +3,13 @@ import datetime
 import io
 import json
 import typing
+
 from unittest import mock
 from unittest.mock import patch
 from uuid import uuid4
 
 import pytz
+
 from django.contrib.gis.geos import Point
 from django.core.files import File
 from django.utils import timezone
@@ -21,6 +23,7 @@ from iaso.api import query_params as query
 from iaso.models import FormVersion, Instance, InstanceLock
 from iaso.models.microplanning import Planning, Team
 from iaso.test import APITestCase
+
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 

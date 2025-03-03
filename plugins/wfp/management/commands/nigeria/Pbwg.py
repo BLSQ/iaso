@@ -1,15 +1,18 @@
 import logging
+
 from itertools import groupby
 from operator import itemgetter
+
 from plugins.wfp.common import ETL
 from plugins.wfp.models import *
+
 
 logger = logging.getLogger(__name__)
 
 
 class NG_PBWG:
-    def run(self):
-        entity_type = ETL(["pbwg_3"])
+    def run(self, type):
+        entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
         beneficiaries = entity_type.retrieve_entities()
         logger.info(f"Instances linked to PBWG program: {beneficiaries.count()} for {account}")
@@ -20,7 +23,7 @@ class NG_PBWG:
 
         for index, instance in enumerate(instances):
             logger.info(
-                f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
+                f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
             )
 
             instance["journey"] = self.journeyMapper(instance["visits"], ["ng_pbwg_anthropometric"])
@@ -33,7 +36,7 @@ class NG_PBWG:
                 if instance.get("birth_date") is not None:
                     beneficiary.birth_date = instance["birth_date"]
                     beneficiary.save()
-                    logger.info(f"Created new beneficiary")
+                    logger.info("Created new beneficiary")
             else:
                 beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
 
@@ -54,7 +57,7 @@ class NG_PBWG:
                 else:
                     logger.info("No new journey")
             logger.info(
-                f"---------------------------------------------------------------------------------------------\n\n"
+                "---------------------------------------------------------------------------------------------\n\n"
             )
 
     def save_journey(self, beneficiary, record):

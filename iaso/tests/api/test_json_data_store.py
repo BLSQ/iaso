@@ -1,8 +1,11 @@
 import json
+
+from django.utils.text import slugify
+
 from iaso.models.base import Account
 from iaso.models.data_store import JsonDataStore
 from iaso.test import APITestCase
-from django.utils.text import slugify
+
 
 data_store_content1 = json.dumps({"hello": "world"})
 data_store_content2 = json.dumps({"wait": "what"})

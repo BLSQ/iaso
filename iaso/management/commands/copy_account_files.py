@@ -1,9 +1,10 @@
 import os
+
 from pathlib import Path
-from django.core.paginator import Paginator
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
+from django.core.paginator import Paginator
 
 
 def fullname(o):
@@ -19,9 +20,7 @@ def model_and_fields_with_files(account_id_to_keep, model_to_copy, offset):
         m = ct.model_class()
         skip = False
         if m:
-            if model_to_copy and m.__name__ == model_to_copy:
-                skip = False
-            elif model_to_copy is None:
+            if (model_to_copy and m.__name__ == model_to_copy) or model_to_copy is None:
                 skip = False
             else:
                 skip = True

@@ -1,8 +1,10 @@
 from django.conf import settings
 
+
 if settings.USE_CELERY:
     import os
-    from celery import Celery, shared_task
+
+    from celery import Celery
 
     from hat import settings
 

@@ -1,14 +1,17 @@
 import datetime
+
 import jsonschema
 import time_machine
 
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
+
+import hat.menupermissions.models as permissions
 
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio import models as pm
-import hat.menupermissions.models as permissions
 
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
@@ -65,8 +68,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
 
         cls.campaign_round_1 = pm.Round.objects.create(
             campaign=cls.campaign,
-            started_at=datetime.datetime(2021, 1, 1),
-            ended_at=datetime.datetime(2021, 1, 31),
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
             number=1,
         )
 
@@ -133,7 +136,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.now - datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=0,
@@ -141,10 +144,28 @@ class VaccineStockManagementAPITestCase(APITestCase):
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.now - datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=20,
+            usable_vials=0,
+        )
+        # Remove from usable
+        cls.incident_report = pm.IncidentReport.objects.create(
+            vaccine_stock=cls.vaccine_stock,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_REMOVE,
+            date_of_incident_report=cls.now - datetime.timedelta(days=6),
+            incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
+            unusable_vials=0,
+            usable_vials=1,
+        )
+        # remove from unusable
+        cls.incident_report = pm.IncidentReport.objects.create(
+            vaccine_stock=cls.vaccine_stock,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_REMOVE,
+            date_of_incident_report=cls.now - datetime.timedelta(days=6),
+            incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
+            unusable_vials=1,
             usable_vials=0,
         )
 
@@ -158,7 +179,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 403)
 
-    def test_user_with_read_only_can_see_list(self):
+    def test_user_with_read_can_see_list(self):
         # Test the vaccine stock list API
         self.client.force_authenticate(user=self.user_ro_perms)
         response = self.client.get(BASE_URL)
@@ -170,9 +191,164 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(stock["vaccine_type"], pm.VACCINES[0][0])
         self.assertEqual(stock["vials_received"], 20)  # 400 doses / 20 doses per vial
         self.assertEqual(stock["vials_used"], 10)
-        self.assertEqual(stock["stock_of_usable_vials"], 22)  # 20 received - 13 used + 15 found in inventory
-        self.assertEqual(stock["stock_of_unusable_vials"], 28)
+        self.assertEqual(
+            stock["stock_of_usable_vials"], 21
+        )  # 20 received - 13 used + 15 found in inventory -1 removed from inventory
+        self.assertEqual(stock["stock_of_unusable_vials"], 27)
+        self.assertEqual(stock["stock_of_earmarked_vials"], 0)
         self.assertEqual(stock["vials_destroyed"], 3)  # 3 destroyed
+
+    def test_vaccine_stock_management_permissions_outgoing_stock_movement(self):
+        # Use a non-admin user
+        self.client.force_authenticate(self.user_ro_perms)
+
+        # Non-admin can create outgoing stock movement
+        osm_data = {
+            "campaign": self.campaign.obr_name,
+            "vaccine_stock": self.vaccine_stock.id,
+            "report_date": "2024-01-01",
+            "form_a_reception_date": "2024-01-02",
+            "usable_vials_used": 50,
+            "lot_numbers": ["LOT1", "LOT2"],
+            "missing_vials": 2,
+            "round": self.campaign_round_1.id,
+            "comment": "Test OSM",
+        }
+
+        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", osm_data, format="json")
+        self.assertEqual(response.status_code, 201)
+        osm_id = response.data["id"]
+
+        # Non-admin can edit within 7 days
+        update_data = {"comment": "Updated comment"}
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Simulate passage of 8 days
+        osm = pm.OutgoingStockMovement.objects.get(id=osm_id)
+        osm.created_at = timezone.now() - datetime.timedelta(days=8)
+        osm.save()
+
+        # Non-admin cannot edit after 7 days
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+        # Switch to admin user
+        self.client.force_authenticate(self.user_rw_perms)
+
+        # Admin can edit regardless of time passed
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Admin can delete regardless of time passed
+        response = self.client.delete(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{osm_id}/")
+        self.assertEqual(response.status_code, 204)
+
+    def test_vaccine_stock_management_permissions_incident_report(self):
+        # Use a non-admin user
+        self.client.force_authenticate(self.user_ro_perms)
+
+        # Non-admin can create incident report
+        incident_data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "stock_correction": "broken",
+            "date_of_incident_report": "2024-01-01",
+            "incident_report_received_by_rrt": "2024-01-02",
+            "unusable_vials": 5,
+            "usable_vials": 0,
+            "comment": "Test incident",
+        }
+
+        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}incident_report/", incident_data, format="json")
+        self.assertEqual(response.status_code, 201)
+        incident_id = response.data["id"]
+
+        # Non-admin can edit within 7 days
+        update_data = {"comment": "Updated comment"}
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}incident_report/{incident_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Simulate passage of 8 days
+        incident = pm.IncidentReport.objects.get(id=incident_id)
+        incident.created_at = timezone.now() - datetime.timedelta(days=8)
+        incident.save()
+
+        # Non-admin cannot edit after 7 days
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}incident_report/{incident_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+        # Switch to admin user
+        self.client.force_authenticate(self.user_rw_perms)
+
+        # Admin can edit regardless of time passed
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}incident_report/{incident_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Admin can delete regardless of time passed
+        response = self.client.delete(f"{BASE_URL_SUB_RESOURCES}incident_report/{incident_id}/")
+        self.assertEqual(response.status_code, 204)
+
+    def test_vaccine_stock_management_permissions_destruction_report(self):
+        # Use a non-admin user
+        self.client.force_authenticate(self.user_ro_perms)
+
+        # Non-admin can create destruction report
+        destruction_data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "stock_correction": "destroyed",
+            "destruction_report_date": "2024-01-01",
+            "rrt_destruction_report_reception_date": "2024-01-02",
+            "unusable_vials_destroyed": 5,
+            "action": "Destroyed due to expiration",
+            "comment": "Test destruction",
+        }
+
+        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}destruction_report/", destruction_data, format="json")
+        self.assertEqual(response.status_code, 201)
+        destruction_id = response.data["id"]
+
+        # Non-admin can edit within 7 days
+        update_data = {"comment": "Updated comment"}
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/{destruction_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Simulate passage of 8 days
+        destruction = pm.DestructionReport.objects.get(id=destruction_id)
+        destruction.created_at = timezone.now() - datetime.timedelta(days=8)
+        destruction.save()
+
+        # Non-admin cannot edit after 7 days
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/{destruction_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+        # Switch to admin user
+        self.client.force_authenticate(self.user_rw_perms)
+
+        # Admin can edit regardless of time passed
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/{destruction_id}/", update_data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Admin can delete regardless of time passed
+        response = self.client.delete(f"{BASE_URL_SUB_RESOURCES}destruction_report/{destruction_id}/")
+        self.assertEqual(response.status_code, 204)
 
     def test_usable_vials_endpoint(self):
         # Authenticate and make request to the API
@@ -210,7 +386,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         }
 
         # Check that we have 6 entries in the results array
-        self.assertEqual(len(data["results"]), 6)
+        self.assertEqual(len(data["results"]), 7)
 
         # Validate the response data against the schema
         try:
@@ -225,37 +401,42 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(data["results"][0]["doses_in"], 320)
         self.assertEqual(data["results"][0]["type"], "incident_report")  # Physical inventory
 
-        self.assertEqual(data["results"][1]["date"], "2024-10-24")
-        self.assertEqual(data["results"][1]["vials_in"], 20)
-        self.assertEqual(data["results"][1]["doses_in"], 400)
-        self.assertEqual(data["results"][1]["type"], "vaccine_arrival_report")  # From arrival report
+        self.assertEqual(data["results"][1]["date"], "2024-10-23")
+        self.assertEqual(data["results"][1]["vials_out"], 1)
+        self.assertEqual(data["results"][1]["doses_out"], 20)
+        self.assertEqual(data["results"][1]["type"], "incident_report")  # Physical inventory remove
 
         self.assertEqual(data["results"][2]["date"], "2024-10-24")
-        self.assertEqual(data["results"][2]["vials_out"], 1)
-        self.assertEqual(data["results"][2]["doses_out"], 20)
-        self.assertEqual(data["results"][2]["type"], "incident_report")  # Broken
+        self.assertEqual(data["results"][2]["vials_in"], 20)
+        self.assertEqual(data["results"][2]["doses_in"], 400)
+        self.assertEqual(data["results"][2]["type"], "vaccine_arrival_report")  # From arrival report
 
-        self.assertEqual(data["results"][3]["date"], "2024-10-25")
+        self.assertEqual(data["results"][3]["date"], "2024-10-24")
         self.assertEqual(data["results"][3]["vials_out"], 1)
         self.assertEqual(data["results"][3]["doses_out"], 20)
-        self.assertEqual(data["results"][3]["type"], "incident_report")  # Expiry date
+        self.assertEqual(data["results"][3]["type"], "incident_report")  # Broken
 
-        self.assertEqual(data["results"][4]["date"], "2024-10-26")
-        self.assertEqual(data["results"][4]["vials_out"], 10)
-        self.assertEqual(data["results"][4]["doses_out"], 200)
-        self.assertEqual(data["results"][4]["type"], "outgoing_stock_movement")  # Outgoing movement (form A)
+        self.assertEqual(data["results"][4]["date"], "2024-10-25")
+        self.assertEqual(data["results"][4]["vials_out"], 1)
+        self.assertEqual(data["results"][4]["doses_out"], 20)
+        self.assertEqual(data["results"][4]["type"], "incident_report")  # Expiry date
 
         self.assertEqual(data["results"][5]["date"], "2024-10-26")
-        self.assertEqual(data["results"][5]["vials_out"], 2)
-        self.assertEqual(data["results"][5]["doses_out"], 40)
-        self.assertEqual(data["results"][5]["type"], "outgoing_stock_movement")  # missing vials (form A)
+        self.assertEqual(data["results"][5]["vials_out"], 10)
+        self.assertEqual(data["results"][5]["doses_out"], 200)
+        self.assertEqual(data["results"][5]["type"], "outgoing_stock_movement")  # Outgoing movement (form A)
+
+        self.assertEqual(data["results"][6]["date"], "2024-10-26")
+        self.assertEqual(data["results"][6]["vials_out"], 2)
+        self.assertEqual(data["results"][6]["doses_out"], 40)
+        self.assertEqual(data["results"][6]["type"], "outgoing_stock_movement")  # missing vials (form A)
 
         # Order by `vials_in DESC`.
 
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/?order=-vials_in")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["results"]), 6)
+        self.assertEqual(len(data["results"]), 7)
 
         self.assertEqual(data["results"][0]["vials_in"], 20)
         self.assertEqual(data["results"][1]["vials_in"], 16)
@@ -263,20 +444,22 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(data["results"][3]["vials_in"], None)
         self.assertEqual(data["results"][4]["vials_in"], None)
         self.assertEqual(data["results"][5]["vials_in"], None)
+        self.assertEqual(data["results"][6]["vials_in"], None)
 
         # Order by `vials_in ASC`.
 
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/?order=vials_in")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["results"]), 6)
+        self.assertEqual(len(data["results"]), 7)
 
         self.assertEqual(data["results"][0]["vials_in"], None)
         self.assertEqual(data["results"][1]["vials_in"], None)
         self.assertEqual(data["results"][2]["vials_in"], None)
         self.assertEqual(data["results"][3]["vials_in"], None)
-        self.assertEqual(data["results"][4]["vials_in"], 16)
-        self.assertEqual(data["results"][5]["vials_in"], 20)
+        self.assertEqual(data["results"][4]["vials_in"], None)
+        self.assertEqual(data["results"][5]["vials_in"], 16)
+        self.assertEqual(data["results"][6]["vials_in"], 20)
 
     def test_unusable_vials_endpoint(self):
         # Authenticate and make request to the API
@@ -320,7 +503,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             self.fail(msg=str(ex))
 
         # Check that the response contains the expected number of unusable vials entries
-        self.assertEqual(len(data["results"]), 4)
+        self.assertEqual(len(data["results"]), 5)
 
         # Default order should be `date ASC`.
 
@@ -329,44 +512,51 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(data["results"][0]["doses_in"], 400)
         self.assertEqual(data["results"][0]["type"], "incident_report")
 
-        self.assertEqual(data["results"][1]["date"], "2024-10-25")
-        self.assertEqual(data["results"][1]["vials_in"], 1)
-        self.assertEqual(data["results"][1]["doses_in"], 20)
+        self.assertEqual(data["results"][1]["date"], "2024-10-23")
+        self.assertEqual(data["results"][1]["vials_out"], 1)
+        self.assertEqual(data["results"][1]["doses_out"], 20)
         self.assertEqual(data["results"][1]["type"], "incident_report")
 
-        self.assertEqual(data["results"][2]["date"], "2024-10-26")
-        self.assertEqual(data["results"][2]["vials_in"], 10)
-        self.assertEqual(data["results"][2]["doses_in"], 200)
-        self.assertEqual(data["results"][2]["type"], "outgoing_stock_movement")
+        self.assertEqual(data["results"][2]["date"], "2024-10-25")
+        self.assertEqual(data["results"][2]["vials_in"], 1)
+        self.assertEqual(data["results"][2]["doses_in"], 20)
+        self.assertEqual(data["results"][2]["type"], "incident_report")
 
-        self.assertEqual(data["results"][3]["date"], "2024-10-29")
-        self.assertEqual(data["results"][3]["vials_out"], 3)
-        self.assertEqual(data["results"][3]["doses_out"], 60)
-        self.assertEqual(data["results"][3]["type"], "destruction_report")
+        self.assertEqual(data["results"][3]["date"], "2024-10-26")
+        self.assertEqual(data["results"][3]["vials_in"], 10)
+        self.assertEqual(data["results"][3]["doses_in"], 200)
+        self.assertEqual(data["results"][3]["type"], "outgoing_stock_movement")
+
+        self.assertEqual(data["results"][4]["date"], "2024-10-29")
+        self.assertEqual(data["results"][4]["vials_out"], 3)
+        self.assertEqual(data["results"][4]["doses_out"], 60)
+        self.assertEqual(data["results"][4]["type"], "destruction_report")
 
         # Order by `doses_in DESC`.
 
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/get_unusable_vials/?order=-doses_in")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["results"]), 4)
+        self.assertEqual(len(data["results"]), 5)
 
         self.assertEqual(data["results"][0]["doses_in"], 400)
         self.assertEqual(data["results"][1]["doses_in"], 200)
         self.assertEqual(data["results"][2]["doses_in"], 20)
         self.assertEqual(data["results"][3]["doses_in"], None)
+        self.assertEqual(data["results"][4]["doses_in"], None)
 
         # Order by `doses_in ASC`.
 
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/get_unusable_vials/?order=doses_in")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["results"]), 4)
+        self.assertEqual(len(data["results"]), 5)
 
         self.assertEqual(data["results"][0]["doses_in"], None)
-        self.assertEqual(data["results"][1]["doses_in"], 20)
-        self.assertEqual(data["results"][2]["doses_in"], 200)
-        self.assertEqual(data["results"][3]["doses_in"], 400)
+        self.assertEqual(data["results"][1]["doses_in"], None)
+        self.assertEqual(data["results"][2]["doses_in"], 20)
+        self.assertEqual(data["results"][3]["doses_in"], 200)
+        self.assertEqual(data["results"][4]["doses_in"], 400)
 
     def test_summary_endpoint(self):
         # Authenticate as a user with read/write permissions
@@ -411,10 +601,10 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # Check that the values match what is expected
         self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
-        self.assertEqual(data["total_usable_vials"], 22)
-        self.assertEqual(data["total_unusable_vials"], 28)
-        self.assertEqual(data["total_usable_doses"], 440)
-        self.assertEqual(data["total_unusable_doses"], 560)
+        self.assertEqual(data["total_usable_vials"], 21)
+        self.assertEqual(data["total_unusable_vials"], 27)
+        self.assertEqual(data["total_usable_doses"], 420)
+        self.assertEqual(data["total_unusable_doses"], 540)
 
     def test_delete(self):
         self.client.force_authenticate(self.user_rw_perms)

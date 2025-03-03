@@ -7,6 +7,7 @@ from copy import deepcopy
 from functools import reduce
 
 import django_cte
+
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
 from django.contrib.postgres.fields import ArrayField
@@ -488,6 +489,7 @@ class OrgUnit(TreeModel):
             res["source"] = self.version.data_source.name if self.version else None
             res["source_id"] = self.version.data_source.id if self.version else None
             res["version"] = self.version.number if self.version else None
+            res["version_id"] = self.version.id if self.version else None
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
 
@@ -807,7 +809,7 @@ class OrgUnitChangeRequest(models.Model):
         for field_name in approved_fields:
             if field_name == "new_location_accuracy":
                 continue
-            elif field_name == "new_groups":
+            if field_name == "new_groups":
                 self.org_unit.groups.clear()
                 self.org_unit.groups.add(*self.new_groups.all())
             elif field_name == "new_reference_instances":

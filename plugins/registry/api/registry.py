@@ -93,8 +93,7 @@ class InstanceSerializer(serializers.ModelSerializer):
                 "last_name": obj.created_by.last_name,
             }
 
-        else:
-            return None
+        return None
 
     def get_file_content(self, obj):
         return obj.get_and_save_json_of_xml()

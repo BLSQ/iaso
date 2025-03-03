@@ -1,15 +1,16 @@
 import typing
 import uuid
 
-from django.contrib.auth.models import User, AnonymousUser
+from typing import Optional
+
+from django.contrib.auth.models import AnonymousUser, User
 from django.db import models
 
-from iaso.models.entity import EntityType, Form
 from ..utils.models.soft_deletable import (
-    SoftDeletableModel,
     DefaultSoftDeletableManager,
-    OnlyDeletedSoftDeletableManager,
     IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
 )
 
 
@@ -22,7 +23,7 @@ class Workflow(SoftDeletableModel):
     A workflow has versions of the type WorkflowVersion which includes the real content of the workflow."""
 
     entity_type = models.OneToOneField(
-        EntityType,
+        "iaso.EntityType",
         on_delete=models.CASCADE,
         related_name="workflow",
     )
@@ -78,6 +79,14 @@ class WorkflowVersionQuerySet(models.QuerySet):
 
         return queryset
 
+    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: Optional[str]):
+        queryset = self.filter_for_user(user)
+
+        if app_id is not None:
+            queryset = queryset.filter(workflow__entity_type__reference_form__projects__app_id=app_id)
+
+        return queryset
+
 
 class WorkflowVersion(SoftDeletableModel):
     """
@@ -125,11 +134,10 @@ class WorkflowVersion(SoftDeletableModel):
 
             return {"success": True}
 
-        else:
-            return {
-                "success": False,
-                "error": f"Transition from {old_status_str} to {new_status_str} is not allowed",
-            }
+        return {
+            "success": False,
+            "error": f"Transition from {old_status_str} to {new_status_str} is not allowed",
+        }
 
     def __str__(self):
         status_label = self.status
@@ -141,7 +149,7 @@ class WorkflowVersion(SoftDeletableModel):
 class WorkflowFollowup(models.Model):
     order = models.IntegerField(default=0)
     condition = models.JSONField(default=dict)
-    forms = models.ManyToManyField(Form)
+    forms = models.ManyToManyField("iaso.Form")
 
     # this actually points to a WorkflowVersion
     workflow_version = models.ForeignKey(WorkflowVersion, on_delete=models.CASCADE, related_name="follow_ups")
@@ -151,7 +159,7 @@ class WorkflowFollowup(models.Model):
 
 
 class WorkflowChange(models.Model):
-    form = models.ForeignKey(Form, on_delete=models.CASCADE)
+    form = models.ForeignKey("iaso.Form", on_delete=models.CASCADE)
     mapping = models.JSONField(
         default=dict
     )  # dict objects with keys a field name from reference_form and value the target field name in form.

@@ -3,6 +3,7 @@ import jsonschema
 from iaso.models import WorkflowVersion
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 
+
 BASE_API = "/api/workflowversions/"
 
 post_answer_schema = {
@@ -102,7 +103,7 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
         response = self.client.get(f"{BASE_API}?limit=2")
 
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 5)  # 4 versions available
+        self.assertEqual(response.json()["count"], 6)
 
         try:
             jsonschema.validate(instance=response.data, schema=set_tl_schema)

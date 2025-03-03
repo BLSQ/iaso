@@ -1,20 +1,17 @@
-import json
 from datetime import datetime
 from tempfile import NamedTemporaryFile
 from time import gmtime, strftime
 from typing import Any, List, Union
 
 from django.conf import settings
-from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Max, Min, Prefetch, Q
-from django.db.models.expressions import RawSQL
 from django.db.models.query import QuerySet
 from django.db.transaction import atomic
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.utils.timezone import make_aware, now
+from django.utils.timezone import now
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.exceptions import APIError  # type: ignore
@@ -39,7 +36,6 @@ from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification,
 from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
     missing_vaccine_authorization_for_campaign_email_alert,
 )
-from plugins.polio.api.common import CACHE_VERSION
 from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer
 from plugins.polio.api.shared_serializers import GroupSerializer, OrgUnitSerializer
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
@@ -59,6 +55,7 @@ from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.parser import InvalidFormatError, get_preparedness
 from plugins.polio.preparedness.spreadsheet_manager import Campaign, generate_spreadsheet_for_campaign
 from plugins.polio.preparedness.summary import preparedness_summary
+from plugins.polio.services.campaign import delete_old_scopes_after_scope_level_switch
 
 
 # Don't display the url for Anonymous users
@@ -171,7 +168,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         for round in ordered_rounds:
             if round.ended_at and now_utc > round.ended_at:
                 return _("Round {} ended").format(round.number)
-            elif round.started_at and now_utc >= round.started_at:
+            if round.started_at and now_utc >= round.started_at:
                 return _("Round {} started").format(round.number)
         return _("Preparing")
 
@@ -279,7 +276,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                         obr_name, validated_data["initial_org_unit"], account
                     )
             except OrgUnit.DoesNotExist:
-                raise Custom403Exception("error:" "Org unit does not exists.")
+                raise Custom403Exception("error:Org unit does not exists.")
 
         return campaign
 
@@ -296,8 +293,11 @@ class CampaignSerializer(serializers.ModelSerializer):
         keep_scope_per_round = separate_scopes_per_round and instance.separate_scopes_per_round
         keep_scope_per_campaign = not separate_scopes_per_round and not instance.separate_scopes_per_round
 
-        if switch_to_scope_per_round and instance.scopes.exists():
-            instance.scopes.all().delete()
+        delete_old_scopes_after_scope_level_switch(
+            switch_to_campaign=switch_to_scope_per_campaign,
+            switch_to_round=switch_to_scope_per_round,
+            campaign=instance,
+        )
 
         if switch_to_scope_per_campaign or keep_scope_per_campaign:
             for scope in campaign_scopes:
@@ -360,9 +360,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_serializer.is_valid(raise_exception=True)
             round_instance = round_serializer.save()
             round_instances.append(round_instance)
-            round_datelogs = []
-            if switch_to_scope_per_campaign and round.scopes.exists():
-                round.scopes.all().delete()
+
             if switch_to_scope_per_round or keep_scope_per_round:
                 for scope in scopes:
                     vaccine = scope.get("vaccine", "")
@@ -386,19 +384,26 @@ class CampaignSerializer(serializers.ModelSerializer):
 
                     scope.group.org_units.set(org_units)
 
+        submitted_round_ids = set([r.id for r in round_instances])
+        current_round_ids = set(instance.rounds.values_list("id", flat=True))
+
         # When some rounds need to be deleted, the payload contains only the rounds to keep.
         # So we have to detect if somebody wants to delete a round to prevent deletion of
         # rounds linked to budget processes.
-        has_rounds_to_delete = round_instances and instance.rounds.count() > len(round_instances)
+        has_rounds_to_delete = round_instances and len(current_round_ids) > len(submitted_round_ids)
         if has_rounds_to_delete:
-            round_instances_ids = [r.id for r in round_instances]
-            rounds_to_delete = instance.rounds.exclude(id__in=round_instances_ids)
+            rounds_to_delete = instance.rounds.exclude(id__in=submitted_round_ids)
             if rounds_to_delete.filter(budget_process__isnull=False).exists():
                 raise serializers.ValidationError("Cannot delete a round linked to a budget process.")
-            else:
-                rounds_to_delete.delete()
+            rounds_to_delete.delete()
 
         instance.rounds.set(round_instances)
+
+        # We have to detect new rounds manually because of the way rounds are associated to the campaign.
+        new_rounds_ids = submitted_round_ids - current_round_ids
+        if new_rounds_ids:
+            for round in instance.rounds.filter(id__in=new_rounds_ids):
+                round.add_chronogram()
 
         campaign = super().update(instance, validated_data)
         campaign.update_geojson_field()
@@ -419,7 +424,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                 if vaccine_authorization:
                     check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds, campaign)
             except OrgUnit.DoesNotExist:
-                raise Custom403Exception("error:" "Org unit does not exists.")
+                raise Custom403Exception("error:Org unit does not exists.")
 
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
         return campaign
@@ -794,13 +799,9 @@ class CampaignViewSet(ModelViewSet):
                 return CalendarCampaignSerializer
 
             return CampaignSerializer
-        else:
-            if (
-                self.request.query_params.get("fieldset") == "calendar"
-                and self.request.method in permissions.SAFE_METHODS
-            ):
-                return CalendarCampaignSerializer
-            return AnonymousCampaignSerializer
+        if self.request.query_params.get("fieldset") == "calendar" and self.request.method in permissions.SAFE_METHODS:
+            return CalendarCampaignSerializer
+        return AnonymousCampaignSerializer
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
@@ -1089,9 +1090,8 @@ class CampaignViewSet(ModelViewSet):
             current_date = datetime.strptime(current_date, "%Y-%m-%d")
             current_date = current_date.date()
             return current_date.year
-        else:
-            today = datetime.today()
-            return today.year
+        today = datetime.today()
+        return today.year
 
     @staticmethod
     def csv_columns():
@@ -1395,10 +1395,10 @@ Timeline tracker Automated message
         users = cug.users.all()
         emails = [user.email for user in users if user.email]
         if not emails:
-            raise serializers.ValidationError(f"No recipients have been configured on the country")
+            raise serializers.ValidationError("No recipients have been configured on the country")
 
         send_mail(
-            "New Campaign {}".format(campaign.obr_name),
+            f"New Campaign {campaign.obr_name}",
             email_text,
             from_email,
             emails,
@@ -1412,12 +1412,13 @@ Timeline tracker Automated message
 
     # We need to authorize PATCH request to enable restore_deleted_campaign endpoint
     # But Patching the campign directly is very much error prone, so we disable it indirectly
+    # Updates are done in the CampaignSerializer
     def partial_update(self):
         """Don't PATCH this way, it won't do anything
         We need to authorize PATCH request to enable restore_deleted_campaign endpoint
         But Patching the campign directly is very much error prone, so we disable it indirectly
+        # Updates are done in the CampaignSerializer
         """
-        pass
 
     @action(methods=["PATCH"], detail=False)
     def restore_deleted_campaigns(self, request):
@@ -1426,8 +1427,7 @@ Timeline tracker Automated message
             campaign.deleted_at = None
             campaign.save()
             return Response(campaign.id, status=status.HTTP_200_OK)
-        else:
-            return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
+        return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs

@@ -1,9 +1,12 @@
-from plugins.wfp.models import *
-from iaso.models import *
+import logging
+
 from itertools import groupby
 from operator import itemgetter
+
+from iaso.models import *
 from plugins.wfp.common import ETL
-import logging
+from plugins.wfp.models import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -112,8 +115,8 @@ class NG_Under5:
             )
         )
 
-    def run(self):
-        entity_type = ETL(["child_under_5_3"])
+    def run(self, type):
+        entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
         beneficiaries = entity_type.retrieve_entities()
 
@@ -127,7 +130,7 @@ class NG_Under5:
 
         for index, instance in enumerate(instances):
             logger.info(
-                f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
+                f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
             )
             instance["journey"] = self.journeyMapper(
                 instance["visits"],
@@ -140,7 +143,7 @@ class NG_Under5:
                 beneficiary.entity_id = instance["entity_id"]
                 beneficiary.account = account
                 beneficiary.save()
-                logger.info(f"Created new beneficiary")
+                logger.info("Created new beneficiary")
             else:
                 beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
 
@@ -161,7 +164,7 @@ class NG_Under5:
                 else:
                     logger.info("No new journey")
             logger.info(
-                f"---------------------------------------------------------------------------------------------\n\n"
+                "---------------------------------------------------------------------------------------------\n\n"
             )
 
     def journeyMapper(self, visits, admission_form):

@@ -1,14 +1,13 @@
-from iaso.models import Entity
-
-
 class PotentialDuplicate(dict):
-    def __init__(self, entity1_id, entity2_id, score, instance_class=Entity):
+    def __init__(self, entity1_id, entity2_id, score, instance_class=None):
+        from iaso.models import Entity
+
         dict.__init__(
             self,
             entity1_id=entity1_id,
             entity2_id=entity2_id,
             score=score,
-            instance_class=instance_class.__name__,
+            instance_class=instance_class.__name__ if instance_class else Entity.__name__,
         )
 
     def __str__(self):

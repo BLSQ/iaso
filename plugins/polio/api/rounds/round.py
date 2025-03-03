@@ -11,7 +11,7 @@ from plugins.polio.api.shared_serializers import (
     GroupSerializer,
     RoundDateHistoryEntryForRoundSerializer,
 )
-from plugins.polio.models import ReasonForDelay, Round, RoundDateHistoryEntry, RoundScope, Campaign
+from plugins.polio.models import Campaign, ReasonForDelay, Round, RoundDateHistoryEntry, RoundScope
 from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
 
 
@@ -49,6 +49,7 @@ class RoundSerializer(serializers.ModelSerializer):
         if datelogs:
             raise serializers.ValidationError({"datelogs": "Cannot have modification history for new round"})
         round = Round.objects.create(**validated_data)
+        round.add_chronogram()
         if started_at is not None or ended_at is not None:
             reason_for_delay = ReasonForDelay.objects.filter(key_name="INITIAL_DATA").first()
             datelog = RoundDateHistoryEntry.objects.create(
@@ -147,7 +148,6 @@ class RoundViewSet(ModelViewSet):
         """Don't PATCH this way, it will not do anything
         Overriding to prevent patching the whole round which is error prone, due to nested fields among others.
         """
-        pass
 
     # Endpoint used to update lqas passed and failed fields by OpenHexa pipeline
     @action(detail=False, methods=["patch"], serializer_class=LqasDistrictsUpdateSerializer)

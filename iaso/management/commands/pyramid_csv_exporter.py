@@ -2,7 +2,7 @@ import csv
 
 from django.core.management.base import BaseCommand
 
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion
+from iaso.models import DataSource, OrgUnit, OrgUnitType, SourceVersion
 
 
 class Command(BaseCommand):

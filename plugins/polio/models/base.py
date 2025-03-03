@@ -2,6 +2,7 @@ import datetime
 import json
 import math
 import os
+
 from collections import defaultdict
 from datetime import date
 from typing import Any, Optional, Tuple, Union
@@ -9,6 +10,7 @@ from uuid import uuid4
 
 import django.db.models.manager
 import pandas as pd
+
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
@@ -16,8 +18,8 @@ from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import Q, QuerySet, Subquery, Sum
 from django.db.models.expressions import RawSQL
-from django.db.models import Q, QuerySet, Sum, Subquery
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.module_loading import import_string
@@ -35,6 +37,7 @@ from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
+
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -120,8 +123,9 @@ class DelayReasons(models.TextChoices):
     VRF_NOT_SIGNED = "VRF_NOT_SIGNED", _("vrf_not_signed")
     FOUR_WEEKS_GAP_BETWEEN_ROUNDS = "FOUR_WEEKS_GAP_BETWEEN_ROUNDS", _("four_weeks_gap_betwenn_rounds")
     OTHER_VACCINATION_CAMPAIGNS = "OTHER_VACCINATION_CAMPAIGNS", _("other_vaccination_campaigns")
-    PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING = "PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING", _(
-        "pending_liquidation_of_previous_sia_funding"
+    PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING = (
+        "PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING",
+        _("pending_liquidation_of_previous_sia_funding"),
     )
 
 
@@ -395,6 +399,26 @@ class Round(models.Model):
         # The scope will be deleted by Django's cascading
         super().delete(*args, **kwargs)
 
+    def add_chronogram(self):
+        """
+        Create a "standard chronogram" for all upcoming rounds of a campaign.
+        See POLIO-1781.
+        """
+        from plugins.polio.models import ChronogramTemplateTask
+
+        if isinstance(self.started_at, datetime.datetime):
+            self.started_at = self.started_at.date()
+
+        if (
+            self.started_at
+            and isinstance(self.started_at, datetime.date)
+            and self.started_at >= timezone.now().date()
+            and self.campaign
+            and self.campaign.has_polio_type
+            and not self.chronograms.valid().exists()
+        ):
+            ChronogramTemplateTask.objects.create_chronogram(round=self, created_by=None, account=self.campaign.account)
+
     def get_item_by_key(self, key):
         return getattr(self, key)
 
@@ -413,8 +437,7 @@ class Round(models.Model):
         """
         if self.campaign.separate_scopes_per_round:
             return self.scopes
-        else:
-            return self.campaign.scopes
+        return self.campaign.scopes
 
     @property
     def vaccine_list(self):
@@ -752,6 +775,10 @@ class Campaign(SoftDeletableModel):
 
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
+
+    @property
+    def has_polio_type(self) -> bool:
+        return self.campaign_types.filter(name=CampaignType.POLIO).exists()
 
     def get_item_by_key(self, key):
         return getattr(self, key)
@@ -1405,6 +1432,7 @@ class VaccineArrivalReport(models.Model):
 
 
 class VaccineStock(models.Model):
+    MANAGEMENT_DAYS_OPEN = 7
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="vaccine_stocks")
     country = models.ForeignKey(
         "iaso.orgunit",
@@ -1430,7 +1458,7 @@ class VaccineStock(models.Model):
 class VaccineStockHistoryQuerySet(models.QuerySet):
     def filter_for_user(self, user: Optional[Union[User, AnonymousUser]]):
         if not user or not user.is_authenticated:
-            raise UserNotAuthError(f"User not Authenticated")
+            raise UserNotAuthError("User not Authenticated")
 
         profile = user.iaso_profile
         self = self.filter(vaccine_stock__account=profile.account)
@@ -1482,6 +1510,9 @@ class OutgoingStockMovement(models.Model):
         storage=CustomPublicStorage(), upload_to="public_documents/forma/", null=True, blank=True
     )
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
 class DestructionReport(models.Model):
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
@@ -1495,6 +1526,9 @@ class DestructionReport(models.Model):
     document = models.FileField(
         storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/", null=True, blank=True
     )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         indexes = [
@@ -1510,7 +1544,8 @@ class IncidentReport(models.Model):
         LOSSES = "losses", _("Losses")
         RETURN = "return", _("Return")
         STEALING = "stealing", _("Stealing")
-        PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
+        PHYSICAL_INVENTORY_ADD = "physical_inventory_add", _("Add to Physical Inventory")
+        PHYSICAL_INVENTORY_REMOVE = "physical_inventory_remove", _("remove from Physical Inventory")
         BROKEN = "broken", _("Broken")
         UNREADABLE_LABEL = "unreadable_label", _("Unreadable label")
 
@@ -1530,11 +1565,74 @@ class IncidentReport(models.Model):
         storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/", null=True, blank=True
     )
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     class Meta:
         indexes = [
             models.Index(fields=["vaccine_stock", "date_of_incident_report"]),  # Frequently queried together
             models.Index(fields=["incident_report_received_by_rrt"]),  # Used in filtering
         ]
+
+
+class EarmarkedStock(models.Model):
+    class EarmarkedStockChoices(models.TextChoices):
+        CREATED = "created", _("Created")  #     1. Usable -> Earmark
+        USED = "used", _("Used")  #     2. Earmarked -> Used
+        RETURNED = "returned", _("Returned")  #     3. Earmark -> Usable
+
+    earmarked_stock_type = models.CharField(
+        max_length=20, choices=EarmarkedStockChoices.choices, default=EarmarkedStockChoices.CREATED
+    )
+    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="earmarked_stocks")
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    form_a = models.ForeignKey(
+        OutgoingStockMovement, on_delete=models.CASCADE, null=True, blank=True, related_name="earmarked_stocks"
+    )
+
+    vials_earmarked = models.PositiveIntegerField()
+    doses_earmarked = models.PositiveIntegerField()
+
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["vaccine_stock", "campaign"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["round"]),
+        ]
+
+    def __str__(self):
+        return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"
+
+    @classmethod
+    def get_available_vials_count(cls, vaccine_stock: VaccineStock, _round: Round):
+        matching_earmarks_plus = EarmarkedStock.objects.filter(
+            vaccine_stock=vaccine_stock,
+            campaign=_round.campaign,
+            round=_round,
+            earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.CREATED,
+        )
+
+        matching_earmarks_minus = EarmarkedStock.objects.filter(
+            vaccine_stock=vaccine_stock,
+            campaign=_round.campaign,
+            round=_round,
+            earmarked_stock_type__in=[
+                EarmarkedStock.EarmarkedStockChoices.USED,
+                EarmarkedStock.EarmarkedStockChoices.RETURNED,
+            ],
+        )
+
+        total_vials_usable_plus = matching_earmarks_plus.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+        total_vials_usable_minus = matching_earmarks_minus.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+
+        total_vials_usable = total_vials_usable_plus - total_vials_usable_minus
+
+        return total_vials_usable
 
 
 class Notification(models.Model):
@@ -1569,8 +1667,9 @@ class Notification(models.Model):
         WPV1 = "wpv1", _("WPV1")
 
     class Sources(models.TextChoices):
-        AFP = "accute_flaccid_paralysis", _(
-            "Accute Flaccid Paralysis"
+        AFP = (
+            "accute_flaccid_paralysis",
+            _("Accute Flaccid Paralysis"),
         )  # A case of someone who got paralyzed because of polio.
         CC = "contact_case", _("Contact Case")
         COMMUNITY = "community", _("Community")

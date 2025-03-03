@@ -1,4 +1,5 @@
 import datetime
+
 from iaso import models as m
 from plugins.polio import models as pm
 
@@ -42,22 +43,22 @@ class PolioTestCaseMixin:
 
         round_1 = pm.Round.objects.create(
             campaign=campaign,
-            started_at=datetime.datetime(2021, 1, 1),
-            ended_at=datetime.datetime(2021, 1, 10),
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 10),
             number=1,
         )
 
         round_2 = pm.Round.objects.create(
             campaign=campaign,
-            started_at=datetime.datetime(2021, 2, 1),
-            ended_at=datetime.datetime(2021, 2, 10),
+            started_at=datetime.date(2021, 2, 1),
+            ended_at=datetime.date(2021, 2, 10),
             number=2,
         )
 
         round_3 = pm.Round.objects.create(
             campaign=campaign,
-            started_at=datetime.datetime(2021, 3, 1),
-            ended_at=datetime.datetime(2021, 3, 10),
+            started_at=datetime.date(2021, 3, 1),
+            ended_at=datetime.date(2021, 3, 10),
             number=3,
         )
 

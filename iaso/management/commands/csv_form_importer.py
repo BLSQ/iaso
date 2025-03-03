@@ -1,12 +1,13 @@
 import csv
 import json
+
 from collections import defaultdict
 from uuid import uuid4
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from iaso.models import OrgUnit, Instance, Form
+from iaso.models import Form, Instance, OrgUnit
 
 
 class Command(BaseCommand):
@@ -26,7 +27,7 @@ class Command(BaseCommand):
             template_json = options.get("template_json")
             mapping_file_name = options.get("mapping_csv_file")
             options_file_name = options.get("options_csv_file")
-            limit = options.get("limit", None)
+            limit = options.get("limit")
             form_id = options.get("form_id")
             form = Form.objects.get(form_id=form_id)
             project = form.projects.first()
@@ -198,5 +199,4 @@ class Command(BaseCommand):
                                 # print(instance.id)
                             except:
                                 print("EXCEPTION!!!")
-                                pass
                         index += 1

@@ -1,20 +1,23 @@
 import datetime
 import os
-import pytz
 import uuid
 import zipfile
+
+from unittest import mock
+
+import pytz
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.test import TestCase
-from unittest import mock
 
 from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, Modification
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
+
 
 CATT_TABLET_DIR = "catt_one_test_with_image"
 LABO_TABLET_DIR = "labo_update_registration_form"

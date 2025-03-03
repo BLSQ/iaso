@@ -1,16 +1,19 @@
 import decimal
 import importlib
 import json
+
 from datetime import datetime
 from logging import getLogger
 
 import boto3
 import dateparser
+
 from django.conf import settings
 from django.db import connection
 from django.utils import timezone
 
-from iaso.models.base import Task, RUNNING, QUEUED, KILLED
+from iaso.models.base import KILLED, QUEUED, RUNNING, Task
+
 
 logger = getLogger(__name__)
 
@@ -29,20 +32,18 @@ logger = getLogger(__name__)
 def json_dump(obj):
     if isinstance(obj, datetime):
         return {"__type__": "datetime", "value": obj.isoformat()}
-    elif isinstance(obj, decimal.Decimal):
+    if isinstance(obj, decimal.Decimal):
         return {"__type__": "decimal", "value": str(obj)}
-    else:
-        assert False, type(obj)
+    assert False, type(obj)
 
 
 def json_load(obj):
     if "__type__" in obj:
         if obj["__type__"] == "datetime":
             return dateparser.parse(obj["value"])
-        elif obj["__type__"] == "decimal":
+        if obj["__type__"] == "decimal":
             return decimal.Decimal(obj["value"])
-        else:
-            assert False
+        assert False
     else:
         return obj
 

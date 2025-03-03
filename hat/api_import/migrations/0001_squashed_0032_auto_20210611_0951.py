@@ -2,11 +2,12 @@
 # corrected by Olivier Le Thanh Duong 20 Jan
 # Edited by Bram Jans 11 Dec 2023
 
-from django.conf import settings
 import django.contrib.gis.db.models.fields
 import django.contrib.postgres.fields.jsonb
-from django.db import migrations, models
 import django.db.models.deletion
+
+from django.conf import settings
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):

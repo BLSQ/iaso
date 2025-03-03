@@ -1,38 +1,46 @@
-import React, { FunctionComponent } from 'react';
+import { Box, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     UrlParams,
     commonStyles,
     textPlaceholder,
-    useSafeIntl,
     useGoBack,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { Grid, Box, Paper, Tab, Tabs, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { STOCK_MANAGEMENT_WRITE } from '../../../../constants/permissions';
+import React, { FunctionComponent } from 'react';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
-import { baseUrls } from '../../../../constants/urls';
-import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
-import { DESTRUCTION, FORM_A, INCIDENT } from '../constants';
-import { StockVariationParams, StockVariationTab } from '../types';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
+import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import {
+    STOCK_MANAGEMENT_WRITE,
+    STOCK_MANAGEMENT_READ,
+    STOCK_EARMARKS_NONADMIN,
+    STOCK_EARMARKS_ADMIN,
+} from '../../../../constants/permissions';
+import { baseUrls } from '../../../../constants/urls';
+import { DESTRUCTION, EARMARKED, FORM_A, INCIDENT } from '../constants';
 import MESSAGES from '../messages';
+import { StockVariationParams, StockVariationTab } from '../types';
 
-import { VaccineStockVariationTable } from './Table/VaccineStockVariationTable';
 import {
     useGetDestructionList,
+    useGetEarmarkedList,
     useGetFormAList,
     useGetIncidentList,
     useGetStockManagementSummary,
 } from '../hooks/api';
+import { CreateDestruction } from './Modals/CreateEditDestruction';
+import { CreateEarmarked } from './Modals/CreateEditEarmarked';
+import { CreateFormA } from './Modals/CreateEditFormA';
+import { CreateIncident } from './Modals/CreateEditIncident';
 import {
     useDestructionTableColumns,
+    useEarmarkedTableColumns,
     useFormATableColumns,
     useIncidentTableColumns,
 } from './Table/columns';
-import { CreateFormA } from './Modals/CreateEditFormA';
-import { CreateDestruction } from './Modals/CreateEditDestruction';
-import { CreateIncident } from './Modals/CreateEditIncident';
+import { VaccineStockVariationTable } from './Table/VaccineStockVariationTable';
 
 const useStyles = makeStyles(theme => {
     return {
@@ -72,6 +80,8 @@ export const VaccineStockVariation: FunctionComponent = () => {
         useGetDestructionList(params, tab === DESTRUCTION);
     const { data: incidents, isFetching: isFetchingIncidents } =
         useGetIncidentList(params, tab === INCIDENT);
+    const { data: earmarked, isFetching: isFetchingEarmarked } =
+        useGetEarmarkedList(params, tab === EARMARKED);
     const { data: summary } = useGetStockManagementSummary(params.id);
     const title = `${formatMessage(MESSAGES.stockVariation)}: ${
         summary?.country_name ?? textPlaceholder
@@ -86,6 +96,10 @@ export const VaccineStockVariation: FunctionComponent = () => {
         summary?.vaccine_type,
     );
     const incidentsColumns = useIncidentTableColumns(
+        summary?.country_name,
+        summary?.vaccine_type,
+    );
+    const earmarkedColumns = useEarmarkedTableColumns(
         summary?.country_name,
         summary?.vaccine_type,
     );
@@ -118,6 +132,11 @@ export const VaccineStockVariation: FunctionComponent = () => {
                         value={INCIDENT}
                         label={formatMessage(MESSAGES.incidentReports)}
                     />
+                    <Tab
+                        key={EARMARKED}
+                        value={EARMARKED}
+                        label={formatMessage(MESSAGES.earmarked)}
+                    />
                 </Tabs>
             </TopBar>
             <Box className={classes.containerFullHeightPadded}>
@@ -128,7 +147,10 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                 {formatMessage(MESSAGES[`${tab}Reports`])}
                             </Typography>
                             <DisplayIfUserHasPerm
-                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
                             >
                                 {tab === FORM_A && (
                                     <CreateFormA
@@ -140,7 +162,10 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                 )}
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
-                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
                             >
                                 {tab === DESTRUCTION && (
                                     <CreateDestruction
@@ -152,10 +177,28 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                 )}
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
-                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
                             >
                                 {tab === INCIDENT && (
                                     <CreateIncident
+                                        iconProps={{}}
+                                        countryName={summary?.country_name}
+                                        vaccine={summary?.vaccine_type}
+                                        vaccineStockId={params.id as string}
+                                    />
+                                )}
+                            </DisplayIfUserHasPerm>
+                            <DisplayIfUserHasPerm
+                                permissions={[
+                                    STOCK_EARMARKS_NONADMIN,
+                                    STOCK_EARMARKS_ADMIN,
+                                ]}
+                            >
+                                {tab === EARMARKED && (
+                                    <CreateEarmarked
                                         iconProps={{}}
                                         countryName={summary?.country_name}
                                         vaccine={summary?.vaccine_type}
@@ -201,6 +244,21 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                 defaultSorted={[
                                     {
                                         id: 'incident_report_received_by_rrt',
+                                        desc: true,
+                                    },
+                                ]}
+                            />
+                        )}
+                        {tab === EARMARKED && (
+                            <VaccineStockVariationTable
+                                data={earmarked}
+                                columns={earmarkedColumns}
+                                params={params}
+                                paramsPrefix={tab}
+                                isFetching={isFetchingEarmarked}
+                                defaultSorted={[
+                                    {
+                                        id: 'created_at',
                                         desc: true,
                                     },
                                 ]}

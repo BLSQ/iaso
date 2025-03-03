@@ -1,12 +1,14 @@
 from argparse import ArgumentParser
+from logging import getLogger
+
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 
 from iaso.management.commands.command_logger import CommandLogger
 from iaso.management.commands.dhis2_ou_importer import FakeTask
 from plugins.polio.models import Campaign
-from plugins.polio.tasks.weekly_email import send_notification_email, send_email
-from logging import getLogger
+from plugins.polio.tasks.weekly_email import send_notification_email
+
 
 logger = getLogger(__name__)
 
@@ -41,7 +43,7 @@ class Command(BaseCommand):
             print(f"Email for {campaign.obr_name}")
             status = send_notification_email(campaign)
             if not status:
-                logger.info(f"... skipped")
+                logger.info("... skipped")
             else:
                 email_sent += 1
         task.report_success(f"Finished sending {email_sent} weekly-email(s)")

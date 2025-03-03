@@ -1,17 +1,18 @@
 import uuid
 
-from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
+from rest_framework import serializers
+
 from hat.audit.audit_logger import AuditLogger
-from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API, Modification
+from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API
+from iaso.api.common import TimestampField
 from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.models.payments import PaymentStatuses
+from iaso.utils import geojson_queryset
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
-from iaso.api.common import TimestampField
-from iaso.utils import geojson_queryset
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -341,7 +342,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
 
         if (new_opening_date and new_closed_date) and (new_closed_date <= new_opening_date):
             raise serializers.ValidationError("`new_closed_date` must be later than `new_opening_date`.")
-        elif (org_unit.closed_date and new_opening_date) and (new_opening_date >= org_unit.closed_date):
+        if (org_unit.closed_date and new_opening_date) and (new_opening_date >= org_unit.closed_date):
             raise serializers.ValidationError("`new_opening_date` must be before the current org_unit closed date.")
 
         if org_unit and new_parent:
@@ -393,6 +394,52 @@ class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
         status = validated_data.get("status")
         approved_fields = validated_data.get("approved_fields")
         rejection_comment = validated_data.get("rejection_comment")
+
+        if status == OrgUnitChangeRequest.Statuses.REJECTED and not rejection_comment:
+            raise serializers.ValidationError("A `rejection_comment` must be provided.")
+
+        if status == OrgUnitChangeRequest.Statuses.APPROVED and not approved_fields:
+            raise serializers.ValidationError("At least one `approved_fields` must be provided.")
+
+        return validated_data
+
+
+class OrgUnitChangeRequestBulkReviewSerializer(serializers.Serializer):
+    """
+    Bulk-approve or bulk-reject `OrgUnitChangeRequest`s.
+    """
+
+    # Selection.
+    select_all = serializers.BooleanField(default=False)
+    selected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=[])
+    unselected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=[])
+    # Review data.
+    status = serializers.ChoiceField(choices=OrgUnitChangeRequest.Statuses, default=None)
+    approved_fields = serializers.MultipleChoiceField(choices=OrgUnitChangeRequest.get_new_fields(), default=None)
+    rejection_comment = serializers.CharField(required=False, allow_blank=True, default="")
+
+    def validate_status(self, value):
+        approved = OrgUnitChangeRequest.Statuses.APPROVED
+        rejected = OrgUnitChangeRequest.Statuses.REJECTED
+        if value not in [approved, rejected]:
+            raise serializers.ValidationError(f"Must be `{approved}` or `{rejected}`.")
+        return value
+
+    def validate(self, validated_data):
+        # Selection.
+        select_all = validated_data["select_all"]
+        selected_ids = validated_data["selected_ids"]
+        unselected_ids = validated_data["unselected_ids"]
+        # Review data.
+        status = validated_data["status"]
+        approved_fields = validated_data["approved_fields"]
+        rejection_comment = validated_data["rejection_comment"]
+
+        if select_all and selected_ids:
+            raise serializers.ValidationError("You cannot set both `select_all` and `selected_ids`.")
+
+        if unselected_ids and not select_all:
+            raise serializers.ValidationError("You cannot set `unselected_ids` without `select_all`.")
 
         if status == OrgUnitChangeRequest.Statuses.REJECTED and not rejection_comment:
             raise serializers.ValidationError("A `rejection_comment` must be provided.")

@@ -2,9 +2,11 @@ import datetime
 import json
 import time
 import uuid
+
 from unittest import mock
 
 import pytz
+
 from django.contrib.auth.models import AnonymousUser
 from django.core.files import File
 
@@ -108,17 +110,20 @@ class EntityAPITestCase(APITestCase):
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
-        payload = {
-            "name": "New Client",
-            "entity_type": self.entity_type.pk,
-            "attributes": instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }, {
-            "name": "New Client 2",
-            "entity_type": self.entity_type.pk,
-            "attributes": second_instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }
+        payload = (
+            {
+                "name": "New Client",
+                "entity_type": self.entity_type.pk,
+                "attributes": instance.uuid,
+                "account": self.yoda.iaso_profile.account.pk,
+            },
+            {
+                "name": "New Client 2",
+                "entity_type": self.entity_type.pk,
+                "attributes": second_instance.uuid,
+                "account": self.yoda.iaso_profile.account.pk,
+            },
+        )
 
         response = self.client.post("/api/entities/bulk_create/", data=payload, format="json")
 
@@ -132,17 +137,20 @@ class EntityAPITestCase(APITestCase):
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
-        payload = {
-            "name": "New Client",
-            "entity_type": self.entity_type.pk,
-            "attributes": instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }, {
-            "name": "New Client 2",
-            "entity_type": self.entity_type.pk,
-            "attributes": instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }
+        payload = (
+            {
+                "name": "New Client",
+                "entity_type": self.entity_type.pk,
+                "attributes": instance.uuid,
+                "account": self.yoda.iaso_profile.account.pk,
+            },
+            {
+                "name": "New Client 2",
+                "entity_type": self.entity_type.pk,
+                "attributes": instance.uuid,
+                "account": self.yoda.iaso_profile.account.pk,
+            },
+        )
 
         response = self.client.post("/api/entities/bulk_create/", data=payload, format="json")
 
@@ -159,17 +167,20 @@ class EntityAPITestCase(APITestCase):
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
-        payload = {
-            "name": "New Client",
-            "entity_type": self.entity_type.pk,
-            "attributes": instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }, {
-            "name": "New Client 2",
-            "entity_type": self.entity_type.pk,
-            "attributes": second_instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }
+        payload = (
+            {
+                "name": "New Client",
+                "entity_type": self.entity_type.pk,
+                "attributes": instance.uuid,
+                "account": self.yoda.iaso_profile.account.pk,
+            },
+            {
+                "name": "New Client 2",
+                "entity_type": self.entity_type.pk,
+                "attributes": second_instance.uuid,
+                "account": self.yoda.iaso_profile.account.pk,
+            },
+        )
 
         self.client.post("/api/entities/bulk_create/", data=payload, format="json")
 
@@ -189,17 +200,20 @@ class EntityAPITestCase(APITestCase):
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
-        payload = {
-            "name": "New Client",
-            "entity_type": self.entity_type.pk,
-            "attributes": instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }, {
-            "name": "New Client 2",
-            "entity_type": self.entity_type.pk,
-            "attributes": second_instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }
+        payload = (
+            {
+                "name": "New Client",
+                "entity_type": self.entity_type.pk,
+                "attributes": instance.uuid,
+                "account": self.yoda.iaso_profile.account.pk,
+            },
+            {
+                "name": "New Client 2",
+                "entity_type": self.entity_type.pk,
+                "attributes": second_instance.uuid,
+                "account": self.yoda.iaso_profile.account.pk,
+            },
+        )
 
         self.client.post("/api/entities/bulk_create/", data=payload, format="json")
 
@@ -267,7 +281,7 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
         # Case 4: search by JSON attribute
-        response = self.client.get(f"/api/entities/?search=age", format="json")
+        response = self.client.get("/api/entities/?search=age", format="json")
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
@@ -466,7 +480,7 @@ class EntityAPITestCase(APITestCase):
 
         self.client.post("/api/entities/", data=payload, format="json")
 
-        response = self.client.get("/api/entities/{0}/".format(Entity.objects.last().pk), format="json")
+        response = self.client.get(f"/api/entities/{Entity.objects.last().pk}/", format="json")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["id"], Entity.objects.last().pk)
@@ -503,7 +517,7 @@ class EntityAPITestCase(APITestCase):
 
         payload = {"name": "New Client-2", "entity_type": self.entity_type.pk, "attributes": instance.pk}
 
-        response = self.client.patch("/api/entities/{0}/".format(Entity.objects.last().pk), data=payload, format="json")
+        response = self.client.patch(f"/api/entities/{Entity.objects.last().pk}/", data=payload, format="json")
 
         self.assertEqual(response.status_code, 200)
 
@@ -518,20 +532,23 @@ class EntityAPITestCase(APITestCase):
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
         )
 
-        payload = {
-            "name": "New Client",
-            "entity_type": self.entity_type.pk,
-            "attributes": instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }, {
-            "name": "New Client 2",
-            "entity_type": self.entity_type.pk,
-            "attributes": second_instance.uuid,
-            "account": self.yoda.iaso_profile.account.pk,
-        }
+        payload = (
+            {
+                "name": "New Client",
+                "entity_type": self.entity_type.pk,
+                "attributes": instance.uuid,
+                "account": self.yoda.iaso_profile.account.pk,
+            },
+            {
+                "name": "New Client 2",
+                "entity_type": self.entity_type.pk,
+                "attributes": second_instance.uuid,
+                "account": self.yoda.iaso_profile.account.pk,
+            },
+        )
 
         self.client.post("/api/entities/bulk_create/", data=payload, format="json")
-        self.client.delete("/api/entities/{0}/".format(Entity.objects.last().pk), format="json")
+        self.client.delete(f"/api/entities/{Entity.objects.last().pk}/", format="json")
 
         response = self.client.get("/api/entities/", format="json")
         self.assertEqual(response.status_code, 200)

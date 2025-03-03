@@ -1,9 +1,10 @@
+from django.contrib.contenttypes.models import ContentType
+
+from hat.audit import models as am
+from iaso import models as m
+from iaso.models import QUEUED, Task
 from iaso.models.payments import PaymentStatuses
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
-from iaso.models import Task, QUEUED
-from iaso import models as m
-from hat.audit import models as am
-from django.contrib.contenttypes.models import ContentType
 
 
 class TestPaymentsBulkUpdate(TaskAPITestCase):

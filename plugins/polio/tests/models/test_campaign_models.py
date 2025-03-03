@@ -1,7 +1,5 @@
-from iaso import models as m
 from iaso.test import TestCase
-
-from plugins.polio.models import VACCINES, Campaign, CampaignType, RoundScope
+from plugins.polio.models import VACCINES, Campaign, CampaignType
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
@@ -243,6 +241,10 @@ class CampaignTestCase(TestCase, PolioTestCaseMixin):
         polio_campaign = Campaign.polio_objects.first()
         self.assertEqual(polio_campaign.campaign_types.first().name, CampaignType.POLIO)
 
+    def test_has_polio_type(self):
+        self.assertTrue(Campaign.polio_objects.first().has_polio_type)
+        self.assertFalse(self.measles_campaign.has_polio_type)
+
     def test_vaccine_properties_with_separate_scopes_per_round(self):
         # strings
         self.assertEqual(self.polio_campaign2.vaccines, f"{self.mopv2}, {self.nopv2_bopv}")
@@ -311,15 +313,15 @@ class CampaignTestCase(TestCase, PolioTestCaseMixin):
         self.assertEqual(self.polio2_round_1.single_vaccine_names, f"{self.mopv2}")
         self.assertEqual(self.polio2_round_1.vaccine_names_extended, f"{self.mopv2}")
         self.assertEqual(self.polio2_round_1.single_vaccine_names_extended, f"{self.mopv2}")
-        self.assertEqual(self.polio2_round_1.subactivities_vaccine_names, f"")
-        self.assertEqual(self.polio2_round_1.subactivities_single_vaccine_names, f"")
+        self.assertEqual(self.polio2_round_1.subactivities_vaccine_names, "")
+        self.assertEqual(self.polio2_round_1.subactivities_single_vaccine_names, "")
 
         self.assertEqual(self.polio2_round_2.vaccine_names, f"{self.nopv2_bopv}")
         self.assertEqual(self.polio2_round_2.single_vaccine_names, f"{self.bopv}, {self.nopv2}")
         self.assertEqual(self.polio2_round_2.vaccine_names_extended, f"{self.nopv2_bopv}")
         self.assertEqual(self.polio2_round_2.single_vaccine_names_extended, f"{self.bopv}, {self.nopv2}")
-        self.assertEqual(self.polio2_round_2.subactivities_vaccine_names, f"")
-        self.assertEqual(self.polio2_round_2.subactivities_single_vaccine_names, f"")
+        self.assertEqual(self.polio2_round_2.subactivities_vaccine_names, "")
+        self.assertEqual(self.polio2_round_2.subactivities_single_vaccine_names, "")
 
         # lists
         self.assertEqual(self.polio2_round_1.vaccine_list, [self.mopv2])

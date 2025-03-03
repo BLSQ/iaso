@@ -2,15 +2,15 @@ import csv
 import datetime
 import io
 
-from iaso.api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
-from iaso.utils.models.common import get_creator_name
 import time_machine
 
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
+from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
+from iaso.utils.models.common import get_creator_name
 
 
-class OrgUnitChangeRequestAPITestCase(APITestCase):
+class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
     """
     Test actions on the ViewSet.
     """
@@ -25,6 +25,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         org_unit = m.OrgUnit.objects.create(
             org_unit_type=org_unit_type,
             version=version,
+            source_ref="112244",
             uuid="1539f174-4c53-499c-85de-7a58458c49ef",
             closed_date=cls.DT.date(),
         )
@@ -61,7 +62,6 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         cls.instance_2 = instance_2
         cls.instance_3 = instance_3
         cls.org_unit = org_unit
-        cls.org_unit_change_request_csv_columns = OrgUnitChangeRequestViewSet.org_unit_change_request_csv_columns()
         cls.org_unit_type = org_unit_type
         cls.project = project
         cls.user = user
@@ -74,7 +74,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(12):
             # filter_for_user_and_app_id
             #   1. SELECT OrgUnit
             # get_queryset
@@ -88,9 +88,15 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             #   8. PREFETCH OrgUnitChangeRequest.new_reference_instances__form
             #   9. PREFETCH OrgUnitChangeRequest.old_reference_instances__form
             #  10. PREFETCH OrgUnitChangeRequest.org_unit_type.projects
+            # extra field `select_all_count` at the same level as `count` for pagination
+            #  11. COUNT(*) -> `self.get_queryset()` is called 2 times…
+            #  12. COUNT(status=new)
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)
-            self.assertEqual(2, len(response.data["results"]))
+
+        self.assertEqual(2, len(response.data["results"]))
+        self.assertEqual(2, response.data["count"])
+        self.assertEqual(2, response.data["select_all_count"])
 
     def test_list_without_auth(self):
         response = self.client.get("/api/orgunits/changes/")
@@ -366,6 +372,101 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         response = self.client.delete(f"/api/orgunits/changes/{change_request.pk}/", format="json")
         self.assertEqual(response.status_code, 405)
 
+    def test_bulk_review_without_perm(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.patch("/api/orgunits/changes/bulk_review/", data={}, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    @time_machine.travel(DT, tick=False)
+    def test_bulk_review_approve(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="foo"
+        )
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="bar"
+        )
+
+        data = {
+            "select_all": 0,
+            "selected_ids": [change_request_1.pk, change_request_2.pk],
+            "unselected_ids": [],
+            "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
+            "approved_fields": ["new_name"],
+        }
+        response = self.client.patch("/api/orgunits/changes/bulk_review/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_approve")
+
+        self.assertEqual(task.launcher, self.user_with_review_perm)
+        self.assertCountEqual(task.params["kwargs"]["change_requests_ids"], [change_request_1.pk, change_request_2.pk])
+        self.assertCountEqual(task.params["kwargs"]["approved_fields"], ["new_name"])
+
+        self.runAndValidateTask(task, "SUCCESS")
+
+        task.refresh_from_db()
+        self.assertEqual(task.progress_message, "Bulk approved 2 change requests.")
+
+        change_request_1.refresh_from_db()
+        self.assertEqual(change_request_1.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
+        self.assertEqual(change_request_1.updated_by, self.user_with_review_perm)
+
+        change_request_2.refresh_from_db()
+        self.assertEqual(change_request_2.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
+        self.assertEqual(change_request_2.updated_by, self.user_with_review_perm)
+
+    @time_machine.travel(DT, tick=False)
+    def test_bulk_review_reject(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="foo"
+        )
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="bar"
+        )
+        change_request_3 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="baz"
+        )
+
+        data = {
+            "select_all": 1,
+            "selected_ids": [],
+            "unselected_ids": [change_request_3.pk],
+            "status": m.OrgUnitChangeRequest.Statuses.REJECTED,
+            "approved_fields": [],
+            "rejection_comment": "No way.",
+        }
+        response = self.client.patch("/api/orgunits/changes/bulk_review/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_reject")
+
+        self.assertEqual(task.launcher, self.user_with_review_perm)
+        self.assertCountEqual(task.params["kwargs"]["change_requests_ids"], [change_request_1.pk, change_request_2.pk])
+        self.assertCountEqual(task.params["kwargs"]["rejection_comment"], "No way.")
+
+        self.runAndValidateTask(task, "SUCCESS")
+
+        task.refresh_from_db()
+        self.assertEqual(task.progress_message, "Bulk rejected 2 change requests.")
+
+        change_request_1.refresh_from_db()
+        self.assertEqual(change_request_1.status, m.OrgUnitChangeRequest.Statuses.REJECTED)
+        self.assertEqual(change_request_1.updated_by, self.user_with_review_perm)
+
+        change_request_2.refresh_from_db()
+        self.assertEqual(change_request_2.status, m.OrgUnitChangeRequest.Statuses.REJECTED)
+        self.assertEqual(change_request_2.updated_by, self.user_with_review_perm)
+
+        change_request_3.refresh_from_db()
+        self.assertEqual(change_request_3.status, m.OrgUnitChangeRequest.Statuses.NEW)
+        self.assertEqual(change_request_3.updated_by, None)
+
     def test_export_to_csv(self):
         """
         It tests the CSV export for the org change requests list.
@@ -390,14 +491,13 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(len(data), 3)
 
         data_headers = data[0]
-        self.assertEqual(
-            data_headers,
-            self.org_unit_change_request_csv_columns,
-        )
+        self.assertEqual(data_headers, OrgUnitChangeRequestViewSet.CSV_HEADER_COLUMNS)
 
         first_data_row = data[1]
         expected_row_data = [
             str(change_request.id),
+            str(change_request.org_unit_id),
+            "112244",
             change_request.org_unit.name,
             change_request.org_unit.parent.name if change_request.org_unit.parent else "",
             change_request.org_unit.org_unit_type.name,

@@ -10,19 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-import base64
-import hashlib
-import html
 import importlib
 import os
-import re
 import sys
-import urllib.parse
+
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
 
 import sentry_sdk
+
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
 from requests.exceptions import HTTPError
@@ -30,6 +27,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
+
 
 MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "false").lower() == "true"
 
@@ -667,6 +665,16 @@ DRF_NESTED_MULTIPART_PARSER = {
 SUPERSET_URL = os.environ.get("SUPERSET_URL", None)
 SUPERSET_ADMIN_USERNAME = os.environ.get("SUPERSET_ADMIN_USERNAME", None)
 SUPERSET_ADMIN_PASSWORD = os.environ.get("SUPERSET_ADMIN_PASSWORD", None)
+
+# ClamAV - Antivirus configuration
+CLAMAV_ACTIVE = os.environ.get("CLAMAV_ACTIVE", "false").lower() == "true"
+CLAMAV_FQDN = os.environ.get("CLAMAV_FQDN", "www.some-url.com")  # FQDN, not full URL
+CLAMAV_PORT = os.environ.get("CLAMAV_PORT", "3310")
+CLAMAV_CONFIGURATION = {
+    "address": f"{CLAMAV_FQDN}:{CLAMAV_PORT}",
+    "backend": "clamd",  # Using ClamAV daemon
+    "stream": True,  # Streaming file content instead of sending files as is
+}
 
 # Plugin config
 print("Enabled plugins:", PLUGINS)

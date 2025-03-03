@@ -7,9 +7,8 @@ from dataclasses import dataclass
 from itertools import islice
 from typing import Optional
 
-from rest_framework.renderers import JSONRenderer
+from iaso.models import DataSourceVersionsSynchronization, Group, OrgUnit, OrgUnitChangeRequest
 
-from iaso.models import Group, OrgUnit, OrgUnitChangeRequest, DataSourceVersionsSynchronization
 from .synchronizer_serializers import DataSourceVersionsSynchronizerDiffSerializer
 
 

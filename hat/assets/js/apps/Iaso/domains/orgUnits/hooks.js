@@ -1,11 +1,11 @@
+import { useCallback, useMemo } from 'react';
+import { useQueryClient } from 'react-query';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api.ts';
 import {
     useSnackMutation,
     useSnackQueries,
     useSnackQuery,
 } from 'Iaso/libs/apiHooks.ts';
-import { useCallback, useMemo } from 'react';
-import { useQueryClient } from 'react-query';
 import { getChipColors, getOtChipColors } from '../../constants/chipColors';
 import { useCheckUserHasWriteTypePermission } from '../../utils/usersUtils.ts';
 import MESSAGES from './messages.ts';
@@ -27,9 +27,14 @@ export const useOrgUnitDetailData = (
                 onSuccess: ou => setCurrentOrgUnit(ou),
             },
         );
-    const groupsDataSourceQueryParams = originalOrgUnit?.source_id
-        ? `?dataSource=${originalOrgUnit.source_id}`
-        : undefined;
+    let groupsDataSourceQueryParams;
+    if (originalOrgUnit?.version_id) {
+        groupsDataSourceQueryParams = `?version=${originalOrgUnit.version_id}`;
+    } else if (originalOrgUnit?.source_id) {
+        groupsDataSourceQueryParams = `?dataSource=${originalOrgUnit.source_id}`;
+    } else {
+        groupsDataSourceQueryParams = undefined;
+    }
     const groupsQueryParams = isNewOrgunit
         ? '?defaultVersion=true'
         : groupsDataSourceQueryParams;

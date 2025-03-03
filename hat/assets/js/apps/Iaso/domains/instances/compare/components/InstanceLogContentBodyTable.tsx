@@ -77,7 +77,9 @@ const InstanceLogContentBodyTable = memo(
                         const isValuesDifferent =
                             fileContent.logA.json[question.name] !==
                             fileContent.logB.json[question.name];
-                        const isImg = ['img', 'photo'].includes(question.type);
+                        const isImg = ['image', 'photo'].includes(
+                            question.type,
+                        );
                         if (isRelevantQuestion && hasLogContent) {
                             return (
                                 <TableRow

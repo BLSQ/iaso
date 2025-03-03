@@ -28,6 +28,7 @@ def projects_mapper(account_name):
             "linked_forms": [
                 "Registry - Population Health area",
                 "Data for Health facility/Données Formation sanitaire",
+                "Equipment/Pop/Social mob./Microplans",
             ],
         },
         {
@@ -35,11 +36,11 @@ def projects_mapper(account_name):
             "app_id": f"{account_name}.children",
             "feature_flags": ["REQUIRE_AUTHENTICATION", "ENTITY"],
             "linked_forms": [
+                "Registration Vaccination Pregnant Women",
+                "Pregnant women follow-up",
                 "Child/Enfant - Registration/Enregistrement",
                 "Child/Enfant - Follow-up/Suivi",
                 "Dénombrement / Enumeration",
-                "Pregnant women follow-up",
-                "Registration Vaccination Pregnant Women",
             ],
         },
         {
@@ -53,13 +54,15 @@ def projects_mapper(account_name):
                 "ENTITY",
             ],
             "linked_forms": [
+                "Registry - Population Health area",
+                "Registration Vaccination Pregnant Women",
+                "Pregnant women follow-up",
+                "Equipment/Pop/Social mob./Microplans",
                 "Child/Enfant - Registration/Enregistrement",
                 "Child/Enfant - Follow-up/Suivi",
+                "Data for Health facility/Données Formation sanitaire",
                 "Dénombrement / Enumeration",
                 "Distribution",
-                "Pregnant women follow-up",
-                "Registration Vaccination Pregnant Women",
-                "Registry - Population Health area",
             ],
         },
     ]

@@ -15,7 +15,8 @@ class MetricTypeSerializer(serializers.ModelSerializer):
             "units",
             "unit_symbol",
             "comments",
-            "legend_threshold",
+            "legend_config",
+            "legend_type",
             "created_at",
             "updated_at",
         ]

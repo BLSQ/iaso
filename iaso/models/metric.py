@@ -7,6 +7,7 @@ LEGEND_TYPES = ["threshold", "linear", "ordinal"]
 
 class MetricType(models.Model):
     class Meta:
+        ordering = ["id"]  # force ordering in order of creation (for demo)
         unique_together = [
             ["account", "name"],
             # ["account", "code"], TODO

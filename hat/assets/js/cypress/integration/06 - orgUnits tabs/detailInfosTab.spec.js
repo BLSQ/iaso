@@ -106,12 +106,15 @@ const mockCalls = () => {
     cy.intercept('GET', '/api/v2/orgunittypes/', {
         fixture: `orgunittypes/list.json`,
     }).as('OUTypes');
+    cy.intercept('GET', '/api/groups/dropdown/**/*', {
+        fixture: `groups/dropdownlist.json`,
+    }).as('groupsOptions');
     cy.intercept('GET', '/api/groups/', {
         fixture: `groups/list.json`,
     }).as('groups');
-    cy.intercept('GET', '/api/groups/**/*', {
-        fixture: `groups/list.json`,
-    }).as('groupsDetails');
+    // cy.intercept('GET', '/api/groups/**/*', {
+    //     fixture: `groups/list.json`,
+    // }).as('groupsDetails');
     cy.intercept('GET', '/api/validationstatus/', {
         fixture: `misc/validationStatuses.json`,
     }).as('statuses');
@@ -202,7 +205,7 @@ describe('infos tab', () => {
 
     it('should render correct infos', () => {
         cy.visit(baseUrl);
-        cy.wait('@getOuDetail').then(() => {
+        cy.wait(['@getOuDetail', '@groupsOptions']).then(() => {
             testEditableInfos(orgUnit);
             testReadableInfos(orgUnit);
         });

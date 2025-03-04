@@ -1855,7 +1855,7 @@ class EarmarkedStock(models.Model):
     def __str__(self):
         if self.campaign and self.round:
             return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"
-        elif self.temporary_campaign_name:
+        if self.temporary_campaign_name:
             return f"Earmarked {self.vials_earmarked} vials for ({self.temporary_campaign_name})"
         return f"Earmarked {self.vials_earmarked} vials"
 

@@ -4,15 +4,18 @@ import {
     displayDateFromTimestamp,
     textPlaceholder,
 } from 'bluesquare-components';
+import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
-import getDisplayName from '../../utils/usersUtils.ts';
+import * as Permission from '../../utils/permissions.ts';
+import getDisplayName, { useCurrentUser } from '../../utils/usersUtils.ts';
 import { LinkToForm } from '../forms/components/LinkToForm.tsx';
+import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import { OrgUnitLabel } from '../orgUnits/components/OrgUnitLabel.tsx';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
-import { LinkToPlanning } from '../plannings/components/LinkToPlanning.tsx';
 import { usePrettyPeriod } from '../periods/utils';
+import { LinkToPlanning } from '../plannings/components/LinkToPlanning.tsx';
+import { userHasOneOfPermissions, userHasPermission } from '../users/utils';
 import MESSAGES from './messages';
-import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -31,6 +34,7 @@ const PrettyPeriod = ({ value }) => {
     const formatPeriod = usePrettyPeriod();
     return formatPeriod(value);
 };
+
 export const INSTANCE_MAP_METAS_FIELDS = [
     {
         key: 'org_unit_type_name',
@@ -93,6 +97,28 @@ export const INSTANCE_MAP_METAS_FIELDS = [
         type: 'location',
     },
 ];
+
+const OrgUnitLabelHyperLink = ({ value }) => {
+    const currentUser = useCurrentUser();
+    const showOrgUnitLink =
+        userHasOneOfPermissions(
+            [Permission.ORG_UNITS, Permission.ORG_UNITS_READ],
+            currentUser,
+        ) && userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser);
+    return (
+        <OrgUnitTooltip key={value.id} orgUnit={value} domComponent="span">
+            {showOrgUnitLink ? (
+                <LinkToOrgUnit orgUnit={value} />
+            ) : (
+                <OrgUnitLabel orgUnit={value} withType withSource={false} />
+            )}
+        </OrgUnitTooltip>
+    );
+};
+
+OrgUnitLabelHyperLink.propTypes = {
+    value: PropTypes.object.isRequired,
+};
 
 export const INSTANCE_METAS_FIELDS = [
     {
@@ -210,15 +236,7 @@ export const INSTANCE_METAS_FIELDS = [
         accessor: 'org_unit__name',
         render: value => {
             if (!value) return null;
-            return (
-                <OrgUnitTooltip
-                    key={value.id}
-                    orgUnit={value}
-                    domComponent="span"
-                >
-                    <OrgUnitLabel orgUnit={value} withType withSource={false} />
-                </OrgUnitTooltip>
-            );
+            return <OrgUnitLabelHyperLink value={value} />;
         },
         active: true,
         tableOrder: 5,

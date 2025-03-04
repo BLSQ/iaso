@@ -2,6 +2,8 @@ from django.db import models
 
 from iaso.models import OrgUnit
 
+LEGEND_TYPES = ["threshold", "linear", "ordinal"]
+
 
 class MetricType(models.Model):
     class Meta:
@@ -18,8 +20,10 @@ class MetricType(models.Model):
     units = models.CharField(max_length=255, blank=True)
     unit_symbol = models.CharField(max_length=255, blank=True)
     category = models.CharField(max_length=255, blank=True)
-    legend_threshold = models.JSONField(blank=True, default=dict)
     comments = models.TextField(blank=True)
+    legend_type = models.CharField(choices=[(t, t) for t in LEGEND_TYPES], max_length=40, default="threshold")
+    legend_config = models.JSONField(blank=True, default=dict)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

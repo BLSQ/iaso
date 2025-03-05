@@ -1,23 +1,25 @@
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { Typography } from '@mui/material';
 import {
     ConfirmCancelModal,
     LoadingSpinner,
-    makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
-import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../../libs/validation';
 import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetGroupSetsDropdown } from '../../hooks/requests/useGetGroupSets';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { editableFieldsManyToManyFields } from '../constants';
+import {
+    editableFieldsManyToManyFields,
+    orgUnitChangeRequestConfigTypeCreation,
+} from '../constants';
 import { useGetFormDropdownOptions } from '../hooks/api/useGetFormDropdownOptions';
 import { useRetrieveOrgUnitChangeRequestConfig } from '../hooks/api/useRetrieveOrgUnitChangeRequestConfig';
 import { useSaveOrgUnitChangeRequestConfiguration } from '../hooks/api/useSaveOrgUnitChangeRequestConfiguration';
+import { useCallbackOrgUnitConfigurationTypeDisplayName } from '../hooks/useCallbackOrgUnitConfigurationTypeDisplayName';
 import { useOrgUnitsEditableFieldsOptions } from '../hooks/useOrgUnitEditableFieldsOptions';
 import { useOrgUnitsEditableOptions } from '../hooks/useOrgUnitsEditableOptions';
 import { useValidationSchemaOUCRC } from '../hooks/useValidationSchemaOUCRC';
@@ -41,6 +43,7 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
 }) => {
+    const isCreation = config.type === orgUnitChangeRequestConfigTypeCreation;
     const configValidationSchema = useValidationSchemaOUCRC();
     const {
         values,
@@ -55,8 +58,9 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     } = useFormik<OrgUnitChangeRequestConfigurationForm>({
         initialValues: {
             projectId: config.project.id,
+            type: config.type,
             orgUnitTypeId: config.orgUnitType.id,
-            orgUnitsEditable: undefined,
+            orgUnitsEditable: isCreation ? true : undefined,
             editableFields: undefined,
             possibleTypeIds: undefined,
             possibleParentTypeIds: undefined,
@@ -99,6 +103,7 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     const orgUnitsEditableOptions = useOrgUnitsEditableOptions();
     const orgUnitEditableFieldsOptions = useOrgUnitsEditableFieldsOptions();
     const { formatMessage } = useSafeIntl();
+    const getTypeDisplayName = useCallbackOrgUnitConfigurationTypeDisplayName();
     const getErrors = useTranslatedErrors({
         errors,
         touched,
@@ -176,17 +181,23 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
                 {formatMessage(MESSAGES.project)}: {config.project.name}
             </Typography>
             <Typography variant="h6" component="h6">
+                {formatMessage(MESSAGES.type)}:{' '}
+                {getTypeDisplayName(config.type)}
+            </Typography>
+            <Typography variant="h6" component="h6">
                 {formatMessage(MESSAGES.orgUnitType)}: {config.orgUnitType.name}
             </Typography>
-            <InputComponent
-                type="radio"
-                keyValue="orgUnitsEditable"
-                onChange={onChangeOrgUnitsEditable}
-                value={values.orgUnitsEditable}
-                errors={getErrors('orgUnitsEditable')}
-                label={MESSAGES.orgUnitsEditable}
-                options={orgUnitsEditableOptions}
-            />
+            {!isCreation && (
+                <InputComponent
+                    type="radio"
+                    keyValue="orgUnitsEditable"
+                    onChange={onChangeOrgUnitsEditable}
+                    value={values.orgUnitsEditable}
+                    errors={getErrors('orgUnitsEditable')}
+                    label={MESSAGES.orgUnitsEditable}
+                    options={orgUnitsEditableOptions}
+                />
+            )}
             {values?.orgUnitsEditable && (
                 <InputComponent
                     type="select"
@@ -268,12 +279,4 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     );
 };
 
-const modalWithButton = makeFullModal(
-    OrgUnitChangeRequestConfigDialog,
-    EditIconButton,
-);
-
-export {
-    OrgUnitChangeRequestConfigDialog as OrgUnitChangeRequestConfigDialogCreateSecondStep,
-    modalWithButton as OrgUnitChangeRequestConfigDialogUpdate,
-};
+export { OrgUnitChangeRequestConfigDialog as OrgUnitChangeRequestConfigDialogCreateSecondStep };

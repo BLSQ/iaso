@@ -13,6 +13,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         new_oucrc = m.OrgUnitChangeRequestConfiguration.objects.create(
             org_unit_type=org_unit_type,
             project=new_project,
+            type=m.OrgUnitChangeRequestConfiguration.Type.EDITION,
             created_by=creator,
             org_units_editable=False,
         )
@@ -37,7 +38,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         response = self.client.get(f"{self.OUCRC_API_URL}?project_id={self.project_johto.id}")
         self.assertJSONResponse(response, 200)
         result = response.json()["results"]
-        self.assertEqual(3, len(result))  # The 3 OUCRCs created in setup
+        self.assertEqual(6, len(result))  # The 6 OUCRCs created in setup
 
         # Making sure that the 3 results do not include the new OUCRC
         oucrc_ids = []
@@ -61,17 +62,19 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         response = self.client.get(f"{self.OUCRC_API_URL}?org_unit_type_id={self.ou_type_water_pokemons.id}")
         self.assertJSONResponse(response, 200)
         result = response.json()["results"]
-        self.assertEqual(2, len(result))
+        self.assertEqual(3, len(result))
         # Results should be ordered by ID by default, so the new one will always be last
         self.assertEqual(result[0]["id"], self.oucrc_type_water.id)
-        self.assertEqual(result[1]["id"], new_oucrc.id)
+        self.assertEqual(result[1]["id"], self.oucrc_type_water_creation.id)
+        self.assertEqual(result[2]["id"], new_oucrc.id)
 
         # Filtering on an orgunit type with a single OUCRC
         response = self.client.get(f"{self.OUCRC_API_URL}?org_unit_type_id={self.ou_type_rock_pokemons.id}")
         self.assertJSONResponse(response, 200)
         result = response.json()["results"]
-        self.assertEqual(1, len(result))
+        self.assertEqual(2, len(result))
         self.assertEqual(result[0]["id"], self.oucrc_type_rock.id)
+        self.assertEqual(result[1]["id"], self.oucrc_type_rock_creation.id)
 
         # Filtering on unknown orgunit type
         probably_not_a_valid_id = 1234567890
@@ -89,22 +92,27 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         response = self.client.get(f"{self.OUCRC_API_URL}?created_by={self.user_brock.id}")
         self.assertJSONResponse(response, 200)
         result = response.json()["results"]
-        self.assertEqual(2, len(result))
+        self.assertEqual(3, len(result))
         # Results should be ordered by ID by default, so the new one will always be last
         self.assertEqual(result[0]["id"], self.oucrc_type_rock.id)
-        self.assertEqual(result[1]["id"], new_oucrc.id)
+        self.assertEqual(result[1]["id"], self.oucrc_type_rock_creation.id)
+        self.assertEqual(result[2]["id"], new_oucrc.id)
 
         # Filtering on multiple users
         response = self.client.get(f"{self.OUCRC_API_URL}?created_by={self.user_brock.id},{self.user_ash_ketchum.id}")
         self.assertJSONResponse(response, 200)
         result = response.json()["results"]
-        self.assertEqual(3, len(result))
+        self.assertEqual(5, len(result))
         self.assertEqual(result[0]["id"], self.oucrc_type_fire.id)
         self.assertEqual(result[0]["created_by"]["username"], self.user_ash_ketchum.username)
-        self.assertEqual(result[1]["id"], self.oucrc_type_rock.id)
-        self.assertEqual(result[1]["created_by"]["username"], self.user_brock.username)
-        self.assertEqual(result[2]["id"], new_oucrc.id)
+        self.assertEqual(result[1]["id"], self.oucrc_type_fire_creation.id)
+        self.assertEqual(result[1]["created_by"]["username"], self.user_ash_ketchum.username)
+        self.assertEqual(result[2]["id"], self.oucrc_type_rock.id)
         self.assertEqual(result[2]["created_by"]["username"], self.user_brock.username)
+        self.assertEqual(result[3]["id"], self.oucrc_type_rock_creation.id)
+        self.assertEqual(result[3]["created_by"]["username"], self.user_brock.username)
+        self.assertEqual(result[4]["id"], new_oucrc.id)
+        self.assertEqual(result[4]["created_by"]["username"], self.user_brock.username)
 
         # Filtering on unknown user
         probably_not_a_valid_id = 1234567890

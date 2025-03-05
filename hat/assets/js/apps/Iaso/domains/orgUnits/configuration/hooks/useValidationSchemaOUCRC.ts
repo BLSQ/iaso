@@ -34,6 +34,10 @@ export const useValidationSchemaOUCRC = () => {
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
+        type: yup
+            .string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
         orgUnitTypeId: yup
             .string()
             .nullable()

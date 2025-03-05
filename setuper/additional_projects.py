@@ -40,7 +40,6 @@ def projects_mapper(account_name):
                 "Pregnant women follow-up",
                 "Child/Enfant - Registration/Enregistrement",
                 "Child/Enfant - Follow-up/Suivi",
-                "Dénombrement / Enumeration",
             ],
         },
         {
@@ -54,13 +53,6 @@ def projects_mapper(account_name):
                 "ENTITY",
             ],
             "linked_forms": [
-                "Registry - Population Health area",
-                "Registration Vaccination Pregnant Women",
-                "Pregnant women follow-up",
-                "Equipment/Pop/Social mob./Microplans",
-                "Child/Enfant - Registration/Enregistrement",
-                "Child/Enfant - Follow-up/Suivi",
-                "Data for Health facility/Données Formation sanitaire",
                 "Dénombrement / Enumeration",
                 "Distribution",
             ],

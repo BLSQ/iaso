@@ -182,25 +182,6 @@ const menuItems = (
             ],
         },
         {
-            label: formatMessage(MESSAGES.payments),
-            key: 'payments',
-            icon: props => <PaymentsIcon {...props} />,
-            subMenu: [
-                {
-                    label: formatMessage(MESSAGES.potentialPayments),
-                    permissions: paths.potentialPaymentsPath.permissions,
-                    key: 'potential',
-                    icon: props => <PriceCheckIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.lots),
-                    permissions: paths.potentialPaymentsPath.permissions,
-                    key: 'lots',
-                    icon: props => <AccountBalanceIcon {...props} />,
-                },
-            ],
-        },
-        {
             label: formatMessage(MESSAGES.validation),
             icon: props => <RuleIcon {...props} />,
             key: 'validation',
@@ -217,6 +198,25 @@ const menuItems = (
                         paths.orgUnitsChangeRequestConfiguration.permissions,
                     key: `${CHANGE_REQUEST_CONFIG}`,
                     icon: props => <CategoryIcon {...props} />,
+                },
+            ],
+        },
+        {
+            label: formatMessage(MESSAGES.payments),
+            key: 'payments',
+            icon: props => <PaymentsIcon {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.potentialPayments),
+                    permissions: paths.potentialPaymentsPath.permissions,
+                    key: 'potential',
+                    icon: props => <PriceCheckIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.lots),
+                    permissions: paths.potentialPaymentsPath.permissions,
+                    key: 'lots',
+                    icon: props => <AccountBalanceIcon {...props} />,
                 },
             ],
         },

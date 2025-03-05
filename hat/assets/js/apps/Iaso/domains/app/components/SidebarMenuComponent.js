@@ -38,7 +38,7 @@ const styles = theme => ({
         ...theme.mixins.toolbar,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-start',
+        justifyContent: 'space-between',
         paddingLeft: theme.spacing(3),
         paddingRight: theme.spacing(3),
         height: 90,

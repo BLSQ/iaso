@@ -95,6 +95,26 @@ def create_or_update_group(group: Group, ref: str, name: str, version: SourceVer
     return group
 
 
+def apply_date_field(field_name: str, props: Dict[str, str], orgunit: OrgUnit, task):
+    # if the field is not the geopackage don't touch the orgunit
+    if field_name not in props.keys():
+        return
+
+    new_date = props.get(field_name)
+
+    if new_date:
+        try:
+            setattr(orgunit, field_name, datetime.strptime(new_date, "%Y-%m-%d").date())
+        except (ValueError, TypeError) as e:
+            message = f"Error parsing {field_name} for {orgunit.name}: {e}"
+            if task:
+                task.report_progress_and_stop_if_killed(progress_message=message)
+            raise Exception(message)
+    else:
+        # the attribute was in the geopackge but "empty" so we delete the value in the orgunit
+        setattr(orgunit, field_name, None)
+
+
 def create_or_update_orgunit(
     orgunit: Optional[OrgUnit],
     data: OrgUnitData,
@@ -120,26 +140,9 @@ def create_or_update_orgunit(
     orgunit.version = source_version
 
     # Import dates if they exist in properties
-    opening_date = props.get("opening_date")
-    closed_date = props.get("closed_date")
 
-    if opening_date:
-        try:
-            orgunit.opening_date = datetime.strptime(opening_date, "%Y-%m-%d").date()
-        except (ValueError, TypeError) as e:
-            if task:
-                task.report_progress_and_stop_if_killed(
-                    progress_message=f"Error parsing opening_date for {orgunit.name}: {e}"
-                )
-
-    if closed_date:
-        try:
-            orgunit.closed_date = datetime.strptime(closed_date, "%Y-%m-%d").date()
-        except (ValueError, TypeError) as e:
-            if task:
-                task.report_progress_and_stop_if_killed(
-                    progress_message=f"Error parsing closed_date for {orgunit.name}: {e}"
-                )
+    apply_date_field("closed_date", props, orgunit, task)
+    apply_date_field("opening_date", props, orgunit, task)
 
     if geometry:
         geom = convert_to_geography(geometry["type"], geometry["coordinates"])

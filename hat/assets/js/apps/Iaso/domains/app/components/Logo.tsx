@@ -9,7 +9,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     text: {
         fontFamily: '"DINAlternate-Bold", "DIN Alternate", sans-serif',
         fontSize: 23,
-        marginLeft: theme.spacing(2),
+        // marginLeft: theme.spacing(2),
     },
 }));
 
@@ -21,11 +21,11 @@ export const Logo: FunctionComponent = () => {
     if (LOGO_PATH && APP_TITLE !== 'Iaso') {
         return (
             <>
-                <img
+                {/* <img
                     alt="logo"
                     src={`${window.STATIC_URL}${LOGO_PATH}`}
                     style={{ maxHeight: '50px', maxWidth: '200px' }}
-                />
+                /> */}
                 {showAppName && (
                     <span className={classes.text}>{APP_TITLE}</span>
                 )}

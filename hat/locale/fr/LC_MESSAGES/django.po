@@ -66,8 +66,8 @@ msgid "Login"
 msgstr "Connexion"
 
 #: hat/templates/iaso/login.html:44
-msgid "Forgot password"
-msgstr "Oublié votre mot de passe?"
+msgid "Forgot password?"
+msgstr "Mot de passe oublié?"
 
 #: hat/templates/iaso/reset_password_complete.html:13
 #, python-format

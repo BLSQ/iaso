@@ -969,8 +969,7 @@ class InstancesAPITestCase(APITestCase):
     def test_can_retrieve_submissions_list_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
-            f"/api/instances/?form_ids={self.instance_1.form.id}&order=id&csv=true",
-            headers={"Content-Type": "text/csv"},
+            f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")

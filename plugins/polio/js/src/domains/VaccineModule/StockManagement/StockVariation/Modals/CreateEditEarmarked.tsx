@@ -46,6 +46,7 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
             campaign: earmark?.campaign,
             round_number: earmark?.round_number,
             comment: earmark?.comment,
+            temporary_campaign_name: earmark?.temporary_campaign_name,
             vials_earmarked: earmark?.vials_earmarked || 0,
             doses_earmarked: earmark?.doses_earmarked || 0,
             vaccine_stock: vaccineStockId,
@@ -108,7 +109,6 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.campaign)}
                         name="campaign"
                         component={SingleSelect}
-                        required
                         options={campaignOptions}
                         withMarginTop
                         isLoading={isFetching}
@@ -120,7 +120,6 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.round)}
                         name="round_number"
                         component={SingleSelect}
-                        required
                         options={roundNumberOptions}
                         withMarginTop
                         isLoading={isFetching}
@@ -141,6 +140,14 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.comment)}
                         name="comment"
                         multiline
+                        component={TextInput}
+                        shrinkLabel={false}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.temporary_campaign_name)}
+                        name="temporary_campaign_name"
                         component={TextInput}
                         shrinkLabel={false}
                     />

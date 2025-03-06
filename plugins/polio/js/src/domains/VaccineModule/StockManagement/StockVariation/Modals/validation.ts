@@ -166,16 +166,9 @@ export const useEarmarkValidation = () => {
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)), // can be made more strict with accepted values from dropdown
-        campaign: yup
-            .string()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField)),
-        round_number: yup
-            .number()
-            .integer()
-            .positive()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField)),
+        campaign: yup.string().nullable(),
+        temporary_campaign_name: yup.string().nullable(),
+        round_number: yup.number().integer().positive().nullable(),
         vials_earmarked: yup
             .number()
             .required(formatMessage(MESSAGES.requiredField))

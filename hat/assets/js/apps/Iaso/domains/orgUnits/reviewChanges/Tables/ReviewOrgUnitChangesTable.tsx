@@ -16,9 +16,11 @@ import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLi
 import { baseUrls } from '../../../../constants/urls';
 import { ColumnCell } from '../../../../types/general';
 import { useTableSelection } from '../../../../utils/table';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { MultiActionsDialog } from '../Components/MultiActionsDialog';
 import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
+import { PAYMENTS_MODULE } from '../constants';
 import { IconButton } from '../details';
 import MESSAGES from '../messages';
 import {
@@ -33,8 +35,11 @@ const getIsSelectionDisabled = (ou: OrgUnitChangeRequest) =>
 
 const useColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    return useMemo(
-        () => [
+    const currentUser = useCurrentUser();
+    const { modules } = currentUser.account;
+
+    return useMemo(() => {
+        const columns = [
             {
                 Header: 'id',
                 id: 'id',
@@ -164,9 +169,15 @@ const useColumns = (): Column[] => {
                     );
                 },
             },
-        ],
-        [formatMessage],
-    );
+        ];
+
+        // Remove payment status column when the current account has no payments module
+        if (!modules.includes(PAYMENTS_MODULE)) {
+            return columns.filter(column => column.id !== 'payment_status');
+        }
+
+        return columns;
+    }, [formatMessage, modules]);
 };
 
 const getRowProps = (row: { original: OrgUnitChangeRequest }) => {

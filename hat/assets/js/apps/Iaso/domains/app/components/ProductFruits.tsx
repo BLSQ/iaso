@@ -6,10 +6,7 @@ const ProductFruitsComponent = () => {
     const currentUser = useCurrentUser();
     const userInfo = useMemo(() => {
         return {
-            username: currentUser.account.name,
-            email: currentUser.account.name,
-            firstname: currentUser.account.name,
-            lastname: currentUser.account.name,
+            username: `${currentUser.account.name}-${currentUser.id}`,
             props: {
                 account_name: currentUser.account.name,
                 account_id: currentUser.account.id,

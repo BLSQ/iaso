@@ -67,7 +67,7 @@ class SubActivityCreateUpdateSerializer(serializers.ModelSerializer):
             group_data["source_version"] = self.context["request"].user.iaso_profile.account.default_version
             group_org_units = group_data.pop("org_units", [])
             eligible_group_org_units = [
-                org_unit for org_unit in group_org_units if org_unit in org_units_in_parent_rnd_scope
+                org_unit for org_unit in group_org_units if org_unit.id in org_units_in_parent_rnd_scope
             ]
             group = Group.objects.create(**group_data)
             group.org_units.set(eligible_group_org_units)
@@ -100,7 +100,7 @@ class SubActivityCreateUpdateSerializer(serializers.ModelSerializer):
                 group_org_units = group_data.pop("org_units", [])
                 # We need to make this check here because
                 eligible_group_org_units = [
-                    org_unit for org_unit in group_org_units if org_unit in org_units_in_parent_rnd_scope
+                    org_unit for org_unit in group_org_units if org_unit.id in org_units_in_parent_rnd_scope
                 ]
                 group = Group.objects.create(**group_data)
                 group.org_units.set(eligible_group_org_units)

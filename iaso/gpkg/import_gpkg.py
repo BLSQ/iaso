@@ -132,11 +132,15 @@ def create_or_update_orgunit(
         # Make a copy, so we can do the audit log, otherwise we would edit in place
         orgunit = deepcopy(orgunit)
 
-    orgunit.name = props["name"]
+    # Validate required name
+    name = validate_required_property(props, "name")
+    orgunit.name = name
     orgunit.org_unit_type = data["type"]
     if orgunit.validation_status is None:
         orgunit.validation_status = validation_status
-    orgunit.source_ref = props["ref"]
+    # Validate required ref
+    ref = validate_required_property(props, "ref")
+    orgunit.source_ref = ref
     orgunit.version = source_version
 
     # Import dates if they exist in properties
@@ -180,6 +184,55 @@ def get_ref(inst: Union[OrgUnit, Group]) -> str:
     """We make an artificial ref in case there is none so the gpkg can still refer existing record in iaso, even if
     they don't have a ref"""
     return inst.source_ref if inst.source_ref else f"iaso#{inst.pk}"
+
+
+def validate_required_property(props: Dict[str, str], property_name: str, orgunit_name: str = "") -> str:
+    """Check if a required property exists and is not empty
+    Args:
+        props: Dictionary of properties
+        property_name: Name of the property to check
+        orgunit_name: Name of orgunit for error message (optional)
+    Returns:
+        The property value
+    Raises:
+        ValueError if:
+        - property column doesn't exist in props
+        - property value is None
+        - property value is empty string
+        - property value is only whitespace
+    """
+    if property_name not in props:
+        raise ValueError(f"Column '{property_name}' is required but missing from GPKG")
+
+    value = props[property_name]
+    if value is None:
+        raise ValueError(f"Column '{property_name}' cannot be null")
+
+    if not isinstance(value, str):
+        raise ValueError(f"Column '{property_name}' must be a string, got {type(value)}")
+
+    if value.strip() == "":
+        raise ValueError(f"Column '{property_name}' cannot be empty or blank")
+
+    return value.strip()
+
+
+def validate_property(props: Dict[str, str], property_name: str, orgunit_name: str = "") -> Optional[str]:
+    """Check if a property exists and validate it's not empty if present
+    Args:
+        props: Dictionary of properties
+        property_name: Name of the property to check
+        orgunit_name: Name of orgunit for error message (optional)
+    Returns:
+        The property value if present and non-empty, None if property doesn't exist or is empty
+    """
+    if property_name not in props:
+        return None
+
+    value = props[property_name]
+    if value and value.strip():  # Only return non-empty values
+        return value
+    return None
 
 
 @transaction.atomic
@@ -269,7 +322,10 @@ def import_gpkg_file2(
         row: OrgUnitData
         for row in iter(colx):
             row["type"] = org_unit_type
-            ref = row["properties"]["ref"]
+
+            # Validate both required fields
+            ref = validate_required_property(row["properties"], "ref")
+            name = validate_required_property(row["properties"], "name")
 
             existing_ou = ref_ou.get(ref)
             orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group, task)
@@ -282,7 +338,11 @@ def import_gpkg_file2(
             ref = get_ref(orgunit)  # if ref was null in gpkg
             ref_ou[ref] = orgunit
 
-            parent_ref = row["properties"]["parent_ref"]
+            parent_ref = None
+            if "parent_ref" in row["properties"]:
+                if row["properties"]["parent_ref"]:  # Only validate if it has a non-empty value
+                    parent_ref = validate_property(row["properties"], "parent_ref", orgunit.name)
+
             to_update_with_parent.append((ref, parent_ref))
             # we will log the modification after we set the parent
             if orgunit.location is not None or orgunit.geom is not None:

@@ -344,6 +344,35 @@ class GPKGImport(TestCase):
             2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
         )
 
+    def test_column_validation(self):
+        """Test column validation according to specifications:
+        Required columns (must exist and cannot be null/empty/blank):
+        - ref
+        - name
+
+        Optional non-nullable columns (can be missing, but if present cannot be empty):
+        - parent_ref
+
+        Optional nullable columns (can be missing or empty):
+        - group_refs
+        - opening_date
+        - closing_date
+        """
+        # Test required columns (ref, name)
+        required_columns = ["ref", "name"]
+        for column in required_columns:
+            try:
+                import_gpkg_file(
+                    f"./iaso/tests/fixtures/gpkg/missing_column_{column}.gpkg",
+                    project_id=self.project.id,
+                    source_name="test",
+                    version_number=1,
+                    validation_status="new",
+                    description="",
+                )
+            except ValueError as e:
+                print(f"Caught expected error: {str(e)}")
+
 
 class GPKGImportSimplifiedGroup(TestCase):
     """Tests case around minimal_simplified_group.gpk

@@ -1,7 +1,7 @@
+import React from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from 'bluesquare-components';
-import React from 'react';
 import ReactDOM from 'react-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
@@ -34,6 +34,7 @@ declare global {
     interface Window {
         SENTRY_CONFIG?: SentryConfig;
         SENTRY_INITIALIZED?: boolean;
+        PRODUCT_FRUITS_WORKSPACE_CODE?: string;
         iasoApp: (
             element: HTMLElement,
             enabledPluginsName: string[],

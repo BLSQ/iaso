@@ -1,26 +1,27 @@
-import {
-    ConfirmCancelModal,
-    IntlMessage,
-    useSafeIntl,
-    useSkipEffectOnMount,
-    InputWithInfos,
-} from 'bluesquare-components';
-import { isUndefined, mapValues } from 'lodash';
-import intersection from 'lodash/intersection';
-import isEmpty from 'lodash/isEmpty';
 import React, {
     FunctionComponent,
-    ReactNode,
     useCallback,
     useEffect,
     useMemo,
     useRef,
     useState,
 } from 'react';
-
-import { Stack, Typography } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
+import { Stack, Typography } from '@mui/material';
+import {
+    ConfirmCancelModal,
+    IntlMessage,
+    useSafeIntl,
+    useSkipEffectOnMount,
+    InputWithInfos,
+    makeFullModal,
+    AddButton,
+} from 'bluesquare-components';
+import { isUndefined, mapValues } from 'lodash';
+import intersection from 'lodash/intersection';
+import isEmpty from 'lodash/isEmpty';
+
+import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useFormState } from '../../../../hooks/form';
 import { DropdownOptions } from '../../../../types/utils';
@@ -67,7 +68,8 @@ const mapOrgUnitType = orgUnitType => {
 type Props = {
     orgUnitType?: OrgunitType;
     titleMessage: IntlMessage;
-    renderTrigger: ({ openDialog }: { openDialog: () => void }) => ReactNode;
+    isOpen: boolean;
+    closeDialog: () => void;
 };
 
 const defaultOrgUnitType: Omit<
@@ -85,11 +87,13 @@ const defaultOrgUnitType: Omit<
     reference_forms: [],
     allow_creating_sub_unit_types: [],
 };
-export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
+const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     orgUnitType = defaultOrgUnitType,
     titleMessage,
-    renderTrigger,
+    isOpen,
+    closeDialog,
 }) => {
+    // console.log('RENDERING', titleMessage, orgUnitType, renderTrigger);
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(mapOrgUnitType(orgUnitType));
 
@@ -242,35 +246,32 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         ],
     );
 
-    const onConfirm = useCallback(
-        async (closeDialog: () => void) => {
-            try {
-                await saveType(mapValues(formState, v => v.value));
-                closeDialog();
-            } catch (error) {
-                if (error.status === 400) {
-                    Object.entries(error.details).forEach(entry => {
-                        if (
-                            entry[0] === 'sub_unit_type_ids' ||
-                            entry[0] === 'allow_creating_sub_unit_type_ids'
-                        ) {
-                            const typeName = (entry[1] as number[]).join(', ');
-                            const errorText: string = formatMessage(
-                                MESSAGES.subTypesErrors,
-                                {
-                                    typeName,
-                                },
-                            );
-                            setFieldErrors(entry[0], [errorText]);
-                        } else {
-                            setFieldErrors(entry[0], entry[1]);
-                        }
-                    });
-                }
+    const onConfirm = useCallback(async () => {
+        try {
+            await saveType(mapValues(formState, v => v.value));
+            closeDialog();
+        } catch (error) {
+            if (error.status === 400) {
+                Object.entries(error.details).forEach(entry => {
+                    if (
+                        entry[0] === 'sub_unit_type_ids' ||
+                        entry[0] === 'allow_creating_sub_unit_type_ids'
+                    ) {
+                        const typeName = (entry[1] as number[]).join(', ');
+                        const errorText: string = formatMessage(
+                            MESSAGES.subTypesErrors,
+                            {
+                                typeName,
+                            },
+                        );
+                        setFieldErrors(entry[0], [errorText]);
+                    } else {
+                        setFieldErrors(entry[0], entry[1]);
+                    }
+                });
             }
-        },
-        [formState, formatMessage, saveType, setFieldErrors],
-    );
+        }
+    }, [closeDialog, formState, formatMessage, saveType, setFieldErrors]);
     const hasPermission =
         userHasOneOfPermissions(
             [Permission.ORG_UNITS, Permission.ORG_UNITS_READ],
@@ -308,26 +309,23 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         useState(false);
 
     return (
-        //  @ts-ignore
         <>
-            <ConfirmCancelDialogComponent
+            <ConfirmCancelModal
                 id="OuTypes-modal"
                 titleMessage={titleMessage}
-                onConfirm={closeDialog => onConfirm(closeDialog)}
-                onCancel={closeDialog => {
-                    closeDialog();
-                    resetForm();
-                }}
+                onConfirm={() => onConfirm()}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
                 allowConfirm={isFormValid(requiredFields, formState)}
                 maxWidth="sm"
-                renderTrigger={renderTrigger}
+                open={isOpen}
+                closeDialog={closeDialog}
+                onClose={() => resetForm()}
+                onCancel={() => {
+                    resetForm();
+                    closeDialog();
+                }}
                 dataTestId="OuTypes-modal"
-                additionalButton={undefined}
-                additionalMessage={undefined}
-                onAdditionalButtonClick={undefined}
-                allowConfimAdditionalButton={undefined}
             >
                 <InputComponent
                     keyValue="name"
@@ -423,7 +421,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                         label={referenceFormsMessage}
                     />
                 )}
-            </ConfirmCancelDialogComponent>
+            </ConfirmCancelModal>
 
             {/* @ts-ignore */}
             <ConfirmCancelModal
@@ -454,4 +452,11 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
             </ConfirmCancelModal>
         </>
     );
+};
+const modalWithButton = makeFullModal(OrgUnitsTypesDialog, AddButton);
+const modalWithIcon = makeFullModal(OrgUnitsTypesDialog, EditIconButton);
+
+export {
+    modalWithButton as AddOrgUnitsTypesDialog,
+    modalWithIcon as EditOrgUnitsTypesDialog,
 };

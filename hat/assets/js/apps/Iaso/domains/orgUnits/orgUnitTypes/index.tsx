@@ -1,3 +1,4 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -6,20 +7,19 @@ import {
     commonStyles,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 
 import TopBar from '../../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
-import { OrgUnitsTypesDialog } from './components/OrgUnitsTypesDialog';
 
 import { baseUrls } from '../../../constants/urls';
-import { OrgUnitTypesParams } from '../types/orgunitTypes';
-import MESSAGES from './messages';
 
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { OrgUnitTypesParams } from '../types/orgunitTypes';
 import { Filters } from './components/Filters';
+import { AddOrgUnitsTypesDialog } from './components/OrgUnitsTypesDialog';
 import { useGetColumns } from './config/tableColumns';
 import { useGetOrgUnitTypes } from './hooks/useGetOrgUnitTypes';
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.orgUnitTypes;
 
@@ -52,14 +52,9 @@ const OrgUnitTypes: FunctionComponent = () => {
                     alignItems="center"
                     className={classes.marginTop}
                 >
-                    <OrgUnitsTypesDialog
+                    <AddOrgUnitsTypesDialog
+                        iconProps={{}}
                         titleMessage={MESSAGES.create}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButton
-                                onClick={openDialog}
-                                id="create-ou-type"
-                            />
-                        )}
                     />
                 </Grid>
                 <TableWithDeepLink

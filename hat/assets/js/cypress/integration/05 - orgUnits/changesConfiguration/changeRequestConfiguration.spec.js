@@ -82,10 +82,14 @@ const testRowContent = (index, config = listFixture.results[index]) => {
     withRowAt(index, r => {
         r.colAt(0).should('contain', config.id);
         r.colAt(1).should('contain', config.project.name);
-        r.colAt(2).should('contain', config.org_unit_type.name);
-        r.colAt(3).should('contain', formatDate(config.created_at));
-        r.colAt(4).should('contain', formatDate(config.updated_at));
-        r.colAt(5)
+        r.colAt(2).should(
+            'contain',
+            config.type === 'edition' ? 'Edition' : 'Creation',
+        );
+        r.colAt(3).should('contain', config.org_unit_type.name);
+        r.colAt(4).should('contain', formatDate(config.created_at));
+        r.colAt(5).should('contain', formatDate(config.updated_at));
+        r.colAt(6)
             .find('.MuiChip-label')
             .should(labels => {
                 const labelTexts = [...labels].map(label => label.textContent);
@@ -98,7 +102,7 @@ const withActionColAt = (index, block) =>
     withRowAt(1, r => block(r.colAt(index).as('actionCol')));
 
 const openDialogToDeleteIndex = index =>
-    withRowAt(index, r => r.colAt(6).find('button').eq(1).click());
+    withRowAt(index, r => r.colAt(7).find('button').eq(1).click());
 
 describe('OrgUnit Change Configuration', () => {
     it('Api should be called with base params', () => {
@@ -131,7 +135,7 @@ describe('OrgUnit Change Configuration', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.results.length,
-            columns: 7,
+            columns: 8,
             withVisit: false,
             apiKey: 'orgunits/changes/configs',
         });
@@ -155,7 +159,7 @@ describe('OrgUnit Change Configuration', () => {
         describe('Action columns', () => {
             it('should display correct amount of buttons', () => {
                 cy.wait('@getOrgUnitChangeConfigs').then(() => {
-                    withActionColAt(6, actionCol =>
+                    withActionColAt(7, actionCol =>
                         actionCol.find('button').should('have.length', 2),
                     );
                 });
@@ -192,14 +196,18 @@ describe('OrgUnit Change Configuration', () => {
                     },
                     {
                         colIndex: 2,
-                        order: 'org_unit_type__name',
+                        order: 'type',
                     },
                     {
                         colIndex: 3,
-                        order: 'created_at',
+                        order: 'org_unit_type__name',
                     },
                     {
                         colIndex: 4,
+                        order: 'created_at',
+                    },
+                    {
+                        colIndex: 5,
                         order: 'updated_at',
                     },
                 ];
@@ -231,6 +239,7 @@ describe('OrgUnit Change Configuration', () => {
                     {
                         ...defaultQuery,
                         project_id: newFilters.project,
+                        type: 'creation',
                         org_unit_type_id: newFilters.org_unit_type_id.urlValue,
                     },
 
@@ -245,6 +254,7 @@ describe('OrgUnit Change Configuration', () => {
                 cy.get('#project_id').type('Test2.35.3');
                 cy.wait(800);
                 cy.get('#project_id').type('{downarrow}').type('{enter}');
+                cy.get('#type').type('{downarrow}').type('{enter}');
                 cy.get('#org_unit_type_id').type('Org Unit Type 2');
                 cy.wait(800);
                 cy.get('#org_unit_type_id').type('{downarrow}').type('{enter}');

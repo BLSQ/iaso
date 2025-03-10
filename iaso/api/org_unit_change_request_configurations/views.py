@@ -15,6 +15,7 @@ from iaso.api.org_unit_change_request_configurations.serializers import (
     OrgUnitChangeRequestConfigurationAuditLogger,
     OrgUnitChangeRequestConfigurationListSerializer,
     OrgUnitChangeRequestConfigurationRetrieveSerializer,
+    OrgUnitChangeRequestConfigurationTypeSerializer,
     OrgUnitChangeRequestConfigurationUpdateSerializer,
     OrgUnitChangeRequestConfigurationWriteSerializer,
     OrgUnitTypeNestedSerializer,
@@ -38,6 +39,7 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
     filterset_class = OrgUnitChangeRequestConfigurationListFilter
     ordering_fields = [
         "id",
+        "type",
         "project__name",
         "org_unit_type__name",
         "org_units_editable",
@@ -88,13 +90,18 @@ class OrgUnitChangeRequestConfigurationViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError("You must be logged in")
 
         project_id = ProjectIdSerializer(data=self.request.query_params).get_project_id(raise_exception=True)
+        oucrc_type = OrgUnitChangeRequestConfigurationTypeSerializer(data=self.request.query_params).get_type(
+            raise_exception=True
+        )
 
         user_projects = user.iaso_profile.projects.values_list("id", flat=True)
         if user_projects and project_id not in user_projects:
             raise serializers.ValidationError(f"The user doesn't have access to the Project {project_id}")
 
-        org_unit_types_in_configs = OrgUnitChangeRequestConfiguration.objects.filter(project_id=project_id).values_list(
-            "org_unit_type_id", flat=True
+        org_unit_types_in_configs = (
+            OrgUnitChangeRequestConfiguration.objects.filter(type=oucrc_type)
+            .filter(project_id=project_id)
+            .values_list("org_unit_type_id", flat=True)
         )
         available_org_unit_types = OrgUnitType.objects.filter(
             Q(projects__id=project_id) & ~Q(id__in=org_unit_types_in_configs)

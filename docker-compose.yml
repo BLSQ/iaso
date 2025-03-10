@@ -71,6 +71,7 @@ services:
             SENTRY_ENVIRONMENT:
             SENTRY_FRONT_ENABLED:
             SENTRY_URL:
+            PRODUCT_FRUITS_WORKSPACE_CODE:
             SERVER_URL:
             SHOW_NAME_WITH_LOGO:
             SUPERSET_ADMIN_PASSWORD:

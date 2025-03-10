@@ -6,7 +6,14 @@ from rest_framework.test import APIClient
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase
-from plugins.polio.models import CampaignType, Round, SubActivity, SubActivityScope
+from plugins.polio.models import (
+    CampaignScope,
+    CampaignType,
+    Round,
+    RoundScope,
+    SubActivity,
+    SubActivityScope,
+)
 from plugins.polio.preparedness.spreadsheet_manager import *
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
@@ -21,15 +28,27 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
     def setUpTestData(cls):
         cls.data_source = m.DataSource.objects.create(name="Default source")
         cls.now = timezone.now()
-        cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
-        cls.account = polio_account = Account.objects.create(name="polio", default_version=cls.source_version_1)
-        cls.user = cls.create_user_with_profile(username="yoda", account=polio_account, permissions=["iaso_forms"])
+        cls.source_version_1 = m.SourceVersion.objects.create(
+            data_source=cls.data_source, number=1
+        )
+        cls.account = polio_account = Account.objects.create(
+            name="polio", default_version=cls.source_version_1
+        )
+        cls.user = cls.create_user_with_profile(
+            username="yoda", account=polio_account, permissions=["iaso_forms"]
+        )
 
-        cls.country_type = m.OrgUnitType.objects.create(name="COUNTRY", short_name="country")
-        cls.district_type = m.OrgUnitType.objects.create(name="DISTRICT", short_name="district")
+        cls.country_type = m.OrgUnitType.objects.create(
+            name="COUNTRY", short_name="country"
+        )
+        cls.district_type = m.OrgUnitType.objects.create(
+            name="DISTRICT", short_name="district"
+        )
 
         cls.org_unit = m.OrgUnit.objects.create(
-            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
+            org_unit_type=m.OrgUnitType.objects.create(
+                name="Jedi Council", short_name="Cnc"
+            ),
             version=cls.source_version_1,
             name="Jedi Council A",
             validation_status=m.OrgUnit.VALIDATION_VALID,
@@ -37,7 +56,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         )
 
         cls.child_org_unit = m.OrgUnit.objects.create(
-            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
+            org_unit_type=m.OrgUnitType.objects.create(
+                name="Jedi Council", short_name="Cnc"
+            ),
             version=cls.source_version_1,
             name="Sub Jedi Council A",
             parent_id=cls.org_unit.id,
@@ -49,7 +70,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             cls.org_unit,
             cls.child_org_unit,
             m.OrgUnit.objects.create(
-                org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
+                org_unit_type=m.OrgUnitType.objects.create(
+                    name="Jedi Council", short_name="Cnc"
+                ),
                 version=cls.source_version_1,
                 name="Jedi Council B",
                 validation_status=m.OrgUnit.VALIDATION_VALID,
@@ -58,7 +81,10 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         ]
 
         cls.user_no_permission = cls.create_user_with_profile(
-            username="luke", account=polio_account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
+            username="luke",
+            account=polio_account,
+            permissions=["iaso_forms"],
+            org_units=[cls.child_org_unit],
         )
 
     def setUp(self):
@@ -76,8 +102,12 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         """
         self.client.force_authenticate(self.user)
         user_account = self.user.iaso_profile.account
-        Campaign.objects.create(account=user_account, obr_name="obr_name", detection_status="PENDING")
-        Campaign.objects.create(account=user_account, obr_name="obr_name2", detection_status="PENDING")
+        Campaign.objects.create(
+            account=user_account, obr_name="obr_name", detection_status="PENDING"
+        )
+        Campaign.objects.create(
+            account=user_account, obr_name="obr_name2", detection_status="PENDING"
+        )
 
         response = self.client.get("/api/polio/campaigns/")
         self.assertEqual(response.status_code, 200)
@@ -95,31 +125,59 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         user_account = self.user.iaso_profile.account
 
         another_account = Account.objects.create(name="another_account")
-        Campaign.objects.create(account=user_account, obr_name="obr_name", detection_status="PENDING")
-        Campaign.objects.create(account=user_account, obr_name="obr_name2", detection_status="PENDING")
-        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+        Campaign.objects.create(
+            account=user_account, obr_name="obr_name", detection_status="PENDING"
+        )
+        Campaign.objects.create(
+            account=user_account, obr_name="obr_name2", detection_status="PENDING"
+        )
+        Campaign.objects.create(
+            account=another_account,
+            obr_name="obr_name_other_account",
+            detection_status="PENDING",
+        )
 
         json_response = self.client.get("/api/polio/campaigns/").json()
         self.assertEqual(len(json_response), 2)
-        self.assertNotIn("obr_name_other_account", [c["obr_name"] for c in json_response])
+        self.assertNotIn(
+            "obr_name_other_account", [c["obr_name"] for c in json_response]
+        )
 
     def test_campaigns_list_anonymous_can_choose_account(self):
         """Campaigns list endpoint: anonymous users only can use the account_id parameter to filter"""
         another_account = Account.objects.create(name="another_account")
-        Campaign.objects.create(account=self.account, obr_name="obr_name", detection_status="PENDING")
-        Campaign.objects.create(account=self.account, obr_name="obr_name2", detection_status="PENDING")
-        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+        Campaign.objects.create(
+            account=self.account, obr_name="obr_name", detection_status="PENDING"
+        )
+        Campaign.objects.create(
+            account=self.account, obr_name="obr_name2", detection_status="PENDING"
+        )
+        Campaign.objects.create(
+            account=another_account,
+            obr_name="obr_name_other_account",
+            detection_status="PENDING",
+        )
 
-        json_response = self.client.get(f"/api/polio/campaigns/?account_id={another_account.pk}").json()
+        json_response = self.client.get(
+            f"/api/polio/campaigns/?account_id={another_account.pk}"
+        ).json()
         self.assertEqual(len(json_response), 1)
         self.assertEqual(json_response[0]["obr_name"], "obr_name_other_account")
 
     def test_campaigns_list_anonymous_get_everything(self):
         """Campaigns list endpoint: if they don't use the account_id, anonymous users get everything"""
         another_account = Account.objects.create(name="another_account")
-        Campaign.objects.create(account=self.account, obr_name="obr_name", detection_status="PENDING")
-        Campaign.objects.create(account=self.account, obr_name="obr_name2", detection_status="PENDING")
-        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+        Campaign.objects.create(
+            account=self.account, obr_name="obr_name", detection_status="PENDING"
+        )
+        Campaign.objects.create(
+            account=self.account, obr_name="obr_name2", detection_status="PENDING"
+        )
+        Campaign.objects.create(
+            account=another_account,
+            obr_name="obr_name_other_account",
+            detection_status="PENDING",
+        )
 
         json_response = self.client.get("/api/polio/campaigns/").json()
         self.assertEqual(len(json_response), 3)
@@ -136,13 +194,25 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         user_account = self.user.iaso_profile.account
 
         another_account = Account.objects.create(name="another_account")
-        Campaign.objects.create(account=user_account, obr_name="obr_name", detection_status="PENDING")
-        Campaign.objects.create(account=user_account, obr_name="obr_name2", detection_status="PENDING")
-        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+        Campaign.objects.create(
+            account=user_account, obr_name="obr_name", detection_status="PENDING"
+        )
+        Campaign.objects.create(
+            account=user_account, obr_name="obr_name2", detection_status="PENDING"
+        )
+        Campaign.objects.create(
+            account=another_account,
+            obr_name="obr_name_other_account",
+            detection_status="PENDING",
+        )
 
-        json_response = self.client.get(f"/api/polio/campaigns/?account_id={another_account.pk}").json()
+        json_response = self.client.get(
+            f"/api/polio/campaigns/?account_id={another_account.pk}"
+        ).json()
         self.assertEqual(len(json_response), 2)
-        self.assertNotIn("obr_name_other_account", [c["obr_name"] for c in json_response])
+        self.assertNotIn(
+            "obr_name_other_account", [c["obr_name"] for c in json_response]
+        )
 
     def test_campaigns_list_anonymous(self):
         """Basic tests for the campaigns list endpoint (anonymous)
@@ -152,8 +222,12 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         - the status code
         - important data fields get returned
         """
-        Campaign.objects.create(account=self.account, obr_name="obr_name", detection_status="PENDING")
-        Campaign.objects.create(account=self.account, obr_name="obr_name2", detection_status="PENDING")
+        Campaign.objects.create(
+            account=self.account, obr_name="obr_name", detection_status="PENDING"
+        )
+        Campaign.objects.create(
+            account=self.account, obr_name="obr_name2", detection_status="PENDING"
+        )
 
         response = self.client.get("/api/polio/campaigns/")
         self.assertEqual(response.status_code, 200)
@@ -234,7 +308,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         chronogram = round_zero.chronograms.valid().first()
         self.assertIsNone(chronogram.created_by)
 
-        response = self.client.get(f"/api/polio/campaigns/{c.id}/", payload, format="json")
+        response = self.client.get(
+            f"/api/polio/campaigns/{c.id}/", payload, format="json"
+        )
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 1)
@@ -273,7 +349,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         chronogram = round_zero.chronograms.valid().first()
         self.assertIsNone(chronogram.created_by)
 
-        response = self.client.get(f"/api/polio/campaigns/{c.id}/", payload, format="json")
+        response = self.client.get(
+            f"/api/polio/campaigns/{c.id}/", payload, format="json"
+        )
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 1)
@@ -285,7 +363,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         started_at_round_1 = self.now.strftime("%Y-%m-%d")
         ended_at_round_1 = (self.now + datetime.timedelta(days=20)).strftime("%Y-%m-%d")
-        started_at_round_2 = (self.now + datetime.timedelta(days=60)).strftime("%Y-%m-%d")
+        started_at_round_2 = (self.now + datetime.timedelta(days=60)).strftime(
+            "%Y-%m-%d"
+        )
         ended_at_round_2 = (self.now + datetime.timedelta(days=80)).strftime("%Y-%m-%d")
         payload = {
             "account": self.account.pk,
@@ -334,7 +414,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         started_at_round_1 = self.now.strftime("%Y-%m-%d")
         ended_at_round_1 = (self.now + datetime.timedelta(days=20)).strftime("%Y-%m-%d")
-        started_at_round_2 = (self.now + datetime.timedelta(days=60)).strftime("%Y-%m-%d")
+        started_at_round_2 = (self.now + datetime.timedelta(days=60)).strftime(
+            "%Y-%m-%d"
+        )
         ended_at_round_2 = (self.now + datetime.timedelta(days=80)).strftime("%Y-%m-%d")
         payload = {
             "account": self.account.pk,
@@ -367,9 +449,15 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         rounds = c.rounds.all().order_by("number")
         self.assertEqual(2, rounds.count())
         self.assertQuerySetEqual(rounds, [1, 2], lambda r: r.number)
-        self.assertQuerySetEqual(c.scopes.get(vaccine="bOPV").group.org_units.all(), [self.org_unit])
-        self.assertEqual(c.scopes.get(vaccine="bOPV").group.source_version, self.org_unit.version)
-        self.assertQuerySetEqual(c.scopes.get(vaccine="mOPV2").group.org_units.all(), [self.child_org_unit])
+        self.assertQuerySetEqual(
+            c.scopes.get(vaccine="bOPV").group.org_units.all(), [self.org_unit]
+        )
+        self.assertEqual(
+            c.scopes.get(vaccine="bOPV").group.source_version, self.org_unit.version
+        )
+        self.assertQuerySetEqual(
+            c.scopes.get(vaccine="mOPV2").group.org_units.all(), [self.child_org_unit]
+        )
         # check via the api
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
@@ -417,7 +505,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         started_at_round_1 = self.now.strftime("%Y-%m-%d")
         ended_at_round_1 = (self.now + datetime.timedelta(days=20)).strftime("%Y-%m-%d")
-        started_at_round_2 = (self.now + datetime.timedelta(days=60)).strftime("%Y-%m-%d")
+        started_at_round_2 = (self.now + datetime.timedelta(days=60)).strftime(
+            "%Y-%m-%d"
+        )
         ended_at_round_2 = (self.now + datetime.timedelta(days=80)).strftime("%Y-%m-%d")
         payload = {
             "account": self.account.pk,
@@ -431,7 +521,10 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
                     "ended_at": ended_at_round_1,
                     "scopes": [
                         {"vaccine": "bOPV", "group": {"org_units": [self.org_unit.id]}},
-                        {"vaccine": "mOPV2", "group": {"org_units": [self.child_org_unit.id]}},
+                        {
+                            "vaccine": "mOPV2",
+                            "group": {"org_units": [self.child_org_unit.id]},
+                        },
                     ],
                 },
                 {
@@ -452,8 +545,14 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(2, rounds.count())
         self.assertQuerySetEqual(rounds, [1, 2], lambda r: r.number)
         first_round = c.rounds.filter(number=1).first()
-        self.assertQuerySetEqual(first_round.scopes.get(vaccine="bOPV").group.org_units.all(), [self.org_unit])
-        self.assertQuerySetEqual(first_round.scopes.get(vaccine="mOPV2").group.org_units.all(), [self.child_org_unit])
+        self.assertQuerySetEqual(
+            first_round.scopes.get(vaccine="bOPV").group.org_units.all(),
+            [self.org_unit],
+        )
+        self.assertQuerySetEqual(
+            first_round.scopes.get(vaccine="mOPV2").group.org_units.all(),
+            [self.child_org_unit],
+        )
         response = self.client.get(f"/api/polio/campaigns/{c.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 2)
@@ -480,7 +579,12 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
                     "group": {
                         "name": f"scope {first_round.scopes.get(vaccine='bOPV').id} for round 1 campaign obr_name - bOPV",
                         "id": first_round.scopes.get(vaccine="bOPV").group.id,
-                        "org_units": [o.id for o in first_round.scopes.get(vaccine="bOPV").group.org_units.all()],
+                        "org_units": [
+                            o.id
+                            for o in first_round.scopes.get(
+                                vaccine="bOPV"
+                            ).group.org_units.all()
+                        ],
                     },
                 },
                 {
@@ -488,11 +592,152 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
                     "group": {
                         "name": f"scope {first_round.scopes.get(vaccine='mOPV2').id} for round 1 campaign obr_name - mOPV2",
                         "id": first_round.scopes.get(vaccine="mOPV2").group.id,
-                        "org_units": [o.id for o in first_round.scopes.get(vaccine="mOPV2").group.org_units.all()],
+                        "org_units": [
+                            o.id
+                            for o in first_round.scopes.get(
+                                vaccine="mOPV2"
+                            ).group.org_units.all()
+                        ],
                     },
                 },
             ],
         )
+
+    def test_campaign_scope_reduction_reflected_on_subactivities(self):
+        # Create a new campaign with scope per campaign + subactivity scope
+        test_campaign, round_1, round_2, _, _, district = self.create_campaign(
+            obr_name="TEST_CAMPAIGN",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+        subactivity_1 = SubActivity.objects.create(
+            name="Test SubActivity",
+            round=round_1,
+            start_date=datetime.date(2022, 1, 1),
+            end_date=datetime.date(2022, 1, 31),
+        )
+        campaign_group = m.Group.objects.create(
+            name="campaign test group", source_version=self.source_version_1
+        )
+        org_units_list = [*self.org_units, district]
+        campaign_group.org_units.set(org_units_list)
+        campaign_scope = CampaignScope.objects.get(
+            campaign=test_campaign, vaccine="mOPV2"
+        )
+        campaign_scope.group = campaign_group
+        campaign_scope.save()
+        sub_activity_group = m.Group.objects.create(
+            name="Test group", source_version=self.source_version_1
+        )
+        sub_activity_group.org_units.set(org_units_list)
+        subactivity_scope = SubActivityScope.objects.create(
+            subactivity=subactivity_1, group=sub_activity_group, vaccine="mOPV2"
+        )
+        # Get the campaign details to reuse payload for PUT request
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/polio/campaigns/{test_campaign.id}/")
+        data = self.assertJSONResponse(response, 200)
+        print("SCOPES", data["scopes"])
+        response_group = data["scopes"][0]["group"]
+
+        # Reduce scope
+        new_scopes = [
+            {
+                "vaccine": data["scopes"][0]["vaccine"],
+                "group": {
+                    "name": response_group["name"],
+                    "id": response_group["id"],
+                    "org_units": [district.id],
+                },
+            }
+        ]
+        payload = {**data, "scopes": new_scopes}
+
+        response = self.client.put(
+            f"/api/polio/campaigns/{test_campaign.id}/", payload, format="json"
+        )
+        data = self.assertJSONResponse(response, 200)
+        # test campaign scope
+        campaign_scope.refresh_from_db()
+        self.assertEqual(campaign_scope.group.org_units.count(), 1)
+        self.assertEqual(campaign_scope.group.org_units.first(), district)
+
+        # test subactivity scope
+        subactivity_scope.refresh_from_db()
+        self.assertEqual(subactivity_scope.group.org_units.count(), 1)
+        self.assertEqual(subactivity_scope.group.org_units.first(), district)
+
+    def test_round_scope_reduction_reflected_on_subactivities(self):
+        # Create a new campaign with scope per campaign + subactivity scope
+        test_campaign, round_1, round_2, _, _, district = self.create_campaign(
+            obr_name="TEST_CAMPAIGN",
+            account=self.account,
+            source_version=self.source_version_1,
+            country_ou_type=self.country_type,
+            district_ou_type=self.district_type,
+        )
+        subactivity_1 = SubActivity.objects.create(
+            name="Test SubActivity",
+            round=round_1,
+            start_date=datetime.date(2022, 1, 1),
+            end_date=datetime.date(2022, 1, 31),
+        )
+        round_1_group = m.Group.objects.create(
+            name="campaign test group", source_version=self.source_version_1
+        )
+
+        test_campaign.separate_scopes_per_round = True
+        test_campaign.save()
+
+        org_units_list = [*self.org_units, district]
+        round_1_group.org_units.set(org_units_list)
+        round_1_scope = RoundScope.objects.create(round=round_1, vaccine="mOPV2")
+        round_1_scope.group = round_1_group
+        round_1_scope.save()
+        sub_activity_group = m.Group.objects.create(
+            name="Test group", source_version=self.source_version_1
+        )
+        sub_activity_group.org_units.set(org_units_list)
+        subactivity_scope = SubActivityScope.objects.create(
+            subactivity=subactivity_1, group=sub_activity_group, vaccine="mOPV2"
+        )
+        # Get the campaign details to reuse payload for PUT request
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/polio/campaigns/{test_campaign.id}/")
+        data = self.assertJSONResponse(response, 200)
+        response_group = data["rounds"][0]["scopes"][0]["group"]
+
+        # Reduce scope
+        new_scopes = [
+            {
+                "vaccine": data["rounds"][0]["scopes"][0]["vaccine"],
+                "group": {
+                    "name": response_group["name"],
+                    "id": response_group["id"],
+                    "org_units": [district.id],
+                },
+            }
+        ]
+        payload = {
+            **data,
+            "rounds": [{**data["rounds"][0], "scopes": new_scopes}, data["rounds"][1]],
+        }
+
+        response = self.client.put(
+            f"/api/polio/campaigns/{test_campaign.id}/", payload, format="json"
+        )
+        data = self.assertJSONResponse(response, 200)
+        # test round scope
+        round_1_scope.refresh_from_db()
+        self.assertEqual(round_1_scope.group.org_units.count(), 1)
+        self.assertEqual(round_1_scope.group.org_units.first(), district)
+
+        # test subactivity scope
+        subactivity_scope.refresh_from_db()
+        self.assertEqual(subactivity_scope.group.org_units.count(), 1)
+        self.assertEqual(subactivity_scope.group.org_units.first(), district)
 
     def test_changing_scope_type_deletes_old_scopes(self):
         # Switching to a campaign-level scope deletes all round-level scopes + subactivity scopes
@@ -512,7 +757,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
             start_date=datetime.date(2022, 1, 1),
             end_date=datetime.date(2022, 1, 31),
         )
-        group = m.Group.objects.create(name="Test group", source_version=self.source_version_1)
+        group = m.Group.objects.create(
+            name="Test group", source_version=self.source_version_1
+        )
         group.org_units.add(district)
         subactivity_scope_with_campaign_level_scope = SubActivityScope.objects.create(
             subactivity=subactivity_1, group=group, vaccine="mOPV2"
@@ -534,10 +781,17 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         new_round_1 = data["rounds"][0]
         new_round_1["scopes"] = data["scopes"]
         new_rounds = [new_round_1, data["rounds"][1], data["rounds"][2]]
-        payload = {**data, "separate_scopes_per_round": True, "rounds": new_rounds, "description": "Yabadabadoo"}
+        payload = {
+            **data,
+            "separate_scopes_per_round": True,
+            "rounds": new_rounds,
+            "description": "Yabadabadoo",
+        }
 
         # Test that scope is on round and not on campaign
-        response = self.client.put(f"/api/polio/campaigns/{test_campaign.id}/", payload, format="json")
+        response = self.client.put(
+            f"/api/polio/campaigns/{test_campaign.id}/", payload, format="json"
+        )
         data = self.assertJSONResponse(response, 200)
         self.assertTrue(data["separate_scopes_per_round"])
         self.assertEqual(len(data["scopes"]), 0)
@@ -564,7 +818,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         )
 
         # Switch scope back to campaign level
-        response = self.client.put(f"/api/polio/campaigns/{test_campaign.id}/", old_payload, format="json")
+        response = self.client.put(
+            f"/api/polio/campaigns/{test_campaign.id}/", old_payload, format="json"
+        )
         data = self.assertJSONResponse(response, 200)
         self.assertFalse(data["separate_scopes_per_round"])
         self.assertEqual(len(data["scopes"]), 1)
@@ -597,7 +853,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         # Format the paymoad to remove a round
         payload = {**old_payload, "rounds": rnds}
 
-        response = self.client.put(f"/api/polio/campaigns/{test_campaign.id}/", payload, format="json")
+        response = self.client.put(
+            f"/api/polio/campaigns/{test_campaign.id}/", payload, format="json"
+        )
         data = self.assertJSONResponse(response, 200)
         self.assertEqual(len(data["rounds"]), 2)
         self.assertIsNone(Round.objects.filter(id=rnd_to_delete["id"]).first())
@@ -615,9 +873,15 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(response.status_code, 201, response.content)
         campaign_id = response.data["id"]
         campaign = Campaign.objects.get(id=campaign_id)
-        self.assertEqual(campaign.campaign_types.first().name, "Polio", "Campaign type should default to 'Polio'")
+        self.assertEqual(
+            campaign.campaign_types.first().name,
+            "Polio",
+            "Campaign type should default to 'Polio'",
+        )
 
-        response = self.client.get(f"/api/polio/campaigns/{campaign.id}/", format="json")
+        response = self.client.get(
+            f"/api/polio/campaigns/{campaign.id}/", format="json"
+        )
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
 
@@ -655,10 +919,14 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         campaign_type2 = CampaignType.objects.create(name="Type2")
         campaign_type_ids = [campaign_type1.id, campaign_type2.id]
 
-        campaign = Campaign.objects.create(obr_name="Campaign with Types", account=self.account)
+        campaign = Campaign.objects.create(
+            obr_name="Campaign with Types", account=self.account
+        )
         campaign.campaign_types.set([campaign_type1, campaign_type2])
 
-        response = self.client.get(f"/api/polio/campaigns/{campaign.id}/", format="json")
+        response = self.client.get(
+            f"/api/polio/campaigns/{campaign.id}/", format="json"
+        )
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
 
@@ -673,7 +941,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(self.user)
         campaign_types_count = CampaignType.objects.count()
 
-        response = self.client.get("/api/polio/campaigns/available_campaign_types/", format="json")
+        response = self.client.get(
+            "/api/polio/campaigns/available_campaign_types/", format="json"
+        )
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
 
@@ -693,14 +963,18 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         campaign3.campaign_types.add(campaign_type3)
 
         # Filter by single campaign type
-        response = self.client.get(f"/api/polio/campaigns/?campaign_types={campaign_type1.id}", format="json")
+        response = self.client.get(
+            f"/api/polio/campaigns/?campaign_types={campaign_type1.id}", format="json"
+        )
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
         self.assertEqual(len(response_data), 1)
         self.assertEqual(response_data[0]["id"], str(campaign1.id))
 
         # Filter by single campaign type using slug
-        response = self.client.get(f"/api/polio/campaigns/?campaign_types={campaign_type1.slug}", format="json")
+        response = self.client.get(
+            f"/api/polio/campaigns/?campaign_types={campaign_type1.slug}", format="json"
+        )
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
         self.assertEqual(len(response_data), 1)
@@ -708,7 +982,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         # Filter by multiple campaign types
         response = self.client.get(
-            f"/api/polio/campaigns/?campaign_types={campaign_type1.id},{campaign_type2.id}", format="json"
+            f"/api/polio/campaigns/?campaign_types={campaign_type1.id},{campaign_type2.id}",
+            format="json",
         )
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
@@ -719,7 +994,8 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
 
         # Filter by multiple campaign types
         response = self.client.get(
-            f"/api/polio/campaigns/?campaign_types={campaign_type1.slug},{campaign_type2.slug}", format="json"
+            f"/api/polio/campaigns/?campaign_types={campaign_type1.slug},{campaign_type2.slug}",
+            format="json",
         )
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
@@ -729,13 +1005,17 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.assertIn(str(campaign2.id), campaign_ids)
 
         # Filter by non-existing campaign type
-        response = self.client.get("/api/polio/campaigns/?campaign_types=9999", format="json")
+        response = self.client.get(
+            "/api/polio/campaigns/?campaign_types=9999", format="json"
+        )
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
         self.assertEqual(len(response_data), 0)
 
         # Filter by non-existing campaign type
-        response = self.client.get("/api/polio/campaigns/?campaign_types=UNKNOWN_CAMPAIGN_TYPE", format="json")
+        response = self.client.get(
+            "/api/polio/campaigns/?campaign_types=UNKNOWN_CAMPAIGN_TYPE", format="json"
+        )
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
         self.assertEqual(len(response_data), 0)

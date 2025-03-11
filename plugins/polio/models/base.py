@@ -1828,7 +1828,7 @@ class EarmarkedStock(models.Model):
     campaign = models.ForeignKey(
         Campaign, on_delete=models.CASCADE, null=True, blank=True
     )
-    temporary_campaign_name = models.CharField(max_length=255, null=True, blank=True)
+    temporary_campaign_name = models.CharField(max_length=255, blank=True)
     round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
     form_a = models.ForeignKey(
         OutgoingStockMovement,

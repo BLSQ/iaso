@@ -805,7 +805,7 @@ def import_data(instances, user, app_id):
         if str(tentative_org_unit_id).isdigit():
             instance.org_unit_id = tentative_org_unit_id
         else:
-            org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id)
+            org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id, version_id=project.account.default_version_id)
             instance.org_unit = org_unit
 
         instance.form_id = instance_data.get("formId")

@@ -1825,9 +1825,7 @@ class EarmarkedStock(models.Model):
     vaccine_stock = models.ForeignKey(
         VaccineStock, on_delete=models.CASCADE, related_name="earmarked_stocks"
     )
-    campaign = models.ForeignKey(
-        Campaign, on_delete=models.CASCADE, null=True, blank=True
-    )
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, blank=True)
     temporary_campaign_name = models.CharField(max_length=255, null=True, blank=True)
     round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
     form_a = models.ForeignKey(

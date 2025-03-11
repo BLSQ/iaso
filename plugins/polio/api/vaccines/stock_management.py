@@ -208,11 +208,9 @@ class VaccineStockCalculator:
             results.append(
                 {
                     "date": report.arrival_report_date,
-                    "action": (
-                        "PO #" + report.po_number
-                        if report.po_number
-                        else "Stock Arrival"
-                    ),
+                    "action": "PO #" + report.po_number
+                    if report.po_number
+                    else "Stock Arrival",
                     "vials_in": report.vials_received or 0,
                     "doses_in": report.doses_received or 0,
                     "vials_out": None,
@@ -375,10 +373,15 @@ class VaccineStockCalculator:
                 stock.earmarked_stock_type
                 == EarmarkedStock.EarmarkedStockChoices.CREATED
             ):
+                action = "Earmarked created"
+                if stock.campaign:
+                    action += f" for {stock.campaign.obr_name}"
+                    if stock.round:
+                        action += f" Round {stock.round.number}"
                 results.append(
                     {
                         "date": stock.created_at.date(),
-                        "action": f"Earmarked created for {stock.campaign.obr_name} Round {stock.round.number}",
+                        "action": action,
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": stock.vials_earmarked,
@@ -390,10 +393,15 @@ class VaccineStockCalculator:
                 stock.earmarked_stock_type
                 == EarmarkedStock.EarmarkedStockChoices.RETURNED
             ):
+                action = "Earmarked returned"
+                if stock.campaign:
+                    action += f" for {stock.campaign.obr_name}"
+                    if stock.round:
+                        action += f" Round {stock.round.number}"
                 results.append(
                     {
                         "date": stock.created_at.date(),
-                        "action": f"Earmarked returned for {stock.campaign.obr_name} Round {stock.round.number}",
+                        "action": action,
                         "vials_in": stock.vials_earmarked,
                         "doses_in": stock.doses_earmarked,
                         "vials_out": None,
@@ -565,7 +573,11 @@ class VaccineStockCalculator:
                 if movement.form_a is not None:
                     action_text = f"Earmarked stock used for FormA ({movement.form_a})"
                 else:
-                    action_text = f"Earmarked stock used for {movement.campaign.obr_name} Round {movement.round.number}"
+                    action_text = "Earmarked stock used"
+                    if movement.campaign:
+                        action_text += f" for {movement.campaign.obr_name}"
+                        if movement.round:
+                            action_text += f" Round {movement.round.number}"
 
                 results.append(
                     {
@@ -579,10 +591,18 @@ class VaccineStockCalculator:
                     }
                 )
             else:
+                action_text = "Earmarked stock reserved"
+                if movement.campaign:
+                    action_text += f" for {movement.campaign.obr_name}"
+                    if movement.round:
+                        action_text += f" Round {movement.round.number}"
+                elif movement.temporary_campaign_name:
+                    action_text += f" for ({movement.temporary_campaign_name})"
+
                 results.append(
                     {
                         "date": movement.created_at.date(),
-                        "action": f"Earmarked stock reserved for {movement.campaign.obr_name} Round {movement.round.number}",
+                        "action": action_text,
                         "vials_in": movement.vials_earmarked,
                         "doses_in": movement.doses_earmarked,
                         "vials_out": None,
@@ -734,14 +754,21 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
         serializer.is_valid(raise_exception=True)
 
         # Extract campaign data
-        campaign_obr_name = serializer.validated_data.get("campaign").get("obr_name")
-        round_number = serializer.validated_data.get("round").get("number")
+        campaign_data = serializer.validated_data.get("campaign")
+        round_data = serializer.validated_data.get("round")
 
-        # Get campaign and round objects
-        campaign = Campaign.objects.get(
-            obr_name=campaign_obr_name, account=request.user.iaso_profile.account
-        )
-        _round = campaign.rounds.get(number=round_number)
+        campaign = None
+        _round = None
+
+        if campaign_data:
+            campaign_obr_name = campaign_data.get("obr_name")
+            campaign = Campaign.objects.get(
+                obr_name=campaign_obr_name, account=request.user.iaso_profile.account
+            )
+
+            if round_data:
+                round_number = round_data.get("number")
+                _round = campaign.rounds.get(number=round_number)
 
         # Update validated data
         serializer.validated_data["campaign"] = campaign
@@ -759,14 +786,21 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
         serializer.is_valid(raise_exception=True)
 
         # Extract campaign data
-        campaign_obr_name = serializer.validated_data.get("campaign").get("obr_name")
-        round_number = serializer.validated_data.get("round").get("number")
+        campaign_data = serializer.validated_data.get("campaign")
+        round_data = serializer.validated_data.get("round")
 
-        # Get campaign and round objects
-        campaign = Campaign.objects.get(
-            obr_name=campaign_obr_name, account=request.user.iaso_profile.account
-        )
-        _round = campaign.rounds.get(number=round_number)
+        campaign = None
+        _round = None
+
+        if campaign_data:
+            campaign_obr_name = campaign_data.get("obr_name")
+            campaign = Campaign.objects.get(
+                obr_name=campaign_obr_name, account=request.user.iaso_profile.account
+            )
+
+            if round_data:
+                round_number = round_data.get("number")
+                _round = campaign.rounds.get(number=round_number)
 
         serializer.validated_data["campaign"] = campaign
         serializer.validated_data["round"] = _round
@@ -936,8 +970,8 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
 
 
 class EarmarkedStockSerializer(serializers.ModelSerializer):
-    campaign = serializers.CharField(source="campaign.obr_name")
-    round_number = serializers.IntegerField(source="round.number")
+    campaign = serializers.SerializerMethodField()
+    round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
 
     class Meta:
@@ -946,6 +980,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             "id",
             "vaccine_stock",
             "campaign",
+            "temporary_campaign_name",
             "round_number",
             "form_a",
             "earmarked_stock_type",
@@ -965,16 +1000,51 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
         )
 
-    def extract_campaign_data(self, validated_data):
-        campaign_data = validated_data.pop("campaign", None)
+    def get_campaign(self, obj):
+        return obj.campaign.obr_name if obj.campaign else None
+
+    def get_round_number(self, obj):
+        return obj.round.number if obj.round else None
+
+    def create(self, validated_data):
+        campaign = None
+        round_obj = None
+
+        campaign_data = self.initial_data.get("campaign", None)
+        round_number = self.initial_data.get("round_number", None)
+
         if campaign_data:
-            campaign_obr_name = campaign_data.get("obr_name")
             campaign = Campaign.objects.get(
-                obr_name=campaign_obr_name,
+                obr_name=campaign_data,
                 account=self.context["request"].user.iaso_profile.account,
             )
-            return campaign
-        return None
+            if round_number:
+                round_obj = campaign.rounds.get(number=round_number)
+
+        validated_data["campaign"] = campaign
+        validated_data["round"] = round_obj
+
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        campaign = None
+        round_obj = None
+
+        campaign_data = self.initial_data.get("campaign", None)
+        round_number = self.initial_data.get("round_number", None)
+
+        if campaign_data:
+            campaign = Campaign.objects.get(
+                obr_name=campaign_data,
+                account=self.context["request"].user.iaso_profile.account,
+            )
+            if round_number:
+                round_obj = campaign.rounds.get(number=round_number)
+
+        validated_data["campaign"] = campaign
+        validated_data["round"] = round_obj
+
+        return super().update(instance, validated_data)
 
 
 class EarmarkedStockFilter(FilterSet):
@@ -1105,10 +1175,14 @@ class VaccineStockManagementViewSet(ModelViewSet):
         calculator = VaccineStockCalculator(vaccine_stock)
 
         total_usable_vials, total_usable_doses = calculator.get_total_of_usable_vials()
-        total_unusable_vials, total_unusable_doses = (
-            calculator.get_total_of_unusable_vials()
-        )
-        # total_earmarked_vials, total_earmarked_doses = calculator.get_total_of_earmarked()
+        (
+            total_unusable_vials,
+            total_unusable_doses,
+        ) = calculator.get_total_of_unusable_vials()
+        # (
+        #     total_earmarked_vials,
+        #     total_earmarked_doses,
+        # ) = calculator.get_total_of_earmarked()
 
         summary_data = {
             "country_id": vaccine_stock.country.id,

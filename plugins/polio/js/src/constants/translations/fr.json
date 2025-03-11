@@ -666,6 +666,7 @@
     "iaso.polio.label.targetPopulation": "Population cible",
     "iaso.polio.label.targetPopulationMessage": "La population cible peut être éditée dans \"Campagnes\" > onglet \"Rounds\"",
     "iaso.polio.label.Teachers_Student": "Professeurs",
+    "iaso.polio.label.temporary_campaign_name": "Nom de campagne provisoire",
     "iaso.polio.label.testCampaign": "Campagne de test/en pause",
     "iaso.polio.label.testRound": "Round de test / En pause",
     "iaso.polio.label.timesSelected": "Nombre de sélections",

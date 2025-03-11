@@ -1,12 +1,15 @@
-from .models import *
-from iaso.models import *
-from datetime import datetime, timedelta, date
-from dateutil.relativedelta import *
+from datetime import date, datetime, timedelta
 from itertools import groupby
 from operator import itemgetter
-from django.db.models import Value, CharField
-from django.db.models.functions import Extract, Concat
+
+from dateutil.relativedelta import *
+from django.db.models import CharField, Value
+from django.db.models.functions import Concat, Extract
+
+from iaso.models import *
 from plugins.wfp.aggregate_journeys import AggregatedJourney
+
+from .models import *
 
 
 class ETL:
@@ -192,11 +195,11 @@ class ETL:
             visit.get("non_respondent__int__") is not None and visit.get("non_respondent__int__") == "1"
         ):
             exit_type = "non_respondent"
-        elif (visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes") or (
-            visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1"
+        elif (
+            (visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes")
+            or (visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1")
+            or (visit.get("_number_of_green_visits") is not None and int(visit.get("_number_of_green_visits")) > 1)
         ):
-            exit_type = "cured"
-        elif visit.get("_number_of_green_visits") is not None and int(visit.get("_number_of_green_visits")) > 1:
             exit_type = "cured"
         elif visit.get("_defaulter") is not None and visit.get("_defaulter") == "1":
             exit_type = "defaulter"
@@ -210,24 +213,22 @@ class ETL:
             return "dismissed_due_to_cheating"
         if exit_type == "dismissal":
             return "dismissed_due_to_cheating"
-        elif exit_type == "transferredout":
+        if exit_type == "transferredout":
             return "transferred_out"
-        elif exit_type == "voluntarywithdrawal":
+        if exit_type == "voluntarywithdrawal":
             return "voluntary_withdrawal"
-        else:
-            return exit_type
+        return exit_type
 
     def admission_type_converter(self, admission_type):
         if admission_type == "referred_from_other_otp":
             return "referred_from_otp_sam"
-        elif admission_type == "referred_from_tsfp":
+        if admission_type == "referred_from_tsfp":
             return "referred_from_tsfp_mam"
-        elif admission_type in ["referred_from_sc_itp", "returned_from_sc"]:
+        if admission_type in ["referred_from_sc_itp", "returned_from_sc"]:
             return "referred_from_sc"
-        elif admission_type == "returnee":
+        if admission_type == "returnee":
             return "returned_referral"
-        else:
-            return admission_type
+        return admission_type
 
     def get_admission_steps(self, steps):
         step_visits = []
@@ -709,6 +710,6 @@ class ETL:
 
         for index, journey in enumerate(aggregated_journeys):
             logger.info(
-                f"---------------------------------------- Journey N° {(index+1)} -----------------------------------"
+                f"---------------------------------------- Journey N° {(index + 1)} -----------------------------------"
             )
             self.save_monthly_journey(journey, account)

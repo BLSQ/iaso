@@ -1,7 +1,8 @@
 import datetime
+
 from django.utils import timezone
-from hat.menupermissions import models as permission
 from rest_framework import permissions
+
 from plugins.polio.models import VaccineStock
 
 
@@ -65,9 +66,8 @@ class VaccineStockManagementPermission(permissions.BasePermission):
                     return (
                         True  # There are multiple objects in one request for those so this is checked in the serializer
                     )
-                else:
-                    one_week_ago = self.datetime_now_today() - datetime.timedelta(days=self.days_open)
-                    return getattr(obj, self.datetime_field) >= one_week_ago
+                one_week_ago = self.datetime_now_today() - datetime.timedelta(days=self.days_open)
+                return getattr(obj, self.datetime_field) >= one_week_ago
 
         return False
 
@@ -125,8 +125,7 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
                 "delete_arrival_reports",
             ]:
                 return True  # There are multiple objects in one request for those so this is checked in the serializer
-            else:
-                one_week_ago = self.datetime_now_today() - datetime.timedelta(days=self.days_open)
-                return getattr(obj, self.datetime_field) >= one_week_ago
+            one_week_ago = self.datetime_now_today() - datetime.timedelta(days=self.days_open)
+            return getattr(obj, self.datetime_field) >= one_week_ago
 
         return False

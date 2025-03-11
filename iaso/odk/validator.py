@@ -1,6 +1,7 @@
-import pandas as pd
-import re
 import os
+import re
+
+import pandas as pd
 
 
 #
@@ -54,7 +55,7 @@ def is_end_repeat(question):
 
 def is_select_one(question):
     question_type = question.get("type")
-    return question_type and (question_type.startswith("select_one ") or question_type.startswith("select one "))
+    return question_type and question_type.startswith(("select_one ", "select one "))
 
 
 def is_repeat_group(question):

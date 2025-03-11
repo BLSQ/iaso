@@ -1,5 +1,6 @@
-from hat.audit.models import Modification
 from rest_framework import serializers
+
+from hat.audit.models import Modification
 
 
 class AuditMixin:

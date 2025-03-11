@@ -2,8 +2,8 @@ import datetime
 
 from django.contrib.auth.models import Group
 
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class FilterPotentialPaymentsAPITestCase(APITestCase):

@@ -1,17 +1,19 @@
 import json
 import logging
 import ntpath
+
 from copy import copy
 from time import gmtime, strftime
-from typing import Any, Dict, Union, List
+from typing import Any, Dict, Union
 
 import pandas as pd
+
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.db.models import Count, F, Func, Prefetch, Q, QuerySet
-from django.http import HttpResponse, StreamingHttpResponse, Http404
+from django.http import Http404, HttpResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
@@ -21,6 +23,7 @@ from rest_framework.response import Response
 from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, Modification, log_modification
 from hat.common.utils import queryset_iterator
@@ -38,10 +41,9 @@ from iaso.models import (
 )
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.file_utils import get_file_type
-from .org_units import HasCreateOrgUnitPermission
 
 from ..models.forms import CR_MODE_IF_REFERENCE_FORM
-from ..utils.models.common import get_creator_name, check_instance_bulk_gps_push
+from ..utils.models.common import check_instance_bulk_gps_push, get_creator_name
 from . import common
 from .comment import UserSerializerForComment
 from .common import (
@@ -49,10 +51,12 @@ from .common import (
     CONTENT_TYPE_XLSX,
     FileFormatEnum,
     TimestampField,
-    safe_api_import,
     parse_comma_separated_numeric_values,
+    safe_api_import,
 )
 from .instance_filters import get_form_from_instance_filters, parse_instance_filters
+from .org_units import HasCreateOrgUnitPermission
+
 
 logger = logging.getLogger(__name__)
 
@@ -436,7 +440,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 res["limit"] = limit
 
                 return Response(res)
-            elif as_small_dict:
+            if as_small_dict:
                 # TODO: apparently, this branch is not used by the frontend nor the mobile app
                 queryset = (
                     queryset.annotate(instancefile_count=Count("instancefile"))
@@ -446,17 +450,16 @@ class InstancesViewSet(viewsets.ViewSet):
                     .defer("json")
                 )
                 return Response([instance.as_small_dict() for instance in queryset])
-            else:
-                return Response(
-                    {
-                        "instances": [
-                            instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
-                            for instance in queryset
-                        ]
-                    }
-                )
-        else:  # This is a CSV/XLSX file export
-            return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
+            return Response(
+                {
+                    "instances": [
+                        instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
+                        for instance in queryset
+                    ]
+                }
+            )
+        # This is a CSV/XLSX file export
+        return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
 
     @action(detail=True, methods=["POST"])
     def add_lock(self, request, pk):
@@ -756,7 +759,15 @@ class InstancesViewSet(viewsets.ViewSet):
         """
         GET /api/instances/<pk>/instance_logs/<logId>/
         """
-        instance = get_object_or_404(Instance, pk=pk)
+        instance = get_object_or_404(
+            Instance.objects.filter(pk=pk).prefetch_related(
+                Prefetch(
+                    "instancefile_set",
+                    queryset=InstanceFile.objects.filter(deleted=False).only("file"),
+                    to_attr="filtered_files",
+                )
+            )
+        )
         log = get_object_or_404(Modification, pk=logId)
         log_dict = log.as_dict()
         possible_fields = (
@@ -764,7 +775,7 @@ class InstancesViewSet(viewsets.ViewSet):
             if instance.form_version and instance.form_version.possible_fields
             else []
         )
-
+        log_dict["files"] = [f.file.url if f.file else None for f in instance.filtered_files]
         log_dict["possible_fields"] = possible_fields
         return Response(log_dict)
 
@@ -832,7 +843,7 @@ def import_data(instances, user, app_id):
 
             if entity.deleted_at:
                 logger.info(
-                    f"Entity %s is soft-deleted for instance %s %s",
+                    "Entity %s is soft-deleted for instance %s %s",
                     entity.uuid,
                     instance.uuid,
                     instance.name,
@@ -842,7 +853,7 @@ def import_data(instances, user, app_id):
                     while active_entity.deleted_at and active_entity.merged_to:
                         active_entity = active_entity.merged_to
                     logger.info(
-                        f"Adding new instance %s %s to merged entity %s",
+                        "Adding new instance %s %s to merged entity %s",
                         instance.uuid,
                         instance.name,
                         active_entity.uuid,

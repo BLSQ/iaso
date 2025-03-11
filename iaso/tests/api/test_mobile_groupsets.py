@@ -1,7 +1,9 @@
-from django.utils.timezone import now
 import json
+
+from django.utils.timezone import now
+
 from iaso import models as m
-from iaso.api.query_params import APP_ID, SHOW_DELETED
+from iaso.api.query_params import APP_ID
 from iaso.test import APITestCase
 
 
@@ -89,7 +91,7 @@ class MobileGroupSetsAPITestCase(APITestCase):
         version_ids = m.SourceVersion.objects.filter(
             data_source__projects__account=cls.user_nigeria.iaso_profile.account
         ).values_list("id", flat=True)
-        assert 4 == len(version_ids)
+        assert len(version_ids) == 4
 
     def test_api_mobile_groupsets_list_without_app_id(self):
         response = self.client.get("/api/mobile/group_sets/")

@@ -1,17 +1,13 @@
 import json
 
 import clamav_client
+
 from bs4 import BeautifulSoup as Soup  # type: ignore
-from django.apps import apps
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.auth.views import redirect_to_login
 from django.db import models
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, resolve_url
-from django.views.generic import TemplateView
-from drf_yasg.generators import OpenAPISchemaGenerator
-from drf_yasg.openapi import ReferenceResolver
 
 from hat.__version__ import DEPLOYED_BY, DEPLOYED_ON, VERSION
 from iaso.models import IFRAME, POWERBI, SUPERSET, TEXT, Account, Page
@@ -226,11 +222,10 @@ class ModelDataView(View):
     def get_field_type(self, field):
         if isinstance(field, models.ForeignKey):
             return f"ForeignKey to {field.related_model.__name__}"
-        elif isinstance(field, models.ManyToManyField):
+        if isinstance(field, models.ManyToManyField):
             return f"ManyToManyField to {field.related_model.__name__}"
-        elif isinstance(field, models.OneToOneField):
+        if isinstance(field, models.OneToOneField):
             return f"OneToOneField to {field.related_model.__name__}"
-        elif isinstance(field, GenericForeignKey):
+        if isinstance(field, GenericForeignKey):
             return "GenericForeignKey"
-        else:
-            return field.__class__.__name__
+        return field.__class__.__name__

@@ -3,10 +3,10 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from rest_framework import serializers
 
-from iaso.api.common import ModelViewSet
-from plugins.polio.api.vaccines.stock_management import VaccineStockCalculator
-from plugins.polio.api.vaccines.permissions import VaccineStockManagementPermission
 from hat.menupermissions import models as permission
+from iaso.api.common import ModelViewSet
+from plugins.polio.api.vaccines.permissions import VaccineStockManagementPermission
+from plugins.polio.api.vaccines.stock_management import VaccineStockCalculator
 from plugins.polio.models import (
     DestructionReport,
     OutgoingStockMovement,

@@ -6,13 +6,14 @@ from django.utils.timezone import now
 from iaso import models as m
 from iaso.api.common import CONTENT_TYPE_XLSX
 from iaso.api.query_params import APP_ID
-from iaso.models import Form, OrgUnit, Instance
-from iaso.test import APITestCase
-
 from iaso.models import (
-    Mapping,
     AGGREGATE,
+    Form,
+    Instance,
+    Mapping,
+    OrgUnit,
 )
+from iaso.test import APITestCase
 
 
 class FormsAPITestCase(APITestCase):
@@ -184,7 +185,7 @@ class FormsAPITestCase(APITestCase):
         """GET /forms/ return only deleted forms"""
         self.client.force_authenticate(self.yoda)
         self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 1",
                 "period_type": "MONTH",
@@ -195,7 +196,7 @@ class FormsAPITestCase(APITestCase):
         )
 
         self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 2",
                 "period_type": "MONTH",
@@ -296,7 +297,7 @@ class FormsAPITestCase(APITestCase):
         """GET /forms/<form_id>: id does not exist"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/forms/292003030/")
+        response = self.client.get("/api/forms/292003030/")
         self.assertJSONResponse(response, 404)
 
     def test_forms_retrieve_ok_1(self):
@@ -323,7 +324,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 1",
                 "period_type": "MONTH",
@@ -347,7 +348,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 1",
                 "period_type": None,
@@ -371,7 +372,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 1",
                 "period_type": "MONTH",
@@ -395,7 +396,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 2",
                 "period_type": "QUARTER",
@@ -421,14 +422,14 @@ class FormsAPITestCase(APITestCase):
     def test_forms_create_without_auth(self):
         """POST /forms/ without auth: 401"""
 
-        response = self.client.post(f"/api/forms/", data={"name": "test form"}, format="json")
+        response = self.client.post("/api/forms/", data={"name": "test form"}, format="json")
         self.assertJSONResponse(response, 401)
 
     def test_forms_create_wrong_permission(self):
         """POST /forms/ with auth but not the proper permission: 403"""
 
         self.client.force_authenticate(self.iron_man)
-        response = self.client.post(f"/api/forms/", data={"name": "test form"}, format="json")
+        response = self.client.post("/api/forms/", data={"name": "test form"}, format="json")
         self.assertJSONResponse(response, 403)
 
     def test_forms_create_invalid_1(self):
@@ -436,7 +437,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/", data={"period_type": "LOL", "single_per_period": "Oui"}, format="json"
+            "/api/forms/", data={"period_type": "LOL", "single_per_period": "Oui"}, format="json"
         )
         self.assertJSONResponse(response, 400)
 
@@ -451,7 +452,7 @@ class FormsAPITestCase(APITestCase):
         """POST /forms/ specific check for allow_empty"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/forms/", data={"project_ids": []}, format="json")
+        response = self.client.post("/api/forms/", data={"project_ids": []}, format="json")
         self.assertJSONResponse(response, 400)
 
         response_data = response.json()
@@ -462,7 +463,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 2",
                 "period_type": None,
@@ -485,7 +486,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form",
                 "form_id": "test_001",
@@ -504,7 +505,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "another test form",
                 "form_id": "test_002",

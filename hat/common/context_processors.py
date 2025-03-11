@@ -1,4 +1,5 @@
 import json
+
 from typing import Any, Dict
 
 from django.conf import settings
@@ -30,6 +31,13 @@ def sentry_config(request: HttpRequest) -> Dict[str, Any]:
         }
     }
     return {"sentry_config": json.dumps(config["sentry_config"])}
+
+
+def product_fruits_config(request: HttpRequest) -> Dict[str, Any]:
+    config = {
+        "PRODUCT_FRUITS_WORKSPACE_CODE": settings.PRODUCT_FRUITS_WORKSPACE_CODE or None,
+    }
+    return {"product_fruits_config": json.dumps(config)}
 
 
 def theme(request: HttpRequest) -> Dict[str, Any]:

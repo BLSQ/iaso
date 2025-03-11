@@ -1,4 +1,4 @@
-from django.db import migrations, models
+from django.db import migrations
 
 
 def move_polio_configs_to_iaso(apps, schema_editor):

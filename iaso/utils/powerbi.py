@@ -1,13 +1,16 @@
 import time
+
 from datetime import datetime
 
 import requests
+
 from django.contrib.auth.models import User
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import RUNNING, SUCCESS, Task
+
 
 SP_AUTH_URL = "https://login.microsoftonline.com/{tenant_id}/oauth2/token"
 POWERBI_RESOURCE = "https://analysis.windows.net/powerbi/api"
@@ -102,7 +105,7 @@ def monitor_task_and_raise_if_fail(dataset_config, task):
         task.refresh_from_db()
         attempts += 1
     if task.status != SUCCESS:
-        raise Http404(f'{dataset_config["task_name"]} failed with status {task.status}')
+        raise Http404(f"{dataset_config['task_name']} failed with status {task.status}")
 
 
 def launch_dataset_refresh(group_id, data_set_id):

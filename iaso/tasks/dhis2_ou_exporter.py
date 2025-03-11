@@ -3,7 +3,7 @@ import sys
 from beanstalk_worker import task_decorator
 from iaso.diffing import Differ, Exporter
 from iaso.management.commands.command_logger import CommandLogger
-from iaso.models import Task, ExternalCredentials, SourceVersion
+from iaso.models import ExternalCredentials, SourceVersion, Task
 from iaso.tasks.dhis2_ou_importer import get_api
 
 

@@ -1,8 +1,8 @@
 from django.db import migrations
 
 from iaso.models.forms import _reformat_questions
-
 from iaso.odk import parsing
+
 
 ## CANNOT USE method function on model and that's fucking annoying
 

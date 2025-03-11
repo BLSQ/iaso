@@ -2,17 +2,20 @@ import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button, Grid, Typography } from '@mui/material';
 
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { merge } from 'lodash';
-import { FormattedMessage } from 'react-intl';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
+import * as Permission from '../../../utils/permissions';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent.tsx';
 import MESSAGES from '../messages';
+import { FormattedMessage } from 'react-intl';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { useFormState } from '../../../hooks/form';
+import { merge } from 'lodash';
 import { useCheckDhis2Mutation, useSaveDataSource } from '../requests';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { useFormState } from '../../../hooks/form';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { useTranslatedDhis2Errors } from '../hooks/useTranslatedDhis2Errors.ts';
+import { userHasPermission } from '../../users/utils';
 
 const ProjectSelectorIds = ({
     keyValue,
@@ -119,6 +122,12 @@ export const DataSourceDialogComponent = ({
     const [fieldHasBeenChanged, setFieldHasBeenChanged] = useState(false);
     const { formatMessage } = useSafeIntl();
 
+    const currentUser = useCurrentUser();
+    const userCanChangeDefaultVersion = userHasPermission(
+        Permission.SOURCES_CAN_CHANGE_DEFAULT_VERSION,
+        currentUser,
+    );
+
     const onConfirm = async closeDialog => {
         await saveDataSource(form);
         closeDialog();
@@ -221,6 +230,7 @@ export const DataSourceDialogComponent = ({
                             type="select"
                             options={initialData ? versions : []}
                             label={MESSAGES.defaultVersion}
+                            disabled={!userCanChangeDefaultVersion}
                         />
                     )}
                     <Box>

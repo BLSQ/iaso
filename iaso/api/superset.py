@@ -43,6 +43,13 @@ class SupersetTokenViewSet(viewsets.ViewSet):
 
         # Fetch Guest token
         current_user = request.user
+
+        row_level_security_clauses = []
+        if current_user.trypelim_profile and current_user.trypelim_profile.coordination:
+            row_level_security_clauses = [
+                {"clause": f"\"Coordination\"='{current_user.trypelim_profile.coordination.name}'"},
+            ]
+
         payload = {
             "user": {
                 "username": current_user.username,
@@ -50,7 +57,7 @@ class SupersetTokenViewSet(viewsets.ViewSet):
                 "last_name": current_user.last_name,
             },
             "resources": [{"type": "dashboard", "id": dashboard_id}],
-            "rls": [],
+            "rls": row_level_security_clauses,
         }
 
         response = requests.post(base_url + "/api/v1/security/guest_token/", json=payload, headers=headers)

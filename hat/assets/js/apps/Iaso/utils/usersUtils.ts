@@ -59,6 +59,7 @@ export type Account = {
     updated_at: number;
     default_version?: DefaultVersion;
     feature_flags: string[];
+    modules: string[];
 };
 
 export type User = {
@@ -89,8 +90,8 @@ export type User = {
 export const getDisplayName = (
     user: Partial<User> | Partial<Profile>,
 ): string => {
-    if(!user){
-        return textPlaceholder
+    if (!user) {
+        return textPlaceholder;
     }
     // Some endpoint have user_name and some username (without the _, fun)
     const userName = user.user_name ?? user?.username;

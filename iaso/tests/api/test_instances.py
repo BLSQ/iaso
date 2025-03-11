@@ -24,6 +24,7 @@ from iaso.models import FormVersion, Instance, InstanceLock
 from iaso.models.microplanning import Planning, Team
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
+
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
 

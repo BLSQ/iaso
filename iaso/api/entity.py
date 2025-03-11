@@ -125,7 +125,11 @@ class EntityViewSet(ModelViewSet):
 
     results_key = "entities"
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+        DeletionFilterBackend,
+    ]
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES)]  # type: ignore
 
     def get_serializer_class(self):
@@ -218,7 +222,12 @@ class EntityViewSet(ModelViewSet):
         if Entity.objects.filter(attributes=instance):
             raise serializers.ValidationError({"attributes": "Entity with this attribute already exists."})
 
-        entity = Entity.objects.create(name=data["name"], entity_type=entity_type, attributes=instance, account=account)
+        entity = Entity.objects.create(
+            name=data["name"],
+            entity_type=entity_type,
+            attributes=instance,
+            account=account,
+        )
         serializer = EntitySerializer(entity, many=False)
         return Response(serializer.data)
 
@@ -238,7 +247,10 @@ class EntityViewSet(ModelViewSet):
                 entity_type = get_object_or_404(EntityType, pk=int(entity["entity_type"]))
                 account = request.user.iaso_profile.account
                 Entity.objects.create(
-                    name=entity["name"], entity_type=entity_type, attributes=instance, account=account
+                    name=entity["name"],
+                    entity_type=entity_type,
+                    attributes=instance,
+                    account=account,
                 )
                 created_entities.append(entity)
             return JsonResponse(created_entities, safe=False)
@@ -365,6 +377,7 @@ class EntityViewSet(ModelViewSet):
                 {"title": "Entity Type", "width": 20},
                 {"title": "Creation Date", "width": 20},
                 {"title": "HC", "width": 20},
+                {"title": "HC ID", "width": 20},
                 {"title": "Last update", "width": 20},
             ]
             for col in columns_list:
@@ -388,6 +401,7 @@ class EntityViewSet(ModelViewSet):
                     entity["entity_type"],
                     created_at,
                     entity["org_unit"]["name"] if entity["org_unit"] else "",
+                    entity["org_unit"]["id"] if entity["org_unit"] else "",
                     last_saved_instance,
                 ]
                 for col in columns_list:
@@ -403,7 +417,8 @@ class EntityViewSet(ModelViewSet):
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(result_list, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+                    streaming_content=(iter_items(result_list, Echo(), columns, get_row)),
+                    content_type=CONTENT_TYPE_CSV,
                 )
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename
@@ -450,7 +465,14 @@ class EntityViewSet(ModelViewSet):
         instances = Instance.objects.filter(entity=entity)
         xlsx = request.GET.get("xlsx", None)
         csv_exp = request.GET.get("csv", None)
-        fields = ["Submissions for the form", "Created", "Last Sync", "Org Unit", "Submitter", "Actions"]
+        fields = [
+            "Submissions for the form",
+            "Created",
+            "Last Sync",
+            "Org Unit",
+            "Submitter",
+            "Actions",
+        ]
         date = datetime.datetime.now().strftime("%Y-%m-%d")
 
         if xlsx:

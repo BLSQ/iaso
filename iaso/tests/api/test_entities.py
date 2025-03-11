@@ -1,4 +1,6 @@
+import csv
 import datetime
+import io
 import json
 import time
 import uuid
@@ -11,6 +13,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.files import File
 
 from iaso import models as m
+from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.models.deduplication import ValidationStatus
 from iaso.test import APITestCase
@@ -19,74 +22,53 @@ from iaso.test import APITestCase
 class EntityAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        star_wars = m.Account.objects.create(name="Star Wars")
-        cls.star_wars = star_wars
-
-        space_balls = m.Account.objects.create(name="Space Balls")
-
-        sw_source = m.DataSource.objects.create(name="Galactic Empire")
+        cls.account = m.Account.objects.create(name="Account")
+        sw_source = m.DataSource.objects.create(name="Source")
         cls.sw_source = sw_source
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        star_wars.default_version = sw_version
-        star_wars.save()
+        cls.account.default_version = sw_version
+        cls.account.save()
         cls.sw_version = sw_version
 
         cls.anon = AnonymousUser()
 
-        cls.project = m.Project.objects.create(
-            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
-        )
+        cls.project = m.Project.objects.create(name="Project", app_id="project", account=cls.account)
 
         cls.yop_solo = cls.create_user_with_profile(
-            username="yop solo", account=space_balls, permissions=["iaso_entities"]
+            username="yop solo", account=m.Account.objects.create(name="Account 2"), permissions=["iaso_entities"]
         )
 
-        cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
-
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council", validation_status=m.OrgUnit.VALIDATION_VALID
+        cls.ou_country = m.OrgUnit.objects.create(
+            name="Burkina Faso (validated)", validation_status=m.OrgUnit.VALIDATION_VALID
         )
-        cls.jedi_council_corruscant_unvalidated = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
+        cls.ou_country_unvalidated = m.OrgUnit.objects.create(name="Burkina Faso (unvalidated)")
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_entities"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.account, permissions=["iaso_entities"])
 
         cls.user_without_ou = cls.create_user_with_profile(
-            username="user_without_ou", account=star_wars, permissions=["iaso_entities"]
+            username="user_without_ou", account=cls.account, permissions=["iaso_entities"]
         )
 
         cls.form_1 = m.Form.objects.create(
-            name="Hydroponics study", period_type=m.MONTH, single_per_period=True, form_id="form_1"
+            name="Hydroponics study",
+            period_type=m.MONTH,
+            single_per_period=True,
+            form_id="form_1",
         )
 
-        cls.create_form_instance(
-            form=cls.form_1, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project, uuid=uuid.uuid4
-        )
-        cls.create_form_instance(
-            form=cls.form_1, period="202002", org_unit=cls.jedi_council_corruscant, project=cls.project, uuid=uuid.uuid4
-        )
-        cls.create_form_instance(
-            form=cls.form_1, period="202002", org_unit=cls.jedi_council_corruscant, project=cls.project, uuid=uuid.uuid4
-        )
-        cls.create_form_instance(
-            form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project, uuid=uuid.uuid4
-        )
+        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
+        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
+        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
+        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
 
         cls.form_1.projects.add(cls.project)
 
-        cls.entity_type = EntityType.objects.create(
-            name="Type 1",
-            reference_form=cls.form_1,
-            account=cls.star_wars,
-        )
+        cls.entity_type = EntityType.objects.create(name="Type 1", reference_form=cls.form_1, account=cls.account)
 
     def test_create_single_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
-        )
+        instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
 
         payload = {
             "name": "New Client",
@@ -102,13 +84,9 @@ class EntityAPITestCase(APITestCase):
     def test_create_multiples_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
-        )
+        instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4())
 
-        second_instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
-        )
+        second_instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4())
 
         payload = (
             {
@@ -133,9 +111,7 @@ class EntityAPITestCase(APITestCase):
     def test_create_entity_same_attributes(self):
         self.client.force_authenticate(self.yoda)
 
-        instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
-        )
+        instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4())
 
         payload = (
             {
@@ -159,13 +135,9 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
-        )
+        instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4())
 
-        second_instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
-        )
+        second_instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4())
 
         payload = (
             {
@@ -192,13 +164,9 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity_without_attributes(self):
         self.client.force_authenticate(self.yoda)
 
-        instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
-        )
+        instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4())
 
-        second_instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
-        )
+        second_instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1, uuid=uuid.uuid4())
 
         payload = (
             {
@@ -218,7 +186,9 @@ class EntityAPITestCase(APITestCase):
         self.client.post("/api/entities/bulk_create/", data=payload, format="json")
 
         entity = Entity.objects.create(
-            name="New Client 3", entity_type=self.entity_type, account=self.yoda.iaso_profile.account
+            name="New Client 3",
+            entity_type=self.entity_type,
+            account=self.yoda.iaso_profile.account,
         )
 
         entity.refresh_from_db()
@@ -246,9 +216,8 @@ class EntityAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_1,
-            period="202002",
             json={"name": "c", "age": 30, "gender": "F"},
         )
 
@@ -306,12 +275,12 @@ class EntityAPITestCase(APITestCase):
 
         # Create 2 entities: one on date1, one on date2
         instance1 = Instance.objects.create(form=self.form_1, source_created_at=date1)
-        entity1 = Entity.objects.create(entity_type=entity_type, attributes=instance1, account=self.star_wars)
+        entity1 = Entity.objects.create(entity_type=entity_type, attributes=instance1, account=self.account)
         instance1.entity = entity1
         instance1.save()
 
         instance2 = Instance.objects.create(form=self.form_1, source_created_at=date2)
-        entity2 = Entity.objects.create(entity_type=entity_type, attributes=instance2, account=self.star_wars)
+        entity2 = Entity.objects.create(entity_type=entity_type, attributes=instance2, account=self.account)
         instance2.entity = entity2
         instance2.save()
 
@@ -355,7 +324,7 @@ class EntityAPITestCase(APITestCase):
 
         # Entity 1 - Female from Bujumbura
         ent1_instance1 = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_1,
             json={"gender": "F"},
         )
@@ -363,12 +332,12 @@ class EntityAPITestCase(APITestCase):
             name="Ent 1",
             entity_type=self.entity_type,
             attributes=ent1_instance1,
-            account=self.star_wars,
+            account=self.account,
         )
         ent1_instance1.entity = ent1
         ent1_instance1.save()
         Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_2,
             json={"residence": "Bujumbura"},
             entity=ent1,
@@ -376,7 +345,7 @@ class EntityAPITestCase(APITestCase):
 
         # Entity 2 - Male from Kinshasa
         ent2_instance1 = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_1,
             json={"gender": "M"},
         )
@@ -384,18 +353,18 @@ class EntityAPITestCase(APITestCase):
             name="Ent 1",
             entity_type=self.entity_type,
             attributes=ent2_instance1,
-            account=self.star_wars,
+            account=self.account,
         )
         ent2_instance1.entity = ent2
         ent2_instance1.save()
         Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_2,
             json={"residence": "Kinshasa"},
             entity=ent2,
         )
         Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_2,
             json={"residence": "Accra"},
             entity=ent2,
@@ -466,9 +435,8 @@ class EntityAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_1,
-            period="202002",
         )
 
         payload = {
@@ -503,7 +471,9 @@ class EntityAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
+            org_unit=self.ou_country,
+            form=self.form_1,
+            uuid=uuid.uuid4(),
         )
 
         payload_post = {
@@ -515,7 +485,11 @@ class EntityAPITestCase(APITestCase):
 
         self.client.post("/api/entities/", data=payload_post, format="json")
 
-        payload = {"name": "New Client-2", "entity_type": self.entity_type.pk, "attributes": instance.pk}
+        payload = {
+            "name": "New Client-2",
+            "entity_type": self.entity_type.pk,
+            "attributes": instance.pk,
+        }
 
         response = self.client.patch(f"/api/entities/{Entity.objects.last().pk}/", data=payload, format="json")
 
@@ -525,11 +499,15 @@ class EntityAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
+            org_unit=self.ou_country,
+            form=self.form_1,
+            uuid=uuid.uuid4(),
         )
 
         second_instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
+            org_unit=self.ou_country,
+            form=self.form_1,
+            uuid=uuid.uuid4(),
         )
 
         payload = (
@@ -571,17 +549,8 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity_only_same_account(self):
         self.client.force_authenticate(self.yoda)
 
-        instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
-        )
-
-        second_instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
-        )
+        instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        second_instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
 
         Entity.objects.create(
             name="New Client",
@@ -589,7 +558,6 @@ class EntityAPITestCase(APITestCase):
             attributes=instance,
             account=self.yop_solo.iaso_profile.account,
         )
-
         Entity.objects.create(
             name="New Client",
             entity_type=self.entity_type,
@@ -602,39 +570,17 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
 
-    @mock.patch("iaso.api.entity.gmtime", lambda: time.struct_time((2021, 7, 18, 14, 57, 0, 1, 291, 0)))
-    def test_export_entity(self):
+    @mock.patch(
+        "iaso.api.entity.gmtime",
+        lambda: time.struct_time((2021, 7, 18, 14, 57, 0, 1, 291, 0)),
+    )
+    def test_export_entities(self):
         self.client.force_authenticate(self.yoda)
-        # entity_type = EntityType.objects.create(
-        #     name="Type 1",
-        #     reference_form=self.form_1,
-        #     fields_detail_info_view=["something", "else"],
-        #     fields_list_view=["something", "else"],
-        # )
 
-        instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
-        )
-
-        second_instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
-        )
-
-        Entity.objects.create(
-            name="New Client",
+        instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity = Entity.objects.create(
             entity_type=self.entity_type,
             attributes=instance,
-            account=self.yop_solo.iaso_profile.account,
-        )
-
-        Entity.objects.create(
-            name="New Client",
-            entity_type=self.entity_type,
-            attributes=second_instance,
             account=self.yoda.iaso_profile.account,
         )
 
@@ -658,25 +604,32 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
 
-        # TODO: we should also check the content of the files
+        # Check the contents of the last CSV file
+        response_csv = response.getvalue().decode("utf-8")
+        response_string = "".join(s for s in response_csv)
+        data = list(csv.reader(io.StringIO(response_string), delimiter=","))
+        row_to_test = data[len(data) - 1]
+
+        expected_row = [
+            str(entity.id),
+            str(entity.uuid),
+            entity.entity_type.name,
+            entity.created_at.strftime(EXPORTS_DATETIME_FORMAT),
+            instance.org_unit.name,
+            str(instance.org_unit.id),
+            "",
+        ]
+        self.assertEqual(row_to_test, expected_row)
 
     def test_handle_export_entity_type_empty_field_list(self):
         self.client.force_authenticate(self.yoda)
 
-        instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
-        )
-
+        instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
         entity = Entity.objects.create(
-            name="New Client",
             entity_type=self.entity_type,
             account=self.yop_solo.iaso_profile.account,
         )
-
         entity.attributes = instance
-
         entity.save()
 
         response = self.client.get("/api/entities/?xlsx=true/")
@@ -685,20 +638,17 @@ class EntityAPITestCase(APITestCase):
     def test_entity_mobile(self):
         self.client.force_authenticate(self.yoda)
 
-        self.yoda.iaso_profile.org_units.set([self.jedi_council_corruscant])
+        self.yoda.iaso_profile.org_units.set([self.ou_country])
 
         self.form_1.form_id = "A_FORM_ID"
-
         self.form_1.json = {"_version": "A_FORM_ID"}
-
         self.form_1.save()
 
         FormVersion.objects.create(form=self.form_1, version_id="A_FORM_ID")
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_1,
-            period="202002",
             project=self.project,
             uuid="9335359a-9f80-422d-997a-68ae7e39d9g3",
         )
@@ -712,7 +662,6 @@ class EntityAPITestCase(APITestCase):
             attributes=instance,
             account=self.yoda.iaso_profile.account,
         )
-
         instance.entity = entity
         instance.save()
 
@@ -733,18 +682,15 @@ class EntityAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         self.form_1.form_id = "A_FORM_ID"
-
         self.form_1.json = {"_version": "A_FORM_ID"}
         self.form_1.projects.add(self.project)
-
         self.form_1.save()
 
         FormVersion.objects.create(form=self.form_1, version_id="A_FORM_ID")
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_1,
-            period="202002",
             project=self.project,
             uuid="9335359a-9f80-422d-997a-68ae7e39d9g3",
         )
@@ -762,9 +708,8 @@ class EntityAPITestCase(APITestCase):
         instance.save()
 
         instance2 = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_1,
-            period="202002",
             project=self.project,
             uuid="9335359a-9f80-422d-997a-68ae7e39d9g6",
         )
@@ -782,9 +727,8 @@ class EntityAPITestCase(APITestCase):
         instance2.save()
 
         instance_unvalidated_ou = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant_unvalidated,
+            org_unit=self.ou_country_unvalidated,
             form=self.form_1,
-            period="202002",
             project=self.project,
             uuid="9335359a-9f80-422d-997a-68ae7e39d9g4",
         )
@@ -802,9 +746,8 @@ class EntityAPITestCase(APITestCase):
         instance_unvalidated_ou.save()
 
         instance_entity_no_attributes = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_1,
-            period="202002",
             project=self.project,
             uuid="9335359a-9f80-422d-997a-68ae7e39d9g5",
         )
@@ -861,9 +804,15 @@ class EntityAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_json.get("count"), 2)
-        self.assertEqual(response_json.get("results")[0].get("entity_type_id"), str(self.entity_type.id))
+        self.assertEqual(
+            response_json.get("results")[0].get("entity_type_id"),
+            str(self.entity_type.id),
+        )
         self.assertEqual(len(response_json.get("results")[0].get("instances")), 1)
-        self.assertEqual(response_json.get("results")[1].get("entity_type_id"), str(self.entity_type.id))
+        self.assertEqual(
+            response_json.get("results")[1].get("entity_type_id"),
+            str(self.entity_type.id),
+        )
         self.assertEqual(len(response_json.get("results")[1].get("instances")), 0)
 
     def test_access_respect_appid_mobile(self):
@@ -871,8 +820,8 @@ class EntityAPITestCase(APITestCase):
 
         app_id = "APP_ID"
 
-        project = Project.objects.create(name="Project 1", app_id=app_id, account=self.star_wars)
-        project.account = self.star_wars
+        project = Project.objects.create(name="Project 1", app_id=app_id, account=self.account)
+        project.account = self.account
         project.save()
 
         self.form_1.projects.add(project)
@@ -880,9 +829,8 @@ class EntityAPITestCase(APITestCase):
         # we should return only the entities whose instaces/attributes are linked to this project.
 
         instance_app_id = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
+            org_unit=self.ou_country,
             form=self.form_1,
-            period="202002",
             project=project,
             uuid="9335359a-9f80-422d-997a-68ae7e39d9g3",
         )
@@ -927,26 +875,40 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response_entity_instance[0]["json"], instance_app_id.json)
 
     def test_retrieve_entities_user_geo_restrictions(self):
-        version = self.star_wars.default_version
+        version = self.account.default_version
         province_type = m.OrgUnitType.objects.create(name="Province", short_name="province", depth=1)
         district_type = m.OrgUnitType.objects.create(name="District", short_name="district", depth=2)
         village_type = m.OrgUnitType.objects.create(name="Village", short_name="village", depth=3)
         province = m.OrgUnit.objects.create(name="Province", org_unit_type=province_type, version=version)
         district_1 = m.OrgUnit.objects.create(
-            name="District 1", org_unit_type=district_type, version=version, parent=province
+            name="District 1",
+            org_unit_type=district_type,
+            version=version,
+            parent=province,
         )
         village_1 = m.OrgUnit.objects.create(
-            name="Village 1", org_unit_type=village_type, version=version, parent=district_1
+            name="Village 1",
+            org_unit_type=village_type,
+            version=version,
+            parent=district_1,
         )
         district_2 = m.OrgUnit.objects.create(
-            name="District 2", org_unit_type=district_type, version=version, parent=province
+            name="District 2",
+            org_unit_type=district_type,
+            version=version,
+            parent=province,
         )
         village_2 = m.OrgUnit.objects.create(
-            name="Village 2", org_unit_type=village_type, version=version, parent=district_2
+            name="Village 2",
+            org_unit_type=village_type,
+            version=version,
+            parent=district_2,
         )
 
         user_manager = self.create_user_with_profile(
-            username="userManager", account=self.star_wars, permissions=["iaso_entities"]
+            username="userManager",
+            account=self.account,
+            permissions=["iaso_entities"],
         )
         user_manager.iaso_profile.org_units.set([district_1])
         user_manager.save()
@@ -954,14 +916,14 @@ class EntityAPITestCase(APITestCase):
         self.client.force_authenticate(user_manager)
 
         # Village 1 (district 1): instance + entity
-        instance_1 = Instance.objects.create(org_unit=village_1, form=self.form_1, period="202002")
-        entity = Entity.objects.create(entity_type=self.entity_type, attributes=instance_1, account=self.star_wars)
+        instance_1 = Instance.objects.create(org_unit=village_1, form=self.form_1)
+        entity = Entity.objects.create(entity_type=self.entity_type, attributes=instance_1, account=self.account)
         instance_1.entity = entity
         instance_1.save()
 
         # Village 2 (district 2): instance + entity
-        instance_2 = Instance.objects.create(org_unit=village_2, form=self.form_1, period="202002")
-        entity_2 = Entity.objects.create(entity_type=self.entity_type, attributes=instance_2, account=self.star_wars)
+        instance_2 = Instance.objects.create(org_unit=village_2, form=self.form_1)
+        entity_2 = Entity.objects.create(entity_type=self.entity_type, attributes=instance_2, account=self.account)
         instance_2.entity = entity_2
         instance_2.save()
 
@@ -983,28 +945,28 @@ class EntityAPITestCase(APITestCase):
         self.form_2 = m.Form.objects.create(name="Form 2", form_id="form_2")
 
         # Create Entity with ref instance
-        ent_ref_instance = Instance.objects.create(org_unit=self.jedi_council_corruscant, form=self.form_1)
+        ent_ref_instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
         ent = Entity.objects.create(
             entity_type=self.entity_type,
             attributes=ent_ref_instance,
-            account=self.star_wars,
+            account=self.account,
         )
         ent_ref_instance.entity = ent
         ent_ref_instance.save()
 
         # Add two more instances to the entity
-        inst1 = Instance.objects.create(org_unit=self.jedi_council_corruscant, form=self.form_2, entity=ent)
-        inst2 = Instance.objects.create(org_unit=self.jedi_council_corruscant, form=self.form_2, entity=ent)
+        inst1 = Instance.objects.create(org_unit=self.ou_country, form=self.form_2, entity=ent)
+        inst2 = Instance.objects.create(org_unit=self.ou_country, form=self.form_2, entity=ent)
 
         # Create duplicate pairs for the entity: a PENDING and a VALIDATED one
         m.EntityDuplicate.objects.create(
             entity1=ent,
-            entity2=Entity.objects.create(entity_type=self.entity_type, account=self.star_wars),
+            entity2=Entity.objects.create(entity_type=self.entity_type, account=self.account),
             validation_status=ValidationStatus.PENDING,
         )
         m.EntityDuplicate.objects.create(
             entity1=ent,
-            entity2=Entity.objects.create(entity_type=self.entity_type, account=self.star_wars),
+            entity2=Entity.objects.create(entity_type=self.entity_type, account=self.account),
             validation_status=ValidationStatus.VALIDATED,
         )
         self.assertEqual(m.EntityDuplicate.objects.count(), 2)

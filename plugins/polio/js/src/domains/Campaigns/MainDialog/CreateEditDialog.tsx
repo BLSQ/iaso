@@ -1,4 +1,3 @@
-import isEqual from 'lodash/isEqual';
 import React, { FunctionComponent, useCallback, useState } from 'react';
 
 import {
@@ -10,15 +9,16 @@ import {
     DialogTitle,
     Grid,
 } from '@mui/material';
-import { FormikProvider, useFormik } from 'formik';
-import { merge } from 'lodash';
-
 import {
     BackdropClickModal,
     IconButton,
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
+import { FormikProvider, useFormik } from 'formik';
+import { merge } from 'lodash';
+
+import isEqual from 'lodash/isEqual';
 import { useQueryClient } from 'react-query';
 import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';

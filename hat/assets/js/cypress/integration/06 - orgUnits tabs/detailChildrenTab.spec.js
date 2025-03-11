@@ -52,7 +52,7 @@ const newFilters = {
     },
     childrenParamsGroup: {
         value: [0],
-        urlValue: '4',
+        urlValue: '1',
         selector: '#childrenParamsGroup',
         type: 'multi',
     },
@@ -158,9 +158,13 @@ const goToPage = () => {
     cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', {
         fixture: `orgunittypes/dropdown-list.json`,
     });
-    cy.intercept('GET', '/api/groups/**', {
-        fixture: `groups/list.json`,
+    cy.intercept('GET', '/api/groups/dropdown/**', {
+        fixture: `groups/dropdownlist.json`,
     });
+    cy.intercept('GET', '/api/instances/**', []);
+    // cy.intercept('GET', '/api/groups/**', {
+    //     fixture: `groups/list.json`,
+    // });
     cy.intercept('GET', `/api/orgunits/${orgUnit.id}`, {
         fixture: 'orgunits/details.json',
     }).as('getOuDetail');

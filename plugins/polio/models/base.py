@@ -956,7 +956,7 @@ class Campaign(SoftDeletableModel):
         return districts
 
     def get_campaign_scope_districts_qs(self):
-        # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
+        # Get districts on campaign scope, make only sense if separate_scopes_per_round=False
         return (
             OrgUnit.objects.filter(groups__campaignScope__campaign=self)
             .filter(validation_status="VALID")

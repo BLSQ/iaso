@@ -637,7 +637,7 @@ class VaccineStockSerializer(serializers.ModelSerializer):
     stock_of_usable_vials = serializers.SerializerMethodField()
     stock_of_unusable_vials = serializers.SerializerMethodField()
     vials_destroyed = serializers.SerializerMethodField()
-    stock_of_earmarked_vials = serializers.SerializerMethodField()
+    # stock_of_earmarked_vials = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineStock
@@ -650,7 +650,7 @@ class VaccineStockSerializer(serializers.ModelSerializer):
             "vials_used",
             "stock_of_usable_vials",
             "stock_of_unusable_vials",
-            "stock_of_earmarked_vials",
+            # "stock_of_earmarked_vials",
             "vials_destroyed",
         ]
         list_serializer_class = VaccineStockListSerializer
@@ -1179,10 +1179,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
             total_unusable_vials,
             total_unusable_doses,
         ) = calculator.get_total_of_unusable_vials()
-        (
-            total_earmarked_vials,
-            total_earmarked_doses,
-        ) = calculator.get_total_of_earmarked()
+        # (
+        #     total_earmarked_vials,
+        #     total_earmarked_doses,
+        # ) = calculator.get_total_of_earmarked()
 
         summary_data = {
             "country_id": vaccine_stock.country.id,
@@ -1191,8 +1191,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "total_usable_vials": total_usable_vials,
             "total_unusable_vials": total_unusable_vials,
             "total_usable_doses": total_usable_doses,
-            "total_earmarked_vials": total_earmarked_vials,
-            "total_earmarked_doses": total_earmarked_doses,
+            # "total_earmarked_vials": total_earmarked_vials,
+            # "total_earmarked_doses": total_earmarked_doses,
             "total_unusable_doses": total_unusable_doses,
         }
 

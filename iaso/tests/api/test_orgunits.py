@@ -1524,8 +1524,13 @@ class OrgUnitAPITestCase(APITestCase):
 
     def test_search_org_unit_based_on_group_and_type(self):
         self.client.force_authenticate(self.yoda)
+        self.jedi_council_corruscant.groups.set(
+            [self.elite_group, self.unofficial_group, self.another_group]
+        )
+        self.jedi_council_corruscant.save()
+
         response = self.client.get(
-            f'/api/orgunits/?limit=20&order=id&page=1&searches=[{{"validation_status":"all","group":"{self.elite_group.pk}","orgUnitTypeId":"{self.jedi_council.pk}"}}]'
+            f'/api/orgunits/?limit=20&order=id&page=1&searches=[{{"validation_status":"all","group":"{self.elite_group.pk},{self.unofficial_group.pk},{self.another_group.pk}","orgUnitTypeId":"{self.jedi_council.pk}"}}]'
         )
         org_units = self.assertJSONResponse(response, 200)
         self.assertEqual(org_units["count"], 1)

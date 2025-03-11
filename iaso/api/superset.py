@@ -51,6 +51,8 @@ class SupersetTokenViewSet(viewsets.ViewSet):
         headers["Cookie"] = response.headers.get("Set-Cookie")
         headers["Referer"] = base_url
 
+        row_level_security_clauses = []
+
         # Fetch Guest token
         if hasattr(request, "user") and request.user.is_authenticated:
             current_user = request.user
@@ -59,6 +61,10 @@ class SupersetTokenViewSet(viewsets.ViewSet):
                 "first_name": current_user.first_name,
                 "last_name": current_user.last_name,
             }
+            if current_user.trypelim_profile and current_user.trypelim_profile.coordination:
+                row_level_security_clauses = [
+                    {"clause": f"\"Coordination\"='{current_user.trypelim_profile.coordination.name}'"},
+                ]
         else:
             user_data = {
                 "username": "guest",
@@ -69,7 +75,7 @@ class SupersetTokenViewSet(viewsets.ViewSet):
         payload = {
             "user": user_data,
             "resources": [{"type": "dashboard", "id": dashboard_id}],
-            "rls": [],
+            "rls": row_level_security_clauses,
         }
 
         response = requests.post(base_url + "/api/v1/security/guest_token/", json=payload, headers=headers)

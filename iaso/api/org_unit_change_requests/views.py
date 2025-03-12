@@ -184,7 +184,6 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         selected_ids = serializer.validated_data["selected_ids"]
         unselected_ids = serializer.validated_data["unselected_ids"]
         status = serializer.validated_data["status"]
-        approved_fields = serializer.validated_data["approved_fields"]
         rejection_comment = serializer.validated_data["rejection_comment"]
 
         queryset = self.filter_queryset(self.get_queryset()).filter(status=OrgUnitChangeRequest.Statuses.NEW)
@@ -197,9 +196,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         ids = list(queryset.values_list("pk", flat=True))
 
         if status == OrgUnitChangeRequest.Statuses.APPROVED:
-            task = org_unit_change_requests_bulk_approve(
-                change_requests_ids=ids, approved_fields=list(approved_fields), user=self.request.user
-            )
+            task = org_unit_change_requests_bulk_approve(change_requests_ids=ids, user=self.request.user)
         else:
             task = org_unit_change_requests_bulk_reject(
                 change_requests_ids=ids, rejection_comment=rejection_comment, user=self.request.user
@@ -238,4 +235,13 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             writer.writerow(row)
         filename = filename + ".csv"
         response["Content-Disposition"] = "attachment; filename=" + filename
+        return response
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        select_all_count = queryset.filter(status=OrgUnitChangeRequest.Statuses.NEW).count()
+
+        response.data["select_all_count"] = select_all_count
+
         return response

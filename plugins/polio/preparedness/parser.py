@@ -1,9 +1,7 @@
 from enum import Enum
 from logging import getLogger
 from typing import Any, Dict, Optional
-
 from gspread.utils import absolute_range_name, rowcol_to_a1
-
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError

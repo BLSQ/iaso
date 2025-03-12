@@ -36,7 +36,7 @@ def get_config_for_country(config, country):
     config = get_google_config(PREPAREDNESS_TEMPLATE_CONFIG_KEY)
     if str(country.id) in config:
         return config[str(country.id)], str(country.id)
-    elif TEMPLATE_VERSION not in config:
+    if TEMPLATE_VERSION not in config:
         raise Exception(f"Template config for {TEMPLATE_VERSION} not found")
     else:
         return config[TEMPLATE_VERSION], TEMPLATE_VERSION
@@ -236,7 +236,7 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
     regions = get_region_from_district(districts)
    
     current_index = 2
-    for _, region in enumerate(regions):
+    for index, region in enumerate(regions):
         if region.id in alt_regions_list:
            imported_sheet = import_alt_worksheet(region,spreadsheet, alt_regions, alt_sheets, alt_names)
            update_regional_worksheet(imported_sheet, region.name, region_districts, config_for_country)

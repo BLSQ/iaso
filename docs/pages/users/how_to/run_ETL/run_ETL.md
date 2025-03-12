@@ -2,10 +2,10 @@
 
 ETL is a script to extract and transform for entities data in the format expected by the Tableau dashboards.
 
-Currently, it reads and writes to the same database as the Iaso installation. ETL script could be scheduled as period task. It means a tasks scheduled to run regulary. But It can also be a One-off Task, the schedule will only run the task a single time.
+Currently, it reads and writes to the same database as the Iaso installation. ETL script could be scheduled as periodic task. It means a task scheduled to run regulary. But It can also be a One-off Task, the schedule will only run the task a single time.
 
 
-## How to View scheduled period tasks
+## How to View scheduled periodic tasks
 
 From Iaso Admin page, in the Periodic Tasks section select Periodic tasks:
 
@@ -16,14 +16,14 @@ You will get a list of Scheduled tasks:
 ![Periodic tasks List](./attachments/Periodic-task-List.png)
 
 
-## How to create a period task
+## How to create ETL task as periodic task
 
 From Iaso Admin page, in the Periodic Tasks list, on the top right side, there is a button **Add periodical task**:
 
 
 ![Add periodical task Button](./attachments/Add-periodical-task-Button.png)
 
-You will get a form to create/edit a period task like ETL task:
+You will get a form to create/edit a periodic task like ETL task:
 
 ![Period task forms](./attachments/Periodic-task-Iaso-Form.png)
 
@@ -173,6 +173,7 @@ Here are the fields for the table:
 ![Monthly Statistics](./attachments/Monthly-statistics.png)
 
 
+Note that in the rigth there is a filter to allow filtering data on various field values!
 
 
 

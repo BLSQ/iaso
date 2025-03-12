@@ -1,4 +1,5 @@
-from plugins.polio.budget.workflow import Category, Transition, Node, Workflow
+from plugins.polio.budget.workflow import Category, Node, Transition, Workflow
+
 
 transition_defs = [
     {

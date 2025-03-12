@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import argparse
-import sys
-import subprocess
 import json
+import subprocess
+import sys
+
 
 # Fetch the data from iaso's /api/datastore/ endpoint and copy it to a local DB
 # By default it will fetch from staging.poliooutbreaks.com but you can change the source by passing the -s arg
@@ -50,7 +51,7 @@ curl_output = subprocess.check_output(
         "-H",
         f"Authorisation: Bearer {token}",  # type: ignore
         "-H",
-        f"Content-Type: application/json",
+        "Content-Type: application/json",
         "-u",
         f"{args.user}:{args.pwd}",
         f"{source}api/datastore/?format=json",
@@ -97,7 +98,7 @@ if args.localuser and args.localpwd:
             "-H",
             f"Authorisation: Bearer {local_token}",  # type: ignore
             "-H",
-            f"Content-Type: application/json",
+            "Content-Type: application/json",
             "-u",
             f"{args.localuser}:{args.localpwd}",
             f"{to}api/datastore/?format=json",

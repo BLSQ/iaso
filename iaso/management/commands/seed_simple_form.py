@@ -5,7 +5,7 @@ from django.core.files import File
 from django.core.management.base import BaseCommand, CommandError
 
 from iaso import periods
-from iaso.models import Form, FormVersion, OrgUnit, OrgUnitType, Project, Instance, Device, Account
+from iaso.models import Account, Device, Form, FormVersion, Instance, OrgUnit, OrgUnitType, Project
 from iaso.odk import parsing
 
 

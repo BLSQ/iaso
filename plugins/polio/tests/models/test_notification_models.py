@@ -1,11 +1,11 @@
 import datetime
 import os
 import shutil
+
 import time_machine
 
 from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
-from django.utils import timezone
 
 from hat import settings
 from iaso import models as m

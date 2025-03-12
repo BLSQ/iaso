@@ -1,7 +1,10 @@
-from django.test import TestCase
-from plugins.wfp.models import *
-from datetime import timedelta, datetime
 import random
+
+from datetime import datetime, timedelta
+
+from django.test import TestCase
+
+from plugins.wfp.models import *
 
 
 class ETLTestCase(TestCase):

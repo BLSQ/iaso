@@ -4,10 +4,10 @@ from qr_code.qrcode.utils import QRCodeOptions
 from rest_framework import filters, permissions, status
 from rest_framework.decorators import action
 
-
 from iaso.models import Project
-from .serializers import ProjectSerializer
+
 from ..common import ModelViewSet
+from .serializers import ProjectSerializer
 
 
 class ProjectsViewSet(ModelViewSet):

@@ -1,17 +1,18 @@
 import tempfile
 import typing
+
 from unittest import mock
 
+from django.contrib.auth.models import AnonymousUser
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
-from django.contrib.auth.models import AnonymousUser
-
 
 from iaso import models as m
 from iaso.models.org_unit import OrgUnitType
 from iaso.models.project import Project
 from iaso.test import APITestCase
+
 
 BASE_URL = "/api/formversions/"
 

@@ -1,12 +1,16 @@
-from .models import *
-from iaso.models import *
-from celery import shared_task
-from .management.commands.south_sudan.Under5 import Under5
-from .management.commands.south_sudan.Pbwg import PBWG
-from .management.commands.nigeria.Under5 import NG_Under5
-from .management.commands.nigeria.Pbwg import NG_PBWG
 import logging
+
+from celery import shared_task
+
+from iaso.models import *
 from plugins.wfp.common import ETL
+
+from .management.commands.nigeria.Pbwg import NG_PBWG
+from .management.commands.nigeria.Under5 import NG_Under5
+from .management.commands.south_sudan.Pbwg import PBWG
+from .management.commands.south_sudan.Under5 import Under5
+from .models import *
+
 
 logger = logging.getLogger(__name__)
 

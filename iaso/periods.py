@@ -1,5 +1,6 @@
-from typing import Tuple, Optional, List
 from datetime import date
+from typing import List, Optional, Tuple
+
 
 PERIOD_TYPE_DAY = "DAY"
 PERIOD_TYPE_MONTH = "MONTH"
@@ -43,17 +44,17 @@ class Period:
         period_type = detect(period_string)
         if period_type == PERIOD_TYPE_YEAR:
             return YearPeriod(period_string)
-        elif period_type == PERIOD_TYPE_MONTH:
+        if period_type == PERIOD_TYPE_MONTH:
             return MonthPeriod(period_string)
-        elif period_type == PERIOD_TYPE_QUARTER:
+        if period_type == PERIOD_TYPE_QUARTER:
             return QuarterPeriod(period_string)
-        elif period_type == PERIOD_TYPE_QUARTER_NOV:
+        if period_type == PERIOD_TYPE_QUARTER_NOV:
             return QuarterNovPeriod(period_string)
-        elif period_type == PERIOD_TYPE_SIX_MONTH:
+        if period_type == PERIOD_TYPE_SIX_MONTH:
             return SemesterPeriod(period_string)
-        elif period_type == PERIOD_TYPE_FINANCIAL_NOV:
+        if period_type == PERIOD_TYPE_FINANCIAL_NOV:
             return FinancialNovPeriod(period_string)
-        elif period_type == PERIOD_TYPE_DAY:
+        if period_type == PERIOD_TYPE_DAY:
             return DayPeriod(period_string)
         raise ValueError(f"unsupported period type: {period_type}")
 
@@ -115,13 +116,13 @@ class Period:
         return detect(self.value)
 
     def next_period(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def gen_sub_periods(self):
         """Return this period as smaller periods, recursive.
         Eg for a semester we will return it expressed as 2 QuarterPeriod and 6 MonthPeriod
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def range_period_to(self, other: "Period"):
         if not type(self) == type(other):

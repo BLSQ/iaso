@@ -1,8 +1,10 @@
 import datetime
+
 from unittest.mock import patch
 
 import jsonschema
 import pytz
+
 from django.contrib import auth
 from django.contrib.contenttypes.models import ContentType
 
@@ -11,6 +13,7 @@ from hat.menupermissions import models as permission
 from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.test import APITestCase
+
 
 user_schema = {
     "type": "object",

@@ -2,10 +2,12 @@ import logging
 import operator
 import typing
 import uuid
+
 from copy import deepcopy
 from functools import reduce
 
 import django_cte
+
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
 from django.contrib.postgres.fields import ArrayField
@@ -24,6 +26,7 @@ from iaso.models.data_source import SourceVersion
 from ..utils.expressions import ArraySubquery
 from ..utils.models.common import get_creator_name
 from .project import Project
+
 
 if typing.TYPE_CHECKING:
     from iaso.models import Account
@@ -806,7 +809,7 @@ class OrgUnitChangeRequest(models.Model):
         for field_name in approved_fields:
             if field_name == "new_location_accuracy":
                 continue
-            elif field_name == "new_groups":
+            if field_name == "new_groups":
                 self.org_unit.groups.clear()
                 self.org_unit.groups.add(*self.new_groups.all())
             elif field_name == "new_reference_instances":

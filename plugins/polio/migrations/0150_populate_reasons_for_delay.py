@@ -1,6 +1,7 @@
-from django.db import migrations, models
+from django.db import migrations
 
 from plugins.polio.models import DelayReasons
+
 
 TRANSLATIONS = {
     "INITIAL_DATA": {"en": "Initial data", "fr": "Données initiales"},

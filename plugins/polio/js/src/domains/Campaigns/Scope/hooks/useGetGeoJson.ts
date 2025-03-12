@@ -1,9 +1,9 @@
 // @ts-ignore
+import _ from 'lodash';
+import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 // @ts-ignore
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import _ from 'lodash';
-import { UseQueryResult } from 'react-query';
 
 type Params = {
     // eslint-disable-next-line camelcase

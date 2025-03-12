@@ -4,7 +4,9 @@ from dhis2 import Api
 from django.core.management.base import BaseCommand
 
 from iaso.models import Form
+
 from ...dhis2.form_mapping import seed_event_mapping
+
 
 """
 ./manage.py seed_form_mapping \
@@ -69,14 +71,14 @@ class Command(BaseCommand):
         print("******** Unmapped questions")
         form = Form.objects.get(form_id=options["form_id"])
         for field in form.possible_fields:
-            if not field in mapping["question_mappings"]:
+            if field not in mapping["question_mappings"]:
                 status = "ERROR no corresponding"
                 if not (field in usual_ona_meta or field in usual_dc_meta):
                     print(field, status)
         print("******** Unmapped questions but might be ok")
         form = Form.objects.get(form_id=options["form_id"])
         for field in form.possible_fields:
-            if not field in mapping["question_mappings"]:
+            if field not in mapping["question_mappings"]:
                 if field in usual_ona_meta or field in usual_dc_meta:
                     status = "WARN usually data collect metadata should not be in the program"
                     print(field, status)

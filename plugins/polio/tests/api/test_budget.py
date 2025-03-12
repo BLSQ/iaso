@@ -1,5 +1,6 @@
 import datetime
 import json
+
 from io import StringIO
 from typing import Dict, List
 from unittest import mock, skip
@@ -38,7 +39,10 @@ class BudgetProcessViewSetTestCase(APITestCase):
             return True
 
         for d in expected:
-            self.assertTrue(any(dictContains(actual_d, d) for actual_d in actual), f"{d} not found in {actual}")
+            self.assertTrue(
+                any(dictContains(actual_d, d) for actual_d in actual),
+                f"{d} not found in {actual}",
+            )
 
     @classmethod
     def setUpTestData(cls) -> None:
@@ -47,7 +51,11 @@ class BudgetProcessViewSetTestCase(APITestCase):
         cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
         cls.user = cls.create_user_with_profile(
-            username="test", first_name="test", last_name="test", account=cls.account, permissions=["iaso_polio_budget"]
+            username="test",
+            first_name="test",
+            last_name="test",
+            account=cls.account,
+            permissions=["iaso_polio_budget"],
         )
 
         # Campaign type.
@@ -198,14 +206,26 @@ class BudgetProcessViewSetTestCase(APITestCase):
         self.assertEqual(response_data["re_submitted_to_rrt_at_WFEDITABLE"], "2026-04-01")
         self.assertEqual(response_data["submitted_to_orpg_operations1_at_WFEDITABLE"], "2026-04-01")
         self.assertEqual(response_data["feedback_sent_to_rrt1_at_WFEDITABLE"], "2026-04-01")
-        self.assertEqual(response_data["re_submitted_to_orpg_operations1_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(
+            response_data["re_submitted_to_orpg_operations1_at_WFEDITABLE"],
+            "2026-04-01",
+        )
         self.assertEqual(response_data["submitted_to_orpg_wider_at_WFEDITABLE"], "2026-04-01")
         self.assertEqual(response_data["submitted_to_orpg_operations2_at_WFEDITABLE"], "2026-04-01")
         self.assertEqual(response_data["feedback_sent_to_rrt2_at_WFEDITABLE"], "2026-04-01")
-        self.assertEqual(response_data["re_submitted_to_orpg_operations2_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(
+            response_data["re_submitted_to_orpg_operations2_at_WFEDITABLE"],
+            "2026-04-01",
+        )
         self.assertEqual(response_data["submitted_for_approval_at_WFEDITABLE"], "2026-04-01")
-        self.assertEqual(response_data["feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE"], "2026-04-01")
-        self.assertEqual(response_data["feedback_sent_to_orpg_operations_who_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(
+            response_data["feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE"],
+            "2026-04-01",
+        )
+        self.assertEqual(
+            response_data["feedback_sent_to_orpg_operations_who_at_WFEDITABLE"],
+            "2026-04-01",
+        )
         self.assertEqual(response_data["approved_by_who_at_WFEDITABLE"], "2026-04-01")
         self.assertEqual(response_data["approved_by_unicef_at_WFEDITABLE"], "2026-04-01")
         self.assertEqual(response_data["approved_at_WFEDITABLE"], "2026-04-01")
@@ -267,13 +287,30 @@ class BudgetProcessViewSetTestCase(APITestCase):
         self.assertEqual(
             budget_processes[0]["rounds"],
             [
-                {"id": self.round_1.pk, "number": 1, "cost": "0.00", "target_population": None},
-                {"id": self.round_2.pk, "number": 2, "cost": "0.00", "target_population": None},
+                {
+                    "id": self.round_1.pk,
+                    "number": 1,
+                    "cost": "0.00",
+                    "target_population": None,
+                },
+                {
+                    "id": self.round_2.pk,
+                    "number": 2,
+                    "cost": "0.00",
+                    "target_population": None,
+                },
             ],
         )
         self.assertEqual(
             budget_processes[1]["rounds"],
-            [{"id": self.round_3.pk, "number": 3, "cost": "0.00", "target_population": None}],
+            [
+                {
+                    "id": self.round_3.pk,
+                    "number": 3,
+                    "cost": "0.00",
+                    "target_population": None,
+                }
+            ],
         )
 
     def test_simple_get_list_with_all_fields(self):
@@ -376,7 +413,10 @@ class BudgetProcessViewSetTestCase(APITestCase):
 
         file_id = budget_step.files.first().id
         self.assertEqual(file["id"], file_id)
-        self.assertEqual(file["permanent_url"], f"/api/polio/budgetsteps/{budget_step.id}/files/{file_id}/")
+        self.assertEqual(
+            file["permanent_url"],
+            f"/api/polio/budgetsteps/{budget_step.id}/files/{file_id}/",
+        )
 
         response = self.client.get(f"/api/polio/budgetsteps/{budget_step.id}/files/{file_id}/")
         self.assertIsInstance(response, HttpResponse)
@@ -433,7 +473,10 @@ class BudgetProcessViewSetTestCase(APITestCase):
         response = self.client.get(f"/api/polio/budget/{budget_process.id}/")
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["current_state"]["key"], "budget_submitted")
-        self.assertEqual(response_data["updated_at"], budget_process.updated_at.isoformat().replace("+00:00", "Z"))
+        self.assertEqual(
+            response_data["updated_at"],
+            budget_process.updated_at.isoformat().replace("+00:00", "Z"),
+        )
 
         self.assertEqual(budget_step.files.count(), 1)
 
@@ -497,7 +540,10 @@ class BudgetProcessViewSetTestCase(APITestCase):
         response = self.client.get(f"/api/polio/budget/{budget_process.id}/")
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["current_state"]["key"], "budget_submitted")
-        self.assertEqual(response_data["updated_at"], budget_process.updated_at.isoformat().replace("+00:00", "Z"))
+        self.assertEqual(
+            response_data["updated_at"],
+            budget_process.updated_at.isoformat().replace("+00:00", "Z"),
+        )
 
         response = self.client.get(f"/api/polio/budgetsteps/{budget_step.id}/")
         response_data = self.assertJSONResponse(response, 200)
@@ -672,7 +718,10 @@ class BudgetProcessViewSetTestCase(APITestCase):
         response = self.client.get(f"/api/polio/budget/{budget_process.id}/")
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["current_state"]["key"], "rejected")
-        self.assertEqual(response_data["updated_at"], budget_process.updated_at.isoformat().replace("+00:00", "Z"))
+        self.assertEqual(
+            response_data["updated_at"],
+            budget_process.updated_at.isoformat().replace("+00:00", "Z"),
+        )
 
         # Check that we have only created one step.
         new_budget_step_count = BudgetStep.objects.count()
@@ -724,7 +773,12 @@ class BudgetProcessViewSetTestCase(APITestCase):
         mt.full_clean()
         mt.save()
         template = Engine.get_default().from_string(mt.template)
-        context = Context({"user": "olivier", "files": [{"path": "http://example.com/test.txt", "name": "test.txt"}]})
+        context = Context(
+            {
+                "user": "olivier",
+                "files": [{"path": "http://example.com/test.txt", "name": "test.txt"}],
+            }
+        )
         r = template.render(context)
         self.assertEqual(
             r,
@@ -767,9 +821,24 @@ class BudgetProcessViewSetTestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
 
         expected_data = [
-            {"value": self.round_1.pk, "label": 1, "campaign_id": str(self.campaign.id), "target_population": None},
-            {"value": self.round_2.pk, "label": 2, "campaign_id": str(self.campaign.id), "target_population": None},
-            {"value": self.round_4.pk, "label": 4, "campaign_id": str(self.campaign.id), "target_population": None},
+            {
+                "value": self.round_1.pk,
+                "label": 1,
+                "campaign_id": str(self.campaign.id),
+                "target_population": None,
+            },
+            {
+                "value": self.round_2.pk,
+                "label": 2,
+                "campaign_id": str(self.campaign.id),
+                "target_population": None,
+            },
+            {
+                "value": self.round_4.pk,
+                "label": 4,
+                "campaign_id": str(self.campaign.id),
+                "target_population": None,
+            },
         ]
         self.assertEqual(response_data, expected_data)
 
@@ -785,7 +854,11 @@ class BudgetProcessViewSetTestCase(APITestCase):
         expected_data = {
             "countries": [{"value": self.campaign.country.id, "label": "ANGOLA"}],
             "campaigns": [
-                {"value": str(self.campaign.id), "label": "test campaign", "country_id": self.campaign.country.id}
+                {
+                    "value": str(self.campaign.id),
+                    "label": "test campaign",
+                    "country_id": self.campaign.country.id,
+                }
             ],
             "rounds": [
                 # Only round 4 should be available.
@@ -942,7 +1015,9 @@ class FilterBudgetStepViewSetTestCase(APITestCase):
 
         # Budget Steps.
         cls.budget_step_1 = BudgetStep.objects.create(
-            budget_process=cls.budget_process_1, created_by=cls.user, transition_key="submit_budget"
+            budget_process=cls.budget_process_1,
+            created_by=cls.user,
+            transition_key="submit_budget",
         )
         cls.budget_step_2 = BudgetStep.objects.create(budget_process=cls.budget_process_1, created_by=cls.user)
 

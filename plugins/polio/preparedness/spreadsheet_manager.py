@@ -121,6 +121,10 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
 
 
+def copy_worksheet_to_spreadsheet(source_worksheet, destination_spreadsheet_id):
+    return source_worksheet.copy_to(destination_spreadsheet_id)
+    
+    
 # Google Sheet don't automatically copy the protected ranges when duplicating a sheet, so we do it by hand
 def copy_protected_range_to_sheet(template_protected_ranges, new_sheet):
     new_sheet_id = new_sheet.id
@@ -170,6 +174,23 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
     config = get_google_config(PREPAREDNESS_TEMPLATE_CONFIG_KEY)
     config_for_country, template_version = get_config_for_country(config=config, country=country)
     spreadsheet = create_spreadsheet(campaign.obr_name, lang, config_for_country)
+    
+    alt_configs = config_for_country.get("replace", None)
+    alt_sheets = {} 
+    alt_regions = {}
+    alt_names = {}
+    if alt_configs is not None:
+      print("ALT CONFIGS", alt_configs)
+      #Generate alt spreadsheets to copy from
+      for alt_lang in alt_configs.keys():
+          print("ALT LANG", alt_lang)
+          alt_sheets[alt_lang] = create_spreadsheet(campaign.obr_name, alt_lang.upper(), config_for_country)
+      #Invert dictionary from config to be able to access language based on region id
+      for key,value in alt_configs.items():
+          for config in value :
+              alt_regions[config["id"]]=key
+              alt_names[config["id"]] = config["name"]
+    
 
     # set some meta data for debugging
     domain = get_current_site(None).domain
@@ -192,13 +213,27 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
     batched_requests = []
     districts = campaign.get_districts_for_round_number(round_number)
     regions = get_region_from_district(districts)
-
+    alt_regions_list = alt_regions.keys()
     current_index = 2
     for index, region in enumerate(regions):
-        regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)
-        batched_requests += copy_protected_range_to_sheet(template_range, regional_worksheet)
-        region_districts = districts.filter(parent=region)
-        update_regional_worksheet(regional_worksheet, region.name, region_districts, config_for_country)
+        if region.id in alt_regions_list:
+           alt_lang = alt_regions[region.id]
+           alt_spreadsheet = alt_sheets[alt_lang]
+           alt_regional_template_worksheet = alt_spreadsheet.worksheet("Regional")
+           alt_meta = alt_spreadsheet.fetch_sheet_metadata()
+           alt_template_range = alt_meta["sheets"][alt_regional_template_worksheet.index]["protectedRanges"] 
+           copied_sheet_dict = copy_worksheet_to_spreadsheet(alt_regional_template_worksheet, spreadsheet.id)
+           print("COPIED sheet", copied_sheet_dict)
+           copied_sheet = spreadsheet.get_worksheet_by_id(copied_sheet_dict["sheetId"])
+           copied_sheet.update_title(alt_names[region.id])
+           # This probably won't work due to using the meta from source sheet
+           copy_protected_range_to_sheet(alt_template_range,copied_sheet)
+           update_regional_worksheet(copied_sheet, region.name, region_districts, config_for_country)
+        else: 
+            regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)
+            batched_requests += copy_protected_range_to_sheet(template_range, regional_worksheet)
+            region_districts = districts.filter(parent=region)
+            update_regional_worksheet(regional_worksheet, region.name, region_districts, config_for_country)
         current_index += 1
     spreadsheet.batch_update({"requests": batched_requests})
     spreadsheet.del_worksheet(regional_template_worksheet)

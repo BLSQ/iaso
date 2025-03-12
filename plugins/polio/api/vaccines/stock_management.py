@@ -1179,10 +1179,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
             total_unusable_vials,
             total_unusable_doses,
         ) = calculator.get_total_of_unusable_vials()
-        # (
-        #     total_earmarked_vials,
-        #     total_earmarked_doses,
-        # ) = calculator.get_total_of_earmarked()
+        (
+            total_earmarked_vials,
+            total_earmarked_doses,
+        ) = calculator.get_total_of_earmarked()
 
         summary_data = {
             "country_id": vaccine_stock.country.id,
@@ -1191,8 +1191,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "total_usable_vials": total_usable_vials,
             "total_unusable_vials": total_unusable_vials,
             "total_usable_doses": total_usable_doses,
-            # "total_earmarked_vials": total_earmarked_vials,
-            # "total_earmarked_doses": total_earmarked_doses,
+            "total_earmarked_vials": total_earmarked_vials,
+            "total_earmarked_doses": total_earmarked_doses,
             "total_unusable_doses": total_unusable_doses,
         }
 

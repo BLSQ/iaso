@@ -62,7 +62,7 @@ export const VaccineStockManagementSummary: FunctionComponent<Props> = ({
                             isLoading={isLoading}
                         />
                     )}
-                    {/* <PaperTableRow
+                    <PaperTableRow
                         label={formatMessage(MESSAGES.earmarked_vials)}
                         value={data?.total_earmarked_vials}
                         isLoading={isLoading}
@@ -71,7 +71,7 @@ export const VaccineStockManagementSummary: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.earmarked_doses)}
                         value={data?.total_earmarked_doses}
                         isLoading={isLoading}
-                    /> */}
+                    />
                 </TableBody>
             </Table>
         </WidgetPaper>

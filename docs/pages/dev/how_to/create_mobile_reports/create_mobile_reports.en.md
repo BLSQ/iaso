@@ -1,3 +1,10 @@
+# Requirements
+
+Make sure to have an entity workflow and forms avalaible in Iaso.
+
+You can find the documentation for that in the sections [Create forms for entities](../../../dev/how_to/create_forms_for_entities/create_forms_for_entities.en.md) and [Create an entity workflow](../../../dev/how_to/create_entity_workflow/create_entity_workflow.en.md#workflows).
+
+
 # How to run coda mobile report locally
 
 The current report is based to nutrition program with beneficiaries splitted into 2 entity types:
@@ -150,4 +157,11 @@ Then:
 - Fill the Name, select the right version(created previously) and Project
 - Save
 
-Open the iaso mobile and Refresh data then Refresh Beneficiaries to link the app to the right report version.
+   ### 3. View report from mobile app
+
+Open the iaso mobile and **Refresh data** then **Refresh Beneficiaries** to link the app to the right report version.
+
+After refreshing data, open the mobile app. The mobile report is accessible from the bottom left link `See reports`.
+
+
+![See reports](./attachments/report-access-from-mobile-app.gif)

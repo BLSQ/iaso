@@ -1,16 +1,17 @@
-from django.test import tag
-from django.contrib import auth
 import jsonschema
+
+from django.contrib import auth
+from django.contrib.auth.models import User
+from django.db.models import Q
+from django.test import tag
 
 from beanstalk_worker.services import TestTaskService
 from hat.audit import models as am
+from hat.menupermissions import models as permission
 from iaso import models as m
-from django.contrib.auth.models import User
-from iaso.models import Task, QUEUED
-from django.db.models import Q
+from iaso.models import QUEUED, Task
 from iaso.models.microplanning import TeamType
 from iaso.test import APITestCase
-from hat.menupermissions import models as permission
 from iaso.tests.api.test_profiles import PROFILE_LOG_SCHEMA
 
 
@@ -180,7 +181,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         """POST /api/tasks/create/profilesbulkupdate/, no auth -> 401"""
 
         response = self.client.post(
-            f"/api/tasks/create/profilesbulkupdate/",
+            "/api/tasks/create/profilesbulkupdate/",
             data={"select_all": True, "language": "fr"},
             format="json",
         )
@@ -197,7 +198,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "selected_ids": [self.user_admin_no_task.iaso_profile.pk, self.user_admin_no_task2.iaso_profile.pk],
             "language": "fr",
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 403)
         data = response.json()
@@ -209,7 +210,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_admin)
         response = self.client.post(
-            f"/api/tasks/create/profilesbulkupdate/",
+            "/api/tasks/create/profilesbulkupdate/",
             data={
                 "select_all": False,
                 "selected_ids": [
@@ -239,7 +240,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_admin_account3)
         response = self.client.post(
-            f"/api/tasks/create/profilesbulkupdate/",
+            "/api/tasks/create/profilesbulkupdate/",
             data={"select_all": True, "language": "fr"},
             format="json",
         )
@@ -290,7 +291,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "projects": None,
             "user_roles": None,
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -403,7 +404,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "projects": None,
             "user_roles": None,
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=payload, format="json")
 
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
@@ -429,7 +430,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
                 self.project_3.pk,
             ],
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -450,7 +451,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
                 self.project_3.pk,
             ],
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -487,7 +488,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "projects": None,
             "user_roles": None,
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -534,7 +535,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "projects": None,
             "user_roles": None,
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -581,7 +582,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "projects": None,
             "user_roles": None,
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -629,7 +630,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "projects": None,
             "user_roles": None,
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -673,7 +674,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "projects": None,
             "user_roles": None,
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -693,7 +694,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_admin)
         response = self.client.post(
-            f"/api/tasks/create/profilesbulkupdate/",
+            "/api/tasks/create/profilesbulkupdate/",
             data={
                 "select_all": True,
                 "selected_ids": None,
@@ -750,7 +751,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_admin)
         response = self.client.post(
-            f"/api/tasks/create/profilesbulkupdate/",
+            "/api/tasks/create/profilesbulkupdate/",
             data={
                 "select_all": True,
                 "language": "fr",
@@ -789,7 +790,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         # test user roles
         response = self.client.post(
-            f"/api/tasks/create/profilesbulkupdate/",
+            "/api/tasks/create/profilesbulkupdate/",
             data={
                 "select_all": True,
                 "language": "fr",
@@ -829,7 +830,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         # test user roles
         response = self.client.post(
-            f"/api/tasks/create/profilesbulkupdate/",
+            "/api/tasks/create/profilesbulkupdate/",
             data={
                 "select_all": True,
                 "language": "fr",
@@ -864,7 +865,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.user_admin_no_task.iaso_profile.language = "en"
         self.user_admin_no_task.iaso_profile.save()
         response = self.client.post(
-            f"/api/tasks/create/profilesbulkupdate/",
+            "/api/tasks/create/profilesbulkupdate/",
             data={
                 "select_all": True,
                 "language": "fr",
@@ -912,7 +913,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
                 self.team_1.pk,
             ],
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -943,7 +944,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
                 self.team_1.pk,
             ],
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -983,7 +984,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
                 self.team_of_teams.pk,
             ],
         }
-        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
 
         self.assertJSONResponse(response, 201)
         data = response.json()
@@ -1009,7 +1010,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_admin)
         response = self.client.post(
-            f"/api/tasks/create/profilesbulkupdate/",
+            "/api/tasks/create/profilesbulkupdate/",
             data={
                 "select_all": True,
                 "language": "fr",
@@ -1034,7 +1035,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.superuser)
         response = self.client.post(
-            f"/api/tasks/create/profilesbulkupdate/",
+            "/api/tasks/create/profilesbulkupdate/",
             data={
                 "select_all": False,
                 "selected_ids": [self.user_admin_no_task.iaso_profile.pk, self.user_admin_no_task2.iaso_profile.pk],

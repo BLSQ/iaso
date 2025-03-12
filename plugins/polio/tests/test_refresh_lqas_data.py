@@ -1,13 +1,11 @@
 from datetime import datetime
-import json
-from iaso import models as m
-from iaso.test import APITestCase
-from iaso.models.base import RUNNING, KILLED, SUCCESS, SKIPPED
-
-from iaso.models.json_config import Config
-from plugins.polio.tasks.api.refresh_lqas_data import LQAS_CONFIG_SLUG, RefreshLQASDataViewset
-import os
 from unittest.mock import patch
+
+from iaso import models as m
+from iaso.models.base import KILLED, RUNNING, SKIPPED, SUCCESS
+from iaso.models.json_config import Config
+from iaso.test import APITestCase
+from plugins.polio.tasks.api.refresh_lqas_data import LQAS_CONFIG_SLUG, RefreshLQASDataViewset
 
 
 class RefreshLQASDataTestCase(APITestCase):

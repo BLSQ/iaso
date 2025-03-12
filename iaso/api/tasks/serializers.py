@@ -5,7 +5,7 @@ from django.utils.text import slugify
 from rest_framework import serializers
 
 from iaso.api.common import TimestampField, UserSerializer
-from iaso.models.base import ERRORED, RUNNING, KILLED, SUCCESS, Task
+from iaso.models.base import ERRORED, KILLED, RUNNING, SUCCESS, Task
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -117,9 +117,9 @@ class ExternalTaskPostSerializer(serializers.Serializer):
         request = self.context["request"]
         user = request.user
         name = (
-            f'{validated_data["slug"]}-{list(validated_data["id_field"].values())[0]}'
+            f"{validated_data['slug']}-{list(validated_data['id_field'].values())[0]}"
             if validated_data.get("id_field", None)
-            else f'{validated_data["slug"]}'
+            else f"{validated_data['slug']}"
         )
         task = Task.objects.create(
             created_by=user,

@@ -1,4 +1,5 @@
 import typing
+
 from copy import copy
 from datetime import timedelta
 from xml.sax.saxutils import escape
@@ -17,15 +18,16 @@ from hat.menupermissions import models as permission
 from iaso.models import Form, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
+from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
 
 
-class HasFormPermission(permissions.BasePermission):
+class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
-            return True
+            return super().has_permission(request, view)
 
         return request.user.is_authenticated and request.user.has_perm(permission.FORMS)
 
@@ -198,9 +200,9 @@ class FormSerializer(DynamicFieldsModelSerializer):
                 before = data.get("periods_before_allowed", 0)
                 after = data.get("periods_after_allowed", 0)
                 if before + after < 1:
-                    tracker_errors[
-                        "periods_allowed"
-                    ] = "periods_before_allowed + periods_after_allowed should be greater than or equal to 1"
+                    tracker_errors["periods_allowed"] = (
+                        "periods_before_allowed + periods_after_allowed should be greater than or equal to 1"
+                    )
             if tracker_errors:
                 raise serializers.ValidationError(tracker_errors)
         return data
@@ -365,7 +367,7 @@ class FormsViewSet(ModelViewSet):
 
         if csv_format:
             return self.list_to_csv()
-        elif xlsx_format:
+        if xlsx_format:
             return self.list_to_xlsx()
 
         return super().list(request, *args, **kwargs)

@@ -3,6 +3,7 @@ import jsonschema
 from iaso.models import WorkflowVersion
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 
+
 BASE_API = "/api/workflowversions/"
 
 post_answer_schema = {

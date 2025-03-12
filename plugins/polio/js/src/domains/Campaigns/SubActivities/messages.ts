@@ -121,9 +121,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.lqasEnd',
         defaultMessage: 'LQAS End',
     },
-    mustBeAfterRoundEndDate: {
-        id: 'iaso.polio.form.label.mustBeAfterRoundEndDate',
-        defaultMessage: 'Must be after round end date',
+    mustBeAfterSubActivityEndDate: {
+        id: 'iaso.polio.form.label.mustBeAfterSubActivityEndDate',
+        defaultMessage: 'Must be after sub-activity end date',
+    },
+    mustBeAfterRoundStartDate: {
+        id: 'iaso.polio.form.label.mustBeAfterRoundStartDate',
+        defaultMessage: 'Must be after round start date',
     },
 });
 

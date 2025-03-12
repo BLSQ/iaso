@@ -2,13 +2,13 @@ from typing import Any, Protocol
 
 from django import forms as django_forms
 from django.contrib import admin
-from django.contrib.admin import widgets, SimpleListFilter
+from django.contrib.admin import SimpleListFilter, widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.http import HttpResponseRedirect
-from django.urls import path, reverse
+from django.urls import reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
@@ -21,7 +21,7 @@ from iaso.utils.admin.custom_filters import (
     has_relation_filter_factory,
 )
 
-from .models import (
+from ..models import (
     Account,
     AccountFeatureFlag,
     AlgorithmRun,
@@ -78,9 +78,9 @@ from .models import (
     WorkflowFollowup,
     WorkflowVersion,
 )
-from .models.data_store import JsonDataStore
-from .models.microplanning import Assignment, Planning, Team
-from .utils.gis import convert_2d_point_to_3d
+from ..models.data_store import JsonDataStore
+from ..models.microplanning import Assignment, Planning, Team
+from ..utils.gis import convert_2d_point_to_3d
 
 
 class EntityAutocompleteFilter(SimpleListFilter):
@@ -379,9 +379,9 @@ class InstanceAdmin(admin.GeoModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "entity":
-            kwargs[
-                "queryset"
-            ] = Entity.objects_include_deleted.all()  # use the manager that includes soft-deleted objects
+            kwargs["queryset"] = (
+                Entity.objects_include_deleted.all()
+            )  # use the manager that includes soft-deleted objects
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
@@ -441,13 +441,6 @@ class GroupAdmin(admin.ModelAdmin):
 
     def org_unit_count(self, obj):
         return obj.org_units.count()
-
-
-@admin_attr_decorator
-class UserAdmin(admin.GeoModelAdmin):
-    search_fields = ("username", "email", "first_name", "last_name", "iaso_profile__account__name")
-    list_filter = ("iaso_profile__account", "is_staff", "is_superuser", "is_active")
-    list_display = ("id", "username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
 
 
 @admin.register(Profile)
@@ -516,7 +509,7 @@ class TaskAdmin(admin.ModelAdmin):
 
     def stacktrace(self, task):
         if not task.result:
-            return
+            return None
         stack = task.result.get("stack_trace")
         return format_html("<p>{}</p><pre>{}</pre>", task.result.get("message", ""), stack)
 
@@ -550,9 +543,9 @@ class EntityAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     readonly_fields = ("created_at",)
@@ -753,9 +746,9 @@ class WorkflowAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     def get_queryset(self, request):
@@ -1026,7 +1019,7 @@ class GroupSetAdmin(admin.ModelAdmin):
 class TenantUserAdmin(admin.ModelAdmin):
     list_display = (
         "main_user",
-        "account_user",
+        "account_user_link",
         "account",
         "created_at",
         "updated_at",
@@ -1037,6 +1030,11 @@ class TenantUserAdmin(admin.ModelAdmin):
     search_fields = ("main_user__username", "account_user__username", "account_user__iaso_profile__account__name")
     raw_id_fields = ("main_user", "account_user")
     readonly_fields = ("created_at", "updated_at", "account", "all_account_users", "other_accounts")
+
+    def account_user_link(self, obj):
+        # Create a link to the User change page in the admin
+        url = reverse("admin:auth_user_change", args=[obj.account_user.pk])
+        return format_html('<a href="{}">{}</a>', url, obj.account_user.username)
 
     def get_urls(self):
         urls = super().get_urls()

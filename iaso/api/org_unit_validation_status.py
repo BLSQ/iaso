@@ -1,6 +1,5 @@
-from rest_framework import viewsets, permissions
+from rest_framework import permissions, viewsets
 from rest_framework.response import Response
-
 
 from iaso.models import OrgUnit
 

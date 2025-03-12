@@ -1,9 +1,10 @@
-from iaso.models import Workflow, WorkflowVersion
+from uuid import uuid4
+
+from iaso.models import Account, EntityType, Workflow, WorkflowVersion
 from iaso.models.workflow import WorkflowVersionsStatus
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
-from iaso.tests.utils.test_utils import var_dump, obj_compare
-from iaso.models import Account, EntityType
-from uuid import uuid4
+from iaso.tests.utils.test_utils import obj_compare
+
 
 BASE_API = "/api/workflows/"
 

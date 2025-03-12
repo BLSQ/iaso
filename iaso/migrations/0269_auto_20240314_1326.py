@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 CODE = "MOBILE_ORG_UNIT_DEEP_SEARCH"
 
 

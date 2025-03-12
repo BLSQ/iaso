@@ -1,9 +1,11 @@
 import logging
+
 from itertools import groupby
 from operator import itemgetter
 
 from plugins.wfp.common import ETL
 from plugins.wfp.models import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +25,7 @@ class PBWG:
 
         for index, instance in enumerate(instances):
             logger.info(
-                f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
+                f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
             )
             instance["journey"] = self.journeyMapper(instance["visits"], ["wfp_coda_pbwg_anthropometric"])
             beneficiary = Beneficiary()
@@ -34,7 +36,7 @@ class PBWG:
                 if instance.get("birth_date") is not None:
                     beneficiary.birth_date = instance["birth_date"]
                     beneficiary.save()
-                    logger.info(f"Created new beneficiary")
+                    logger.info("Created new beneficiary")
             else:
                 beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
 
@@ -55,7 +57,7 @@ class PBWG:
                 else:
                     logger.info("No new journey")
             logger.info(
-                f"---------------------------------------------------------------------------------------------\n\n"
+                "---------------------------------------------------------------------------------------------\n\n"
             )
 
     def save_journey(self, beneficiary, record):

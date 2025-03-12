@@ -365,6 +365,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.round',
         defaultMessage: 'Round',
     },
+    download: {
+        defaultMessage: 'Download',
+        id: 'iaso.polio.label.download',
+    },
     stockToModify: {
         id: 'iaso.polio.label.stockToModify',
         defaultMessage: 'Stock to modify',
@@ -392,6 +396,10 @@ const MESSAGES = defineMessages({
     returned: {
         id: 'iaso.label.returned',
         defaultMessage: 'Returned',
+    },
+    temporary_campaign_name: {
+        id: 'iaso.polio.label.temporary_campaign_name',
+        defaultMessage: 'Temporary campaign name',
     },
 });
 

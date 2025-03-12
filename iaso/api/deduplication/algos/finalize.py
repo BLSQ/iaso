@@ -1,9 +1,10 @@
 from typing import List
+
+from django.apps import apps
+from django.utils.timezone import now
+
 from iaso.api.deduplication.common import PotentialDuplicate  # type: ignore
 from iaso.models.base import Task
-
-from django.utils.timezone import now
-from django.apps import apps
 
 
 def finalize_from_task(the_task: Task, potential_duplicates: List[PotentialDuplicate]):

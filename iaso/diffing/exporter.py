@@ -1,13 +1,15 @@
 import json
-from pprint import pprint
+
 from typing import List
+
 import dhis2.exceptions
+
 from dhis2 import Api
 from django.contrib.gis.geos import GEOSGeometry
 
 from iaso.models import generate_id_for_dhis_2
-from .comparisons import as_field_types
-from .comparisons import Diff, Comparison
+
+from .comparisons import Comparison, Diff, as_field_types
 
 
 def all_slices(iterables, size: int):
@@ -56,7 +58,7 @@ def dhis2_group_contains(dhis2_group, org_unit):
 
 
 def format_error(action, exc, errors):
-    message = f"Error when {action}" f"\n" f"URL : {exc.url}\n" f"Received status code: {exc.code}\n"
+    message = f"Error when {action}\nURL : {exc.url}\nReceived status code: {exc.code}\n"
     if errors:
         message += "Errors:\r\n"
         for error in errors:
@@ -189,7 +191,7 @@ class Exporter:
                     )
                 diff = diff[0]
                 for comparison in diff.comparisons:  # type: ignore
-                    if comparison.status != "same" and not comparison.field.startswith("groupset:"):
+                    if comparison.status != "same" and not comparison.field.startswith(("group:", "groupset:")):
                         self.apply_comparison(dhis2_payload, comparison)
             self.iaso_logger.info(f"will post slice for {', '.join(ids)}")
             # pprint([{k: (v if k != "geometry" else "...") for k, v in payload.items()} for payload in dhis2_payloads])

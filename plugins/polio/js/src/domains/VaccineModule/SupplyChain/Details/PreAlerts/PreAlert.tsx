@@ -114,14 +114,20 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                 )}
                                 name={`pre_alerts[${index}].date_pre_alert_reception`}
                                 component={DateInput}
-                                disabled={markedForDeletion}
+                                disabled={
+                                    markedForDeletion ||
+                                    !pre_alerts?.[index].can_edit
+                                }
                                 required
                             />
                             <Field
                                 label={formatMessage(MESSAGES.doses_shipped)}
                                 name={`pre_alerts[${index}].doses_shipped`}
                                 component={NumberInput}
-                                disabled={markedForDeletion}
+                                disabled={
+                                    markedForDeletion ||
+                                    !pre_alerts?.[index].can_edit
+                                }
                                 onChange={handleDosesShippedUpdate}
                                 onFocus={onDosesFocus}
                                 onBlur={onDosesBlur}
@@ -146,6 +152,10 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                     document={
                                         values?.pre_alerts?.[index]?.document
                                     }
+                                    disabled={
+                                        markedForDeletion ||
+                                        !pre_alerts?.[index].can_edit
+                                    }
                                 />
                             </Box>
                         </Grid>
@@ -155,7 +165,10 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                     label={formatMessage(MESSAGES.po_number)}
                                     name={`pre_alerts[${index}].po_number`}
                                     component={TextInput}
-                                    disabled={markedForDeletion}
+                                    disabled={
+                                        markedForDeletion ||
+                                        !pre_alerts?.[index].can_edit
+                                    }
                                     shrinkLabel={false}
                                     required
                                 />
@@ -164,7 +177,10 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                 label={formatMessage(MESSAGES.vials_shipped)}
                                 name={`pre_alerts[${index}].vials_shipped`}
                                 component={NumberInput}
-                                disabled={markedForDeletion}
+                                disabled={
+                                    markedForDeletion ||
+                                    !pre_alerts?.[index].can_edit
+                                }
                                 onChange={handleVialsShippedUpdate}
                                 onFocus={onVialsFocus}
                                 onBlur={onVialsBlur}
@@ -178,7 +194,10 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                 )}
                                 name={`pre_alerts[${index}].estimated_arrival_time`}
                                 component={DateInput}
-                                disabled={markedForDeletion}
+                                disabled={
+                                    markedForDeletion ||
+                                    !pre_alerts?.[index].can_edit
+                                }
                                 required
                             />
                             <Box>
@@ -197,26 +216,28 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                 </Grid>
             </Paper>
             {/* Box is necessay to avoid bad tooltip placement */}
-            <Box ml={2}>
-                {!pre_alerts?.[index].to_delete && (
-                    <DeleteIconButton
-                        onClick={onDelete}
-                        message={MESSAGES.markForDeletion}
-                    />
-                )}
-                {pre_alerts?.[index].to_delete && (
-                    <IconButton
-                        onClick={() => {
-                            setFieldValue(
-                                `pre_alerts[${index}].to_delete`,
-                                false,
-                            );
-                        }}
-                        overrideIcon={RestoreFromTrashIcon}
-                        tooltipMessage={MESSAGES.cancelDeletion}
-                    />
-                )}
-            </Box>
+            {pre_alerts?.[index].can_edit && (
+                <Box ml={2}>
+                    {!pre_alerts?.[index].to_delete && (
+                        <DeleteIconButton
+                            onClick={onDelete}
+                            message={MESSAGES.markForDeletion}
+                        />
+                    )}
+                    {pre_alerts?.[index].to_delete && (
+                        <IconButton
+                            onClick={() => {
+                                setFieldValue(
+                                    `pre_alerts[${index}].to_delete`,
+                                    false,
+                                );
+                            }}
+                            overrideIcon={RestoreFromTrashIcon}
+                            tooltipMessage={MESSAGES.cancelDeletion}
+                        />
+                    )}
+                </Box>
+            )}
         </div>
     );
 };

@@ -5,9 +5,9 @@
 
 from typing import Any
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 
-from iaso.models import Account, Form, OrgUnitType, OrgUnit, Instance
+from iaso.models import Account, Form, Instance, OrgUnit, OrgUnitType
 from iaso.models.base import Profile
 from iaso.models.microplanning import Team
 from iaso.test import APITestCase
@@ -43,8 +43,7 @@ def are_almost_equal(o1: Any, o2: Any, max_abs_ratio_diff: float, max_abs_diff: 
             for s1, s2 in zip(sorted(o1.__slots__), sorted(o2.__slots__))
         ):
             return False
-        else:
-            composite_type_passed = True
+        composite_type_passed = True
 
     if hasattr(o1, "__dict__"):
         if len(o1.__dict__) != len(o2.__dict__):
@@ -56,8 +55,7 @@ def are_almost_equal(o1: Any, o2: Any, max_abs_ratio_diff: float, max_abs_diff: 
             if not k1.startswith("__")
         ):  # avoid infinite loops
             return False
-        else:
-            composite_type_passed = True
+        composite_type_passed = True
 
     if isinstance(o1, dict):
         if len(o1) != len(o2):
@@ -78,18 +76,17 @@ def are_almost_equal(o1: Any, o2: Any, max_abs_ratio_diff: float, max_abs_diff: 
     elif isinstance(o1, float):
         if o1 == o2:
             return True
-        else:
-            # FIXME we can probably replace this by math.isclose
-            if max_abs_ratio_diff > 0:  # if max_abs_ratio_diff < 0, max_abs_ratio_diff is ignored
-                if o2 != 0:
-                    if abs(1.0 - (o1 / o2)) > max_abs_ratio_diff:
-                        return False
-                else:  # if both == 0, we already returned True
-                    if abs(1.0 - (o2 / o1)) > max_abs_ratio_diff:
-                        return False
-            if 0 < max_abs_diff < abs(o1 - o2):  # if max_abs_diff < 0, max_abs_diff is ignored
-                return False
-            return True
+        # FIXME we can probably replace this by math.isclose
+        if max_abs_ratio_diff > 0:  # if max_abs_ratio_diff < 0, max_abs_ratio_diff is ignored
+            if o2 != 0:
+                if abs(1.0 - (o1 / o2)) > max_abs_ratio_diff:
+                    return False
+            else:  # if both == 0, we already returned True
+                if abs(1.0 - (o2 / o1)) > max_abs_ratio_diff:
+                    return False
+        if 0 < max_abs_diff < abs(o1 - o2):  # if max_abs_diff < 0, max_abs_diff is ignored
+            return False
+        return True
 
     else:
         if not composite_type_passed:
@@ -491,7 +488,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Filtering by form type"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?limit=10")
+        response = self.client.get("/api/v2/completeness_stats/?limit=10")
         json = self.assertJSONResponse(response, 200)
         # Without filtering, we  also have results for form_hs_2 and form_hs_4 just like in test_base_row_listing()
         self.assertEqual(len(json["forms"]), 3)
@@ -622,7 +619,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """OUs with a non-valid status are excluded from the API"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?limit=10")
+        response = self.client.get("/api/v2/completeness_stats/?limit=10")
         json = response.json()
         ou_ids = [result["org_unit"]["id"] for result in json["results"]]
         # Those two OUs have a non-valid status
@@ -659,7 +656,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         # Then we ask to filter to only keep the hospitals: nothing at this level is a hospital => no results
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?org_unit_type_ids=100000")
+        response = self.client.get("/api/v2/completeness_stats/?org_unit_type_ids=100000")
         j = self.assertJSONResponse(response, 400)
         self.assertIn("org_unit_type_ids", j)
 
@@ -678,7 +675,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         results_with_filter = json["results"]
         self.assertEqual(len(results_with_filter), 2)
         response_without_filter = self.client.get(
-            f"/api/v2/completeness_stats/?limit=10", {"org_unit_validation_status": "VALID,NEW"}
+            "/api/v2/completeness_stats/?limit=10", {"org_unit_validation_status": "VALID,NEW"}
         )
         results_without_filter = self.assertJSONResponse(response_without_filter, 200)["results"]
         self.assertListEqual(results_with_filter, results_without_filter)
@@ -687,7 +684,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
-            f"/api/v2/completeness_stats/?limit=10&parent_org_unit_id=1&org_unit_validation_status=VALID,NEW"
+            "/api/v2/completeness_stats/?limit=10&parent_org_unit_id=1&org_unit_validation_status=VALID,NEW"
         )
         json = response.json()
         # All the rows we get are direct children of the Country (region A and B)
@@ -730,7 +727,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "org_unit_validation_status": "VALID,NEW",
                 "limit": 10,
@@ -745,7 +742,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # We request a form/OU combination that has no forms to fill.
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.id,
                 "form_id": self.form_hs_2.id,
@@ -767,7 +764,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # We filter to get only the district A.A
         response = self.client.get(
-            f"/api/v2/completeness_stats/?parent_org_unit_id=4&limit=10", {"org_unit_validation_status": "VALID,NEW"}
+            "/api/v2/completeness_stats/?parent_org_unit_id=4&limit=10", {"org_unit_validation_status": "VALID,NEW"}
         )
         j = self.assertJSONResponse(response, 200)
         self.assertEqual(len(j["results"]), 2)
@@ -780,7 +777,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.as_abb_ou.validation_status = OrgUnit.VALIDATION_NEW
         self.as_abb_ou.save()
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "limit": 10,
@@ -816,7 +813,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.as_abb_ou.save()
 
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,
@@ -853,7 +850,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         # Check number of result when it's false
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "limit": 10,
@@ -867,7 +864,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # should default to false so same number of result if par modiié leams is not present
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,
@@ -880,7 +877,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # If we filter it should be two
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,

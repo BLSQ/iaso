@@ -8,15 +8,19 @@ We copy the Regional worksheet for each region in the Campaign scope, then add a
 """
 
 import copy
-import gspread  # type: ignore
+
 from logging import getLogger
-from rest_framework import exceptions
 from typing import Optional
-from gspread.utils import Dimension, a1_range_to_grid_range, rowcol_to_a1  # type: ignore
-from hat.__version__ import VERSION
-from iaso.models import OrgUnit
+
+import gspread  # type: ignore
+
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.translation import gettext_lazy as _
+from gspread.utils import Dimension, a1_range_to_grid_range, rowcol_to_a1  # type: ignore
+from rest_framework import exceptions
+
+from hat.__version__ import VERSION
+from iaso.models import OrgUnit
 from plugins.polio.models import Campaign, CountryUsersGroup
 from plugins.polio.preparedness.client import get_client, get_google_config
 
@@ -34,8 +38,7 @@ def get_config_for_country(config, country):
         return config[str(country.id)], str(country.id)
     if TEMPLATE_VERSION not in config:
         raise Exception(f"Template config for {TEMPLATE_VERSION} not found")
-    else:
-        return config[TEMPLATE_VERSION], TEMPLATE_VERSION
+    return config[TEMPLATE_VERSION], TEMPLATE_VERSION
 
 
 def create_spreadsheet(title: str, lang: str, config_for_country):

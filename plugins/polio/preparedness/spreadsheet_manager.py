@@ -36,10 +36,9 @@ def get_config_for_country(config, country):
     config = get_google_config(PREPAREDNESS_TEMPLATE_CONFIG_KEY)
     if str(country.id) in config:
         return config[str(country.id)], str(country.id)
-    elif TEMPLATE_VERSION not in config:
+    if TEMPLATE_VERSION not in config:
         raise Exception(f"Template config for {TEMPLATE_VERSION} not found")
-    else:
-        return config[TEMPLATE_VERSION], TEMPLATE_VERSION
+    return config[TEMPLATE_VERSION], TEMPLATE_VERSION
 
 
 def create_spreadsheet(title: str, lang: str, config_for_country):

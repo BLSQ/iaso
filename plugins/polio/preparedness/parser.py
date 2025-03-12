@@ -9,6 +9,7 @@ from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError
 from plugins.polio.preparedness.spread_cache import CachedSheet, CachedSpread
 
+
 logger = getLogger(__name__)
 
 

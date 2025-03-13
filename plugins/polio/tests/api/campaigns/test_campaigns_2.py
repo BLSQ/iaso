@@ -1,8 +1,10 @@
 import datetime
+
 from typing import List
 from unittest import mock, skip
 
 import pandas as pd
+
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 from rest_framework import status
@@ -148,7 +150,7 @@ class PolioAPITestCase(APITestCase):
         campaign = Campaign.objects.create(account=self.account)
 
         response = self.client.patch(
-            f"/api/polio/campaigns/" + str(campaign.id) + "/",
+            "/api/polio/campaigns/" + str(campaign.id) + "/",
             data={
                 "obr_name": "campaign with org units",
                 "scopes": [
@@ -194,7 +196,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(Campaign.objects.get().scopes.first().group.org_units.count(), 1)
 
         response = self.client.put(
-            f"/api/polio/campaigns/{str(Campaign.objects.get().id)}/",
+            f"/api/polio/campaigns/{Campaign.objects.get().id!s}/",
             data={
                 "account": self.account.pk,
                 "obr_name": "campaign with org units",
@@ -459,7 +461,7 @@ class PolioAPITestCase(APITestCase):
         for n in range(count):
             payload = {
                 "account": self.account.pk,
-                "obr_name": "campaign_{0}".format(n),
+                "obr_name": f"campaign_{n}",
                 "detection_status": "PENDING",
             }
             self.client.post("/api/polio/campaigns/", payload, format="json")
@@ -470,7 +472,7 @@ class PolioAPITestCase(APITestCase):
         campaigns = Campaign.objects.all()
 
         for c in campaigns[:8]:
-            self.client.delete("/api/polio/campaigns/{0}/".format(c.id))
+            self.client.delete(f"/api/polio/campaigns/{c.id}/")
 
         response = self.client.get("/api/polio/campaigns/?deletion_status=deleted", format="json")
 
@@ -501,7 +503,7 @@ class PolioAPITestCase(APITestCase):
         campaigns = Campaign.objects.all()
 
         for c in campaigns[:2]:
-            self.client.delete("/api/polio/campaigns/{0}/".format(c.id))
+            self.client.delete(f"/api/polio/campaigns/{c.id}/")
 
         response = self.client.get("/api/polio/campaigns/?campaigns=active", format="json")
 
@@ -515,7 +517,7 @@ class PolioAPITestCase(APITestCase):
         payload = {"id": campaign.id}
 
         if campaign.deleted_at is None:
-            self.client.delete("/api/polio/campaigns/{0}/".format(campaign.id))
+            self.client.delete(f"/api/polio/campaigns/{campaign.id}/")
             self.client.patch("/api/polio/campaigns/restore_deleted_campaigns/", payload, format="json")
 
         restored_campaign = Campaign.objects.get(id=campaign.id)

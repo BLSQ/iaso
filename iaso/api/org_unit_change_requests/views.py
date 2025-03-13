@@ -1,10 +1,11 @@
 import csv
+
 from datetime import datetime
 
 import django_filters
+
 from django.db.models import Prefetch
 from django.http import HttpResponse
-
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -18,15 +19,15 @@ from iaso.api.org_unit_change_requests.permissions import (
     HasOrgUnitsChangeRequestReviewPermission,
 )
 from iaso.api.org_unit_change_requests.serializers import (
+    OrgUnitChangeRequestBulkReviewSerializer,
     OrgUnitChangeRequestListSerializer,
     OrgUnitChangeRequestRetrieveSerializer,
     OrgUnitChangeRequestReviewSerializer,
     OrgUnitChangeRequestWriteSerializer,
-    OrgUnitChangeRequestBulkReviewSerializer,
 )
 from iaso.api.serializers import AppIdSerializer
 from iaso.api.tasks.serializers import TaskSerializer
-from iaso.models import OrgUnit, OrgUnitChangeRequest, Instance
+from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest
 from iaso.tasks.org_unit_change_requests_bulk_review import (
     org_unit_change_requests_bulk_approve,
     org_unit_change_requests_bulk_reject,
@@ -35,6 +36,21 @@ from iaso.utils.models.common import get_creator_name
 
 
 class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
+    CSV_HEADER_COLUMNS = [
+        "Id",
+        "Org unit ID",
+        "External reference",
+        "Name",
+        "Parent",
+        "Org unit type",
+        "Groups",
+        "Status",
+        "Created",
+        "Created by",
+        "Updated",
+        "Updated by",
+    ]
+
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = OrgUnitChangeRequestListFilter
     ordering_fields = [
@@ -168,7 +184,6 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         selected_ids = serializer.validated_data["selected_ids"]
         unselected_ids = serializer.validated_data["unselected_ids"]
         status = serializer.validated_data["status"]
-        approved_fields = serializer.validated_data["approved_fields"]
         rejection_comment = serializer.validated_data["rejection_comment"]
 
         queryset = self.filter_queryset(self.get_queryset()).filter(status=OrgUnitChangeRequest.Statuses.NEW)
@@ -181,30 +196,13 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         ids = list(queryset.values_list("pk", flat=True))
 
         if status == OrgUnitChangeRequest.Statuses.APPROVED:
-            task = org_unit_change_requests_bulk_approve(
-                change_requests_ids=ids, approved_fields=list(approved_fields), user=self.request.user
-            )
+            task = org_unit_change_requests_bulk_approve(change_requests_ids=ids, user=self.request.user)
         else:
             task = org_unit_change_requests_bulk_reject(
                 change_requests_ids=ids, rejection_comment=rejection_comment, user=self.request.user
             )
 
         return Response({"task": TaskSerializer(instance=task).data})
-
-    @staticmethod
-    def org_unit_change_request_csv_columns():
-        return [
-            "Id",
-            "Name",
-            "Parent",
-            "Org unit type",
-            "Groups",
-            "Status",
-            "Created",
-            "Created by",
-            "Updated",
-            "Updated by",
-        ]
 
     @action(detail=False, methods=["get"])
     def export_to_csv(self, request):
@@ -217,12 +215,13 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         response = HttpResponse(content_type=CONTENT_TYPE_CSV)
 
         writer = csv.writer(response)
-        headers = self.org_unit_change_request_csv_columns()
-        writer.writerow(headers)
+        writer.writerow(self.CSV_HEADER_COLUMNS)
 
         for change_request in filtered_org_unit_changes_requests:
             row = [
                 change_request.id,
+                change_request.org_unit_id,
+                change_request.org_unit.source_ref,
                 change_request.org_unit.name,
                 change_request.org_unit.parent.name if change_request.org_unit.parent else None,
                 change_request.org_unit.org_unit_type.name,
@@ -236,4 +235,13 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             writer.writerow(row)
         filename = filename + ".csv"
         response["Content-Disposition"] = "attachment; filename=" + filename
+        return response
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        select_all_count = queryset.filter(status=OrgUnitChangeRequest.Statuses.NEW).count()
+
+        response.data["select_all_count"] = select_all_count
+
         return response

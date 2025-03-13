@@ -4,15 +4,15 @@ from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
-from rest_framework.response import Response
 from rest_framework.request import Request
+from rest_framework.response import Response
 
 from iaso.api.data_source_versions_synchronization.filters import DataSourceVersionsSynchronizationFilter
 from iaso.api.data_source_versions_synchronization.pagination import DataSourceVersionsSynchronizationPagination
 from iaso.api.data_source_versions_synchronization.permissions import DataSourceVersionsSynchronizationPermission
 from iaso.api.data_source_versions_synchronization.serializers import (
-    DataSourceVersionsSynchronizationSerializer,
     CreateJsonDiffParametersSerializer,
+    DataSourceVersionsSynchronizationSerializer,
 )
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import DataSourceVersionsSynchronization

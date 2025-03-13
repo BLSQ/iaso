@@ -4,10 +4,11 @@ To control who receive the e-mail create edit a polio.Config object with slug em
 and containing a list of e-mail as json.
 e.g. ['test@bluesquarehub.com']
 """
+
 import logging
 
 from django.core.mail import send_mail
-from django.template import Engine, Context
+from django.template import Context, Engine
 
 from iaso.models.json_config import Config
 from plugins.polio.preparedness.summary import get_or_set_preparedness_cache_for_round
@@ -58,12 +59,12 @@ def send_warning_email(round_qs):
     for round in round_qs:
         if round.preparedness_sync_status == "FAILURE":
             errors = [
-                f"Could not synchronise with the spreadsheet configured. Please check in the Campaign configuration on the platform"
+                "Could not synchronise with the spreadsheet configured. Please check in the Campaign configuration on the platform"
             ]
         else:
             pr = get_or_set_preparedness_cache_for_round(round.campaign, round)
             if not pr or pr.get("status") == "not_sync":
-                errors = [f"not synchronised"]
+                errors = ["not synchronised"]
             else:
                 try:
                     errors = error_for_rounds(pr)

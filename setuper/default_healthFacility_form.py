@@ -1,19 +1,30 @@
-import uuid
-from datetime import datetime
-from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point
 import random
+import uuid
+
+from datetime import datetime
+
+from names_generator import generate_name
+from submissions import (
+    org_unit_gps_point,
+    submission2xml,
+    submission_org_unit_gps_point,
+)
 
 
 def setup_health_facility_level_default_form(account_name, iaso_client):
     print("-- Setting up a default form for Health Facility level")
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
-    health_facility_type = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][
-        0
-    ]
+    health_facility_type = [
+        out
+        for out in org_unit_types
+        if out["name"] == "Health facility/Formation sanitaire - HF"
+    ][0]
 
     org_unit_type_id = [
-        out["id"] for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"
+        out["id"]
+        for out in org_unit_types
+        if out["name"] == "Health facility/Formation sanitaire - HF"
     ]
 
     sample_data = {
@@ -44,9 +55,10 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
 
     # fetch orgunit ids
     limit = 20
-    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": health_facility_type["id"]})[
-        "orgunits"
-    ]
+    orgunits = iaso_client.get(
+        "/api/orgunits/",
+        params={"limit": limit, "orgUnitTypeId": health_facility_type["id"]},
+    )["orgunits"]
     print("-- Submitting %d submissions" % limit)
 
     for orgunit in orgunits:
@@ -86,16 +98,29 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                             "start": "2022-09-07T17:54:55.805+02:00",
                             "end": "2022-09-07T17:55:31.192+02:00",
                             "geo_group": {
-                                "responsable_fosa": random.choice(["Respo 1", "Respo 2", "Respo 3"]),
+                                "responsable_fosa": generate_name(style="capital"),
                                 "statut_fosa": random.choice(
-                                    ["public", "prive_confessionel", "prive_laic", "militaire", "ong", "autre"]
+                                    [
+                                        "public",
+                                        "prive_confessionel",
+                                        "prive_laic",
+                                        "militaire",
+                                        "ong",
+                                        "autre",
+                                    ]
                                 ),
-                                "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
+                                "coordonnees_gps_fosa": submission_org_unit_gps_point(
+                                    orgunit
+                                ),
                             },
                             "equipment_group": {
                                 "HFR_CS_16": random.choice(["yes", "no"]),
-                                "HFR_CS_17": random.choice(["pub", "gr_elect", "syst_sol", "autre"]),
-                                "HFR_CS_18": random.choice(["res_pub", "forage", "puit", "puit_non_prot"]),
+                                "HFR_CS_17": random.choice(
+                                    ["pub", "gr_elect", "syst_sol", "autre"]
+                                ),
+                                "HFR_CS_18": random.choice(
+                                    ["res_pub", "forage", "puit", "puit_non_prot"]
+                                ),
                             },
                             "services_group": {
                                 "HFR_CS_26": random.choice(["yes", "no"]),
@@ -121,4 +146,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                 )
             },
         )
-    print(iaso_client.get("/api/instances", params={"limit": 1})["count"], "instances created")
+    print(
+        iaso_client.get("/api/instances", params={"limit": 1})["count"],
+        "instances created",
+    )

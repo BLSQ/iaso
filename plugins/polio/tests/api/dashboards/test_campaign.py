@@ -5,6 +5,7 @@ from iaso.test import APITestCase
 from plugins.polio.models import CampaignType
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
+
 BASE_URL = "/api/polio/dashboards/campaigns/"
 
 

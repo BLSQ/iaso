@@ -39,6 +39,8 @@ const ORG_UNITS_CHANGE_REQUEST_REVIEW = 'iaso_org_unit_change_request_review';
 const ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION =
     'iaso_org_unit_change_request_configurations';
 const SOURCES = 'iaso_sources';
+const SOURCES_CAN_CHANGE_DEFAULT_VERSION =
+    'iaso_sources_can_change_default_version';
 const SOURCE_WRITE = 'iaso_write_sources';
 const STORAGES = 'iaso_storages';
 const SUBMISSIONS = 'iaso_submissions';
@@ -93,6 +95,7 @@ export {
     REGISTRY_READ,
     REGISTRY_WRITE,
     SOURCES,
+    SOURCES_CAN_CHANGE_DEFAULT_VERSION,
     SOURCE_WRITE,
     STORAGES,
     SUBMISSIONS,

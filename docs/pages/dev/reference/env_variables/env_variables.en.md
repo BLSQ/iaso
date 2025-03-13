@@ -101,3 +101,13 @@ If you don't provide a SENTRY_URL, sentry won't be configured
 If you need to set up IASO in maintenance mode, meaning that it will display at / a page indicating that the 
 server is under maintenance, and give a 404 answer to all requests except for /health or /_health (wich we encourage to use 
 for status monitoring), you can set the environment variable `MAINTENANCE_MODE` to the value `"true"`
+
+## Product Fruits Integration
+
+To enable Product Fruits integration, set the following environment variable:
+
+```
+PRODUCT_FRUITS_WORKSPACE_CODE=YOUR_CODE
+```
+
+When this variable is set, Product Fruits will be enabled and only the account name and ID will be sent to the service. This allows for user onboarding and feature discovery.

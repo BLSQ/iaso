@@ -25,6 +25,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         org_unit = m.OrgUnit.objects.create(
             org_unit_type=org_unit_type,
             version=version,
+            source_ref="112244",
             uuid="1539f174-4c53-499c-85de-7a58458c49ef",
             closed_date=cls.DT.date(),
         )
@@ -61,7 +62,6 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         cls.instance_2 = instance_2
         cls.instance_3 = instance_3
         cls.org_unit = org_unit
-        cls.org_unit_change_request_csv_columns = OrgUnitChangeRequestViewSet.org_unit_change_request_csv_columns()
         cls.org_unit_type = org_unit_type
         cls.project = project
         cls.user = user
@@ -374,7 +374,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
     def test_bulk_review_without_perm(self):
         self.client.force_authenticate(self.user)
-        response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data={}, format="json")
+        response = self.client.patch("/api/orgunits/changes/bulk_review/", data={}, format="json")
         self.assertEqual(response.status_code, 403)
 
     @time_machine.travel(DT, tick=False)
@@ -382,10 +382,24 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.user_with_review_perm)
 
         change_request_1 = m.OrgUnitChangeRequest.objects.create(
-            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="foo"
+            status=m.OrgUnitChangeRequest.Statuses.NEW,
+            org_unit=self.org_unit,
+            created_by=self.user,
+            new_name="foo",
+            requested_fields=["new_name"],
+        )
+        org_unit_2 = m.OrgUnit.objects.create(
+            name="baz",
+            org_unit_type=self.org_unit_type,
+            version=self.version,
+            parent=self.org_unit,
         )
         change_request_2 = m.OrgUnitChangeRequest.objects.create(
-            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=self.user, new_name="bar"
+            status=m.OrgUnitChangeRequest.Statuses.NEW,
+            org_unit=org_unit_2,
+            created_by=self.user,
+            new_name="new baz",
+            requested_fields=["new_name"],
         )
 
         data = {
@@ -393,9 +407,8 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "selected_ids": [change_request_1.pk, change_request_2.pk],
             "unselected_ids": [],
             "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
-            "approved_fields": ["new_name"],
         }
-        response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data=data, format="json")
+        response = self.client.patch("/api/orgunits/changes/bulk_review/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
         data = response.json()
 
@@ -403,7 +416,6 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         self.assertEqual(task.launcher, self.user_with_review_perm)
         self.assertCountEqual(task.params["kwargs"]["change_requests_ids"], [change_request_1.pk, change_request_2.pk])
-        self.assertCountEqual(task.params["kwargs"]["approved_fields"], ["new_name"])
 
         self.runAndValidateTask(task, "SUCCESS")
 
@@ -413,10 +425,16 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         change_request_1.refresh_from_db()
         self.assertEqual(change_request_1.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
         self.assertEqual(change_request_1.updated_by, self.user_with_review_perm)
+        change_request_1.org_unit.refresh_from_db()
+        self.assertEqual(change_request_1.org_unit.name, "foo")
+        self.assertEqual(change_request_1.org_unit.parent, None)  # Should be unmodified.
 
         change_request_2.refresh_from_db()
         self.assertEqual(change_request_2.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
         self.assertEqual(change_request_2.updated_by, self.user_with_review_perm)
+        change_request_2.org_unit.refresh_from_db()
+        self.assertEqual(change_request_2.org_unit.name, "new baz")
+        self.assertEqual(change_request_2.org_unit.parent, self.org_unit)  # Should be unmodified.
 
     @time_machine.travel(DT, tick=False)
     def test_bulk_review_reject(self):
@@ -437,10 +455,9 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             "selected_ids": [],
             "unselected_ids": [change_request_3.pk],
             "status": m.OrgUnitChangeRequest.Statuses.REJECTED,
-            "approved_fields": [],
             "rejection_comment": "No way.",
         }
-        response = self.client.patch(f"/api/orgunits/changes/bulk_review/", data=data, format="json")
+        response = self.client.patch("/api/orgunits/changes/bulk_review/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
         data = response.json()
 
@@ -491,14 +508,13 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(len(data), 3)
 
         data_headers = data[0]
-        self.assertEqual(
-            data_headers,
-            self.org_unit_change_request_csv_columns,
-        )
+        self.assertEqual(data_headers, OrgUnitChangeRequestViewSet.CSV_HEADER_COLUMNS)
 
         first_data_row = data[1]
         expected_row_data = [
             str(change_request.id),
+            str(change_request.org_unit_id),
+            "112244",
             change_request.org_unit.name,
             change_request.org_unit.parent.name if change_request.org_unit.parent else "",
             change_request.org_unit.org_unit_type.name,

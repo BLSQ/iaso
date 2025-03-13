@@ -5,7 +5,7 @@ from django.contrib.gis.geos import Point
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from ..models import OrgUnit, Profile, OrgUnitType, Account, Project, DataSource, SourceVersion
+from ..models import Account, DataSource, OrgUnit, OrgUnitType, Profile, Project, SourceVersion
 
 
 class MultiSearchTestCase(TestCase):

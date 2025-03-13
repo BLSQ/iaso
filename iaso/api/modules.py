@@ -1,9 +1,11 @@
-from rest_framework import permissions, serializers
 from django.contrib.auth.models import Permission
-from iaso.models import Account, Profile
-from .common import ModelViewSet, HasPermission
+from rest_framework import permissions, serializers
+
 from hat.menupermissions import models as permission
 from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
+from iaso.models import Account, Profile
+
+from .common import ModelViewSet
 
 
 class HasModulesPermission(permissions.BasePermission):
@@ -50,8 +52,7 @@ class ModuleSerializer(serializers.Serializer):
                 account_serializer = []
 
             return AccountSerializer(account_serializer, many=True).data
-        else:
-            return []
+        return []
 
 
 class ModulesViewSet(ModelViewSet):

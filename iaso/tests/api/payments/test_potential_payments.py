@@ -1,6 +1,7 @@
 import datetime
-from iaso.test import APITestCase
+
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class PotentialPaymentsViewSetAPITestCase(APITestCase):
@@ -148,7 +149,7 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
             created_by=self.user_with_perm,
         )
         self.client.force_authenticate(self.geo_limited_user)
-        response = self.client.get(f"/api/potential_payments/")
+        response = self.client.get("/api/potential_payments/")
         self.assertJSONResponse(response, 200)
         data = response.json()
         results = data["results"]

@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.db import models
 
+
 PROFILE_API = "profile_api"
 PROFILE_API_BULK = "profile_api_bulk"
 PASSWORD_API = "password_api"

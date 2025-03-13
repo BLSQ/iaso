@@ -142,7 +142,7 @@ def download_xlsx_stock_variants(request, filename, results, lambda_methods, vac
 
         write_colums_headers(sheet, config)
 
-        datas = results if sheet_name == tab else sort_results(request, lambda_methods.get(sheet_name, lambda: [])())
+        datas = results if sheet_name == tab else sort_results(request, lambda_methods.get(sheet_name, list)())
         vaccince_country = get_vaccine_country(vaccince_stock)
         for data in datas:
             data["country"] = vaccince_country["country"]

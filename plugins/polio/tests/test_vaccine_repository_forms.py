@@ -8,6 +8,7 @@ from iaso.test import APITestCase
 from plugins.polio import models as pm
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
+
 BASE_URL = "/api/polio/vaccine/repository/"
 
 

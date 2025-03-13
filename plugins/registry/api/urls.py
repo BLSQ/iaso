@@ -1,5 +1,7 @@
 from rest_framework import routers
+
 from .registry import PublicRegistryViewSet
+
 
 router = routers.SimpleRouter()
 

@@ -1,17 +1,18 @@
 from time import time
+from typing import List
+
 from django.db import transaction
+from django.utils import timezone
+
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from iaso.api.org_unit_change_requests.serializers import (
     OrgUnitChangeRequestAuditLogger,
 )
-from typing import List
 from iaso.api.payments.serializers import PaymentAuditLogger, PaymentLotAuditLogger
 from iaso.models import Task
-from iaso.models.payments import Payment, PaymentLot, PaymentStatuses, PotentialPayment
-from django.utils import timezone
 from iaso.models.base import ERRORED
-from django.db.models import Q
+from iaso.models.payments import Payment, PaymentLot, PaymentStatuses, PotentialPayment
 
 
 def create_payment_from_payment_lot(user, payment_lot, *, potential_payment):

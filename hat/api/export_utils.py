@@ -1,8 +1,10 @@
 import csv
 import io
+
 from datetime import datetime
 
 import xlsxwriter  # type: ignore
+
 from django.conf import settings
 from django.db.models import QuerySet
 from django.utils import timezone
@@ -120,5 +122,4 @@ def timestamp_to_utc_datetime(timestamp):
     dt = datetime.fromtimestamp(int(timestamp / 1000), timezone.utc)
     if dt.year < 1972:
         return datetime.fromtimestamp(int(timestamp), timezone.utc)
-    else:
-        return dt
+    return dt

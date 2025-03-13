@@ -2,14 +2,14 @@ import json
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import serializers, permissions
+from rest_framework import permissions, serializers
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.api.common import TimestampField
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import WorkflowVersion, Project, WorkflowFollowup
-from iaso.models.workflow import WorkflowVersionsStatus, WorkflowChange
+from iaso.models import Project, WorkflowFollowup, WorkflowVersion
+from iaso.models.workflow import WorkflowChange, WorkflowVersionsStatus
 
 
 class ChangeNestedSerializer(serializers.ModelSerializer):

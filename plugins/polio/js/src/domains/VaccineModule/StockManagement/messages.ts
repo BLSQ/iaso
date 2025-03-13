@@ -397,6 +397,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.returned',
         defaultMessage: 'Returned',
     },
+    temporary_campaign_name: {
+        id: 'iaso.polio.label.temporary_campaign_name',
+        defaultMessage: 'Temporary campaign name',
+    },
 });
 
 export default MESSAGES;

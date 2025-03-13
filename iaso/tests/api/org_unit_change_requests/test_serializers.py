@@ -1,27 +1,29 @@
 import collections
 import datetime
-import time_machine
 import uuid
+
+from collections import OrderedDict
+
+import time_machine
 
 from django.contrib.gis.geos import Point
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
-from collections import OrderedDict
 
+from iaso import models as m
 from iaso.api.org_unit_change_requests.serializers import (
     InstanceForChangeRequestSerializer,
     MobileOrgUnitChangeRequestListSerializer,
+    OrgUnitChangeRequestBulkReviewSerializer,
     OrgUnitChangeRequestListSerializer,
+    OrgUnitChangeRequestRetrieveSerializer,
+    OrgUnitChangeRequestReviewSerializer,
     OrgUnitChangeRequestWriteSerializer,
     OrgUnitForChangeRequestSerializer,
-    OrgUnitChangeRequestReviewSerializer,
-    OrgUnitChangeRequestRetrieveSerializer,
-    OrgUnitChangeRequestBulkReviewSerializer,
 )
 from iaso.models import OrgUnitChangeRequest
 from iaso.models.payments import PaymentStatuses
 from iaso.test import TestCase
-from iaso import models as m
 
 
 class InstanceForChangeRequestSerializerTestCase(TestCase):
@@ -735,7 +737,6 @@ class OrgUnitChangeRequestBulkReviewSerializerTestCase(TestCase):
             "selected_ids": [1, 2, 315646465465465465464],
             "unselected_ids": [],
             "status": self.change_request.Statuses.APPROVED,
-            "approved_fields": ["new_name"],
         }
         serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
         self.assertTrue(serializer.is_valid())
@@ -744,7 +745,6 @@ class OrgUnitChangeRequestBulkReviewSerializerTestCase(TestCase):
         self.assertEqual(serializer.validated_data["unselected_ids"], [])
         self.assertEqual(serializer.validated_data["status"], self.change_request.Statuses.APPROVED)
         self.assertEqual(serializer.validated_data["rejection_comment"], "")
-        self.assertEqual(serializer.validated_data["approved_fields"], {"new_name"})
 
     def test_validate_status(self):
         data = {
@@ -761,7 +761,6 @@ class OrgUnitChangeRequestBulkReviewSerializerTestCase(TestCase):
             "select_all": 1,
             "selected_ids": [1, 2],
             "status": OrgUnitChangeRequest.Statuses.APPROVED,
-            "approved_fields": ["new_name"],
         }
         serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
         with self.assertRaises(ValidationError) as error:
@@ -774,25 +773,12 @@ class OrgUnitChangeRequestBulkReviewSerializerTestCase(TestCase):
             "select_all": 0,
             "unselected_ids": [1, 2],
             "status": OrgUnitChangeRequest.Statuses.APPROVED,
-            "approved_fields": ["new_name"],
         }
         serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
         with self.assertRaises(ValidationError) as error:
             serializer.is_valid(raise_exception=True)
         self.assertEqual(
             error.exception.detail["non_field_errors"][0], "You cannot set `unselected_ids` without `select_all`."
-        )
-
-    def test_validate_approve(self):
-        data = {
-            "status": OrgUnitChangeRequest.Statuses.APPROVED,
-            "approved_fields": [],
-        }
-        serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
-        with self.assertRaises(ValidationError) as error:
-            serializer.is_valid(raise_exception=True)
-        self.assertEqual(
-            error.exception.detail["non_field_errors"][0], "At least one `approved_fields` must be provided."
         )
 
     def test_validate_reject(self):

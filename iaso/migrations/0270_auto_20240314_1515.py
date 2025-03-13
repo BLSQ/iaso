@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 CODE = "MOBILE_ENTITY_WARN_WHEN_FOUND"
 
 

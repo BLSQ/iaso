@@ -1,15 +1,17 @@
 from copy import deepcopy
 from time import time
 from typing import List
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
+from django.utils import timezone
+
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from iaso.api.payments.serializers import PaymentLotAuditLogger
 from iaso.models import Task
-from iaso.models.base import ERRORED, KILLED, KilledException
+from iaso.models.base import ERRORED, KilledException
 from iaso.models.payments import Payment, PaymentLot, PaymentStatuses
-from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
 
 
 def end_task_and_update_payment_lot(payment_lot, task, message):

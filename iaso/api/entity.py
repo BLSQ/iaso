@@ -3,25 +3,26 @@ import datetime
 import io
 import json
 import math
-import pytz
+
 from time import gmtime, strftime
 from typing import Any, List, Union
 
-from iaso.models.storage import StorageDevice
+import pytz
 import xlsxwriter  # type: ignore
+
 from django.core.paginator import Paginator
-from django.db.models import Exists, Max, OuterRef, Q, Count
+from django.db.models import Exists, Max, OuterRef, Q
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, permissions, serializers, status
+from rest_framework import filters, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from hat.audit.models import ENTITY_API
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
+from hat.audit.models import ENTITY_API
 from hat.menupermissions import models as permission
 from iaso.api.common import (
     CONTENT_TYPE_CSV,
@@ -33,6 +34,7 @@ from iaso.api.common import (
 )
 from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
+from iaso.models.storage import StorageDevice
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 
 
@@ -414,7 +416,7 @@ class EntityViewSet(ModelViewSet):
                     "result": result_list,
                 }
             )
-        elif limit:
+        if limit:
             return Response(
                 {
                     "count": total_count,

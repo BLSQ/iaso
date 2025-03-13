@@ -189,6 +189,7 @@ class EntitySerializer(serializers.ModelSerializer):
             "org_unit",
             "duplicates",
             "nfc_cards",
+            "migration_source",
         ]
 
     entity_type_name = serializers.SerializerMethodField()
@@ -199,6 +200,7 @@ class EntitySerializer(serializers.ModelSerializer):
         source="get_pending_duplicate_ids", child=serializers.IntegerField(), read_only=True, default=[]
     )
     nfc_cards = serializers.SerializerMethodField()
+    migration_source = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
@@ -225,3 +227,14 @@ class EntitySerializer(serializers.ModelSerializer):
     @staticmethod
     def get_entity_type_name(obj: Entity):
         return obj.entity_type.name if obj.entity_type else None
+
+    def get_migration_source(self, obj: Entity):
+        if not obj.attributes:
+            return None
+
+        if obj.attributes.patient_set.exists():
+            patient = obj.attributes.patient_set.first()
+            if patient:
+                return patient.id
+
+        return None

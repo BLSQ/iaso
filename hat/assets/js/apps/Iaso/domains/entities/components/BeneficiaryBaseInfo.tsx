@@ -7,7 +7,7 @@ import {
 } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 
-import { Grid } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
@@ -60,6 +60,13 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const widgetContents = <BeneficiaryBaseInfoContents fields={fields} />;
 
+    const openMigratedToInstance = () => {
+        window.open(
+            `/old-trypelim-dashboard/datas/register/detail/patient_id/${beneficiary.migration_source}/order/last_name/pageSize/50/page/1`,
+            '_blank',
+        );
+    };
+
     const title = (
         <BeneficiaryTitle
             hasDuplicates={hasDuplicates}
@@ -84,8 +91,19 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
         );
     }
     return (
-        <WidgetPaper className={classes.infoPaper} title={title}>
-            {widgetContents}
-        </WidgetPaper>
+        <Box>
+            <WidgetPaper className={classes.infoPaper} title={title}>
+                {widgetContents}
+            </WidgetPaper>
+            {beneficiary.migration_source && (
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => openMigratedToInstance()}
+                >
+                    Open patient
+                </Button>
+            )}
+        </Box>
     );
 };

@@ -95,12 +95,13 @@ class WorkflowVersion(SoftDeletableModel):
         changes -> WorkflowChange
         follow_ups -> WorkflowFollowup
     """
+    NAME_MAX_LENGTH = 50
 
     workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE, related_name="workflow_versions")
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True)
 
-    name = models.CharField(max_length=50, default="No Name")
+    name = models.CharField(max_length=NAME_MAX_LENGTH, default="No Name")
     status = models.CharField(
         max_length=12,
         choices=WorkflowVersionsStatus.choices,

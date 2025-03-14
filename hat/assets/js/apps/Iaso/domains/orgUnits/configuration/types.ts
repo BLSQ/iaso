@@ -2,6 +2,7 @@ import { Pagination, UrlParams } from 'bluesquare-components';
 import { User } from '../../../utils/usersUtils';
 
 export type OrgUnitChangeRequestConfigsParams = UrlParams & {
+    type?: string;
     org_unit_type_id?: string;
     project_id?: string;
 };
@@ -36,6 +37,7 @@ export type NestedUser = Partial<User>;
 export type OrgUnitChangeRequestConfigListElement = {
     id: number;
     project: Project;
+    Type: string;
     org_unit_type: OrgUnitType;
     org_units_editable: boolean;
     editable_fields: Array<string>;
@@ -48,6 +50,7 @@ export type OrgUnitChangeRequestConfigListElement = {
 export type OrgUnitChangeRequestConfigurationFull = {
     id: number;
     project: Project;
+    type: string;
     org_unit_type: OrgUnitType;
     org_units_editable?: boolean;
     editable_fields?: string[];
@@ -60,6 +63,7 @@ export type OrgUnitChangeRequestConfigurationFull = {
 
 export type OrgUnitChangeRequestConfigurationForm = {
     projectId: number;
+    type: string;
     orgUnitTypeId: number;
     orgUnitsEditable?: boolean;
     editableFields?: string;
@@ -73,13 +77,10 @@ export type OrgUnitChangeRequestConfigurationForm = {
 export type OrgUnitChangeRequestConfiguration = {
     id?: number;
     project: Project;
+    type: string;
     orgUnitType: OrgUnitType;
 };
 
 export interface OrgUnitChangeRequestConfigsPaginated extends Pagination {
     results: OrgUnitChangeRequestConfigListElement[];
-}
-
-export interface CheckAvailiabilityOrgUnitRequestConfig {
-    results: OrgUnitType[];
 }

@@ -1,20 +1,27 @@
+import React, {
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+    FunctionComponent,
+    ReactNode,
+    useMemo,
+} from 'react';
 import { Box, Divider, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { arrayOf, func, number, object, string } from 'prop-types';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import InputComponent from '../../../components/forms/InputComponent.tsx';
+import InputComponent from '../../../components/forms/InputComponent';
 import { ModalSubTitle } from '../../../components/forms/ModalSubTitle';
 import { useFormState } from '../../../hooks/form';
-import { useSnackMutation } from '../../../libs/apiHooks.ts';
+import { useSnackMutation } from '../../../libs/apiHooks';
 import {
-    commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
     convertFormStateToDict,
 } from '../../../utils/forms';
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus.ts';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
+import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
+import { Version } from '../../orgUnits/types/dataSources';
 import MESSAGES from '../messages';
 import {
     csvPreview,
@@ -29,6 +36,7 @@ import {
     useFieldsToExport,
     versionsAsOptionsWithSourceName,
 } from '../utils';
+import { VersionPicker, VersionFields } from './VersionPicker';
 
 const style = theme => ({
     noCreds: {
@@ -61,7 +69,14 @@ const initialExportData = defaultVersionId => ({
     source_top_org_unit_id: null,
 });
 
-export const ExportToDHIS2Dialog = ({
+type Props = {
+    renderTrigger: () => ReactNode;
+    dataSourceName: boolean;
+    versions: Version[];
+    defaultVersionId?: number;
+};
+
+export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
     renderTrigger,
     dataSourceName,
     versions,
@@ -160,6 +175,95 @@ export const ExportToDHIS2Dialog = ({
         }
     }, [refDataVersionId]);
 
+    const sourceFields: VersionFields = useMemo(() => {
+        return {
+            version: {
+                key: 'ref_version_id',
+                value: refDataVersionId,
+                errors: exportData.ref_version_id.errors,
+                options: dataSourceVersionsAsOptions(
+                    versions,
+                    defaultVersionId,
+                    formatMessage,
+                ),
+                required: true,
+            },
+            status: {
+                key: 'ref_status',
+                value: exportData.ref_status?.value,
+                errors: exportData.ref_status.errors,
+                options: orgUnitStatusAsOptions,
+                required: true,
+                isLoading: isLoadingOrgUnitStatusAsOptions,
+            },
+            orgUnitTypes: {
+                key: 'ref_org_unit_type_ids',
+                value: exportData.ref_org_unit_type_ids?.value,
+                errors: exportData.ref_org_unit_type_ids.errors,
+                options: orgUnitTypes ?? [],
+                isLoading: areOrgUnitTypesLoading,
+            },
+            orgUnit: {
+                key: 'ref_top_org_unit_id',
+                value: exportData.ref_top_org_unit_id?.value,
+                errors: exportData.ref_top_org_unit_id.errors,
+            },
+        };
+    }, [
+        refDataVersionId,
+        exportData,
+        versions,
+        defaultVersionId,
+        formatMessage,
+        orgUnitStatusAsOptions,
+        isLoadingOrgUnitStatusAsOptions,
+        orgUnitTypes,
+        areOrgUnitTypesLoading,
+    ]);
+
+    const targetFields: VersionFields = useMemo(() => {
+        return {
+            version: {
+                key: 'source_version_id',
+                value: sourceDataVersionId,
+                errors: exportData.source_version_id.errors,
+                options: versionsAsOptionsWithSourceName({
+                    formatMessage,
+                    versions: sourceVersions,
+                }),
+                required: true,
+            },
+            status: {
+                key: 'source_status',
+                value: exportData.source_status?.value,
+                errors: exportData.source_status.errors,
+                options: orgUnitStatusAsOptions,
+                required: true,
+                isLoading: isLoadingOrgUnitStatusAsOptions,
+            },
+            orgUnitTypes: {
+                key: 'source_org_unit_type_ids',
+                value: exportData.source_org_unit_type_ids?.value,
+                errors: exportData.source_org_unit_type_ids.errors,
+                options: orgUnitTypes ?? [],
+                isLoading: areOrgUnitTypesLoading,
+            },
+            orgUnit: {
+                key: 'source_top_org_unit_id',
+                value: exportData.source_top_org_unit_id?.value,
+                errors: exportData.source_top_org_unit_id.errors,
+            },
+        };
+    }, [
+        areOrgUnitTypesLoading,
+        exportData,
+        formatMessage,
+        isLoadingOrgUnitStatusAsOptions,
+        orgUnitStatusAsOptions,
+        orgUnitTypes,
+        sourceVersions,
+        sourceDataVersionId,
+    ]);
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
@@ -185,76 +289,13 @@ export const ExportToDHIS2Dialog = ({
                     <ModalSubTitle
                         message={formatMessage(MESSAGES.exportTitle)}
                     />
-                    <Grid container item spacing={2}>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                type="select"
-                                keyValue="ref_version_id"
-                                labelString={formatMessage(MESSAGES.version)}
-                                value={exportData.ref_version_id?.value}
-                                errors={exportData.ref_version_id.errors}
-                                onChange={setExportDataField}
-                                options={dataSourceVersionsAsOptions(
-                                    versions,
-                                    defaultVersionId,
-                                    formatMessage,
-                                )}
-                                required
-                            />
-                        </Grid>
-                        <Grid xs={6} item>
-                            <Box mb={2} mt={1}>
-                                <OrgUnitTreeviewModal
-                                    onConfirm={value => {
-                                        setExportDataField(
-                                            'ref_top_org_unit_id',
-                                            value?.id ?? null,
-                                        );
-                                    }}
-                                    version={refDataVersionId}
-                                    titleMessage={formatMessage(
-                                        MESSAGES.selectTopOrgUnit,
-                                    )}
-                                    resetTrigger={
-                                        refTreeviewResetControl.current !==
-                                        refDataVersionId
-                                    }
-                                    hardReset
-                                />
-                            </Box>
-                        </Grid>
-                    </Grid>
-                    <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            labelString={formatMessage(MESSAGES.status)}
-                            keyValue="ref_status"
-                            value={exportData.ref_status?.value}
-                            errors={exportData.ref_status.errors}
-                            onChange={setExportDataField}
-                            loading={isLoadingOrgUnitStatusAsOptions}
-                            options={orgUnitStatusAsOptions}
-                            required
-                        />
-                    </Grid>
-                    <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            keyValue="ref_org_unit_type_ids"
-                            labelString={formatMessage(MESSAGES.orgUnitTypes)}
-                            value={exportData.ref_org_unit_type_ids?.value}
-                            errors={exportData.ref_org_unit_type_ids.errors}
-                            onChange={(keyValue, newValue) => {
-                                setExportDataField(
-                                    keyValue,
-                                    commaSeparatedIdsToArray(newValue),
-                                );
-                            }}
-                            loading={areOrgUnitTypesLoading}
-                            options={orgUnitTypes ?? []}
-                            multi
-                        />
-                    </Grid>
+                    <VersionPicker
+                        fields={sourceFields}
+                        onChange={setExportDataField}
+                        resetTrigger={
+                            refTreeviewResetControl.current !== refDataVersionId
+                        }
+                    />
                     <Grid xs={6} item>
                         <InputComponent
                             type="select"
@@ -271,6 +312,7 @@ export const ExportToDHIS2Dialog = ({
                             options={fieldsToExport}
                             multi
                             required
+                            withMarginTop={false}
                         />
                     </Grid>
                     <Grid xs={12} item>
@@ -283,78 +325,14 @@ export const ExportToDHIS2Dialog = ({
                         message={formatMessage(MESSAGES.sourceDataSource)}
                     />
 
-                    <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            keyValue="source_version_id"
-                            labelString={formatMessage(
-                                MESSAGES.datasourceSource,
-                            )}
-                            value={exportData.source_version_id.value}
-                            errors={exportData.source_version_id.errors}
-                            onChange={(keyValue, value) => {
-                                setExportDataField(keyValue, value?.toString());
-                            }}
-                            options={versionsAsOptionsWithSourceName({
-                                formatMessage,
-                                versions: sourceVersions,
-                            })}
-                            loading={areSourceVersionsLoading}
-                            required
-                        />
-                    </Grid>
-                    <Grid xs={6} item>
-                        <Box mb={2} mt={1}>
-                            <OrgUnitTreeviewModal
-                                onConfirm={value => {
-                                    setExportDataField(
-                                        'source_top_org_unit_id',
-                                        value?.id ?? null,
-                                    );
-                                }}
-                                version={sourceDataVersionId}
-                                titleMessage={formatMessage(
-                                    MESSAGES.selectTopOrgUnit,
-                                )}
-                                resetTrigger={
-                                    sourceTreeviewResetControl.current !==
-                                    sourceDataVersionId
-                                }
-                                disabled={!sourceDataVersionId}
-                                hardReset
-                            />
-                        </Box>
-                    </Grid>
-                    <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            labelString={formatMessage(MESSAGES.status)}
-                            keyValue="source_status"
-                            value={exportData.source_status?.value}
-                            errors={exportData.source_status.errors}
-                            onChange={setExportDataField}
-                            options={orgUnitStatusAsOptions}
-                            required
-                        />
-                    </Grid>
-                    <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            keyValue="source_org_unit_type_ids"
-                            labelString={formatMessage(MESSAGES.orgUnitTypes)}
-                            value={exportData.source_org_unit_type_ids?.value}
-                            errors={exportData.source_org_unit_type_ids.errors}
-                            onChange={(keyValue, newValue) => {
-                                setExportDataField(
-                                    keyValue,
-                                    commaSeparatedIdsToArray(newValue),
-                                );
-                            }}
-                            loading={areOrgUnitTypesLoading}
-                            options={orgUnitTypes ?? []}
-                            multi
-                        />
-                    </Grid>
+                    <VersionPicker
+                        fields={targetFields}
+                        onChange={setExportDataField}
+                        resetTrigger={
+                            sourceTreeviewResetControl.current !==
+                            sourceDataVersionId
+                        }
+                    />
                     {credentials && (
                         <Grid xs={12} item>
                             <Box display="flex" alignItems="center">
@@ -390,15 +368,4 @@ export const ExportToDHIS2Dialog = ({
             </Grid>
         </ConfirmCancelDialogComponent>
     );
-};
-
-ExportToDHIS2Dialog.propTypes = {
-    renderTrigger: func.isRequired,
-    dataSourceName: string.isRequired,
-    versions: arrayOf(object).isRequired,
-    defaultVersionId: number,
-};
-
-ExportToDHIS2Dialog.defaultProps = {
-    defaultVersionId: null,
 };

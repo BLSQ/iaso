@@ -11,7 +11,7 @@ class Command(BaseCommand):
     help = "Make translations and check for missing translations"
 
     def handle(self, *args, **options):
-        # Find existing .po files and their modification times before running makemessages
+        # Find existing .po files and their modification times before running make_messages
         project_root = Path.cwd()
         po_files_before = {po_file: po_file.stat().st_mtime for po_file in project_root.rglob("*.po")}
 
@@ -25,7 +25,7 @@ class Command(BaseCommand):
 
         try:
             self.stdout.write(self.style.SUCCESS("Starting translation process..."))  # Log start
-            call_command("makemessages", *cmd_args)
+            call_command("make_messages", *cmd_args)
             self.stdout.write(self.style.SUCCESS("Translation process completed successfully."))
 
         except Exception as e:

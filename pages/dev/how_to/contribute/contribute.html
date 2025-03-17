@@ -609,33 +609,53 @@
     Translations
   </a>
   
+    <nav class="md-nav" aria-label="Translations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#steps-for-managing-translations" class="md-nav__link">
+    Steps for Managing Translations
+  </a>
+  
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
+  <a href="#important-notes" class="md-nav__link">
+    Important Notes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#code-reloading" class="md-nav__link">
     Code reloading
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#troubleshooting" class="md-nav__link">
     Troubleshooting
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#jupyter-notebook" class="md-nav__link">
     Jupyter Notebook
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#testing-prod-js-assets-in-development" class="md-nav__link">
     Testing prod js assets in development
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -837,33 +857,53 @@
     Translations
   </a>
   
+    <nav class="md-nav" aria-label="Translations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#steps-for-managing-translations" class="md-nav__link">
+    Steps for Managing Translations
+  </a>
+  
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
+  <a href="#important-notes" class="md-nav__link">
+    Important Notes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#code-reloading" class="md-nav__link">
     Code reloading
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#troubleshooting" class="md-nav__link">
     Troubleshooting
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#jupyter-notebook" class="md-nav__link">
     Jupyter Notebook
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#testing-prod-js-assets-in-development" class="md-nav__link">
     Testing prod js assets in development
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -906,18 +946,29 @@ if the formatting is respected!</p>
 <p>For the Python backend, we use the Django builtin test framework. Tests can be executed with</p>
 <pre class="bash"><code class="language-sourceCode">docker compose exec iaso ./manage.py test
 </code></pre>
-<h3 id="translations">Translations<a class="headerlink" href="#translations" title="Permanent link">#</a></h3>
-<p>The few translation for the Django side (login and reset password email etc..)
-are separated from the test. We only translate the template for now
-not the python code (string on model or admin).</p>
-<p>When modifying or adding new strings to translate, use the following command to
-regenerate the translations:</p>
-<p><code>manage.py makemessages --locale=fr --extension txt --extension html</code></p>
-<p>This will update <code>hat/locale/fr/LC_MESSAGES/django.po</code> with the new strings to
-translate.</p>
-<p>After updating it with the translation you need to following command to have
-them reflected in the interface:</p>
-<p><code>manage.py compilemessages</code></p>
+<h2 id="translations">Translations<a class="headerlink" href="#translations" title="Permanent link">#</a></h2>
+<p>We have automated the translation process using custom management commands. This process involves generating translation files, checking for missing translations, and compiling them for use in the application. The process also includes fetching translations from other Django apps, including those located in plugin folders.</p>
+<h3 id="steps-for-managing-translations">Steps for Managing Translations<a class="headerlink" href="#steps-for-managing-translations" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Generate and Check Translations:</strong></li>
+</ol>
+<p>Use the <code>make_translations</code> management command to generate translation files and check for any missing translations. This command will process <code>.txt</code>, <code>.py</code>, and <code>.html</code> files across the entire project, including any plugins, ensuring that all user-facing text is captured.</p>
+<p><code>bash
+   python manage.py make_translations</code></p>
+<p>This command will update the <code>.po</code> files in the <code>hat/locale/</code>, <code>iaso/locale/</code>, and any other relevant directories. It will also report any missing translations that need to be addressed.</p>
+<ol>
+<li><strong>Compile Translations:</strong></li>
+</ol>
+<p>After ensuring all translations are complete, use the <code>compile_translations</code> command to compile the translation files. This step is necessary to reflect the translations in the application interface.</p>
+<p><code>bash
+   python manage.py compile_translations</code></p>
+<h3 id="important-notes">Important Notes<a class="headerlink" href="#important-notes" title="Permanent link">#</a></h3>
+<ul>
+<li>The scripts are configured to ignore certain directories and include <code>.py</code> files, as translations are used in API error handling and choice lists.</li>
+<li>You do not need to add translations for English, as it is the default language. Currently, only French translations are required.</li>
+<li>If you encounter issues with locale paths, ensure that the <code>LOCALE_PATHS</code> setting in <code>settings.py</code> is correctly configured to include the necessary directories.</li>
+</ul>
+<p>By following these steps, you can efficiently manage translations within the Iaso platform, including those from additional Django apps and plugins.</p>
 <h3 id="code-reloading">Code reloading<a class="headerlink" href="#code-reloading" title="Permanent link">#</a></h3>
 <p>In development the servers will reload when they detect a file
 change, either in Python or Javascript. If you need reloading for the bluesquare-components code, see the "Live Bluesquare Components" section. </p>

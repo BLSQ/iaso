@@ -973,6 +973,11 @@ using login:</p>
 <p>If you need to set up IASO in maintenance mode, meaning that it will display at / a page indicating that the 
 server is under maintenance, and give a 404 answer to all requests except for /health or /_health (wich we encourage to use 
 for status monitoring), you can set the environment variable <code>MAINTENANCE_MODE</code> to the value <code>"true"</code></p>
+<h2 id="learn-more-url">Learn More URL<a class="headerlink" href="#learn-more-url" title="Permanent link">#</a></h2>
+<p>The <code>LEARN_MORE_URL</code> environment variable is used to specify a URL that will be displayed on the login page. If set, users can click on a "Know More" link or the logo to visit this URL. If <code>LEARN_MORE_URL</code> is not set, the logo will not be clickable, and the link will not be displayed.</p>
+<pre><code>LEARN_MORE_URL
+</code></pre>
+<p>In our environments, this will be linked to <code>https://www.openiaso.com/</code>. For customer environments, this can be removed or customized as needed.</p>
 <h2 id="product-fruits-integration">Product Fruits Integration<a class="headerlink" href="#product-fruits-integration" title="Permanent link">#</a></h2>
 <p>To enable Product Fruits integration, set the following environment variable:</p>
 <pre><code>PRODUCT_FRUITS_WORKSPACE_CODE=YOUR_CODE

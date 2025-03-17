@@ -15,12 +15,13 @@ from ..utils.clamav import scan_uploaded_file_for_virus
 from .common import ModelViewSet, TimestampField
 from .forms import HasFormPermission
 from .query_params import APP_ID
+from ..utils.models.virus_scan import VirusScanStatus
 
 
 class FormAttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormAttachment
-        fields = ["id", "name", "file", "md5", "form_id", "created_at", "updated_at"]
+        fields = ["id", "name", "file", "md5", "form_id", "created_at", "updated_at", "scan_result", "scan_timestamp"]
 
     form_id: Field = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
     file = serializers.FileField(required=True, allow_empty_file=False)  # field is not required in model
@@ -28,6 +29,16 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
     md5 = serializers.CharField(read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+    scan_result = serializers.SerializerMethodField()
+    scan_timestamp = serializers.SerializerMethodField()
+
+    def get_scan_result(self, obj: FormAttachment):
+        return obj.file_scan_status
+
+    def get_scan_timestamp(self, obj: FormAttachment):
+        if obj.file_last_scan:
+            return obj.file_last_scan.timestamp()
+        return obj.file_last_scan
 
     def validate(self, data: typing.MutableMapping):
         form: Form = data["form"]
@@ -45,17 +56,18 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
         form: Form = validated_data["form"]
         file: InMemoryUploadedFile = validated_data["file"]
 
-        is_safe, details = scan_uploaded_file_for_virus(file)
-        if not is_safe:
-            raise serializers.ValidationError({"file": [details]})
+        scan_result, scan_timestamp = scan_uploaded_file_for_virus(file)
         try:
             previous_attachment = FormAttachment.objects.get(name=file.name, form=form)
             previous_attachment.file = file
             previous_attachment.md5 = self.md5sum(file)
+            previous_attachment.file_scan_status = scan_result
+            previous_attachment.file_last_scan = scan_timestamp
             previous_attachment.save()
             return previous_attachment
         except FormAttachment.DoesNotExist:
-            return FormAttachment.objects.create(form=form, name=file.name, file=file, md5=self.md5sum(file))
+            return FormAttachment.objects.create(form=form, name=file.name, file=file, md5=self.md5sum(file),
+                                                 file_last_scan=scan_timestamp, file_scan_status=scan_result)
         except Exception as e:
             # putting the error in an array to prevent front-end crash
             raise serializers.ValidationError({"file": [e]})

@@ -1,9 +1,11 @@
+import datetime
 import typing
 
 from unittest import mock
 from unittest.mock import MagicMock, patch
 from xml.sax.saxutils import escape
 
+import time_machine
 from django.core.files import File
 from django.http import HttpResponse
 from django.test import override_settings
@@ -12,7 +14,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.test import APITestCase
-
+from iaso.utils.models.virus_scan import VirusScanStatus
 
 BASE_URL = "/api/formattachments/"
 MANIFEST_URL = "/api/forms/{form_id}/manifest/"
@@ -22,6 +24,8 @@ EICAR_FILE_PATH = "iaso/tests/fixtures/clamav/eicar.txt"
 
 class FormAttachmentsAPITestCase(APITestCase):
     project_1: m.Project
+    DT = datetime.datetime(2024, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc)
+
 
     @classmethod
     def setUpTestData(cls):
@@ -147,15 +151,16 @@ class FormAttachmentsAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         form_attachment_data = response.json()
         self.assertValidAttachmentData(form_attachment_data)
         self.assertEqual("logo.png", form_attachment_data["name"])
         self.assertEqual("36e9383ddb4944fee0f791eedbab13db", form_attachment_data["md5"])
         self.assertEqual(f"http://testserver{self.form_1.attachments.first().file.url}", form_attachment_data["file"])
-        response = self.client.delete(f"{BASE_URL}{form_attachment_data['id']}/")
-        self.assertJSONResponse(response, 204)
+        self.assertEqual(VirusScanStatus.PENDING, form_attachment_data["scan_result"])
+        self.assertIsNone(form_attachment_data["scan_timestamp"])
 
+    @time_machine.travel(DT, tick=False)
     @override_settings(CLAMAV_ACTIVE=True)
     @patch("clamav_client.get_scanner")
     def test_form_attachments_create_with_scanning_virus_free_file(self, mock_get_scanner):
@@ -178,15 +183,16 @@ class FormAttachmentsAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        self.assertEqual(1, mock_scanner.scan.call_count)
         form_attachment_data = response.json()
         self.assertValidAttachmentData(form_attachment_data)
         self.assertEqual("safe.jpg", form_attachment_data["name"])
         self.assertEqual(f"http://testserver{self.form_1.attachments.first().file.url}", form_attachment_data["file"])
-        response = self.client.delete(f"{BASE_URL}{form_attachment_data['id']}/")
-        self.assertJSONResponse(response, 204)
-        self.assertEqual(1, mock_scanner.scan.call_count)
+        self.assertEqual(VirusScanStatus.CLEAN, form_attachment_data["scan_result"])
+        self.assertEqual(self.DT.timestamp(), form_attachment_data["scan_timestamp"])
 
+    @time_machine.travel(DT, tick=False)
     @override_settings(CLAMAV_ACTIVE=True)
     @patch("clamav_client.get_scanner")
     def test_form_attachments_create_with_scanning_virus_file(self, mock_get_scanner):
@@ -210,8 +216,12 @@ class FormAttachmentsAPITestCase(APITestCase):
                 headers={"accept": "application/json"},
             )
 
-        self.assertContains(response, "A virus was found in this file", status_code=status.HTTP_400_BAD_REQUEST)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        form_attachment_data = response.json()
+        self.assertValidAttachmentData(form_attachment_data)
         self.assertEqual(1, mock_scanner.scan.call_count)
+        self.assertEqual(VirusScanStatus.INFECTED, form_attachment_data["scan_result"])
+        self.assertEqual(self.DT.timestamp(), form_attachment_data["scan_timestamp"])
 
     def test_form_attachments_update(self):
         f"""POST {BASE_URL}: allowed to update"""
@@ -264,6 +274,8 @@ class FormAttachmentsAPITestCase(APITestCase):
         self.assertHasField(form_data, "form_id", int)
         self.assertHasField(form_data, "created_at", float)
         self.assertHasField(form_data, "updated_at", float)
+        self.assertHasField(form_data, "scan_result", str)
+        self.assertHasField(form_data, "scan_timestamp", float, optional=True)
 
     def test_manifest_without_auth(self):
         f"""GET {BASE_URL} without auth: 0 result"""

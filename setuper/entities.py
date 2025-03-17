@@ -259,7 +259,7 @@ def setup_entities(account_name, iaso_client):
         json={
             "algorithm": "levenshtein",
             "entity_type_id": entity_type["id"],
-            "fields": ["name"],
+            "fields": ["name", "gender", "father_name"],
             "parameters": [],
         },
     )

@@ -111,3 +111,13 @@ LEARN_MORE_URL
 ```
 
 In our environments, this will be linked to `https://www.openiaso.com/`. For customer environments, this can be removed or customized as needed.
+
+## Product Fruits Integration
+
+To enable Product Fruits integration, set the following environment variable:
+
+```
+PRODUCT_FRUITS_WORKSPACE_CODE=YOUR_CODE
+```
+
+When this variable is set, Product Fruits will be enabled and only the account name and ID will be sent to the service. This allows for user onboarding and feature discovery.

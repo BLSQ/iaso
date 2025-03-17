@@ -34,7 +34,10 @@ from iaso.models.base import Account, Task
 from iaso.models.entity import UserNotAuthError
 from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
-from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    SoftDeletableModel,
+)
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -103,7 +106,11 @@ PREPAREDNESS_SYNC_STATUS = [
     ("FINISHED", _("Finished")),
 ]
 
-PAYMENT = [("DIRECT", _("Direct")), ("DFC", _("DFC")), ("MOBILE_PAYMENT", _("Mobile Payment"))]
+PAYMENT = [
+    ("DIRECT", _("Direct")),
+    ("DFC", _("DFC")),
+    ("MOBILE_PAYMENT", _("Mobile Payment")),
+]
 
 
 class DelayReasons(models.TextChoices):
@@ -113,16 +120,32 @@ class DelayReasons(models.TextChoices):
     OTHER_ACTIVITIES = "OTHER_ACTIVITIES", _("other_activities")
     MOH_DECISION = "MOH_DECISION", _("moh_decision")
     CAMPAIGN_SYNCHRONIZATION = "CAMPAIGN_SYNCHRONIZATION", _("campaign_synchronization")
-    PREPAREDNESS_LEVEL_NOT_REACHED = "PREPAREDNESS_LEVEL_NOT_REACHED", _("preparedness_level_not_reached")
-    FUNDS_NOT_RECEIVED_OPS_LEVEL = "FUNDS_NOT_RECEIVED_OPS_LEVEL", _("funds_not_received_ops_level")
-    FUNDS_NOT_ARRIVED_IN_COUNTRY = "FUNDS_NOT_ARRIVED_IN_COUNTRY", _("funds_not_arrived_in_country")
-    VACCINES_NOT_DELIVERED_OPS_LEVEL = "VACCINES_NOT_DELIVERED_OPS_LEVEL", _("vaccines_not_delivered_ops_level")
-    VACCINES_NOT_ARRIVED_IN_COUNTRY = "VACCINES_NOT_ARRIVED_IN_COUNTRY", _("vaccines_not_arrived_in_country")
+    PREPAREDNESS_LEVEL_NOT_REACHED = "PREPAREDNESS_LEVEL_NOT_REACHED", _(
+        "preparedness_level_not_reached"
+    )
+    FUNDS_NOT_RECEIVED_OPS_LEVEL = "FUNDS_NOT_RECEIVED_OPS_LEVEL", _(
+        "funds_not_received_ops_level"
+    )
+    FUNDS_NOT_ARRIVED_IN_COUNTRY = "FUNDS_NOT_ARRIVED_IN_COUNTRY", _(
+        "funds_not_arrived_in_country"
+    )
+    VACCINES_NOT_DELIVERED_OPS_LEVEL = "VACCINES_NOT_DELIVERED_OPS_LEVEL", _(
+        "vaccines_not_delivered_ops_level"
+    )
+    VACCINES_NOT_ARRIVED_IN_COUNTRY = "VACCINES_NOT_ARRIVED_IN_COUNTRY", _(
+        "vaccines_not_arrived_in_country"
+    )
     SECURITY_CONTEXT = "SECURITY_CONTEXT", _("security_context")
-    CAMPAIGN_MOVED_FORWARD_BY_MOH = "CAMPAIGN_MOVED_FORWARD_BY_MOH", _("campaign_moved_forward_by_moh")
+    CAMPAIGN_MOVED_FORWARD_BY_MOH = "CAMPAIGN_MOVED_FORWARD_BY_MOH", _(
+        "campaign_moved_forward_by_moh"
+    )
     VRF_NOT_SIGNED = "VRF_NOT_SIGNED", _("vrf_not_signed")
-    FOUR_WEEKS_GAP_BETWEEN_ROUNDS = "FOUR_WEEKS_GAP_BETWEEN_ROUNDS", _("four_weeks_gap_betwenn_rounds")
-    OTHER_VACCINATION_CAMPAIGNS = "OTHER_VACCINATION_CAMPAIGNS", _("other_vaccination_campaigns")
+    FOUR_WEEKS_GAP_BETWEEN_ROUNDS = "FOUR_WEEKS_GAP_BETWEEN_ROUNDS", _(
+        "four_weeks_gap_betwenn_rounds"
+    )
+    OTHER_VACCINATION_CAMPAIGNS = "OTHER_VACCINATION_CAMPAIGNS", _(
+        "other_vaccination_campaigns"
+    )
     PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING = (
         "PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING",
         _("pending_liquidation_of_previous_sia_funding"),
@@ -142,7 +165,10 @@ class RoundScope(models.Model):
     "Scope (selection of orgunit) for a round and vaccines"
 
     group = models.OneToOneField(
-        Group, on_delete=models.CASCADE, related_name="roundScope", default=make_group_round_scope
+        Group,
+        on_delete=models.CASCADE,
+        related_name="roundScope",
+        default=make_group_round_scope,
     )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="scopes")
 
@@ -161,9 +187,14 @@ class CampaignScope(models.Model):
     """Scope (selection of orgunit) for a campaign and vaccines"""
 
     group = models.OneToOneField(
-        Group, on_delete=models.CASCADE, related_name="campaignScope", default=make_group_campaign_scope
+        Group,
+        on_delete=models.CASCADE,
+        related_name="campaignScope",
+        default=make_group_campaign_scope,
     )
-    campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE, related_name="scopes")
+    campaign = models.ForeignKey(
+        "Campaign", on_delete=models.CASCADE, related_name="scopes"
+    )
     vaccine = models.CharField(max_length=12, choices=VACCINES, blank=True)
 
     class Meta:
@@ -186,22 +217,40 @@ class RoundDateHistoryEntry(models.Model):
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
     reason_for_delay = models.ForeignKey(
-        "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="round_history_entries"
+        "ReasonForDelay",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="round_history_entries",
     )
-    round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="datelogs", null=True, blank=True)
-    modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)
+    round = models.ForeignKey(
+        "Round",
+        on_delete=models.CASCADE,
+        related_name="datelogs",
+        null=True,
+        blank=True,
+    )
+    modified_by = models.ForeignKey(
+        "auth.User", on_delete=models.PROTECT, null=True, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
 
 class ReasonForDelay(SoftDeletableModel):
-    name = TranslatedField(models.CharField(_("name"), max_length=200), {"fr": {"blank": True}})
+    name = TranslatedField(
+        models.CharField(_("name"), max_length=200), {"fr": {"blank": True}}
+    )
     # key_name is necessary for the current implementation of powerBi dashboards
     # and for the front-end to be able to prevent users from selecting "INITIAL_DATA"
     # when updating round dates
-    key_name = models.CharField(blank=True, max_length=200, validators=[RegexValidator(r"^[A-Z_]+$")])
+    key_name = models.CharField(
+        blank=True, max_length=200, validators=[RegexValidator(r"^[A-Z_]+$")]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    account = models.ForeignKey(Account, models.CASCADE, related_name="reasons_for_delay")
+    account = models.ForeignKey(
+        Account, models.CASCADE, related_name="reasons_for_delay"
+    )
 
     class Meta:
         # This will prevent sharing reasons across accounts, but it can be annoying if 2 accounts need INITIAL_DATA
@@ -237,7 +286,11 @@ class RoundQuerySet(models.QuerySet):
             )
             data["campaigns"].setdefault(
                 campaign_uuid,
-                {"value": campaign_uuid, "label": rnd.campaign.obr_name, "country_id": rnd.campaign.country_id},
+                {
+                    "value": campaign_uuid,
+                    "label": rnd.campaign.obr_name,
+                    "country_id": rnd.campaign.country_id,
+                },
             )
             data["rounds"].append(
                 {
@@ -257,8 +310,14 @@ class RoundQuerySet(models.QuerySet):
             self.select_related("campaign")
             .prefetch_related("scopes", "campaign__scopes")
             .filter(
-                (Q(campaign__separate_scopes_per_round=False) & Q(campaign__scopes__vaccine=vaccine_name))
-                | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=vaccine_name))
+                (
+                    Q(campaign__separate_scopes_per_round=False)
+                    & Q(campaign__scopes__vaccine=vaccine_name)
+                )
+                | (
+                    Q(campaign__separate_scopes_per_round=True)
+                    & Q(scopes__vaccine=vaccine_name)
+                )
             )
         )
 
@@ -271,9 +330,14 @@ class SubActivityScope(models.Model):
     "Scope (selection of orgunit) for a SubActivity and vaccines"
 
     group = models.OneToOneField(
-        Group, on_delete=models.CASCADE, related_name="subactivityScope", default=make_group_subactivity_scope
+        Group,
+        on_delete=models.CASCADE,
+        related_name="subactivityScope",
+        default=make_group_subactivity_scope,
     )
-    subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, related_name="scopes")
+    subactivity = models.ForeignKey(
+        "SubActivity", on_delete=models.CASCADE, related_name="scopes"
+    )
 
     vaccine = models.CharField(max_length=12, choices=VACCINES, blank=True)
 
@@ -285,7 +349,9 @@ AGE_UNITS = [
 
 
 class SubActivity(models.Model):
-    round = models.ForeignKey("Round", related_name="sub_activities", on_delete=models.CASCADE)
+    round = models.ForeignKey(
+        "Round", related_name="sub_activities", on_delete=models.CASCADE
+    )
     name = models.CharField(max_length=255)
     age_unit = models.CharField(max_length=3, choices=AGE_UNITS, null=True, blank=True)
     age_min = models.IntegerField(null=True, blank=True)
@@ -332,9 +398,15 @@ class Round(models.Model):
     # floating around in production, and therefore consumer code must assume that this field might be NULL
     started_at = models.DateField(null=True, blank=True)
     number = models.IntegerField(null=True, blank=True)
-    campaign = models.ForeignKey("Campaign", related_name="rounds", on_delete=models.PROTECT, null=True)
+    campaign = models.ForeignKey(
+        "Campaign", related_name="rounds", on_delete=models.PROTECT, null=True
+    )
     budget_process = models.ForeignKey(
-        "BudgetProcess", related_name="rounds", on_delete=models.SET_NULL, null=True, blank=True
+        "BudgetProcess",
+        related_name="rounds",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     # With the current situation/UI, all rounds must have an end date. However, there might be legacy campaigns/rounds
     # floating around in production, and therefore consumer code must assume that this field might be NULL
@@ -352,7 +424,9 @@ class Round(models.Model):
     lqas_ended_at = models.DateField(null=True, blank=True)
     target_population = models.IntegerField(null=True, blank=True)
     doses_requested = models.IntegerField(null=True, blank=True)
-    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, null=True, blank=True)
+    cost = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.0, null=True, blank=True
+    )
     im_percentage_children_missed_in_household = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
@@ -362,7 +436,9 @@ class Round(models.Model):
     im_percentage_children_missed_in_plus_out_household = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-    awareness_of_campaign_planning = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    awareness_of_campaign_planning = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
     main_awareness_problem = models.CharField(max_length=255, null=True, blank=True)
     lqas_district_passing = models.IntegerField(null=True, blank=True)
     lqas_district_failing = models.IntegerField(null=True, blank=True)
@@ -370,7 +446,9 @@ class Round(models.Model):
 
     # Preparedness
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
-    preparedness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
+    preparedness_sync_status = models.CharField(
+        max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS
+    )
     # Vaccine management
     date_signed_vrf_received = models.DateField(null=True, blank=True)
     date_destruction = models.DateField(null=True, blank=True)
@@ -417,7 +495,9 @@ class Round(models.Model):
             and self.campaign.has_polio_type
             and not self.chronograms.valid().exists()
         ):
-            ChronogramTemplateTask.objects.create_chronogram(round=self, created_by=None, account=self.campaign.account)
+            ChronogramTemplateTask.objects.create_chronogram(
+                round=self, created_by=None, account=self.campaign.account
+            )
 
     def get_item_by_key(self, key):
         return getattr(self, key)
@@ -452,7 +532,9 @@ class Round(models.Model):
 
         else:
             campaign_vaccines = CampaignScope.objects.filter(
-                campaign=self.campaign, group__org_units__isnull=False, vaccine__isnull=False
+                campaign=self.campaign,
+                group__org_units__isnull=False,
+                vaccine__isnull=False,
             ).values_list("vaccine", flat=True)
 
             vaccines.update(campaign_vaccines)
@@ -481,7 +563,9 @@ class Round(models.Model):
         vaccines = set()
 
         subactivity_vaccines = SubActivityScope.objects.filter(
-            subactivity__round=self, group__org_units__isnull=False, vaccine__isnull=False
+            subactivity__round=self,
+            group__org_units__isnull=False,
+            vaccine__isnull=False,
         ).values_list("vaccine", flat=True)
 
         vaccines.update(subactivity_vaccines)
@@ -489,7 +573,9 @@ class Round(models.Model):
 
     @property
     def subactivities_single_vaccine_list(self):
-        return sorted(list(Campaign.split_combined_vaccines(set(self.subactivities_vaccine_list))))
+        return sorted(
+            list(Campaign.split_combined_vaccines(set(self.subactivities_vaccine_list)))
+        )
 
     @property
     def subactivities_vaccine_names(self):
@@ -509,7 +595,9 @@ class Round(models.Model):
 
     @property
     def single_vaccine_list_extended(self):
-        return sorted(list(Campaign.split_combined_vaccines(set(self.vaccine_list_extended))))
+        return sorted(
+            list(Campaign.split_combined_vaccines(set(self.vaccine_list_extended)))
+        )
 
     @property
     def vaccine_names_extended(self):
@@ -556,16 +644,23 @@ class CampaignQuerySet(models.QuerySet):
 
             # Restrict Campaign to the OrgUnit on the country he can access
             if user.iaso_profile.org_units.count() and not user.is_superuser:
-                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).defer(
-                    "geom", "simplified_geom"
+                org_units = OrgUnit.objects.hierarchy(
+                    user.iaso_profile.org_units.all()
+                ).defer("geom", "simplified_geom")
+                qs = qs.filter(
+                    Q(country__in=org_units) | Q(initial_org_unit__in=org_units)
                 )
-                qs = qs.filter(Q(country__in=org_units) | Q(initial_org_unit__in=org_units))
         return qs
 
 
 class PolioCampaignManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().prefetch_related("campaign_types").filter(campaign_types__name=CampaignType.POLIO)
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related("campaign_types")
+            .filter(campaign_types__name=CampaignType.POLIO)
+        )
 
 
 class Campaign(SoftDeletableModel):
@@ -579,7 +674,9 @@ class Campaign(SoftDeletableModel):
     scopes: "django.db.models.manager.RelatedManager[CampaignScope]"
     rounds: "django.db.models.manager.RelatedManager[Round]"
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
-    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="campaigns")
+    account = models.ForeignKey(
+        "iaso.account", on_delete=models.CASCADE, related_name="campaigns"
+    )
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255, unique=True)
     is_preventive = models.BooleanField(default=False, help_text="Preventive campaign")
@@ -588,14 +685,20 @@ class Campaign(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    campaign_types = models.ManyToManyField(CampaignType, blank=True, related_name="campaigns")
+    campaign_types = models.ManyToManyField(
+        CampaignType, blank=True, related_name="campaigns"
+    )
 
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
     gpei_email = models.EmailField(max_length=254, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     separate_scopes_per_round = models.BooleanField(default=False)
     initial_org_unit = models.ForeignKey(
-        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
+        "iaso.orgunit",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="campaigns",
     )
 
     enable_send_weekly_email = models.BooleanField(
@@ -669,8 +772,12 @@ class Campaign(SoftDeletableModel):
     virus = models.CharField(max_length=15, choices=VIRUSES, null=True, blank=True)
 
     # Detection.
-    detection_status = models.CharField(default="PENDING", max_length=10, choices=STATUS)
-    detection_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
+    detection_status = models.CharField(
+        default="PENDING", max_length=10, choices=STATUS
+    )
+    detection_responsible = models.CharField(
+        max_length=10, choices=RESPONSIBLES, null=True, blank=True
+    )
     detection_first_draft_submitted_at = models.DateField(
         null=True,
         blank=True,
@@ -678,8 +785,12 @@ class Campaign(SoftDeletableModel):
     )
 
     # Risk Assessment.
-    risk_assessment_status = models.CharField(max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True)
-    risk_assessment_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
+    risk_assessment_status = models.CharField(
+        max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True
+    )
+    risk_assessment_responsible = models.CharField(
+        max_length=10, choices=RESPONSIBLES, null=True, blank=True
+    )
     investigation_at = models.DateField(
         null=True,
         blank=True,
@@ -725,16 +836,28 @@ class Campaign(SoftDeletableModel):
     submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_gpei_at_WFEDITABLE = models.DateField(null=True, blank=True)
     re_submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(
+        null=True, blank=True
+    )
     feedback_sent_to_rrt1_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(
+        null=True, blank=True
+    )
     submitted_to_orpg_wider_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(
+        null=True, blank=True
+    )
     feedback_sent_to_rrt2_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(
+        null=True, blank=True
+    )
     submitted_for_approval_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_orpg_operations_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE = models.DateField(
+        null=True, blank=True
+    )
+    feedback_sent_to_orpg_operations_who_at_WFEDITABLE = models.DateField(
+        null=True, blank=True
+    )
     approved_by_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
@@ -768,7 +891,9 @@ class Campaign(SoftDeletableModel):
         null=True,
         blank=True,
     )
-    payment_mode = models.CharField(max_length=30, choices=PAYMENT, null=True, blank=True)
+    payment_mode = models.CharField(
+        max_length=30, choices=PAYMENT, null=True, blank=True
+    )
     district_count = models.IntegerField(null=True, blank=True)
     # END fields moved to the `Budget` model. ************************************************
     # ----------------------------------------------------------------------------------------
@@ -831,7 +956,7 @@ class Campaign(SoftDeletableModel):
         return districts
 
     def get_campaign_scope_districts_qs(self):
-        # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
+        # Get districts on campaign scope, make only sense if separate_scopes_per_round=False
         return (
             OrgUnit.objects.filter(groups__campaignScope__campaign=self)
             .filter(validation_status="VALID")
@@ -890,7 +1015,11 @@ class Campaign(SoftDeletableModel):
     def save(self, *args, **kwargs):
         if self.initial_org_unit is not None:
             try:
-                country = self.initial_org_unit.ancestors().filter(org_unit_type__category="COUNTRY").first()
+                country = (
+                    self.initial_org_unit.ancestors()
+                    .filter(org_unit_type__category="COUNTRY")
+                    .first()
+                )
                 self.country = country
             except OrgUnit.DoesNotExist:
                 pass
@@ -900,7 +1029,8 @@ class Campaign(SoftDeletableModel):
     @property
     def campaign_level_vaccines_list(self):
         """Vaccine types from campaign level scopes.
-        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2
+        """
 
         if self.separate_scopes_per_round:
             return []
@@ -927,7 +1057,8 @@ class Campaign(SoftDeletableModel):
     @property
     def round_level_vaccines_list(self):
         """vaccines from round level scopes, excluding subactivities
-        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2
+        """
         if not self.separate_scopes_per_round:
             return []
 
@@ -935,7 +1066,9 @@ class Campaign(SoftDeletableModel):
         rnds = self.rounds.all().values("id")
 
         round_vaccines = RoundScope.objects.filter(
-            round__id__in=Subquery(rnds), group__org_units__isnull=False, vaccine__isnull=False
+            round__id__in=Subquery(rnds),
+            group__org_units__isnull=False,
+            vaccine__isnull=False,
         ).values_list("vaccine", flat=True)
 
         vaccines.update(round_vaccines)
@@ -953,12 +1086,15 @@ class Campaign(SoftDeletableModel):
     @property
     def sub_activity_level_vaccines_list(self):
         """List of vaccines from sub-activities scopes (excluding parent round scopes)
-        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2
+        """
         vaccines = set()
         rnds = self.rounds.all().values("id")
 
         subactivity_vaccines = SubActivityScope.objects.filter(
-            subactivity__round__id__in=Subquery(rnds), group__org_units__isnull=False, vaccine__isnull=False
+            subactivity__round__id__in=Subquery(rnds),
+            group__org_units__isnull=False,
+            vaccine__isnull=False,
         ).values_list("vaccine", flat=True)
 
         vaccines.update(subactivity_vaccines)
@@ -1104,9 +1240,15 @@ class Preparedness(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     spreadsheet_url = models.URLField()
 
-    national_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("National Score"))
-    regional_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Regional Score"))
-    district_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("District Score"))
+    national_score = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("National Score")
+    )
+    regional_score = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("Regional Score")
+    )
+    district_score = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name=_("District Score")
+    )
 
     payload = models.JSONField()
 
@@ -1123,7 +1265,9 @@ class CountryUsersGroup(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
     # used for workflow
-    teams = models.ManyToManyField(Team, help_text="Teams used by the country", blank=True)
+    teams = models.ManyToManyField(
+        Team, help_text="Teams used by the country", blank=True
+    )
 
     def __str__(self):
         return str(self.country)
@@ -1134,7 +1278,9 @@ class URLCache(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     def __str__(self):
         return self.url
@@ -1156,7 +1302,9 @@ class SpreadSheetImport(models.Model):
     def create_for_url(spreadsheet_url: str):
         spread = open_sheet_by_url(spreadsheet_url)
         cached_spread = CachedSpread.from_spread(spread)
-        return SpreadSheetImport.objects.create(content=cached_spread.c, url=spreadsheet_url, spread_id=spread.id)
+        return SpreadSheetImport.objects.create(
+            content=cached_spread.c, url=spreadsheet_url, spread_id=spread.id
+        )
 
     @property
     def cached_spreadsheet(self):
@@ -1200,14 +1348,18 @@ class BudgetEvent(SoftDeletableModel):
 
     STATUS = (("validation_ongoing", "Validation Ongoing"), ("validated", "Validated"))
 
-    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT, related_name="budget_events")
+    campaign = models.ForeignKey(
+        Campaign, on_delete=models.PROTECT, related_name="budget_events"
+    )
     type = models.CharField(choices=TYPES, max_length=200)
     author = models.ForeignKey(User, blank=False, null=False, on_delete=models.PROTECT)
     internal = models.BooleanField(default=False)
     target_teams = models.ManyToManyField(Team)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(choices=STATUS, max_length=200, null=True, default="validation_ongoing")
+    status = models.CharField(
+        choices=STATUS, max_length=200, null=True, default="validation_ongoing"
+    )
     cc_emails = models.CharField(max_length=200, blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
     links = models.TextField(blank=True, null=True)
@@ -1221,7 +1373,9 @@ class BudgetEvent(SoftDeletableModel):
 
 # Deprecated
 class BudgetFiles(models.Model):
-    event = models.ForeignKey(BudgetEvent, on_delete=models.PROTECT, related_name="event_files")
+    event = models.ForeignKey(
+        BudgetEvent, on_delete=models.PROTECT, related_name="event_files"
+    )
     file = models.FileField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1243,15 +1397,26 @@ class VaccineAuthorizationStatus(models.TextChoices):
 
 class VaccineAuthorization(SoftDeletableModel):
     country = models.ForeignKey(
-        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="vaccineauthorization"
+        "iaso.orgunit",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="vaccineauthorization",
     )
-    account = models.ForeignKey("iaso.account", on_delete=models.DO_NOTHING, related_name="vaccineauthorization")
+    account = models.ForeignKey(
+        "iaso.account", on_delete=models.DO_NOTHING, related_name="vaccineauthorization"
+    )
     start_date = models.DateField(blank=True, null=True)
     expiration_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     quantity = models.IntegerField(blank=True, null=True)
-    status = models.CharField(null=True, blank=True, choices=VaccineAuthorizationStatus.choices, max_length=200)
+    status = models.CharField(
+        null=True,
+        blank=True,
+        choices=VaccineAuthorizationStatus.choices,
+        max_length=200,
+    )
     comment = models.TextField(max_length=250, blank=True, null=True)
 
     def __str__(self):
@@ -1263,14 +1428,20 @@ class NotificationManager(models.Manager):
         """
         Returns a queryset of unique countries used in notifications for the given account.
         """
-        countries_pk = self.filter(account=account, org_unit__version_id=account.default_version_id).values_list(
-            "org_unit__parent__parent__id", flat=True
+        countries_pk = self.filter(
+            account=account, org_unit__version_id=account.default_version_id
+        ).values_list("org_unit__parent__parent__id", flat=True)
+        return (
+            OrgUnit.objects.filter(pk__in=countries_pk)
+            .defer("geom", "simplified_geom")
+            .order_by("name")
         )
-        return OrgUnit.objects.filter(pk__in=countries_pk).defer("geom", "simplified_geom").order_by("name")
 
 
 class CustomPublicStorage(
-    S3Boto3Storage if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME") else import_string(settings.DEFAULT_FILE_STORAGE)
+    S3Boto3Storage
+    if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME")
+    else import_string(settings.DEFAULT_FILE_STORAGE)
 ):
     if os.environ.get("AWS_PUBLIC_STORAGE_BUCKET_NAME"):
         default_acl = "public-read"
@@ -1294,7 +1465,9 @@ class VaccineRequestFormType(models.TextChoices):
 class VaccineRequestForm(SoftDeletableModel):
     class Meta:
         indexes = [
-            models.Index(fields=["campaign", "vaccine_type"]),  # Frequently filtered together
+            models.Index(
+                fields=["campaign", "vaccine_type"]
+            ),  # Frequently filtered together
             models.Index(fields=["vrf_type"]),  # Filtered in repository_forms.py
             models.Index(fields=["created_at"]),  # Used for ordering
             models.Index(fields=["updated_at"]),  # Used for ordering
@@ -1306,25 +1479,40 @@ class VaccineRequestForm(SoftDeletableModel):
     date_vrf_signature = models.DateField(null=True, blank=True)
     date_vrf_reception = models.DateField(null=True, blank=True)
     date_dg_approval = models.DateField(null=True, blank=True)
-    quantities_ordered_in_doses = models.PositiveIntegerField(null=True, blank=True, default=0)
+    quantities_ordered_in_doses = models.PositiveIntegerField(
+        null=True, blank=True, default=0
+    )
     vrf_type = models.CharField(
-        max_length=20, choices=VaccineRequestFormType.choices, default=VaccineRequestFormType.NORMAL
+        max_length=20,
+        choices=VaccineRequestFormType.choices,
+        default=VaccineRequestFormType.NORMAL,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     # optional fields
-    wastage_rate_used_on_vrf = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    wastage_rate_used_on_vrf = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
     date_vrf_submission_to_orpg = models.DateField(null=True, blank=True)
-    quantities_approved_by_orpg_in_doses = models.PositiveIntegerField(null=True, blank=True)
+    quantities_approved_by_orpg_in_doses = models.PositiveIntegerField(
+        null=True, blank=True
+    )
     date_rrt_orpg_approval = models.DateField(null=True, blank=True)
     date_vrf_submitted_to_dg = models.DateField(null=True, blank=True)
-    quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
+    quantities_approved_by_dg_in_doses = models.PositiveIntegerField(
+        null=True, blank=True
+    )
     comment = models.TextField(blank=True, null=True)
     target_population = models.PositiveIntegerField(null=True, blank=True)
 
-    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/vrf/", null=True, blank=True)
+    document = models.FileField(
+        storage=CustomPublicStorage(),
+        upload_to="public_documents/vrf/",
+        null=True,
+        blank=True,
+    )
 
     objects = DefaultSoftDeletableManager()
 
@@ -1338,14 +1526,14 @@ class VaccineRequestForm(SoftDeletableModel):
         return self.vaccinearrivalreport_set.count()
 
     def total_doses_shipped(self):
-        return self.vaccineprealert_set.all().aggregate(total_doses_shipped=Coalesce(Sum("doses_shipped"), 0))[
-            "total_doses_shipped"
-        ]
+        return self.vaccineprealert_set.all().aggregate(
+            total_doses_shipped=Coalesce(Sum("doses_shipped"), 0)
+        )["total_doses_shipped"]
 
     def total_doses_received(self):
-        return self.vaccinearrivalreport_set.all().aggregate(total_doses_received=Coalesce(Sum("doses_received"), 0))[
-            "total_doses_received"
-        ]
+        return self.vaccinearrivalreport_set.all().aggregate(
+            total_doses_received=Coalesce(Sum("doses_received"), 0)
+        )["total_doses_received"]
 
     def __str__(self):
         return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
@@ -1354,7 +1542,9 @@ class VaccineRequestForm(SoftDeletableModel):
 class VaccinePreAlert(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     date_pre_alert_reception = models.DateField()
-    po_number = models.CharField(max_length=200, blank=True, null=True, default=None, unique=True)
+    po_number = models.CharField(
+        max_length=200, blank=True, null=True, default=None, unique=True
+    )
     estimated_arrival_time = models.DateField(blank=True, null=True, default=None)
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
@@ -1365,7 +1555,10 @@ class VaccinePreAlert(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     document = models.FileField(
-        storage=CustomPublicStorage(), upload_to="public_documents/prealert/", null=True, blank=True
+        storage=CustomPublicStorage(),
+        upload_to="public_documents/prealert/",
+        null=True,
+        blank=True,
     )
 
     def save(self, *args, **kwargs):
@@ -1383,9 +1576,13 @@ class VaccinePreAlert(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=["request_form", "estimated_arrival_time"]),  # Used together in queries
+            models.Index(
+                fields=["request_form", "estimated_arrival_time"]
+            ),  # Used together in queries
             models.Index(fields=["po_number"]),  # Unique field that's queried
-            models.Index(fields=["date_pre_alert_reception"]),  # Used for filtering/ordering
+            models.Index(
+                fields=["date_pre_alert_reception"]
+            ),  # Used for filtering/ordering
         ]
 
 
@@ -1393,7 +1590,9 @@ class VaccineArrivalReport(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     arrival_report_date = models.DateField()
     doses_received = models.PositiveIntegerField()
-    po_number = models.CharField(max_length=200, blank=True, null=True, default=None, unique=True)
+    po_number = models.CharField(
+        max_length=200, blank=True, null=True, default=None, unique=True
+    )
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
@@ -1425,7 +1624,9 @@ class VaccineArrivalReport(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=["request_form", "arrival_report_date"]),  # Frequently queried together
+            models.Index(
+                fields=["request_form", "arrival_report_date"]
+            ),  # Frequently queried together
             models.Index(fields=["po_number"]),  # Unique field that's queried
             models.Index(fields=["doses_received"]),  # Used in aggregations
         ]
@@ -1433,7 +1634,9 @@ class VaccineArrivalReport(models.Model):
 
 class VaccineStock(models.Model):
     MANAGEMENT_DAYS_OPEN = 7
-    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="vaccine_stocks")
+    account = models.ForeignKey(
+        "iaso.account", on_delete=models.CASCADE, related_name="vaccine_stocks"
+    )
     country = models.ForeignKey(
         "iaso.orgunit",
         null=True,
@@ -1447,7 +1650,9 @@ class VaccineStock(models.Model):
     class Meta:
         unique_together = ("country", "vaccine")
         indexes = [
-            models.Index(fields=["country", "vaccine"]),  # Already unique_together, but used in many queries
+            models.Index(
+                fields=["country", "vaccine"]
+            ),  # Already unique_together, but used in many queries
             models.Index(fields=["account"]),  # Frequently filtered by account
         ]
 
@@ -1468,8 +1673,12 @@ class VaccineStockHistoryQuerySet(models.QuerySet):
 
 class VaccineStockHistory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="history")
-    round = models.ForeignKey(Round, on_delete=models.CASCADE, related_name="stock_on_closing")
+    vaccine_stock = models.ForeignKey(
+        VaccineStock, on_delete=models.CASCADE, related_name="history"
+    )
+    round = models.ForeignKey(
+        Round, on_delete=models.CASCADE, related_name="stock_on_closing"
+    )
     unusable_vials_in = models.IntegerField(null=True)
     unusable_vials_out = models.IntegerField(null=True)
     unusable_doses_in = models.IntegerField(null=True)
@@ -1489,7 +1698,9 @@ class VaccineStockHistory(models.Model):
 class OutgoingStockMovement(models.Model):
     class Meta:
         indexes = [
-            models.Index(fields=["vaccine_stock", "campaign"]),  # Frequently queried together
+            models.Index(
+                fields=["vaccine_stock", "campaign"]
+            ),  # Frequently queried together
             models.Index(fields=["form_a_reception_date"]),  # Used in ordering
             models.Index(fields=["report_date"]),  # Used in filtering/ordering
         ]
@@ -1507,7 +1718,10 @@ class OutgoingStockMovement(models.Model):
     comment = models.TextField(blank=True, null=True)
 
     document = models.FileField(
-        storage=CustomPublicStorage(), upload_to="public_documents/forma/", null=True, blank=True
+        storage=CustomPublicStorage(),
+        upload_to="public_documents/forma/",
+        null=True,
+        blank=True,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1524,7 +1738,10 @@ class DestructionReport(models.Model):
     comment = models.TextField(blank=True, null=True)
 
     document = models.FileField(
-        storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/", null=True, blank=True
+        storage=CustomPublicStorage(),
+        upload_to="public_documents/destructionreport/",
+        null=True,
+        blank=True,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1532,27 +1749,39 @@ class DestructionReport(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=["vaccine_stock", "destruction_report_date"]),  # Used together in queries
-            models.Index(fields=["rrt_destruction_report_reception_date"]),  # Used in filtering
+            models.Index(
+                fields=["vaccine_stock", "destruction_report_date"]
+            ),  # Used together in queries
+            models.Index(
+                fields=["rrt_destruction_report_reception_date"]
+            ),  # Used in filtering
         ]
 
 
 class IncidentReport(models.Model):
     class StockCorrectionChoices(models.TextChoices):
-        VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
+        VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _(
+            "VVM reached the discard point"
+        )
         VACCINE_EXPIRED = "vaccine_expired", _("Vaccine expired")
         LOSSES = "losses", _("Losses")
         RETURN = "return", _("Return")
         STEALING = "stealing", _("Stealing")
-        PHYSICAL_INVENTORY_ADD = "physical_inventory_add", _("Add to Physical Inventory")
-        PHYSICAL_INVENTORY_REMOVE = "physical_inventory_remove", _("remove from Physical Inventory")
+        PHYSICAL_INVENTORY_ADD = "physical_inventory_add", _(
+            "Add to Physical Inventory"
+        )
+        PHYSICAL_INVENTORY_REMOVE = "physical_inventory_remove", _(
+            "remove from Physical Inventory"
+        )
         BROKEN = "broken", _("Broken")
         UNREADABLE_LABEL = "unreadable_label", _("Unreadable label")
 
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
 
     stock_correction = models.CharField(
-        max_length=50, choices=StockCorrectionChoices.choices, default=StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+        max_length=50,
+        choices=StockCorrectionChoices.choices,
+        default=StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
     )
     title = models.CharField(max_length=255, null=True)
     comment = models.TextField(blank=True, null=True)
@@ -1562,7 +1791,10 @@ class IncidentReport(models.Model):
     usable_vials = models.PositiveIntegerField()
 
     document = models.FileField(
-        storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/", null=True, blank=True
+        storage=CustomPublicStorage(),
+        upload_to="public_documents/incidentreport/",
+        null=True,
+        blank=True,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1570,8 +1802,12 @@ class IncidentReport(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=["vaccine_stock", "date_of_incident_report"]),  # Frequently queried together
-            models.Index(fields=["incident_report_received_by_rrt"]),  # Used in filtering
+            models.Index(
+                fields=["vaccine_stock", "date_of_incident_report"]
+            ),  # Frequently queried together
+            models.Index(
+                fields=["incident_report_received_by_rrt"]
+            ),  # Used in filtering
         ]
 
 
@@ -1582,13 +1818,24 @@ class EarmarkedStock(models.Model):
         RETURNED = "returned", _("Returned")  #     3. Earmark -> Usable
 
     earmarked_stock_type = models.CharField(
-        max_length=20, choices=EarmarkedStockChoices.choices, default=EarmarkedStockChoices.CREATED
+        max_length=20,
+        choices=EarmarkedStockChoices.choices,
+        default=EarmarkedStockChoices.CREATED,
     )
-    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="earmarked_stocks")
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
-    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    vaccine_stock = models.ForeignKey(
+        VaccineStock, on_delete=models.CASCADE, related_name="earmarked_stocks"
+    )
+    campaign = models.ForeignKey(
+        Campaign, on_delete=models.CASCADE, null=True, blank=True
+    )
+    temporary_campaign_name = models.CharField(max_length=255, blank=True)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
     form_a = models.ForeignKey(
-        OutgoingStockMovement, on_delete=models.CASCADE, null=True, blank=True, related_name="earmarked_stocks"
+        OutgoingStockMovement,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="earmarked_stocks",
     )
 
     vials_earmarked = models.PositiveIntegerField()
@@ -1606,7 +1853,11 @@ class EarmarkedStock(models.Model):
         ]
 
     def __str__(self):
-        return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"
+        if self.campaign and self.round:
+            return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"
+        if self.temporary_campaign_name:
+            return f"Earmarked {self.vials_earmarked} vials for ({self.temporary_campaign_name})"
+        return f"Earmarked {self.vials_earmarked} vials"
 
     @classmethod
     def get_available_vials_count(cls, vaccine_stock: VaccineStock, _round: Round):
@@ -1627,8 +1878,13 @@ class EarmarkedStock(models.Model):
             ],
         )
 
-        total_vials_usable_plus = matching_earmarks_plus.aggregate(total=Sum("vials_earmarked"))["total"] or 0
-        total_vials_usable_minus = matching_earmarks_minus.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+        total_vials_usable_plus = (
+            matching_earmarks_plus.aggregate(total=Sum("vials_earmarked"))["total"] or 0
+        )
+        total_vials_usable_minus = (
+            matching_earmarks_minus.aggregate(total=Sum("vials_earmarked"))["total"]
+            or 0
+        )
 
         total_vials_usable = total_vials_usable_plus - total_vials_usable_minus
 
@@ -1674,15 +1930,21 @@ class Notification(models.Model):
         CC = "contact_case", _("Contact Case")
         COMMUNITY = "community", _("Community")
         CONTACT = "contact", _("Contact")
-        ENV = "environmental", _("Environmental")  # They found a virus in the environment.
+        ENV = "environmental", _(
+            "Environmental"
+        )  # They found a virus in the environment.
         HC = "healthy_children", _("Healthy Children")
         OTHER = "other", _("Other")
 
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
     # EPID number = epidemiological number = unique identifier of a case per disease.
     epid_number = models.CharField(max_length=50, unique=True)
-    vdpv_category = models.CharField(max_length=20, choices=VdpvCategories.choices, default=VdpvCategories.AVDPV)
-    source = models.CharField(max_length=50, choices=Sources.choices, default=Sources.AFP)
+    vdpv_category = models.CharField(
+        max_length=20, choices=VdpvCategories.choices, default=VdpvCategories.AVDPV
+    )
+    source = models.CharField(
+        max_length=50, choices=Sources.choices, default=Sources.AFP
+    )
     vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10, blank=True)
     # Lineage possible values: NIE-ZAS-1, RDC-MAN-3, Ambiguous, etc.
     lineage = models.CharField(max_length=150, blank=True)
@@ -1692,21 +1954,35 @@ class Notification(models.Model):
 
     # Country / province / district are modelized as a hierarchy of OrgUnits.
     org_unit = models.ForeignKey(
-        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notifications"
+        "iaso.orgunit",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="polio_notifications",
     )
     site_name = models.CharField(max_length=255, blank=True)
 
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_created_set"
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="polio_notification_created_set",
     )
     updated_at = models.DateTimeField(blank=True, null=True)
     updated_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_updated_set"
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="polio_notification_updated_set",
     )
 
     # `import_*` fields are populated when the data come from an .xlsx file.
-    import_source = models.ForeignKey("NotificationImport", null=True, blank=True, on_delete=models.SET_NULL)
+    import_source = models.ForeignKey(
+        "NotificationImport", null=True, blank=True, on_delete=models.SET_NULL
+    )
     import_raw_data = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
 
     objects = NotificationManager()
@@ -1752,7 +2028,11 @@ class NotificationImport(models.Model):
     errors = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_import_created_set"
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="polio_notification_import_created_set",
     )
     updated_at = models.DateTimeField(blank=True, null=True)
 
@@ -1770,7 +2050,9 @@ class NotificationImport(models.Model):
             raise ValueError(f"Invalid Excel file {file}.")
 
         # Normalize xlsx header's names.
-        df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
+        df.rename(
+            columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True
+        )
         for name in cls.EXPECTED_XLSX_COL_NAMES:
             if name not in df.columns:
                 raise ValueError(f"Missing column {name}.")
@@ -1787,14 +2069,18 @@ class NotificationImport(models.Model):
 
         errors = []
         importer = NotificationXlsxImporter(
-            org_units=OrgUnit.objects.filter(version_id=self.account.default_version_id).defer(
-                "geom", "simplified_geom"
-            )
+            org_units=OrgUnit.objects.filter(
+                version_id=self.account.default_version_id
+            ).defer("geom", "simplified_geom")
         )
 
         for idx, row in df.iterrows():
             # Remove columns not in `EXPECTED_XLSX_COL_NAMES`.
-            row_data_as_dict = {k: v for k, v in row.to_dict().items() if k in self.EXPECTED_XLSX_COL_NAMES}
+            row_data_as_dict = {
+                k: v
+                for k, v in row.to_dict().items()
+                if k in self.EXPECTED_XLSX_COL_NAMES
+            }
             try:
                 epid_number = importer.clean_str(row["EPID_NUMBER"])
                 org_unit = importer.find_org_unit_in_caches(
@@ -1804,9 +2090,15 @@ class NotificationImport(models.Model):
                 )
                 defaults = {
                     "account": self.account,
-                    "closest_match_vdpv2": importer.clean_str(row["CLOSEST_MATCH_VDPV2"]),
-                    "date_of_onset": importer.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
-                    "date_results_received": importer.clean_date(row["DATE_RESULTS_RECEIVED"]),
+                    "closest_match_vdpv2": importer.clean_str(
+                        row["CLOSEST_MATCH_VDPV2"]
+                    ),
+                    "date_of_onset": importer.clean_date(
+                        row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]
+                    ),
+                    "date_results_received": importer.clean_date(
+                        row["DATE_RESULTS_RECEIVED"]
+                    ),
                     "import_raw_data": row_data_as_dict,
                     "import_source": self,
                     "lineage": importer.clean_str(row["LINEAGE"]),
@@ -1814,9 +2106,13 @@ class NotificationImport(models.Model):
                     "site_name": importer.clean_str(row["SITE_NAME/GEOCODE"]),
                     "source": importer.clean_source(row["SOURCE(AFP/ENV/CONTACT/HC)"]),
                     "vdpv_category": importer.clean_vdpv_category(row["VDPV_CATEGORY"]),
-                    "vdpv_nucleotide_diff_sabin2": importer.clean_str(row["VDPV_NUCLEOTIDE_DIFF_SABIN2"]),
+                    "vdpv_nucleotide_diff_sabin2": importer.clean_str(
+                        row["VDPV_NUCLEOTIDE_DIFF_SABIN2"]
+                    ),
                 }
-                notification = Notification.objects.filter(epid_number=epid_number).first()
+                notification = Notification.objects.filter(
+                    epid_number=epid_number
+                ).first()
                 if not notification:
                     notification = Notification(**defaults)
                     notification.epid_number = epid_number
@@ -1841,7 +2137,9 @@ class NotificationImport(models.Model):
 
 @task_decorator(task_name="create_polio_notifications_async")
 def create_polio_notifications_async(pk: int, task: Task = None) -> None:
-    task.report_progress_and_stop_if_killed(progress_message="Importing polio notifications…")
+    task.report_progress_and_stop_if_killed(
+        progress_message="Importing polio notifications…"
+    )
     user = task.launcher
     notification_import = NotificationImport.objects.get(pk=pk)
     notification_import.create_notifications(created_by=user)
@@ -1860,7 +2158,10 @@ class NotificationXlsxImporter:
         from plugins.polio.api.common import make_orgunits_cache
 
         districts = (
-            self.org_units.filter(org_unit_type__category="DISTRICT", validation_status=OrgUnit.VALIDATION_VALID)
+            self.org_units.filter(
+                org_unit_type__category="DISTRICT",
+                validation_status=OrgUnit.VALIDATION_VALID,
+            )
             .defer("geom", "simplified_geom")
             .select_related("org_unit_type")
         )
@@ -1893,18 +2194,28 @@ class NotificationXlsxImporter:
 
         return countries_cache, regions_cache, districts_cache
 
-    def find_org_unit_in_caches(self, country_name: str, region_name: str, district_name: str) -> Union[None, OrgUnit]:
+    def find_org_unit_in_caches(
+        self, country_name: str, region_name: str, district_name: str
+    ) -> Union[None, OrgUnit]:
         from plugins.polio.api.common import find_orgunit_in_cache
 
         if not self.countries_cache:
-            self.countries_cache, self.regions_cache, self.districts_cache = self.build_org_unit_caches()
+            (
+                self.countries_cache,
+                self.regions_cache,
+                self.districts_cache,
+            ) = self.build_org_unit_caches()
 
         country = find_orgunit_in_cache(self.countries_cache, country_name)
         region = None
         if country:
-            region = find_orgunit_in_cache(self.regions_cache, region_name, country.name)
+            region = find_orgunit_in_cache(
+                self.regions_cache, region_name, country.name
+            )
         if region:
-            return find_orgunit_in_cache(self.districts_cache, district_name, region.name)
+            return find_orgunit_in_cache(
+                self.districts_cache, district_name, region.name
+            )
         return None
 
     def clean_str(self, data: Any) -> str:

@@ -42,7 +42,7 @@ class MobileOrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
                 },
             )
             self.assertJSONResponse(response, status.HTTP_200_OK)
-            self.assertEqual(3, len(response.data["results"]))  # the 3 OUCRCs from setup
+            self.assertEqual(3, len(response.data["results"]))  # the 3 edition OUCRCs from setup
 
     def test_list_ok_with_include_creation(self):
         self.client.force_authenticate(self.user_ash_ketchum)

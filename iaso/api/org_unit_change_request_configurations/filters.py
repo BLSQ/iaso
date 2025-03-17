@@ -8,9 +8,6 @@ from iaso.models import OrgUnitChangeRequestConfiguration
 
 class OrgUnitChangeRequestConfigurationListFilter(django_filters.rest_framework.FilterSet):
     project_id = django_filters.NumberFilter(field_name="project", label=_("Project ID"))
-    type = django_filters.ChoiceFilter(
-        field_name="type", label=_("Type"), choices=OrgUnitChangeRequestConfiguration.Type.choices
-    )
     org_unit_type_id = django_filters.NumberFilter(field_name="org_unit_type", label=_("Org unit type ID"))
     created_by = django_filters.CharFilter(
         method="filter_created_by", label=_("Created by - Users IDs (comma-separated)")
@@ -18,8 +15,9 @@ class OrgUnitChangeRequestConfigurationListFilter(django_filters.rest_framework.
 
     class Meta:
         model = OrgUnitChangeRequestConfiguration
-        fields = []
+        fields = ["type"]
 
-    def filter_created_by(self, queryset, name, value):
+    @staticmethod
+    def filter_created_by(queryset, name, value):
         user_ids = parse_comma_separated_numeric_values(value, name)
         return queryset.filter(created_by_id__in=user_ids)

@@ -190,7 +190,6 @@ class BaseOrgUnitChangeRequestConfigurationWriteUpdateSerializer(serializers.Mod
     class Meta:
         model = OrgUnitChangeRequestConfiguration
         fields = [
-            "type",
             "org_units_editable",
             "editable_fields",
             "possible_type_ids",

@@ -40,7 +40,7 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         result = response.json()["results"]
         self.assertEqual(6, len(result))  # The 6 OUCRCs created in setup
 
-        # Making sure that the 3 results do not include the new OUCRC
+        # Making sure that the 6 results do not include the new OUCRC
         oucrc_ids = []
         for oucrc in result:
             oucrc_ids.append(oucrc["id"])
@@ -68,7 +68,6 @@ class FilterOrgUnitChangeRequestAPITestCase(OUCRCAPIBase):
         self.assertEqual(result[1]["id"], self.oucrc_type_water_creation.id)
         self.assertEqual(result[2]["id"], new_oucrc.id)
 
-        # Filtering on an orgunit type with a single OUCRC
         response = self.client.get(f"{self.OUCRC_API_URL}?org_unit_type_id={self.ou_type_rock_pokemons.id}")
         self.assertJSONResponse(response, 200)
         result = response.json()["results"]

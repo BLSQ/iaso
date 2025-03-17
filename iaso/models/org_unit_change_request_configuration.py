@@ -34,6 +34,11 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
     """
 
     class Type(models.TextChoices):
+        """
+        OrgUnitChangeRequestConfiguration can be applied to OrgUnit creation or edition.
+        The type tells us to which scenario does the configuration apply.
+        """
+
         CREATION = "creation", _("Creation")
         EDITION = "edition", _("Edition")
 

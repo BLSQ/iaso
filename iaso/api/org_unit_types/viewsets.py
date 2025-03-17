@@ -1,11 +1,15 @@
 from django.db.models import Q
-from rest_framework import status, permissions
-from rest_framework.response import Response
-from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
+from rest_framework import permissions, status
 from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
 from iaso.models import OrgUnitType
-from .serializers import OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2, OrgUnitTypesDropdownSerializer
+
+from ...permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from ..common import ModelViewSet
+from .serializers import OrgUnitTypesDropdownSerializer, OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2
+
 
 DEFAULT_ORDER = "name"
 
@@ -22,7 +26,7 @@ class OrgUnitTypeViewSet(ModelViewSet):
     GET /api/orgunittypes/
     """
 
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired]
     serializer_class = OrgUnitTypeSerializerV1
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
@@ -92,7 +96,7 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         return queryset.order_by("depth").distinct().order_by(*orders)
 
     @action(
-        permission_classes=[permissions.IsAuthenticatedOrReadOnly],
+        permission_classes=[IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired],
         detail=False,
         methods=["GET"],
         serializer_class=OrgUnitTypesDropdownSerializer,

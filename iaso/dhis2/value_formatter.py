@@ -66,11 +66,8 @@ def format_value(data_element, raw_value, orgunit_resolver):
                 return translated_value
             if "." in translated_value:
                 return float(translated_value)
-            else:
-                return int(translated_value)
+            return int(translated_value)
         except Exception:
-            import traceback
-
             raise Exception("Bad value for float '" + str(raw_value) + "'", data_element)
 
     if (
@@ -107,14 +104,11 @@ def format_value(data_element, raw_value, orgunit_resolver):
     if data_element_type == "BOOLEAN":
         if translated_value == "1" or translated_value == "yes" or translated_value == "true" or translated_value == 1:
             return True
-        elif (
-            translated_value == "0" or translated_value == "no" or translated_value == "false" or translated_value == 0
-        ):
+        if translated_value == "0" or translated_value == "no" or translated_value == "false" or translated_value == 0:
             return False
-        elif translated_value == "":
+        if translated_value == "":
             return None
-        else:
-            raise Exception("Bad value for boolean '" + str(raw_value) + "'", data_element)
+        raise Exception("Bad value for boolean '" + str(raw_value) + "'", data_element)
 
     if data_element_type == "COORDINATE":
         if translated_value:

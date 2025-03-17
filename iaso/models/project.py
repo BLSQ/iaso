@@ -1,7 +1,8 @@
 import typing
+
 from uuid import uuid4
 
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.db import models
 
 

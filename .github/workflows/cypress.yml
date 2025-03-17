@@ -160,7 +160,7 @@ jobs:
 
             - name: Cache dependencies
               id: cache
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               with:
                   path: ./node_modules
                   key: node_modules-20221121-${{ hashFiles('package-lock.json') }}

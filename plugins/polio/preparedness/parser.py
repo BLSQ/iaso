@@ -1,13 +1,14 @@
 from enum import Enum
-from typing import Optional, Dict, Any
+from logging import getLogger
+from typing import Any, Dict, Optional
 
 from gspread.utils import absolute_range_name, rowcol_to_a1
 
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError
-from plugins.polio.preparedness.spread_cache import CachedSpread, CachedSheet
-from logging import getLogger
+from plugins.polio.preparedness.spread_cache import CachedSheet, CachedSpread
+
 
 logger = getLogger(__name__)
 

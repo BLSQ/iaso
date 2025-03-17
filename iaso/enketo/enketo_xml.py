@@ -1,10 +1,10 @@
 from typing import Tuple
-import re
 
 from lxml import etree  # type: ignore
 from lxml.etree import XMLParser
 
 from iaso.utils.emoji import fix_emoji
+
 
 ENKETO_FORM_ID_SEPARATOR = "-"
 
@@ -85,9 +85,6 @@ def inject_instance_id_in_form(xml_str, instance_id):
         if calculate_expression:
             # if trivial expression like a constant no reference to another variable or function call
             if "$" not in calculate_expression and "(" not in calculate_expression:
-                import pdb
-
-                pdb.set_trace()
                 print("deleting ", bind.get("calculate"))
                 del bind.attrib["calculate"]
 

@@ -9,12 +9,14 @@ type DocumentUploadWithPreviewProps = {
     errors: string[] | undefined;
     onFilesSelect: (files: File[]) => void;
     document?: File[] | string;
+    disabled?: boolean;
 };
 
 const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
     errors,
     onFilesSelect,
     document,
+    disabled = false,
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -40,6 +42,7 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
                     onFilesSelect={onFilesSelect}
                     multi={false}
                     errors={errors}
+                    disabled={disabled}
                     placeholder={formatMessage(MESSAGES.document)}
                 />
             </Grid>

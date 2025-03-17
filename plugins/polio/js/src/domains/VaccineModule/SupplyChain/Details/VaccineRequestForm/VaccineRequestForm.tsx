@@ -1,15 +1,15 @@
-import { Box, Grid, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
-import { Field, useFormikContext } from 'formik';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useMemo,
 } from 'react';
-import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { Box, Grid, Typography } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import { Field, useFormikContext } from 'formik';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
+import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { NumberInput } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
@@ -24,6 +24,10 @@ import MESSAGES from '../../messages';
 import { useSharedStyles } from '../shared';
 
 type Props = { className?: string; vrfData: any };
+
+export const isFieldDisabledEdit = (inputData: any | undefined): boolean => {
+    return inputData ? !inputData.can_edit : false;
+};
 
 export const VaccineRequestForm: FunctionComponent<Props> = ({
     className,
@@ -113,7 +117,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                             label={formatMessage(MESSAGES.vrfType)}
                             name="vrf.vrf_type"
                             component={SingleSelect}
-                            disabled={false}
+                            disabled={isFieldDisabledEdit(vrfData)}
                             required
                             withMarginTop
                             isLoading={
@@ -132,7 +136,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 label={formatMessage(MESSAGES.country)}
                                 name="vrf.country"
                                 component={SingleSelect}
-                                disabled={false}
+                                disabled={isFieldDisabledEdit(vrfData)}
                                 required
                                 withMarginTop
                                 isLoading={
@@ -146,7 +150,10 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 label={formatMessage(MESSAGES.campaign)}
                                 name="vrf.campaign"
                                 component={SingleSelect}
-                                disabled={!values?.vrf?.country}
+                                disabled={
+                                    !values?.vrf?.country ||
+                                    isFieldDisabledEdit(vrfData)
+                                }
                                 required
                                 options={campaigns}
                                 withMarginTop
@@ -160,7 +167,10 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 label={formatMessage(MESSAGES.vaccine)}
                                 name="vrf.vaccine_type"
                                 component={SingleSelect}
-                                disabled={!values?.vrf?.campaign}
+                                disabled={
+                                    !values?.vrf?.campaign ||
+                                    isFieldDisabledEdit(vrfData)
+                                }
                                 required
                                 options={vaccines}
                                 withMarginTop
@@ -174,7 +184,10 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 label={formatMessage(MESSAGES.roundNumbers)}
                                 name="vrf.rounds"
                                 component={MultiSelect}
-                                disabled={!values?.vrf?.vaccine_type}
+                                disabled={
+                                    !values?.vrf?.vaccine_type ||
+                                    isFieldDisabledEdit(vrfData)
+                                }
                                 required
                                 withMarginTop
                                 options={rounds}
@@ -196,7 +209,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                             )}
                                             name="vrf.date_vrf_signature"
                                             component={DateInput}
-                                            disabled={false}
+                                            disabled={isFieldDisabledEdit(
+                                                vrfData,
+                                            )}
                                         />
                                     </Box>
                                 </Grid>
@@ -208,7 +223,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                             )}
                                             name="vrf.quantities_ordered_in_doses"
                                             component={NumberInput}
-                                            disabled={false}
+                                            disabled={isFieldDisabledEdit(
+                                                vrfData,
+                                            )}
                                         />
                                     </Box>
                                 </Grid>
@@ -221,7 +238,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                             )}
                                             name="vrf.wastage_rate_used_on_vrf"
                                             component={NumberInput}
-                                            disabled={false}
+                                            disabled={isFieldDisabledEdit(
+                                                vrfData,
+                                            )}
                                             numberInputOptions={{
                                                 suffix: '%',
                                                 max: 100,
@@ -237,7 +256,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                             )}
                                             name="vrf.date_vrf_reception"
                                             component={DateInput}
-                                            disabled={false}
+                                            disabled={isFieldDisabledEdit(
+                                                vrfData,
+                                            )}
                                         />
                                     </Box>
                                 </Grid>
@@ -250,7 +271,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         )}
                                         name="vrf.date_vrf_submission_to_orpg"
                                         component={DateInput}
-                                        disabled={false}
+                                        disabled={isFieldDisabledEdit(vrfData)}
                                     />
                                 </Grid>
                                 <Grid item xs={6} md={3}>
@@ -260,7 +281,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         )}
                                         name="vrf.quantities_approved_by_orpg_in_doses"
                                         component={NumberInput}
-                                        disabled={false}
+                                        disabled={isFieldDisabledEdit(vrfData)}
                                     />
                                 </Grid>
                                 <Grid item xs={6} md={3}>
@@ -270,7 +291,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         )}
                                         name="vrf.date_rrt_orpg_approval"
                                         component={DateInput}
-                                        disabled={false}
+                                        disabled={isFieldDisabledEdit(vrfData)}
                                     />
                                 </Grid>
                                 <Grid item xs={6} md={3}>
@@ -280,7 +301,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         )}
                                         name="vrf.target_population"
                                         component={NumberInput}
-                                        disabled={false}
+                                        disabled={isFieldDisabledEdit(vrfData)}
                                     />
                                 </Grid>
                             </Grid>
@@ -292,7 +313,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         )}
                                         name="vrf.date_vrf_submitted_to_dg"
                                         component={DateInput}
-                                        disabled={false}
+                                        disabled={isFieldDisabledEdit(vrfData)}
                                     />
                                 </Grid>
                                 <Grid item xs={6} md={3}>
@@ -302,7 +323,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         )}
                                         name="vrf.quantities_approved_by_dg_in_doses"
                                         component={NumberInput}
-                                        disabled={false}
+                                        disabled={isFieldDisabledEdit(vrfData)}
                                     />
                                 </Grid>
                                 <Grid item xs={6} md={3}>
@@ -312,7 +333,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         )}
                                         name="vrf.date_dg_approval"
                                         component={DateInput}
-                                        disabled={false}
+                                        disabled={isFieldDisabledEdit(vrfData)}
                                     />
                                 </Grid>
                                 <Grid item xs={6} md={3}>
@@ -331,6 +352,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                                     );
                                                 }
                                             }}
+                                            disabled={isFieldDisabledEdit(
+                                                vrfData,
+                                            )}
                                             document={values?.vrf?.document}
                                         />
                                     </Box>
@@ -345,6 +369,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         // errors={errors.comment ? errors.comment : []}
                                         label={MESSAGES.comments}
                                         onChange={onCommentChange}
+                                        disabled={isFieldDisabledEdit(vrfData)}
                                         withMarginTop={false}
                                     />
                                 </Grid>

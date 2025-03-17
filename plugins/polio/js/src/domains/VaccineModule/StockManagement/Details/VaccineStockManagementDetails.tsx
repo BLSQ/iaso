@@ -1,30 +1,32 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { Box, Button, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
     textPlaceholder,
-    useSafeIntl,
     useGoBack,
     useRedirectTo,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { Box, Button, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { baseUrls } from '../../../../constants/urls';
-import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
-import { UNUSABLE_VIALS, USABLE_VIALS } from '../constants';
-import { StockManagementDetailsParams, TabValue } from '../types';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import MESSAGES from '../messages';
+import ExcellSvg from '../../../../../../../../hat/assets/js/apps/Iaso/components/svg/ExcellSvgComponent';
+import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
+import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { baseUrls } from '../../../../constants/urls';
+import { UNUSABLE_VIALS, USABLE_VIALS } from '../constants';
 import {
-    VaccineStockManagementDetailsTableUnusable,
-    VaccineStockManagementDetailsTableUsable,
-} from './Table/VaccineStockManagementDetailsTable';
-import {
+    // useGetEarmarked,
     useGetStockManagementSummary,
     useGetUnusableVials,
     useGetUsableVials,
 } from '../hooks/api';
+import MESSAGES from '../messages';
+import { StockManagementDetailsParams, TabValue } from '../types';
 import { VaccineStockManagementSummary } from './Summary/VaccineStockManagementSummary';
+import {
+    VaccineStockManagementDetailsTableUnusable,
+    VaccineStockManagementDetailsTableUsable,
+} from './Table/VaccineStockManagementDetailsTable';
 
 const useStyles = makeStyles(theme => {
     return {
@@ -53,12 +55,15 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
         baseUrl,
     });
 
-    // Make 1 API call with both usable and not usable + vountry and campaign
+    // Make 1 API call with both usable and not usable + country and campaign
     const { data: usableVials, isFetching: isFetchingUsable } =
         useGetUsableVials(params, tab === USABLE_VIALS);
 
     const { data: unusableVials, isFetching: isFetchingUnusable } =
         useGetUnusableVials(params, tab === UNUSABLE_VIALS);
+
+    // const { data: earmarked, isFetching: isFetchingEarmarked } =
+    //     useGetEarmarked(params, tab === EARMARKED);
 
     const { data: summary, isLoading: isLoadingSummary } =
         useGetStockManagementSummary(params.id);
@@ -77,12 +82,30 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
 
+    const exportXlsxUrl = useMemo(() => {
+        let xlsxUrl = `/api/polio/vaccine/vaccine_stock/${params.id}`;
+        switch (tab) {
+            case USABLE_VIALS:
+                xlsxUrl = `${xlsxUrl}/usable_vials/?export_xlsx=true`;
+                break;
+            case UNUSABLE_VIALS:
+                xlsxUrl = `${xlsxUrl}/get_unusable_vials/?export_xlsx=true`;
+                break;
+            // case EARMARKED:
+            //     xlsxUrl = `${xlsxUrl}/get_unusable_vials/?export_xlsx=true`;
+            //     break;
+            default:
+                break;
+        }
+        return xlsxUrl;
+    }, [params.id, tab]);
+
     return (
         <>
             <TopBar title={title} displayBackButton goBack={goBack} />
 
             <Box className={classes.containerFullHeightPadded}>
-                <Grid container>
+                <Grid container spacing={2}>
                     <Grid item xs={12} sm={6} md={4}>
                         <VaccineStockManagementSummary
                             isLoading={isLoadingSummary}
@@ -97,13 +120,27 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                         md={8}
                         justifyContent="flex-end"
                     >
-                        <Box>
+                        <Box display="flex" flexDirection="column" gap={2}>
                             <Button
                                 variant="contained"
                                 color="primary"
                                 onClick={goToStockVariation}
                             >
                                 {formatMessage(MESSAGES.stockVariation)}
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                href={exportXlsxUrl}
+                            >
+                                <ExcellSvg
+                                    sx={{
+                                        height: theme => theme.spacing(3),
+                                        width: 'auto',
+                                        marginRight: theme => theme.spacing(1),
+                                    }}
+                                />
+                                {`${formatMessage(MESSAGES.download)} XLSX`}
                             </Button>
                         </Box>
                     </Grid>
@@ -127,6 +164,11 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                             label={formatMessage(MESSAGES.unusable)}
                         />
                     )}
+                    {/* <Tab
+                        key={EARMARKED}
+                        value={EARMARKED}
+                        label={formatMessage(MESSAGES.earmarked)}
+                    /> */}
                 </Tabs>
                 <Paper elevation={2} className={classes.marginTop}>
                     <Box pt={2} px={2}>
@@ -151,6 +193,14 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                                 isFetching={isFetchingUnusable}
                             />
                         )}
+                        {/* {tab === EARMARKED && (
+                            <VaccineStockManagementDetailsTableUnusable
+                                params={params}
+                                paramsPrefix={tab}
+                                data={earmarked}
+                                isFetching={isFetchingEarmarked}
+                            />
+                        )} */}
                     </Box>
                 </Paper>
             </Box>

@@ -2,33 +2,32 @@ from logging import getLogger
 from uuid import uuid4
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from rest_framework import permissions
-from rest_framework import status
+from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hat.audit.models import log_modification, INSTANCE_API
+from hat.audit.models import INSTANCE_API, log_modification
+from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
 from iaso.dhis2.datavalue_exporter import InstanceExportError
-from iaso.enketo import calculate_file_md5
 from iaso.enketo import (
+    EnketoError,
+    calculate_file_md5,
     enketo_settings,
-    enketo_url_for_edition,
     enketo_url_for_creation,
-    to_xforms_xml,
+    enketo_url_for_edition,
     extract_xml_instance_from_form_xml,
     inject_instance_id_in_form,
-    EnketoError,
+    to_xforms_xml,
 )
 from iaso.enketo.enketo_xml import inject_xml_find_uuid
-from iaso.models import Form, Instance, InstanceFile, OrgUnit, Project, Profile
-from iaso.models import User
-from hat.menupermissions import models as permission
+from iaso.models import Form, Instance, InstanceFile, OrgUnit, Profile, Project, User
+
 
 logger = getLogger(__name__)
 
@@ -134,7 +133,7 @@ def enketo_public_create_url(request):
             {"error": "Not Found", "message": f"OrgUnit {source_ref} not found in project {project.name}"}, status=400
         )
 
-    if not form in project.forms.all():
+    if form not in project.forms.all():
         return JsonResponse({"error": _("Unauthorized")}, status=401)
 
     if external_user_id:
@@ -179,32 +178,32 @@ def enketo_public_create_url(request):
             user_id = profile.user.id
         url_for_edition = _build_url_for_edition(request, instance, user_id)
         return JsonResponse({"url": url_for_edition}, status=201)
-    else:  # creation
-        uuid = str(uuid4())
-        now = timezone.now()
-        instance = Instance.objects.create(
-            form_id=form.id,
-            name=form.name,
-            period=period,
-            uuid=uuid,
-            org_unit_id=org_unit.id,
-            project=project,
-            file_name=uuid + "xml",
-            to_export=(to_export == "true"),
-            source_created_at=now,
-            source_updated_at=now,
+    # creation
+    uuid = str(uuid4())
+    now = timezone.now()
+    instance = Instance.objects.create(
+        form_id=form.id,
+        name=form.name,
+        period=period,
+        uuid=uuid,
+        org_unit_id=org_unit.id,
+        project=project,
+        file_name=uuid + "xml",
+        to_export=(to_export == "true"),
+        source_created_at=now,
+        source_updated_at=now,
+    )
+
+    try:
+        if not return_url:
+            return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
+        edit_url = enketo_url_for_creation(
+            server_url=public_url_for_enketo(request, "/api/enketo"), uuid=uuid, return_url=return_url
         )
 
-        try:
-            if not return_url:
-                return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
-            edit_url = enketo_url_for_creation(
-                server_url=public_url_for_enketo(request, "/api/enketo"), uuid=uuid, return_url=return_url
-            )
-
-            return JsonResponse({"url": edit_url}, status=201)
-        except EnketoError as error:
-            return JsonResponse({"error": str(error)}, status=409)
+        return JsonResponse({"url": edit_url}, status=201)
+    except EnketoError as error:
+        return JsonResponse({"error": str(error)}, status=409)
 
 
 # TODO : Check if this is used
@@ -313,8 +312,7 @@ def enketo_form_list(request):
         )
 
         return HttpResponse(xforms, content_type="application/xml")
-    else:
-        return HttpResponse(content_type="application/xml")
+    return HttpResponse(content_type="application/xml")
 
 
 @api_view(["GET", "HEAD"])

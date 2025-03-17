@@ -1,10 +1,11 @@
 import django_filters
+
 from django.conf import settings
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
-from iaso.models.data_source import SourceVersion
 from rest_framework.exceptions import ValidationError
+
 from iaso.api.common import parse_comma_separated_numeric_values
 from iaso.models import OrgUnit, OrgUnitChangeRequest
 from iaso.models.payments import PaymentStatuses
@@ -25,6 +26,9 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     groups = django_filters.CharFilter(method="filter_groups", label=_("Groups IDs (comma-separated)"))
     project = django_filters.NumberFilter(field_name="org_unit__org_unit_type__projects", label=_("Project ID"))
     created_at = django_filters.DateFromToRangeFilter()
+    data_source_synchronization_id = django_filters.CharFilter(
+        field_name="data_source_synchronization_id", label=_("Data source synchronization ID")
+    )
 
     forms = django_filters.CharFilter(method="filter_forms", label=_("Forms IDs (comma-separated)"))
     users = django_filters.CharFilter(method="filter_users", label=_("Users IDs (comma-separated)"))
@@ -127,8 +131,7 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
                 & (Q(potential_payment__isnull=False) | Q(status=OrgUnitChangeRequest.Statuses.APPROVED.value))
             ) | Q(payment__status=PaymentStatuses.PENDING)
             return queryset.filter(pending_filter)
-        else:
-            return queryset.filter(payment__status=value)
+        return queryset.filter(payment__status=value)
 
     # This filter is used when redirecting from potential payments to see related change requests. It is not otherwise visible in the UI
     def filter_potential_payments(self, queryset: QuerySet, name: str, value: str) -> QuerySet:

@@ -4,9 +4,8 @@ import time_machine
 
 from iaso import models as m
 from iaso.test import TestCase
-
-from plugins.polio.models import Campaign, Round, Chronogram, ChronogramTask, CampaignType
-from plugins.polio.models.chronogram import Period, ChronogramTemplateTask
+from plugins.polio.models import Campaign, CampaignType, Chronogram, ChronogramTask, Round
+from plugins.polio.models.chronogram import ChronogramTemplateTask, Period
 
 
 TODAY = datetime.datetime(2024, 6, 24, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -181,7 +180,7 @@ class ChronogramTemplateTaskTestCase(TestCase):
         cls.campaign.campaign_types.add(cls.polio_type)
 
         # Round.
-        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY)
+        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY.date())
 
         # Chronogram templates.
         cls.chronogram_template_1 = ChronogramTemplateTask.objects.create(

@@ -1,13 +1,15 @@
 import json
+
 from io import StringIO
 from os import environ
 
 import responses  # type: ignore
+
 from django.core import management
 
 from hat.audit.models import Modification
 from iaso import models as m
-from iaso.models import OrgUnit, Group, GroupSet, Task, Account, DataSource, SUCCESS, Project
+from iaso.models import SUCCESS, Account, DataSource, Group, GroupSet, OrgUnit, Project, Task
 from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
 from iaso.test import TestCase
 

@@ -1,6 +1,8 @@
 import datetime
 import datetime as dt
+
 from datetime import timedelta
+from logging import getLogger
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
@@ -9,11 +11,10 @@ from django.shortcuts import get_object_or_404
 
 from beanstalk_worker import task_decorator
 from hat import settings
-from iaso.models import Team, Profile
+from iaso.models import Profile, Team
 from plugins.polio.models import VaccineAuthorization
-from logging import getLogger
-
 from plugins.polio.settings import NOPV2_VACCINE_TEAM_NAME
+
 
 logger = getLogger(__name__)
 
@@ -99,7 +100,7 @@ def send_email_vaccine_authorizations_60_days_expiration_alert(task=None):
         logger.info(f"Email for {vacc_auth}")
         status = vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list)
         if not status:
-            logger.info(f"... skipped")
+            logger.info("... skipped")
         else:
             email_sent += 1
 
@@ -180,7 +181,7 @@ def send_email_expired_vaccine_authorizations_alert(task=None):
         logger.info(f"Email for {vacc_auth}")
         status = vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list)
         if not status:
-            logger.info(f"... skipped")
+            logger.info("... skipped")
         else:
             email_sent += 1
 
@@ -208,7 +209,7 @@ def vaccine_authorization_update_expired_entries(task=None):
 
         logger.info(f"Campaign {vacc_auth} has expired.")
         if total == 0:
-            logger.info(f"... skipped")
+            logger.info("... skipped")
         else:
             expired_auth += 1
 

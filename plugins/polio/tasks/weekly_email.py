@@ -8,6 +8,7 @@ from beanstalk_worker import task_decorator
 from plugins.polio.models import Campaign, CountryUsersGroup, Round
 from plugins.polio.preparedness.summary import get_or_set_preparedness_cache_for_round
 
+
 logger = getLogger(__name__)
 
 
@@ -46,7 +47,7 @@ def send_notification_email(campaign):
         preparedness = get_or_set_preparedness_cache_for_round(campaign, next_round)
         if preparedness and preparedness.get("indicators", {}).get("status_score"):
             prep_summary = preparedness["indicators"]["status_score"]
-            format = lambda x: "{:.2f}%".format(x * 10) if isinstance(x, (int, float)) else "N/A"
+            format = lambda x: f"{x * 10:.2f}%" if isinstance(x, (int, float)) else "N/A"
             prep_national = format(prep_summary.get("national"))
             prep_regional = format(prep_summary.get("regions"))
             prep_district = format(prep_summary.get("districts"))
@@ -153,7 +154,7 @@ Timeline tracker Automated message.
     logger.info(f"Sending to {len(emails)} recipients")
 
     send_mail(
-        "Update on Campaign {}".format(campaign.obr_name),
+        f"Update on Campaign {campaign.obr_name}",
         email_text,
         from_email,
         emails,
@@ -182,7 +183,7 @@ def send_email(task=None):
         logger.info(f"Email for {campaign.obr_name}")
         status = send_notification_email(campaign)
         if not status:
-            logger.info(f"... skipped")
+            logger.info("... skipped")
         else:
             email_sent += 1
 

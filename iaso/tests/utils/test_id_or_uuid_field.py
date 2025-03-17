@@ -1,8 +1,8 @@
 from rest_framework.exceptions import ValidationError
 
+from iaso import models as m
 from iaso.test import APITestCase
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
-from iaso import models as m
 
 
 class IdOrUuidRelatedFieldTestCase(APITestCase):

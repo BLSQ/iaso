@@ -10,19 +10,16 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-import base64
-import hashlib
-import html
 import importlib
 import os
-import re
 import sys
-import urllib.parse
+
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
 
 import sentry_sdk
+
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
 from requests.exceptions import HTTPError
@@ -30,6 +27,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
+
 
 MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "false").lower() == "true"
 
@@ -76,6 +74,8 @@ DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
 SENTRY_FRONT_ENABLED = os.environ.get("SENTRY_FRONT_ENABLED", "false").lower() == "true"
+
+PRODUCT_FRUITS_WORKSPACE_CODE = os.environ.get("PRODUCT_FRUITS_WORKSPACE_CODE", "")
 
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
@@ -260,6 +260,7 @@ TEMPLATES = [
                 "hat.common.context_processors.logo_path",
                 "hat.common.context_processors.theme",
                 "hat.common.context_processors.sentry_config",
+                "hat.common.context_processors.product_fruits_config",
             ]
         },
     }
@@ -660,6 +661,16 @@ DRF_NESTED_MULTIPART_PARSER = {
 SUPERSET_URL = os.environ.get("SUPERSET_URL", None)
 SUPERSET_ADMIN_USERNAME = os.environ.get("SUPERSET_ADMIN_USERNAME", None)
 SUPERSET_ADMIN_PASSWORD = os.environ.get("SUPERSET_ADMIN_PASSWORD", None)
+
+# ClamAV - Antivirus configuration
+CLAMAV_ACTIVE = os.environ.get("CLAMAV_ACTIVE", "false").lower() == "true"
+CLAMAV_FQDN = os.environ.get("CLAMAV_FQDN", "www.some-url.com")  # FQDN, not full URL
+CLAMAV_PORT = os.environ.get("CLAMAV_PORT", "3310")
+CLAMAV_CONFIGURATION = {
+    "address": f"{CLAMAV_FQDN}:{CLAMAV_PORT}",
+    "backend": "clamd",  # Using ClamAV daemon
+    "stream": True,  # Streaming file content instead of sending files as is
+}
 
 # Plugin config
 print("Enabled plugins:", PLUGINS)

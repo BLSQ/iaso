@@ -1,10 +1,10 @@
 from django.db.models import Count
-from iaso.api.group_sets.serializers import GroupSetSerializer
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
+from iaso.api.group_sets.serializers import GroupSetSerializer
 from iaso.models import DataSource, Group, Project, SourceVersion
 
 from .common import HasPermission, ModelViewSet, TimestampField
@@ -114,13 +114,12 @@ class GroupsViewSet(ModelViewSet):
         profile = self.request.user.iaso_profile
         queryset = Group.objects.filter(
             source_version__data_source__projects__in=profile.account.project_set.all()
-        ).prefetch_related("group_sets")
+        ).select_related("source_version", "source_version__data_source")
+        queryset = queryset.prefetch_related("group_sets")
         return queryset
 
-    def filter_queryset(self, queryset):
+    def filter_queryset(self, queryset, allow_anon=False):
         light = self.request.GET.get("light", False)
-        queryset = queryset.prefetch_related("source_version")
-        queryset = queryset.prefetch_related("source_version__data_source")
         if not light:
             queryset = queryset.annotate(org_unit_count=Count("org_units"))
 
@@ -130,7 +129,8 @@ class GroupsViewSet(ModelViewSet):
             queryset = queryset.filter(source_version=version)
         elif data_source_id:
             queryset = queryset.filter(source_version__data_source__id=data_source_id)
-        else:
+        # if allow_anon is True, versions and projects are handled manually outside of this method
+        elif not allow_anon:
             default_version = self.request.GET.get("defaultVersion", None)
             if default_version == "true":
                 queryset = queryset.filter(source_version=self.request.user.iaso_profile.account.default_version)
@@ -169,18 +169,22 @@ class GroupsViewSet(ModelViewSet):
         if user and user.is_authenticated:
             account = user.iaso_profile.account
             # Filter on version ids (linked to the account)""
-            default_version = self.request.query_params.get("defaultVersion", account.default_version.id)
-            versions = SourceVersion.objects.filter(data_source__projects__account=account, pk=default_version)
+            default_version_id = account.default_version.id
+            versions = SourceVersion.objects.filter(data_source__projects__account=account)
 
         else:
             # this check if project need auth
             project = Project.objects.get_for_user_and_app_id(user, app_id)
-            default_version = self.request.query_params.get("defaultVersion", project.account.default_version.id)
-            versions = SourceVersion.objects.filter(data_source__projects=project, pk=default_version)
+            default_version_id = project.account.default_version.id
+            versions = SourceVersion.objects.filter(data_source__projects=project)
+
+        # Apply defaultVersion filter that we skip in filter_queryset when allowing anon users
+        if self.request.GET.get("defaultVersion", None) == "true":
+            versions = versions.filter(pk=default_version_id)
 
         groups = Group.objects.filter(source_version__in=versions).distinct()
 
-        queryset = self.filter_queryset(groups)
+        queryset = self.filter_queryset(groups, allow_anon=True)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

@@ -1,25 +1,28 @@
 import pathlib
 import typing
+
 from uuid import uuid4
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
+from django.db.models import OuterRef, Prefetch, Subquery
 from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 
-from .project import Project
 from .. import periods
 from ..dhis2.form_mapping import copy_mappings_from_previous_version
 from ..odk import parsing
 from ..utils import slugify_underscore
 from ..utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
-    SoftDeletableModel,
     IncludeDeletedSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
 )
+from .project import Project
+
 
 CR_MODE_NONE = "CR_MODE_NONE"
 CR_MODE_IF_REFERENCE_FORM = "CR_MODE_IF_REFERENCE_FORM"
@@ -57,6 +60,21 @@ class FormQuerySet(models.QuerySet):
             except Project.DoesNotExist:
                 return self.none()
 
+        return queryset
+
+    def with_latest_version(self):
+        queryset = self
+        queryset = queryset.annotate(
+            latest_version_id=Subquery(
+                FormVersion.objects.filter(form=OuterRef("pk")).order_by("-created_at").values("id")[:1]
+            )
+        )
+
+        latest_versions = FormVersion.objects.filter(id__in=queryset.values_list("latest_version_id", flat=True))
+
+        queryset = queryset.prefetch_related(
+            Prefetch("form_versions", queryset=latest_versions, to_attr="latest_versions")
+        )
         return queryset
 
 
@@ -122,7 +140,14 @@ class Form(SoftDeletableModel):
 
     @property
     def latest_version(self):
-        return self.form_versions.order_by("-created_at").first()
+        # attribute filled by queryset.with_latest_version() on FormQuerySet
+        try:
+            if len(self.latest_versions) > 0:
+                return self.latest_versions[0]
+            return None
+        except AttributeError as e:
+            # WARN form loaded without approtiate queryset.with_latest_version(), might trigger n+1 select
+            return self.form_versions.order_by("-created_at").first()
 
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)

@@ -1,5 +1,6 @@
 import math
-from django.db import migrations, models
+
+from django.db import migrations
 
 
 def get_round_doses_requested(apps, schema_editor):

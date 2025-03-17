@@ -1015,6 +1015,7 @@
     "iaso.permissions.iaso_org_unit_change_request": "Demande de changement d’unité d’organisation - Lecture et écriture",
     "iaso.permissions.iaso_org_unit_change_request_approve": "Demande de changement d’unité d’organisation - Approbation",
     "iaso.permissions.iaso_org_unit_change_request_configurations": "Configurations de demande de changement d’unité d’organisation",
+    "iaso.permissions.iaso_org_unit_change_request_review": "Demande de changement d'unité d'org.",
     "iaso.permissions.iaso_org_unit_groups": "Gestion des groupes d’unités d’organisation",
     "iaso.permissions.iaso_org_unit_types": "Gestion des types d’unités d’organisation",
     "iaso.permissions.iaso_page_write": "Gestion des liens intégrés web - Lecture et écriture",

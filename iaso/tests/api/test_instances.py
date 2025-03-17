@@ -508,7 +508,11 @@ class InstancesAPITestCase(TaskAPITestCase):
         """POST /api/instances/ an instance with an orgunit that has been copied in multiple source versions"""
 
         # First, let's create a user that has permissions to do all of this
-        super_yoda = self.create_user_with_profile(account=self.star_wars, username="super yoda", permissions=["iaso_sources", "iaso_submissions", "iaso_org_units"])
+        super_yoda = self.create_user_with_profile(
+            account=self.star_wars,
+            username="super yoda",
+            permissions=["iaso_sources", "iaso_submissions", "iaso_org_units"],
+        )
 
         # Then, let's copy the existing source version through an API call (couldn't call task directly)
         self.client.force_authenticate(super_yoda)
@@ -1025,7 +1029,8 @@ class InstancesAPITestCase(TaskAPITestCase):
     def test_can_retrieve_submissions_list_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
-            f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
+            f"/api/instances/?form_ids={self.instance_1.form.id}&order=id&csv=true",
+            headers={"Content-Type": "text/csv"},
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
@@ -1034,7 +1039,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         response_string = "".join(s for s in response_csv)
         reader = csv.reader(io.StringIO(response_string), delimiter=",")
         data = list(reader)
-        row_to_test = data[len(data) - 1]
+        row_to_test = data[1]
         expected_row = [
             f"{self.instance_1.id}",
             "",

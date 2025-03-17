@@ -19,7 +19,6 @@ from iaso.enketo import (
     EnketoError,
     calculate_file_md5,
     enketo_settings,
-    enketo_url_for_creation,
     enketo_url_for_edition,
     extract_xml_instance_from_form_xml,
     inject_instance_id_in_form,
@@ -43,6 +42,28 @@ def public_url_for_enketo(request: HttpRequest, path):
     if enketo_settings().get("ENKETO_DEV"):
         resolved_path = resolved_path.replace("localhost:8081", "iaso:8081")
     return resolved_path
+
+
+def _enketo_url_for_creation(form, instance, request, return_url):
+    user_id = None
+    profile = request.user.iaso_profile if request.user and not request.user.is_anonymous else None
+    if profile:
+        user_id = profile.user.id
+    instance_xml = extract_xml_instance_from_form_xml(form.latest_version.file.read(), instance.uuid)
+
+    version_id = instance.form.latest_version.version_id
+    instance_uuid, new_xml = inject_xml_find_uuid(
+        instance_xml, instance_id=instance.id, version_id=version_id, user_id=user_id, instance=instance
+    )
+
+    edit_url = enketo_url_for_edition(
+        public_url_for_enketo(request, "/api/enketo"),
+        form_id_string=instance.uuid,
+        instance_xml=new_xml,
+        instance_id=instance_uuid,
+        return_url=return_url,
+    )
+    return edit_url
 
 
 # Used by Create submission in Iaso Dashboard
@@ -77,24 +98,7 @@ def enketo_create_url(request):
         if not return_url:
             return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
 
-        user_id = None
-        profile = request.user.iaso_profile
-        if profile:
-            user_id = profile.user.id
-        instance_xml = extract_xml_instance_from_form_xml(form.latest_version.file.read(), uuid)
-
-        version_id = instance.form.latest_version.version_id
-        instance_uuid, new_xml = inject_xml_find_uuid(
-            instance_xml, instance_id=instance.id, version_id=version_id, user_id=user_id, instance=instance
-        )
-
-        edit_url = enketo_url_for_edition(
-            public_url_for_enketo(request, "/api/enketo"),
-            form_id_string=instance.uuid,
-            instance_xml=new_xml,
-            instance_id=instance_uuid,
-            return_url=return_url,
-        )
+        edit_url = _enketo_url_for_creation(form=form, instance=instance, request=request, return_url=return_url)
 
         return JsonResponse({"edit_url": edit_url}, status=201)
     except EnketoError as error:
@@ -197,9 +201,8 @@ def enketo_public_create_url(request):
     try:
         if not return_url:
             return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
-        edit_url = enketo_url_for_creation(
-            server_url=public_url_for_enketo(request, "/api/enketo"), uuid=uuid, return_url=return_url
-        )
+
+        edit_url = _enketo_url_for_creation(form=form, instance=instance, request=request, return_url=return_url)
 
         return JsonResponse({"url": edit_url}, status=201)
     except EnketoError as error:
@@ -227,7 +230,7 @@ def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
     i.save()
 
     try:
-        edit_url = enketo_url_for_creation(server_url=public_url_for_enketo(request, "/api/enketo"), uuid=uuid)
+        edit_url = _enketo_url_for_creation(form=form, instance=i, request=request)
 
         return HttpResponseRedirect(edit_url)
     except EnketoError as error:

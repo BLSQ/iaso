@@ -74,22 +74,17 @@ def inject_instance_id_in_form(xml_str, instance_id):
     # Find all <bind> nodes in the default namespace
     bind_nodes = root.findall(f".//{{{default_ns}}}bind")
 
-    print("**************************** ")
-    print("removing calculate")
-    print("    Iterate over bind nodes")
-    print("**************************** ")
     for bind in bind_nodes:
         question_name = bind.get("nodeset").split("/")[-1]
-        print(" bind : ", bind.get("nodeset"))
-        calculate_expression = bind.get("calculate")
-        if calculate_expression:
-            # if trivial expression like a constant no reference to another variable or function call
-            if "$" not in calculate_expression and "(" not in calculate_expression:
-                print("deleting ", bind.get("calculate"))
-                del bind.attrib["calculate"]
+        if question_name in ORG_UNIT_INJECTABLE_QUESTION_NAMES:
+            calculate_expression = bind.get("calculate")
+            if calculate_expression:
+                # if trivial expression like a constant no reference to another variable or function call
+                if "$" not in calculate_expression and "(" not in calculate_expression:
+                    print("deleting ", question_name, bind.get("calculate"))
+                    del bind.attrib["calculate"]
 
     instance_xml = etree.tostring(root, pretty_print=False, encoding="UTF-8")
-    print(instance_xml.decode("utf-8"))
     return instance_xml.decode("utf-8")
 
 
@@ -179,9 +174,16 @@ def extract_xml_instance_from_form_xml(form_version_xml, instance_uuid):
     instance_id_tag = new_data_node.find(".//meta/instanceID")
     instance_id_tag.text = f"uuid:{instance_uuid}"
 
-    print(etree.tostring(new_data_node, encoding="UTF-8", pretty_print=True).decode())
     instance_xml = etree.tostring(new_data_node, encoding="UTF-8", pretty_print=False)
     return instance_xml
+
+
+def deep_getattr(obj, attr, default=None):
+    for part in attr.split("."):
+        obj = getattr(obj, part, default)
+        if obj is default:
+            return default
+    return obj
 
 
 # we still use lxml.etree and not xml.etree because the latter seems to drop the namespace attribute by default
@@ -207,41 +209,37 @@ def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id, instanc
         edit_user_id_tag = etree.SubElement(root.find(".//meta"), "editUserID")  # type: ignore
     edit_user_id_tag.text = str(user_id)
 
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! INJECT ")
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! INJECT ")
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! INJECT ")
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! INJECT ")
-    substitutions = {
-        ".//current_ou_id": instance.org_unit.id,
-        ".//current_ou_name": instance.org_unit.name,
-        ".//current_ou_type_id": instance.org_unit.org_unit_type.id,
-        ".//current_ou_type_name": instance.org_unit.org_unit_type.name,
-    }
+    substitutions = {}
+    if instance and instance.org_unit:
+        substitutions = {
+            ".//current_ou_id": deep_getattr(instance, "org_unit.id", ""),
+            ".//current_ou_name": deep_getattr(instance, "org_unit.name", ""),
+            ".//current_ou_type_id": deep_getattr(instance, "org_unit.org_unit_type.id", ""),
+            ".//current_ou_type_name": deep_getattr(instance, "org_unit.org_unit_type.name", ""),
+        }
 
-    ancestors = []
-    parent = instance.org_unit.parent
-    while parent:
-        ancestors.append(parent)
-        parent = parent.parent
-    ancestors.reverse()
-    ancestor_index = 1
-    for ancestor in ancestors:
-        prefix = f"parent{ancestor_index}_ou_"
-        substitutions[f".//{prefix}id"] = ancestor.id
-        substitutions[f".//{prefix}name"] = ancestor.name
-        substitutions[f".//{prefix}type_id"] = ancestor.org_unit_type.id
-        substitutions[f".//{prefix}type_name"] = ancestor.org_unit_type.name
-        substitutions[f".//{prefix}is_root"] = "1" if ancestor_index == 1 else "0"
-        ancestor_index += 1
+    if instance and instance.org_unit:
+        ancestors = []
+        parent = instance.org_unit.parent
+        while parent:
+            ancestors.append(parent)
+            parent = parent.parent
+        ancestors.reverse()
+        ancestor_index = 1
+        for ancestor in ancestors:
+            prefix = f"parent{ancestor_index}_ou_"
+            substitutions[f".//{prefix}id"] = deep_getattr(ancestor, "id", "")
+            substitutions[f".//{prefix}name"] = deep_getattr(ancestor, "name", "")
+            substitutions[f".//{prefix}type_id"] = deep_getattr(ancestor, "org_unit_type.id", "")
+            substitutions[f".//{prefix}type_name"] = deep_getattr(ancestor, "org_unit_type.name", "")
+            substitutions[f".//{prefix}is_root"] = "1" if ancestor_index == 1 else "0"
+            ancestor_index += 1
 
     for xpath, value in substitutions.items():
         node = root.xpath(xpath)
         if node and instance:
-            print("injecting ", xpath, value)
             node[0].text = str(value)
 
     new_xml = etree.tostring(root, encoding="UTF-8", pretty_print=False)
-
-    print(new_xml)
 
     return instance_uuid, new_xml

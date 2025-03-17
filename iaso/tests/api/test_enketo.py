@@ -336,11 +336,60 @@ class EnketoAPITestCase(APITestCase):
         response = self.client.get("/api/enketo/public_create_url/", data=data)
         r = self.assertJSONResponse(response, 201)
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
-        self.assertTrue(
-            responses.assert_call_count("https://enketo_url.host.test/api_v2/survey/single", 1),
-        )
+        self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1))
+
         self.assertEqual(len(responses.calls), 1)
         self.assertEqual(old_count + 1, Instance.objects.count())
+
+    @override_settings(ENKETO=enketo_test_settings)
+    @responses.activate
+    def test_public_create_url_injectables(self):
+        self.setUpMockEnketo()
+        # usually passed to the external service when configuring
+        token = self.project.external_token
+
+        form_with_injectables = m.Form.objects.create(
+            name="Hydroponics study injectables",
+            form_id="hydro_1_injectables",
+            period_type=m.MONTH,
+            single_per_period=True,
+        )
+
+        form_version_1 = m.FormVersion.objects.create(
+            form=form_with_injectables,
+            version_id="1",
+            file=UploadedFile(open("iaso/tests/fixtures/form_rapide_1666691000_with_injectables.xml")),
+        )
+
+        self.project.unit_types.add(self.jedi_council)
+        self.project.forms.add(form_with_injectables)
+        self.project.save()
+
+        form_id = form_with_injectables.form_id
+        old_count = Instance.objects.count()
+
+        data = {
+            "period": "202301",
+            "form_id": form_id,
+            "external_org_unit_id": self.jedi_council_corruscant.source_ref,
+            "token": token,
+        }
+
+        response = self.client.get("/api/enketo/public_create_url/", data=data)
+
+        r = self.assertJSONResponse(response, 201)
+        self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
+        self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1))
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(old_count + 1, Instance.objects.count())
+
+        from urllib.parse import parse_qs, unquote
+
+        params = parse_qs(responses.calls[0].request.body)
+        decoded_params = {key: [unquote(value) for value in values] for key, values in params.items()}
+
+        self.assertIn("<current_ou_name>Corruscant Jedi Council</current_ou_name>", decoded_params["instance"][0])
+        self.assertIn("<current_ou_type_name></current_ou_type_name>", decoded_params["instance"][0])
 
     def setUpMockEnketo(self):
         self.enketo_contents = []
@@ -460,7 +509,8 @@ class EnketoAPITestCase(APITestCase):
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertEqual(len(responses.calls), 1)
         # self.assertEqual(responses.calls[0].request.url, 1)
-        self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/survey/single", 1))
+        self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1))
+
         self.assertEqual(old_count + 1, Instance.objects.count())
 
     @override_settings(ENKETO=enketo_test_settings)
@@ -497,7 +547,7 @@ class EnketoAPITestCase(APITestCase):
         self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
         self.assertEqual(len(responses.calls), 1)
         # self.assertEqual(responses.calls[0].request.url, 1)
-        self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/survey/single", 1))
+        self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1))
         self.assertEqual(old_count + 1, Instance.objects.count())
 
     def test_form_list_work_with_duplicate_instance(self):

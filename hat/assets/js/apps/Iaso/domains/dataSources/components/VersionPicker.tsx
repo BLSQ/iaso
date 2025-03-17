@@ -46,6 +46,7 @@ export const VersionPicker: FunctionComponent<Props> = ({
                     errors={version.errors}
                     onChange={onChange}
                     options={version.options}
+                    withMarginTop={false}
                     required={version.required}
                 />
                 <InputComponent
@@ -61,7 +62,7 @@ export const VersionPicker: FunctionComponent<Props> = ({
                 />
             </Grid>
             <Grid xs={6} item>
-                <Box mt={1}>
+                <Box mt={-2}>
                     <OrgUnitTreeviewModal
                         onConfirm={value => {
                             onChange(orgUnit.key, value?.id ?? null);

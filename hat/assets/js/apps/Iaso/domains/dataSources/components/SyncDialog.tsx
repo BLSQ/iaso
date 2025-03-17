@@ -5,7 +5,7 @@ import React, {
     useState,
     FunctionComponent,
 } from 'react';
-import PublishIcon from '@mui/icons-material/Publish';
+import SyncIcon from '@mui/icons-material/Sync';
 import {
     Button,
     Dialog,
@@ -14,17 +14,17 @@ import {
     DialogTitle,
     Divider,
     Grid,
+    Typography,
 } from '@mui/material';
 import { IconButton, LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
-import { ModalSubTitle } from '../../../components/forms/ModalSubTitle';
 import { useFormState } from '../../../hooks/form';
 import { useSnackMutation } from '../../../libs/apiHooks';
 import {
     commaSeparatedIdsToStringArray,
     convertFormStateToDict,
 } from '../../../utils/forms';
-import { Version } from '../../orgUnits/types/dataSources';
+import { DataSource } from '../../orgUnits/types/dataSources';
 import { useExportFields } from '../hooks/useExportFields';
 import MESSAGES from '../messages';
 import {
@@ -38,7 +38,7 @@ import { ConfirmExportButton } from './ConfirmExportButton';
 import { Dhis2Credentials } from './Dhis2Credentials';
 import { VersionPicker } from './VersionPicker';
 
-const initialExportData = defaultVersionId => ({
+const initialExportData = (defaultVersionId?: number) => ({
     ref_version_id: defaultVersionId, // version id of the target data source
     ref_top_org_unit_id: null,
 
@@ -58,22 +58,14 @@ const initialExportData = defaultVersionId => ({
 });
 
 type Props = {
-    dataSourceName: boolean;
-    versions: Version[];
-    defaultVersionId?: number;
-    dataSourceId: number;
+    dataSource: DataSource;
 };
 
-export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
-    dataSourceName,
-    versions,
-    defaultVersionId,
-    dataSourceId,
-}) => {
+export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
     const [open, setOpen] = useState(false);
     const { formatMessage } = useSafeIntl();
     const fieldsToExport = useFieldsToExport();
-
+    const defaultVersionId = dataSource.default_version?.id;
     const { data: sourceVersions } = useDataSourceVersions();
 
     const { mutate: exportToDHIS2 } = useSnackMutation(
@@ -120,10 +112,20 @@ export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
         }
     }, [exportData]);
 
-    const onConfirm = useCallback(() => {
-        exportToDHIS2(convertFormStateToDict(exportData) as unknown as void);
+    const handleClose = useCallback(() => {
         setOpen(false);
-    }, [exportData, exportToDHIS2]);
+        reset();
+    }, [reset]);
+
+    const onConfirmExport = useCallback(() => {
+        exportToDHIS2(convertFormStateToDict(exportData) as unknown as void);
+        handleClose();
+    }, [exportData, exportToDHIS2, handleClose]);
+
+    const onConfirmSync = useCallback(() => {
+        console.log('onConfirmSync');
+        handleClose();
+    }, [handleClose]);
 
     const allowConfirm =
         Boolean(exportData.source_version_id?.value) &&
@@ -150,7 +152,7 @@ export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
 
     const { sourceFields, targetFields } = useExportFields({
         exportData,
-        versions,
+        versions: dataSource.versions,
         sourceVersions,
         defaultVersionId,
         formatMessage,
@@ -160,32 +162,30 @@ export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
     return (
         <>
             <IconButton
-                dataTestId={`open-versions-dialog-button-${dataSourceId}`}
+                dataTestId={`open-versions-dialog-button-${dataSource.id}`}
                 onClick={() => setOpen(true)}
-                overrideIcon={PublishIcon}
-                tooltipMessage={MESSAGES.versions}
+                overrideIcon={SyncIcon}
+                tooltipMessage={MESSAGES.compare}
             />
-            <Dialog
-                open={open}
-                onClose={() => {
-                    setOpen(false);
-                    reset();
-                }}
-                maxWidth="md"
-            >
+            <Dialog open={open} onClose={handleClose} maxWidth="md">
                 <DialogTitle>
-                    {formatMessage(MESSAGES.exportDataSource, {
-                        dataSourceName,
+                    {formatMessage(MESSAGES.compareDataSource, {
+                        dataSourceName: dataSource.name,
                     })}
                 </DialogTitle>
                 <DialogContent>
                     <Grid container spacing={2}>
                         {isCSVLoading && <LoadingSpinner />}
                         {/* Data to export  */}
+                        <Grid item xs={12}>
+                            <Typography
+                                variant="subtitle1"
+                                sx={{ fontWeight: 'bold' }}
+                            >
+                                {formatMessage(MESSAGES.origin)}:
+                            </Typography>
+                        </Grid>
                         <Grid container item spacing={2}>
-                            <ModalSubTitle
-                                message={formatMessage(MESSAGES.exportTitle)}
-                            />
                             <VersionPicker
                                 fields={sourceFields}
                                 onChange={setExportDataField}
@@ -222,13 +222,15 @@ export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
                             </Grid>
                         </Grid>
                         {/* End data to export */}
+                        <Grid item xs={12}>
+                            <Typography
+                                variant="subtitle1"
+                                sx={{ fontWeight: 'bold' }}
+                            >
+                                {formatMessage(MESSAGES.target)}:
+                            </Typography>
+                        </Grid>
                         <Grid container item spacing={2}>
-                            <ModalSubTitle
-                                message={formatMessage(
-                                    MESSAGES.sourceDataSource,
-                                )}
-                            />
-
                             <VersionPicker
                                 fields={targetFields}
                                 onChange={setExportDataField}
@@ -242,14 +244,18 @@ export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
                     </Grid>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setOpen(false)}>
+                    <Button onClick={handleClose}>
                         {formatMessage(MESSAGES.close)}
                     </Button>
                     <Button onClick={onXlsPreview} disabled={!allowConfirm}>
                         {formatMessage(MESSAGES.csvPreview)}
                     </Button>
                     <ConfirmExportButton
-                        onConfirm={onConfirm}
+                        onConfirm={onConfirmSync}
+                        allowConfirm
+                    />
+                    <ConfirmExportButton
+                        onConfirm={onConfirmExport}
                         allowConfirm={allowConfirmExport}
                     />
                 </DialogActions>

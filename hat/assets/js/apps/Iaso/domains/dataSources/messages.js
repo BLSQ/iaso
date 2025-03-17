@@ -161,9 +161,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.version',
         defaultMessage: 'Versions',
     },
-    exportDataSource: {
-        id: 'iaso.datasources.exportDataSource',
-        defaultMessage: 'Export data source: {dataSourceName}',
+    compareDataSource: {
+        id: 'iaso.datasources.compareDataSource',
+        defaultMessage: 'Compare data source: {dataSourceName}',
     },
     name: {
         id: 'iaso.datasources.options.label.name',
@@ -229,17 +229,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.credentials',
         defaultMessage: 'Credentials',
     },
-    exportTitle: {
-        id: 'iaso.datasources.title.export',
-        defaultMessage: 'Org units to export',
+    origin: {
+        id: 'iaso.datasources.title.origin',
+        defaultMessage: 'Origin',
     },
-    sourceDataSource: {
-        id: 'iaso.datasources.title.sourceDataSource',
-        defaultMessage: 'Version to compare with to generate export',
+    target: {
+        id: 'iaso.datasources.title.target',
+        defaultMessage: 'Target',
     },
-    compareAndExport: {
-        id: 'iaso.datasources.tooltip.compareAndExport',
-        defaultMessage: 'Compare data sources and export to DHIS2',
+    compare: {
+        id: 'iaso.datasources.tooltip.compare',
+        defaultMessage: 'Compare data sources',
     },
     credentialsForExport: {
         id: 'iaso.datasources.credentialsForExport',

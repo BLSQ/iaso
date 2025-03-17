@@ -10,7 +10,7 @@ type Props = {
     allowConfirm: boolean;
 };
 
-export const ConfirmExportButton: FunctionComponent<Props> = ({
+export const ConfirmSyncButton: FunctionComponent<Props> = ({
     onConfirm,
     allowConfirm,
 }) => {
@@ -34,7 +34,7 @@ export const ConfirmExportButton: FunctionComponent<Props> = ({
                         color="error"
                         fontSize="large"
                     />
-                    {formatMessage(MESSAGES.dhis2ExportTitle)}
+                    {formatMessage(MESSAGES.dhis2ExportTitle)}SYNC
                     <ReportIcon
                         sx={{
                             display: 'inline-block',

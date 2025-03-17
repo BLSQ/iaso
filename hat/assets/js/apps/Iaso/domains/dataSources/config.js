@@ -14,7 +14,7 @@ import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx'
 import { baseUrls } from '../../constants/urls.ts';
 import * as Permission from '../../utils/permissions.ts';
 import { DataSourceDialogComponent as DataSourceDialog } from './components/DataSourceDialogComponent';
-import { ExportToDHIS2Dialog } from './components/ExportToDHIS2Dialog.tsx';
+import { SyncDialog } from './components/SyncDialog.tsx';
 import { VersionsDialog } from './components/VersionsDialog';
 import MESSAGES from './messages';
 
@@ -122,17 +122,10 @@ export const useDataSourcesTableColumns = defaultSourceVersion => {
                                             tooltipMessage={MESSAGES.versions}
                                         />
                                     )}
-                                    defaultSourceVersion={defaultSourceVersion}
                                     source={settings.row.original}
                                 />
-                                <ExportToDHIS2Dialog
-                                    dataSourceName={settings.row.original.name}
-                                    dataSourceId={settings.row.original.id}
-                                    versions={settings.row.original.versions}
-                                    defaultVersionId={
-                                        settings.row.original?.default_version
-                                            ?.id
-                                    }
+                                <SyncDialog
+                                    dataSource={settings.row.original}
                                 />
                             </DisplayIfUserHasPerm>
                         </section>

@@ -5,12 +5,10 @@ import React, {
     useState,
     FunctionComponent,
     ReactNode,
-    useMemo,
 } from 'react';
 import { Box, Divider, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { arrayOf, func, number, object, string } from 'prop-types';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { ModalSubTitle } from '../../../components/forms/ModalSubTitle';
@@ -22,6 +20,7 @@ import {
 } from '../../../utils/forms';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Version } from '../../orgUnits/types/dataSources';
+import { useExportFields } from '../hooks/useExportFields';
 import MESSAGES from '../messages';
 import {
     csvPreview,
@@ -30,13 +29,8 @@ import {
     useDataSourceVersions,
     useOrgUnitTypes,
 } from '../requests';
-import {
-    FIELDS_TO_EXPORT,
-    dataSourceVersionsAsOptions,
-    useFieldsToExport,
-    versionsAsOptionsWithSourceName,
-} from '../utils';
-import { VersionPicker, VersionFields } from './VersionPicker';
+import { FIELDS_TO_EXPORT, useFieldsToExport } from '../utils';
+import { VersionPicker } from './VersionPicker';
 
 const style = theme => ({
     noCreds: {
@@ -82,19 +76,11 @@ export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
     versions,
     defaultVersionId,
 }) => {
-    const {
-        data: orgUnitStatusAsOptions,
-        isLoading: isLoadingOrgUnitStatusAsOptions,
-    } = useGetValidationStatus(true);
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const fieldsToExport = useFieldsToExport();
 
-    const { data: orgUnitTypes, isLoading: areOrgUnitTypesLoading } =
-        useOrgUnitTypes();
-
-    const { data: sourceVersions, isLoading: areSourceVersionsLoading } =
-        useDataSourceVersions();
+    const { data: sourceVersions } = useDataSourceVersions();
 
     const { mutate: exportToDHIS2 } = useSnackMutation(
         postToDHIS2,
@@ -175,95 +161,15 @@ export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
         }
     }, [refDataVersionId]);
 
-    const sourceFields: VersionFields = useMemo(() => {
-        return {
-            version: {
-                key: 'ref_version_id',
-                value: refDataVersionId,
-                errors: exportData.ref_version_id.errors,
-                options: dataSourceVersionsAsOptions(
-                    versions,
-                    defaultVersionId,
-                    formatMessage,
-                ),
-                required: true,
-            },
-            status: {
-                key: 'ref_status',
-                value: exportData.ref_status?.value,
-                errors: exportData.ref_status.errors,
-                options: orgUnitStatusAsOptions,
-                required: true,
-                isLoading: isLoadingOrgUnitStatusAsOptions,
-            },
-            orgUnitTypes: {
-                key: 'ref_org_unit_type_ids',
-                value: exportData.ref_org_unit_type_ids?.value,
-                errors: exportData.ref_org_unit_type_ids.errors,
-                options: orgUnitTypes ?? [],
-                isLoading: areOrgUnitTypesLoading,
-            },
-            orgUnit: {
-                key: 'ref_top_org_unit_id',
-                value: exportData.ref_top_org_unit_id?.value,
-                errors: exportData.ref_top_org_unit_id.errors,
-            },
-        };
-    }, [
-        refDataVersionId,
+    const { sourceFields, targetFields } = useExportFields({
         exportData,
         versions,
+        sourceVersions,
         defaultVersionId,
         formatMessage,
-        orgUnitStatusAsOptions,
-        isLoadingOrgUnitStatusAsOptions,
-        orgUnitTypes,
-        areOrgUnitTypesLoading,
-    ]);
-
-    const targetFields: VersionFields = useMemo(() => {
-        return {
-            version: {
-                key: 'source_version_id',
-                value: sourceDataVersionId,
-                errors: exportData.source_version_id.errors,
-                options: versionsAsOptionsWithSourceName({
-                    formatMessage,
-                    versions: sourceVersions,
-                }),
-                required: true,
-            },
-            status: {
-                key: 'source_status',
-                value: exportData.source_status?.value,
-                errors: exportData.source_status.errors,
-                options: orgUnitStatusAsOptions,
-                required: true,
-                isLoading: isLoadingOrgUnitStatusAsOptions,
-            },
-            orgUnitTypes: {
-                key: 'source_org_unit_type_ids',
-                value: exportData.source_org_unit_type_ids?.value,
-                errors: exportData.source_org_unit_type_ids.errors,
-                options: orgUnitTypes ?? [],
-                isLoading: areOrgUnitTypesLoading,
-            },
-            orgUnit: {
-                key: 'source_top_org_unit_id',
-                value: exportData.source_top_org_unit_id?.value,
-                errors: exportData.source_top_org_unit_id.errors,
-            },
-        };
-    }, [
-        areOrgUnitTypesLoading,
-        exportData,
-        formatMessage,
-        isLoadingOrgUnitStatusAsOptions,
-        orgUnitStatusAsOptions,
-        orgUnitTypes,
-        sourceVersions,
+        refDataVersionId,
         sourceDataVersionId,
-    ]);
+    });
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}

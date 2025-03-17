@@ -1,8 +1,5 @@
 IGNORE_ARGS = [
     "--ignore=.venv",
-    "--ignore=cypress",
-    "--ignore=node_modules",
-    "--ignore=.venv",
     "--ignore=venv",
     "--ignore=cypress",
     "--ignore=node_modules",

@@ -568,7 +568,7 @@ class VaccineStockSerializer(serializers.ModelSerializer):
     stock_of_usable_vials = serializers.SerializerMethodField()
     stock_of_unusable_vials = serializers.SerializerMethodField()
     vials_destroyed = serializers.SerializerMethodField()
-    # stock_of_earmarked_vials = serializers.SerializerMethodField()
+    stock_of_earmarked_vials = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineStock
@@ -581,7 +581,7 @@ class VaccineStockSerializer(serializers.ModelSerializer):
             "vials_used",
             "stock_of_usable_vials",
             "stock_of_unusable_vials",
-            # "stock_of_earmarked_vials",
+            "stock_of_earmarked_vials",
             "vials_destroyed",
         ]
         list_serializer_class = VaccineStockListSerializer

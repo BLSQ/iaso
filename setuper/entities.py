@@ -125,7 +125,7 @@ def setup_entities(account_name, iaso_client):
     )
 
     # fetch orgunit ids
-    limit = 35
+    limit = 40
     orgunits = iaso_client.get(
         "/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]}
     )["orgunits"]
@@ -259,7 +259,7 @@ def setup_entities(account_name, iaso_client):
         json={
             "algorithm": "levenshtein",
             "entity_type_id": entity_type["id"],
-            "fields": ["name", "gender", "father_name"],
+            "fields": ["name"],
             "parameters": [],
         },
     )

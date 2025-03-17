@@ -4,12 +4,18 @@ import React, {
     useRef,
     useState,
     FunctionComponent,
-    ReactNode,
 } from 'react';
-import { Box, Divider, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import PublishIcon from '@mui/icons-material/Publish';
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Divider,
+    Grid,
+} from '@mui/material';
+import { IconButton, LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { ModalSubTitle } from '../../../components/forms/ModalSubTitle';
 import { useFormState } from '../../../hooks/form';
@@ -18,7 +24,6 @@ import {
     commaSeparatedIdsToStringArray,
     convertFormStateToDict,
 } from '../../../utils/forms';
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Version } from '../../orgUnits/types/dataSources';
 import { useExportFields } from '../hooks/useExportFields';
 import MESSAGES from '../messages';
@@ -27,22 +32,11 @@ import {
     postToDHIS2,
     useDataSourceForVersion,
     useDataSourceVersions,
-    useOrgUnitTypes,
 } from '../requests';
 import { FIELDS_TO_EXPORT, useFieldsToExport } from '../utils';
+import { ConfirmExportButton } from './ConfirmExportButton';
+import { Dhis2Credentials } from './Dhis2Credentials';
 import { VersionPicker } from './VersionPicker';
-
-const style = theme => ({
-    noCreds: {
-        color: theme.palette.error.main,
-    },
-    subtitle: {
-        fontWeight: 'bold',
-        color: theme.palette.primary.main,
-    },
-});
-
-const useStyles = makeStyles(style);
 
 const initialExportData = defaultVersionId => ({
     ref_version_id: defaultVersionId, // version id of the target data source
@@ -64,20 +58,20 @@ const initialExportData = defaultVersionId => ({
 });
 
 type Props = {
-    renderTrigger: () => ReactNode;
     dataSourceName: boolean;
     versions: Version[];
     defaultVersionId?: number;
+    dataSourceId: number;
 };
 
 export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
-    renderTrigger,
     dataSourceName,
     versions,
     defaultVersionId,
+    dataSourceId,
 }) => {
+    const [open, setOpen] = useState(false);
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
     const fieldsToExport = useFieldsToExport();
 
     const { data: sourceVersions } = useDataSourceVersions();
@@ -126,17 +120,10 @@ export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
         }
     }, [exportData]);
 
-    const onConfirm = useCallback(
-        closeDialog => {
-            // eslint-disable-next-line no-restricted-globals,no-alert
-            const r = confirm(formatMessage(MESSAGES.dhis2ExportSure));
-            if (r) {
-                exportToDHIS2(convertFormStateToDict(exportData));
-                closeDialog();
-            }
-        },
-        [exportData, exportToDHIS2, formatMessage],
-    );
+    const onConfirm = useCallback(() => {
+        exportToDHIS2(convertFormStateToDict(exportData) as unknown as void);
+        setOpen(false);
+    }, [exportData, exportToDHIS2]);
 
     const allowConfirm =
         Boolean(exportData.source_version_id?.value) &&
@@ -171,107 +158,102 @@ export const ExportToDHIS2Dialog: FunctionComponent<Props> = ({
         sourceDataVersionId,
     });
     return (
-        <ConfirmCancelDialogComponent
-            renderTrigger={renderTrigger}
-            onConfirm={onXlsPreview}
-            onClosed={reset}
-            confirmMessage={MESSAGES.csvPreview}
-            cancelMessage={MESSAGES.close}
-            maxWidth="md"
-            allowConfirm={allowConfirm}
-            titleMessage={{
-                ...MESSAGES.exportDataSource,
-                values: { dataSourceName },
-            }}
-            additionalButton
-            additionalMessage={MESSAGES.export}
-            onAdditionalButtonClick={onConfirm}
-            allowConfimAdditionalButton={allowConfirmExport}
-        >
-            <Grid container spacing={2}>
-                {isCSVLoading && <LoadingSpinner />}
-                {/* Data to export  */}
-                <Grid container item spacing={2}>
-                    <ModalSubTitle
-                        message={formatMessage(MESSAGES.exportTitle)}
-                    />
-                    <VersionPicker
-                        fields={sourceFields}
-                        onChange={setExportDataField}
-                        resetTrigger={
-                            refTreeviewResetControl.current !== refDataVersionId
-                        }
-                    />
-                    <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            keyValue="fields_to_export"
-                            labelString={formatMessage(MESSAGES.fieldsToExport)}
-                            value={exportData.fields_to_export.value}
-                            errors={exportData.fields_to_export.errors}
-                            onChange={(keyValue, newValue) => {
-                                setExportDataField(
-                                    keyValue,
-                                    commaSeparatedIdsToStringArray(newValue),
-                                );
-                            }}
-                            options={fieldsToExport}
-                            multi
-                            required
-                            withMarginTop={false}
-                        />
-                    </Grid>
-                    <Grid xs={12} item>
-                        <Divider />
-                    </Grid>
-                </Grid>
-                {/* End data to export */}
-                <Grid container item spacing={2}>
-                    <ModalSubTitle
-                        message={formatMessage(MESSAGES.sourceDataSource)}
-                    />
-
-                    <VersionPicker
-                        fields={targetFields}
-                        onChange={setExportDataField}
-                        resetTrigger={
-                            sourceTreeviewResetControl.current !==
-                            sourceDataVersionId
-                        }
-                    />
-                    {credentials && (
-                        <Grid xs={12} item>
-                            <Box display="flex" alignItems="center">
-                                <Typography
-                                    variant="subtitle1"
-                                    className={classes.subtitle}
-                                >
-                                    {formatMessage(
-                                        MESSAGES.credentialsForExport,
+        <>
+            <IconButton
+                dataTestId={`open-versions-dialog-button-${dataSourceId}`}
+                onClick={() => setOpen(true)}
+                overrideIcon={PublishIcon}
+                tooltipMessage={MESSAGES.versions}
+            />
+            <Dialog
+                open={open}
+                onClose={() => {
+                    setOpen(false);
+                    reset();
+                }}
+                maxWidth="md"
+            >
+                <DialogTitle>
+                    {formatMessage(MESSAGES.exportDataSource, {
+                        dataSourceName,
+                    })}
+                </DialogTitle>
+                <DialogContent>
+                    <Grid container spacing={2}>
+                        {isCSVLoading && <LoadingSpinner />}
+                        {/* Data to export  */}
+                        <Grid container item spacing={2}>
+                            <ModalSubTitle
+                                message={formatMessage(MESSAGES.exportTitle)}
+                            />
+                            <VersionPicker
+                                fields={sourceFields}
+                                onChange={setExportDataField}
+                                resetTrigger={
+                                    refTreeviewResetControl.current !==
+                                    refDataVersionId
+                                }
+                            />
+                            <Grid xs={6} item>
+                                <InputComponent
+                                    type="select"
+                                    keyValue="fields_to_export"
+                                    labelString={formatMessage(
+                                        MESSAGES.fieldsToExport,
                                     )}
-                                </Typography>
-                                {credentials?.is_valid && (
-                                    <Typography variant="body1">
-                                        {credentials.name
-                                            ? `: ${credentials.name} (${credentials.url})`
-                                            : `: ${credentials.url}`}
-                                    </Typography>
-                                )}
-                                {!credentials?.is_valid && (
-                                    <Typography
-                                        variant="body1"
-                                        className={classes.noCreds}
-                                    >
-                                        {`: ${formatMessage(
-                                            MESSAGES.noCredentialsForExport,
-                                        )}`}
-                                    </Typography>
-                                )}
-                            </Box>
+                                    value={exportData.fields_to_export.value}
+                                    errors={exportData.fields_to_export.errors}
+                                    onChange={(keyValue, newValue) => {
+                                        setExportDataField(
+                                            keyValue,
+                                            commaSeparatedIdsToStringArray(
+                                                newValue,
+                                            ),
+                                        );
+                                    }}
+                                    options={fieldsToExport}
+                                    multi
+                                    required
+                                    withMarginTop={false}
+                                />
+                            </Grid>
+                            <Grid xs={12} item>
+                                <Divider />
+                            </Grid>
                         </Grid>
-                    )}
-                </Grid>
-            </Grid>
-        </ConfirmCancelDialogComponent>
+                        {/* End data to export */}
+                        <Grid container item spacing={2}>
+                            <ModalSubTitle
+                                message={formatMessage(
+                                    MESSAGES.sourceDataSource,
+                                )}
+                            />
+
+                            <VersionPicker
+                                fields={targetFields}
+                                onChange={setExportDataField}
+                                resetTrigger={
+                                    sourceTreeviewResetControl.current !==
+                                    sourceDataVersionId
+                                }
+                            />
+                            <Dhis2Credentials credentials={credentials} />
+                        </Grid>
+                    </Grid>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpen(false)}>
+                        {formatMessage(MESSAGES.close)}
+                    </Button>
+                    <Button onClick={onXlsPreview} disabled={!allowConfirm}>
+                        {formatMessage(MESSAGES.csvPreview)}
+                    </Button>
+                    <ConfirmExportButton
+                        onConfirm={onConfirm}
+                        allowConfirm={allowConfirmExport}
+                    />
+                </DialogActions>
+            </Dialog>
+        </>
     );
 };

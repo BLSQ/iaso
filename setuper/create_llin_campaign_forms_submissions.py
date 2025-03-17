@@ -29,9 +29,7 @@ def create_form_submissions(account_name, iaso_client, form, orgunit):
             "name": file_name,
         }
     ]
-    iaso_client.post(
-        f"/api/instances/?app_id={account_name}.campaign", json=instance_body
-    )
+    iaso_client.post(f"/api/instances/?app_id={account_name}.campaign", json=instance_body)
 
     instance_id = {"instanceID": "uuid:" + the_uuid}
     instance_json = instance_by_LLIN_campaign_form(form, instance_id)
@@ -53,9 +51,7 @@ def create_form_submissions(account_name, iaso_client, form, orgunit):
 
 def create_org_units_submissions(account_name, iaso_client, facility_type_id, form):
     limit = 20
-    orgUnits = iaso_client.get(
-        "/api/orgunits/", params={"limit": limit, "orgUnitTypeId": facility_type_id}
-    )["orgunits"]
+    orgUnits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": facility_type_id})["orgunits"]
 
     for orgUnit in orgUnits:
         create_form_submissions(account_name, iaso_client, form, orgUnit)
@@ -92,9 +88,7 @@ def llin_forms(iaso_client, account_name):
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
     org_unit_type_id = [
-        out["id"]
-        for out in org_unit_types
-        if out["name"] == "Health facility/Formation sanitaire - HF"
+        out["id"] for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"
     ]
 
     print("--- Creating LLIN campaign forms ---")
@@ -118,8 +112,6 @@ def llin_forms(iaso_client, account_name):
         data = {"form_id": form_id, "xls_file": xlsx_file}
         form_files = {"xls_file": open(xlsx_file, "rb")}
         form["id"] = form_id
-        form["version"] = iaso_client.post(
-            "/api/formversions/", files=form_files, data=data
-        )
+        form["version"] = iaso_client.post("/api/formversions/", files=form_files, data=data)
 
         create_org_units_submissions(account_name, iaso_client, org_unit_type_id, form)

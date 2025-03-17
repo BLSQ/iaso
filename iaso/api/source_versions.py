@@ -100,7 +100,9 @@ class SourceVersionViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.MAPPINGS, permission.ORG_UNITS, permission.ORG_UNITS_READ, permission.LINKS, permission.SOURCES),  # type: ignore
+        HasPermission(
+            permission.MAPPINGS, permission.ORG_UNITS, permission.ORG_UNITS_READ, permission.LINKS, permission.SOURCES
+        ),  # type: ignore
     ]
     serializer_class = SourceVersionSerializer
     results_key = "versions"

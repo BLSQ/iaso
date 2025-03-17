@@ -761,7 +761,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_sources_can_change_default_version: {
         id: 'iaso.permissions.sourcesCanChangeDefaultVersion',
-        defaultMessage: 'Geo data sources default version',
+        defaultMessage: 'Edit geographic default data source',
     },
     iaso_sources_can_change_default_version_tooltip: {
         id: 'iaso.permissions.sourcesCanChangeDefaultVersionTooltip',

@@ -155,6 +155,8 @@ PERMISSIONS_PRESENTATION = {
         "iaso_links",
         "iaso_registry_read",
         "iaso_registry_write",
+    ],
+    "data_validation": [
         "iaso_org_unit_change_request_review",
         "iaso_org_unit_change_request_configurations",
     ],

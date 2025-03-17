@@ -557,12 +557,22 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage: 'Manage polio notifications - Read and Write',
     },
     iaso_org_unit_change_request_review: {
-        id: 'iaso.permissions.tooltip.iaso_org_unit_change_request_review',
+        id: 'iaso.permissions.iaso_org_unit_change_request_review',
         defaultMessage: 'Org unit change request review',
+    },
+    iaso_org_unit_change_request_review_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_org_unit_change_request_review',
+        defaultMessage:
+            'View, approve or reject proposed Org unit change request',
     },
     iaso_org_unit_change_request_configurations: {
         id: 'iaso.permissions.iaso_org_unit_change_request_configurations',
         defaultMessage: 'Org unit change request configurations',
+    },
+    iaso_org_unit_change_request_configurations_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_org_unit_change_request_configurations',
+        defaultMessage:
+            'View and edit configuration for editable fields per org unit types',
     },
     iaso_polio_vaccine_stock_management_read: {
         id: 'iaso.permissions.iaso_polio_vaccine_stock_management_read',

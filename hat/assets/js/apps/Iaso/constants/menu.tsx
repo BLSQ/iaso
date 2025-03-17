@@ -20,22 +20,32 @@ import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRou
 import Input from '@mui/icons-material/Input';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
-import RuleIcon from '@mui/icons-material/Rule';
-import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
 import PriceCheckIcon from '@mui/icons-material/PriceCheck';
+import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import RuleIcon from '@mui/icons-material/Rule';
 import Settings from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import BeneficiarySvg from '../components/svg/Beneficiary';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
+
+import { MenuItem, MenuItems, Plugins } from '../domains/app/types';
+import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
+import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
+import {
+    listMenuPermission,
+    userHasOneOfPermissions,
+} from '../domains/users/utils';
+import { DropdownOptions } from '../types/utils';
+import { PluginsContext } from '../utils';
 import {
     hasFeatureFlag,
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
@@ -43,19 +53,9 @@ import {
     SHOW_DHIS2_LINK,
     SHOW_PAGES,
 } from '../utils/featureFlags';
-import * as paths from './routes';
-
-import { MenuItem, MenuItems, Plugins } from '../domains/app/types';
-import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
-import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
-import {
-    listMenuPermission,
-    userHasOneOfPermissions,
-} from '../domains/users/utils';
-import { DropdownOptions } from '../types/utils';
-import { PluginsContext } from '../utils';
 import { useCurrentUser } from '../utils/usersUtils';
 import MESSAGES from './messages';
+import * as paths from './routes';
 import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG } from './urls';
 
 // !! remove permission property if the menu has a subMenu !!
@@ -149,12 +149,6 @@ const menuItems = (
                     icon: props => <FormatListBulleted {...props} />,
                 },
                 {
-                    label: formatMessage(MESSAGES.registry),
-                    permissions: paths.registryPath.permissions,
-                    key: 'registry',
-                    icon: props => <MenuBookIcon {...props} />,
-                },
-                {
                     label: formatMessage(MESSAGES.configuration),
                     key: 'configuration',
                     icon: props => <Settings {...props} />,
@@ -180,6 +174,12 @@ const menuItems = (
                     ],
                 },
             ],
+        },
+        {
+            label: formatMessage(MESSAGES.registry),
+            permissions: paths.registryPath.permissions,
+            key: 'registry',
+            icon: props => <MenuBookIcon {...props} />,
         },
         {
             label: formatMessage(MESSAGES.validation),

@@ -1004,6 +1004,7 @@
     "iaso.permissions.group.payments": "Paiements",
     "iaso.permissions.group.planning": "Planning",
     "iaso.permissions.group.polio": "Polio",
+    "iaso.permissions.group.registry": "Registre",
     "iaso.permissions.group.trypelim": "Trypelim",
     "iaso.permissions.iaso_dhis2_link": "Lier avec DHIS2",
     "iaso.permissions.iaso_entity_duplicates_read": "Doublons d’entités - Lecture seule",

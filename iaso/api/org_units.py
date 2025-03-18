@@ -204,7 +204,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
                 # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
                 # because `build_org_units_queryset()` can set `.distinct()` clauses.
-                queryset = queryset.distinct(*order)
+                if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
+                    queryset = queryset.distinct(*order)
 
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)

@@ -21,8 +21,9 @@ from ..utils.models.soft_deletable import (
     OnlyDeletedSoftDeletableManager,
     SoftDeletableModel,
 )
-from .project import Project
 from ..utils.models.virus_scan import VirusScanStatus
+from .project import Project
+
 
 CR_MODE_NONE = "CR_MODE_NONE"
 CR_MODE_IF_REFERENCE_FORM = "CR_MODE_IF_REFERENCE_FORM"

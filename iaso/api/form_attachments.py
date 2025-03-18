@@ -15,7 +15,6 @@ from ..utils.clamav import scan_uploaded_file_for_virus
 from .common import ModelViewSet, TimestampField
 from .forms import HasFormPermission
 from .query_params import APP_ID
-from ..utils.models.virus_scan import VirusScanStatus
 
 
 class FormAttachmentSerializer(serializers.ModelSerializer):

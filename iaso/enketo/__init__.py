@@ -1,7 +1,6 @@
 from .enketo_url import (
     EnketoError,
     enketo_settings,
-    enketo_url_for_creation,
     enketo_url_for_edition,
 )
 from .enketo_xml import (
@@ -18,7 +17,6 @@ __all__ = [
     "EnketoError",
     "calculate_file_md5",
     "enketo_settings",
-    "enketo_url_for_creation",
     "enketo_url_for_edition",
     "extract_xml_instance_from_form_xml",
     "inject_instance_id_in_form",

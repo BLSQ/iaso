@@ -533,6 +533,11 @@ class OrgUnitAPITestCase(APITestCase):
         for orgunit in response_data["orgUnits"]:
             self.assertEqual(orgunit["parent_id"], None)
 
+    def test_org_unit_list_with_as_location(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?asLocation=true&limit=1&group=1")
+        self.assertJSONResponse(response, 200)
+
     def test_org_unit_retrieve_without_auth_or_app_id(self):
         """GET /orgunits/<org_unit_id>/ without auth or app id should result in a 200 empty response"""
 

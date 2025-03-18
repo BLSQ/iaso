@@ -41,6 +41,7 @@ from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
     SoftDeletableModel,
 )
+from iaso.utils.models.virus_scan import VirusScanStatus
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -1389,11 +1390,10 @@ class VaccineRequestForm(SoftDeletableModel):
     comment = models.TextField(blank=True, null=True)
     target_population = models.PositiveIntegerField(null=True, blank=True)
 
-    document = models.FileField(
-        storage=CustomPublicStorage(),
-        upload_to="public_documents/vrf/",
-        null=True,
-        blank=True,
+    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/vrf/", null=True, blank=True)
+    document_last_scan = models.DateTimeField(blank=True, null=True)
+    document_scan_status = models.CharField(
+        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
     )
 
     objects = DefaultSoftDeletableManager()
@@ -1439,6 +1439,10 @@ class VaccinePreAlert(models.Model):
         upload_to="public_documents/prealert/",
         null=True,
         blank=True,
+    )
+    document_last_scan = models.DateTimeField(blank=True, null=True)
+    document_scan_status = models.CharField(
+        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
     )
 
     def save(self, *args, **kwargs):
@@ -1617,6 +1621,10 @@ class OutgoingStockMovement(models.Model):
         null=True,
         blank=True,
     )
+    document_last_scan = models.DateTimeField(blank=True, null=True)
+    document_scan_status = models.CharField(
+        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1636,6 +1644,10 @@ class DestructionReport(models.Model):
         upload_to="public_documents/destructionreport/",
         null=True,
         blank=True,
+    )
+    document_last_scan = models.DateTimeField(blank=True, null=True)
+    document_scan_status = models.CharField(
+        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1679,6 +1691,10 @@ class IncidentReport(models.Model):
         upload_to="public_documents/incidentreport/",
         null=True,
         blank=True,
+    )
+    document_last_scan = models.DateTimeField(blank=True, null=True)
+    document_scan_status = models.CharField(
+        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1887,6 +1903,8 @@ class NotificationImport(models.Model):
 
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
     file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
+    file_last_scan = models.DateTimeField(blank=True, null=True)
+    file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.NEW)
     errors = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
     created_at = models.DateTimeField(default=timezone.now)

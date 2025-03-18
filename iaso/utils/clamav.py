@@ -2,8 +2,6 @@ import logging
 import os
 import tempfile
 
-from datetime import datetime
-
 import clamav_client
 
 from clamav_client.clamd import CommunicationError

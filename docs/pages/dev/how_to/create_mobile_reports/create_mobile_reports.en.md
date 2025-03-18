@@ -7,7 +7,7 @@ You can find the documentation for that in the sections [Create forms for entiti
 
 # How to run coda mobile report locally
 
-The current report is based to nutrition program with beneficiaries splitted into 2 entity types:
+The current report is based on nutrition programs with beneficiaries split into 2 entity types:
 - Childen Under 5
 - Pregnant and breastfeeding woman 
 
@@ -28,18 +28,23 @@ yarn start
 
 ## 3. Getting json sample data for development
 
-It requires to have coda mobile app install debug version on your device. Debugging version allows to get sample data.
+It requires to have the CODA mobile app debug version installed on your device.
+The debugging version allows to get sample data.
 
-### Connect device to computer and run `scrcpy` command from the terminal
+### Connect the device to your computer and run `scrcpy` command from the terminal
 
-e.g: `scrcpy` or `scrcpy -s R58MA48E00H` (R58MA48E00H is device id and could change from one device to another)
+You can download `scrcpy` from their GitHub page: [https://github.com/Genymobile/scrcpy].
 
-Open Coda mobile app on the device, then click in the `See reports` link on the left bottom in order to access the mobile report
+Then run it:
+
+Either run  `scrcpy` or `scrcpy -s <device id>` (E.g.: `scrcpy -s R58MA48E00H`, the device id changes from one device to another)
+
+Open the CODA mobile app on the device, then click the `See reports` link at the bottom left of your screen to access the mobile report.
 
 ![See reports](./attachments/report_link.png)
 
 
-From your chrome browser, enter `chrome://inspect/`, then inspect link:
+In your Chrome browser, enter the following URL: `chrome://inspect/`, then inspect link:
 
 ![Chrome Inspect](./attachments/inspect_link.png)
 
@@ -90,7 +95,8 @@ The app reports 2 types of beneficiaries :
 - Childen Under 5
 - Pregnant and breastfeeding woman
 
-As additional information, to allow you navigate into report from your browser, in your code editor you need to open `/src/App.tsx` under line 82, replace "hidden" with "visible". This allow you to have back button to go back to previous screen, in the same way as android device.
+To allow you to navigate back inside the report from within your browser, you need to make the back button visible.
+In your code editor of choice, open `/src/App.tsx`, under line 82, replace "hidden" with "visible".
 
 
 Each sub report is splitted into:
@@ -107,7 +113,10 @@ Each sub report is splitted into:
 
 The report is deployed on Iaso via the web interface.
 
-   ### 1. Prepare the report zip file to deploy
+### 1. Prepare the report zip file to deploy
+
+**/!\ Make sure you have removed the FAKE DATA and made back the back button hidden in `/src/App.tsx` before you create a zip /!\**
+
 
 ```
 yarn run build
@@ -137,12 +146,13 @@ In header tag, on:
 
 In order to reference the right path, then remove css and js folder as they are empty.
 
-Inside `build/static` folder, create zip file with the whole content by selecting all files then zip, provide the name for the zip and let the process finish compressing files .
+Inside the `build/static` folder, create the zip file with the whole content by selecting all files then zip.
+Provide a name for the zip and let the process finish completely.
 
 
-   ### 2. Upload the zip file
+### 2. Upload the zip file
 
-Login with super user(with admin access) to Django admin interface: `/admin``:
+Login with a super user account (with admin access) to Django admin interface: `/admin``:
 
 - Go to `/admin`
 - Open the `Report versions` menu
@@ -157,11 +167,11 @@ Then:
 - Fill the Name, select the right version(created previously) and Project
 - Save
 
-   ### 3. View report from mobile app
+### 3. View report from mobile app
 
-Open the iaso mobile and **Refresh data** then **Refresh Beneficiaries** to link the app to the right report version.
+Open the CODA mobile and **Refresh data** then **Refresh Beneficiaries** to download the latest report version.
 
-After refreshing data, open the mobile app. The mobile report is accessible from the bottom left link `See reports`.
+After refreshing data, your new mobile report is accessible from the bottom left link `See reports`.
 
 
 ![See reports](./attachments/report-access-from-mobile-app.gif)

@@ -853,6 +853,7 @@
     "iaso.matching.title": "Correspondances sources",
     "iaso.modules.completeness_per_period": "Complétude par période",
     "iaso.modules.data_collection_forms": "Collecte de données - Formulaires",
+    "iaso.modules.data_validation": "Validation des données",
     "iaso.modules.default": "Par défaut",
     "iaso.modules.dhis2_mapping": "Mappage DHIS2",
     "iaso.modules.embedded_links": "Liens intégrés",

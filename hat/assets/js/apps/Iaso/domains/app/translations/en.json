@@ -853,6 +853,7 @@
     "iaso.matching.title": "Matching",
     "iaso.modules.completeness_per_period": "Completeness per Period",
     "iaso.modules.data_collection_forms": "Data collection - Forms",
+    "iaso.modules.data_validation": "Data validation",
     "iaso.modules.default": "Default",
     "iaso.modules.dhis2_mapping": "DHIS2 mapping",
     "iaso.modules.embedded_links": "Embedded links",

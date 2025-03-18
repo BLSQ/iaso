@@ -79,7 +79,7 @@ class EntityType(models.Model):
             "name": self.name,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "reference_form": self.reference_form.as_dict(),
+            "reference_form": self.reference_form.as_dict() if self.reference_form else None,
             "account": self.account.as_dict(),
         }
 

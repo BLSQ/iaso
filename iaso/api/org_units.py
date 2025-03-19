@@ -167,6 +167,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
             if limit and not as_location:
                 limit = int(limit)
                 page_offset = int(page_offset)
+
+                # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
+                # because `build_org_units_queryset()` can set `.distinct()` clauses.
+                if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
+                    queryset = queryset.distinct(*order)
+
                 paginator = Paginator(queryset, limit)
 
                 if page_offset > paginator.num_pages:

@@ -2,6 +2,7 @@ from itertools import chain
 
 import django_filters
 
+from django.db.models import Q
 from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -10,6 +11,7 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from iaso.api.org_unit_change_request_configurations.filters import MobileOrgUnitChangeRequestConfigurationListFilter
 from iaso.api.org_unit_change_request_configurations.pagination import OrgUnitChangeRequestConfigurationPagination
 from iaso.api.org_unit_change_request_configurations.permissions import (
     HasOrgUnitsChangeRequestConfigurationReadPermission,
@@ -17,7 +19,7 @@ from iaso.api.org_unit_change_request_configurations.permissions import (
 from iaso.api.org_unit_change_request_configurations.serializers import (
     MobileOrgUnitChangeRequestConfigurationListSerializer,
 )
-from iaso.api.query_params import APP_ID
+from iaso.api.query_params import APP_ID, INCLUDE_CREATION
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import OrgUnitChangeRequestConfiguration, Project
 
@@ -25,6 +27,7 @@ from iaso.models import OrgUnitChangeRequestConfiguration, Project
 class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [HasOrgUnitsChangeRequestConfigurationReadPermission]
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = MobileOrgUnitChangeRequestConfigurationListFilter
     serializer_class = MobileOrgUnitChangeRequestConfigurationListSerializer
     pagination_class = OrgUnitChangeRequestConfigurationPagination
 
@@ -34,6 +37,13 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
         required=True,
         description="Application id (`Project.app_id`)",
         type=openapi.TYPE_STRING,
+    )
+    include_creation_param = openapi.Parameter(
+        name=INCLUDE_CREATION,
+        in_=openapi.IN_QUERY,
+        required=True,
+        description="Whether to include OUCRC creations (used for legacy reasons)",
+        type=openapi.TYPE_BOOLEAN,
     )
 
     def get_queryset(self):
@@ -70,8 +80,7 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
 
         """
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
-        queryset = self.get_queryset()
-
+        queryset = self.filter_queryset(self.get_queryset())
         user_editable_org_unit_type_ids = self.request.user.iaso_profile.get_editable_org_unit_type_ids()
 
         if user_editable_org_unit_type_ids:
@@ -80,6 +89,7 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
 
             dynamic_configurations = [
                 OrgUnitChangeRequestConfiguration(
+                    type=OrgUnitChangeRequestConfiguration.Type.EDITION,
                     org_unit_type_id=org_unit_type_id,
                     org_units_editable=False,
                     created_at=timezone.now(),
@@ -92,14 +102,15 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
             # we have to sort the resulting list manually to keep the pagination working properly.
             queryset = list(
                 chain(
-                    queryset.exclude(org_unit_type__in=non_editable_org_unit_type_ids),
+                    queryset.exclude(
+                        Q(org_unit_type__in=non_editable_org_unit_type_ids)
+                        & Q(type=OrgUnitChangeRequestConfiguration.Type.EDITION)
+                    ),
                     dynamic_configurations,
                 )
             )
             # Unsaved instances do not have an `id`, so we're sorting on `org_unit_type_id` in all cases.
             queryset = sorted(queryset, key=lambda item: item.org_unit_type_id)
-
-        queryset = self.filter_queryset(queryset)
 
         page = self.paginate_queryset(queryset)
         if page is not None:

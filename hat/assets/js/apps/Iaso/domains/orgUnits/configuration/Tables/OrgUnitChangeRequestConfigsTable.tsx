@@ -1,4 +1,3 @@
-import { Column, useSafeIntl } from 'bluesquare-components';
 import React, {
     Dispatch,
     FunctionComponent,
@@ -6,11 +5,13 @@ import React, {
     useCallback,
     useMemo,
 } from 'react';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
 import { ConfirmDeleteModal } from '../Dialog/ConfirmDeleteModal';
+import { useCallbackOrgUnitConfigurationTypeDisplayName } from '../hooks/useCallbackOrgUnitConfigurationTypeDisplayName';
 import MESSAGES from '../messages';
 import {
     OrgUnitChangeRequestConfigsPaginated,
@@ -23,6 +24,7 @@ const useColumns = (
     onEditClicked: Dispatch<SetStateAction<OrgUnitChangeRequestConfiguration>>,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const getTypeDisplayName = useCallbackOrgUnitConfigurationTypeDisplayName();
     // @ts-ignore
     return useMemo(
         () => [
@@ -36,6 +38,11 @@ const useColumns = (
                 Header: formatMessage(MESSAGES.project),
                 id: 'project',
                 accessor: row => row.project.name,
+            },
+            {
+                Header: formatMessage(MESSAGES.type),
+                id: 'type',
+                accessor: row => getTypeDisplayName(row.type),
             },
             {
                 Header: formatMessage(MESSAGES.orgUnitType),
@@ -69,6 +76,7 @@ const useColumns = (
                     const handleEdit = useCallback(() => {
                         const configToUpdate = {
                             id: settings.row.original.id,
+                            type: settings.row.original.type,
                             project: settings.row.original.project,
                             orgUnitType: settings.row.original.org_unit_type,
                         };
@@ -86,7 +94,7 @@ const useColumns = (
                 },
             },
         ],
-        [formatMessage, onEditClicked],
+        [formatMessage, onEditClicked, getTypeDisplayName],
     );
 };
 

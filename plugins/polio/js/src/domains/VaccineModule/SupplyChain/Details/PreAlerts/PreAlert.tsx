@@ -152,6 +152,13 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                     document={
                                         values?.pre_alerts?.[index]?.document
                                     }
+                                    scanResult={
+                                        values?.pre_alerts?.[index]?.scan_result
+                                    }
+                                    scanTimestamp={
+                                        values?.pre_alerts?.[index]
+                                            ?.scan_timestamp
+                                    }
                                     disabled={
                                         markedForDeletion ||
                                         !pre_alerts?.[index].can_edit

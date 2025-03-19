@@ -1,3 +1,5 @@
+import logging
+
 from datetime import date, datetime, timedelta
 from itertools import groupby
 from operator import itemgetter
@@ -7,9 +9,13 @@ from django.db.models import CharField, Value
 from django.db.models.functions import Concat, Extract
 
 from iaso.models import *
+from iaso.models.base import Instance
 from plugins.wfp.aggregate_journeys import AggregatedJourney
 
 from .models import *
+
+
+logger = logging.getLogger(__name__)
 
 
 class ETL:
@@ -307,13 +313,25 @@ class ETL:
                     days=int(next_visit_days)
                 )
             missed_followup_visit = self.missed_followup_visit(
-                visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
+                visits,
+                anthropometric_visit_forms,
+                next_visit_date[:10],
+                nextSecondVisitDate,
+                next_visit_days,
             )
         if missed_followup_visit > 1 and next_visit_date != "" and nextSecondVisitDate != "":
             exit = {"exit_type": "defaulter", "end_date": nextSecondVisitDate}
         return exit
 
-    def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey, visits, index):
+    def journey_Formatter(
+        self,
+        visit,
+        anthropometric_visit_form,
+        followup_forms,
+        current_journey,
+        visits,
+        index,
+    ):
         default_anthropometric_followup_forms = followup_forms
         default_admission_form = None
         if visit["form_id"] in anthropometric_visit_form:
@@ -597,7 +615,12 @@ class ETL:
                     current_journey["duration"] = visit.get("duration")
 
                 current_journey = ETL().journey_Formatter(
-                    visit, admission_form, anthropometric_visit_forms, current_journey, visits, index
+                    visit,
+                    admission_form,
+                    anthropometric_visit_forms,
+                    current_journey,
+                    visits,
+                    index,
                 )
             current_journey["steps"].append(visit)
         journey.append(current_journey)
@@ -620,7 +643,7 @@ class ETL:
             elif weight_difference < 0:
                 weight_loss = abs(weight_difference)
         return {
-            "initial_weight": float(initial_weight) if initial_weight is not None else initial_weight,
+            "initial_weight": (float(initial_weight) if initial_weight is not None else initial_weight),
             "discharge_weight": (
                 float(current_weight) if current_weight is not None and current_weight != "" else current_weight
             ),
@@ -670,7 +693,10 @@ class ETL:
         aggregated_journeys = []
         journeys = (
             Step.objects.select_related("visit", "visit__journey", "visit__org_unit_id")
-            .filter(visit__journey__programme_type=programme, visit__journey__beneficiary__account=account)
+            .filter(
+                visit__journey__programme_type=programme,
+                visit__journey__beneficiary__account=account,
+            )
             .values(
                 "visit__journey__admission_type",
                 "assistance_type",

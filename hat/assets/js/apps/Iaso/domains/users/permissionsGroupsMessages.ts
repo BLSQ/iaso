@@ -48,6 +48,10 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
         id: 'iaso.permissions.group.admin',
         defaultMessage: 'Admin:',
     },
+    registry: {
+        id: 'iaso.permissions.group.registry',
+        defaultMessage: 'Registry:',
+    },
 });
 
 export default PERMISSIONS_GROUPS_MESSAGES;

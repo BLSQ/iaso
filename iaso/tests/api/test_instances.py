@@ -22,13 +22,13 @@ from iaso import models as m
 from iaso.api import query_params as query
 from iaso.models import FormVersion, Instance, InstanceLock
 from iaso.models.microplanning import Planning, Team
-from iaso.test import APITestCase
+from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
 
-class InstancesAPITestCase(APITestCase):
+class InstancesAPITestCase(TaskAPITestCase):
     @classmethod
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def setUpTestData(cls):
@@ -55,11 +55,13 @@ class InstancesAPITestCase(APITestCase):
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
+        cls.jedi_council_corruscant_uuid = str(uuid4())
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
             name="Coruscant Jedi Council",
             source_ref="jedi_council_corruscant_ref",
             version=sw_version,
             validation_status="VALID",
+            uuid=cls.jedi_council_corruscant_uuid,
         )
         cls.ou_top_1 = m.OrgUnit.objects.create(
             name="ou_top_1",
@@ -501,6 +503,64 @@ class InstancesAPITestCase(APITestCase):
         pre_existing_instance.refresh_from_db()
         self.assertEqual("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", pre_existing_instance.file_name)
         self.assertEqual("Mobile app name", pre_existing_instance.name)
+
+    def test_instance_create_with_org_unit_in_multiple_source_versions(self):
+        """POST /api/instances/ an instance with an orgunit that has been copied in multiple source versions"""
+
+        # First, let's create a user that has permissions to do all of this
+        super_yoda = self.create_user_with_profile(
+            account=self.star_wars,
+            username="super yoda",
+            permissions=["iaso_sources", "iaso_submissions", "iaso_org_units"],
+        )
+
+        # Then, let's copy the existing source version through an API call (couldn't call task directly)
+        self.client.force_authenticate(super_yoda)
+        response = self.client.post(
+            "/api/copyversion/",
+            data={
+                "source_source_id": self.sw_source.id,
+                "source_version_number": self.sw_version.number,
+                "destination_source_id": self.sw_source.id,
+                "destination_version_number": str(self.sw_version.number + 1),
+            },
+            format="json",
+        )
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        task = self.assertValidTaskAndInDB(response_json["task"], status="QUEUED", name="copy_version")
+        self.runAndValidateTask(task, "SUCCESS")
+
+        # Make sure that there are multiple orgunits with the same UUID
+        self.assertGreater(m.OrgUnit.objects.filter(uuid=self.jedi_council_corruscant_uuid).count(), 1)
+
+        # Now, let's create an instance with that orgunit
+        instance_uuid = str(uuid4())
+        instance_name = "Testing if multiple OrgUnit UUIDs still fail"
+        body = [
+            {
+                "id": instance_uuid,
+                "latitude": 4.4,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.uuid,
+                "formId": self.form_1.id,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "name": instance_name,
+            },
+        ]
+        response = self.client.post(
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        last_instance = m.Instance.objects.order_by("-id").first()
+        self.assertEqual(last_instance.uuid, instance_uuid)
+        self.assertEqual(last_instance.name, instance_name)
 
     def test_instance_list_by_form_id_ok(self):
         """GET /instances/?form_id=form_id"""

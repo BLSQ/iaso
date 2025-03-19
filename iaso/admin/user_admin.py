@@ -107,8 +107,7 @@ class UserAdmin(AuthUserAdmin):
 
         if user.tenant_users.exists():  # Multi-account user
             linked_accounts = [
-                tu.account_user.iaso_profile and tu.account_user.iaso_profile.account
-                for tu in user.tenant_users.all()
+                tu.account_user.iaso_profile and tu.account_user.iaso_profile.account for tu in user.tenant_users.all()
             ]
         elif hasattr(user, "iaso_profile"):  # Regular user
             linked_accounts = [user.iaso_profile.account]

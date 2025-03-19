@@ -106,7 +106,11 @@ PREPAREDNESS_SYNC_STATUS = [
     ("FINISHED", _("Finished")),
 ]
 
-PAYMENT = [("DIRECT", _("Direct")), ("DFC", _("DFC")), ("MOBILE_PAYMENT", _("Mobile Payment"))]
+PAYMENT = [
+    ("DIRECT", _("Direct")),
+    ("DFC", _("DFC")),
+    ("MOBILE_PAYMENT", _("Mobile Payment")),
+]
 
 
 class DelayReasons(models.TextChoices):
@@ -145,7 +149,10 @@ class RoundScope(models.Model):
     "Scope (selection of orgunit) for a round and vaccines"
 
     group = models.OneToOneField(
-        Group, on_delete=models.CASCADE, related_name="roundScope", default=make_group_round_scope
+        Group,
+        on_delete=models.CASCADE,
+        related_name="roundScope",
+        default=make_group_round_scope,
     )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="scopes")
 
@@ -164,7 +171,10 @@ class CampaignScope(models.Model):
     """Scope (selection of orgunit) for a campaign and vaccines"""
 
     group = models.OneToOneField(
-        Group, on_delete=models.CASCADE, related_name="campaignScope", default=make_group_campaign_scope
+        Group,
+        on_delete=models.CASCADE,
+        related_name="campaignScope",
+        default=make_group_campaign_scope,
     )
     campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE, related_name="scopes")
     vaccine = models.CharField(max_length=12, choices=VACCINES, blank=True)
@@ -189,9 +199,19 @@ class RoundDateHistoryEntry(models.Model):
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
     reason_for_delay = models.ForeignKey(
-        "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="round_history_entries"
+        "ReasonForDelay",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="round_history_entries",
     )
-    round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="datelogs", null=True, blank=True)
+    round = models.ForeignKey(
+        "Round",
+        on_delete=models.CASCADE,
+        related_name="datelogs",
+        null=True,
+        blank=True,
+    )
     modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -240,7 +260,11 @@ class RoundQuerySet(models.QuerySet):
             )
             data["campaigns"].setdefault(
                 campaign_uuid,
-                {"value": campaign_uuid, "label": rnd.campaign.obr_name, "country_id": rnd.campaign.country_id},
+                {
+                    "value": campaign_uuid,
+                    "label": rnd.campaign.obr_name,
+                    "country_id": rnd.campaign.country_id,
+                },
             )
             data["rounds"].append(
                 {
@@ -274,7 +298,10 @@ class SubActivityScope(models.Model):
     "Scope (selection of orgunit) for a SubActivity and vaccines"
 
     group = models.OneToOneField(
-        Group, on_delete=models.CASCADE, related_name="subactivityScope", default=make_group_subactivity_scope
+        Group,
+        on_delete=models.CASCADE,
+        related_name="subactivityScope",
+        default=make_group_subactivity_scope,
     )
     subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, related_name="scopes")
 
@@ -337,7 +364,11 @@ class Round(models.Model):
     number = models.IntegerField(null=True, blank=True)
     campaign = models.ForeignKey("Campaign", related_name="rounds", on_delete=models.PROTECT, null=True)
     budget_process = models.ForeignKey(
-        "BudgetProcess", related_name="rounds", on_delete=models.SET_NULL, null=True, blank=True
+        "BudgetProcess",
+        related_name="rounds",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     # With the current situation/UI, all rounds must have an end date. However, there might be legacy campaigns/rounds
     # floating around in production, and therefore consumer code must assume that this field might be NULL
@@ -455,7 +486,9 @@ class Round(models.Model):
 
         else:
             campaign_vaccines = CampaignScope.objects.filter(
-                campaign=self.campaign, group__org_units__isnull=False, vaccine__isnull=False
+                campaign=self.campaign,
+                group__org_units__isnull=False,
+                vaccine__isnull=False,
             ).values_list("vaccine", flat=True)
 
             vaccines.update(campaign_vaccines)
@@ -484,7 +517,9 @@ class Round(models.Model):
         vaccines = set()
 
         subactivity_vaccines = SubActivityScope.objects.filter(
-            subactivity__round=self, group__org_units__isnull=False, vaccine__isnull=False
+            subactivity__round=self,
+            group__org_units__isnull=False,
+            vaccine__isnull=False,
         ).values_list("vaccine", flat=True)
 
         vaccines.update(subactivity_vaccines)
@@ -598,7 +633,11 @@ class Campaign(SoftDeletableModel):
     description = models.TextField(null=True, blank=True)
     separate_scopes_per_round = models.BooleanField(default=False)
     initial_org_unit = models.ForeignKey(
-        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
+        "iaso.orgunit",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="campaigns",
     )
 
     enable_send_weekly_email = models.BooleanField(
@@ -903,7 +942,8 @@ class Campaign(SoftDeletableModel):
     @property
     def campaign_level_vaccines_list(self):
         """Vaccine types from campaign level scopes.
-        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2
+        """
 
         if self.separate_scopes_per_round:
             return []
@@ -930,7 +970,8 @@ class Campaign(SoftDeletableModel):
     @property
     def round_level_vaccines_list(self):
         """vaccines from round level scopes, excluding subactivities
-        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2
+        """
         if not self.separate_scopes_per_round:
             return []
 
@@ -938,7 +979,9 @@ class Campaign(SoftDeletableModel):
         rnds = self.rounds.all().values("id")
 
         round_vaccines = RoundScope.objects.filter(
-            round__id__in=Subquery(rnds), group__org_units__isnull=False, vaccine__isnull=False
+            round__id__in=Subquery(rnds),
+            group__org_units__isnull=False,
+            vaccine__isnull=False,
         ).values_list("vaccine", flat=True)
 
         vaccines.update(round_vaccines)
@@ -956,12 +999,15 @@ class Campaign(SoftDeletableModel):
     @property
     def sub_activity_level_vaccines_list(self):
         """List of vaccines from sub-activities scopes (excluding parent round scopes)
-        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2"""
+        Combined type nOPV2&bOPV2 is treated as separate from its components nOPV2 and bOPV2
+        """
         vaccines = set()
         rnds = self.rounds.all().values("id")
 
         subactivity_vaccines = SubActivityScope.objects.filter(
-            subactivity__round__id__in=Subquery(rnds), group__org_units__isnull=False, vaccine__isnull=False
+            subactivity__round__id__in=Subquery(rnds),
+            group__org_units__isnull=False,
+            vaccine__isnull=False,
         ).values_list("vaccine", flat=True)
 
         vaccines.update(subactivity_vaccines)
@@ -1246,7 +1292,11 @@ class VaccineAuthorizationStatus(models.TextChoices):
 
 class VaccineAuthorization(SoftDeletableModel):
     country = models.ForeignKey(
-        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="vaccineauthorization"
+        "iaso.orgunit",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="vaccineauthorization",
     )
     account = models.ForeignKey("iaso.account", on_delete=models.DO_NOTHING, related_name="vaccineauthorization")
     start_date = models.DateField(blank=True, null=True)
@@ -1254,7 +1304,12 @@ class VaccineAuthorization(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     quantity = models.IntegerField(blank=True, null=True)
-    status = models.CharField(null=True, blank=True, choices=VaccineAuthorizationStatus.choices, max_length=200)
+    status = models.CharField(
+        null=True,
+        blank=True,
+        choices=VaccineAuthorizationStatus.choices,
+        max_length=200,
+    )
     comment = models.TextField(max_length=250, blank=True, null=True)
 
     def __str__(self):
@@ -1311,7 +1366,9 @@ class VaccineRequestForm(SoftDeletableModel):
     date_dg_approval = models.DateField(null=True, blank=True)
     quantities_ordered_in_doses = models.PositiveIntegerField(null=True, blank=True, default=0)
     vrf_type = models.CharField(
-        max_length=20, choices=VaccineRequestFormType.choices, default=VaccineRequestFormType.NORMAL
+        max_length=20,
+        choices=VaccineRequestFormType.choices,
+        default=VaccineRequestFormType.NORMAL,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1327,7 +1384,12 @@ class VaccineRequestForm(SoftDeletableModel):
     comment = models.TextField(blank=True, null=True)
     target_population = models.PositiveIntegerField(null=True, blank=True)
 
-    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/vrf/", null=True, blank=True)
+    document = models.FileField(
+        storage=CustomPublicStorage(),
+        upload_to="public_documents/vrf/",
+        null=True,
+        blank=True,
+    )
 
     objects = DefaultSoftDeletableManager()
 
@@ -1368,7 +1430,10 @@ class VaccinePreAlert(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     document = models.FileField(
-        storage=CustomPublicStorage(), upload_to="public_documents/prealert/", null=True, blank=True
+        storage=CustomPublicStorage(),
+        upload_to="public_documents/prealert/",
+        null=True,
+        blank=True,
     )
 
     def save(self, *args, **kwargs):
@@ -1510,7 +1575,10 @@ class OutgoingStockMovement(models.Model):
     comment = models.TextField(blank=True, null=True)
 
     document = models.FileField(
-        storage=CustomPublicStorage(), upload_to="public_documents/forma/", null=True, blank=True
+        storage=CustomPublicStorage(),
+        upload_to="public_documents/forma/",
+        null=True,
+        blank=True,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1527,7 +1595,10 @@ class DestructionReport(models.Model):
     comment = models.TextField(blank=True, null=True)
 
     document = models.FileField(
-        storage=CustomPublicStorage(), upload_to="public_documents/destructionreport/", null=True, blank=True
+        storage=CustomPublicStorage(),
+        upload_to="public_documents/destructionreport/",
+        null=True,
+        blank=True,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1555,7 +1626,9 @@ class IncidentReport(models.Model):
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
 
     stock_correction = models.CharField(
-        max_length=50, choices=StockCorrectionChoices.choices, default=StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+        max_length=50,
+        choices=StockCorrectionChoices.choices,
+        default=StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
     )
     title = models.CharField(max_length=255, null=True)
     comment = models.TextField(blank=True, null=True)
@@ -1565,7 +1638,10 @@ class IncidentReport(models.Model):
     usable_vials = models.PositiveIntegerField()
 
     document = models.FileField(
-        storage=CustomPublicStorage(), upload_to="public_documents/incidentreport/", null=True, blank=True
+        storage=CustomPublicStorage(),
+        upload_to="public_documents/incidentreport/",
+        null=True,
+        blank=True,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1585,13 +1661,20 @@ class EarmarkedStock(models.Model):
         RETURNED = "returned", _("Returned")  #     3. Earmark -> Usable
 
     earmarked_stock_type = models.CharField(
-        max_length=20, choices=EarmarkedStockChoices.choices, default=EarmarkedStockChoices.CREATED
+        max_length=20,
+        choices=EarmarkedStockChoices.choices,
+        default=EarmarkedStockChoices.CREATED,
     )
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE, related_name="earmarked_stocks")
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
-    round = models.ForeignKey(Round, on_delete=models.CASCADE)
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, null=True, blank=True)
+    temporary_campaign_name = models.CharField(max_length=255, blank=True)
+    round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
     form_a = models.ForeignKey(
-        OutgoingStockMovement, on_delete=models.CASCADE, null=True, blank=True, related_name="earmarked_stocks"
+        OutgoingStockMovement,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="earmarked_stocks",
     )
 
     vials_earmarked = models.PositiveIntegerField()
@@ -1609,7 +1692,11 @@ class EarmarkedStock(models.Model):
         ]
 
     def __str__(self):
-        return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"
+        if self.campaign and self.round:
+            return f"Earmarked {self.vials_earmarked} vials for {self.campaign.obr_name} Round {self.round.number}"
+        if self.temporary_campaign_name:
+            return f"Earmarked {self.vials_earmarked} vials for ({self.temporary_campaign_name})"
+        return f"Earmarked {self.vials_earmarked} vials"
 
     @classmethod
     def get_available_vials_count(cls, vaccine_stock: VaccineStock, _round: Round):
@@ -1695,17 +1782,29 @@ class Notification(models.Model):
 
     # Country / province / district are modelized as a hierarchy of OrgUnits.
     org_unit = models.ForeignKey(
-        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notifications"
+        "iaso.orgunit",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="polio_notifications",
     )
     site_name = models.CharField(max_length=255, blank=True)
 
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_created_set"
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="polio_notification_created_set",
     )
     updated_at = models.DateTimeField(blank=True, null=True)
     updated_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_updated_set"
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="polio_notification_updated_set",
     )
 
     # `import_*` fields are populated when the data come from an .xlsx file.
@@ -1755,7 +1854,11 @@ class NotificationImport(models.Model):
     errors = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_import_created_set"
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="polio_notification_import_created_set",
     )
     updated_at = models.DateTimeField(blank=True, null=True)
 
@@ -1863,7 +1966,10 @@ class NotificationXlsxImporter:
         from plugins.polio.api.common import make_orgunits_cache
 
         districts = (
-            self.org_units.filter(org_unit_type__category="DISTRICT", validation_status=OrgUnit.VALIDATION_VALID)
+            self.org_units.filter(
+                org_unit_type__category="DISTRICT",
+                validation_status=OrgUnit.VALIDATION_VALID,
+            )
             .defer("geom", "simplified_geom")
             .select_related("org_unit_type")
         )
@@ -1900,7 +2006,11 @@ class NotificationXlsxImporter:
         from plugins.polio.api.common import find_orgunit_in_cache
 
         if not self.countries_cache:
-            self.countries_cache, self.regions_cache, self.districts_cache = self.build_org_unit_caches()
+            (
+                self.countries_cache,
+                self.regions_cache,
+                self.districts_cache,
+            ) = self.build_org_unit_caches()
 
         country = find_orgunit_in_cache(self.countries_cache, country_name)
         region = None

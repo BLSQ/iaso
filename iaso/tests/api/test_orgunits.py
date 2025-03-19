@@ -18,7 +18,9 @@ class OrgUnitAPITestCase(APITestCase):
         cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
         marvel = m.Account.objects.create(name="MCU")
         cls.project = project = m.Project.objects.create(
-            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
+            name="Hydroponic gardens",
+            app_id="stars.empire.agriculture.hydroponics",
+            account=star_wars,
         )
         sw_source = m.DataSource.objects.create(name="Evil Empire")
         sw_source.projects.add(project)
@@ -66,11 +68,17 @@ class OrgUnitAPITestCase(APITestCase):
         )
 
         cls.instance_related_to_reference_form = cls.create_form_instance(
-            form=reference_form, period="202003", org_unit=jedi_council_corruscant, project=project
+            form=reference_form,
+            period="202003",
+            org_unit=jedi_council_corruscant,
+            project=project,
         )
 
         cls.instance_not_related_to_reference_form = cls.create_form_instance(
-            form=not_a_reference_form, period="202003", org_unit=jedi_council_corruscant, project=project
+            form=not_a_reference_form,
+            period="202003",
+            org_unit=jedi_council_corruscant,
+            project=project,
         )
 
         jedi_council_corruscant.groups.set([elite_group])
@@ -130,10 +138,15 @@ class OrgUnitAPITestCase(APITestCase):
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
         cls.user_read_permission = cls.create_user_with_profile(
-            username="user_read_permission", account=star_wars, permissions=["iaso_org_units_read"]
+            username="user_read_permission",
+            account=star_wars,
+            permissions=["iaso_org_units_read"],
         )
         cls.luke = cls.create_user_with_profile(
-            username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[jedi_council_endor]
+            username="luke",
+            account=star_wars,
+            permissions=["iaso_org_units"],
+            org_units=[jedi_council_endor],
         )
         cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_org_units"])
 
@@ -141,11 +154,26 @@ class OrgUnitAPITestCase(APITestCase):
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True
         )
 
-        cls.create_form_instance(form=form_1, period="202001", org_unit=jedi_council_corruscant, project=project)
+        cls.create_form_instance(
+            form=form_1,
+            period="202001",
+            org_unit=jedi_council_corruscant,
+            project=project,
+        )
 
-        cls.create_form_instance(form=form_1, period="202001", org_unit=jedi_council_corruscant, project=project)
+        cls.create_form_instance(
+            form=form_1,
+            period="202001",
+            org_unit=jedi_council_corruscant,
+            project=project,
+        )
 
-        cls.create_form_instance(form=form_1, period="202003", org_unit=jedi_council_corruscant, project=project)
+        cls.create_form_instance(
+            form=form_1,
+            period="202003",
+            org_unit=jedi_council_corruscant,
+            project=project,
+        )
 
     def test_org_unit_search_with_ids(self):
         """GET /orgunits/ with a search based on refs"""
@@ -273,7 +301,10 @@ class OrgUnitAPITestCase(APITestCase):
         # council and Endor Jedi council are kept
         self.assertEqual(json_response["count"], 2)
         returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
-        self.assertEqual(returned_ou_ids, {self.jedi_council_corruscant.id, self.jedi_council_endor.id})
+        self.assertEqual(
+            returned_ou_ids,
+            {self.jedi_council_corruscant.id, self.jedi_council_endor.id},
+        )
 
     def test_org_unit_search_geography_location(self):
         """GET /orgunits/ filtered so only OUs with a point location are returned"""
@@ -332,7 +363,12 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(json_response["count"], 3)
         returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
         self.assertEqual(
-            returned_ou_ids, {self.jedi_squad_endor.id, self.jedi_council_corruscant.id, self.jedi_council_endor.id}
+            returned_ou_ids,
+            {
+                self.jedi_squad_endor.id,
+                self.jedi_council_corruscant.id,
+                self.jedi_council_endor.id,
+            },
         )
 
     def test_org_unit_search_geography_with_location_true(self):
@@ -362,7 +398,12 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(json_response["count"], 3)
         returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
         self.assertEqual(
-            returned_ou_ids, {self.jedi_council_corruscant.id, self.jedi_council_endor.id, self.jedi_squad_endor_2.id}
+            returned_ou_ids,
+            {
+                self.jedi_council_corruscant.id,
+                self.jedi_council_endor.id,
+                self.jedi_squad_endor_2.id,
+            },
         )
 
     def test_org_units_tree_super_user(self):
@@ -374,7 +415,10 @@ class OrgUnitAPITestCase(APITestCase):
         )
 
         super_user = self.create_user_with_profile(
-            username="superUser", is_superuser=True, account=self.star_wars, permissions=["iaso_org_units"]
+            username="superUser",
+            is_superuser=True,
+            account=self.star_wars,
+            permissions=["iaso_org_units"],
         )
         super_user.iaso_profile.org_units.set([org_unit_country])
         super_user.save()
@@ -396,7 +440,9 @@ class OrgUnitAPITestCase(APITestCase):
         )
 
         user_manager = self.create_user_with_profile(
-            username="userManager", account=self.star_wars, permissions=["iaso_org_units"]
+            username="userManager",
+            account=self.star_wars,
+            permissions=["iaso_org_units"],
         )
         user_manager.iaso_profile.org_units.set([org_unit_country])
         user_manager.save()
@@ -566,7 +612,8 @@ class OrgUnitAPITestCase(APITestCase):
     def test_can_retrieve_org_units_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
-            f"/api/orgunits/{self.jedi_squad_endor.id}/?format=csv", headers={"Content-Type": "text/csv"}
+            f"/api/orgunits/{self.jedi_squad_endor.id}/?format=csv",
+            headers={"Content-Type": "text/csv"},
         )
         self.assertFileResponse(response, 200, "text/csv; charset=utf-8")
 
@@ -666,7 +713,10 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.set_up_org_unit_creation()
         json_response = self.assertJSONResponse(response, 400)
         self.assertEqual(json_response[0]["errorKey"], "org_unit_type_id")
-        self.assertEqual(json_response[0]["errorMessage"], "You cannot create or edit an Org unit of this type")
+        self.assertEqual(
+            json_response[0]["errorMessage"],
+            "You cannot create or edit an Org unit of this type",
+        )
         self.yoda.iaso_profile.editable_org_unit_types.clear()
 
     def test_create_org_unit(self):
@@ -710,7 +760,11 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.post(
             "/api/orgunits/create_org_unit/",
             format="json",
-            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "opening_date": "01-01-2024"},
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "opening_date": "01-01-2024",
+            },
         )
 
         jr = self.assertJSONResponse(response, 200)
@@ -747,7 +801,11 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.post(
             "/api/orgunits/create_org_unit/",
             format="json",
-            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [34]},
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [34],
+            },
         )
         self.assertJSONResponse(response, 404)
         # we didn't create any new orgunit
@@ -991,7 +1049,10 @@ class OrgUnitAPITestCase(APITestCase):
         old_ou.refresh_from_db()
         # check the orgunit has not beee modified
         self.assertEqual(old_modification_date, old_ou.updated_at)
-        self.assertNotIn(self.instance_not_related_to_reference_form, old_ou.reference_instances.all())
+        self.assertNotIn(
+            self.instance_not_related_to_reference_form,
+            old_ou.reference_instances.all(),
+        )
 
     def set_up_org_unit_partial_update(self):
         ou = m.OrgUnit(version=self.sw_version_1)
@@ -1027,7 +1088,9 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
         self.assertEqual(response.data["reference_instances"], [])
 
-    def test_edit_org_unit_partial_update_remove_geojson_geom_simplified_geom_should_be_consistent(self):
+    def test_edit_org_unit_partial_update_remove_geojson_geom_simplified_geom_should_be_consistent(
+        self,
+    ):
         """Check that if we remove the geojson both simplified_geom and geom are empty"""
         ou = m.OrgUnit(version=self.sw_version_1)
         ou.name = "test ou"
@@ -1083,7 +1146,10 @@ class OrgUnitAPITestCase(APITestCase):
         )
         json_response = self.assertJSONResponse(response, 400)
         self.assertEqual(json_response[0]["errorKey"], "org_unit_type_id")
-        self.assertEqual(json_response[0]["errorMessage"], "You cannot create or edit an Org unit of this type")
+        self.assertEqual(
+            json_response[0]["errorMessage"],
+            "You cannot create or edit an Org unit of this type",
+        )
         self.yoda.iaso_profile.editable_org_unit_types.clear()
 
     def test_edit_org_unit_edit_bad_group_fail(self):
@@ -1295,7 +1361,9 @@ class OrgUnitAPITestCase(APITestCase):
         ]
 
         response = self.client.post(
-            "/api/mobile/orgunits/?app_id=stars.empire.agriculture.hydroponics", data=data, format="json"
+            "/api/mobile/orgunits/?app_id=stars.empire.agriculture.hydroponics",
+            data=data,
+            format="json",
         )
         orgunits = OrgUnit.objects.all().count()
 
@@ -1331,7 +1399,11 @@ class OrgUnitAPITestCase(APITestCase):
         ids_in_response = [ou["id"] for ou in org_units]
 
         # list of all the indirect children of the jedi_council_endor OU
-        ou_ids_list = [self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk, jedi_squad_endor_2_children.pk]
+        ou_ids_list = [
+            self.jedi_squad_endor.pk,
+            self.jedi_squad_endor_2.pk,
+            jedi_squad_endor_2_children.pk,
+        ]
 
         self.assertEqual(sorted(ids_in_response), sorted(ou_ids_list))
 
@@ -1399,3 +1471,17 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidOrgUnitData(jr)
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertIsNone(ou.default_image)
+
+    def test_search_org_unit_based_on_group_and_type(self):
+        self.client.force_authenticate(self.yoda)
+        self.jedi_council_corruscant.groups.set([self.elite_group, self.unofficial_group, self.another_group])
+        self.jedi_council_corruscant.save()
+
+        response = self.client.get(
+            f'/api/orgunits/?limit=20&order=id&page=1&searches=[{{"validation_status":"all","group":"{self.elite_group.pk},{self.unofficial_group.pk},{self.another_group.pk}","orgUnitTypeId":"{self.jedi_council.pk}"}}]'
+        )
+        org_units = self.assertJSONResponse(response, 200)
+        self.assertEqual(org_units["count"], 1)
+        self.assertEqual(org_units["page"], 1)
+        first_org_unit = org_units["orgunits"][0]
+        self.assertEqual(first_org_unit["id"], self.jedi_council_corruscant.pk)

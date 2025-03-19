@@ -396,7 +396,14 @@ export const useEarmarkedTableColumns = (
                 accessor: 'campaign',
                 id: 'campaign',
                 sortable: true,
-                Cell: BreakWordCell,
+                Cell: settings => {
+                    if (settings.row.original.campaign) {
+                        return settings.row.original.campaign;
+                    }
+                    return settings.row.original.temporary_campaign_name
+                        ? `(${settings.row.original.temporary_campaign_name})`
+                        : textPlaceholder;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.round),

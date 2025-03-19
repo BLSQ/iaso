@@ -146,14 +146,12 @@ PERMISSIONS_PRESENTATION = {
         "iaso_org_units_read",
         "iaso_org_unit_types",
         "iaso_org_unit_groups",
-        "iaso_sources",
-        "iaso_sources_can_change_default_version",
-        "iaso_write_sources",
-        "iaso_links",
-        "iaso_registry_read",
-        "iaso_registry_write",
         "iaso_org_unit_change_request_review",
         "iaso_org_unit_change_request_configurations",
+    ],
+    "registry": [
+        "iaso_registry_read",
+        "iaso_registry_write",
     ],
     "entities": [
         "iaso_entities",
@@ -232,6 +230,10 @@ PERMISSIONS_PRESENTATION = {
         "iaso_teams",
         "iaso_modules",
         "iaso_mobile_app_offline_setup",
+        "iaso_sources",
+        "iaso_sources_can_change_default_version",
+        "iaso_write_sources",
+        "iaso_links",
     ],
 }
 

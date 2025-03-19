@@ -151,7 +151,51 @@ class VaccineStockEarmarkedTests(APITestCase):
                 found = True
                 break
 
-        self.assertFalse(found, "Earmarked stock of type CREATED should not appear in unusable vials list")
+        self.assertFalse(
+            found,
+            "Earmarked stock of type CREATED should not appear in unusable vials list",
+        )
+
+    def test_create_earmarked_stock_with_temporary_campaign_name(self):
+        """Test that earmarked stock can be created with temporary_campaign_name instead of campaign/round"""
+        self.client.force_authenticate(self.user_rw_perms)
+
+        # Create earmarked stock with temporary campaign name
+        earmarked_data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "temporary_campaign_name": "Upcoming Campaign 2024",
+            "vials_earmarked": 100,
+            "doses_earmarked": 2000,
+            "earmarked_stock_type": pm.EarmarkedStock.EarmarkedStockChoices.CREATED,
+            "comment": "Reserved for future campaign",
+        }
+
+        response = self.client.post(EARMARKED_BASE_URL, earmarked_data, format="json")
+        self.assertEqual(response.status_code, 201)
+        data = response.json()
+
+        # Verify the created earmarked stock
+        self.assertEqual(data["temporary_campaign_name"], "Upcoming Campaign 2024")
+        self.assertIsNone(data["campaign"])
+        self.assertIsNone(data["round_number"])
+        self.assertEqual(data["vials_earmarked"], 100)
+        self.assertEqual(data["doses_earmarked"], 2000)
+        self.assertEqual(data["comment"], "Reserved for future campaign")
+
+        # Verify it was saved to database correctly
+        earmarked_stock = pm.EarmarkedStock.objects.get(id=data["id"])
+        self.assertEqual(earmarked_stock.temporary_campaign_name, "Upcoming Campaign 2024")
+        self.assertIsNone(earmarked_stock.campaign)
+        self.assertIsNone(earmarked_stock.round)
+        self.assertEqual(earmarked_stock.vials_earmarked, 100)
+
+        # Get the same earmarked stock through the API
+        response = self.client.get(f"{EARMARKED_BASE_URL}{earmarked_stock.id}/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["temporary_campaign_name"], "Upcoming Campaign 2024")
+        self.assertIsNone(data["campaign"])
+        self.assertIsNone(data["round_number"])
 
     def test_earmarked_stock_affects_summary_totals(self):
         """Test that earmarked stocks affect summary totals appropriately"""
@@ -313,7 +357,11 @@ class VaccineStockEarmarkedTests(APITestCase):
             "round": self.round.id,
         }
 
-        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", form_a_data, format="json")
+        response = self.client.post(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/",
+            form_a_data,
+            format="json",
+        )
         self.assertEqual(response.status_code, 201)
 
         response_data = response.json()
@@ -321,7 +369,10 @@ class VaccineStockEarmarkedTests(APITestCase):
 
         # Should have created USED stock with max available earmarked amount
         used_stocks = pm.EarmarkedStock.objects.filter(
-            vaccine_stock=self.vaccine_stock, campaign=self.campaign, round=self.round, earmarked_stock_type="used"
+            vaccine_stock=self.vaccine_stock,
+            campaign=self.campaign,
+            round=self.round,
+            earmarked_stock_type="used",
         )
 
         self.assertEqual(used_stocks.count(), 2)
@@ -343,12 +394,17 @@ class VaccineStockEarmarkedTests(APITestCase):
         }
 
         response = self.client.post(
-            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", second_form_a_data, format="json"
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/",
+            second_form_a_data,
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
         used_stocks = pm.EarmarkedStock.objects.filter(
-            vaccine_stock=self.vaccine_stock, campaign=self.campaign, round=self.round, earmarked_stock_type="used"
+            vaccine_stock=self.vaccine_stock,
+            campaign=self.campaign,
+            round=self.round,
+            earmarked_stock_type="used",
         )
 
         self.assertEqual(used_stocks.count(), 3)
@@ -370,12 +426,17 @@ class VaccineStockEarmarkedTests(APITestCase):
         }
 
         response = self.client.post(
-            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", third_form_a_data, format="json"
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/",
+            third_form_a_data,
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
 
         used_stocks = pm.EarmarkedStock.objects.filter(
-            vaccine_stock=self.vaccine_stock, campaign=self.campaign, round=self.round, earmarked_stock_type="used"
+            vaccine_stock=self.vaccine_stock,
+            campaign=self.campaign,
+            round=self.round,
+            earmarked_stock_type="used",
         )
 
         # This time it should NOT create a new USED stock because there are no more earmarked stocks left
@@ -416,7 +477,9 @@ class VaccineStockEarmarkedTests(APITestCase):
             "comment": "Updated comment",
         }
         response = self.client.patch(
-            f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{earmarked_id}/", update_data, format="json"
+            f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{earmarked_id}/",
+            update_data,
+            format="json",
         )
         self.assertEqual(response.status_code, 200)
 
@@ -427,7 +490,9 @@ class VaccineStockEarmarkedTests(APITestCase):
 
         # Non-admin cannot edit after 7 days
         response = self.client.patch(
-            f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{earmarked_id}/", update_data, format="json"
+            f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{earmarked_id}/",
+            update_data,
+            format="json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -436,7 +501,9 @@ class VaccineStockEarmarkedTests(APITestCase):
 
         # Admin can edit regardless of time passed
         response = self.client.patch(
-            f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{earmarked_id}/", update_data, format="json"
+            f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{earmarked_id}/",
+            update_data,
+            format="json",
         )
         self.assertEqual(response.status_code, 200)
 

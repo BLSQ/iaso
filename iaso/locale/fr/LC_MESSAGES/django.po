@@ -354,8 +354,7 @@ msgstr "L'instance doit être liée à un formulaire."
 
 #: iaso/models/base.py:1085
 msgid "The OrgUnit must be linked to a OrgUnitType."
-msgstr ""
-"L'unité organisationnelle doit être liée à un type d'unité organisationnelle."
+msgstr "L'unité organisationnelle doit être liée à un type d'unité organisationnelle."
 
 #: iaso/models/base.py:1087
 msgid "The submission must be an instance of a reference form."
@@ -375,9 +374,7 @@ msgstr "Authentification requise sur mobile"
 
 #: iaso/models/base.py:1691
 msgid "Mobile: Limit download of orgunit to what the user has access to"
-msgstr ""
-"Mobile : Limiter le téléchargement des unités organisationnelles à celles "
-"auxquelles l'utilisateur a accès"
+msgstr "Mobile : Limiter le téléchargement des unités organisationnelles à celles auxquelles l'utilisateur a accès"
 
 #: iaso/models/base.py:1699
 msgid ""
@@ -446,6 +443,7 @@ msgid "Data source synchronization"
 msgstr "Synchronisation de source de données"
 
 #: iaso/models/deduplication.py:8 iaso/models/payments.py:7
+#: iaso/utils/models/virus_scan.py:7
 msgid "Pending"
 msgstr "En attente"
 
@@ -481,39 +479,39 @@ msgstr "À pied"
 msgid "Truc"
 msgstr "Truc"
 
-#: iaso/models/forms.py:88
+#: iaso/models/forms.py:89
 msgid "Day"
 msgstr "Jour"
 
-#: iaso/models/forms.py:89
+#: iaso/models/forms.py:90
 msgid "Month"
 msgstr "Mois"
 
-#: iaso/models/forms.py:90
+#: iaso/models/forms.py:91
 msgid "Quarter"
 msgstr "Trimestre"
 
-#: iaso/models/forms.py:91
+#: iaso/models/forms.py:92
 msgid "Quarter Nov"
 msgstr "Trimestre Nov"
 
-#: iaso/models/forms.py:92
+#: iaso/models/forms.py:93
 msgid "Six-month"
 msgstr "Semestre"
 
-#: iaso/models/forms.py:93
+#: iaso/models/forms.py:94
 msgid "Year"
 msgstr "Année"
 
-#: iaso/models/forms.py:94
+#: iaso/models/forms.py:95
 msgid "Financial Nov"
 msgstr "Financier Nov"
 
-#: iaso/models/forms.py:98
+#: iaso/models/forms.py:99
 msgid "No change request"
 msgstr "Pas de demande de modification"
 
-#: iaso/models/forms.py:99
+#: iaso/models/forms.py:100
 msgid "Create change request if form is reference form"
 msgstr ""
 "Créer une demande de modification si le formulaire est un formulaire de "
@@ -624,6 +622,18 @@ msgstr "Copie des unités organisationnelles"
 #: iaso/tasks/copy_version.py:120
 msgid "Fixing parents"
 msgstr "Correction des parents"
+
+#: iaso/utils/models/virus_scan.py:6
+msgid "Clean"
+msgstr "Aucun virus détecté"
+
+#: iaso/utils/models/virus_scan.py:8
+msgid "Infected"
+msgstr "Virus détecté"
+
+#: iaso/utils/models/virus_scan.py:9
+msgid "Error"
+msgstr "Erreur lors de l'analyse"
 
 #: iaso/utils/serializer/id_or_uuid_field.py:12
 msgid "This field is required."

@@ -21,3 +21,26 @@ class OrgUnitChangeRequestConfigurationListFilter(django_filters.rest_framework.
     def filter_created_by(queryset, name, value):
         user_ids = parse_comma_separated_numeric_values(value, name)
         return queryset.filter(created_by_id__in=user_ids)
+
+
+class MobileOrgUnitChangeRequestConfigurationListFilter(django_filters.rest_framework.FilterSet):
+    include_creation = django_filters.BooleanFilter(method="filter_include_creation", label=_("Include creation"))
+
+    def __init__(self, *args, **kwargs):
+        # This is ugly but seems to be the way: https://stackoverflow.com/a/58608986
+        if "include_creation" not in kwargs["data"]:
+            kwargs["data"]._mutable = True
+            kwargs["data"]["include_creation"] = False
+            kwargs["data"]._mutable = False
+        super(MobileOrgUnitChangeRequestConfigurationListFilter, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = OrgUnitChangeRequestConfiguration
+        fields = []
+
+    @staticmethod
+    def filter_include_creation(queryset, name, value):
+        if value:
+            return queryset
+
+        return queryset.exclude(type=OrgUnitChangeRequestConfiguration.Type.CREATION)

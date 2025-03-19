@@ -1,10 +1,10 @@
+import React, { FunctionComponent, useState } from 'react';
 import { Box, Tab, Tabs, Typography } from '@mui/material';
 import {
     MENU_HEIGHT_WITHOUT_TABS,
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { OffLineLangSwitch } from '../../../../../../../hat/assets/js/apps/Iaso/domains/home/components/LangSwitch';

@@ -20,7 +20,7 @@ from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Q, QuerySet, Subquery, Sum
+from django.db.models import Exists, OuterRef, Q, QuerySet, Subquery, Sum
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Coalesce
 from django.utils import timezone
@@ -2195,7 +2195,7 @@ class VaccineStockCalculator:
 
         return total_vials, total_doses
 
-    def get_list_of_vaccines_received(self, end_date=None):
+    def get_list_of_vaccines_received(self, end_date=None, expanded=False):
         """
         Vaccines received are only those linked to an arrival report. We exclude those found e.g. during physical inventory
         """
@@ -2230,23 +2230,33 @@ class VaccineStockCalculator:
                 arrival_reports = []
         results = []
 
+        additional_fields = {
+            "id": self.vaccine_stock.id,
+            "country_name": self.vaccine_stock.country.name,
+            "country_id": self.vaccine_stock.country.id,
+            "vaccine_type": self.vaccine_stock.vaccine,
+            "vials_type": "usable",
+        }
+
         for report in arrival_reports:
-            results.append(
-                {
-                    "date": report.arrival_report_date,
-                    "action": "PO #" + report.po_number if report.po_number else "Stock Arrival",
-                    "vials_in": report.vials_received or 0,
-                    "doses_in": report.doses_received or 0,
-                    "vials_out": None,
-                    "doses_out": None,
-                    "type": MovementTypeEnum.VACCINE_ARRIVAL_REPORT.value,
-                }
-            )
+            base_result = {
+                "date": report.arrival_report_date,
+                "action": "PO #" + report.po_number if report.po_number else "Stock Arrival",
+                "vials_in": report.vials_received or 0,
+                "doses_in": report.doses_received or 0,
+                "vials_out": None,
+                "doses_out": None,
+                "type": MovementTypeEnum.VACCINE_ARRIVAL_REPORT.value,
+            }
+            if not expanded:
+                results.append(base_result)
+            else:
+                results.append({**base_result, **additional_fields})
         return results
 
     def get_list_of_usable_vials(self, end_date=None, expanded=False):
         # First get vaccines received from arrival reports
-        results = self.get_list_of_vaccines_received(end_date)
+        results = self.get_list_of_vaccines_received(end_date, expanded=expanded)
 
         # Add stock movements (used and missing vials)
         stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock).order_by("report_date")

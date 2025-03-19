@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet
 from rest_framework import permissions, serializers
@@ -65,5 +64,8 @@ class PagesViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         order = self.request.query_params.get("order", "created_at").split(",")
-        users = User.objects.filter(iaso_profile__account=user.iaso_profile.account)
-        return Page.objects.filter(users__in=users).order_by(*order).distinct()
+        if user.has_perm(permission.PAGES) and not user.has_perm(permission.PAGE_WRITE):
+            return Page.objects.filter(users=user).order_by(*order).distinct()
+        
+        return Page.objects.filter(users__iaso_profile__account=user.iaso_profile.account).order_by(*order).distinct()
+    

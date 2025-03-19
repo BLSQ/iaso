@@ -62,6 +62,30 @@ class PagesAPITestCase(APITestCase):
 
         response = self.client.get("/api/pages/")
         self.assertJSONResponse(response, 403)
+    
+    def test_pages_list_linked_to_current_user(self):
+        """Get /pages/ only pages linked to the current user"""
+        self.create_page(name="TEST1", slug="test_1", needs_authentication=False, users=[self.second_user.pk])
+        self.create_page(name="TEST2", slug="test_2", needs_authentication=True, users=[self.second_user.pk])
+
+        # Check when the user has only read permission but not embedded links linked to him
+        self.client.force_login(self.userNoWritePermission)
+        response = self.client.get("/api/pages/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 0)
+
+        # Check when the user has only read permission but has some embedded links linked to him
+        self.create_page(name="TEST3", slug="test_3", needs_authentication=True, users=[self.userNoWritePermission.pk])
+        self.client.force_login(self.userNoWritePermission)
+        response = self.client.get("/api/pages/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 1)
+
+        # Check when the user has write permission
+        self.client.force_login(self.first_user)
+        response = self.client.get("/api/pages/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 3)
 
     def test_pages_list_search_by_name_or_by_slug(self):
         """GET /pages/?search='search string'"""

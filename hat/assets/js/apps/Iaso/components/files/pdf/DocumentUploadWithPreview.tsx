@@ -10,6 +10,8 @@ type DocumentUploadWithPreviewProps = {
     onFilesSelect: (files: File[]) => void;
     document?: File[] | string;
     disabled?: boolean;
+    scanResult?: string | undefined;
+    scanTimestamp?: number | undefined;
 };
 
 const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
@@ -17,6 +19,8 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
     onFilesSelect,
     document,
     disabled = false,
+    scanResult,
+    scanTimestamp,
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -48,7 +52,11 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
             </Grid>
             {pdfUrl && (
                 <Grid item xs={2} sx={{ textAlign: 'right' }}>
-                    <PdfPreview pdfUrl={pdfUrl} />
+                    <PdfPreview
+                        pdfUrl={pdfUrl}
+                        scanResult={scanResult}
+                        scanTimestamp={scanTimestamp}
+                    />
                 </Grid>
             )}
         </Grid>

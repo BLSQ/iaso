@@ -180,7 +180,8 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 @admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances", "default_image")
-    list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
+    autocomplete_fields = ("creator", "org_unit_type", "version")
+    list_filter = ("org_unit_type", "custom", "validated", "sub_source")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
     inlines = [

@@ -822,7 +822,6 @@ class CampaignViewSet(ModelViewSet):
         if self.action in ("update", "partial_update", "retrieve", "destroy"):
             return queryset
         campaign_category = self.request.query_params.get("campaign_category")
-        print("Campaign Category", campaign_category)
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
         on_hold = self.request.query_params.get("on_hold", "false")

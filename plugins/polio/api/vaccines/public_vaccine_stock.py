@@ -51,21 +51,21 @@ class PublicVaccineStockViewset(ViewSet):
             order = order[1:]
         return sorted(data_list, key=lambda x: x[order], reverse=reverse)
 
-    @action(
-        detail=False,
-        methods=["get"],
-    )
-    def get_unusable(self, request):
+    def _get_json_data(self, request, usable):
         queryset = self.filter_queryset(request)
-        all_unusable = [stock.unusable_vials() for stock in queryset]
-        all_unusable = sum(all_unusable, [])
-        all_unusable.sort(key=lambda x: x["date"])
+        all_entries = [stock.usable_vials() if usable else stock.unusable_vials() for stock in queryset]
+        all_entries = sum(all_entries, [])
+        return all_entries
 
-        filtered_unusable = self.filter_action_type(all_unusable, request)
-        sorted_unusable = self.sort_results(filtered_unusable, request)
+    def _apply_filter_and_sort(self, json_data, request):
+        filtered_data = self.filter_action_type(json_data, request)
+        sorted_data = self.sort_results(filtered_data, request)
+        return sorted_data
+
+    def _compute_totals(self, json_data):
         total_vials = 0
         total_doses = 0
-        for entry in sorted_unusable:
+        for entry in json_data:
             if entry["vials_in"]:
                 total_vials += entry["vials_in"]
             if entry["doses_in"]:
@@ -75,14 +75,18 @@ class PublicVaccineStockViewset(ViewSet):
             if entry["doses_out"]:
                 total_doses -= entry["doses_out"]
 
+        return total_vials, total_doses
+
+    def _paginate_response(self, request, json_data):
+        total_vials, total_doses = self._compute_totals(json_data)
         # Adding some pagination to avoid crashing the front-end
         page = int(request.query_params.get("page", "1"))  # validate
         limit = int(request.query_params.get("limit", "20"))  # validate
-        count = len(sorted_unusable)
+        count = len(json_data)
         pages = math.ceil(count / limit)
         start_index = (page - 1) * limit
         end_index = (start_index) + (limit) if page < pages else None
-        unusable_to_display = sorted_unusable[start_index:end_index]
+        unusable_to_display = json_data[start_index:end_index]
         has_previous = page > 1
         has_next = page < pages
         data = {"total_vials": total_vials, "total_doses": total_doses, "movements": unusable_to_display}
@@ -104,46 +108,27 @@ class PublicVaccineStockViewset(ViewSet):
         detail=False,
         methods=["get"],
     )
+    def get_unusable(self, request):
+        all_unusable = self._get_json_data(request, usable=False)
+        sorted_unusable = self._apply_filter_and_sort(all_unusable, request)
+
+        return self._paginate_response(request, sorted_unusable)
+
+    @action(
+        detail=False,
+        methods=["get"],
+    )
     def get_usable(self, request):
-        queryset = self.filter_queryset(request)
-        all_usable = [stock.usable_vials() for stock in queryset]
-        all_usable = sum(all_usable, [])
-        all_usable.sort(key=lambda x: x["date"])
-        filtered_usable = self.filter_action_type(all_usable, request)
-        sorted_usable = self.sort_results(filtered_usable, request)
+        all_usable = self._get_json_data(request, usable=True)
+        sorted_usable = self._apply_filter_and_sort(all_usable, request)
 
-        total_vials = 0
-        total_doses = 0
-        for entry in sorted_usable:
-            if entry["vials_in"]:
-                total_vials += entry["vials_in"]
-            if entry["doses_in"]:
-                total_doses += entry["doses_in"]
-            if entry["vials_out"]:
-                total_vials -= entry["vials_out"]
-            if entry["doses_out"]:
-                total_doses -= entry["doses_out"]
+        return self._paginate_response(request, sorted_usable)
 
-        page = int(request.query_params.get("page", "1"))  # validate
-        limit = int(request.query_params.get("limit", "20"))  # validate
-        count = len(sorted_usable)
-        pages = math.ceil(count / limit)
-        start_index = (page - 1) * limit
-        end_index = (start_index) + (limit) if page < pages else None
-        usable_to_display = sorted_usable[start_index:end_index]
-        has_previous = page > 1
-        has_next = page < pages
-        data = {"total_vials": total_vials, "total_doses": total_doses, "movements": usable_to_display}
-        if page > pages:
-            return Response({"result": f"Maximum page is {pages}, entered {page}"}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(
-            {
-                "count": count,
-                "results": data,
-                "has_next": has_next,
-                "has_previous": has_previous,
-                "page": page,
-                "pages": pages,
-                "limit": limit,
-            }
-        )
+    def export_xlsx(self, request):
+        # Data to export for usable based on queryparams received from front-end
+        all_usable = self._get_json_data(request, usable=True)
+        sorted_usable = self._apply_filter_and_sort(all_usable, request)
+
+        # Data to export for unusable based on queryparams received from front-end
+        all_unusable = self._get_json_data(request, usable=False)
+        sorted_unusable = self._apply_filter_and_sort(all_unusable, request)

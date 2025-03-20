@@ -1,6 +1,4 @@
-import csv
 import datetime
-import io
 import json
 import typing
 
@@ -20,7 +18,7 @@ from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.api import query_params as query
-from iaso.models import FormVersion, Instance, InstanceLock
+from iaso.models import FormVersion, Instance, InstanceLock, OrgUnitReferenceInstance
 from iaso.models.microplanning import Planning, Team
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
@@ -1028,40 +1026,43 @@ class InstancesAPITestCase(TaskAPITestCase):
 
     def test_can_retrieve_submissions_list_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(
-            f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
+
+        # Mark instance_1 as a reference instance.
+        OrgUnitReferenceInstance.objects.create(
+            org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "text/csv")
+
+        with self.assertNumQueries(10):
+            response = self.client.get(
+                f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response["Content-Type"], "text/csv")
 
         response_csv = response.getvalue().decode("utf-8")
-        response_string = "".join(s for s in response_csv)
-        reader = csv.reader(io.StringIO(response_string), delimiter=",")
-        data = list(reader)
-        row_to_test = data[len(data) - 1]
-        expected_row = [
-            f"{self.instance_1.id}",
-            "",
-            "Vzhn0nceudr",
-            "",
-            "",
-            "",
-            "",
-            "202001",
-            self.instance_1.source_created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            self.instance_1.source_updated_at.strftime("%Y-%m-%d %H:%M:%S"),
-            "yoda (Yo Da)",
-            "READY",
-            "",  # entity UUID
-            "Coruscant Jedi Council",
-            f"{self.jedi_council_corruscant.id}",
-            "jedi_council_corruscant_ref",
-            "",
-            "",
-            "",
-            "",
-        ]
-        self.assertEqual(row_to_test, expected_row)
+        expected_csv_row = (
+            f"{self.instance_1.id},"
+            "True,"
+            ","
+            "Vzhn0nceudr,"
+            ","
+            ","
+            ","
+            ","
+            "202001,"
+            f"{self.instance_1.source_created_at.strftime('%Y-%m-%d %H:%M:%S')},"
+            f"{self.instance_1.source_updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
+            "yoda (Yo Da),"
+            "READY,"
+            ","
+            "Coruscant Jedi Council,"
+            f"{self.jedi_council_corruscant.id},"
+            "jedi_council_corruscant_ref,"
+            ","
+            ","
+            ","
+        )
+        self.assertIn(expected_csv_row, response_csv)
 
     def test_can_retrieve_submissions_list_in_csv_format_without_source_fields(self):
         # Set up a new instance without source fields
@@ -1091,34 +1092,29 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(response["Content-Type"], "text/csv")
 
         response_csv = response.getvalue().decode("utf-8")
-        response_string = "".join(s for s in response_csv)
-        reader = csv.reader(io.StringIO(response_string), delimiter=",")
-        data = list(reader)
-        row_to_test = data[len(data) - 1]
-        expected_row = [
-            f"{sourceless_instance.id}",
-            "",
-            export_id,
-            "",
-            "",
-            "",
-            "",
-            period,
-            sourceless_instance.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            sourceless_instance.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
-            "yoda (Yo Da)",
-            "READY",
-            "",  # entity UUID
-            "Coruscant Jedi Council",
-            f"{self.jedi_council_corruscant.id}",
-            "jedi_council_corruscant_ref",
-            "",
-            "",
-            "",
-            "",
-        ]
-        # Make sure the export is using the default created/updated_at if there is no source
-        self.assertEqual(row_to_test, expected_row)
+        expected_csv_row = (
+            f"{sourceless_instance.id},"
+            "False,"
+            ","
+            f"{export_id},"
+            ","
+            ","
+            ","
+            ","
+            f"{period},"
+            f"{sourceless_instance.created_at.strftime('%Y-%m-%d %H:%M:%S')},"
+            f"{sourceless_instance.updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
+            "yoda (Yo Da),"
+            "READY,"
+            ","
+            "Coruscant Jedi Council,"
+            f"{self.jedi_council_corruscant.id},"
+            "jedi_council_corruscant_ref,"
+            ","
+            ","
+            ","
+        )
+        self.assertIn(expected_csv_row, response_csv)
 
     def test_submissions_list_in_csv_format_error_no_form(self):
         # Make sure IA-3275 is fixed by sending a 400 instead of letting the backend crash

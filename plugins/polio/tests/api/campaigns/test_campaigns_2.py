@@ -505,7 +505,7 @@ class PolioAPITestCase(APITestCase):
         for c in campaigns[:2]:
             self.client.delete(f"/api/polio/campaigns/{c.id}/")
 
-        response = self.client.get("/api/polio/campaigns/?campaigns=active", format="json")
+        response = self.client.get("/api/polio/campaigns/", format="json")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)

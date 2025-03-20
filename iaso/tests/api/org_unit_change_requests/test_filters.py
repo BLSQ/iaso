@@ -345,3 +345,26 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.data["count"], 0)
+
+    def test_filter_by_multiple_ids(self):
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request_3 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Baz")
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/orgunits/changes/?ids={change_request_1.pk},{change_request_3.pk}")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["results"]), 2)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_1.pk, result_ids)
+        self.assertNotIn(change_request_2.pk, result_ids)
+        self.assertIn(change_request_3.pk, result_ids)
+
+        response = self.client.get(f"/api/orgunits/changes/?ids={change_request_2.pk}")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["results"]), 1)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertNotIn(change_request_1.pk, result_ids)
+        self.assertIn(change_request_2.pk, result_ids)
+        self.assertNotIn(change_request_3.pk, result_ids)

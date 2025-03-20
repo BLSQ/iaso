@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('polio', '0224_earmarkedstock_temporary_campaign_name_and_more'),
+        ("polio", "0224_earmarkedstock_temporary_campaign_name_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='campaign',
-            name='on_hold',
+            model_name="campaign",
+            name="on_hold",
             field=models.BooleanField(default=False),
         ),
     ]

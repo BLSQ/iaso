@@ -149,12 +149,14 @@ PERMISSIONS_PRESENTATION = {
         "iaso_org_units_read",
         "iaso_org_unit_types",
         "iaso_org_unit_groups",
-        "iaso_registry_read",
-        "iaso_registry_write",
     ],
     "data_validation": [
         "iaso_org_unit_change_request_review",
         "iaso_org_unit_change_request_configurations",
+    ],
+    "registry": [
+        "iaso_registry_read",
+        "iaso_registry_write",
     ],
     "entities": [
         "iaso_entities",

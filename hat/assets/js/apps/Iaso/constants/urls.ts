@@ -205,7 +205,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         ],
     },
     registry: {
-        url: 'orgunits/registry',
+        url: 'registry',
         params: [
             'accountId',
             'orgUnitId',

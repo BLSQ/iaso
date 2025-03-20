@@ -508,7 +508,11 @@ class InstancesAPITestCase(TaskAPITestCase):
         """POST /api/instances/ an instance with an orgunit that has been copied in multiple source versions"""
 
         # First, let's create a user that has permissions to do all of this
-        super_yoda = self.create_user_with_profile(account=self.star_wars, username="super yoda", permissions=["iaso_sources", "iaso_submissions", "iaso_org_units"])
+        super_yoda = self.create_user_with_profile(
+            account=self.star_wars,
+            username="super yoda",
+            permissions=["iaso_sources", "iaso_submissions", "iaso_org_units"],
+        )
 
         # Then, let's copy the existing source version through an API call (couldn't call task directly)
         self.client.force_authenticate(super_yoda)

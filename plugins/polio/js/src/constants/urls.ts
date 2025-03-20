@@ -21,6 +21,7 @@ export const CALENDAR_BASE_URL = 'polio/calendar';
 export const EMBEDDED_CALENDAR_URL = 'polio/embeddedCalendar';
 export const EMBEDDED_VACCINE_REPOSITORY_URL =
     'polio/embeddedVaccineRepository';
+export const EMBEDDED_VACCINE_STOCK_URL = 'polio/embeddedVaccineStock';
 export const CONFIG_BASE_URL = 'polio/config';
 export const CONFIG_COUNTRY_URL = `${CONFIG_BASE_URL}/country`;
 export const CONFIG_REASONS_FOR_DELAY_URL = `${CONFIG_BASE_URL}/reasonsfordelay`;

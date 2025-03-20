@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from iaso.models import Group, OrgUnit
+from iaso.models import Group
 from plugins.polio.models import VaccineStock
 
 
@@ -49,8 +49,6 @@ class PublicVaccineStockViewset(ViewSet):
         reverse = order.startswith("-")
         if reverse:
             order = order[1:]
-        print("ORDER", order)
-        print("FIRST", data_list[1][order])
         return sorted(data_list, key=lambda x: x[order], reverse=reverse)
 
     @action(

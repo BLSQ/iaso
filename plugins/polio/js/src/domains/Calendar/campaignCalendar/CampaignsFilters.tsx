@@ -1,6 +1,3 @@
-import FiltersIcon from '@mui/icons-material/FilterList';
-import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
-import { useRedirectToReplace } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
@@ -8,22 +5,25 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import FiltersIcon from '@mui/icons-material/FilterList';
+import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
+import { useRedirectToReplace } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetGroupDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
-import MESSAGES from '../../../constants/messages';
-import { useGetCountries } from '../../../hooks/useGetCountries';
-import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns';
-
 import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
 } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
+
 import { appId } from '../../../constants/app';
+import MESSAGES from '../../../constants/messages';
 import { baseUrls } from '../../../constants/urls';
+import { useGetCountries } from '../../../hooks/useGetCountries';
 import { useGetCampaignTypes } from '../../Campaigns/hooks/api/useGetCampaignTypes';
 import { useCampaignCategoryOptions } from '../../Campaigns/hooks/useCampaignCategoryOptions';
+import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns';
 import { CalendarParams } from './types';
 
 type Props = {
@@ -65,7 +65,9 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const [countries, setCountries] = useState(params.countries);
     const [orgUnitGroups, setOrgUnitGroups] = useState(params.orgUnitGroups);
     const [campaignCategory, setCampaignCategory] = useState(
-        isEmbedded ? params.campaignCategory ?? 'all' : params.campaignCategory,
+        isEmbedded
+            ? (params.campaignCategory ?? 'all')
+            : params.campaignCategory,
     );
     const [campaignGroups, setCampaignGroups] = useState(params.campaignGroups);
     const [search, setSearch] = useState(params.search);

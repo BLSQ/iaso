@@ -343,7 +343,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             }}
                             value={showTest}
                             type="checkbox"
-                            label={MESSAGES.testCampaign}
+                            label={MESSAGES.showTestCampaigns}
                             withMarginTop={false}
                         />
                     </Box>

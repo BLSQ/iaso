@@ -1857,6 +1857,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.showHidden',
         defaultMessage: 'Show hidden',
     },
+    showTestCampaigns: {
+        id: 'iaso.polio.label.showTestCampaigns',
+        defaultMessage: 'Show test campaigns',
+    },
     url: {
         id: 'iaso.polio.label.url',
         defaultMessage: 'Url',

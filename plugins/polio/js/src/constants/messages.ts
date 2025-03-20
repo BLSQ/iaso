@@ -1212,7 +1212,11 @@ const MESSAGES = defineMessages({
     },
     testCampaign: {
         id: 'iaso.polio.label.testCampaign',
-        defaultMessage: 'Test campaign/On hold',
+        defaultMessage: 'Test campaign',
+    },
+    campaignOnHold: {
+        id: 'iaso.polio.label.campaignOnHold',
+        defaultMessage: 'Campaign on hold',
     },
     hasSubActivities: {
         id: 'iaso.polio.label.hasSubActivities',
@@ -2425,7 +2429,8 @@ const MESSAGES = defineMessages({
     },
     scopesWillBeDeleted: {
         id: 'iaso.polio.campaign.label.scopesWillBeDeleted',
-        defaultMessage: 'The previous scopes will be deleted (at the sub-activity level too)',
+        defaultMessage:
+            'The previous scopes will be deleted (at the sub-activity level too)',
     },
     scopeWarningTitle: {
         id: 'iaso.polio.campaign.label.scopeWarningTitle',

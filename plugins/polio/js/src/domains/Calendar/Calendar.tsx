@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -8,40 +9,39 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 // @ts-ignore
 import moment from 'moment';
 import { useLocation } from 'react-router-dom';
 import { XlsxButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/XslxButton';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { getCampaignColor } from '../../constants/campaignsColors';
-import { CampaignsCalendar } from './campaignCalendar';
-import { CalendarMap } from './campaignCalendar/map/CalendarMap';
-import {
-    filterCampaigns,
-    getCalendarData,
-    mapCampaigns,
-} from './campaignCalendar/utils';
-
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { getCampaignColor } from '../../constants/campaignsColors';
+
 import MESSAGES from '../../constants/messages';
 import { baseUrls } from '../../constants/urls';
 import {
     CAMPAIGNS_ENDPOINT,
     useGetCampaigns,
 } from '../Campaigns/hooks/api/useGetCampaigns';
-import { ExportCsvModal } from './ExportCsvModal';
+import { CampaignsCalendar } from './campaignCalendar';
 import {
     CampaignsFilters,
     getRedirectUrl,
 } from './campaignCalendar/CampaignsFilters';
+import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import { HasSubActivityLegend } from './campaignCalendar/HasSubActivityLegend';
 import { IsTestLegend } from './campaignCalendar/IsTestLegend';
+import { CalendarMap } from './campaignCalendar/map/CalendarMap';
 import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 import { TogglePeriod } from './campaignCalendar/TogglePeriod';
-import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import { CalendarParams, MappedCampaign } from './campaignCalendar/types';
+import {
+    filterCampaigns,
+    getCalendarData,
+    mapCampaigns,
+} from './campaignCalendar/utils';
+import { ExportCsvModal } from './ExportCsvModal';
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {
@@ -89,9 +89,7 @@ export const Calendar: FunctionComponent = () => {
                 ? params.orgUnitGroups.split(',').map(Number)
                 : undefined,
             fieldset: 'calendar',
-            show_test:
-                params.campaignCategory === 'test' ||
-                params.campaignCategory === 'all',
+            show_test: false,
         }),
         [
             orders,

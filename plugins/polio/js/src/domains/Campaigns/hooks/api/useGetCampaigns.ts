@@ -163,10 +163,11 @@ export const useCampaignParams = (params: Options): Options => {
             campaignType: params.campaignType,
             campaignCategory: params.campaignCategory,
             campaignGroups: params.campaignGroups,
-            show_test:
-                (params.campaignCategory === 'test' ||
-                    params.campaignCategory === 'all') &&
-                !params.notShowTest,
+            show_test: false,
+            // show_test:
+            //     (params.campaignCategory === 'test' ||
+            //         params.campaignCategory === 'all') &&
+            //     !params.notShowTest,
             fieldset: 'list',
             orgUnitGroups: params.orgUnitGroups,
         };

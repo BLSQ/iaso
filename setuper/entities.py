@@ -4,7 +4,11 @@ from datetime import datetime, timedelta
 from random import randint
 
 from fake import fake_person
-from submissions import org_unit_gps_point, submission2xml, submission_org_unit_gps_point
+from submissions import (
+    org_unit_gps_point,
+    submission2xml,
+    submission_org_unit_gps_point,
+)
 
 
 def setup_entities(account_name, iaso_client):
@@ -12,7 +16,11 @@ def setup_entities(account_name, iaso_client):
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
 
-    hf_out = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][0]
+    hf_out = [
+        out
+        for out in org_unit_types
+        if out["name"] == "Health facility/Formation sanitaire - HF"
+    ][0]
 
     print("-- Setting up reference form")
 
@@ -41,7 +49,9 @@ def setup_entities(account_name, iaso_client):
     reg_form_version_data = {"form_id": reg_form_id, "xls_file": reg_test_file}
     reg_form_files = {"xls_file": open(reg_test_file, "rb")}
 
-    reg_form_version = iaso_client.post("/api/formversions/", files=reg_form_files, data=reg_form_version_data)
+    reg_form_version = iaso_client.post(
+        "/api/formversions/", files=reg_form_files, data=reg_form_version_data
+    )
 
     # create a form
     follow_form_data = {
@@ -68,7 +78,9 @@ def setup_entities(account_name, iaso_client):
     follow_form_version_data = {"form_id": follow_form_id, "xls_file": follow_test_file}
     follow_form_files = {"xls_file": open(follow_test_file, "rb")}
 
-    follow_form_version = iaso_client.post("/api/formversions/", files=follow_form_files, data=follow_form_version_data)
+    follow_form_version = iaso_client.post(
+        "/api/formversions/", files=follow_form_files, data=follow_form_version_data
+    )
 
     current_user = iaso_client.get("/api/profiles/me/")
 
@@ -91,7 +103,9 @@ def setup_entities(account_name, iaso_client):
                 "caretaker_rs",
             ],
             "fields_list_view": ["name", "father_name", "age", "gender"],
-            "account": current_user["account"]["id"],  # suspicious... should have been deduced from user
+            "account": current_user["account"][
+                "id"
+            ],  # suspicious... should have been deduced from user
         },
     )
 
@@ -101,7 +115,8 @@ def setup_entities(account_name, iaso_client):
     entity_type = iaso_client.get("/api/entitytypes/")[0]
 
     wfw_version = iaso_client.post(
-        "/api/workflowversions/", json={"name": "Child program", "entity_type_id": entity_type["id"]}
+        "/api/workflowversions/",
+        json={"name": "Child program", "entity_type_id": entity_type["id"]},
     )
 
     iaso_client.post(
@@ -110,8 +125,10 @@ def setup_entities(account_name, iaso_client):
     )
 
     # fetch orgunit ids
-    limit = 20
-    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]})["orgunits"]
+    limit = 40
+    orgunits = iaso_client.get(
+        "/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]}
+    )["orgunits"]
 
     print("-- Submitting %d submissions" % limit)
     count = 0
@@ -159,7 +176,9 @@ def setup_entities(account_name, iaso_client):
                                     "caretaker_rs": "brother",
                                     "hc": "hc_E",
                                 },
-                                "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
+                                "coordonnees_gps_fosa": submission_org_unit_gps_point(
+                                    orgunit
+                                ),
                             },
                             "meta": {"instanceID": "uuid:" + the_uuid},
                         },
@@ -179,7 +198,9 @@ def setup_entities(account_name, iaso_client):
             local_path = "generated/%s" % file_name
             current_datetime = int(datetime.now().timestamp())
             created_at = datetime.now() - timedelta(days=4)
-            created_at_to_datetime = int(datetime.timestamp(created_at + timedelta(days=i)))
+            created_at_to_datetime = int(
+                datetime.timestamp(created_at + timedelta(days=i))
+            )
 
             iaso_client.post(
                 f"/api/instances/?app_id={account_name}",
@@ -212,7 +233,9 @@ def setup_entities(account_name, iaso_client):
                                 "visit": {
                                     "oedema": 1,
                                     "need_followup": 0,
-                                    "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
+                                    "coordonnees_gps_fosa": submission_org_unit_gps_point(
+                                        orgunit
+                                    ),
                                 },
                                 "meta": {"instanceID": "uuid:" + the_uuid},
                             },
@@ -224,4 +247,21 @@ def setup_entities(account_name, iaso_client):
             )
         count = count + 1
 
-    print(iaso_client.get("/api/instances", params={"limit": 1})["count"], "instances created")
+    print(
+        iaso_client.get("/api/instances", params={"limit": 1})["count"],
+        "instances created",
+    )
+
+    print("--- Launching entity duplicates analysis ---")
+
+    create_entity_duplicate_analysis = iaso_client.post(
+        "/api/entityduplicates_analyzes/",
+        json={
+            "algorithm": "levenshtein",
+            "entity_type_id": entity_type["id"],
+            "fields": ["name"],
+            "parameters": [],
+        },
+    )
+
+    print(f"Entity duplicates analysis done! {create_entity_duplicate_analysis}")

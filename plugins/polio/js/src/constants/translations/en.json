@@ -769,7 +769,6 @@
     "iaso.polio.notifications.title": "Virus notification",
     "iaso.polio.notifications.validation.field_required": "This field is required",
     "iaso.polio.notifications.validation.invalid_date": "Invalid date",
-    "iaso.polio.notShowTestCampaigns": "Do not show test campaigns",
     "iaso.polio.periods.quarter": "Quarter",
     "iaso.polio.periods.semester": "Semester",
     "iaso.polio.periods.year": "Year",

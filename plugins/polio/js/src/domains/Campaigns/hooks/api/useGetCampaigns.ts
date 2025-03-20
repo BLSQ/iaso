@@ -28,7 +28,6 @@ export type Options = {
     enabled?: boolean;
     fieldset?: string;
     filterLaunched?: boolean;
-    notShowTest?: boolean;
 };
 
 export type GetCampaignsParams = {
@@ -50,7 +49,6 @@ export type GetCampaignsParams = {
     enabled?: boolean;
     fieldset?: string;
     format?: string;
-    not_show_test?: boolean;
 };
 
 const getURL = (urlParams: GetCampaignsParams, url: string): string => {
@@ -167,7 +165,7 @@ export const useCampaignParams = (params: Options): Options => {
             campaignType: params.campaignType,
             campaignCategory: params.campaignCategory,
             campaignGroups: params.campaignGroups,
-            show_test: false,
+            show_test: params.show_test,
             on_hold:
                 params.campaignCategory === 'on_hold' ||
                 params.campaignCategory === 'all',

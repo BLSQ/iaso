@@ -1,5 +1,5 @@
-import { UrlParams, useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { UrlParams, useSafeIntl } from 'bluesquare-components';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import {
     FormattedApiParams,
@@ -15,11 +15,6 @@ import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import {
-    StockManagementDetailsParams,
-    StockManagementListParams,
-    StockVariationParams,
-} from '../types';
 
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { commaSeparatedIdsToStringArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
@@ -29,6 +24,11 @@ import {
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
 import { patchRequest2, postRequest2 } from '../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
+import {
+    StockManagementDetailsParams,
+    StockManagementListParams,
+    StockVariationParams,
+} from '../types';
 
 const defaults = {
     order: 'country',

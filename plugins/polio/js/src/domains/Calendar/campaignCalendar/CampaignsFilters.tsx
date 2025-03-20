@@ -74,9 +74,8 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
     );
-    const [notShowTest, setNotShowTest] = useState(
-        params.notShowTest === 'true',
-    );
+    const [showTest, setShowTest] = useState(params.show_test === 'true');
+
     const [roundStartFrom, setRoundStartFrom] = useState(
         dateApiToDateRangePicker(params.roundStartFrom),
     );
@@ -93,8 +92,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         campaignType ||
         campaignCategory ||
         campaignGroups ||
-        orgUnitGroups ||
-        notShowTest;
+        orgUnitGroups;
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -113,11 +111,11 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                 campaignType,
                 campaignCategory,
                 showOnlyDeleted: showOnlyDeleted ? 'true' : undefined,
+                show_test: showTest ? 'true' : undefined,
                 campaignGroups,
                 orgUnitGroups,
                 filterLaunched: filtersFilled ? 'true' : 'false',
                 periodType: params?.periodType,
-                notShowTest: notShowTest ? 'true' : undefined,
             };
             redirectToReplace(redirectUrl, urlParams);
         }
@@ -131,10 +129,10 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         campaignType,
         campaignCategory,
         showOnlyDeleted,
+        showTest,
         campaignGroups,
         orgUnitGroups,
         filtersFilled,
-        notShowTest,
         redirectToReplace,
         redirectUrl,
     ]);
@@ -168,11 +166,11 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         roundStartFrom,
         roundStartTo,
         showOnlyDeleted,
+        showTest,
         campaignType,
         campaignCategory,
         campaignGroups,
         orgUnitGroups,
-        notShowTest,
     ]);
 
     useEffect(() => {
@@ -323,7 +321,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                     </>
                 )}
                 {!disableOnlyDeleted && (
-                    <>
+                    <Box mt={1}>
                         <InputComponent
                             keyValue="showOnlyDeleted"
                             onChange={(key, value) => {
@@ -332,17 +330,23 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             value={showOnlyDeleted}
                             type="checkbox"
                             label={MESSAGES.showOnlyDeleted}
+                            withMarginTop={false}
                         />
+                    </Box>
+                )}
+                {!isCalendar && (
+                    <Box mt={disableOnlyDeleted ? 1 : undefined}>
                         <InputComponent
-                            keyValue="NotShowTest"
+                            keyValue="show_test"
                             onChange={(key, value) => {
-                                setNotShowTest(value);
+                                setShowTest(value);
                             }}
-                            value={notShowTest}
+                            value={showTest}
                             type="checkbox"
-                            label={MESSAGES.notShowTestCampaigns}
+                            label={MESSAGES.testCampaign}
+                            withMarginTop={false}
                         />
-                    </>
+                    </Box>
                 )}
             </Grid>
 

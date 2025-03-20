@@ -483,6 +483,7 @@ class ListCampaignSerializer(CampaignSerializer):
             "campaign_types",
             "is_test",
             "is_preventive",
+            "on_hold",
         ]
         read_only_fields = fields
 
@@ -690,6 +691,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "campaign_types",
             "description",
             "is_test",
+            "on_hold",
         ]
         read_only_fields = fields
 
@@ -820,6 +822,7 @@ class CampaignViewSet(ModelViewSet):
         if self.action in ("update", "partial_update", "retrieve", "destroy"):
             return queryset
         campaign_category = self.request.query_params.get("campaign_category")
+        print("Campaign Category", campaign_category)
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
         on_hold = self.request.query_params.get("on_hold", "false")
@@ -832,8 +835,8 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(on_hold=False)
         if campaign_category == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
-        if campaign_category == "test":
-            campaigns = campaigns.filter(is_test=True)
+        if campaign_category == "on_hold":
+            campaigns = campaigns.filter(on_hold=True)
         if campaign_category == "regular":
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_groups:
@@ -1217,10 +1220,16 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
         if campaign_groups:
             rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
+        if campaign_category == "on_hold":
+            rounds = rounds.filter(campaign__on_hold=True)
         if campaign_category == "preventive":
             rounds = rounds.filter(campaign__is_preventive=True)
         if campaign_category == "regular":
-            rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
+            rounds = (
+                rounds.filter(campaign__is_preventive=False)
+                .filter(campaign__is_test=False)
+                .filter(campaign__on_hold=False)
+            )
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
         if org_unit_groups:

@@ -45,6 +45,7 @@ export type MappedCampaign = {
     id: string;
     isPreventive: boolean;
     isTest: boolean;
+    onHold: boolean;
 };
 
 export type ShapeForCalendarMap = {
@@ -73,7 +74,6 @@ export type CalendarParams = {
     orgUnitGroups?: string;
     currentDate?: string;
     periodType?: PeriodType;
-    notShowTest?: string;
 };
 
 export type CalendarData = {

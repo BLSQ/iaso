@@ -822,11 +822,14 @@ class CampaignViewSet(ModelViewSet):
         campaign_category = self.request.query_params.get("campaign_category")
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
+        on_hold = self.request.query_params.get("on_hold", "false")
         org_unit_groups = self.request.query_params.get("org_unit_groups")
         campaign_types = self.request.query_params.get("campaign_types")
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
+        if on_hold == "false":
+            campaigns = campaigns.filter(on_hold=False)
         if campaign_category == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
         if campaign_category == "test":
@@ -952,7 +955,9 @@ class CampaignViewSet(ModelViewSet):
         rounds = (
             Round.objects.select_related("campaign")
             .filter(query_rounds)
-            .exclude(Q(campaign__isnull=True) | Q(campaign__is_test=True))
+            .exclude(
+                Q(campaign__isnull=True) | Q(campaign__is_test=True)
+            )  # TODO see if on hold should be excluded as well
         )
 
         # get filtered rounds

@@ -31,7 +31,7 @@ import {
 } from './campaignCalendar/CampaignsFilters';
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import { HasSubActivityLegend } from './campaignCalendar/HasSubActivityLegend';
-import { IsTestLegend } from './campaignCalendar/IsTestLegend';
+import { IsOnHoldLegend } from './campaignCalendar/IsOnHoldLegend';
 import { CalendarMap } from './campaignCalendar/map/CalendarMap';
 import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 import { TogglePeriod } from './campaignCalendar/TogglePeriod';
@@ -90,6 +90,7 @@ export const Calendar: FunctionComponent = () => {
                 : undefined,
             fieldset: 'calendar',
             show_test: false,
+            on_hold: true,
         }),
         [
             orders,
@@ -266,10 +267,10 @@ export const Calendar: FunctionComponent = () => {
                         )}
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>
                             <Box display="flex" justifyContent="flex-end">
-                                {(params.campaignCategory === 'test' ||
+                                {(params.campaignCategory === 'on_hold' ||
                                     params.campaignCategory === 'all') && (
                                     <Box mr={2}>
-                                        <IsTestLegend />
+                                        <IsOnHoldLegend />
                                     </Box>
                                 )}
                                 <Box mr={2}>

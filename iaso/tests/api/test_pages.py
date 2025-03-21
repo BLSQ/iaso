@@ -28,10 +28,10 @@ class PagesAPITestCase(APITestCase):
         cls.fifth_user = cls.create_user_with_profile(
             username="fifth user", account=first_account, permissions=["iaso_page_write"]
         )
-        cls.userNoWritePermission = cls.create_user_with_profile(
+        cls.user_no_write_permission = cls.create_user_with_profile(
             username="NoWritePermission", account=first_account, permissions=["iaso_pages"]
         )
-        cls.userNoIasoPagesPermission = cls.create_user_with_profile(
+        cls.user_no_iaso_pages_permission = cls.create_user_with_profile(
             username="userNoIasoPagesPermission", account=first_account
         )
 
@@ -58,10 +58,34 @@ class PagesAPITestCase(APITestCase):
 
     def test_pages_list_without_pages_permission(self):
         """GET /pages/ without iaso_pages permission should result in a 403"""
-        self.client.force_login(self.userNoIasoPagesPermission)
+        self.client.force_login(self.user_no_iaso_pages_permission)
 
         response = self.client.get("/api/pages/")
         self.assertJSONResponse(response, 403)
+    
+    def test_pages_list_linked_to_current_user(self):
+        """Get /pages/ only pages linked to the current user"""
+        self.create_page(name="TEST1", slug="test_1", needs_authentication=False, users=[self.second_user.pk])
+        self.create_page(name="TEST2", slug="test_2", needs_authentication=True, users=[self.second_user.pk])
+
+        # Check when the user has only read permission but not embedded links linked to him
+        self.client.force_login(self.user_no_write_permission)
+        response = self.client.get("/api/pages/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 0)
+
+        # Check when the user has only read permission but has some embedded links linked to him
+        self.create_page(name="TEST3", slug="test_3", needs_authentication=True, users=[self.user_no_write_permission.pk])
+        self.client.force_login(self.user_no_write_permission)
+        response = self.client.get("/api/pages/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 1)
+
+        # Check when the user has write permission
+        self.client.force_login(self.first_user)
+        response = self.client.get("/api/pages/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.json()["results"]), 3)
 
     def test_pages_list_search_by_name_or_by_slug(self):
         """GET /pages/?search='search string'"""
@@ -107,7 +131,7 @@ class PagesAPITestCase(APITestCase):
 
     def test_create_page_with_no_write_permission(self):
         """POST /pages/ without write page permission should result in a 403"""
-        self.client.force_login(self.userNoWritePermission)
+        self.client.force_login(self.user_no_write_permission)
 
         response = self.client.post(
             "/api/pages/",
@@ -141,7 +165,7 @@ class PagesAPITestCase(APITestCase):
             format="json",
         )
 
-        self.client.force_login(self.userNoWritePermission)
+        self.client.force_login(self.user_no_write_permission)
         page = Page.objects.last().pk
 
         response = self.client.delete(

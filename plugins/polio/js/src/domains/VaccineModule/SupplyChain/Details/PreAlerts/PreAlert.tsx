@@ -1,9 +1,9 @@
+import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
-import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
@@ -159,6 +159,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                         values?.pre_alerts?.[index]
                                             ?.scan_timestamp
                                     }
+                                    coloredScanResultIcon
                                     disabled={
                                         markedForDeletion ||
                                         !pre_alerts?.[index].can_edit

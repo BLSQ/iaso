@@ -2640,15 +2640,15 @@ class VaccineStockCalculator:
                 elif movement.temporary_campaign_name:
                     action_text += f" for ({movement.temporary_campaign_name})"
 
-                    base_result = {
-                        "date": movement.created_at.date(),
-                        "action": action_text,
-                        "vials_in": movement.vials_earmarked,
-                        "doses_in": movement.doses_earmarked,
-                        "vials_out": None,
-                        "doses_out": None,
-                        "type": f"earmarked_stock__{movement_type}",
-                    }
+                base_result = {
+                    "date": movement.created_at.date(),
+                    "action": action_text,
+                    "vials_in": movement.vials_earmarked,
+                    "doses_in": movement.doses_earmarked,
+                    "vials_out": None,
+                    "doses_out": None,
+                    "type": f"earmarked_stock__{movement_type}",
+                }
                 if not expanded:
                     results.append(base_result)
                 else:

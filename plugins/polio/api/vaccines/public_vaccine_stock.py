@@ -1,12 +1,18 @@
 import math
 
+from datetime import date
+from tempfile import NamedTemporaryFile
+
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from iaso.api.common import CONTENT_TYPE_XLSX
 from iaso.models import Group
+from plugins.polio.api.vaccines.export_utils import download_xlsx_public_stock_variants
 from plugins.polio.models import VaccineStock
 
 
@@ -123,12 +129,31 @@ class PublicVaccineStockViewset(ViewSet):
         sorted_usable = self._apply_filter_and_sort(all_usable, request)
 
         return self._paginate_response(request, sorted_usable)
-
+    
+    @action(
+        detail=False,
+        methods=["get"],
+    )
     def export_xlsx(self, request):
         # Data to export for usable based on queryparams received from front-end
         all_usable = self._get_json_data(request, usable=True)
         sorted_usable = self._apply_filter_and_sort(all_usable, request)
-
+        usable_totals = self._compute_totals(sorted_usable)
         # Data to export for unusable based on queryparams received from front-end
         all_unusable = self._get_json_data(request, usable=False)
         sorted_unusable = self._apply_filter_and_sort(all_unusable, request)
+        unusable_totals = self._compute_totals(sorted_unusable)
+        
+        today = date.today().isoformat()
+        filename = f"{today}-usable-unsuable-vaccine-stock-export"
+        workbook = download_xlsx_public_stock_variants(filename, sorted_usable, sorted_unusable, usable_totals, unusable_totals)
+
+        with NamedTemporaryFile() as tmp:
+                workbook.save(tmp.name)
+                tmp.seek(0)
+                stream = tmp.read()
+
+        response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+        response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+        return response
+        

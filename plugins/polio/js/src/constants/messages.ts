@@ -1116,6 +1116,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.showDeletedCampaigns',
         defaultMessage: 'Show deleted campaigns',
     },
+    hideTestCampaigns: {
+        id: 'iaso.polio.hideTestCampaigns',
+        defaultMessage: 'Hide test campaigns',
+    },
     deleted_at: {
         id: 'iaso.forms.deleted_at',
         defaultMessage: 'Deleted',
@@ -1212,7 +1216,11 @@ const MESSAGES = defineMessages({
     },
     testCampaign: {
         id: 'iaso.polio.label.testCampaign',
-        defaultMessage: 'Test campaign/On hold',
+        defaultMessage: 'Test campaign',
+    },
+    campaignOnHold: {
+        id: 'iaso.polio.label.campaignOnHold',
+        defaultMessage: 'Campaign on hold',
     },
     hasSubActivities: {
         id: 'iaso.polio.label.hasSubActivities',
@@ -1853,6 +1861,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.showHidden',
         defaultMessage: 'Show hidden',
     },
+    showTestCampaigns: {
+        id: 'iaso.polio.label.showTestCampaigns',
+        defaultMessage: 'Show test campaigns',
+    },
     url: {
         id: 'iaso.polio.label.url',
         defaultMessage: 'Url',
@@ -2407,10 +2419,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.chronogram',
         defaultMessage: 'Chronogram',
     },
-    notShowTestCampaigns: {
-        id: 'iaso.polio.notShowTestCampaigns',
-        defaultMessage: 'Do not show test campaigns',
-    },
     fileType: {
         id: 'iaso.polio.label.fileType',
         defaultMessage: 'File type',
@@ -2425,7 +2433,8 @@ const MESSAGES = defineMessages({
     },
     scopesWillBeDeleted: {
         id: 'iaso.polio.campaign.label.scopesWillBeDeleted',
-        defaultMessage: 'The previous scopes will be deleted (at the sub-activity level too)',
+        defaultMessage:
+            'The previous scopes will be deleted (at the sub-activity level too)',
     },
     scopeWarningTitle: {
         id: 'iaso.polio.campaign.label.scopeWarningTitle',

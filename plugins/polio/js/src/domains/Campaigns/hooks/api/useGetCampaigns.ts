@@ -8,7 +8,7 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_ORDER = '-cvdpv2_notified_at';
 export const CAMPAIGNS_ENDPOINT = '/api/polio/campaigns/';
 
-export type CampaignCategory = 'all' | 'preventive' | 'test' | 'regular';
+export type CampaignCategory = 'all' | 'preventive' | 'on_hold' | 'regular';
 
 export type Options = {
     pageSize?: number;
@@ -24,10 +24,10 @@ export type Options = {
     campaignGroups?: number[];
     orgUnitGroups?: number[];
     show_test?: boolean;
+    on_hold?: boolean;
     enabled?: boolean;
     fieldset?: string;
     filterLaunched?: boolean;
-    notShowTest?: boolean;
 };
 
 export type GetCampaignsParams = {
@@ -44,11 +44,11 @@ export type GetCampaignsParams = {
     campaign_groups?: number[];
     org_unit_groups?: number[];
     show_test?: boolean;
+    on_hold?: boolean;
     // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
     enabled?: boolean;
     fieldset?: string;
     format?: string;
-    not_show_test?: boolean;
 };
 
 const getURL = (urlParams: GetCampaignsParams, url: string): string => {
@@ -80,6 +80,7 @@ export const useGetCampaignsOptions = (
             campaign_groups: options.campaignGroups,
             org_unit_groups: options.orgUnitGroups,
             show_test: options.show_test ?? false,
+            on_hold: options.on_hold ?? false,
             // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
             enabled: options.enabled ?? true,
             fieldset: asCsv ? undefined : (options.fieldset ?? undefined),
@@ -101,6 +102,7 @@ export const useGetCampaignsOptions = (
             options.show_test,
             options.enabled,
             options.fieldset,
+            options.on_hold,
         ],
     );
 };
@@ -163,10 +165,10 @@ export const useCampaignParams = (params: Options): Options => {
             campaignType: params.campaignType,
             campaignCategory: params.campaignCategory,
             campaignGroups: params.campaignGroups,
-            show_test:
-                (params.campaignCategory === 'test' ||
-                    params.campaignCategory === 'all') &&
-                !params.notShowTest,
+            show_test: params.show_test ?? true,
+            on_hold:
+                params.campaignCategory === 'on_hold' ||
+                params.campaignCategory === 'all',
             fieldset: 'list',
             orgUnitGroups: params.orgUnitGroups,
         };

@@ -623,6 +623,7 @@ class Campaign(SoftDeletableModel):
     is_preventive = models.BooleanField(default=False, help_text="Preventive campaign")
     # campaign used for training and testing purpose
     is_test = models.BooleanField(default=False)
+    on_hold = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

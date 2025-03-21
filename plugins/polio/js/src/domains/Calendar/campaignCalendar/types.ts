@@ -45,6 +45,7 @@ export type MappedCampaign = {
     id: string;
     isPreventive: boolean;
     isTest: boolean;
+    onHold: boolean;
 };
 
 export type ShapeForCalendarMap = {
@@ -61,7 +62,8 @@ export type CalendarParams = {
     roundStartTo?: string;
     showOnlyDeleted?: string;
     // eslint-disable-next-line camelcase
-    show_test?: string;
+    show_test?: string; // boolean in string form
+    on_hold?: string; // boolean in string form
     filterLaunched?: string;
     order?: string;
     countries?: string;
@@ -72,7 +74,6 @@ export type CalendarParams = {
     orgUnitGroups?: string;
     currentDate?: string;
     periodType?: PeriodType;
-    notShowTest?: string;
 };
 
 export type CalendarData = {

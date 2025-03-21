@@ -175,13 +175,24 @@ class PolioAPICampaignCsvTestCase(APITestCase):
             4. If the data in cells are correct
         """
 
-        self.c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+        c_1_round_1 = self.c.rounds.create(
+            number=1,
+            started_at=datetime.date(2022, 1, 1),
+            ended_at=datetime.date(2022, 1, 2),
+            target_population=1500,
+            cost=15,
+            lqas_district_passing=16,
+            lqas_district_failing=3,
+            preparedness_spreadsheet_url="https://docs.google.com/spreadsheets/d/test2",
+            preparedness_sync_status="FINISHED",
+            doses_requested=0,
+        )
         self.c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
 
         self.c2.is_test = True
         self.c2.save()
 
-        c_round_2 = self.c2.rounds.create(
+        c_2_round_2 = self.c2.rounds.create(
             number=1,
             started_at=datetime.date(2021, 12, 1),
             ended_at=datetime.date(2021, 12, 31),
@@ -195,7 +206,32 @@ class PolioAPICampaignCsvTestCase(APITestCase):
         )
         self.c2.rounds.create(number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7))
         response = self.client.get(
-            "/api/polio/campaigns/csv_campaigns_export/?campaign_category=test&show_test=true&enabled=true"
+            "/api/polio/campaigns/csv_campaigns_export/?campaign_category=all&show_test=true&enabled=true"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get("Content-Disposition"),
+            "attachment; filename=campaigns-rounds--" + strftime("%Y-%m-%d-%H-%M", gmtime()) + ".csv",
+        )
+
+        response_string = "\n".join(s.decode("U8") for s in response).replace("\r\n\n", "\r\n")
+        reader = csv.reader(io.StringIO(response_string), delimiter=",")
+        data = list(reader)
+        self.assertEqual(len(data), 5)
+        data_headers = data[0]
+        self.assertEqual(
+            data_headers,
+            self.campaign_csv_columns,
+        )
+        data_row = data[3]
+        row_data = self.row_data(self.c2, c_2_round_2)
+
+        self.assertEqual(
+            data_row,
+            row_data,
+        )
+        response = self.client.get(
+            "/api/polio/campaigns/csv_campaigns_export/?campaign_category=all&show_test=false&enabled=true"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -213,7 +249,8 @@ class PolioAPICampaignCsvTestCase(APITestCase):
             self.campaign_csv_columns,
         )
         first_data_row = data[1]
-        row_data = self.row_data(self.c2, c_round_2)
+        row_data = self.row_data(self.c, c_1_round_1)
+
         self.assertEqual(
             first_data_row,
             row_data,

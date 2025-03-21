@@ -1,28 +1,28 @@
 /* eslint-disable react/no-array-index-key */
 import React from 'react';
-import { useSafeIntl } from 'bluesquare-components';
 import { Grid, Box, Paper } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm.tsx';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject.tsx';
+import { HorizontalDivider } from '../../../components/HorizontalDivider.tsx';
+import MESSAGES from '../../../constants/messages.ts';
+import { Sides } from '../../../constants/types.ts';
+import { useGetCampaigns } from '../../Campaigns/hooks/api/useGetCampaigns.ts';
+import { GraphTitle } from '../shared/charts/GraphTitle.tsx';
+import { LqasImHorizontalChart } from '../shared/charts/LqasImHorizontalChart.tsx';
+import { LqasImVerticalChart } from '../shared/charts/LqasImVerticalChart.tsx';
+import { paperElevation } from '../shared/constants.ts';
+import { BadRoundNumbers } from '../shared/DebugInfo/BadRoundNumber.tsx';
+import { DatesIgnored } from '../shared/DebugInfo/DatesIgnored.tsx';
 import { DistrictsNotFound } from '../shared/DebugInfo/DistrictsNotFound.tsx';
 import { Filters } from '../shared/Filters.tsx';
-import { GraphTitle } from '../shared/charts/GraphTitle.tsx';
 
-import { LqasImHorizontalChart } from '../shared/charts/LqasImHorizontalChart.tsx';
-import { DatesIgnored } from '../shared/DebugInfo/DatesIgnored.tsx';
-import { HorizontalDivider } from '../../../components/HorizontalDivider.tsx';
-import { LqasImVerticalChart } from '../shared/charts/LqasImVerticalChart.tsx';
-import { Sides } from '../../../constants/types.ts';
+import { useSelectedRounds } from '../shared/hooks/useSelectedRounds.tsx';
+import { useStyles } from '../shared/hooks/useStyles.ts';
 import { ImOverviewContainer } from './CountryOverview/ImOverviewContainer.tsx';
 import { useImData } from './hooks/useImData.ts';
-import MESSAGES from '../../../constants/messages.ts';
-import { BadRoundNumbers } from '../shared/DebugInfo/BadRoundNumber.tsx';
-import { paperElevation } from '../shared/constants.ts';
-import { useSelectedRounds } from '../shared/hooks/useSelectedRounds.tsx';
-import { useGetCampaigns } from '../../Campaigns/hooks/api/useGetCampaigns.ts';
 import { useImType } from './hooks/useImType.ts';
-import { useStyles } from '../shared/hooks/useStyles.ts';
 
 export const ImStats = () => {
     const { url: baseUrl, type: imType } = useImType();
@@ -35,6 +35,8 @@ export const ImStats = () => {
         useGetCampaigns({
             countries: country,
             enabled: Boolean(country),
+            show_test: false,
+            on_hold: true,
         });
 
     const { onRoundChange, selectedRounds, dropDownOptions } =

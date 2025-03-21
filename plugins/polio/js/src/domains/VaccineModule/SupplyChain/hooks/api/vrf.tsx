@@ -1,12 +1,11 @@
+import { useMemo } from 'react';
 import {
     UrlParams,
     renderTagsWithTooltip,
     textPlaceholder,
 } from 'bluesquare-components';
 import moment from 'moment';
-import { useMemo } from 'react';
 import { UseMutationResult, UseQueryResult } from 'react-query';
-import { PostArg } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     errorSnackBar,
@@ -26,6 +25,7 @@ import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { PostArg } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import {
     DropdownOptions,
     DropdownOptionsWithOriginal,
@@ -39,7 +39,11 @@ import {
     CampaignCategory,
     useGetCampaigns,
 } from '../../../../Campaigns/hooks/api/useGetCampaigns';
-import { apiUrl, defaultVaccineOptions, singleVaccinesList } from '../../constants';
+import {
+    apiUrl,
+    defaultVaccineOptions,
+    singleVaccinesList,
+} from '../../constants';
 import MESSAGES from '../../messages';
 import {
     CampaignDropdowns,
@@ -122,6 +126,8 @@ export const useCampaignDropDowns = (
         countries: countryId ? [`${countryId}`] : undefined,
         campaignCategory: 'regular' as CampaignCategory,
         campaignType: 'polio',
+        on_hold: true,
+        show_test: false,
     };
 
     const { data, isFetching } = useGetCampaigns(options, CAMPAIGNS_ENDPOINT);
@@ -141,7 +147,9 @@ export const useCampaignDropDowns = (
             : singleVaccinesList;
         const rounds = vaccine
             ? (selectedCampaign?.rounds ?? [])
-                  .filter(round => round.vaccine_names_extended.includes(vaccine))
+                  .filter(round =>
+                      round.vaccine_names_extended.includes(vaccine),
+                  )
                   .map(round => ({
                       label: `Round ${round.number}`,
                       value: `${round.number}`,

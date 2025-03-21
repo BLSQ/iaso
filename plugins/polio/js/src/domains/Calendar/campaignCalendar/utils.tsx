@@ -1,11 +1,11 @@
-import moment, { Moment } from 'moment';
 import React, { ReactElement } from 'react';
-import { colsCounts, dateFormat } from './constants';
+import moment, { Moment } from 'moment';
 
 import { CalendarCampaign } from '../../../constants/types';
 import { CampaignDurationCell } from './cells/CampaignDuration';
 import { EmptyCell } from './cells/Empty';
 import { RoundCell } from './cells/RoundCell';
+import { colsCounts, dateFormat } from './constants';
 import {
     CalendarData,
     CalendarRound,
@@ -267,6 +267,7 @@ const mapCampaigns = (allCampaigns: CalendarCampaign[]): MappedCampaign[] => {
             original: c,
             isPreventive: c.is_preventive,
             isTest: c.is_test,
+            onHold: c.on_hold,
             separateScopesPerRound: c.separate_scopes_per_round,
             scopes: c.scopes,
         };

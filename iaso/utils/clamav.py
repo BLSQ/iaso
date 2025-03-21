@@ -2,13 +2,14 @@ import logging
 import os
 import tempfile
 
-from datetime import datetime
-
 import clamav_client
 
 from clamav_client.clamd import CommunicationError
 from django.conf import settings
 from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.utils import timezone
+
+from iaso.utils.models.virus_scan import VirusScanStatus
 
 
 logger = logging.getLogger(__name__)
@@ -37,33 +38,28 @@ def _scan_with_clamav(file_path: str):
     is_clamav_active = settings.CLAMAV_ACTIVE
     if not is_clamav_active:
         logger.info("ClamAV is not active, skipping scan")
-        return True, "ClamAV is not active, skipping scan"
+        return VirusScanStatus.PENDING, None
 
     try:
         scanner = clamav_client.get_scanner(config=settings.CLAMAV_CONFIGURATION)
-        before = datetime.now()
+        before = timezone.now()
         scan = scanner.scan(file_path)
-        after = datetime.now()
+        after = timezone.now()
         file_size = os.path.getsize(file_path)
         logger.info(f"Scan result: {scan} - done in {after - before} - size {file_size} B")
 
-        is_safe = scan.passed
+        if scan.passed:
+            return VirusScanStatus.CLEAN, after
         if scan.state == "FOUND":
-            details = "A virus was found in this file, please contact your administrator"
-        elif scan.state == "ERROR":
-            details = f"An error occurred while scanning the file - {scan.details}"
-        elif scan.state is None:
-            details = "The scan is not completed yet"
-        else:
-            details = ""
+            return VirusScanStatus.INFECTED, after
+        if scan.state == "ERROR":
+            return VirusScanStatus.ERROR, None
 
-        return is_safe, details
+        return VirusScanStatus.PENDING, None
 
     except CommunicationError as e:
-        error_message = f"Connection error to ClamAV - {e}"
-        logger.error(error_message)
-        return False, error_message
+        logger.error(f"Connection error to ClamAV - {e}")
+        return VirusScanStatus.ERROR, None
     except Exception as e:
-        error_message = f"Unknown error while scanning file - {e}"
-        logger.error(error_message)
-        return False, error_message
+        logger.error(f"Unknown error while scanning file - {e}")
+        return VirusScanStatus.ERROR, None

@@ -40,8 +40,12 @@ class PublicVaccineStockViewset(ViewSet):
     # We filter separately because this filter can't be applied on the queryset level
     def filter_action_type(self, data_list, request):
         action_type = request.query_params.get("action_type", None)
-        if action_type:
+        if action_type and "forma" not in action_type:
             data_list = [el for el in data_list if el["type"] == action_type]
+        if action_type and action_type == "forma_used_vials":
+            data_list = [el for el in data_list if "Form A - Vials Used" in el["action"]]
+        if action_type and action_type == "forma_missing_vials":
+            data_list = [el for el in data_list if "Form A - Missing Vials" in el["action"]]
         return data_list
 
     def sort_results(self, data_list, request):

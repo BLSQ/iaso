@@ -137,6 +137,17 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'reportVaccineName',
         ],
     },
+    embeddedVaccineStock: {
+        url: EMBEDDED_VACCINE_STOCK_URL,
+        params: [
+            ...paginationPathParams,
+            'country',
+            'action_type',
+            'country_block',
+            'vaccine',
+            'usable',
+        ],
+    },
     lqasCountry: {
         url: LQAS_BASE_URL,
         params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
@@ -336,6 +347,7 @@ export type PolioBaseUrls = {
     reasonsForDelayConfig: string;
     embeddedCalendar: string;
     embeddedVaccineRepository: string;
+    embeddedVaccineStock: string;
     notification: string;
     chronogram: string;
     chronogramTemplateTask: string;

@@ -4,21 +4,19 @@ import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import { useLocation } from 'react-router-dom';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../../../constants/urls';
+import { Filters } from './components/Filters';
 import { LanguageButton } from './components/LanguageButton';
 import { Table } from './components/Table';
 import { useGetPublicVaccineStock } from './useGetPublicVaccineStock';
 
-const baseUrl = baseUrls.embeddedVaccineRepository;
+const baseUrl = baseUrls.embeddedVaccineStock;
 
 export const PublicVaccineStock: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const location = useLocation();
     const params = useParamsObject(baseUrl);
     const redirectTo = useRedirectTo();
-    const { data, isLoading } = useGetPublicVaccineStock({
-        params,
-        usable: true,
-    });
+    const { data, isLoading } = useGetPublicVaccineStock(params);
 
     return (
         <>
@@ -59,6 +57,7 @@ export const PublicVaccineStock: FunctionComponent = () => {
                     </Grid>
                 </Grid>
                 <Box>
+                    <Filters params={params} />
                     <Table data={data} isLoading={isLoading} />
                 </Box>
             </Box>

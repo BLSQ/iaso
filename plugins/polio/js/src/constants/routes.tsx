@@ -22,6 +22,7 @@ import { Nopv2AuthorisationsDetails } from '../domains/VaccineModule/Nopv2Author
 import { Nopv2Authorisations } from '../domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
 import { VaccineRepository } from '../domains/VaccineModule/Repository/VaccineRepository';
 import { VaccineStockManagementDetails } from '../domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails';
+import { PublicVaccineStock } from '../domains/VaccineModule/StockManagement/PublicPage/PublicVaccineStock';
 import { VaccineStockVariation } from '../domains/VaccineModule/StockManagement/StockVariation/VaccineStockVariation';
 import { VaccineStockManagement } from '../domains/VaccineModule/StockManagement/VaccineStockManagement';
 import { VaccineSupplyChainDetails } from '../domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails';
@@ -101,7 +102,7 @@ export const embeddedVaccineStockPath: AnonymousRoutePath = {
     allowAnonymous: true,
     baseUrl: EMBEDDED_VACCINE_STOCK_URL,
     routerUrl: `${EMBEDDED_VACCINE_STOCK_URL}/*`,
-    element: <VaccineRepository />,
+    element: <PublicVaccineStock />,
     isRootUrl: false,
 };
 

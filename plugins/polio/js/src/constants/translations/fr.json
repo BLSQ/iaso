@@ -267,6 +267,7 @@
     "iaso.polio.forms.error.wrongUserAccount": "Mauvais compte d'utilisateur",
     "iaso.polio.forms.options.approval": "Approbation",
     "iaso.polio.forms.options.approval_ongoing": "Approbation en cours",
+    "iaso.polio.hideTestCampaigns": "Masquer les campagnes de test",
     "iaso.polio.import_file.label": "Excel Line File",
     "iaso.polio.label.3months": "3 derniers mois",
     "iaso.polio.label.6months": "6 derniers mois",

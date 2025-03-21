@@ -74,7 +74,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
     );
-    const [showTest, setShowTest] = useState(params.show_test === 'true');
+    const [hideTest, setHideTest] = useState(params.show_test === 'false');
 
     const [roundStartFrom, setRoundStartFrom] = useState(
         dateApiToDateRangePicker(params.roundStartFrom),
@@ -89,6 +89,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         roundStartFrom ||
         roundStartTo ||
         showOnlyDeleted ||
+        hideTest ||
         campaignType ||
         campaignCategory ||
         campaignGroups ||
@@ -111,7 +112,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                 campaignType,
                 campaignCategory,
                 showOnlyDeleted: showOnlyDeleted ? 'true' : undefined,
-                show_test: showTest ? 'true' : undefined,
+                show_test: hideTest ? 'false' : 'true',
                 campaignGroups,
                 orgUnitGroups,
                 filterLaunched: filtersFilled ? 'true' : 'false',
@@ -129,7 +130,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         campaignType,
         campaignCategory,
         showOnlyDeleted,
-        showTest,
+        hideTest,
         campaignGroups,
         orgUnitGroups,
         filtersFilled,
@@ -166,7 +167,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         roundStartFrom,
         roundStartTo,
         showOnlyDeleted,
-        showTest,
+        hideTest,
         campaignType,
         campaignCategory,
         campaignGroups,
@@ -339,12 +340,13 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                         <InputComponent
                             keyValue="show_test"
                             onChange={(key, value) => {
-                                setShowTest(value);
+                                setHideTest(value);
                             }}
-                            value={showTest}
+                            value={hideTest}
                             type="checkbox"
-                            label={MESSAGES.showTestCampaigns}
+                            label={MESSAGES.hideTestCampaigns}
                             withMarginTop={false}
+                            disabled={campaignCategory === 'on_hold'}
                         />
                     </Box>
                 )}

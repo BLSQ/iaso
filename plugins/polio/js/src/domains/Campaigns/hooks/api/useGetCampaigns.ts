@@ -165,7 +165,7 @@ export const useCampaignParams = (params: Options): Options => {
             campaignType: params.campaignType,
             campaignCategory: params.campaignCategory,
             campaignGroups: params.campaignGroups,
-            show_test: params.show_test,
+            show_test: params.show_test ?? true,
             on_hold:
                 params.campaignCategory === 'on_hold' ||
                 params.campaignCategory === 'all',

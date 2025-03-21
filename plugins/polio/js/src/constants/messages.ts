@@ -1116,6 +1116,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.showDeletedCampaigns',
         defaultMessage: 'Show deleted campaigns',
     },
+    hideTestCampaigns: {
+        id: 'iaso.polio.hideTestCampaigns',
+        defaultMessage: 'Hide test campaigns',
+    },
     deleted_at: {
         id: 'iaso.forms.deleted_at',
         defaultMessage: 'Deleted',

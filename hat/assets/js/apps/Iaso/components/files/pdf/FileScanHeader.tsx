@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { CheckCircleOutline } from '@mui/icons-material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
@@ -13,14 +13,16 @@ import { SxStyles } from '../../../types/general';
 import MESSAGES from './messages';
 
 const styles: SxStyles = {
-    headerCleanFile: {
-        backgroundColor: '#E6F4EA',
-        color: '#1E4620',
+    baseHeader: {
         padding: 2,
         borderRadius: 2,
         display: 'flex',
         alignItems: 'center',
         gap: 1,
+    },
+    headerCleanFile: {
+        backgroundColor: '#E6F4EA',
+        color: '#1E4620',
     },
     colorCleanFile: {
         color: '#137333',
@@ -28,11 +30,6 @@ const styles: SxStyles = {
     headerPendingFile: {
         backgroundColor: '#FEF7E0',
         color: '#8A5700',
-        padding: 2,
-        borderRadius: 2,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
     },
     colorPendingFile: {
         color: '#B06D00',
@@ -40,31 +37,31 @@ const styles: SxStyles = {
     headerInfectedFile: {
         backgroundColor: '#FDEDED',
         color: '#8B1A1A',
-        padding: 2,
-        borderRadius: 2,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1,
     },
     colorInfectedFile: {
         color: '#B3261E',
     },
 };
 
-export const useFileScanHeader = (
-    scanResult: string | undefined,
-    scanTimestamp: number | undefined,
-) => {
+type FileScanHeaderProps = {
+    scanResult?: string;
+    scanTimestamp?: number;
+};
+
+export const FileScanHeader: FunctionComponent<FileScanHeaderProps> = ({
+    scanResult,
+    scanTimestamp,
+}) => {
     const { formatMessage } = useSafeIntl();
 
     const headerStyle = useMemo(() => {
         if (scanResult === fileScanResultClean) {
-            return styles.headerCleanFile;
+            return [styles.baseHeader, styles.headerCleanFile];
         }
         if (scanResult === fileScanResultInfected) {
-            return styles.headerInfectedFile;
+            return [styles.baseHeader, styles.headerInfectedFile];
         }
-        return styles.headerPendingFile;
+        return [styles.baseHeader, styles.headerPendingFile];
     }, [scanResult]);
 
     const headerIcon = useMemo(() => {

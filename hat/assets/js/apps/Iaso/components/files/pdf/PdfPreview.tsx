@@ -18,9 +18,9 @@ import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { fileScanResultInfected } from '../../../constants/fileScanResults';
 import { SxStyles } from '../../../types/general';
-import PdfSvgComponent from '../../svg/PdfSvgComponent';
+import { FileScanHeader } from './FileScanHeader';
+import { FileScanStatusOpenButton } from './FileScanStatusOpenButton';
 import MESSAGES from './messages';
-import { useFileScanHeader } from './useFileScanHeader';
 
 // Set the workerSrc for pdfjs to enable the use of Web Workers.
 // Web Workers allow the PDF.js library to process PDF files in a separate thread,
@@ -40,6 +40,7 @@ type PdfPreviewProps = {
     buttonProps?: Record<string, unknown>;
     scanResult?: string | undefined;
     scanTimestamp?: number | undefined;
+    coloredScanResultIcon?: boolean;
 };
 
 const styles: SxStyles = {
@@ -77,25 +78,13 @@ const styles: SxStyles = {
     },
 };
 
-const DefaultOpenButton: FunctionComponent<{
-    onClick: () => void;
-    disabled: boolean;
-}> = ({ onClick, disabled }) => (
-    <IconButton
-        onClick={onClick}
-        aria-label="preview document"
-        disabled={disabled}
-    >
-        <PdfSvgComponent />
-    </IconButton>
-);
-
 export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
     pdfUrl,
     OpenButtonComponent,
     buttonProps,
     scanResult,
     scanTimestamp,
+    coloredScanResultIcon,
 }) => {
     const [open, setOpen] = useState(false);
     const [numPages, setNumPages] = useState<number | null>(null);
@@ -113,8 +102,6 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
     const isFileSafeToDisplayAndDownload = useMemo(() => {
         return !scanResult || scanResult !== fileScanResultInfected;
     }, [scanResult]);
-
-    const fileScanHeader = useFileScanHeader(scanResult, scanTimestamp);
 
     const handleDownload = useCallback(() => {
         if (pdfUrl && isFileSafeToDisplayAndDownload) {
@@ -143,13 +130,15 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
         });
     };
 
-    const OpenButton = OpenButtonComponent || DefaultOpenButton;
+    const OpenButton = OpenButtonComponent || FileScanStatusOpenButton;
 
     return (
         <>
             <OpenButton
                 onClick={handleOpen}
                 disabled={!pdfUrl}
+                coloredIcon={coloredScanResultIcon}
+                scanResult={scanResult}
                 {...buttonProps}
             />
             {open && (
@@ -160,7 +149,10 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
                     onClose={handleClose}
                 >
                     <DialogContent sx={styles.dialogContent}>
-                        {fileScanHeader}
+                        <FileScanHeader
+                            scanResult={scanResult}
+                            scanTimestamp={scanTimestamp}
+                        />
                         {isFileSafeToDisplayAndDownload && (
                             <Box sx={styles.documentContainer}>
                                 <Document

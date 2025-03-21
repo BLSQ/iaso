@@ -338,7 +338,7 @@ export const useCampaignOptions = (
         cacheTime: 1000 * 60 * 5,
     };
     const { data, isFetching } = useGetCampaigns(
-        {},
+        { show_test: false, on_hold: true },
         CAMPAIGNS_ENDPOINT,
         undefined,
         queryOptions,

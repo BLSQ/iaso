@@ -837,7 +837,7 @@ class CampaignViewSet(ModelViewSet):
         if campaign_category == "on_hold":
             campaigns = campaigns.filter(on_hold=True)
         if campaign_category == "regular":
-            campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
+            campaigns = campaigns.filter(is_preventive=False).filter(is_test=False).filter(on_hold=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
         if org_unit_groups:

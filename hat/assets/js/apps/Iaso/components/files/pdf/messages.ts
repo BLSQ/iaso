@@ -40,6 +40,20 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Scanned on {datetime}',
         id: 'iaso.label.fileScanTimestamp',
     },
+    fileScanSafeIconTooltip: {
+        defaultMessage: 'This file is safe',
+        id: 'iaso.label.fileScanSafeIconTooltip',
+    },
+    fileScanInfectedIconTooltip: {
+        defaultMessage:
+            'This file contains a virus',
+        id: 'iaso.label.fileScanInfectedIconTooltip',
+    },
+    fileScanPendingIconTooltip: {
+        defaultMessage:
+            'This file has not been scanned',
+        id: 'iaso.label.fileScanPendingIconTooltip',
+    },
 });
 
 export default MESSAGES;

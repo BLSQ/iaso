@@ -35,8 +35,8 @@ class PublicVaccineStockViewset(ViewSet):
         if country_block:
             country_block = int(country_block)
             group = Group.objects.filter(id=country_block).first()
-            if group.exists():
-                queryset = queryset.filter(country__in=group.org_units)
+            if group:
+                queryset = queryset.filter(country__in=group.org_units.all())
         if country:
             queryset = queryset.filter(country__id=int(country))
         if vaccine:
@@ -100,7 +100,7 @@ class PublicVaccineStockViewset(ViewSet):
         has_previous = page > 1
         has_next = page < pages
         data = {"total_vials": total_vials, "total_doses": total_doses, "movements": unusable_to_display}
-        if page > pages:
+        if pages > 0 and page > pages:
             return Response({"result": f"Maximum page is {pages}, entered {page}"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(
             {
@@ -133,7 +133,7 @@ class PublicVaccineStockViewset(ViewSet):
         sorted_usable = self._apply_filter_and_sort(all_usable, request)
 
         return self._paginate_response(request, sorted_usable)
-    
+
     @action(
         detail=False,
         methods=["get"],
@@ -147,17 +147,18 @@ class PublicVaccineStockViewset(ViewSet):
         all_unusable = self._get_json_data(request, usable=False)
         sorted_unusable = self._apply_filter_and_sort(all_unusable, request)
         unusable_totals = self._compute_totals(sorted_unusable)
-        
+
         today = date.today().isoformat()
         filename = f"{today}-usable-unsuable-vaccine-stock-export"
-        workbook = download_xlsx_public_stock_variants(filename, sorted_usable, sorted_unusable, usable_totals, unusable_totals)
+        workbook = download_xlsx_public_stock_variants(
+            filename, sorted_usable, sorted_unusable, usable_totals, unusable_totals
+        )
 
         with NamedTemporaryFile() as tmp:
-                workbook.save(tmp.name)
-                tmp.seek(0)
-                stream = tmp.read()
+            workbook.save(tmp.name)
+            tmp.seek(0)
+            stream = tmp.read()
 
         response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
         response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
         return response
-        

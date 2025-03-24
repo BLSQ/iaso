@@ -8,6 +8,7 @@ import { Filters } from './components/Filters';
 import { LanguageButton } from './components/LanguageButton';
 import { Table } from './components/Table';
 import { TabSwitchButton } from './components/TabSwitchButton';
+import { VialsSummary } from './components/VialsSummary';
 import MESSAGES from './messages';
 import { useGetPublicVaccineStock } from './useGetPublicVaccineStock';
 
@@ -71,6 +72,13 @@ export const PublicVaccineStock: FunctionComponent = () => {
                 <Box>
                     <Filters params={params} />
                     <Table data={data} isLoading={isLoading} tab={tab} />
+                    {!isLoading && Boolean(data.results) && (
+                        <VialsSummary
+                            totalVials={data.results.total_vials}
+                            totalDoses={data.results.total_doses}
+                            tab={tab}
+                        />
+                    )}
                 </Box>
             </Box>
         </>

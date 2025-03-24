@@ -143,5 +143,21 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.all',
         defaultMessage: 'All',
     },
+    totalUnusableDoses: {
+        id: 'iaso.label.publicVaccineStock.totalUnusableDoses',
+        defaultMessage: 'Stock unusable doses',
+    },
+    totalUsableDoses: {
+        id: 'iaso.label.publicVaccineStock.totalUsableDoses',
+        defaultMessage: 'Stock usable doses',
+    },
+    totalUnusableVials: {
+        id: 'iaso.label.publicVaccineStock.totalUnusableVials',
+        defaultMessage: 'Stock unusable vials',
+    },
+    totalUsableVials: {
+        id: 'iaso.label.publicVaccineStock.totalUsableVials',
+        defaultMessage: 'Stock usable vials',
+    },
 });
 export default MESSAGES;

@@ -34,6 +34,7 @@ export const Table: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const tabText = formatMessage(MESSAGES[tab]);
     const redirectTo = useRedirectTo();
+    const { order } = params;
     const handleChangePage = useCallback(
         (_event, newPage) => {
             redirectTo(baseUrls.embeddedVaccineStock, {
@@ -76,6 +77,25 @@ export const Table: FunctionComponent<Props> = ({
                                         color: '#0a4780',
                                         textAlign: 'center',
                                     }}
+                                    onClick={() => {
+                                        if (order === 'country_name') {
+                                            redirectTo(
+                                                baseUrls.embeddedVaccineStock,
+                                                {
+                                                    ...params,
+                                                    order: '-country_name',
+                                                },
+                                            );
+                                        } else {
+                                            redirectTo(
+                                                baseUrls.embeddedVaccineStock,
+                                                {
+                                                    ...params,
+                                                    order: 'country_name',
+                                                },
+                                            );
+                                        }
+                                    }}
                                 >
                                     <Typography sx={{ fontWeight: 'bold' }}>
                                         {formatMessage(MESSAGES.country)}
@@ -87,6 +107,25 @@ export const Table: FunctionComponent<Props> = ({
                                         cursor: 'pointer',
                                         color: '#0a4780',
                                         textAlign: 'center',
+                                    }}
+                                    onClick={() => {
+                                        if (order === 'vaccine_type') {
+                                            redirectTo(
+                                                baseUrls.embeddedVaccineStock,
+                                                {
+                                                    ...params,
+                                                    order: '-vaccine_type',
+                                                },
+                                            );
+                                        } else {
+                                            redirectTo(
+                                                baseUrls.embeddedVaccineStock,
+                                                {
+                                                    ...params,
+                                                    order: 'vaccine_type',
+                                                },
+                                            );
+                                        }
                                     }}
                                 >
                                     <Typography sx={{ fontWeight: 'bold' }}>
@@ -101,9 +140,27 @@ export const Table: FunctionComponent<Props> = ({
                                         color: '#0a4780',
                                         textAlign: 'center',
                                     }}
+                                    onClick={() => {
+                                        if (order === 'date') {
+                                            redirectTo(
+                                                baseUrls.embeddedVaccineStock,
+                                                {
+                                                    ...params,
+                                                    order: '-date',
+                                                },
+                                            );
+                                        } else {
+                                            redirectTo(
+                                                baseUrls.embeddedVaccineStock,
+                                                {
+                                                    ...params,
+                                                    order: 'date',
+                                                },
+                                            );
+                                        }
+                                    }}
                                 >
                                     <Typography sx={{ fontWeight: 'bold' }}>
-                                        {' '}
                                         {formatMessage(MESSAGES.date)}
                                     </Typography>
                                 </TableCell>
@@ -116,7 +173,6 @@ export const Table: FunctionComponent<Props> = ({
                                     }}
                                 >
                                     <Typography sx={{ fontWeight: 'bold' }}>
-                                        {' '}
                                         {formatMessage(MESSAGES.vialsType)}
                                     </Typography>
                                 </TableCell>
@@ -129,7 +185,6 @@ export const Table: FunctionComponent<Props> = ({
                                     }}
                                 >
                                     <Typography sx={{ fontWeight: 'bold' }}>
-                                        {' '}
                                         {formatMessage(MESSAGES.actionType)}
                                     </Typography>
                                 </TableCell>
@@ -142,7 +197,6 @@ export const Table: FunctionComponent<Props> = ({
                                     }}
                                 >
                                     <Typography sx={{ fontWeight: 'bold' }}>
-                                        {' '}
                                         {formatMessage(MESSAGES.action)}
                                     </Typography>
                                 </TableCell>
@@ -155,7 +209,6 @@ export const Table: FunctionComponent<Props> = ({
                                     }}
                                 >
                                     <Typography sx={{ fontWeight: 'bold' }}>
-                                        {' '}
                                         {formatMessage(MESSAGES.vialsIn)}
                                     </Typography>
                                 </TableCell>
@@ -168,7 +221,6 @@ export const Table: FunctionComponent<Props> = ({
                                     }}
                                 >
                                     <Typography sx={{ fontWeight: 'bold' }}>
-                                        {' '}
                                         {formatMessage(MESSAGES.vialsOut)}
                                     </Typography>
                                 </TableCell>
@@ -181,7 +233,6 @@ export const Table: FunctionComponent<Props> = ({
                                     }}
                                 >
                                     <Typography sx={{ fontWeight: 'bold' }}>
-                                        {' '}
                                         {formatMessage(MESSAGES.dosesIn)}
                                     </Typography>
                                 </TableCell>

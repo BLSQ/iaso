@@ -7,15 +7,23 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogContentText,
     DialogActions,
     Divider,
+    List,
+    ListItem,
+    ListItemText,
 } from '@mui/material';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import {
+    InputWithInfos,
+    LoadingSpinner,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { ConfirmDialogWarningTitle } from '../../../components/dialogs/ConfirmDialogWarningTitle';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useCreateDataSourceVersionsSync } from '../hooks/useCreateDataSourceVersionsSync';
+import { useCreateJsonDiffAsync } from '../hooks/useCreateJsonDiffAsync';
 import MESSAGES from '../messages';
+import { SyncResponse } from '../types/sync';
 
 type Props = {
     onConfirm: () => void;
@@ -37,28 +45,40 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
 
     const [open, setOpen] = useState<boolean>(false);
     const [isPreviewDone, setIsPreviewDone] = useState<boolean>(false);
+    const [jsonDiffResult, setJsonDiffResult] = useState<
+        SyncResponse | undefined
+    >(undefined);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [syncName, setSyncName] = useState<string | undefined>(undefined);
     const { mutateAsync: createDataSourceVersionsSync } =
         useCreateDataSourceVersionsSync();
+    const { mutateAsync: createJsonDiffAsync } = useCreateJsonDiffAsync();
     const handleSeePreview = useCallback(async () => {
         setIsLoading(true);
-        const result = await createDataSourceVersionsSync({
-            name: syncName,
-            refSourceVersionId,
-            targetSourceVersionId,
-        });
-        console.log('result', result);
-        // - Set loading state
-        // - call the API to create a new DataSourceVersionsSynchronization object => POST on /api/datasources/sync/
-        // - call the API to compute the differences asynchronously => PATCH on /api/datasources/sync/{id}/create_json_diff_async/
-        // - remove loading state
-
-        setIsLoading(false);
-        setIsPreviewDone(true);
-        // - display result in the dialog
+        try {
+            const result = await createDataSourceVersionsSync({
+                name: syncName,
+                refSourceVersionId,
+                targetSourceVersionId,
+            });
+            const diffResult = await createJsonDiffAsync({
+                id: result.id,
+            });
+            setIsPreviewDone(true);
+            setJsonDiffResult(diffResult);
+        } catch (error) {
+            setIsLoading(false);
+            setIsPreviewDone(false);
+            console.error(
+                'Error creating data source versions synchronization',
+                error,
+            );
+        } finally {
+            setIsLoading(false);
+        }
     }, [
         createDataSourceVersionsSync,
+        createJsonDiffAsync,
         refSourceVersionId,
         syncName,
         targetSourceVersionId,
@@ -86,7 +106,12 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
     );
 
     const isDisabled: boolean = !syncName || isLoading;
-
+    const isConfirmDisabled: boolean =
+        !isPreviewDone ||
+        isLoading ||
+        !jsonDiffResult ||
+        (jsonDiffResult.count_create === 0 &&
+            jsonDiffResult.count_update === 0);
     return (
         <>
             <Tooltip
@@ -118,66 +143,101 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
             >
                 <DialogTitle>
                     <ConfirmDialogWarningTitle
-                        title={formatMessage(MESSAGES.exportTitle)}
+                        title={formatMessage(MESSAGES.syncTitle)}
                     />
                 </DialogTitle>
                 <Divider />
                 <DialogContent>
                     {isLoading && <LoadingSpinner absolute />}
-                    <Box>
+
+                    <InputWithInfos
+                        infos={formatMessage(MESSAGES.syncNameInfos)}
+                    >
                         <InputComponent
-                            keyValue="short_name"
+                            keyValue="syncName"
                             onChange={(_key, value) => {
                                 setSyncName(value);
                             }}
                             value={syncName}
                             errors={[]}
                             type="text"
-                            label={MESSAGES.name}
+                            label={MESSAGES.syncName}
                             required
                         />
-                    </Box>
-                    <DialogContentText id="alert-dialog-description">
-                        <Typography
-                            variant="body2"
-                            color="error"
-                            component="span"
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                            }}
+                    </InputWithInfos>
+                    <Box
+                        display="flex"
+                        justifyContent="flex-end"
+                        width="100%"
+                        my={2}
+                    >
+                        <Button
+                            onClick={handleSeePreview}
+                            color="primary"
+                            variant="outlined"
+                            disabled={isDisabled}
                         >
-                            {formatMessage(MESSAGES.syncMessage)}
-                        </Typography>
-                    </DialogContentText>
+                            {formatMessage(MESSAGES.syncPreview)}
+                        </Button>
+                    </Box>
+                    {jsonDiffResult && (
+                        <List>
+                            <ListItem>
+                                <ListItemText>
+                                    {formatMessage(MESSAGES.count_create)}:{' '}
+                                    {jsonDiffResult.count_create}
+                                </ListItemText>
+                            </ListItem>
+                            <ListItem>
+                                <ListItemText>
+                                    {formatMessage(MESSAGES.count_update)}:{' '}
+                                    {jsonDiffResult.count_update}
+                                </ListItemText>
+                            </ListItem>
+                        </List>
+                    )}
+                    <Typography
+                        variant="body2"
+                        color="error"
+                        component="span"
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        {formatMessage(MESSAGES.syncMessage)}
+                    </Typography>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">
                         {formatMessage(MESSAGES.cancel)}
                     </Button>
-                    <Button
-                        onClick={handleSeePreview}
-                        color="primary"
-                        disabled={isDisabled}
+                    <Tooltip
+                        title={
+                            isConfirmDisabled
+                                ? formatMessage(MESSAGES.syncTooltip)
+                                : undefined
+                        }
                     >
-                        {formatMessage(MESSAGES.csvPreview)}
-                    </Button>
-                    <Button
-                        onClick={() => handleOnConfirm(false)}
-                        color="primary"
-                        autoFocus
-                        disabled={!isPreviewDone}
-                    >
-                        {formatMessage(MESSAGES.confirm)}
-                    </Button>
-                    <Button
-                        onClick={() => handleOnConfirm(true)}
-                        color="primary"
-                        autoFocus
-                        disabled={!isPreviewDone}
-                    >
-                        {formatMessage(MESSAGES.goToCurrentTask)}
-                    </Button>
+                        <Box>
+                            <Button
+                                onClick={() => handleOnConfirm(false)}
+                                color="primary"
+                                autoFocus
+                                disabled={isConfirmDisabled}
+                            >
+                                {formatMessage(MESSAGES.launch)}
+                            </Button>
+                            <Button
+                                onClick={() => handleOnConfirm(true)}
+                                color="primary"
+                                autoFocus
+                                disabled={isConfirmDisabled}
+                            >
+                                {formatMessage(MESSAGES.goToCurrentTask)}
+                            </Button>
+                        </Box>
+                    </Tooltip>
                 </DialogActions>
             </Dialog>
         </>

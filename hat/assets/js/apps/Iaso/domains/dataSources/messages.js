@@ -193,6 +193,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.title.exportTitle',
         defaultMessage: 'Are you sure?',
     },
+    syncTitle: {
+        id: 'iaso.datasources.title.syncTitle',
+        defaultMessage: 'Synchronize data sources',
+    },
     dhis2ExportMessage: {
         id: 'iaso.datasources.title.dhis2ExportMessage',
         defaultMessage: 'This might make a lot of changes in DHIS2.',
@@ -217,6 +221,10 @@ const MESSAGES = defineMessages({
     csvPreview: {
         id: 'iaso.datasources.button.label.csvPreview',
         defaultMessage: 'Preview',
+    },
+    syncPreview: {
+        id: 'iaso.datasources.button.label.syncPreview',
+        defaultMessage: 'Preview change request(s)',
     },
     orgUnitTypes: {
         id: 'iaso.datasources.label.orgUnitTypes',
@@ -439,6 +447,27 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.exportMessageDisabled',
         defaultMessage:
             'Please select a data source with DHIS2 credentials to enable export',
+    },
+    syncName: {
+        id: 'iaso.datasources.syncName',
+        defaultMessage: 'Synchronization name',
+    },
+    syncTooltip: {
+        id: 'iaso.datasources.syncTooltip',
+        defaultMessage:
+            'You need to give a name and see the preview to launch the synchronization.',
+    },
+    count_create: {
+        id: 'iaso.datasources.count_create',
+        defaultMessage: 'Org unit(s) to create',
+    },
+    count_update: {
+        id: 'iaso.datasources.count_update',
+        defaultMessage: 'Org unit(s) to update',
+    },
+    syncNameInfos: {
+        id: 'iaso.datasources.syncNameInfos',
+        defaultMessage: 'Used to find linked changed requests',
     },
 });
 

@@ -1,16 +1,11 @@
 import { postRequest } from '../../../libs/Api';
 import { useSnackMutation } from '../../../libs/apiHooks';
+import { SyncResponse } from '../types/sync';
 
 type SyncParams = {
     name: string | undefined;
     refSourceVersionId: number;
     targetSourceVersionId: number;
-};
-
-type SyncResponse = {
-    id: number;
-    status: string;
-    // Add other response fields if needed
 };
 
 const createDataSourceVersionsSync = async ({
@@ -26,12 +21,13 @@ const createDataSourceVersionsSync = async ({
 };
 
 export const useCreateDataSourceVersionsSync = () => {
-    return useSnackMutation<SyncResponse, Error, SyncParams>(
-        ({ name, refSourceVersionId, targetSourceVersionId }) =>
+    return useSnackMutation<SyncResponse, Error, SyncParams>({
+        mutationFn: ({ name, refSourceVersionId, targetSourceVersionId }) =>
             createDataSourceVersionsSync({
                 name,
                 refSourceVersionId,
                 targetSourceVersionId,
             }),
-    );
+        showSucessSnackBar: false,
+    });
 };

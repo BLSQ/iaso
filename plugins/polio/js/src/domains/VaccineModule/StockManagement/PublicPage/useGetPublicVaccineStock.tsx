@@ -9,7 +9,7 @@ const unusableEndpoint =
 
 const defaults = {
     order: '-date',
-    pageSize: 20,
+    pageSize: 50,
     page: 1,
 };
 

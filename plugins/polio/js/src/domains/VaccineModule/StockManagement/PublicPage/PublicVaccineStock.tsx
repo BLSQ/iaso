@@ -113,7 +113,12 @@ export const PublicVaccineStock: FunctionComponent = () => {
                 </Grid>
                 <Box>
                     <Filters params={params} />
-                    <Table data={data} isLoading={isLoading} tab={tab} />
+                    <Table
+                        data={data}
+                        isLoading={isLoading}
+                        tab={tab}
+                        params={params}
+                    />
                     {!isLoading && Boolean(data.results) && (
                         <VialsSummary
                             totalVials={data.results.total_vials}

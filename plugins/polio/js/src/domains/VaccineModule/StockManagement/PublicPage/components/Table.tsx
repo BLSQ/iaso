@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     TableContainer,
     Table as MuiTable,
@@ -10,17 +10,48 @@ import {
     Box,
     Typography,
 } from '@mui/material';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import {
+    LoadingSpinner,
+    useRedirectTo,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { baseUrls } from '../../../../../constants/urls';
 import MESSAGES from '../messages';
 
 type Props = {
     data: any;
     isLoading: boolean;
     tab: 'usable' | 'unusable';
+    params: any;
 };
 
-export const Table: FunctionComponent<Props> = ({ data, isLoading, tab }) => {
+export const Table: FunctionComponent<Props> = ({
+    data,
+    isLoading,
+    tab,
+    params,
+}) => {
     const { formatMessage } = useSafeIntl();
+    const redirectTo = useRedirectTo();
+    const handleChangePage = useCallback(
+        (_event, newPage) => {
+            redirectTo(baseUrls.embeddedVaccineStock, {
+                ...params,
+                page: newPage,
+            });
+        },
+        [params, redirectTo],
+    );
+    const handleChangeRowsPerPage = useCallback(
+        event => {
+            redirectTo(baseUrls.embeddedVaccineStock, {
+                ...params,
+                page: 1,
+                pageSize: parseInt(event.target.value, 10),
+            });
+        },
+        [params, redirectTo],
+    );
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -155,17 +186,16 @@ export const Table: FunctionComponent<Props> = ({ data, isLoading, tab }) => {
                     </MuiTable>
                 </TableContainer>
             </Box>
-            {/* <TablePagination
-                // className={classes.tablePagination}
-                rowsPerPageOptions={[5, 10, 25]}
+            <TablePagination
+                rowsPerPageOptions={[5, 10, 20, 50]}
                 component="div"
-                count={data.count}
-                rowsPerPage={data.limit}
-                page={data.page}
+                count={data?.count ?? 0}
+                rowsPerPage={data?.limit ?? 50}
+                page={data?.page ?? 1}
                 labelRowsPerPage="Rows"
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
-            /> */}
+            />
         </>
     );
 };

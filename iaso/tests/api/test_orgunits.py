@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 import typing
 
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
@@ -242,6 +243,39 @@ class OrgUnitAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 2)
+
+    def test_org_unit_search_with_external_refs(self):
+        """GET /orgunits/ with a search based on refs - real external & fake external (internal) """
+        # First, let's set a source ref on this orgunit, because there is none in the setup
+        jedi_counsil_endor_source_ref = "sOuRcErEf"
+        self.jedi_council_endor.source_ref = jedi_counsil_endor_source_ref
+        self.jedi_council_endor.save()
+        self.jedi_council_endor.refresh_from_db()
+
+        invalid_external_ref = "iTsAMeMario"
+        invalid_iaso_id = 12345678987654321
+
+        # Let's add a mix of existing and non-existing refs, both external and fake external
+        search_criteria = {
+            "validation_status": "all",
+            "version": self.sw_version_1.id,
+            "search": f"refs: {self.jedi_council_corruscant.source_ref} iaso#{invalid_iaso_id} {self.jedi_council_endor.source_ref} iaso#{self.jedi_squad_endor.id} {invalid_external_ref}",
+        }
+        search_criteria_str = json.dumps(search_criteria)
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{search_criteria_str}]&limit=50")
+        self.assertJSONResponse(response, 200)
+
+        response_json = response.json()
+        self.assertEqual(response_json["count"], 3)
+        org_units = response_json["orgunits"]
+        self.assertEqual(org_units[0]["id"], self.jedi_council_corruscant.id)
+        self.assertEqual(org_units[0]["source_ref"], self.jedi_council_corruscant.source_ref)
+        self.assertEqual(org_units[1]["id"], self.jedi_council_endor.id)
+        self.assertEqual(org_units[1]["source_ref"], jedi_counsil_endor_source_ref)
+        self.assertEqual(org_units[2]["id"], self.jedi_squad_endor.id)
+
 
     def test_org_unit_search(self):
         """GET /orgunits/ with a search based on name"""

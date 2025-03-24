@@ -49,6 +49,8 @@ export type PreAlert = {
     to_delete?: boolean;
     document?: File;
     can_edit: boolean;
+    scan_result?: string;
+    scan_timestamp?: number;
 };
 
 export type VAR = {

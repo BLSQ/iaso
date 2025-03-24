@@ -149,7 +149,7 @@ class PublicVaccineStockViewset(ViewSet):
         unusable_totals = self._compute_totals(sorted_unusable)
 
         today = date.today().isoformat()
-        filename = f"{today}-usable-unsuable-vaccine-stock-export"
+        filename = f"{today}-stock-card-export"
         workbook = download_xlsx_public_stock_variants(
             filename, sorted_usable, sorted_unusable, usable_totals, unusable_totals
         )

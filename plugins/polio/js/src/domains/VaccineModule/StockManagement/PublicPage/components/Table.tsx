@@ -204,34 +204,36 @@ export const Table: FunctionComponent<Props> = ({
                                 data.results.movements.map(entry => {
                                     return (
                                         <TableRow>
-                                            <TableCell>
+                                            <TableCell sx={{ height: '60px' }}>
                                                 {entry.country_name}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell sx={{ height: '60px' }}>
                                                 {entry.vaccine_type}
                                             </TableCell>
-                                            <TableCell>{entry.date}</TableCell>
+                                            <TableCell sx={{ height: '60px' }}>
+                                                {entry.date}
+                                            </TableCell>
                                             <TableCell>{tabText}</TableCell>
-                                            <TableCell>
+                                            <TableCell sx={{ height: '60px' }}>
                                                 {formatMessage(
                                                     MESSAGES[entry.type],
                                                 ) ?? entry.type}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell sx={{ height: '60px' }}>
                                                 {formatMessage(
                                                     MESSAGES[entry.action],
                                                 ) ?? entry.action}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell sx={{ height: '60px' }}>
                                                 {entry.vials_in}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell sx={{ height: '60px' }}>
                                                 {entry.vials_out}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell sx={{ height: '60px' }}>
                                                 {entry.doses_in}
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell sx={{ height: '60px' }}>
                                                 {entry.doses_out}
                                             </TableCell>
                                         </TableRow>

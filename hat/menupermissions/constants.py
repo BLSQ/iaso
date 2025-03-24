@@ -56,8 +56,6 @@ MODULE_PERMISSIONS = {
     "REGISTRY": [
         "iaso_registry_write",
         "iaso_registry_read",
-        "iaso_org_unit_change_request_review",
-        "iaso_org_unit_change_request_configurations",
     ],
     "PAYMENTS": ["iaso_payments"],
     "COMPLETENESS_PER_PERIOD": ["iaso_completeness"],
@@ -99,6 +97,10 @@ MODULE_PERMISSIONS = {
         "iaso_trypelim_vectorcontrol",
         "iaso_trypelim_vectorcontrolupload",
     ],
+    "DATA_VALIDATION": [
+        "iaso_org_unit_change_request_review",
+        "iaso_org_unit_change_request_configurations",
+    ]
 }
 
 MODULES = [
@@ -118,6 +120,7 @@ MODULES = [
     {"name": "Payments", "codename": "PAYMENTS", "fr_name": "Paiements"},
     {"name": "Completeness per Period", "codename": "COMPLETENESS_PER_PERIOD", "fr_name": "Complétude par période"},
     {"name": "Trypelim project", "codename": "TRYPELIM_PROJECT", "fr_name": "Projet Trypelim"},
+    {"name": "Data validation", "codename": "DATA_VALIDATION", "fr_name": "Validation des données"}
 ]
 
 FEATUREFLAGES_TO_EXCLUDE = {
@@ -146,10 +149,14 @@ PERMISSIONS_PRESENTATION = {
         "iaso_org_units_read",
         "iaso_org_unit_types",
         "iaso_org_unit_groups",
-        "iaso_registry_read",
-        "iaso_registry_write",
+    ],
+    "data_validation": [
         "iaso_org_unit_change_request_review",
         "iaso_org_unit_change_request_configurations",
+    ],
+    "registry": [
+        "iaso_registry_read",
+        "iaso_registry_write",
     ],
     "entities": [
         "iaso_entities",

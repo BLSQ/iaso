@@ -69,9 +69,7 @@ def build_org_units_queryset(queryset, params, profile):
                 queryset = queryset.filter(source_ref__in=[])
                 print("Failed parsing refs in search", search)
         else:
-            queryset = queryset.filter(
-                Q(name__icontains=search) | Q(aliases__contains=[search])
-            )
+            queryset = queryset.filter(Q(name__icontains=search) | Q(aliases__contains=[search]))
 
     if group:
         if isinstance(group, str):
@@ -105,9 +103,7 @@ def build_org_units_queryset(queryset, params, profile):
         queryset = queryset.filter(instance__created_at__lte=date_to)
 
     if date_from is not None and date_to is not None:
-        queryset = queryset.filter(
-            instance__created_at__range=[date_from, date_to]
-        ).distinct("id")
+        queryset = queryset.filter(instance__created_at__range=[date_from, date_to]).distinct("id")
 
     if has_instances is not None:
         if has_instances == "true":
@@ -142,17 +138,13 @@ def build_org_units_queryset(queryset, params, profile):
     # We need a few things for empty location comparisons:
     # 1. An annotated queryset (geography fields exposed as geometries)
     queryset = queryset.annotate(location_as_geom=Cast("location", PointField(dim=3)))
-    queryset = queryset.annotate(
-        simplified_geom_as_geom=Cast("simplified_geom", MultiPolygonField())
-    )
+    queryset = queryset.annotate(simplified_geom_as_geom=Cast("simplified_geom", MultiPolygonField()))
     # 2. Empty features to compare to
     empty_point = GEOSGeometry("POINT EMPTY", srid=4326)
     empty_multipolygon = GEOSGeometry("MULTIPOLYGON EMPTY", srid=4326)
 
     has_location = Q(location__isnull=False) & (~Q(location_as_geom=empty_point))
-    has_simplified_geom = Q(simplified_geom__isnull=False) & (
-        ~Q(simplified_geom_as_geom=empty_multipolygon)
-    )
+    has_simplified_geom = Q(simplified_geom__isnull=False) & (~Q(simplified_geom_as_geom=empty_multipolygon))
 
     if geography == "location":
         queryset = queryset.filter(has_location)
@@ -217,9 +209,7 @@ def build_org_units_queryset(queryset, params, profile):
         queryset = queryset.filter(sub_source=source_id)
 
     if org_unit_type_category:
-        queryset = queryset.filter(
-            org_unit_type__category=org_unit_type_category.upper()
-        )
+        queryset = queryset.filter(org_unit_type__category=org_unit_type_category.upper())
 
     if ignore_empty_names:
         queryset = queryset.filter(~Q(name=""))
@@ -227,13 +217,9 @@ def build_org_units_queryset(queryset, params, profile):
     if path_depth is not None:
         queryset = queryset.filter(path__depth=path_depth)
     if opening_date:
-        queryset = queryset.filter(
-            opening_date=datetime.strptime(opening_date, "%d-%m-%Y").date()
-        )
+        queryset = queryset.filter(opening_date=datetime.strptime(opening_date, "%d-%m-%Y").date())
     if closed_date:
-        queryset = queryset.filter(
-            closed_date=datetime.strptime(closed_date, "%d-%m-%Y").date()
-        )
+        queryset = queryset.filter(closed_date=datetime.strptime(closed_date, "%d-%m-%Y").date())
     if not direct_children:
         queryset = queryset.exclude(pk=org_unit_parent_id)
 
@@ -252,11 +238,7 @@ def annotate_query(queryset, count_instances, count_per_form, forms):
         queryset = queryset.annotate(
             instances_count=Count(
                 "instance",
-                filter=(
-                    ~Q(instance__file="")
-                    & ~Q(instance__device__test_device=True)
-                    & ~Q(instance__deleted=True)
-                ),
+                filter=(~Q(instance__file="") & ~Q(instance__device__test_device=True) & ~Q(instance__deleted=True)),
             )
         )
 

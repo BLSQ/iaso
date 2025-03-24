@@ -45,26 +45,20 @@ def picture_by_org_unit_type_name(org_unit_type_name):
     return picture_name
 
 
-def create_default_reference_submission(
-    account_name, iaso_client, org_unit_id, form_id, uuid
-):
+def create_default_reference_submission(account_name, iaso_client, org_unit_id, form_id, uuid):
     submissions_linked_to_org_unit = iaso_client.get(
         f"/api/instances/?app_id={account_name}",
         params={"orgUnitId": org_unit_id, "form_ids": form_id},
     )["instances"]
     reference_submission = [
-        submission["id"]
-        for submission in submissions_linked_to_org_unit
-        if submission["uuid"] == uuid
+        submission["id"] for submission in submissions_linked_to_org_unit if submission["uuid"] == uuid
     ]
     org_unit_reference_submission = {
         "id": org_unit_id,
         "reference_instance_id": random.choice(reference_submission),
         "reference_instance_action": "flag",
     }
-    iaso_client.patch(
-        f"/api/orgunits/{org_unit_id}/", json=org_unit_reference_submission
-    )
+    iaso_client.patch(f"/api/orgunits/{org_unit_id}/", json=org_unit_reference_submission)
 
 
 def instance_by_LLIN_campaign_form(form, instance_id):
@@ -113,9 +107,7 @@ def instance_by_LLIN_campaign_form(form, instance_id):
                     "actual_birthday__date__": birth_date,
                 },
                 "card": {
-                    "record_book_or_vaccination_card": random.choice(
-                        ["vaccination_book", "antenatal_record_book"]
-                    ),
+                    "record_book_or_vaccination_card": random.choice(["vaccination_book", "antenatal_record_book"]),
                     "card_number": ticket_number,
                 },
                 "food_assistance": {

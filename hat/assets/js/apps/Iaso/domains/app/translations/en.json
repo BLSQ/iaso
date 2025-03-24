@@ -911,6 +911,8 @@
     "iaso.orgUnits.removeAsDefaultImage": "Remove as default image",
     "iaso.orgUnits.removeFromGroups": "Remove from group(s)",
     "iaso.orgUnits.search": "Search org unit",
+    "iaso.orgUnits.searchByIds": "Search by multiple IDs",
+    "iaso.orgUnits.searchByIdsInfo": "Search by ID or multiple IDs at once, separated by a comma or a space. E.g. “132,654”",
     "iaso.orgUnits.searchParams": "Use prefix “refs:” for external org unit ID search. Use prefix “ids:” for internal org unit ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or “refs: O6uvpzGd5pu, ImspTQPwCqd”",
     "iaso.orgUnits.selectionAction": "With selected org unit",
     "iaso.orgUnits.selectOrgUnit": "Please select an org Unit",

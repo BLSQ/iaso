@@ -8,6 +8,7 @@ import { IntlProvider } from 'react-intl';
 // the intl paths get rewritten by webpack depending on the locale
 import en from '__intl/messages/en'; // eslint-disable-line
 import fr from '__intl/messages/fr'; // eslint-disable-line
+import et from '__intl/messages/et'; // eslint-disable-line
 
 import enLibrary from '../../../../../../../../node_modules/bluesquare-components/dist/locale/en.json';
 import frLibrary from '../../../../../../../../node_modules/bluesquare-components/dist/locale/fr.json';
@@ -23,9 +24,11 @@ export default function LocalizedAppComponent({ children }) {
     const { plugins } = useContext(PluginsContext);
     const frPlugins = extractTranslations(plugins, 'fr');
     const enPlugins = extractTranslations(plugins, 'en');
+    const etPlugins = extractTranslations(plugins, 'et');
     const messages = {
         fr: { ...fr, ...frLibrary, ...frPlugins },
         en: { ...en, ...enLibrary, ...enPlugins },
+        et: { ...et, ...enLibrary, ...etPlugins },
     };
     const { locale } = useLocale();
     const onError = msg => console.warn(msg);

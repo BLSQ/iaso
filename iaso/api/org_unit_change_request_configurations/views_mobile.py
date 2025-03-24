@@ -11,12 +11,12 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from iaso.api.org_unit_change_request_configurations.filters import MobileOrgUnitChangeRequestConfigurationListFilter
 from iaso.api.org_unit_change_request_configurations.pagination import OrgUnitChangeRequestConfigurationPagination
 from iaso.api.org_unit_change_request_configurations.permissions import (
     HasOrgUnitsChangeRequestConfigurationReadPermission,
 )
 from iaso.api.org_unit_change_request_configurations.serializers import (
+    IncludeCreationSerializer,
     MobileOrgUnitChangeRequestConfigurationListSerializer,
 )
 from iaso.api.query_params import APP_ID, INCLUDE_CREATION
@@ -27,7 +27,6 @@ from iaso.models import OrgUnitChangeRequestConfiguration, Project
 class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [HasOrgUnitsChangeRequestConfigurationReadPermission]
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
-    filterset_class = MobileOrgUnitChangeRequestConfigurationListFilter
     serializer_class = MobileOrgUnitChangeRequestConfigurationListSerializer
     pagination_class = OrgUnitChangeRequestConfigurationPagination
 
@@ -80,7 +79,13 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
 
         """
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
-        queryset = self.filter_queryset(self.get_queryset())
+        include_creation = IncludeCreationSerializer(data=self.request.query_params).get_include_creation(
+            raise_exception=True
+        )
+        queryset = self.get_queryset()
+        if not include_creation:
+            queryset = queryset.exclude(type=OrgUnitChangeRequestConfiguration.Type.CREATION)
+
         user_editable_org_unit_type_ids = self.request.user.iaso_profile.get_editable_org_unit_type_ids()
 
         if user_editable_org_unit_type_ids:
@@ -111,6 +116,8 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
             )
             # Unsaved instances do not have an `id`, so we're sorting on `org_unit_type_id` in all cases.
             queryset = sorted(queryset, key=lambda item: item.org_unit_type_id)
+
+        queryset = self.filter_queryset(queryset)
 
         page = self.paginate_queryset(queryset)
         if page is not None:

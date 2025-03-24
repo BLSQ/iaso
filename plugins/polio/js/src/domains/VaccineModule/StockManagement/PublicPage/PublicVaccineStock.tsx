@@ -1,7 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { Box, Button, Grid } from '@mui/material';
+import { ExcellSvg, useSafeIntl } from 'bluesquare-components';
+import { useDownloadButtonStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DownloadButtonsComponent';
+import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
+import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../../../constants/urls';
 import { Filters } from './components/Filters';
@@ -13,11 +16,29 @@ import MESSAGES from './messages';
 import { useGetPublicVaccineStock } from './useGetPublicVaccineStock';
 
 const baseUrl = baseUrls.embeddedVaccineStock;
-
+const useXlsxUrl = allParams => {
+    const xlsxApiUrl = '/api/polio/dashboards/public/vaccine_stock/export_xlsx';
+    const defaults = {
+        order: '-date',
+        pageSize: 20,
+        page: 1,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+    const { tab, ...params } = allParams;
+    const safeParams = useUrlParams(
+        { ...params, app_id: 'com.poliooutbreaks.app' },
+        defaults,
+    );
+    const apiParams = useApiParams(safeParams);
+    const queryString = new URLSearchParams(apiParams).toString();
+    return `${xlsxApiUrl}/?${queryString}`;
+};
 export const PublicVaccineStock: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
+    const classes = useDownloadButtonStyles();
     const params = useParamsObject(baseUrl);
     const { data, isLoading } = useGetPublicVaccineStock(params);
+    const xlsxUrl = useXlsxUrl(params);
     const { tab, handleChangeTab } = useTabs<'usable' | 'unusable'>({
         params,
         defaultTab: (params?.tab ?? 'usable') as 'usable' | 'unusable',
@@ -49,6 +70,27 @@ export const PublicVaccineStock: FunctionComponent = () => {
                         spacing={1}
                         justifyContent="flex-end"
                     >
+                        <Grid item>
+                            <Box mt={1}>
+                                <Button
+                                    data-test="xlsx-export-button"
+                                    variant="contained"
+                                    sx={{
+                                        backgroundColor: 'black',
+                                        color: 'white',
+                                        boxShadow: 'none',
+                                        borderRadius: 0,
+                                        border: '1px solid black',
+                                    }}
+                                    color="primary"
+                                    href={xlsxUrl}
+                                    disabled={isLoading}
+                                >
+                                    <ExcellSvg className={classes.icon} />
+                                    XLSX
+                                </Button>
+                            </Box>
+                        </Grid>
                         <Grid item>
                             <Box mt={1}>
                                 <TabSwitchButton

@@ -20,8 +20,12 @@ class MobileOrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterS
         fields = []
 
 
+class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
+    pass
+
+
 class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
-    ids = django_filters.AllValuesMultipleFilter(field_name="id", widget=CSVWidget, label=_("IDs (comma-separated)"))
+    ids = NumberInFilter(field_name="id", widget=CSVWidget, label=_("IDs (comma-separated)"))
     org_unit_id = django_filters.NumberFilter(field_name="org_unit_id", label=_("Org unit ID"))
     org_unit_type_id = django_filters.CharFilter(method="filter_org_unit_type_id", label=_("Org unit type ID"))
     parent_id = django_filters.NumberFilter(method="filter_parent_id", label=_("Parent ID"))

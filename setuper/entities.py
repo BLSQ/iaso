@@ -3,20 +3,25 @@ import uuid
 from datetime import datetime, timedelta
 from random import randint
 
-from fake import fake_person
-from submissions import org_unit_gps_point, submission2xml, submission_org_unit_gps_point
+from submissions import (
+    instance_by_LLIN_campaign_form,
+    org_unit_gps_point,
+    submission2xml,
+)
 
 
-def setup_entities(account_name, iaso_client):
-    print("-- Setting up entity")
-    project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
-
-    hf_out = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][0]
-
+def create_forms_and_entities(iaso_client):
     print("-- Setting up reference form")
 
-    # create a form
+    project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    hf_out = [
+        out
+        for out in org_unit_types
+        if out["name"] == "Health facility/Formation sanitaire - HF"
+    ][0]
+
+    # create registration form form
     reg_form_data = {
         "id": None,
         "name": "Child/Enfant - Registration/Enregistrement",
@@ -41,10 +46,12 @@ def setup_entities(account_name, iaso_client):
     reg_form_version_data = {"form_id": reg_form_id, "xls_file": reg_test_file}
     reg_form_files = {"xls_file": open(reg_test_file, "rb")}
 
-    reg_form_version = iaso_client.post("/api/formversions/", files=reg_form_files, data=reg_form_version_data)
+    iaso_client.post(
+        "/api/formversions/", files=reg_form_files, data=reg_form_version_data
+    )
 
-    # create a form
-    follow_form_data = {
+    # create followup form
+    followUp_form_data = {
         "id": None,
         "name": "Child/Enfant - Follow-up/Suivi",
         "short_name": "",
@@ -59,27 +66,193 @@ def setup_entities(account_name, iaso_client):
         "label_keys": [],
     }
 
-    follow_form = iaso_client.post("/api/forms/", json=follow_form_data)
+    follow_form = iaso_client.post("/api/forms/", json=followUp_form_data)
     follow_form_id = follow_form["id"]
 
     # associate it's form version and upload xlsform
-
     follow_test_file = "data/entity-child_followup.xlsx"
     follow_form_version_data = {"form_id": follow_form_id, "xls_file": follow_test_file}
     follow_form_files = {"xls_file": open(follow_test_file, "rb")}
 
-    follow_form_version = iaso_client.post("/api/formversions/", files=follow_form_files, data=follow_form_version_data)
+    iaso_client.post(
+        "/api/formversions/", files=follow_form_files, data=follow_form_version_data
+    )
 
+
+def create_additional_entities(account_name, iaso_client, orgunit, entity_type):
+    reference_form = entity_type["reference_form"]
+    current_datetime = int(datetime.now().timestamp())
+    the_uuid = str(uuid.uuid4())
+    entity_uuid = str(uuid.uuid4())
+    file_name = "example_%s.xml" % the_uuid
+    local_path = "generated/%s" % file_name
+    org_unit_id = orgunit["id"]
+
+    instance_data = {
+        **org_unit_gps_point(orgunit),
+        "id": the_uuid,
+        "created_at": current_datetime,
+        "updated_at": current_datetime,
+        "orgUnitId": org_unit_id,
+        "formId": reference_form["id"],
+        "entityUuid": entity_uuid,
+        "entityTypeId": entity_type["id"],
+        "accuracy": 0,
+        "imgUrl": "imgUrl",
+        "file": local_path,
+        "name": file_name,
+    }
+
+    iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
+    instance_json = instance_by_LLIN_campaign_form(
+        reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit
+    )
+    iaso_client.post(
+        "/sync/form_upload/",
+        files={
+            "xml_submission_file": (
+                local_path,
+                submission2xml(
+                    instance_json,
+                    form_version_id=reference_form["latest_form_version"]["version_id"],
+                    form_id=reference_form["form_id"],
+                ),
+            )
+        },
+    )
+
+
+def create_child_entities(account_name, iaso_client, orgunit, entity_type):
+    reference_form = entity_type["reference_form"]
+    followup_form = entity_type["followup_form"]
+    current_datetime = int(datetime.now().timestamp())
+
+    the_uuid = str(uuid.uuid4())
+    entity_uuid = str(uuid.uuid4())
+    file_name = "example_%s.xml" % the_uuid
+    local_path = "generated/%s" % file_name
+    org_unit_id = orgunit["id"]
+
+    instance_data = {
+        **org_unit_gps_point(orgunit),
+        "id": the_uuid,
+        "created_at": current_datetime,
+        "updated_at": current_datetime,
+        "orgUnitId": org_unit_id,
+        "formId": reference_form["id"],
+        "entityUuid": entity_uuid,
+        "entityTypeId": entity_type["id"],
+        "accuracy": 0,
+        "imgUrl": "imgUrl",
+        "file": local_path,
+        "name": file_name,
+    }
+    iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
+    instance_json = instance_by_LLIN_campaign_form(
+        reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit
+    )
+    iaso_client.post(
+        "/sync/form_upload/",
+        files={
+            "xml_submission_file": (
+                local_path,
+                submission2xml(
+                    instance_json,
+                    form_version_id=reference_form["latest_form_version"]["version_id"],
+                    form_id=reference_form["form_id"],
+                ),
+            )
+        },
+    )
+
+    current_datetime = int(datetime.now().timestamp())
+    for i in range(randint(0, 5)):
+        the_uuid = str(uuid.uuid4())
+        file_name = "example_%s.xml" % the_uuid
+
+        local_path = "generated/%s" % file_name
+        current_datetime = int(datetime.now().timestamp())
+        created_at = datetime.now() - timedelta(days=4)
+        created_at_to_datetime = int(datetime.timestamp(created_at + timedelta(days=i)))
+
+        iaso_client.post(
+            f"/api/instances/?app_id={account_name}",
+            json=[
+                {
+                    **org_unit_gps_point(orgunit),
+                    "id": the_uuid,
+                    "created_at": created_at_to_datetime,
+                    "updated_at": current_datetime,
+                    "orgUnitId": org_unit_id,
+                    "formId": followup_form["id"],
+                    "entityUuid": entity_uuid,
+                    "entityTypeId": entity_type["id"],
+                    "accuracy": 0,
+                    "imgUrl": "imgUrl",
+                    "file": local_path,
+                    "name": file_name,
+                }
+            ],
+        )
+        instance_json = instance_by_LLIN_campaign_form(
+            followup_form, {"instanceID": "uuid:" + the_uuid}, orgunit
+        )
+        iaso_client.post(
+            "/sync/form_upload/",
+            files={
+                "xml_submission_file": (
+                    local_path,
+                    submission2xml(
+                        instance_json,
+                        form_version_id=followup_form["latest_form_version"][
+                            "version_id"
+                        ],
+                        form_id=followup_form["form_id"],
+                    ),
+                )
+            },
+        )
+
+
+def setup_entities(account_name, iaso_client, entity_type, new_entity_type):
+    print("-- Setting up entity")
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
+    hf_out = [
+        out
+        for out in org_unit_types
+        if out["name"] == "Health facility/Formation sanitaire - HF"
+    ][0]
+
+    # fetch orgunit ids
+    limit = 20
+    orgunits = iaso_client.get(
+        "/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]}
+    )["orgunits"]
+
+    print("-- Submitting %d submissions" % limit)
+    count = 0
+    for orgunit in orgunits:
+        entity_type["reference_form"] = new_entity_type["reference_form"]
+        entity_type["followup_form"] = new_entity_type["followup_form"]
+        if entity_type["name"] == "Children less than 5":
+            create_child_entities(account_name, iaso_client, orgunit, entity_type)
+        elif entity_type["name"] in ["Pregnant women", "Household"]:
+            create_additional_entities(account_name, iaso_client, orgunit, entity_type)
+        count = count + 1
+    print(
+        iaso_client.get("/api/instances", params={"limit": 1})["count"],
+        "instances created",
+    )
+
+
+def create_entity_types(iaso_client):
     current_user = iaso_client.get("/api/profiles/me/")
-
-    print("-- Setting up entity type")
-
-    # create entity types
-    entity_type = iaso_client.post(
-        "/api/entitytypes/",
-        json={
-            "name": "Child",
-            "reference_form": reg_form_id,
+    account_name = current_user["account"]["name"]
+    account = current_user["account"]["id"]
+    existing_forms = iaso_client.get("/api/forms/")["forms"]
+    entity_types = [
+        {
+            "name": "Children less than 5",
             "fields_detail_info_view": [
                 "name",
                 "father_name",
@@ -91,137 +264,72 @@ def setup_entities(account_name, iaso_client):
                 "caretaker_rs",
             ],
             "fields_list_view": ["name", "father_name", "age", "gender"],
-            "account": current_user["account"]["id"],  # suspicious... should have been deduced from user
+            "account": account,
+            "reference_form": "Child/Enfant - Registration/Enregistrement",
+            "followup_form": "Child/Enfant - Follow-up/Suivi",
+            "condition": True,
         },
-    )
-
-    # couldn't find the id in the entity_type
-    # so refetching it
-    # and no wrapping element here
-    entity_type = iaso_client.get("/api/entitytypes/")[0]
-
-    wfw_version = iaso_client.post(
-        "/api/workflowversions/", json={"name": "Child program", "entity_type_id": entity_type["id"]}
-    )
-
-    iaso_client.post(
-        "/api/workflowfollowups/?version_id=" + str(wfw_version["version_id"]),
-        {"condition": True, "form_ids": [follow_form_id], "order": 0},
-    )
-
-    # fetch orgunit ids
-    limit = 20
-    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]})["orgunits"]
-
-    print("-- Submitting %d submissions" % limit)
-    count = 0
-    for orgunit in orgunits:
-        child = fake_person()
-        the_uuid = str(uuid.uuid4())
-        child_uuid = str(uuid.uuid4())
-        file_name = "example_%s.xml" % the_uuid
-        org_unit_id = orgunit["id"]
-        local_path = "generated/%s" % file_name
-        current_datetime = int(datetime.now().timestamp())
-
-        instance_data = {
-            **org_unit_gps_point(orgunit),
-            "id": the_uuid,
-            "created_at": current_datetime,
-            "updated_at": current_datetime,
-            "orgUnitId": org_unit_id,
-            "formId": reg_form_id,
-            "entityUuid": child_uuid,
-            "entityTypeId": entity_type["id"],
-            "accuracy": 0,
-            "imgUrl": "imgUrl",
-            "file": local_path,
-            "name": file_name,
-        }
-        iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
+        {
+            "name": "Household",
+            "fields_detail_info_view": [
+                "nombre_couchage",
+                "a_recu_ses_mildas",
+                "milda_recu_",
+                "nombre_milda_donne",
+            ],
+            "fields_list_view": ["nom_prenoms", "code_barre"],
+            "fields_duplicate_search": ["code_barre"],
+            "account": account,
+            "reference_form": "Dénombrement / Enumeration",
+            "followup_form": "Dénombrement / Enumeration",
+            "condition": {"and": [{"==": [{"var": "a_recu_ses_mildas"}, "0"]}]},
+        },
+        {
+            "name": "Pregnant women",
+            "fields_detail_info_view": [
+                "first_name",
+                "last_name",
+                "actual_birthday__date__",
+            ],
+            "fields_list_view": ["first_name", "last_name", "gender"],
+            "fields_duplicate_search": ["first_name", "last_name"],
+            "account": account,
+            "reference_form": "Registration Vaccination Pregnant Women",
+            "followup_form": "Registration Vaccination Pregnant Women",
+            "condition": True,
+        },
+    ]
+    print("-- Creating entity types --")
+    for entity_type in entity_types:
+        form = [
+            form["id"]
+            for form in existing_forms
+            if form["name"] == entity_type["reference_form"]
+        ]
+        entity_type["reference_form"] = form[0]
+        new_entity_type = iaso_client.post("/api/entitytypes/", json=entity_type)
+        last_new_entity_type = iaso_client.get("/api/entitytypes/?order=-id")[0]
+        entity_type["id"] = last_new_entity_type["id"]
+        wfw_version = iaso_client.post(
+            "/api/workflowversions/",
+            json={
+                "name": entity_type["name"],
+                "entity_type_id": entity_type["id"],
+            },
+        )
+        followup_form = [
+            form
+            for form in existing_forms
+            if form["name"] == entity_type["followup_form"]
+        ]
+        new_entity_type["followup_form"] = followup_form[0]
         iaso_client.post(
-            "/sync/form_upload/",
-            files={
-                "xml_submission_file": (
-                    local_path,
-                    submission2xml(
-                        {
-                            "start": "2022-09-07T17:54:55.805+02:00",
-                            "end": "2022-09-07T17:55:31.192+02:00",
-                            "register": {
-                                "name": child["firstname"],
-                                "father_name": child["lastname"],
-                                "age_type": 1,
-                                "age": child["age_in_months"],
-                                "child_details": {
-                                    "gender": child["gender"],
-                                    "caretaker_name": child["lastname"],
-                                    "caretaker_rs": "brother",
-                                    "hc": "hc_E",
-                                },
-                                "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
-                            },
-                            "meta": {"instanceID": "uuid:" + the_uuid},
-                        },
-                        form_version_id=reg_form_version["version_id"],
-                        form_id="entity-child_registration",
-                    ),
-                )
+            "/api/workflowfollowups/?version_id=" + str(wfw_version["version_id"]),
+            {
+                "condition": entity_type["condition"],
+                "form_ids": [new_entity_type["followup_form"]["id"]],
+                "order": 0,
             },
         )
 
-        current_datetime = int(datetime.now().timestamp())
-
-        for i in range(randint(0, 5)):
-            the_uuid = str(uuid.uuid4())
-            file_name = "example_%s.xml" % the_uuid
-
-            local_path = "generated/%s" % file_name
-            current_datetime = int(datetime.now().timestamp())
-            created_at = datetime.now() - timedelta(days=4)
-            created_at_to_datetime = int(datetime.timestamp(created_at + timedelta(days=i)))
-
-            iaso_client.post(
-                f"/api/instances/?app_id={account_name}",
-                json=[
-                    {
-                        **org_unit_gps_point(orgunit),
-                        "id": the_uuid,
-                        "created_at": created_at_to_datetime,
-                        "updated_at": current_datetime,
-                        "orgUnitId": org_unit_id,
-                        "formId": follow_form_id,
-                        "entityUuid": child_uuid,
-                        "entityTypeId": entity_type["id"],
-                        "accuracy": 0,
-                        "imgUrl": "imgUrl",
-                        "file": local_path,
-                        "name": file_name,
-                    }
-                ],
-            )
-            iaso_client.post(
-                "/sync/form_upload/",
-                files={
-                    "xml_submission_file": (
-                        local_path,
-                        submission2xml(
-                            {
-                                "start": "2022-09-07T17:54:55.805+02:00",
-                                "end": "2022-09-07T17:55:31.192+02:00",
-                                "visit": {
-                                    "oedema": 1,
-                                    "need_followup": 0,
-                                    "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
-                                },
-                                "meta": {"instanceID": "uuid:" + the_uuid},
-                            },
-                            form_version_id=follow_form_version["version_id"],
-                            form_id="entity-child_followup",
-                        ),
-                    )
-                },
-            )
-        count = count + 1
-
-    print(iaso_client.get("/api/instances", params={"limit": 1})["count"], "instances created")
+        setup_entities(account_name, iaso_client, entity_type, new_entity_type)

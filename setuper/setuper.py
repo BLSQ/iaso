@@ -8,7 +8,10 @@ from additional_projects import create_projects, link_new_projects_to_main_data_
 from create_submission_with_picture import create_submission_with_picture
 from data_collection import setup_instances
 from default_healthFacility_form import setup_health_facility_level_default_form
-from entities import setup_entities
+from entities import (
+    create_entity_types,
+    create_forms_and_entities,
+)
 from iaso_api_client import IasoClient
 from micro_planning import setup_users_teams_micro_planning
 from org_unit_pictures import associate_favorite_picture
@@ -45,7 +48,14 @@ def setup_account(account_name, server_url, username, password):
         "user_first_name": account_name,
         "user_last_name": account_name,
         "password": account_name,
-        "modules": ["DEFAULT", "REGISTRY", "PLANNING", "ENTITIES", "DATA_COLLECTION_FORMS", "DHIS2_MAPPING"],
+        "modules": [
+            "DEFAULT",
+            "REGISTRY",
+            "PLANNING",
+            "ENTITIES",
+            "DATA_COLLECTION_FORMS",
+            "DHIS2_MAPPING",
+        ],
     }
     iaso_admin_client = admin_login(server_url, username, password)
     iaso_admin_client.post("/api/setupaccount/", json=data)
@@ -67,7 +77,9 @@ def validate_account_name(name: str) -> str:
     # However, the setuper can create multiple accounts with a '.xx' suffix, so we need to keep some space
     NAME_MAX_LENGTH = 147
     if len(name) > NAME_MAX_LENGTH:
-        raise Exception(f"Account name is too long - {NAME_MAX_LENGTH} characters maximum")
+        raise Exception(
+            f"Account name is too long - {NAME_MAX_LENGTH} characters maximum"
+        )
 
     # I wanted to include "-" in the pattern, but the API converts them to "." and then it breaks stuff later on
     # Not sure how accents in app_id will be handled, so let's avoid them out of caution
@@ -79,7 +91,11 @@ def validate_account_name(name: str) -> str:
 
 
 def create_account(
-    server_url: str, username: str, password: str, optional_account_name: str, additional_projects: bool
+    server_url: str,
+    username: str,
+    password: str,
+    optional_account_name: str,
+    additional_projects: bool,
 ):
     account_name = validate_account_name(optional_account_name)
     print("Creating account:", account_name)
@@ -99,11 +115,13 @@ def create_account(
         associate_favorite_picture(iaso_client=iaso_client)
 
     if seed_entities:
-        setup_entities(account_name, iaso_client=iaso_client)
+        print("Attempting to create entity")
+        create_forms_and_entities(iaso_client=iaso_client)
 
     if additional_projects:
         create_projects(account_name, iaso_client=iaso_client)
         link_new_projects_to_main_data_source(account_name, iaso_client=iaso_client)
+        create_entity_types(iaso_client=iaso_client)
         setup_users_teams_micro_planning(account_name, iaso_client=iaso_client)
 
     if seed_review_change_proposal:
@@ -111,7 +129,10 @@ def create_account(
 
     print("-----------------------------------------------")
     print("Account created:", account_name)
-    print("Login at %s with\n\tlogin: %s \n\tpassword: %s" % (server_url, account_name, account_name))
+    print(
+        "Login at %s with\n\tlogin: %s \n\tpassword: %s"
+        % (server_url, account_name, account_name)
+    )
     print("-----------------------------------------------")
     return account_name
 
@@ -121,7 +142,9 @@ if __name__ == "__main__":
     parser.add_argument("-u", "--username", type=str, help="User name")
     parser.add_argument("-p", "--password", type=str, help="Password")
     parser.add_argument("-s", "--server_url", type=str, help="Server URL")
-    parser.add_argument("-n", "--name", help="Account name (max 147 characters; a-z, A-Z, 0-9)")
+    parser.add_argument(
+        "-n", "--name", help="Account name (max 147 characters; a-z, A-Z, 0-9)"
+    )
     parser.add_argument("-a", "--additional_projects", action="store_true")
 
     args = parser.parse_args()
@@ -139,7 +162,9 @@ if __name__ == "__main__":
         except ModuleNotFoundError:
             pass
         try:
-            password = ADMIN_PASSWORD if (username is None and password is None) else password
+            password = (
+                ADMIN_PASSWORD if (username is None and password is None) else password
+            )
         except ModuleNotFoundError:
             pass
         try:
@@ -148,6 +173,8 @@ if __name__ == "__main__":
             pass
 
     if not server_url or not username or not password:
-        sys.exit("ERROR: Values for server url, user name and password are all required")
+        sys.exit(
+            "ERROR: Values for server url, user name and password are all required"
+        )
 
     create_account(server_url, username, password, account_name, additional_projects)

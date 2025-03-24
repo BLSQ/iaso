@@ -55,6 +55,7 @@ def setup_account(account_name, server_url, username, password):
             "ENTITIES",
             "DATA_COLLECTION_FORMS",
             "DHIS2_MAPPING",
+            "DATA_VALIDATION",
         ],
     }
     iaso_admin_client = admin_login(server_url, username, password)

@@ -230,7 +230,8 @@ def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
     i.save()
 
     try:
-        edit_url = _enketo_url_for_creation(form=form, instance=i, request=request)
+        # return_url with just tell enketo to show a thank you page
+        edit_url = _enketo_url_for_creation(form=form, instance=i, request=request, return_url="")
 
         return HttpResponseRedirect(edit_url)
     except EnketoError as error:

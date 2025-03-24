@@ -64,6 +64,13 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
     </url>
     <url>
+        <loc>Nonepages/dev/how_to/create_mobile_reports/create_mobile_reports.html</loc>
+        <lastmod>2025-03-24</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_mobile_reports/create_mobile_reports.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_mobile_reports/create_mobile_reports.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html</loc>
         <lastmod>2025-03-24</lastmod>
         <changefreq>daily</changefreq>
@@ -440,6 +447,13 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/dev/how_to/create_mobile_reports/create_mobile_reports.html</loc>
+        <lastmod>2025-03-24</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/create_mobile_reports/create_mobile_reports.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/create_mobile_reports/create_mobile_reports.html"/>
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/create_registry_in_web_ui/create_registry_in_web_ui.html</loc>

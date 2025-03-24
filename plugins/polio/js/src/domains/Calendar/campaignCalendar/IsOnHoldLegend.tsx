@@ -1,6 +1,6 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { SxStyles } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../constants/messages';
 
@@ -22,13 +22,13 @@ const styles: SxStyles = {
         fontSize: 12,
     },
 };
-export const IsTestLegend: FunctionComponent = () => {
+export const IsOnHoldLegend: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     return (
         <Box sx={styles.root}>
             <Box sx={styles.legendSquare} />
             <Typography sx={styles.typo} variant="body2">
-                {formatMessage(MESSAGES.testCampaign)}
+                {formatMessage(MESSAGES.campaignOnHold)}
             </Typography>
         </Box>
     );

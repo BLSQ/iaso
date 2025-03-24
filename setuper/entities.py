@@ -317,6 +317,13 @@ def create_entity_types(iaso_client):
                 "entity_type_id": entity_type["id"],
             },
         )
+        iaso_client.patch(
+            f"/api/workflowversions/{wfw_version["version_id"]}",
+            json={
+                "name": entity_type["name"],
+                "status": "PUBLISHED",
+            },
+        )
         followup_form = [
             form
             for form in existing_forms

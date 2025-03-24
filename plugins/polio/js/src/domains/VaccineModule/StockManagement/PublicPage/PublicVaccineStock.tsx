@@ -59,8 +59,22 @@ export const PublicVaccineStock: FunctionComponent = () => {
             <Box sx={{ border: '1px solid black' }} mx={1} mt={1}>
                 <Grid container>
                     <Grid item xs={6}>
-                        <Box mt={1} sx={{ color: 'blue', fontSize: 36 }}>
-                            <h1>{formatMessage(MESSAGES.countryStockCards)}</h1>
+                        <Box
+                            mt={1}
+                            ml={3}
+                            sx={{
+                                color: '#0a4780',
+                                // color: '#094780',
+                                fontSize: 32,
+                                fontWeight: 'bold',
+                                fontFamily: 'arial',
+                            }}
+                        >
+                            <h1>
+                                {formatMessage(
+                                    MESSAGES.countryStockCards,
+                                ).toUpperCase()}
+                            </h1>
                         </Box>
                     </Grid>
                     <Grid
@@ -81,6 +95,10 @@ export const PublicVaccineStock: FunctionComponent = () => {
                                         boxShadow: 'none',
                                         borderRadius: 0,
                                         border: '1px solid black',
+                                        paddingLeft: '48px',
+                                        paddingRight: '48px',
+                                        fontWeight: 'bold',
+                                        fontSize: '16px',
                                     }}
                                     color="primary"
                                     href={xlsxUrl}

@@ -96,10 +96,17 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                 pt={2}
                 pb={5}
                 ml={1}
-                sx={{ backgroundColor: 'lightgrey' }}
+                sx={{ backgroundColor: '#e6e6e6' }}
             >
                 <Grid item xs={2}>
-                    <Typography variant="subtitle1">
+                    <Typography
+                        variant="subtitle1"
+                        sx={{
+                            color: '#0a4780',
+                            fontWeight: 'bold',
+                            fontSize: 18,
+                        }}
+                    >
                         {formatMessage(MESSAGES.countryBlock)}
                     </Typography>
                     <Select
@@ -119,7 +126,14 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
                 <Grid item xs={2}>
-                    <Typography variant="subtitle1">
+                    <Typography
+                        variant="subtitle1"
+                        sx={{
+                            color: '#0a4780',
+                            fontWeight: 'bold',
+                            fontSize: 18,
+                        }}
+                    >
                         {formatMessage(MESSAGES.country)}
                     </Typography>
                     <Select
@@ -139,7 +153,14 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
                 <Grid item xs={2}>
-                    <Typography variant="subtitle1">
+                    <Typography
+                        variant="subtitle1"
+                        sx={{
+                            color: '#0a4780',
+                            fontWeight: 'bold',
+                            fontSize: 18,
+                        }}
+                    >
                         {formatMessage(MESSAGES.vaccine)}
                     </Typography>
                     <Select
@@ -160,7 +181,14 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
 
                 <Grid item xs={2}>
-                    <Typography variant="subtitle1">
+                    <Typography
+                        variant="subtitle1"
+                        sx={{
+                            color: '#0a4780',
+                            fontWeight: 'bold',
+                            fontSize: 18,
+                        }}
+                    >
                         {formatMessage(MESSAGES.actionType)}
                     </Typography>
                     <Select

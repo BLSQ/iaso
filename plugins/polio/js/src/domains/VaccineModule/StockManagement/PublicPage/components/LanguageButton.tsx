@@ -28,9 +28,16 @@ export const LanguageButton: FunctionComponent<Props> = ({ lang }) => {
     return (
         <Button
             sx={{
-                backgroundColor: 'green',
+                backgroundColor: '#4caf50',
                 boxShadow: 'none',
                 borderRadius: 0,
+                paddingTop: '12px',
+                paddingBottom: '12px',
+                paddingLeft: '20px',
+                paddingRight: '20px',
+                textTransform: 'capitalize',
+                fontWeight: 'bold',
+                fontSize: '16px',
             }}
             onClick={handleClick}
             variant="contained"

@@ -33,6 +33,11 @@ export const TabSwitchButton: FunctionComponent<Props> = ({
                 boxShadow: 'none',
                 borderRadius: 0,
                 border: '1px solid black',
+                textTransform: 'capitalize',
+                paddingLeft: '48px',
+                paddingRight: '48px',
+                fontWeight: 'bold',
+                fontSize: '16px',
             }}
             onClick={handleClick}
             variant="contained"

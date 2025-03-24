@@ -26,7 +26,7 @@ export const VialsSummary: FunctionComponent<Props> = ({
             : formatMessage(MESSAGES.totalUnusableDoses);
 
     return (
-        <Box ml={1} mt={4}>
+        <Box ml={3} my={4}>
             <Paper elevation={0} sx={{ border: 'none' }}>
                 <Grid container justifyContent="flex-start" spacing={2}>
                     <Grid item sx={{ textAlign: 'center' }}>
@@ -34,12 +34,12 @@ export const VialsSummary: FunctionComponent<Props> = ({
                             sx={{
                                 fontSize: '32px',
                                 fontWeight: 'bold',
-                                color: 'grey',
+                                color: '#808080',
                             }}
                         >
                             <NumberCell value={totalVials} />
                         </Typography>
-                        <Typography sx={{ color: 'grey' }}>
+                        <Typography sx={{ color: '#808080' }}>
                             {vialsSubtitle}
                         </Typography>
                     </Grid>
@@ -48,12 +48,12 @@ export const VialsSummary: FunctionComponent<Props> = ({
                             sx={{
                                 fontSize: '32px',
                                 fontWeight: 'bold',
-                                color: 'grey',
+                                color: '#808080',
                             }}
                         >
                             <NumberCell value={totalDoses} />
                         </Typography>
-                        <Typography sx={{ color: 'grey' }}>
+                        <Typography sx={{ color: '#808080' }}>
                             {dosesSubtitle}
                         </Typography>
                     </Grid>

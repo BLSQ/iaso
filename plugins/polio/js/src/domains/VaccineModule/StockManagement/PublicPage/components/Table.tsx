@@ -55,7 +55,7 @@ export const Table: FunctionComponent<Props> = ({
     return (
         <>
             {isLoading && <LoadingSpinner />}
-            <Box ml={1}>
+            <Box ml={1} sx={{ overflow: 'auto', maxHeight: '500px' }}>
                 <TableContainer>
                     <MuiTable stickyHeader size="small">
                         <TableHead>
@@ -190,7 +190,7 @@ export const Table: FunctionComponent<Props> = ({
                 rowsPerPageOptions={[5, 10, 20, 50]}
                 component="div"
                 count={data?.count ?? 0}
-                rowsPerPage={data?.limit ?? 50}
+                rowsPerPage={data?.limit ?? 20}
                 page={data?.page ?? 1}
                 labelRowsPerPage="Rows"
                 onPageChange={handleChangePage}

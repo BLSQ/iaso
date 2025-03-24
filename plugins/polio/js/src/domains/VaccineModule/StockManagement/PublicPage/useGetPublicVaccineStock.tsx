@@ -18,14 +18,17 @@ const getPublicVaccineStock = (queryString = '', usable = true) => {
     return getRequest(`${endpoint}/?${queryString}`);
 };
 export const useGetPublicVaccineStock = allParams => {
-    const { usable, ...params } = allParams;
-    const isUsable = usable === 'true' || usable === undefined;
-    const safeParams = useUrlParams(params, defaults);
+    const { tab, ...params } = allParams;
+    const isUsable = tab === 'usable';
+    const safeParams = useUrlParams(
+        { ...params, app_id: 'com.poliooutbreaks.app' },
+        defaults,
+    );
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
 
     return useSnackQuery({
-        queryKey: ['public_stock', queryString, usable],
+        queryKey: ['public_stock', queryString, tab],
         queryFn: () => getPublicVaccineStock(queryString, isUsable),
         options: {
             select: data => {

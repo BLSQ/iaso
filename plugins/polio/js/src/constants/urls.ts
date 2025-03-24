@@ -145,7 +145,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'action_type',
             'country_block',
             'vaccine',
-            'usable',
+            'tab',
         ],
     },
     lqasCountry: {

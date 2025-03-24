@@ -16,9 +16,10 @@ import MESSAGES from '../messages';
 type Props = {
     data: any;
     isLoading: boolean;
+    tab: 'usable' | 'unusable';
 };
 
-export const Table: FunctionComponent<Props> = ({ data, isLoading }) => {
+export const Table: FunctionComponent<Props> = ({ data, isLoading, tab }) => {
     const { formatMessage } = useSafeIntl();
     return (
         <>
@@ -123,10 +124,18 @@ export const Table: FunctionComponent<Props> = ({ data, isLoading }) => {
                                         </TableCell>
                                         <TableCell>{entry.date}</TableCell>
                                         <TableCell>
-                                            {entry.vials_type}
+                                            {formatMessage(MESSAGES[tab])}
                                         </TableCell>
-                                        <TableCell>{entry.type}</TableCell>
-                                        <TableCell>{entry.action}</TableCell>
+                                        <TableCell>
+                                            {formatMessage(
+                                                MESSAGES[entry.type],
+                                            ) ?? entry.type}
+                                        </TableCell>
+                                        <TableCell>
+                                            {formatMessage(
+                                                MESSAGES[entry.action],
+                                            ) ?? entry.action}
+                                        </TableCell>
                                         <TableCell>{entry.vials_in}</TableCell>
                                         <TableCell>{entry.vials_out}</TableCell>
                                         <TableCell>{entry.doses_in}</TableCell>

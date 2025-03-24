@@ -19,7 +19,11 @@ export const LanguageButton: FunctionComponent<Props> = ({ lang }) => {
 
     return (
         <Button
-            sx={{ backgroundColor: 'green' }}
+            sx={{
+                backgroundColor: 'green',
+                boxShadow: 'none',
+                borderRadius: 0,
+            }}
             onClick={handleClick}
             variant="contained"
         >

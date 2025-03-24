@@ -18,6 +18,8 @@
     "iaso.label.doses_in": "Doses IN",
     "iaso.label.doses_out": "Doses OUT",
     "iaso.label.other": "Other",
+    "iaso.label.publicVaccineStock.\toutgoing_stock_movement": "Form A",
+    "iaso.label.publicVaccineStock.PO": "PO",
     "iaso.label.returned": "Returned",
     "iaso.label.stockBalance": "Stock balance",
     "iaso.label.stockDetails": "Stock details",

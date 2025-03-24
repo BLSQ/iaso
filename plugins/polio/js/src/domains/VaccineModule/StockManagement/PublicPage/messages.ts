@@ -119,5 +119,25 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.po_action_type',
         defaultMessage: 'PO',
     },
+    countryBlock: {
+        defaultMessage: 'Country block',
+        id: 'iaso.polio.label.countryBlock',
+    },
+    unusable: {
+        id: 'iaso.label.unusable',
+        defaultMessage: 'Unusable',
+    },
+    usable: {
+        id: 'iaso.label.usable',
+        defaultMessage: 'Usable',
+    },
+    vaccine_arrival_report: {
+        id: 'iaso.label.publicVaccineStock.PO',
+        defaultMessage: 'PO',
+    },
+    outgoing_stock_movement: {
+        id: 'iaso.label.publicVaccineStock.outgoing_stock_movement',
+        defaultMessage: 'Form A',
+    },
 });
 export default MESSAGES;

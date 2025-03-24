@@ -57,6 +57,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',
     },
+    confirm: {
+        id: 'iaso.label.confirm',
+        defaultMessage: 'Confirm',
+    },
     defaultSource: {
         id: 'iaso.dataSources.default',
         defaultMessage: 'Default source',
@@ -185,13 +189,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.options.label.version',
         defaultMessage: 'Version',
     },
-    dhis2ExportTitle: {
-        id: 'iaso.datasources.title.dhis2ExportTitle',
+    exportTitle: {
+        id: 'iaso.datasources.title.exportTitle',
         defaultMessage: 'Are you sure?',
     },
     dhis2ExportMessage: {
         id: 'iaso.datasources.title.dhis2ExportMessage',
         defaultMessage: 'This might make a lot of changes in DHIS2.',
+    },
+    syncMessage: {
+        id: 'iaso.datasources.title.syncMessage',
+        defaultMessage:
+            'This might create a lot of changes requests to align the two versions.',
     },
     default: {
         id: 'iaso.datasources.options.label.default',
@@ -416,6 +425,20 @@ const MESSAGES = defineMessages({
     validate: {
         defaultMessage: 'Validate',
         id: 'iaso.label.validate',
+    },
+    sync: {
+        id: 'iaso.datasources.label.sync',
+        defaultMessage: 'Synchronize',
+    },
+    syncMessageDisabled: {
+        id: 'iaso.datasources.syncMessageDisabled',
+        defaultMessage:
+            'Please select a version of same data source to enable sync',
+    },
+    exportMessageDisabled: {
+        id: 'iaso.datasources.exportMessageDisabled',
+        defaultMessage:
+            'Please select a data source with DHIS2 credentials to enable export',
     },
 });
 

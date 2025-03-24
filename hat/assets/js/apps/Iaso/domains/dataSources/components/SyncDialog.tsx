@@ -35,6 +35,7 @@ import {
 } from '../requests';
 import { FIELDS_TO_EXPORT, useFieldsToExport } from '../utils';
 import { ConfirmExportButton } from './ConfirmExportButton';
+import { ConfirmSyncButton } from './ConfirmSyncButton';
 import { Dhis2Credentials } from './Dhis2Credentials';
 import { VersionPicker } from './VersionPicker';
 
@@ -122,19 +123,16 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
         handleClose();
     }, [exportData, exportToDHIS2, handleClose]);
 
-    const onConfirmSync = useCallback(() => {
-        console.log('onConfirmSync');
-        handleClose();
-    }, [handleClose]);
-
-    const allowConfirm =
+    const areVersionsFromSameDataSource =
+        sourceVersion?.data_source === dataSource.id;
+    const allowPreview =
         Boolean(exportData.source_version_id?.value) &&
         (Boolean(exportData.ref_status?.value) ||
             exportData.ref_status?.value === '') &&
         exportData.fields_to_export?.value.length > 0 &&
         Boolean(exportData.ref_version_id?.value);
-
-    const allowConfirmExport = allowConfirm && credentials?.is_valid;
+    const allowSync = allowPreview && areVersionsFromSameDataSource;
+    const allowConfirmExport = allowPreview && credentials?.is_valid;
 
     // Reset Treeview when changing source datasource
     useEffect(() => {
@@ -247,12 +245,14 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                     <Button onClick={handleClose}>
                         {formatMessage(MESSAGES.close)}
                     </Button>
-                    <Button onClick={onXlsPreview} disabled={!allowConfirm}>
+                    <Button onClick={onXlsPreview} disabled={!allowPreview}>
                         {formatMessage(MESSAGES.csvPreview)}
                     </Button>
-                    <ConfirmExportButton
-                        onConfirm={onConfirmSync}
-                        allowConfirm
+                    <ConfirmSyncButton
+                        onConfirm={handleClose}
+                        allowConfirm={allowSync}
+                        refSourceVersionId={refDataVersionId}
+                        targetSourceVersionId={sourceDataVersionId}
                     />
                     <ConfirmExportButton
                         onConfirm={onConfirmExport}

@@ -1,33 +1,48 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, FunctionComponent, ReactNode } from 'react';
 
-import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-
-import { Button } from '@mui/material';
-import Divider from '@mui/material/Divider';
+import { Box, Button, Tooltip } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Divider from '@mui/material/Divider';
+import { FormattedMessage } from 'react-intl';
 
 import MESSAGES from './messages';
 
-const ConfirmDialog = ({
+type Props = {
+    btnMessage: string;
+    message: string | ReactNode;
+    question: string | ReactNode;
+    confirm: () => void;
+    reject?: () => void;
+    btnVariant?: 'text' | 'outlined' | 'contained';
+    btnDisabled?: boolean;
+    btnSize?: 'small' | 'medium';
+    withDivider?: boolean;
+    tooltipMessage?: string;
+    onOpen?: () => void;
+};
+
+const ConfirmDialog: FunctionComponent<Props> = ({
     btnMessage,
     message,
     question,
     confirm,
-    reject,
-    btnVariant,
-    btnDisabled,
-    btnSize,
-    withDivider,
+    reject = () => {},
+    btnVariant = 'outlined',
+    btnDisabled = false,
+    btnSize = 'medium',
+    withDivider = false,
+    tooltipMessage,
+    onOpen,
 }) => {
     const [open, setOpen] = React.useState(false);
 
     const handleClickOpen = () => {
         setOpen(true);
+        onOpen?.();
     };
 
     const handleClose = isAccepted => {
@@ -38,18 +53,21 @@ const ConfirmDialog = ({
             reject();
         }
     };
-
     return (
         <>
-            <Button
-                variant={btnVariant}
-                size={btnSize}
-                color="primary"
-                disabled={btnDisabled}
-                onClick={() => handleClickOpen()}
-            >
-                {btnMessage}
-            </Button>
+            <Tooltip title={tooltipMessage}>
+                <Box>
+                    <Button
+                        variant={btnVariant}
+                        size={btnSize}
+                        color="primary"
+                        disabled={btnDisabled}
+                        onClick={() => handleClickOpen()}
+                    >
+                        {btnMessage}
+                    </Button>
+                </Box>
+            </Tooltip>
             <Dialog
                 open={open}
                 onClose={(event, reason) => {
@@ -82,27 +100,6 @@ const ConfirmDialog = ({
             </Dialog>
         </>
     );
-};
-
-ConfirmDialog.defaultProps = {
-    reject: () => null,
-    btnDisabled: false,
-    btnVariant: 'outlined',
-    message: '',
-    btnSize: 'medium',
-    withDivider: false,
-};
-
-ConfirmDialog.propTypes = {
-    question: PropTypes.any.isRequired,
-    message: PropTypes.any,
-    btnMessage: PropTypes.any.isRequired,
-    confirm: PropTypes.func.isRequired,
-    reject: PropTypes.func,
-    btnDisabled: PropTypes.bool,
-    btnVariant: PropTypes.string,
-    btnSize: PropTypes.string,
-    withDivider: PropTypes.bool,
 };
 
 export default ConfirmDialog;

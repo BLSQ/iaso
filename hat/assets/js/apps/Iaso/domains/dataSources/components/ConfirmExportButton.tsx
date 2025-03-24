@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import ReportIcon from '@mui/icons-material/Report';
-import { Box, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
+import { ConfirmDialogWarningTitle } from '../../../components/dialogs/ConfirmDialogWarningTitle';
 import MESSAGES from '../messages';
 
 type Props = {
@@ -19,32 +19,9 @@ export const ConfirmExportButton: FunctionComponent<Props> = ({
         <ConfirmDialog
             btnMessage={formatMessage(MESSAGES.export)}
             question={
-                <Box
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                    }}
-                >
-                    <ReportIcon
-                        sx={{
-                            display: 'inline-block',
-                            marginLeft: theme => theme.spacing(1),
-                            marginRight: theme => theme.spacing(1),
-                        }}
-                        color="error"
-                        fontSize="large"
-                    />
-                    {formatMessage(MESSAGES.dhis2ExportTitle)}
-                    <ReportIcon
-                        sx={{
-                            display: 'inline-block',
-                            marginLeft: theme => theme.spacing(1),
-                            marginRight: theme => theme.spacing(1),
-                        }}
-                        color="error"
-                        fontSize="large"
-                    />
-                </Box>
+                <ConfirmDialogWarningTitle
+                    title={formatMessage(MESSAGES.exportTitle)}
+                />
             }
             message={
                 <Typography
@@ -62,6 +39,11 @@ export const ConfirmExportButton: FunctionComponent<Props> = ({
             confirm={onConfirm}
             btnVariant="text"
             btnDisabled={!allowConfirm}
+            tooltipMessage={
+                !allowConfirm
+                    ? formatMessage(MESSAGES.exportMessageDisabled)
+                    : undefined
+            }
         />
     );
 };

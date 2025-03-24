@@ -330,6 +330,13 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/edit_documentation/edit_documentation.html"/>
     </url>
     <url>
+        <loc>Nonepages/users/how_to/run_ETL/run_ETL.html</loc>
+        <lastmod>2025-03-24</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/run_ETL/run_ETL.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/run_ETL/run_ETL.html"/>
+    </url>
+    <url>
         <loc>Nonepages/users/how_to/setup_an_empty_iaso_account/setup_an_empty_iaso_account.html</loc>
         <lastmod>2025-03-24</lastmod>
         <changefreq>daily</changefreq>
@@ -713,6 +720,13 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/edit_documentation/edit_documentation.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/edit_documentation/edit_documentation.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/users/how_to/run_ETL/run_ETL.html</loc>
+        <lastmod>2025-03-24</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/users/how_to/run_ETL/run_ETL.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/users/how_to/run_ETL/run_ETL.html"/>
     </url>
     <url>
         <loc>Nonefr/pages/users/how_to/setup_an_empty_iaso_account/setup_an_empty_iaso_account.html</loc>

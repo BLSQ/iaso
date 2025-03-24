@@ -1,0 +1,989 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.1">
+    
+    
+      
+        <title>IASO ETL - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.402914a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#iaso-etl" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              IASO ETL
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Select language">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="run_ETL.html" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../../../../fr/pages/users/how_to/run_ETL/run_ETL.html" hreflang="fr" class="md-select__link">
+                    Français
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Users
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Users
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/iaso_concepts/iaso_concepts.html" class="md-nav__link">
+        Concepts
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/iaso_modules/iaso_modules.html" class="md-nav__link">
+        Modules
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/iaso_web/user_guide.html" class="md-nav__link">
+        Web Platform
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/iaso_mobile/iaso_mobile.html" class="md-nav__link">
+        Mobile Application
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Developers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Developers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          References
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          References
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/data_model_glossary/data_model_glossary.html" class="md-nav__link">
+        Data model glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/sql_dashboard/SQL_Dashboard_feature.html" class="md-nav__link">
+        SQL Dashboard feature
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/docker/docker.html" class="md-nav__link">
+        Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/background_tasks/background_tasks.html" class="md-nav__link">
+        Background tasks & worker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/env_variables/env_variables.html" class="md-nav__link">
+        Environnement variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Models
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Models
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/API/entity.html" class="md-nav__link">
+        API reference: Entity
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          How to
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          How to
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/how_to/contribute/contribute.html" class="md-nav__link">
+        Contribute
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/how_to/setup_dev_env/setup_dev_env.html" class="md-nav__link">
+        Setup a dev environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/how_to/use_iaso_apis/use_iaso_apis.html" class="md-nav__link">
+        Use iaso apis
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          More about IASO
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          More about IASO
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        IASO website
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        Digital Public Goods Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        Release notes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        Bluesquare website
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                        fill="#192041">
+                        <path
+                            d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-view-scheduled-periodic-tasks" class="md-nav__link">
+    How to view scheduled periodic tasks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-create-etl-task-as-periodic-task" class="md-nav__link">
+    How to create ETL task as periodic task
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-run-the-etl-script-manually" class="md-nav__link">
+    How to run the ETL script manually
+  </a>
+  
+    <nav class="md-nav" aria-label="How to run the ETL script manually">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-beneficiaries" class="md-nav__link">
+    1. Beneficiaries
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-journeys" class="md-nav__link">
+    2. Journeys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-visits" class="md-nav__link">
+    3. Visits
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-steps" class="md-nav__link">
+    4. Steps
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-monthly-statisticss" class="md-nav__link">
+    5. Monthly statisticss
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/users/how_to/run_ETL/run_ETL.md" title="Edit this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="iaso-etl">IASO ETL<a class="headerlink" href="#iaso-etl" title="Permanent link">#</a></h1>
+<p><a href="https://en.wikipedia.org/wiki/Extract,_transform,_load">Extract, Transform, Load (ETL)</a> is a script to extract and transform entity data from IASO into the format expected by the Tableau dashboards.</p>
+<p>Currently, it reads and writes to the same database as the Iaso installation. The ETL script can be used in two ways:</p>
+<ol>
+<li>It can be scheduled as periodic task, which means it is set to run regulary.</li>
+<li>Alternatively, it can be scheduled as a one-off task, where the task is executed only once.</li>
+</ol>
+<h2 id="how-to-view-scheduled-periodic-tasks">How to view scheduled periodic tasks<a class="headerlink" href="#how-to-view-scheduled-periodic-tasks" title="Permanent link">#</a></h2>
+<p>From the Iaso Admin page, in the "Periodic Tasks" section select "Periodic tasks":</p>
+<p><img alt="Periodic tasks section" src="attachments/Periodic-Tasks.png" /></p>
+<p>You will get a list of scheduled tasks:</p>
+<p><img alt="Periodic tasks List" src="attachments/Periodic-task-List.png" /></p>
+<h2 id="how-to-create-etl-task-as-periodic-task">How to create ETL task as periodic task<a class="headerlink" href="#how-to-create-etl-task-as-periodic-task" title="Permanent link">#</a></h2>
+<p>From the Iaso Admin page, in the "Periodic Tasks" list, on the top right side, there is a button <strong>Add periodical task</strong>:</p>
+<p><img alt="Add periodical task Button" src="attachments/Add-periodical-task-Button.png" /></p>
+<p>You will get a form to create/edit a periodic task like the ETL task:</p>
+<p><img alt="Period task forms" src="attachments/Periodic-task-Iaso-Form.png" /></p>
+<p>There are 5 main fields:</p>
+<ul>
+<li>Name: task name</li>
+<li>Task (custom): a developed custom script</li>
+<li>Enabled: if is set to true, the task will run automatically</li>
+<li>Interval Schedule: the frequency of execution of the task (when Enabled is set to True)</li>
+<li>One-off Task: if checked, the schedule will only run the task a single time</li>
+</ul>
+<p>Then click on <strong>Save</strong> to save the task!</p>
+<p>In the periodic tasks list, when <strong>Enabled</strong> and/or <strong>One-off Task</strong> is set to true the circle icon will become green, otherwise it's red!</p>
+<h2 id="how-to-run-the-etl-script-manually">How to run the ETL script manually<a class="headerlink" href="#how-to-run-the-etl-script-manually" title="Permanent link">#</a></h2>
+<p>From the Iaso Admin on the "Periodic tasks" page, select the ETL task to run, in the "Action" field above, select the action "Run Selected Tasks":</p>
+<p><img alt="Run Period task" src="attachments/Select-periodic-task-to-run.png" /></p>
+<p>Then click on the <strong>Go</strong> button:</p>
+<p><img alt="Run ETL Period task" src="attachments/Run-periodic-task.png" /></p>
+<p>Note that the task queue is managed by Celery which is a Distributed Task Queue.</p>
+<p>Once the task has finished running, you can go to the "Celery Results" section and open "Task results". There you will find a list of completed tasks ordered by completed datetime with for each row:</p>
+<ol>
+<li>Period task name: the name of task</li>
+<li>Task Name: the developed custom script</li>
+<li>Completed datetime: the time when the script finished running</li>
+<li>Task state: <strong>SUCCESS</strong> if the task ran successfully, <strong>FAILURE</strong> if it failed</li>
+</ol>
+<p><img alt="Task results" src="attachments/Task-results-list.png" /></p>
+<p>When the task ran successfully, it will populate the analytics table with the entities data.
+In the Iaso Admin page, you can find all analytics tables in the WFP section:</p>
+<ol>
+<li>Beneficiaries</li>
+<li>Journeys</li>
+<li>Visits</li>
+<li>Steps</li>
+<li>Monthly statistics</li>
+</ol>
+<p>Note that in our case, there are 2 beneficiary types: <strong>Children under 5</strong> and <strong>Pregnant and Lactating Women</strong> (PLW)</p>
+<h3 id="1-beneficiaries">1. Beneficiaries<a class="headerlink" href="#1-beneficiaries" title="Permanent link">#</a></h3>
+<p>An analytics table to store the basic beneficiary information:</p>
+<ul>
+<li>Birth date: The beneficiary's birth date recorded in the admission visit</li>
+<li>Gender: The gender for the beneficiary, used only for children under 5</li>
+<li>Entity id: Reference to the entity id</li>
+<li>Account: reference to the country account</li>
+</ul>
+<p><img alt="Beneficiary" src="attachments/Beneficiary.png" /></p>
+<h3 id="2-journeys">2. Journeys<a class="headerlink" href="#2-journeys" title="Permanent link">#</a></h3>
+<p>Analytics table to store beneficiary information from the admission in the program to the exit. When a beneficiary is admitted in a program, it means in the current context the start of a journey that will end when he is discharged from the program.</p>
+<ul>
+<li>Beneficiary: Reference to beneficiary id</li>
+<li>Admission Criteria: the criteria selected in the admission visit, eg: MUAC, WHZ</li>
+<li>Admission Type: the admission type selected in the admission visit. eg: New Case, Relapse, etc...</li>
+<li>Nutrion Programme: the program selected in the admission visit. eg: OTP, TSFP</li>
+<li>Programme Type: It shows if the beneficiary is a child under 5 or a pregnant/lactating woman, e,g: U5, PLW</li>
+<li>Initial Weight: the weigth of beneficiary when admitted in the program</li>
+<li>Discharge Weight: the weigth of beneficiary when discharged from the program</li>
+<li>Start Date: the admission date</li>
+<li>End Date: the discharge date</li>
+<li>Duration: the length of the stay(number of days between the admission date and discharge date), i.e. the journey duration</li>
+<li>Weight Gain: the difference between discharge weight and initial weight when it's positive</li>
+<li>Weight Loss: the difference between discharge weight and initial weight when it's negative</li>
+<li>Exit Type: the reason of discharge from program. e.g: Cured, Voluntary Withdrawal, Death, Defaulter, etc...</li>
+<li>Instance Id: reference to the form submission of the beneficiary registration</li>
+</ul>
+<p><img alt="Journey" src="attachments/Journey.png" /></p>
+<h3 id="3-visits">3. Visits<a class="headerlink" href="#3-visits" title="Permanent link">#</a></h3>
+<p>Analytics table to store beneficiary visit information. For instance in nutrition program, there are 2 types of visits:</p>
+<ol>
+<li>admission: the first time when the beneficiary is admitted in the program</li>
+<li>followup: the successif visits when the beneficiary is already admitted into program</li>
+</ol>
+<p>Here are the fields for the table:</p>
+<ul>
+<li>Date: admission or followup visit date</li>
+<li>Number: The number of current visit (admission visit is 0)</li>
+<li>Org unit: the org unit where the visit occured</li>
+<li>Journey: Reference to journey id where the visit belongs to</li>
+</ul>
+<p><img alt="Visit" src="attachments/Visits.png" /></p>
+<h3 id="4-steps">4. Steps<a class="headerlink" href="#4-steps" title="Permanent link">#</a></h3>
+<p>In the context of nutrition program, a visit is splitted into 3 steps: anthropometric, medical and assistance.</p>
+<p>Here are the fields for the table:</p>
+<ul>
+<li>Assistance type: the assistance type given during the medical or assistance visit. e.g: Amoxillin, Soap, Net, CSB, etc...</li>
+<li>Quantity given: the quantity given for assistance type.</li>
+<li>Visit: Reference to the linked visit</li>
+</ul>
+<p><img alt="Steps" src="attachments/Steps.png" /></p>
+<p>For each analytics table, you will find filters on the right side that allow filtering data on various field values.</p>
+<h3 id="5-monthly-statisticss">5. Monthly statisticss<a class="headerlink" href="#5-monthly-statisticss" title="Permanent link">#</a></h3>
+<p>An analytics table to aggregate assistance data within visits based on the org unit the visits happened, period (month and year) and assistance type and quantity given.</p>
+<p>For example, when there are 3 visits for 3 beneficiaries that belong to the same program type, nutrition program, admission type and admission criteria, that happened in the same org unit, month and year, and within the visits various assistances have been given, in this table, those 3 visits will be aggregated in 1 by adding together the quantities of assistance given for the same assistance type.</p>
+<p>Here are the fields for the table:</p>
+<ol>
+<li>Org Unit: the reference of org unit where the visits happened</li>
+<li>Account: reference to country account</li>
+<li>Month: the month when the visits happened</li>
+<li>Year: the month when the visits happened</li>
+<li>Admission criteria: the admission criteria of all aggregated visits</li>
+<li>Admission type: the admission type of all aggregated visits</li>
+<li>Nutrition program:  the nutrition program of all aggregated visits</li>
+<li>Program type: the program type of all aggregated visits</li>
+<li>Number visits: the number of aggregated visits</li>
+<li>Given sachet RUSF: the sum of all given quantity of RUSF (assistance type) during the assistance visits</li>
+<li>Given sachet RUTF: the sum of all given quantity of RUTF (assistance type) during the assistance visits</li>
+<li>Given quantity CSB: the sum of all CSB given during assistance type</li>
+</ol>
+<p><img alt="Monthly Statistics" src="attachments/Monthly-statistics.png" /></p>
+<p>Note that on the right there is a filter to allow filtering data on various field values.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit"], "search": "../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.b78d2936.min.js"></script>
+      
+        <script src="../../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  </body>
+</html>

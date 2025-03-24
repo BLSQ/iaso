@@ -139,5 +139,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.publicVaccineStock.outgoing_stock_movement',
         defaultMessage: 'Form A',
     },
+    all: {
+        id: 'iaso.forms.all',
+        defaultMessage: 'All',
+    },
 });
 export default MESSAGES;

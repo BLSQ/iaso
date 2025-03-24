@@ -86,6 +86,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
 
     const unusableActionTypeOptions = useUnusableActionTypeOptions();
     const usableActionTypeOptions = useUsableActionTypeOptions();
+    const placeholder = formatMessage(MESSAGES.all);
     return (
         <Box sx={{ width: 'calc(100vw - 50px)' }} mb={4}>
             <Grid
@@ -114,7 +115,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                         onChange={newValue =>
                             changeAndSearch('country_block', newValue)
                         }
-                        placeholder="all"
+                        placeholder={placeholder}
                     />
                 </Grid>
                 <Grid item xs={2}>
@@ -134,7 +135,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                         onChange={newValue =>
                             changeAndSearch('country', newValue)
                         }
-                        placeholder="all"
+                        placeholder={placeholder}
                     />
                 </Grid>
                 <Grid item xs={2}>
@@ -154,7 +155,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                         onChange={newValue =>
                             changeAndSearch('vaccine', newValue)
                         }
-                        placeholder="all"
+                        placeholder={placeholder}
                     />
                 </Grid>
 
@@ -179,7 +180,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                         onChange={newValue =>
                             changeAndSearch('action_type', newValue)
                         }
-                        placeholder="all"
+                        placeholder={placeholder}
                     />
                 </Grid>
             </Grid>

@@ -1,16 +1,24 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Button } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
 import { useLocale } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/contexts/LocaleContext';
-import MESSAGES from '../messages';
 
 type Props = {
     lang: 'en' | 'fr';
 };
 
+const getDisplayLang = (lang: 'en' | 'fr'): 'English' | 'Français' => {
+    if (lang === 'en') {
+        return 'English';
+    }
+    if (lang === 'fr') {
+        return 'Français';
+    }
+    return lang;
+};
+
 export const LanguageButton: FunctionComponent<Props> = ({ lang }) => {
     const { locale: activeLocale, setLocale } = useLocale();
-    const { formatMessage } = useSafeIntl();
+    const displayLang = getDisplayLang(lang);
     const handleClick = useCallback(() => {
         if (activeLocale !== lang) {
             setLocale(lang);
@@ -27,7 +35,7 @@ export const LanguageButton: FunctionComponent<Props> = ({ lang }) => {
             onClick={handleClick}
             variant="contained"
         >
-            {formatMessage(MESSAGES[lang])}
+            {displayLang}
         </Button>
     );
 };

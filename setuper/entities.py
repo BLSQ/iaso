@@ -318,9 +318,8 @@ def create_entity_types(iaso_client):
             },
         )
         iaso_client.patch(
-            f"/api/workflowversions/{wfw_version['version_id']}",
+            f"/api/workflowversions/{wfw_version['version_id']}/",
             json={
-                "name": entity_type["name"],
                 "status": "PUBLISHED",
             },
         )

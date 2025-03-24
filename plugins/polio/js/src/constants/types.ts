@@ -343,6 +343,7 @@ export type CalendarCampaign = {
     campaign_types: CampaignType[];
     description: string;
     is_test: boolean;
+    on_hold: boolean;
 };
 
 export type Campaign = {
@@ -401,6 +402,7 @@ export type Campaign = {
     preparedness_sync_status: PreparednessSyncStatus;
     budget_status: Nullable<BudgetStatusDeprecated>;
     is_test: boolean;
+    on_hold: boolean;
     budget_current_state_key: string;
     budget_current_state_label: Nullable<string>;
     who_disbursed_to_co_at: Nullable<string>; // date
@@ -520,6 +522,7 @@ export type CampaignListItem = {
     grouped_campaigns: number[];
     campaign_types: CampaignType[];
     is_test: boolean;
+    on_hold?: boolean;
     is_preventive: boolean;
 };
 
@@ -533,6 +536,7 @@ export type DefaultCampaignValues = {
     gpei_coordinator?: string;
     is_preventive: boolean;
     is_test: boolean;
+    on_hold: boolean;
     rounds: Round[];
     scopes: Scope[];
     org_unit?: Shape;

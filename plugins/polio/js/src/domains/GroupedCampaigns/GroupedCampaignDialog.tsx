@@ -1,5 +1,4 @@
 /* eslint-disable react/require-default-props */
-import { Box, Divider, Grid } from '@mui/material';
 import React, {
     FunctionComponent,
     ReactNode,
@@ -7,9 +6,10 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import { Box, Divider, Grid } from '@mui/material';
 // @ts-ignore
-import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import { useSafeIntl } from 'bluesquare-components';
+import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { commaSeparatedIdsToStringArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import MESSAGES from '../../constants/messages';
@@ -46,7 +46,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
     const [campaignsToLink, setCampaignsToLink] = useState<string[]>(campaigns);
     // TODO refactor this hook to make more flexible
     const { data: allCampaigns, isFetching: isFetchingCamaigns } =
-        useGetCampaigns();
+        useGetCampaigns({ show_test: false });
     const allCampaignsDropdown = useMemo(
         () => makeCampaignsDropDownWithUUID(allCampaigns),
         [allCampaigns],

@@ -35,34 +35,44 @@ be sure when updating an existing one that the casing and accents matches the ta
 Note that OrgUnit and Group are linked to a particular data source but OrgUnitType are not and are shared between all projects of a tenant.
 
 Each layer table must have the following columns:
-* `name` The name of the OrgUnit
-* a geometry (can be any name as long as it's referenced as per the GeoPackage spec) [1]
-* `ref` Reference to be used for update and linking the parent (will be in orgunit.source_ref). Must be unique.
-* `parent_ref` the reference of the parent OrgUnit may be blank or null or the `ref` of the parent (not the name). [2]
-* `group_refs` a list of groups reference to which the OrgUnit should belong. Represented as string of ref separated by the ',' character. This column is optional, delete it if you don't want to touch group affiliation. *If you keep it empty all groups will be removed from the OrgUnit when updating*. See Group table below.
 
+Required columns (must exist and cannot be null/empty/blank):
+* `ref` Reference to be used for update and linking the parent (will be in orgunit.source_ref). Must be unique.
+* `name` The name of the OrgUnit
+
+Optional non-nullable columns (can be missing, but if present cannot be empty):
+* `parent_ref` The reference of the parent OrgUnit. If present, must contain either:
+  - A valid `ref` of another OrgUnit
+  - The format `iaso#{db_id}` to reference an existing OrgUnit by its database ID
+
+Optional nullable columns (can be missing or empty):
+* `group_refs` A comma-separated list of group references (e.g., "group_a,group_b"). If the column:
+  - Is missing: group assignments won't be modified
+  - Is empty: all groups will be removed from the OrgUnit
+  - Contains values: must reference existing groups in the Groups table or database
+* `opening_date` The date when the OrgUnit becomes active (format: YYYY-MM-DD)
+* `closed_date` The date when the OrgUnit becomes inactive (format: YYYY-MM-DD)
+
+Other requirements:
+* A geometry column (can have any name as long as it's referenced as per the GeoPackage spec) [1]
 
 [1] It is possible to have OrgUnit without an attached Geometry.
 
-[2] When updating an element from an already existing source, you may want to reference a parent OrgUnit existing in Iaso DataSource. However, this parent OrgUnit may not have a `source_ref` attribute. Instead, you can use the format `iaso#{db_id}` to point to it where `db_id`is the id of the parent OrgUnit in Iaso's database.
-
-
 ## Group table
 
-An additional table `groups` must be present. It represents
-the (OrgUnit linked) Groups to create and/or update.  This is an Attribute table in gpkg parlance as it doesn't contain a geometry.
+An additional table `groups` must be present. It represents the (OrgUnit linked) Groups to create and/or update. This is an Attribute table in gpkg parlance as it doesn't contain a geometry.
 
-Mandatory columns:
+Required columns (must exist and cannot be null/empty/blank):
 * `ref` Reference to the group, will be in source_ref (used in the layer tables as `group_ref`)
 * `name` Name of the Group
 
-Other tables and columns may be present and will be ignored (as long as they don't start with `level-`)
-
 ### Problematic input
 
-These input are forbidden:
-
+These inputs are forbidden:
 * `,` in group.ref
+* Null or empty values in required columns
+* References to non-existent groups in `group_refs`
+* Invalid date formats in `opening_date` or `closed_date`
 
 ## Examples
 

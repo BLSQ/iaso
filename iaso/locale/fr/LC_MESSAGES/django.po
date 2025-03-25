@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-03 10:30+0000\n"
+"POT-Creation-Date: 2025-03-24 14:18+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -70,12 +69,12 @@ msgstr ""
 "l'un des suivants : iaso.orgunit, iaso.form, iaso.instance"
 
 #: iaso/api/org_unit_change_request_configurations/filters.py:10
-#: iaso/api/org_unit_change_requests/filters.py:27
+#: iaso/api/org_unit_change_requests/filters.py:29
 msgid "Project ID"
 msgstr "ID du projet"
 
 #: iaso/api/org_unit_change_request_configurations/filters.py:11
-#: iaso/api/org_unit_change_requests/filters.py:24
+#: iaso/api/org_unit_change_requests/filters.py:26
 msgid "Org unit type ID"
 msgstr "ID du type d'unité organisationnelle"
 
@@ -83,60 +82,64 @@ msgstr "ID du type d'unité organisationnelle"
 msgid "Created by - Users IDs (comma-separated)"
 msgstr "Créé par - IDs utilisateurs (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:23
+#: iaso/api/org_unit_change_requests/filters.py:24
+msgid "IDs (comma-separated)"
+msgstr "IDs (séparés par des virgules)"
+
+#: iaso/api/org_unit_change_requests/filters.py:25
 msgid "Org unit ID"
 msgstr "ID de l'unité organisationnelle"
 
-#: iaso/api/org_unit_change_requests/filters.py:25
+#: iaso/api/org_unit_change_requests/filters.py:27
 #: iaso/api/org_unit_tree/filters.py:13
 msgid "Parent ID"
 msgstr "ID du parent"
 
-#: iaso/api/org_unit_change_requests/filters.py:26
+#: iaso/api/org_unit_change_requests/filters.py:28
 msgid "Groups IDs (comma-separated)"
 msgstr "IDs des groupes (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:30
+#: iaso/api/org_unit_change_requests/filters.py:32
 msgid "Data source synchronization ID"
 msgstr "ID de synchronisation de source de données"
 
-#: iaso/api/org_unit_change_requests/filters.py:33
+#: iaso/api/org_unit_change_requests/filters.py:35
 msgid "Forms IDs (comma-separated)"
 msgstr "IDs des formulaires (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:34
+#: iaso/api/org_unit_change_requests/filters.py:36
 msgid "Users IDs (comma-separated)"
 msgstr "IDs des utilisateurs (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:35
+#: iaso/api/org_unit_change_requests/filters.py:37
 msgid "User roles IDs (comma-separated)"
 msgstr "IDs des rôles utilisateurs (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:36
+#: iaso/api/org_unit_change_requests/filters.py:38
 msgid "With or without location"
 msgstr "Avec ou sans localisation"
 
-#: iaso/api/org_unit_change_requests/filters.py:37
+#: iaso/api/org_unit_change_requests/filters.py:39
 msgid "Status (comma-separated)"
 msgstr "Statut (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:38
+#: iaso/api/org_unit_change_requests/filters.py:40
 msgid "Projects IDs (comma-separated)"
 msgstr "IDs des projets (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:39
+#: iaso/api/org_unit_change_requests/filters.py:41
 msgid "Payment status"
 msgstr "Statut de paiement"
 
-#: iaso/api/org_unit_change_requests/filters.py:40
+#: iaso/api/org_unit_change_requests/filters.py:42
 msgid "Payment IDs (comma-separated)"
 msgstr "IDs des paiements (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:42
+#: iaso/api/org_unit_change_requests/filters.py:44
 msgid "Potential Payment IDs (comma-separated)"
 msgstr "IDs des paiements potentiels (séparés par des virgules)"
 
-#: iaso/api/org_unit_change_requests/filters.py:44
+#: iaso/api/org_unit_change_requests/filters.py:46
 msgid "Source version ID"
 msgstr "ID de version source"
 
@@ -152,44 +155,49 @@ msgstr "ID de source de données"
 msgid "Validation status"
 msgstr "Statut de validation"
 
-#: iaso/api/org_units.py:434 iaso/api/org_units.py:716
+#: iaso/api/org_units.py:446 iaso/api/org_units.py:728
 msgid "You cannot create or edit an Org unit of this type"
 msgstr ""
 "Vous ne pouvez pas créer ou modifier une unité organisationnelle de ce type"
 
-#: iaso/api/org_units.py:544 iaso/api/org_units.py:729
+#: iaso/api/org_units.py:472
+#, python-brace-format
+msgid "Invalid validation status : {validation_status}"
+msgstr "Statut de validation invalide : {validation_status}"
+
+#: iaso/api/org_units.py:556 iaso/api/org_units.py:741
 msgid "You cannot create an Org Unit without a parent"
 msgstr "Vous ne pouvez pas créer une unité organisationnelle sans parent"
 
-#: iaso/api/org_units.py:560 iaso/api/org_units.py:737
+#: iaso/api/org_units.py:572 iaso/api/org_units.py:749
 msgid "Group must be in the same source version"
 msgstr "Le groupe doit être dans la même version source"
 
-#: iaso/api/org_units.py:574
+#: iaso/api/org_units.py:586
 msgid "InstanceFile with id {} does not exist"
 msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
-#: iaso/api/org_units.py:641
+#: iaso/api/org_units.py:653
 msgid "Unauthorized version id"
 msgstr "ID de version non autorisé"
 
-#: iaso/api/org_units.py:652
+#: iaso/api/org_units.py:664
 msgid "Org unit name is required"
 msgstr "Le nom de l'unité organisationnelle est requis"
 
-#: iaso/api/org_units.py:677
+#: iaso/api/org_units.py:689
 msgid "Opening date must be anterior to closed date"
 msgstr "La date d'ouverture doit être antérieure à la date de fermeture"
 
-#: iaso/api/org_units.py:699
+#: iaso/api/org_units.py:711
 msgid "Can't parse geom"
 msgstr "Impossible d'analyser la géométrie"
 
-#: iaso/api/org_units.py:710
+#: iaso/api/org_units.py:722
 msgid "Org unit type is required"
 msgstr "Le type d'unité organisationnelle est requis"
 
-#: iaso/api/org_units.py:723
+#: iaso/api/org_units.py:735
 msgid "Parent is not in the same version"
 msgstr "Le parent n'est pas dans la même version"
 
@@ -328,50 +336,50 @@ msgstr "Arrêté"
 msgid "Success"
 msgstr "Succès"
 
-#: iaso/models/base.py:431
+#: iaso/models/base.py:432
 msgid "Polio"
 msgstr "Polio"
 
-#: iaso/models/base.py:553
+#: iaso/models/base.py:554
 msgid "SINGLE"
 msgstr "UNIQUE"
 
-#: iaso/models/base.py:554
+#: iaso/models/base.py:555
 msgid "MULTIPLE"
 msgstr "MULTIPLE"
 
-#: iaso/models/base.py:1082
+#: iaso/models/base.py:1083
 msgid "The Instance must be linked to a Form."
 msgstr "L'instance doit être liée à un formulaire."
 
-#: iaso/models/base.py:1084
+#: iaso/models/base.py:1085
 msgid "The OrgUnit must be linked to a OrgUnitType."
 msgstr ""
 "L'unité organisationnelle doit être liée à un type d'unité organisationnelle."
 
-#: iaso/models/base.py:1086
+#: iaso/models/base.py:1087
 msgid "The submission must be an instance of a reference form."
 msgstr "La soumission doit être une instance d'un formulaire de référence."
 
-#: iaso/models/base.py:1673
+#: iaso/models/base.py:1674
 msgid "Immediate export of instances to DHIS2"
 msgstr "Export immédiat des instances vers DHIS2"
 
-#: iaso/models/base.py:1678
+#: iaso/models/base.py:1679
 msgid "GPS localization on start of instance on mobile"
 msgstr "Localisation GPS au démarrage de l'instance sur mobile"
 
-#: iaso/models/base.py:1683
+#: iaso/models/base.py:1684
 msgid "Require authentication on mobile"
 msgstr "Authentification requise sur mobile"
 
-#: iaso/models/base.py:1690
+#: iaso/models/base.py:1691
 msgid "Mobile: Limit download of orgunit to what the user has access to"
 msgstr ""
 "Mobile : Limiter le téléchargement des unités organisationnelles à celles "
 "auxquelles l'utilisateur a accès"
 
-#: iaso/models/base.py:1698
+#: iaso/models/base.py:1699
 msgid ""
 "Saving a form as finalized on mobile triggers an upload attempt immediately "
 "+ everytime network becomes available"
@@ -635,6 +643,3 @@ msgstr ""
 #: iaso/utils/serializer/three_dim_point_field.py:18
 msgid "Enter a valid location."
 msgstr "Entrez une localisation valide."
-
-#~ msgid "Invalid validation status : {validation_status}"
-#~ msgstr "Statut de validation invalide : {validation_status}"

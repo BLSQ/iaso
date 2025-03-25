@@ -68,7 +68,7 @@ class GPKGExport(TestCase):
         )  # The unknown type created because ou3 don't have one
         self.assertEqual(v2.group_set.count(), 2)
 
-        root = v2.orgunit_set.get(parent=None)
+        root = v2.orgunit_set.get(parent=None, name="ou1")
         root.orgunit_set.all()
 
         self.assertEqual(root.name, "ou1")

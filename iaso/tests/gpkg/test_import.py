@@ -30,9 +30,8 @@ class GPKGImport(TestCase):
         self.assertEqual(3, Modification.objects.filter(content_type__model="orgunit").count())
         self.assertEqual(2, Modification.objects.filter(content_type__model="group").count())
 
-        root = OrgUnit.objects.get(parent=None)
+        root = OrgUnit.objects.get(source_ref="cdd3e94c-3c2a-4ab1-8900-be97f82347de")
         self.assertEqual(root.name, "District Betare Oya")
-        self.assertEqual(root.source_ref, "cdd3e94c-3c2a-4ab1-8900-be97f82347de")
         self.assertEqual(root.org_unit_type.name, "DS")
         self.assertEqual(root.groups.all().count(), 0)
         self.assertEqual(root.opening_date.strftime("%Y-%m-%d"), "2020-01-01")

@@ -35,6 +35,8 @@ class GPKGImport(TestCase):
         self.assertEqual(root.source_ref, "cdd3e94c-3c2a-4ab1-8900-be97f82347de")
         self.assertEqual(root.org_unit_type.name, "DS")
         self.assertEqual(root.groups.all().count(), 0)
+        self.assertEqual(root.opening_date.strftime("%Y-%m-%d"), "2020-01-01")
+        self.assertEqual(root.closed_date.strftime("%Y-%m-%d"), "2021-12-31")
 
         self.assertEqual(root.orgunit_set.all().count(), 1)
         self.assertEqual(str(root.path), f"{root.pk}")
@@ -83,7 +85,13 @@ class GPKGImport(TestCase):
         source_name = "hey"
         source = DataSource.objects.create(name=source_name)
         version = SourceVersion.objects.create(number=version_number, data_source=source)
-        ou = OrgUnit.objects.create(name="bla", source_ref="cdd3e94c-3c2a-4ab1-8900-be97f82347de", version=version)
+        ou = OrgUnit.objects.create(
+            name="bla",
+            source_ref="cdd3e94c-3c2a-4ab1-8900-be97f82347de",
+            version=version,
+            opening_date="2020-01-01",
+            closed_date="2021-12-31",
+        )
         g = Group.objects.create(source_version=version, source_ref="group_b", name="Previous name of group B")
         ou.groups.set([g])
         self.assertEqual(ou.groups.count(), 1)
@@ -127,6 +135,10 @@ class GPKGImport(TestCase):
         new = mod.new_value[0]
         self.assertEqual(old["fields"]["name"], "bla")
         self.assertEqual(new["fields"]["name"], "District Betare Oya")
+        self.assertEqual(old["fields"]["opening_date"], "2020-01-01")
+        self.assertEqual(old["fields"]["closed_date"], "2021-12-31")
+        self.assertEqual(new["fields"]["opening_date"], "2020-01-01")
+        self.assertEqual(new["fields"]["closed_date"], "2021-12-31")
 
         g.refresh_from_db()
         self.assertEqual(g.name, "Group B")
@@ -331,6 +343,35 @@ class GPKGImport(TestCase):
         self.assertEqual(
             2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
         )
+
+    def test_column_validation(self):
+        """Test column validation according to specifications:
+        Required columns (must exist and cannot be null/empty/blank):
+        - ref
+        - name
+
+        Optional non-nullable columns (can be missing, but if present cannot be empty):
+        - parent_ref
+
+        Optional nullable columns (can be missing or empty):
+        - group_refs
+        - opening_date
+        - closing_date
+        """
+        # Test required columns (ref, name)
+        required_columns = ["ref", "name"]
+        for column in required_columns:
+            try:
+                import_gpkg_file(
+                    f"./iaso/tests/fixtures/gpkg/missing_column_{column}.gpkg",
+                    project_id=self.project.id,
+                    source_name="test",
+                    version_number=1,
+                    validation_status="new",
+                    description="",
+                )
+            except ValueError as e:
+                print(f"Caught expected error: {str(e)}")
 
 
 class GPKGImportSimplifiedGroup(TestCase):

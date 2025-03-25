@@ -85,11 +85,31 @@ class PublicVaccineStockViewset(ViewSet):
             if entry["doses_in"]:
                 total_doses += entry["doses_in"]
             if entry["vials_out"]:
-                total_vials -= entry["vials_out"]
+                total_vials += entry["vials_out"]
             if entry["doses_out"]:
-                total_doses -= entry["doses_out"]
+                total_doses += entry["doses_out"]
 
         return total_vials, total_doses
+
+    def _compute_vials(self, json_data):
+        total_in = 0
+        total_out = 0
+        for entry in json_data:
+            if entry["vials_in"]:
+                total_in += entry["vials_in"]
+            if entry["vials_out"]:
+                total_out += entry["vials_out"]
+        return total_in, total_out
+
+    def _compute_doses(self, json_data):
+        total_in = 0
+        total_out = 0
+        for entry in json_data:
+            if entry["vials_in"]:
+                total_in += entry["doses_in"]
+            if entry["vials_out"]:
+                total_out += entry["doses_out"]
+        return total_in, total_out
 
     def _paginate_response(self, request, json_data, earmarked_vials=None, earmarked_doses=None):
         total_vials, total_doses = self._compute_totals(json_data)
@@ -152,19 +172,39 @@ class PublicVaccineStockViewset(ViewSet):
         methods=["get"],
     )
     def export_xlsx(self, request):
+        queryset = self.filter_queryset(request)
         # Data to export for usable based on queryparams received from front-end
-        all_usable = self._get_json_data(request, usable=True)
+        all_usable = self._get_json_data(queryset, usable=True)
         sorted_usable = self._apply_filter_and_sort(all_usable, request)
         usable_totals = self._compute_totals(sorted_usable)
+        usable_vials_in, usable_vials_out = self._compute_vials(sorted_usable)
+        usable_doses_in, usable_doses_out = self._compute_doses(sorted_usable)
         # Data to export for unusable based on queryparams received from front-end
-        all_unusable = self._get_json_data(request, usable=False)
+        all_unusable = self._get_json_data(queryset, usable=False)
         sorted_unusable = self._apply_filter_and_sort(all_unusable, request)
         unusable_totals = self._compute_totals(sorted_unusable)
+        unusable_vials_in, unusable_vials_out = self._compute_vials(sorted_unusable)
+        unusable_doses_in, unusable_doses_out = self._compute_doses(sorted_unusable)
+
+        earmarked_totals = self._get_earmarked_totals(queryset)
 
         today = date.today().isoformat()
         filename = f"{today}-stock-card-export"
         workbook = download_xlsx_public_stock_variants(
-            filename, sorted_usable, sorted_unusable, usable_totals, unusable_totals
+            filename=filename,
+            usable_results=sorted_usable,
+            unusable_results=sorted_unusable,
+            usable_totals=usable_totals,
+            unusable_totals=unusable_totals,
+            earmarked_totals=earmarked_totals,
+            usable_vials_in=usable_vials_in,
+            usable_vials_out=usable_vials_out,
+            usable_doses_in=usable_doses_in,
+            usable_doses_out=usable_doses_out,
+            unusable_vials_in=unusable_vials_in,
+            unusable_vials_out=unusable_vials_out,
+            unusable_doses_in=unusable_doses_in,
+            unusable_doses_out=unusable_doses_out,
         )
 
         with NamedTemporaryFile() as tmp:

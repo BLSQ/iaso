@@ -1053,6 +1053,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             f"{self.instance_1.source_created_at.strftime('%Y-%m-%d %H:%M:%S')},"
             f"{self.instance_1.source_updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
             "yoda (Yo Da),"
+            f"{self.instance_1.created_by_id},"
             "READY,"
             ","  # entity UUID
             ","  # entity ID
@@ -1112,9 +1113,10 @@ class InstancesAPITestCase(TaskAPITestCase):
             f"{sourceless_instance.created_at.strftime('%Y-%m-%d %H:%M:%S')},"
             f"{sourceless_instance.updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
             "yoda (Yo Da),"
+            f"{self.instance_1.created_by_id},"
             "READY,"
-            ","  # entity UUID
-            ","  # entity ID
+            f"uuid:{sourceless_instance.entity.uuid},"
+            f"{sourceless_instance.entity.id},"
             "Coruscant Jedi Council,"
             f"{self.jedi_council_corruscant.id},"
             "jedi_council_corruscant_ref,"

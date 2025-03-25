@@ -230,7 +230,7 @@ def validate_property(props: Dict[str, str], property_name: str, orgunit_name: s
         return None
 
     value = props[property_name]
-    if value and value.strip() == "":  # Only return non-empty values
+    if value and value.strip() != "":  # Only return non-empty values
         return value
     return None
 

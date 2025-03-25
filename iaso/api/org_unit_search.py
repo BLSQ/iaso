@@ -78,7 +78,7 @@ def build_org_units_queryset(queryset, params, profile):
             group_ids = [group]
         else:
             group_ids = group
-        queryset = queryset.filter(groups__in=group_ids)
+        queryset = queryset.filter(groups__in=group_ids).distinct("id")
 
     if source:
         source = DataSource.objects.get(id=source)

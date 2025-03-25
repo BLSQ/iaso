@@ -1,5 +1,3 @@
-import { Box, Grid, Typography } from '@mui/material';
-import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
@@ -8,6 +6,12 @@ import React, {
     useRef,
     useState,
 } from 'react';
+import { Box, Grid, Typography } from '@mui/material';
+import {
+    InputWithInfos,
+    useRedirectToReplace,
+    useSafeIntl,
+} from 'bluesquare-components';
 
 import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';
 import { FilterButton } from '../../../../components/FilterButton';
@@ -18,6 +22,7 @@ import { baseUrls } from '../../../../constants/urls';
 import { useFilterState } from '../../../../hooks/useFilterState';
 import { DropdownOptions } from '../../../../types/utils';
 import * as Permission from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 import {
     useGetDataSourceVersionsSynchronizationDropdown,
     useSearchDataSourceVersionsSynchronization,
@@ -34,6 +39,7 @@ import { useGetDataSources } from '../../hooks/requests/useGetDataSources';
 import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetVersionLabel } from '../../hooks/useGetVersionLabel';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { PAYMENTS_MODULE } from '../constants';
 import { usePaymentStatusOptions } from '../hooks/api/useGetPaymentStatusOptions';
 import MESSAGES from '../messages';
 import { ApproveOrgUnitParams } from '../types';
@@ -57,6 +63,8 @@ const styles = {
 export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
+    const currentUser = useCurrentUser();
+    const { modules } = currentUser.account;
     const redirectToReplace = useRedirectToReplace();
 
     const defaultSourceVersion = useDefaultSourceVersion();
@@ -242,6 +250,18 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             filters.parent_id = null;
         },
         [dataSources, filters, handleChange],
+    );
+
+    const handleChangeIds = useCallback(
+        (key, newValue) => {
+            const ids: string = newValue
+                .split(/[\s,]+/)
+                // Remove empty elements.
+                .filter(i => i)
+                .join(',');
+            handleChange(key, ids);
+        },
+        [handleChange],
     );
 
     const getVersionLabel = useGetVersionLabel(dataSources);
@@ -463,20 +483,32 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         },
                     ]}
                 />
-                <InputComponent
-                    label={MESSAGES.location}
-                    type="select"
-                    clearable
-                    keyValue="paymentStatus"
-                    value={filters.paymentStatus}
-                    onChange={handleChange}
-                    loading={isFetchingPaymentStatuses}
-                    options={paymentStatuses}
-                    labelString={formatMessage(MESSAGES.paymentStatus)}
-                />
+                {modules.includes(PAYMENTS_MODULE) && (
+                    <InputComponent
+                        label={MESSAGES.location}
+                        type="select"
+                        clearable
+                        keyValue="paymentStatus"
+                        value={filters.paymentStatus}
+                        onChange={handleChange}
+                        loading={isFetchingPaymentStatuses}
+                        options={paymentStatuses}
+                        labelString={formatMessage(MESSAGES.paymentStatus)}
+                    />
+                )}
             </Grid>
 
             <Grid item xs={12} md={4} lg={3}>
+                <InputWithInfos infos={formatMessage(MESSAGES.searchByIdsInfo)}>
+                    <InputComponent
+                        keyValue="ids"
+                        value={filters.ids}
+                        type="search"
+                        label={MESSAGES.searchByIds}
+                        blockForbiddenChars
+                        onChange={handleChangeIds}
+                    />
+                </InputWithInfos>
                 <DatesRange
                     xs={12}
                     sm={12}

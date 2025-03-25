@@ -1,29 +1,29 @@
 /* eslint-disable react/no-array-index-key */
 import React from 'react';
-import { useSafeIntl } from 'bluesquare-components';
 import { Grid, Box, Paper } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject.tsx';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm.tsx';
-import { Filters } from '../shared/Filters.tsx';
-import { CaregiversTable } from './Graphs/CaregiversTable.tsx';
-import { GraphTitle } from '../shared/charts/GraphTitle.tsx';
-import { LqasImHorizontalChart } from '../shared/charts/LqasImHorizontalChart.tsx';
-import { DistrictsNotFound } from '../shared/DebugInfo/DistrictsNotFound.tsx';
-import { DatesIgnored } from '../shared/DebugInfo/DatesIgnored.tsx';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject.tsx';
 import { HorizontalDivider } from '../../../components/HorizontalDivider.tsx';
-import { LqasImVerticalChart } from '../shared/charts/LqasImVerticalChart.tsx';
-import { useLqasData } from './hooks/useLqasData.ts';
-import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer.tsx';
 import MESSAGES from '../../../constants/messages.ts';
-import { BadRoundNumbers } from '../shared/DebugInfo/BadRoundNumber.tsx';
-import { paperElevation } from '../shared/constants.ts';
-import { useLqasIm } from '../shared/hooks/api/useLqasIm.ts';
 import { Sides } from '../../../constants/types.ts';
 import { baseUrls } from '../../../constants/urls.ts';
-import { useSelectedRounds } from '../shared/hooks/useSelectedRounds.tsx';
 import { useGetCampaigns } from '../../Campaigns/hooks/api/useGetCampaigns.ts';
+import { GraphTitle } from '../shared/charts/GraphTitle.tsx';
+import { LqasImHorizontalChart } from '../shared/charts/LqasImHorizontalChart.tsx';
+import { LqasImVerticalChart } from '../shared/charts/LqasImVerticalChart.tsx';
+import { paperElevation } from '../shared/constants.ts';
+import { BadRoundNumbers } from '../shared/DebugInfo/BadRoundNumber.tsx';
+import { DatesIgnored } from '../shared/DebugInfo/DatesIgnored.tsx';
+import { DistrictsNotFound } from '../shared/DebugInfo/DistrictsNotFound.tsx';
+import { Filters } from '../shared/Filters.tsx';
+import { useLqasIm } from '../shared/hooks/api/useLqasIm.ts';
+import { useSelectedRounds } from '../shared/hooks/useSelectedRounds.tsx';
 import { useStyles } from '../shared/hooks/useStyles.ts';
+import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer.tsx';
+import { CaregiversTable } from './Graphs/CaregiversTable.tsx';
+import { useLqasData } from './hooks/useLqasData.ts';
 
 const baseUrl = baseUrls.lqasCountry;
 
@@ -38,6 +38,8 @@ export const Lqas = () => {
         useGetCampaigns({
             countries: country,
             enabled: Boolean(country),
+            show_test: false,
+            on_hold: true,
         });
 
     const { onRoundChange, selectedRounds, dropDownOptions } =

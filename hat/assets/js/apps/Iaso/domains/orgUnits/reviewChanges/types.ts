@@ -21,6 +21,7 @@ export type ApproveOrgUnitParams = UrlParams & {
     potentialPaymentIds?: string; // comma separated ids
     source_version_id?: string;
     data_source_synchronization_id?: string;
+    ids?: string; // comma separated ids
 };
 
 export type OrgUnitChangeRequestDetailParams = UrlParams & {
@@ -80,6 +81,7 @@ export type OrgUnitChangeRequests = Array<OrgUnitChangeRequest>;
 
 export interface OrgUnitChangeRequestsPaginated extends Pagination {
     results: OrgUnitChangeRequest[];
+    select_all_count: number;
 }
 
 export type OrgUnitChangeRequestDetails = {

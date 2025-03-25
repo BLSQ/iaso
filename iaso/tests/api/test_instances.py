@@ -1,6 +1,4 @@
-import csv
 import datetime
-import io
 import json
 import typing
 
@@ -20,15 +18,15 @@ from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, Modification
 from iaso import models as m
 from iaso.api import query_params as query
-from iaso.models import FormVersion, Instance, InstanceLock
+from iaso.models import FormVersion, Instance, InstanceLock, OrgUnitReferenceInstance
 from iaso.models.microplanning import Planning, Team
-from iaso.test import APITestCase
+from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
 
-class InstancesAPITestCase(APITestCase):
+class InstancesAPITestCase(TaskAPITestCase):
     @classmethod
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def setUpTestData(cls):
@@ -55,11 +53,13 @@ class InstancesAPITestCase(APITestCase):
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
+        cls.jedi_council_corruscant_uuid = str(uuid4())
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
             name="Coruscant Jedi Council",
             source_ref="jedi_council_corruscant_ref",
             version=sw_version,
             validation_status="VALID",
+            uuid=cls.jedi_council_corruscant_uuid,
         )
         cls.ou_top_1 = m.OrgUnit.objects.create(
             name="ou_top_1",
@@ -501,6 +501,64 @@ class InstancesAPITestCase(APITestCase):
         pre_existing_instance.refresh_from_db()
         self.assertEqual("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", pre_existing_instance.file_name)
         self.assertEqual("Mobile app name", pre_existing_instance.name)
+
+    def test_instance_create_with_org_unit_in_multiple_source_versions(self):
+        """POST /api/instances/ an instance with an orgunit that has been copied in multiple source versions"""
+
+        # First, let's create a user that has permissions to do all of this
+        super_yoda = self.create_user_with_profile(
+            account=self.star_wars,
+            username="super yoda",
+            permissions=["iaso_sources", "iaso_submissions", "iaso_org_units"],
+        )
+
+        # Then, let's copy the existing source version through an API call (couldn't call task directly)
+        self.client.force_authenticate(super_yoda)
+        response = self.client.post(
+            "/api/copyversion/",
+            data={
+                "source_source_id": self.sw_source.id,
+                "source_version_number": self.sw_version.number,
+                "destination_source_id": self.sw_source.id,
+                "destination_version_number": str(self.sw_version.number + 1),
+            },
+            format="json",
+        )
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        task = self.assertValidTaskAndInDB(response_json["task"], status="QUEUED", name="copy_version")
+        self.runAndValidateTask(task, "SUCCESS")
+
+        # Make sure that there are multiple orgunits with the same UUID
+        self.assertGreater(m.OrgUnit.objects.filter(uuid=self.jedi_council_corruscant_uuid).count(), 1)
+
+        # Now, let's create an instance with that orgunit
+        instance_uuid = str(uuid4())
+        instance_name = "Testing if multiple OrgUnit UUIDs still fail"
+        body = [
+            {
+                "id": instance_uuid,
+                "latitude": 4.4,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.uuid,
+                "formId": self.form_1.id,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "name": instance_name,
+            },
+        ]
+        response = self.client.post(
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        last_instance = m.Instance.objects.order_by("-id").first()
+        self.assertEqual(last_instance.uuid, instance_uuid)
+        self.assertEqual(last_instance.name, instance_name)
 
     def test_instance_list_by_form_id_ok(self):
         """GET /instances/?form_id=form_id"""
@@ -968,40 +1026,45 @@ class InstancesAPITestCase(APITestCase):
 
     def test_can_retrieve_submissions_list_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(
-            f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
+
+        # Mark instance_1 as a reference instance.
+        OrgUnitReferenceInstance.objects.create(
+            org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "text/csv")
+
+        with self.assertNumQueries(10):
+            response = self.client.get(
+                f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response["Content-Type"], "text/csv")
 
         response_csv = response.getvalue().decode("utf-8")
-        response_string = "".join(s for s in response_csv)
-        reader = csv.reader(io.StringIO(response_string), delimiter=",")
-        data = list(reader)
-        row_to_test = data[len(data) - 1]
-        expected_row = [
-            f"{self.instance_1.id}",
-            "",
-            "Vzhn0nceudr",
-            "",
-            "",
-            "",
-            "",
-            "202001",
-            self.instance_1.source_created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            self.instance_1.source_updated_at.strftime("%Y-%m-%d %H:%M:%S"),
-            "yoda (Yo Da)",
-            "READY",
-            "",  # entity UUID
-            "Coruscant Jedi Council",
-            f"{self.jedi_council_corruscant.id}",
-            "jedi_council_corruscant_ref",
-            "",
-            "",
-            "",
-            "",
-        ]
-        self.assertEqual(row_to_test, expected_row)
+        expected_csv_row = (
+            f"{self.instance_1.id},"
+            "True,"
+            ","
+            "Vzhn0nceudr,"
+            ","
+            ","
+            ","
+            ","
+            "202001,"
+            f"{self.instance_1.source_created_at.strftime('%Y-%m-%d %H:%M:%S')},"
+            f"{self.instance_1.source_updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
+            "yoda (Yo Da),"
+            f"{self.instance_1.created_by_id},"
+            "READY,"
+            ","  # entity UUID
+            ","  # entity ID
+            "Coruscant Jedi Council,"
+            f"{self.jedi_council_corruscant.id},"
+            "jedi_council_corruscant_ref,"
+            ","
+            ","
+            ","
+        )
+        self.assertIn(expected_csv_row, response_csv)
 
     def test_can_retrieve_submissions_list_in_csv_format_without_source_fields(self):
         # Set up a new instance without source fields
@@ -1009,6 +1072,11 @@ class InstancesAPITestCase(APITestCase):
         export_id = "TESTING"
         period = "200605"
         with patch("django.utils.timezone.now", lambda: new_date):
+            entity = m.Entity.objects.create(
+                uuid=uuid4(),
+                entity_type=m.EntityType.objects.create(account=self.star_wars),
+                account=self.star_wars,
+            )
             # Explicitly set source fields to None because the test helpers will set default values otherwise
             sourceless_instance = self.create_form_instance(
                 form=self.form_4,
@@ -1020,6 +1088,7 @@ class InstancesAPITestCase(APITestCase):
                 source_created_at=None,
                 source_updated_at=None,
                 json={"test": "test"},
+                entity=entity,
             )
 
         self.client.force_authenticate(self.yoda)
@@ -1031,34 +1100,31 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(response["Content-Type"], "text/csv")
 
         response_csv = response.getvalue().decode("utf-8")
-        response_string = "".join(s for s in response_csv)
-        reader = csv.reader(io.StringIO(response_string), delimiter=",")
-        data = list(reader)
-        row_to_test = data[len(data) - 1]
-        expected_row = [
-            f"{sourceless_instance.id}",
-            "",
-            export_id,
-            "",
-            "",
-            "",
-            "",
-            period,
-            sourceless_instance.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            sourceless_instance.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
-            "yoda (Yo Da)",
-            "READY",
-            "",  # entity UUID
-            "Coruscant Jedi Council",
-            f"{self.jedi_council_corruscant.id}",
-            "jedi_council_corruscant_ref",
-            "",
-            "",
-            "",
-            "",
-        ]
-        # Make sure the export is using the default created/updated_at if there is no source
-        self.assertEqual(row_to_test, expected_row)
+        expected_csv_row = (
+            f"{sourceless_instance.id},"
+            "False,"
+            ","
+            f"{export_id},"
+            ","
+            ","
+            ","
+            ","
+            f"{period},"
+            f"{sourceless_instance.created_at.strftime('%Y-%m-%d %H:%M:%S')},"
+            f"{sourceless_instance.updated_at.strftime('%Y-%m-%d %H:%M:%S')},"
+            "yoda (Yo Da),"
+            f"{self.instance_1.created_by_id},"
+            "READY,"
+            f"uuid:{sourceless_instance.entity.uuid},"
+            f"{sourceless_instance.entity.id},"
+            "Coruscant Jedi Council,"
+            f"{self.jedi_council_corruscant.id},"
+            "jedi_council_corruscant_ref,"
+            ","
+            ","
+            ","
+        )
+        self.assertIn(expected_csv_row, response_csv)
 
     def test_submissions_list_in_csv_format_error_no_form(self):
         # Make sure IA-3275 is fixed by sending a 400 instead of letting the backend crash

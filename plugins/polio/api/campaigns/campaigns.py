@@ -32,7 +32,10 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.models import Group, OrgUnit
-from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
+from plugins.polio.api.campaigns.campaigns_log import (
+    log_campaign_modification,
+    serialize_campaign,
+)
 from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
     missing_vaccine_authorization_for_campaign_email_alert,
 )
@@ -53,9 +56,15 @@ from plugins.polio.models import (
 from plugins.polio.models.base import SubActivity, SubActivityScope
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.parser import InvalidFormatError, get_preparedness
-from plugins.polio.preparedness.spreadsheet_manager import Campaign, generate_spreadsheet_for_campaign
+from plugins.polio.preparedness.spreadsheet_manager import (
+    Campaign,
+    generate_spreadsheet_for_campaign,
+)
 from plugins.polio.preparedness.summary import preparedness_summary
-from plugins.polio.services.campaign import delete_old_scopes_after_scope_level_switch
+from plugins.polio.services.campaign import (
+    delete_old_scopes_after_scope_level_switch,
+    remove_out_of_scope_org_units_from_sub_activities,
+)
 
 
 # Don't display the url for Anonymous users
@@ -409,6 +418,9 @@ class CampaignSerializer(serializers.ModelSerializer):
         campaign.update_geojson_field()
         campaign.save()
 
+        # Check if there are no subactivities with org units not in their current parent round scope
+        remove_out_of_scope_org_units_from_sub_activities(campaign)
+
         # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
         c_rounds = [r for r in campaign.rounds.all()]
         nOPV2_rounds = []
@@ -471,6 +483,7 @@ class ListCampaignSerializer(CampaignSerializer):
             "campaign_types",
             "is_test",
             "is_preventive",
+            "on_hold",
         ]
         read_only_fields = fields
 
@@ -678,6 +691,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "campaign_types",
             "description",
             "is_test",
+            "on_hold",
         ]
         read_only_fields = fields
 
@@ -810,17 +824,22 @@ class CampaignViewSet(ModelViewSet):
         campaign_category = self.request.query_params.get("campaign_category")
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
+        on_hold = self.request.query_params.get("on_hold", "false")
         org_unit_groups = self.request.query_params.get("org_unit_groups")
         campaign_types = self.request.query_params.get("campaign_types")
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
+        if on_hold == "false":
+            campaigns = campaigns.filter(on_hold=False)
         if campaign_category == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
-        if campaign_category == "test":
-            campaigns = campaigns.filter(is_test=True)
-        if campaign_category == "regular":
+        if campaign_category == "on_hold":
+            campaigns = campaigns.filter(on_hold=True)
+        if campaign_category == "regular" and on_hold == "true":
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
+        if campaign_category == "regular" and on_hold == "false":
+            campaigns = campaigns.filter(is_preventive=False).filter(is_test=False).filter(on_hold=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
         if org_unit_groups:
@@ -940,7 +959,9 @@ class CampaignViewSet(ModelViewSet):
         rounds = (
             Round.objects.select_related("campaign")
             .filter(query_rounds)
-            .exclude(Q(campaign__isnull=True) | Q(campaign__is_test=True))
+            .exclude(
+                Q(campaign__isnull=True) | Q(campaign__is_test=True)
+            )  # TODO see if on hold should be excluded as well
         )
 
         # get filtered rounds
@@ -1200,10 +1221,16 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
         if campaign_groups:
             rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
+        if campaign_category == "on_hold":
+            rounds = rounds.filter(campaign__on_hold=True)
         if campaign_category == "preventive":
             rounds = rounds.filter(campaign__is_preventive=True)
         if campaign_category == "regular":
-            rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
+            rounds = (
+                rounds.filter(campaign__is_preventive=False)
+                .filter(campaign__is_test=False)
+                .filter(campaign__on_hold=False)
+            )
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
         if org_unit_groups:

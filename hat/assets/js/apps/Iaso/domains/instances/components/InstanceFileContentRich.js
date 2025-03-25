@@ -1,15 +1,14 @@
 /* eslint-disable react/jsx-indent */
+import React, { useMemo } from 'react';
 import CommentIcon from '@mui/icons-material/Comment';
 import FunctionsIcon from '@mui/icons-material/Functions';
 import { Table, TableBody, TableCell, TableRow, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { textPlaceholder } from 'bluesquare-components';
 import isPlainObject from 'lodash/isPlainObject';
 import PropTypes from 'prop-types';
-import React, { useMemo, useState } from 'react';
-
-import { textPlaceholder } from 'bluesquare-components';
-import ImageGallery from '../../../components/dialogs/ImageGalleryComponent.tsx';
 import { useLocale } from '../../app/contexts/LocaleContext.tsx';
+import { InstanceImagePreview } from './InstanceImagePreview.tsx';
 
 const useStyle = makeStyles(theme => ({
     tableCellHead: {
@@ -164,8 +163,6 @@ InstanceFileContentRich.propTypes = {
 
 const PhotoField = ({ descriptor, data, showQuestionKey, files }) => {
     const classes = useStyle();
-    const [open, setOpen] = useState(false);
-
     const value = data[descriptor.name];
     const fileUrl = useMemo(() => {
         if (value && files.length > 0) {
@@ -188,28 +185,10 @@ const PhotoField = ({ descriptor, data, showQuestionKey, files }) => {
                 title={getRawValue(descriptor, data)}
             >
                 {value && fileUrl && (
-                    <>
-                        <img
-                            src={fileUrl}
-                            alt={descriptor.name}
-                            style={{
-                                objectFit: 'contain',
-                                maxWidth: '35vw',
-                                maxHeight: '35vh',
-                                cursor: 'pointer',
-                                width: '100%',
-                                height: 'auto',
-                            }}
-                            onClick={() => setOpen(true)}
-                        />
-                        {open && (
-                            <ImageGallery
-                                closeLightbox={() => setOpen(false)}
-                                imageList={[{ path: fileUrl }]}
-                                currentIndex={0}
-                            />
-                        )}
-                    </>
+                    <InstanceImagePreview
+                        imageUrl={fileUrl}
+                        altText={descriptor.name}
+                    />
                 )}
                 {(!value || !fileUrl) && textPlaceholder}
             </TableCell>

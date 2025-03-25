@@ -1,25 +1,61 @@
+from create_llin_campaign_forms_submissions import llin_forms
+
+
 def projects_mapper(account_name):
     projects = [
         {
             "name": "Planning",
             "app_id": f"{account_name}.planning",
-            "feature_flags": ["REQUIRE_AUTHENTICATION", "TAKE_GPS_ON_FORM", "FORMS_AUTO_UPLOAD", "PLANNING"],
+            "feature_flags": [
+                "REQUIRE_AUTHENTICATION",
+                "FORMS_AUTO_UPLOAD",
+                "TAKE_GPS_ON_FORM",
+                "GPS_TRACKING",
+                "SHOW_DETAIL_MAP_ON_MOBILE",
+                "PLANNING",
+            ],
             "linked_forms": ["Equipment/Pop/Social mob./Microplans"],
         },
         {
             "name": "Georegistry/Géoregistre",
             "app_id": f"{account_name}.georegistry",
-            "feature_flags": ["REQUIRE_AUTHENTICATION", "TAKE_GPS_ON_FORM", "MOBILE_ORG_UNIT_REGISTRY"],
+            "feature_flags": [
+                "REQUIRE_AUTHENTICATION",
+                "TAKE_GPS_ON_FORM",
+                "MOBILE_ORG_UNIT_REGISTRY",
+                "DATA_COLLECTION",
+            ],
             "linked_forms": [
                 "Registry - Population Health area",
                 "Data for Health facility/Données Formation sanitaire",
+                "Equipment/Pop/Social mob./Microplans",
             ],
         },
         {
             "name": "Vaccination",
             "app_id": f"{account_name}.children",
             "feature_flags": ["REQUIRE_AUTHENTICATION", "ENTITY"],
-            "linked_forms": ["Child/Enfant - Registration/Enregistrement", "Child/Enfant - Follow-up/Suivi"],
+            "linked_forms": [
+                "Registration Vaccination Pregnant Women",
+                "Pregnant women follow-up",
+                "Child/Enfant - Registration/Enregistrement",
+                "Child/Enfant - Follow-up/Suivi",
+            ],
+        },
+        {
+            "name": "LLIN campaign",
+            "app_id": f"{account_name}.campaign",
+            "feature_flags": [
+                "REQUIRE_AUTHENTICATION",
+                "TAKE_GPS_ON_FORM",
+                "MOBILE_ENTITY_WARN_WHEN_FOUND",
+                "DATA_COLLECTION",
+                "ENTITY",
+            ],
+            "linked_forms": [
+                "Dénombrement / Enumeration",
+                "Distribution",
+            ],
         },
     ]
     return projects
@@ -87,10 +123,11 @@ def link_forms_to_new_projects(projects, forms, iaso_client):
             iaso_client.patch(f"/api/forms/{current_form['id']}/", json=current_form)
 
 
-def forms_mapper(projects, iaso_client):
+def forms_mapper(projects, iaso_client, account_name):
     forms = [project["linked_forms"] for project in projects]
     all_forms = [sub_form for sub_forms in forms for sub_form in sub_forms]
     uniq_forms = list(set(all_forms))
+    llin_forms(iaso_client, account_name)
     link_forms_to_new_projects(projects, uniq_forms, iaso_client)
 
 
@@ -105,4 +142,4 @@ def link_new_projects_to_main_data_source(account_name, iaso_client):
         if len(current_project) > 0:
             project["id"] = current_project[0]["id"]
         all_projects.append(project)
-    forms_mapper(all_projects, iaso_client)
+    forms_mapper(all_projects, iaso_client, account_name)

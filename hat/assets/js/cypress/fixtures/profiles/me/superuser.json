@@ -31,6 +31,20 @@
             "ALLOW_SHAPE_EDITION",
             "SHOW_PAGES"
         ],
+        "modules": [
+            "DATA_COLLECTION_FORMS",
+            "DEFAULT",
+            "DHIS2_MAPPING",
+            "EMBEDDED_LINKS",
+            "ENTITIES",
+            "EXTERNAL_STORAGE",
+            "PLANNING",
+            "POLIO_PROJECT",
+            "REGISTRY",
+            "COMPLETENESS_PER_PERIOD",
+            "TRYPELIM_PROJECT",
+            "PAYMENTS"
+        ],
         "id": 1,
         "name": "RDC",
         "updated_at": 1629976748.994371

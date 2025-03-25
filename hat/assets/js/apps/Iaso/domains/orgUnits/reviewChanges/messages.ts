@@ -250,6 +250,50 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.label.sourceVersion',
         defaultMessage: 'Source version',
     },
+
+    multiSelectionAction: {
+        defaultMessage: 'Edit selected users',
+        id: 'iaso.users.multiSelectionAction',
+    },
+
+    changeSelectedChangeRequests: {
+        id: 'iaso.changeRequest.changeSelectedChangeRequests',
+        defaultMessage: 'Edit {count} selected change requests.',
+    },
+    changeSelectedChangeRequestsLaunched: {
+        id: 'iaso.snackBar.changeSelectedChangeRequestsLaunched',
+        defaultMessage:
+            'The modifications to the change requests will take a few moments to take effect.',
+    },
+    goToCurrentTask: {
+        id: 'iaso.label.goToCurrentTask',
+        defaultMessage: 'Launch and show task',
+    },
+    confirmMultiChange: {
+        defaultMessage: 'Confirm mass changes ?',
+        id: 'iaso.orgUnits.confirmMultiChange',
+    },
+    yes: {
+        defaultMessage: 'Yes',
+        id: 'iaso.label.yes',
+    },
+    no: {
+        defaultMessage: 'No',
+        id: 'iaso.label.no',
+    },
+    bulkChangeCount: {
+        id: 'iaso.orgUnits.bulkChangeCount',
+        defaultMessage: 'You are about to change {count} Org units',
+    },
+    searchByIds: {
+        id: 'iaso.orgUnits.searchByIds',
+        defaultMessage: 'Search by multiple IDs',
+    },
+    searchByIdsInfo: {
+        id: 'iaso.orgUnits.searchByIdsInfo',
+        defaultMessage:
+            'Search by ID or multiple IDs at once, separated by a comma or a space. E.g. “132,654”',
+    },
 });
 
 export default MESSAGES;

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
+from django_filters.widgets import CSVWidget
 from rest_framework.exceptions import ValidationError
 
 from iaso.api.common import parse_comma_separated_numeric_values
@@ -19,7 +20,12 @@ class MobileOrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterS
         fields = []
 
 
+class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
+    pass
+
+
 class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
+    ids = NumberInFilter(field_name="id", widget=CSVWidget, label=_("IDs (comma-separated)"))
     org_unit_id = django_filters.NumberFilter(field_name="org_unit_id", label=_("Org unit ID"))
     org_unit_type_id = django_filters.CharFilter(method="filter_org_unit_type_id", label=_("Org unit type ID"))
     parent_id = django_filters.NumberFilter(method="filter_parent_id", label=_("Parent ID"))

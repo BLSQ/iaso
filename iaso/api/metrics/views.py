@@ -1,11 +1,13 @@
 import json
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 
-
 from iaso.models import MetricType, MetricValue
 from iaso.utils.jsonlogic import jsonlogic_to_q
+
 from .serializers import MetricTypeSerializer, MetricValueSerializer
+
 
 # TODO for both viewsets: permission_classes
 

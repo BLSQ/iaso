@@ -57,6 +57,7 @@
     "iaso.changeRequest.comment": "Comment",
     "iaso.changeRequest.confirmAcceptChangeRequest": "You are about to replace the original version (left) with the modified version (right).",
     "iaso.changeRequest.confirmMessage": "Do you confirm those changes?",
+    "iaso.changeRequest.multiSelectionAction": "Edit selected change proposals",
     "iaso.changeRequest.newValue": "Modified version",
     "iaso.changeRequest.oldValue": "Initial version",
     "iaso.changeRequest.openingDate": "Opening date",

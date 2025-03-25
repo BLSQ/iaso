@@ -252,8 +252,8 @@ const MESSAGES = defineMessages({
     },
 
     multiSelectionAction: {
-        defaultMessage: 'Edit selected users',
-        id: 'iaso.users.multiSelectionAction',
+        defaultMessage: 'Edit selected change proposals',
+        id: 'iaso.changeRequest.multiSelectionAction',
     },
 
     changeSelectedChangeRequests: {

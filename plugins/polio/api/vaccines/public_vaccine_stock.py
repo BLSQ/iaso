@@ -61,11 +61,15 @@ class PublicVaccineStockViewset(ViewSet):
             order = order[1:]
         return sorted(data_list, key=lambda x: x[order], reverse=reverse)
 
-    def _get_json_data(self, request, usable):
-        queryset = self.filter_queryset(request)
+    def _get_json_data(self, queryset, usable):
         all_entries = [stock.usable_vials() if usable else stock.unusable_vials() for stock in queryset]
         all_entries = sum(all_entries, [])
         return all_entries
+
+    def _get_earmarked_totals(self, queryset):
+        earmarked = [stock.earmarked_vials() for stock in queryset]
+        earmarked = sum(earmarked, [])
+        return self._compute_totals(earmarked)
 
     def _apply_filter_and_sort(self, json_data, request):
         filtered_data = self.filter_action_type(json_data, request)
@@ -87,7 +91,7 @@ class PublicVaccineStockViewset(ViewSet):
 
         return total_vials, total_doses
 
-    def _paginate_response(self, request, json_data):
+    def _paginate_response(self, request, json_data, earmarked_vials=None, earmarked_doses=None):
         total_vials, total_doses = self._compute_totals(json_data)
         # Adding some pagination to avoid crashing the front-end
         page = int(request.query_params.get("page", "1"))  # validate
@@ -99,7 +103,13 @@ class PublicVaccineStockViewset(ViewSet):
         unusable_to_display = json_data[start_index:end_index]
         has_previous = page > 1
         has_next = page < pages
-        data = {"total_vials": total_vials, "total_doses": total_doses, "movements": unusable_to_display}
+        data = {
+            "total_vials": total_vials,
+            "total_doses": total_doses,
+            "earmarked_vials": earmarked_vials,
+            "earmarked_doses": earmarked_doses,
+            "movements": unusable_to_display,
+        }
         if pages > 0 and page > pages:
             return Response({"result": f"Maximum page is {pages}, entered {page}"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(
@@ -118,21 +128,24 @@ class PublicVaccineStockViewset(ViewSet):
         detail=False,
         methods=["get"],
     )
-    def get_unusable(self, request):
-        all_unusable = self._get_json_data(request, usable=False)
-        sorted_unusable = self._apply_filter_and_sort(all_unusable, request)
+    def get_usable(self, request):
+        queryset = self.filter_queryset(request)
+        earmarked_vials, earmarked_doses = self._get_earmarked_totals(queryset)
+        all_usable = self._get_json_data(queryset, usable=True)
+        sorted_usable = self._apply_filter_and_sort(all_usable, request)
 
-        return self._paginate_response(request, sorted_unusable)
+        return self._paginate_response(request, sorted_usable, earmarked_vials, earmarked_doses)
 
     @action(
         detail=False,
         methods=["get"],
     )
-    def get_usable(self, request):
-        all_usable = self._get_json_data(request, usable=True)
-        sorted_usable = self._apply_filter_and_sort(all_usable, request)
+    def get_unusable(self, request):
+        queryset = self.filter_queryset(request)
+        all_unusable = self._get_json_data(queryset, usable=False)
+        sorted_unusable = self._apply_filter_and_sort(all_unusable, request)
 
-        return self._paginate_response(request, sorted_usable)
+        return self._paginate_response(request, sorted_unusable)
 
     @action(
         detail=False,

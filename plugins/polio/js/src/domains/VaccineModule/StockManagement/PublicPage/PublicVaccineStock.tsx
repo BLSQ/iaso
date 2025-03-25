@@ -37,7 +37,7 @@ export const PublicVaccineStock: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const classes = useDownloadButtonStyles();
     const params = useParamsObject(baseUrl);
-    const { data, isLoading } = useGetPublicVaccineStock(params);
+    const { data, isFetching: isLoading } = useGetPublicVaccineStock(params);
     const xlsxUrl = useXlsxUrl(params);
     const { tab, handleChangeTab } = useTabs<'usable' | 'unusable'>({
         params,

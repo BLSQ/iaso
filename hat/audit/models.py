@@ -8,29 +8,29 @@ from django.core import serializers
 from django.db import models
 
 
-PROFILE_API = "profile_api"
-PROFILE_API_BULK = "profile_api_bulk"
-PASSWORD_API = "password_api"
-PATIENT_API = "patient_api"
-ORG_UNIT_API = "org_unit_api"
-ORG_UNIT_CHANGE_REQUEST = "org_unit_change_request"
-ORG_UNIT_API_BULK = "org_unit_api_bulk"
+BULK_UPLOAD = "bulk_upload"
+BULK_UPLOAD_MERGED_ENTITY = "bulk_upload_merged_entity"
+CAMPAIGN_API = "campaign_api"
+DJANGO_ADMIN = "django_admin"
+ENTITY_API = "entity_api"
+ENTITY_DUPLICATE_MERGE = "entity_duplicate_merge"
+FORM_API = "form_api"
+GPKG_IMPORT = "gpkg_import"
 GROUP_SET_API = "group_set_api"
 INSTANCE_API = "instance_api"
 INSTANCE_API_BULK = "instance_api_bulk"
-FORM_API = "form_api"
-GPKG_IMPORT = "gpkg_import"
-CAMPAIGN_API = "campaign_api"
-PAYMENT_API_BULK = "payment_api_bulk"
-PAYMENT_API = "payment_api"
-PAYMENT_LOT_API = "payment_lot_api"
+ORG_UNIT_API = "org_unit_api"
+ORG_UNIT_API_BULK = "org_unit_api_bulk"
+ORG_UNIT_CHANGE_REQUEST = "org_unit_change_request"
 ORG_UNIT_CHANGE_REQUEST_API = "org_unit_change_request_api"
 ORG_UNIT_CHANGE_REQUEST_CONFIGURATION_API = "org_unit_change_request_configuration_api"
-DJANGO_ADMIN = "django_admin"
-BULK_UPLOAD = "bulk_upload"
-BULK_UPLOAD_MERGED_ENTITY = "bulk_upload_merged_entity"
-ENTITY_DUPLICATE_MERGE = "entity_duplicate_merge"
-ENTITY_API = "entity_api"
+PASSWORD_API = "password_api"
+PATIENT_API = "patient_api"
+PAYMENT_API = "payment_api"
+PAYMENT_API_BULK = "payment_api_bulk"
+PAYMENT_LOT_API = "payment_lot_api"
+PROFILE_API = "profile_api"
+PROFILE_API_BULK = "profile_api_bulk"
 
 
 def dict_compare(d1, d2):
@@ -118,16 +118,37 @@ def log_modification(v1, v2, source, user=None):
     modification = Modification()
     modification.past_value = []
     modification.new_value = []
+
     if v1:
         modification.object_id = v1.id
         modification.past_value = json.loads(serializers.serialize("json", [v1]))
     elif v2:
         modification.object_id = v2.id
+
     if v2:
         modification.content_object = v2
         modification.new_value = json.loads(serializers.serialize("json", [v2]))
     elif v1:
         modification.content_object = v1
+
+    if v1 and v2:
+        diffs = modification.field_diffs()
+
+        added = diffs["added"]
+        removed = diffs["removed"]
+        modified = diffs["modified"]
+
+        # Nothing to log.
+        if not any([added, removed, modified]):
+            return None
+
+        # Only `updated_at` was modified.
+        # This can happen in a bulk update. E.g., someone decided to update the status
+        # of all org units to `VALID`. In this case org units already in the `VALID`
+        # status would have only their `updated_at` attribute updated.
+        if not any([added, removed]) and len(modified.keys()) == 1 and "updated_at" in modified:
+            return None
+
     modification.source = source
     modification.user = user
     modification.save()

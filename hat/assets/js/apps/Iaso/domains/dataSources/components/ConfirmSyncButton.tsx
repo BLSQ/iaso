@@ -88,6 +88,7 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
         setIsPreviewDone(false);
         setIsLoading(false);
         setSyncName(undefined);
+        setJsonDiffResult(undefined);
     }, []);
 
     const handleOnConfirm = useCallback(
@@ -134,6 +135,8 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
                 </Box>
             </Tooltip>
             <Dialog
+                maxWidth="xs"
+                fullWidth
                 open={open}
                 onClose={(_event, reason) => {
                     if (reason === 'backdropClick') {
@@ -167,7 +170,7 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
                     </InputWithInfos>
                     <Box
                         display="flex"
-                        justifyContent="flex-end"
+                        justifyContent="center"
                         width="100%"
                         my={2}
                     >
@@ -180,33 +183,57 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
                             {formatMessage(MESSAGES.syncPreview)}
                         </Button>
                     </Box>
+
                     {jsonDiffResult && (
-                        <List>
-                            <ListItem>
-                                <ListItemText>
-                                    {formatMessage(MESSAGES.count_create)}:{' '}
-                                    {jsonDiffResult.count_create}
-                                </ListItemText>
-                            </ListItem>
-                            <ListItem>
-                                <ListItemText>
-                                    {formatMessage(MESSAGES.count_update)}:{' '}
-                                    {jsonDiffResult.count_update}
-                                </ListItemText>
-                            </ListItem>
-                        </List>
+                        <Box
+                            sx={{
+                                bgcolor: 'grey.200',
+                                p: 2,
+                                borderRadius: 1,
+                                mb: 3,
+                                textAlign: 'center',
+                            }}
+                        >
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    gap: 4,
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Box>
+                                    <Typography variant="subtitle2">
+                                        {formatMessage(MESSAGES.count_create)}
+                                    </Typography>
+                                    <Typography variant="h4">
+                                        {jsonDiffResult.count_create}
+                                    </Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="subtitle2">
+                                        {formatMessage(MESSAGES.count_update)}
+                                    </Typography>
+                                    <Typography variant="h4">
+                                        {jsonDiffResult.count_update}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Box>
                     )}
-                    <Typography
-                        variant="body2"
-                        color="error"
-                        component="span"
-                        sx={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        {formatMessage(MESSAGES.syncMessage)}
-                    </Typography>
+                    {!jsonDiffResult && (
+                        <Typography
+                            variant="body2"
+                            color="error"
+                            component="span"
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                width: '100%',
+                            }}
+                        >
+                            {formatMessage(MESSAGES.syncMessage)}
+                        </Typography>
+                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">

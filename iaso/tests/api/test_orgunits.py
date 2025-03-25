@@ -533,9 +533,22 @@ class OrgUnitAPITestCase(APITestCase):
         for orgunit in response_data["orgUnits"]:
             self.assertEqual(orgunit["parent_id"], None)
 
-    def test_org_unit_list_with_as_location(self):
+    def test_org_unit_list_with_as_location_with_group(self):
+        """
+        Test that `build_org_units_queryset()` which sets `.distinct()` clauses
+        when the `group` param is used doesn't cause `Paginator` to fail.
+        """
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/orgunits/?asLocation=true&limit=1&group=1")
+        self.assertJSONResponse(response, 200)
+
+    def test_org_unit_list_without_as_location_with_group(self):
+        """
+        Test that `build_org_units_queryset()` which sets `.distinct()` clauses
+        when the `group` param is used doesn't cause `Paginator` to fail.
+        """
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?limit=1&group=1")
         self.assertJSONResponse(response, 200)
 
     def test_org_unit_retrieve_without_auth_or_app_id(self):

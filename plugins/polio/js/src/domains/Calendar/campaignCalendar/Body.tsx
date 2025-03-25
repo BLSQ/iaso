@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
 
 import { TableBody, TableRow } from '@mui/material';
-import { useStyles } from './Styles';
 
-import { PlaceholderRow } from './PlaceholderRow';
 import { StaticFieldsCells } from './cells/StaticFields';
 import { RoundPopperContextProvider } from './contexts/RoundPopperContext';
+import { PlaceholderRow } from './PlaceholderRow';
+import { useStyles } from './Styles';
 import { CalendarData, CalendarParams, MappedCampaign } from './types';
 import { getCells } from './utils';
 

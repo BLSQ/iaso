@@ -267,12 +267,9 @@ export const Calendar: FunctionComponent = () => {
                         )}
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>
                             <Box display="flex" justifyContent="flex-end">
-                                {(params.campaignCategory === 'on_hold' ||
-                                    params.campaignCategory === 'all') && (
-                                    <Box mr={2}>
-                                        <IsOnHoldLegend />
-                                    </Box>
-                                )}
+                                <Box mr={2}>
+                                    <IsOnHoldLegend />
+                                </Box>
                                 <Box mr={2}>
                                     <HasSubActivityLegend />
                                 </Box>

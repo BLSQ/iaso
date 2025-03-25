@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Button, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { ExcellSvg, useSafeIntl } from 'bluesquare-components';
-import { useDownloadButtonStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DownloadButtonsComponent';
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
@@ -33,9 +33,24 @@ const useXlsxUrl = allParams => {
     const queryString = new URLSearchParams(apiParams).toString();
     return `${xlsxApiUrl}/?${queryString}`;
 };
+
+const useStyles = makeStyles(theme => ({
+    '@global': {
+        body: {
+            overflowX: 'hidden !important',
+            overflowY: 'auto !important',
+        },
+    },
+    icon: {
+        height: theme.spacing(3),
+        width: 'auto',
+        marginRight: theme.spacing(1),
+    },
+}));
+
 export const PublicVaccineStock: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
-    const classes = useDownloadButtonStyles();
+    const classes = useStyles();
     const params = useParamsObject(baseUrl);
     const { data, isFetching: isLoading } = useGetPublicVaccineStock(params);
     const xlsxUrl = useXlsxUrl(params);

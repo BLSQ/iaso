@@ -19,7 +19,7 @@ const getPublicVaccineStock = (queryString = '', usable = true) => {
 };
 export const useGetPublicVaccineStock = allParams => {
     const { tab, ...params } = allParams;
-    const isUsable = tab === 'usable';
+    const isUsable = (tab ?? 'usable') === 'usable';
     const safeParams = useUrlParams(
         { ...params, app_id: 'com.poliooutbreaks.app' },
         defaults,

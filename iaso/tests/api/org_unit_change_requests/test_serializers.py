@@ -353,13 +353,14 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
         change_request.new_groups.set([new_group])
 
         serializer = OrgUnitChangeRequestRetrieveSerializer(change_request)
-
+        
         self.assertEqual(
             serializer.data,
             {
                 "id": change_request.pk,
                 "uuid": str(change_request.uuid),
                 "status": "new",
+                "kind": "org_unit_creation",
                 "created_by": OrderedDict(
                     [
                         ("id", self.user.pk),

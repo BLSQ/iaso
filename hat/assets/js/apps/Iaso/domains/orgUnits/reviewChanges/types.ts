@@ -86,6 +86,7 @@ export interface OrgUnitChangeRequestsPaginated extends Pagination {
 export type OrgUnitChangeRequestDetails = {
     id: number;
     uuid: string;
+    kind: string;
     status: ChangeRequestValidationStatus;
     created_by: NestedUser;
     created_at: number;

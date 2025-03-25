@@ -56,7 +56,7 @@ export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
     const isNew: boolean =
         !isFetchingChangeRequest && changeRequest?.status === 'new';
     const isNewOrgUnit = changeRequest
-        ? changeRequest.org_unit.validation_status === 'NEW'
+        ? changeRequest.kind === 'org_unit_creation'
         : false;
     const { newFields, setSelected } = useNewFields(changeRequest);
     const goBack = useGoBack(baseUrls.orgUnitsChangeRequest);

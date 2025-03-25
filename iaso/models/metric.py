@@ -2,6 +2,7 @@ from django.db import models
 
 from iaso.models import OrgUnit
 
+
 LEGEND_TYPES = ["threshold", "linear", "ordinal"]
 
 

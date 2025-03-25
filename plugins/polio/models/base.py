@@ -449,6 +449,7 @@ class Round(models.Model):
             and self.started_at >= timezone.now().date()
             and self.campaign
             and self.campaign.has_polio_type
+            and not self.campaign.is_test
             and not self.chronograms.valid().exists()
         ):
             ChronogramTemplateTask.objects.create_chronogram(round=self, created_by=None, account=self.campaign.account)

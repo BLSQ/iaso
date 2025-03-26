@@ -17,27 +17,27 @@ import {
     Typography,
 } from '@mui/material';
 import { IconButton, LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import InputComponent from '../../../components/forms/InputComponent';
-import { useFormState } from '../../../hooks/form';
-import { useSnackMutation } from '../../../libs/apiHooks';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { useFormState } from '../../../../hooks/form';
+import { useSnackMutation } from '../../../../libs/apiHooks';
 import {
     commaSeparatedIdsToStringArray,
     convertFormStateToDict,
-} from '../../../utils/forms';
-import { DataSource } from '../../orgUnits/types/dataSources';
-import { useExportFields } from '../hooks/useExportFields';
-import MESSAGES from '../messages';
+} from '../../../../utils/forms';
+import { DataSource } from '../../../orgUnits/types/dataSources';
+import { useExportFields } from '../../hooks/useExportFields';
+import MESSAGES from '../../messages';
 import {
     csvPreview,
     postToDHIS2,
     useDataSourceForVersion,
     useDataSourceVersions,
-} from '../requests';
-import { FIELDS_TO_EXPORT, useFieldsToExport } from '../utils';
-import { ConfirmExportButton } from './ConfirmExportButton';
+} from '../../requests';
+import { FIELDS_TO_EXPORT, useFieldsToExport } from '../../utils';
+import { ConfirmExportButton } from '../ConfirmExportButton';
+import { Dhis2Credentials } from '../Dhis2Credentials';
+import { VersionPicker } from '../VersionPicker';
 import { ConfirmSyncButton } from './ConfirmSyncButton';
-import { Dhis2Credentials } from './Dhis2Credentials';
-import { VersionPicker } from './VersionPicker';
 
 const initialExportData = (defaultVersionId?: number) => ({
     ref_version_id: defaultVersionId, // version id of the target data source
@@ -249,7 +249,7 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                         {formatMessage(MESSAGES.csvPreview)}
                     </Button>
                     <ConfirmSyncButton
-                        onConfirm={handleClose}
+                        closeMainDialog={handleClose}
                         allowConfirm={allowSync}
                         refSourceVersionId={refDataVersionId}
                         targetSourceVersionId={sourceDataVersionId}

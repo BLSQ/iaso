@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import {
-    Typography,
     Tooltip,
     Box,
     Button,
@@ -9,39 +8,44 @@ import {
     DialogContent,
     DialogActions,
     Divider,
-    List,
-    ListItem,
-    ListItemText,
 } from '@mui/material';
 import {
     InputWithInfos,
     LoadingSpinner,
+    useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import { ConfirmDialogWarningTitle } from '../../../components/dialogs/ConfirmDialogWarningTitle';
-import InputComponent from '../../../components/forms/InputComponent';
-import { useCreateDataSourceVersionsSync } from '../hooks/useCreateDataSourceVersionsSync';
-import { useCreateJsonDiffAsync } from '../hooks/useCreateJsonDiffAsync';
-import MESSAGES from '../messages';
-import { SyncResponse } from '../types/sync';
+
+import { ConfirmDialogWarningTitle } from '../../../../components/dialogs/ConfirmDialogWarningTitle';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { baseUrls } from '../../../../constants/urls';
+import { useCreateDataSourceVersionsSync } from '../../hooks/useCreateDataSourceVersionsSync';
+import { useCreateJsonDiffAsync } from '../../hooks/useCreateJsonDiffAsync';
+import { useLaunchDiff } from '../../hooks/useLaunchDiff';
+import MESSAGES from '../../messages';
+import { SyncResponse } from '../../types/sync';
+import { ConfirmSyncPreview } from './ConfirmSyncPreview';
 
 type Props = {
-    onConfirm: () => void;
+    closeMainDialog: () => void;
     allowConfirm: boolean;
     refSourceVersionId: number;
     targetSourceVersionId: number;
 };
+
 //  Steps to sync:
 // POST on /api/datasources/sync/ to create a new DataSourceVersionsSynchronization object
 // PATCH on /api/datasources/sync/{id}/create_json_diff_async/ to compute the differences asynchronously
+// PATCH on /api/datasources/sync/{id}/synchronize_source_versions_async/ to create change requests asynchronously
 
 export const ConfirmSyncButton: FunctionComponent<Props> = ({
-    onConfirm,
+    closeMainDialog,
     allowConfirm,
     refSourceVersionId,
     targetSourceVersionId,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const redirectTo = useRedirectTo();
 
     const [open, setOpen] = useState<boolean>(false);
     const [isPreviewDone, setIsPreviewDone] = useState<boolean>(false);
@@ -53,6 +57,7 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
     const { mutateAsync: createDataSourceVersionsSync } =
         useCreateDataSourceVersionsSync();
     const { mutateAsync: createJsonDiffAsync } = useCreateJsonDiffAsync();
+    const { mutateAsync: launchDiff } = useLaunchDiff();
     const handleSeePreview = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -94,16 +99,19 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
     const handleOnConfirm = useCallback(
         goToCurrentTask => {
             setOpen(false);
-            // PATCH on /api/datasources/sync/{id}/synchronize_source_versions_async/ to create change requests asynchronously
-            if (!goToCurrentTask) {
-                console.log('confirm');
-                handleClose();
-                onConfirm();
-            } else {
-                console.log('go to current task');
+            if (jsonDiffResult) {
+                launchDiff({ id: jsonDiffResult.id });
+                if (!goToCurrentTask) {
+                    handleClose();
+                    closeMainDialog();
+                } else {
+                    redirectTo(baseUrls.tasks, {
+                        order: '-created_at',
+                    });
+                }
             }
         },
-        [onConfirm, handleClose],
+        [jsonDiffResult, launchDiff, handleClose, closeMainDialog, redirectTo],
     );
 
     const isDisabled: boolean = !syncName || isLoading;
@@ -168,72 +176,11 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
                             required
                         />
                     </InputWithInfos>
-                    <Box
-                        display="flex"
-                        justifyContent="center"
-                        width="100%"
-                        my={2}
-                    >
-                        <Button
-                            onClick={handleSeePreview}
-                            color="primary"
-                            variant="outlined"
-                            disabled={isDisabled}
-                        >
-                            {formatMessage(MESSAGES.syncPreview)}
-                        </Button>
-                    </Box>
-
-                    {jsonDiffResult && (
-                        <Box
-                            sx={{
-                                bgcolor: 'grey.200',
-                                p: 2,
-                                borderRadius: 1,
-                                mb: 3,
-                                textAlign: 'center',
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    display: 'flex',
-                                    gap: 4,
-                                    justifyContent: 'center',
-                                }}
-                            >
-                                <Box>
-                                    <Typography variant="subtitle2">
-                                        {formatMessage(MESSAGES.count_create)}
-                                    </Typography>
-                                    <Typography variant="h4">
-                                        {jsonDiffResult.count_create}
-                                    </Typography>
-                                </Box>
-                                <Box>
-                                    <Typography variant="subtitle2">
-                                        {formatMessage(MESSAGES.count_update)}
-                                    </Typography>
-                                    <Typography variant="h4">
-                                        {jsonDiffResult.count_update}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Box>
-                    )}
-                    {!jsonDiffResult && (
-                        <Typography
-                            variant="body2"
-                            color="error"
-                            component="span"
-                            sx={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                width: '100%',
-                            }}
-                        >
-                            {formatMessage(MESSAGES.syncMessage)}
-                        </Typography>
-                    )}
+                    <ConfirmSyncPreview
+                        jsonDiffResult={jsonDiffResult}
+                        isDisabled={isDisabled}
+                        handleSeePreview={handleSeePreview}
+                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">

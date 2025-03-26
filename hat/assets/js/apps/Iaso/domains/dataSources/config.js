@@ -14,7 +14,7 @@ import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx'
 import { baseUrls } from '../../constants/urls.ts';
 import * as Permission from '../../utils/permissions.ts';
 import { DataSourceDialogComponent as DataSourceDialog } from './components/DataSourceDialogComponent';
-import { SyncDialog } from './components/SyncDialog.tsx';
+import { SyncDialog } from './components/sync/SyncDialog';
 import { VersionsDialog } from './components/VersionsDialog';
 import MESSAGES from './messages';
 

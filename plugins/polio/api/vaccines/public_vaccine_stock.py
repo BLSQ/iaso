@@ -3,6 +3,7 @@ import math
 from datetime import date
 from tempfile import NamedTemporaryFile
 
+from django.db.models import Model
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import action
@@ -12,6 +13,7 @@ from rest_framework.viewsets import ViewSet
 
 from iaso.api.common import CONTENT_TYPE_XLSX
 from iaso.models import Group
+from iaso.models.org_unit import OrgUnit
 from plugins.polio.api.vaccines.export_utils import download_xlsx_public_stock_variants
 from plugins.polio.models import VaccineStock
 
@@ -189,7 +191,24 @@ class PublicVaccineStockViewset(ViewSet):
         earmarked_totals = self._get_earmarked_totals(queryset)
 
         today = date.today().isoformat()
-        filename = f"{today}-stock-card-export"
+        filename_details = f"{today}"
+        country = request.query_params.get("country", None)
+        vaccine = request.query_params.get("vaccine", None)
+        if country is not None:
+            try:
+                country_name = OrgUnit.objects.get(id=int(country)).name
+                filename_details = f"{filename_details}-{country_name}"
+            except Model.DoesNotExist:
+                return Response({"results": f"Country with id {country} not found"}, status=status.HTTP_400_BAD_REQUEST)
+            except Model.MultipleObjectsReturned:
+                return Response(
+                    {"results": f"Country id {country} returned multiple objects"}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+        if vaccine is not None:
+            filename_details = f"{filename_details}-{vaccine}"
+        filename = f"{filename_details}-stock-card-export"
+
         workbook = download_xlsx_public_stock_variants(
             filename=filename,
             usable_results=sorted_usable,

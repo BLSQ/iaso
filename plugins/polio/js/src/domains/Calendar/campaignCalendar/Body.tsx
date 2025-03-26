@@ -3,11 +3,12 @@ import React, { FunctionComponent } from 'react';
 import { TableBody, TableRow } from '@mui/material';
 
 import { StaticFieldsCells } from './cells/StaticFields';
+import { StaticSubactivitiesFields } from './cells/StaticSubactivitiesFields';
 import { RoundPopperContextProvider } from './contexts/RoundPopperContext';
 import { PlaceholderRow } from './PlaceholderRow';
 import { useStyles } from './Styles';
 import { CalendarData, CalendarParams, MappedCampaign } from './types';
-import { getCells } from './utils';
+import { getCells, getSubActivitiesCells } from './utils';
 
 type BodyProps = {
     campaigns: MappedCampaign[];
@@ -39,19 +40,38 @@ export const Body: FunctionComponent<BodyProps> = ({
                     />
                 )}
                 {campaigns.map((campaign: MappedCampaign) => (
-                    <TableRow
-                        className={classes.tableRow}
-                        key={`row-${campaign.id}`}
-                    >
-                        <StaticFieldsCells campaign={campaign} isPdf={isPdf} />
-                        {getCells(
-                            campaign,
-                            currentWeekIndex,
-                            firstMonday,
-                            lastSunday,
-                            params.periodType || 'quarter',
+                    <>
+                        <TableRow
+                            className={classes.tableRow}
+                            key={`row-${campaign.id}`}
+                        >
+                            <StaticFieldsCells
+                                campaign={campaign}
+                                isPdf={isPdf}
+                            />
+                            {getCells(
+                                campaign,
+                                currentWeekIndex,
+                                firstMonday,
+                                lastSunday,
+                                params.periodType || 'quarter',
+                            )}
+                        </TableRow>
+                        {campaign.subActivities.length > 0 && (
+                            <TableRow
+                                className={classes.tableRow}
+                                key={`row-${campaign.id}`}
+                            >
+                                <StaticSubactivitiesFields isPdf={isPdf} />
+                                {getSubActivitiesCells(
+                                    campaign,
+                                    currentWeekIndex,
+                                    firstMonday,
+                                    lastSunday,
+                                )}
+                            </TableRow>
                         )}
-                    </TableRow>
+                    </>
                 ))}
             </TableBody>
         </RoundPopperContextProvider>

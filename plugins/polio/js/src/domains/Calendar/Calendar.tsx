@@ -129,8 +129,13 @@ export const Calendar: FunctionComponent = () => {
     );
 
     const mappedCampaigns: MappedCampaign[] = useMemo(
-        () => mapCampaigns(campaigns),
-        [campaigns],
+        () =>
+            mapCampaigns(
+                campaigns,
+                calendarData.firstMonday,
+                calendarData.lastSunday,
+            ),
+        [campaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
     const filteredCampaigns = useMemo(
         () =>

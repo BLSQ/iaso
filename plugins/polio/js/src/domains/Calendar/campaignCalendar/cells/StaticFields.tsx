@@ -1,11 +1,11 @@
-import classnames from 'classnames';
 import React, { FunctionComponent } from 'react';
 
 import { Box, TableCell } from '@mui/material';
+import classnames from 'classnames';
 
 import { useStaticFields } from '../../hooks/useStaticFields';
-import { useStyles } from '../Styles';
 import { colSpanTitle } from '../constants';
+import { useStyles } from '../Styles';
 import { MappedCampaign } from '../types';
 
 type Props = {

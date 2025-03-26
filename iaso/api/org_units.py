@@ -323,7 +323,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 org_unit.get("creator__first_name", None),
                 org_unit.get("creator__last_name", None),
             )
-            source_ref = org_unit.get("source_ref") if org_unit.get("source_ref") else f"iaso#{org_unit.get('id')}"
+            source_ref = org_unit.get("source_ref") if org_unit.get("source_ref") else f"iaso:{org_unit.get('id')}"
 
             parents_source_ref = [
                 get_org_unit_parents_ref(field_name, org_unit, parent_source_ref_name, parent_field_ids)

@@ -259,7 +259,7 @@ class OrgUnitAPITestCase(APITestCase):
         search_criteria = {
             "validation_status": "all",
             "version": self.sw_version_1.id,
-            "search": f"refs: {self.jedi_council_corruscant.source_ref} iaso#{invalid_iaso_id} {self.jedi_council_endor.source_ref} iaso#{self.jedi_squad_endor.id} {invalid_external_ref}",
+            "search": f"refs: {self.jedi_council_corruscant.source_ref} iaso:{invalid_iaso_id} {self.jedi_council_endor.source_ref} iaso:{self.jedi_squad_endor.id} {invalid_external_ref}",
         }
         search_criteria_str = json.dumps(search_criteria)
 

@@ -54,6 +54,8 @@ class OrgUnitData(TypedDict):
     properties: PropertyDict
     type: Optional[OrgUnitType]
 
+OLD_INTERNAL_REF = "iaso#"
+NEW_INTERNAL_REF = "iaso:"
 
 def convert_to_geography(geom_type: str, coordinates: list):
     """Convert a geography dict from gpkg/fiona to a geodjango.Geom
@@ -89,7 +91,7 @@ def create_or_update_group(group: Group, ref: str, name: str, version: SourceVer
     if not group:
         group = Group()
     group.name = name
-    group.source_ref = ref
+    group.source_ref =  ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
     group.source_version = version
     group.save()
     return group
@@ -169,7 +171,7 @@ def create_or_update_orgunit(
             orgunit.groups.clear()
     elif props["group_refs"]:
         group_refs = props["group_refs"].split(",")
-        group_refs = [ref.strip() for ref in group_refs]
+        group_refs = [ref.strip().replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF) for ref in group_refs]
 
         try:
             groups = [ref_group[ref] for ref in group_refs if ref]
@@ -182,8 +184,12 @@ def create_or_update_orgunit(
 
 def get_ref(inst: Union[OrgUnit, Group]) -> str:
     """We make an artificial ref in case there is none so the gpkg can still refer existing record in iaso, even if
-    they don't have a ref"""
-    return inst.source_ref if inst.source_ref else f"iaso#{inst.pk}"
+    they don't have a ref
+    Before, we used the format "iaso#ID", but having a # creates some issues, so this will return "iaso:ID" instead
+    """
+    if not inst.source_ref or inst.source_ref.startswith(OLD_INTERNAL_REF):
+        return f"{NEW_INTERNAL_REF}{inst.pk}"
+    return inst.source_ref
 
 
 def validate_required_property(props: Dict[str, str], property_name: str, orgunit_name: str = "") -> str:
@@ -366,6 +372,7 @@ def import_gpkg_file2(
             )
         parent_ou = ref_ou[parent_ref] if parent_ref else None
         ou.parent = parent_ou
+        ou.source_ref = ou.source_ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
         ou.save()
     if task:
         task.report_progress_and_stop_if_killed(

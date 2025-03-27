@@ -57,6 +57,8 @@
     "iaso.changeRequest.comment": "Comment",
     "iaso.changeRequest.confirmAcceptChangeRequest": "You are about to replace the original version (left) with the modified version (right).",
     "iaso.changeRequest.confirmMessage": "Do you confirm those changes?",
+    "iaso.changeRequest.confirmOrgUnitCreationChangeRequest": "You are about to create new Org unit through change request.",
+    "iaso.changeRequest.confirmOrgUnitCreationMessage": "Do you confirm the creation?",
     "iaso.changeRequest.newValue": "Modified version",
     "iaso.changeRequest.oldValue": "Initial version",
     "iaso.changeRequest.openingDate": "Opening date",

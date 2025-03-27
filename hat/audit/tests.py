@@ -31,7 +31,7 @@ class AuditMethodsTestCase(TestCase):
         self.assertIsInstance(json_instance["fields"], dict)
 
     def test_log_modification_with_nothing(self):
-        with self.assertLogs("hat.audit", level="ERROR") as caught_msg:
+        with self.assertLogs(level="ERROR") as caught_msg:
             audit_models.log_modification(
                 self.org_unit, self.org_unit, source=audit_models.ORG_UNIT_API, user=self.user
             )
@@ -42,8 +42,8 @@ class AuditMethodsTestCase(TestCase):
         original_copy = m.OrgUnit.objects.get(pk=self.org_unit.pk)
         self.org_unit.save()
 
-        with self.assertLogs("hat.audit", level="ERROR") as caught_msg:
-            modification = audit_models.log_modification(
+        with self.assertLogs(level="ERROR") as caught_msg:
+            audit_models.log_modification(
                 original_copy, self.org_unit, source=audit_models.ORG_UNIT_API, user=self.user
             )
         self.assertEqual(len(caught_msg.output), 1)

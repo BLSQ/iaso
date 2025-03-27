@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { Fragment, FunctionComponent } from 'react';
 
 import { TableBody, TableRow } from '@mui/material';
 
@@ -40,11 +40,8 @@ export const Body: FunctionComponent<BodyProps> = ({
                     />
                 )}
                 {campaigns.map((campaign: MappedCampaign) => (
-                    <>
-                        <TableRow
-                            className={classes.tableRow}
-                            key={`row-${campaign.id}`}
-                        >
+                    <Fragment key={`row-${campaign.id}`}>
+                        <TableRow className={classes.tableRow}>
                             <StaticFieldsCells
                                 campaign={campaign}
                                 isPdf={isPdf}
@@ -58,10 +55,7 @@ export const Body: FunctionComponent<BodyProps> = ({
                             )}
                         </TableRow>
                         {campaign.subActivities.length > 0 && (
-                            <TableRow
-                                className={classes.tableRow}
-                                key={`row-${campaign.id}`}
-                            >
+                            <TableRow className={classes.tableRow}>
                                 <StaticSubactivitiesFields isPdf={isPdf} />
                                 {getSubActivitiesCells(
                                     campaign,
@@ -71,7 +65,7 @@ export const Body: FunctionComponent<BodyProps> = ({
                                 )}
                             </TableRow>
                         )}
-                    </>
+                    </Fragment>
                 ))}
             </TableBody>
         </RoundPopperContextProvider>

@@ -5,6 +5,7 @@ import { CalendarCampaign } from '../../../constants/types';
 import { CampaignDurationCell } from './cells/CampaignDuration';
 import { EmptyCell } from './cells/Empty';
 import { RoundCell } from './cells/RoundCell';
+import { SubactivityCell } from './cells/SubactivityCell';
 import { colsCounts, dateFormat } from './constants';
 import {
     CalendarData,
@@ -18,19 +19,19 @@ import {
 } from './types';
 
 const getEmptyCellsData = (
-    endRoundDate: Moment,
+    endDate: Moment,
     lastSunday: Moment,
 ): { extraDays: number; fullWeeks: number } => {
     let sunday: Moment;
-    if (endRoundDate.isAfter(lastSunday)) {
+    if (endDate.isAfter(lastSunday)) {
         return { extraDays: 0, fullWeeks: 0 };
     }
-    if (endRoundDate.weekday() !== 7) {
-        sunday = endRoundDate.clone().endOf('isoWeek');
+    if (endDate.weekday() !== 7) {
+        sunday = endDate.clone().endOf('isoWeek');
     } else {
-        sunday = endRoundDate.clone();
+        sunday = endDate.clone();
     }
-    const extraDays = sunday.clone().diff(endRoundDate, 'days');
+    const extraDays = sunday.clone().diff(endDate, 'days');
     const fullWeeks = lastSunday.diff(sunday, 'weeks');
     return {
         extraDays,
@@ -41,14 +42,12 @@ const getEmptyCells = ({
     cells,
     extraDays,
     fullWeeks,
-    round,
     currentWeekIndex,
     id,
 }: {
     cells: ReactElement[];
     extraDays: number;
     fullWeeks: number;
-    round: CalendarRound;
     currentWeekIndex: number;
     id: string;
 }) => {
@@ -61,7 +60,7 @@ const getEmptyCells = ({
         spans += 1;
         cells.push(
             <EmptyCell
-                key={`empty-cell-${id}-end-${round.end}-${round.number}`}
+                key={`empty-cell-${id}-end`}
                 colSpan={extraDays}
                 isCurrentWeek={spans === currentWeekIndex}
             />,
@@ -74,7 +73,7 @@ const getEmptyCells = ({
             spans += 1;
             cells.push(
                 <EmptyCell
-                    key={`empty-cell-${id}-end-${i}-${round.number}`}
+                    key={`empty-cell-week-${id}-end-${i}-${spans}`}
                     colSpan={7}
                     isCurrentWeek={spans === currentWeekIndex}
                 />,
@@ -179,14 +178,13 @@ const getLastRound = (rounds: CalendarRound[]): CalendarRound => {
     }
     return lastRound;
 };
-
 const filterCampaigns = (
     allCampaigns: MappedCampaign[],
     firstMonday: Moment,
     lastSunday: Moment,
 ): MappedCampaign[] => {
     return allCampaigns.filter(campaign => {
-        const { rounds } = campaign;
+        const { rounds, subActivities } = campaign;
         const lastRound = getLastRound(rounds);
         const endCampaignDate = lastRound?.end
             ?.clone()
@@ -207,6 +205,23 @@ const filterCampaigns = (
             ? isDateInRange(endCampaignDate, firstMonday, lastSunday)
             : false;
 
+        // const isSubActivityVisible = subActivities.some(
+        //     subActivity =>
+        //         (subActivity.start_date &&
+        //             isDateInRange(
+        //                 subActivity.start_date,
+        //                 firstMonday,
+        //                 lastSunday,
+        //             )) ||
+        //         (subActivity.end_date &&
+        //             isDateInRange(
+        //                 subActivity.end_date,
+        //                 firstMonday,
+        //                 lastSunday,
+        //             )),
+        // );
+
+        // return isRoundVisible || isLastRoundVisible || isSubActivityVisible;
         return isRoundVisible || isLastRoundVisible;
     });
 };
@@ -268,11 +283,17 @@ const mapCampaigns = (
                     new Date(a.start_date).getTime() -
                     new Date(b.start_date).getTime(),
             )
-            .map(subActivity => ({
-                ...subActivity,
-                start_date: moment(subActivity.start_date),
-                end_date: moment(subActivity.end_date),
-            }))
+            .map(subActivity => {
+                return {
+                    ...subActivity,
+                    start_date: moment(subActivity.start_date)
+                        .hours(0)
+                        .minutes(1),
+                    end_date: moment(subActivity.end_date)
+                        .hours(23)
+                        .minutes(59),
+                };
+            })
             .filter(
                 subActivity =>
                     isDateInRange(
@@ -305,7 +326,7 @@ const mapCampaigns = (
     });
 };
 
-const drawEmptyCells = ({
+const drawEmptyFirstCells = ({
     startDate,
     firstMonday,
     currentWeekIndex,
@@ -372,7 +393,7 @@ const addCellsBeforeRound = ({
     if (index === 0) {
         // if first round is not starting on the first cell, populate with empty cell
         if (startInRange && round.start) {
-            const emptyCells = drawEmptyCells({
+            const emptyCells = drawEmptyFirstCells({
                 startDate: round.start,
                 firstMonday,
                 currentWeekIndex,
@@ -454,7 +475,61 @@ const addRoundCell = ({
     );
     return result;
 };
+const addSubactivityCell = ({
+    cells,
+    subActivity,
+    firstMonday,
+    lastSunday,
+    startInRange,
+    endInRange,
+}: {
+    cells: ReactElement[];
+    subActivity: SubActivity;
+    firstMonday: Moment;
+    lastSunday: Moment;
+    startInRange: boolean;
+    endInRange: boolean;
+}) => {
+    let colSpan = 1;
+    const result = [...cells];
 
+    const startAndEndInRange = startInRange && endInRange;
+
+    const onlyStartInRange = !endInRange && startInRange;
+
+    const onlyEndInRange = !startInRange && endInRange;
+
+    if (subActivity.start_date && subActivity.end_date) {
+        if (startAndEndInRange) {
+            // if both start and end date are in range use diff between dates for length of cells
+            colSpan = subActivity.end_date
+                .clone()
+                .add(1, 'day')
+                .diff(subActivity.start_date, 'days');
+            // else if start is not in range calculate diff with firstmonday
+        } else if (onlyEndInRange) {
+            colSpan = subActivity.end_date
+                .clone()
+                .add(1, 'day')
+                .diff(firstMonday, 'days');
+            // else if end is not in range calculate diff with lastSunday
+        } else if (onlyStartInRange) {
+            colSpan = Math.abs(
+                subActivity.start_date
+                    .clone()
+                    .subtract(1, 'day')
+                    .diff(lastSunday, 'days'),
+            );
+        }
+    }
+    result.push(
+        <SubactivityCell
+            key={`subactivity-${subActivity.id}`}
+            colSpan={colSpan}
+        />,
+    );
+    return result;
+};
 const addBufferCell = ({
     id,
     round,
@@ -516,14 +591,12 @@ const addRemainingEmptyCells = ({
     cells,
     dateUntilNextRound,
     lastSunday,
-    round,
     campaign,
     currentWeekIndex,
 }: {
     cells: ReactElement[];
     dateUntilNextRound: Moment;
     lastSunday: Moment;
-    round: CalendarRound;
     campaign: MappedCampaign;
     currentWeekIndex: number;
 }) => {
@@ -535,7 +608,6 @@ const addRemainingEmptyCells = ({
         cells,
         extraDays,
         fullWeeks,
-        round,
         currentWeekIndex,
         id,
     });
@@ -634,7 +706,6 @@ const getRoundRow = (
                 cells,
                 dateUntilNextRound,
                 lastSunday,
-                round,
                 campaign,
                 currentWeekIndex,
             });
@@ -680,12 +751,88 @@ const getRoundRow = (
             cells,
             dateUntilNextRound,
             lastSunday,
-            round,
             campaign,
             currentWeekIndex,
         });
     }
     return cells;
+};
+const isStartOfWeek = (date: Moment): boolean => date.isoWeekday() === 1; // 1 is Monday
+const isEndOfWeek = (date: Moment): boolean => date.isoWeekday() === 7; // 7 is Sunday
+
+const getEmptyCellBetweenTwoDates = (
+    startDate: Moment,
+    endDate: Moment,
+    cells: ReactElement[],
+    currentWeekIndex: number,
+): ReactElement[] => {
+    const result: ReactElement[] = [];
+
+    let spans = 0;
+    cells.forEach(c => {
+        spans += c.props.colSpan;
+    });
+
+    spans = Math.floor(spans / 7);
+    // get next monday after startDate
+    let nextMonday;
+    let daysCountBefore = 0;
+    if (!isEndOfWeek(startDate)) {
+        nextMonday = startDate.clone().add(1, 'week').startOf('isoWeek');
+        daysCountBefore = nextMonday.diff(startDate, 'days') || 0;
+    } else {
+        nextMonday = startDate.add(1, 'day').clone();
+    }
+    // get days between startDate and next monday
+    if (daysCountBefore > 0) {
+        spans += 1;
+        result.push(
+            <EmptyCell
+                key={`empty-cell-${startDate}-${daysCountBefore}`}
+                colSpan={daysCountBefore}
+                isCurrentWeek={spans === currentWeekIndex}
+            />,
+        );
+    }
+    // get last sunday before endDate
+    let lastSunday;
+    let daysCountAfter = 0;
+    if (!isStartOfWeek(endDate)) {
+        lastSunday = endDate.clone().subtract(1, 'week').endOf('isoWeek');
+        daysCountAfter = endDate.diff(lastSunday, 'days') || 0;
+    } else {
+        lastSunday = endDate.subtract(1, 'day').clone();
+    }
+    // get weeks between next monday and last sunday
+    const weeksCount =
+        lastSunday.add(1, 'day').diff(nextMonday.subtract(1, 'day'), 'weeks') ||
+        0;
+    if (weeksCount > 0) {
+        Array(weeksCount)
+            .fill(null)
+            .forEach((_, i) => {
+                spans += 1;
+                result.push(
+                    <EmptyCell
+                        key={`empty-cell-week-${weeksCount}-end-${i}`}
+                        colSpan={7}
+                        isCurrentWeek={spans === currentWeekIndex}
+                    />,
+                );
+            });
+    }
+    // get days between last sunday and end date
+    if (daysCountAfter > 0) {
+        spans += 1;
+        result.push(
+            <EmptyCell
+                key={`empty-cell-${endDate}-${daysCountAfter}`}
+                colSpan={daysCountAfter}
+                isCurrentWeek={spans === currentWeekIndex}
+            />,
+        );
+    }
+    return result;
 };
 
 const getSubActivitiesRow = (
@@ -697,26 +844,59 @@ const getSubActivitiesRow = (
     campaign: MappedCampaign,
 ): ReactElement[] => {
     // First order subActivities by start date and filter out subActivities that are not in range
-
-    const cells = [...originalCells];
+    let cells = [...originalCells];
     if (subActivities.length > 0) {
         // Draw cells before first subActivity
         const firstSubActivity = subActivities[0];
-        const emptyCells = drawEmptyCells({
-            startDate: firstSubActivity.start_date,
+        const emptyCells = drawEmptyFirstCells({
+            startDate: firstSubActivity.start_date.clone(),
             firstMonday,
             currentWeekIndex,
             id: campaign.id,
         });
         cells.push(...emptyCells);
-
         // loop into subActivities
-        // Draw subactivity
-
-        // Draw cells after subActivity
+        subActivities.forEach((subActivity, index) => {
+            const startInRange = subActivity.start_date
+                ? isDateInRange(subActivity.start_date, firstMonday, lastSunday)
+                : false;
+            const endInRange = subActivity.end_date
+                ? isDateInRange(subActivity.end_date, firstMonday, lastSunday)
+                : false;
+            // Draw subactivity
+            cells = addSubactivityCell({
+                cells,
+                subActivity,
+                firstMonday,
+                lastSunday,
+                startInRange,
+                endInRange,
+            });
+            // Draw cells after subActivity
+            const nextSubActivity = subActivities[index + 1];
+            if (nextSubActivity) {
+                const nextStartDate = nextSubActivity?.start_date.clone();
+                const emptyBetweenCells = getEmptyCellBetweenTwoDates(
+                    subActivity.end_date,
+                    nextStartDate,
+                    cells,
+                    currentWeekIndex,
+                );
+                cells.push(...emptyBetweenCells);
+            }
+        });
 
         // Draw cells after last subActivity
+        cells = addRemainingEmptyCells({
+            cells,
+            dateUntilNextRound:
+                subActivities[subActivities.length - 1].end_date,
+            lastSunday,
+            campaign,
+            currentWeekIndex,
+        });
     }
+
     return cells;
 };
 

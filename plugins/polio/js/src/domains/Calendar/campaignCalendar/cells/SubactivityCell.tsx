@@ -4,12 +4,19 @@ import { Box, TableCell } from '@mui/material';
 import classnames from 'classnames';
 
 import { useStyles } from '../Styles';
+import { PeriodType } from '../types';
 
 type Props = {
     colSpan: number;
+    periodType: PeriodType;
+    roundNumber: number;
 };
 
-export const SubactivityCell: FunctionComponent<Props> = ({ colSpan }) => {
+export const SubactivityCell: FunctionComponent<Props> = ({
+    colSpan,
+    periodType,
+    roundNumber,
+}) => {
     const classes = useStyles();
 
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
@@ -34,7 +41,8 @@ export const SubactivityCell: FunctionComponent<Props> = ({ colSpan }) => {
                     color: 'white',
                 }}
             >
-                {colSpan}
+                {periodType !== 'year' && colSpan > 1 && `R${roundNumber}`}
+                {periodType === 'year' && colSpan > 1 && roundNumber}
             </span>
         </TableCell>
     );

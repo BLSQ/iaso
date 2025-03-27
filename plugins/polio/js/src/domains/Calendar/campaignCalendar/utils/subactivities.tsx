@@ -2,7 +2,7 @@ import React, { ReactElement } from 'react';
 import { Moment } from 'moment';
 
 import { SubactivityCell } from '../cells/SubactivityCell';
-import { MappedCampaign, SubActivity } from '../types';
+import { MappedCampaign, PeriodType, SubActivity } from '../types';
 import {
     addRemainingEmptyCells,
     getEmptyCellBetweenTwoDates,
@@ -17,6 +17,7 @@ const addSubactivityCell = ({
     lastSunday,
     startInRange,
     endInRange,
+    periodType,
 }: {
     cells: ReactElement[];
     subActivity: SubActivity;
@@ -24,6 +25,7 @@ const addSubactivityCell = ({
     lastSunday: Moment;
     startInRange: boolean;
     endInRange: boolean;
+    periodType: PeriodType;
 }) => {
     let colSpan = 1;
     const result = [...cells];
@@ -61,6 +63,8 @@ const addSubactivityCell = ({
         <SubactivityCell
             key={`subactivity-${subActivity.id}`}
             colSpan={colSpan}
+            periodType={periodType}
+            roundNumber={subActivity.round_number}
         />,
     );
     return result;
@@ -73,6 +77,7 @@ const getSubActivitiesRow = (
     lastSunday: Moment,
     currentWeekIndex: number,
     campaign: MappedCampaign,
+    periodType: PeriodType,
 ): ReactElement[] => {
     // First order subActivities by start date and filter out subActivities that are not in range
     let cells = [...originalCells];
@@ -104,6 +109,7 @@ const getSubActivitiesRow = (
                 lastSunday,
                 startInRange,
                 endInRange,
+                periodType,
             });
             // Draw cells after subActivity
             const nextSubActivity = subActivities[index + 1];
@@ -138,6 +144,7 @@ export const getSubActivitiesCells = (
     currentWeekIndex: number,
     firstMonday: Moment,
     lastSunday: Moment,
+    periodType: PeriodType,
 ): ReactElement[] => {
     let cells: ReactElement[] = [];
 
@@ -148,6 +155,7 @@ export const getSubActivitiesCells = (
         lastSunday,
         currentWeekIndex,
         campaign,
+        periodType,
     );
     return cells;
 };

@@ -63,6 +63,7 @@ export const Body: FunctionComponent<BodyProps> = ({
                                     currentWeekIndex,
                                     firstMonday,
                                     lastSunday,
+                                    params.periodType || 'quarter',
                                 )}
                             </TableRow>
                         )}

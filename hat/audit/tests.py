@@ -1,3 +1,5 @@
+import logging
+
 from hat.audit import models as audit_models
 from iaso import models as m
 from iaso.test import TestCase
@@ -7,6 +9,12 @@ class AuditMethodsTestCase(TestCase):
     """
     Test methods in the `audit` module.
     """
+
+    def setUp(self):
+        logging.disable(logging.NOTSET)
+
+    def tearDown(self):
+        logging.disable(logging.CRITICAL)
 
     @classmethod
     def setUpTestData(cls):

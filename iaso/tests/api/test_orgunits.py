@@ -1503,3 +1503,18 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(org_units["page"], 1)
         first_org_unit = org_units["orgunits"][0]
         self.assertEqual(first_org_unit["id"], self.jedi_council_corruscant.pk)
+    
+    def test_descending_order_without_as_location(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/orgunits/?limit=20&order=-name&page=1"
+        )
+        self.assertEqual(response.status_code, 200)
+    
+    def test_descending_order_with_as_location(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/orgunits/?limit=20&order=-name&page=1&asLocation=true"
+        )
+        self.assertEqual(response.status_code, 200)
+

@@ -163,6 +163,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         queryset = queryset.order_by(*order)
 
+        distinct_fields = [item.replace("-", "") for item in order]
+
         if not is_export:
             if limit and not as_location:
                 limit = int(limit)
@@ -171,7 +173,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
                 # because `build_org_units_queryset()` can set `.distinct()` clauses.
                 if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
-                    queryset = queryset.distinct(*order)
+                    queryset = queryset.distinct(*distinct_fields)
 
                 paginator = Paginator(queryset, limit)
 
@@ -211,7 +213,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
                 # because `build_org_units_queryset()` can set `.distinct()` clauses.
                 if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
-                    queryset = queryset.distinct(*order)
+                    queryset = queryset.distinct(*distinct_fields)
 
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)

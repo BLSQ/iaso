@@ -129,6 +129,7 @@ class Modification(models.Model):
 
 
 def log_modification(
+    # `v1` should be either a deepcopy or a serialized instance.
     v1: Optional[Union[AnyModelInstance, list[dict[str, Any]]]],
     v2: Optional[AnyModelInstance],
     source: Optional[str],

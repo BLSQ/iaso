@@ -1,4 +1,5 @@
 import json
+import logging
 import uuid
 
 from typing import Any, Optional, TypeVar, Union
@@ -8,6 +9,9 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
 from django.db import models
+
+
+logger = logging.getLogger(__name__)
 
 
 BULK_UPLOAD = "bulk_upload"
@@ -128,10 +132,12 @@ def log_modification(
     v2: Optional[AnyModelInstance],
     source: Optional[str],
     user: User = None,
-) -> Modification:
+) -> Union[Modification, None]:
     modification = Modification()
     modification.past_value = []
     modification.new_value = []
+    modification.source = source
+    modification.user = user
 
     if v1:
         # If `v1` is a list, it means it's already been serialized.
@@ -152,7 +158,20 @@ def log_modification(
     elif v1:
         modification.content_object = v1
 
-    modification.source = source
-    modification.user = user
-    modification.save()
-    return modification
+    if v1 and v2:
+        diffs = modification.field_diffs()
+        added = diffs["added"]
+        removed = diffs["removed"]
+        modified = diffs["modified"]
+
+        # Nothing to log.
+        if not any([added, removed, modified]):
+            logger.error("log_modification() called with nothing to log.", extra={"modification": modification})
+            return None
+
+        # Only `updated_at` was modified.
+        if not any([added, removed]) and len(modified.keys()) == 1 and "updated_at" in modified:
+            logger.error("log_modification() called with only `updated_at`.", extra={"modification": modification})
+            return None
+
+    return modification.save()

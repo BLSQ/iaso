@@ -1,5 +1,3 @@
-from django.core.exceptions import ValidationError
-
 from hat.audit import models as audit_models
 from iaso import models as m
 from iaso.test import TestCase
@@ -33,11 +31,23 @@ class AuditMethodsTestCase(TestCase):
         self.assertIsInstance(json_instance["fields"], dict)
 
     def test_log_modification_with_nothing(self):
-        with self.assertRaises(ValidationError) as error:
+        with self.assertLogs("hat.audit", level="ERROR") as caught_msg:
             audit_models.log_modification(
                 self.org_unit, self.org_unit, source=audit_models.ORG_UNIT_API, user=self.user
             )
-        self.assertEqual(error.exception.message, "Nothing to log.")
+        self.assertEqual(len(caught_msg.output), 1)
+        self.assertIn("log_modification() called with nothing to log.", caught_msg.output[0])
+
+    def test_log_modification_with_only_updated_at(self):
+        original_copy = m.OrgUnit.objects.get(pk=self.org_unit.pk)
+        self.org_unit.save()
+
+        with self.assertLogs("hat.audit", level="ERROR") as caught_msg:
+            modification = audit_models.log_modification(
+                original_copy, self.org_unit, source=audit_models.ORG_UNIT_API, user=self.user
+            )
+        self.assertEqual(len(caught_msg.output), 1)
+        self.assertIn("log_modification() called with only `updated_at`.", caught_msg.output[0])
 
     def test_log_modification_for_simple_field(self):
         original_copy = m.OrgUnit.objects.get(pk=self.org_unit.pk)

@@ -11,10 +11,12 @@ import { useStyles } from '../Styles';
 
 type Props = {
     isPdf: boolean;
+    roundNumber: number;
 };
 
 export const StaticSubactivitiesFields: FunctionComponent<Props> = ({
     isPdf,
+    roundNumber,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -36,7 +38,8 @@ export const StaticSubactivitiesFields: FunctionComponent<Props> = ({
                     textTransform: 'uppercase',
                 }}
             >
-                {formatMessage(MESSAGES.subactivities)}
+                {formatMessage(MESSAGES.subactivities)}{' '}
+                {formatMessage(MESSAGES.round)} {roundNumber}
             </Box>
         </TableCell>
     );

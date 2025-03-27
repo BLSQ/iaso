@@ -30,6 +30,7 @@ export type CalendarRound = {
     scopes: Scope[];
     target_population: number;
     hasSubActivities: boolean;
+    subActivities: SubActivity[];
 };
 
 export type SubActivity = {

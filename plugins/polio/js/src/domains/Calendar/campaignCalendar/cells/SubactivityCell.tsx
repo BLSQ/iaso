@@ -1,26 +1,53 @@
-import React, { FunctionComponent } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useContext,
+    useState,
+} from 'react';
 
 import { Box, TableCell } from '@mui/material';
 import classnames from 'classnames';
 
-import { useStyles } from '../Styles';
-import { PeriodType } from '../types';
+import { isEqual } from 'lodash';
+import { SUBACTIVITY_CELL_COLOR } from '../constants';
+import { RoundPopperContext } from '../contexts/RoundPopperContext';
+import { SubactivityPopper } from '../popper/SubactivityPopper';
+import { smallCellHeight, useStyles } from '../Styles';
+import { SubActivity, MappedCampaign } from '../types';
 
 type Props = {
     colSpan: number;
-    periodType: PeriodType;
-    roundNumber: number;
+    campaign: MappedCampaign;
+    subactivity: SubActivity;
 };
 
 export const SubactivityCell: FunctionComponent<Props> = ({
     colSpan,
-    periodType,
-    roundNumber,
+    campaign,
+    subactivity,
 }) => {
     const classes = useStyles();
+    const { anchorEl, setAnchorEl } = useContext(RoundPopperContext);
+    const [self, setSelf] = useState<HTMLElement | null>(null);
+    const open = anchorEl && isEqual(self, anchorEl);
 
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
-
+    const handleClick = useCallback(
+        (event: React.MouseEvent<HTMLElement>) => {
+            if (!self) {
+                setSelf(event.currentTarget);
+            }
+            setAnchorEl(
+                isEqual(event.currentTarget, anchorEl)
+                    ? undefined
+                    : event.currentTarget,
+            );
+        },
+        [anchorEl, self, setAnchorEl],
+    );
+    const handleClose = () => {
+        setAnchorEl(undefined);
+    };
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.round)}
@@ -29,10 +56,13 @@ export const SubactivityCell: FunctionComponent<Props> = ({
             <Box
                 className={classes.coloredBox}
                 sx={{
-                    background: 'rebeccapurple',
+                    background: SUBACTIVITY_CELL_COLOR,
                 }}
             />
             <span
+                onClick={handleClick}
+                role="button"
+                tabIndex={0}
                 className={classnames(
                     classes.tableCellSpan,
                     classes.tableCellSpanWithPopOver,
@@ -40,10 +70,16 @@ export const SubactivityCell: FunctionComponent<Props> = ({
                 style={{
                     color: 'white',
                 }}
-            >
-                {periodType !== 'year' && colSpan > 1 && `R${roundNumber}`}
-                {periodType === 'year' && colSpan > 1 && roundNumber}
-            </span>
+            />
+            {open && (
+                <SubactivityPopper
+                    open={open}
+                    subactivity={subactivity}
+                    anchorEl={anchorEl}
+                    campaign={campaign}
+                    handleClose={handleClose}
+                />
+            )}
         </TableCell>
     );
 };

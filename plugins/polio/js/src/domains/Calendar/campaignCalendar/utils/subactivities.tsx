@@ -2,7 +2,7 @@ import React, { ReactElement } from 'react';
 import { Moment } from 'moment';
 
 import { SubactivityCell } from '../cells/SubactivityCell';
-import { MappedCampaign, PeriodType, SubActivity } from '../types';
+import { MappedCampaign, SubActivity } from '../types';
 import {
     addRemainingEmptyCells,
     getEmptyCellBetweenTwoDates,
@@ -17,7 +17,7 @@ const addSubactivityCell = ({
     lastSunday,
     startInRange,
     endInRange,
-    periodType,
+    campaign,
 }: {
     cells: ReactElement[];
     subActivity: SubActivity;
@@ -25,7 +25,7 @@ const addSubactivityCell = ({
     lastSunday: Moment;
     startInRange: boolean;
     endInRange: boolean;
-    periodType: PeriodType;
+    campaign: MappedCampaign;
 }) => {
     let colSpan = 1;
     const result = [...cells];
@@ -63,8 +63,8 @@ const addSubactivityCell = ({
         <SubactivityCell
             key={`subactivity-${subActivity.id}`}
             colSpan={colSpan}
-            periodType={periodType}
-            roundNumber={subActivity.round_number}
+            campaign={campaign}
+            subactivity={subActivity}
         />,
     );
     return result;
@@ -77,7 +77,6 @@ const getSubActivitiesRow = (
     lastSunday: Moment,
     currentWeekIndex: number,
     campaign: MappedCampaign,
-    periodType: PeriodType,
 ): ReactElement[] => {
     // First order subActivities by start date and filter out subActivities that are not in range
     let cells = [...originalCells];
@@ -109,7 +108,7 @@ const getSubActivitiesRow = (
                 lastSunday,
                 startInRange,
                 endInRange,
-                periodType,
+                campaign,
             });
             // Draw cells after subActivity
             const nextSubActivity = subActivities[index + 1];
@@ -141,21 +140,20 @@ const getSubActivitiesRow = (
 
 export const getSubActivitiesCells = (
     campaign: MappedCampaign,
+    subActivities: SubActivity[],
     currentWeekIndex: number,
     firstMonday: Moment,
     lastSunday: Moment,
-    periodType: PeriodType,
 ): ReactElement[] => {
     let cells: ReactElement[] = [];
 
     cells = getSubActivitiesRow(
         cells,
-        campaign.subActivities,
+        subActivities,
         firstMonday,
         lastSunday,
         currentWeekIndex,
         campaign,
-        periodType,
     );
     return cells;
 };

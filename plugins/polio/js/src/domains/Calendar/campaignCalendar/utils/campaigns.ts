@@ -157,51 +157,6 @@ export const mapCampaigns = (
     lastSunday: Moment,
 ): MappedCampaign[] => {
     return allCampaigns.map(c => {
-        const rounds = c.rounds.map((round, index) => {
-            const nextRound = c.rounds[index + 1];
-            const started_at =
-                round.started_at === null ? undefined : round.started_at;
-            const ended_at =
-                round.ended_at === null ? undefined : round.ended_at;
-            const start = round.started_at
-                ? moment(round.started_at, dateFormat)
-                : undefined;
-            const end = round.ended_at
-                ? moment(round.ended_at, dateFormat)
-                : undefined;
-            const hasNextRound = nextRound && end && nextRound.started_at;
-            const target_population =
-                round.target_population != null ? round.target_population : 0;
-            const weeksCount = hasNextRound
-                ? moment(nextRound.started_at, dateFormat).diff(end, 'weeks')
-                : 0;
-
-            const daysCount = hasNextRound
-                ? moment(nextRound.started_at, dateFormat).diff(end, 'days')
-                : 0;
-
-            const hasSubActivities = Boolean(
-                c.sub_activities.find(
-                    subActivity => subActivity.round_number === round.number,
-                ),
-            );
-
-            const mappedRound = {
-                ...round,
-                target_population,
-                started_at,
-                ended_at,
-                start,
-                end,
-                weeksCount,
-                daysCount,
-                hasSubActivities,
-            };
-            if (c.is_preventive && !nextRound?.started_at) {
-                return { ...mappedRound, weeksCount: 0, daysCount: 0 };
-            }
-            return mappedRound;
-        });
         const displayedSubActivities = c.sub_activities
             .sort(
                 (a, b) =>
@@ -232,6 +187,54 @@ export const mapCampaigns = (
                         lastSunday,
                     ),
             );
+        const rounds = c.rounds.map((round, index) => {
+            const nextRound = c.rounds[index + 1];
+            const started_at =
+                round.started_at === null ? undefined : round.started_at;
+            const ended_at =
+                round.ended_at === null ? undefined : round.ended_at;
+            const start = round.started_at
+                ? moment(round.started_at, dateFormat)
+                : undefined;
+            const end = round.ended_at
+                ? moment(round.ended_at, dateFormat)
+                : undefined;
+            const hasNextRound = nextRound && end && nextRound.started_at;
+            const target_population =
+                round.target_population != null ? round.target_population : 0;
+            const weeksCount = hasNextRound
+                ? moment(nextRound.started_at, dateFormat).diff(end, 'weeks')
+                : 0;
+
+            const daysCount = hasNextRound
+                ? moment(nextRound.started_at, dateFormat).diff(end, 'days')
+                : 0;
+
+            const hasSubActivities = Boolean(
+                displayedSubActivities.find(
+                    subActivity => subActivity.round_number === round.number,
+                ),
+            );
+            const subActivities = displayedSubActivities.filter(
+                subActivity => subActivity.round_number === round.number,
+            );
+            const mappedRound = {
+                ...round,
+                target_population,
+                started_at,
+                ended_at,
+                start,
+                end,
+                weeksCount,
+                daysCount,
+                hasSubActivities,
+                subActivities,
+            };
+            if (c.is_preventive && !nextRound?.started_at) {
+                return { ...mappedRound, weeksCount: 0, daysCount: 0 };
+            }
+            return mappedRound;
+        });
 
         return {
             id: c.id,

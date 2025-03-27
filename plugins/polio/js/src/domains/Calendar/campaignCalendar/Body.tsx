@@ -55,18 +55,28 @@ export const Body: FunctionComponent<BodyProps> = ({
                                 params.periodType || 'quarter',
                             )}
                         </TableRow>
-                        {campaign.subActivities.length > 0 && (
-                            <TableRow className={classes.tableRow}>
-                                <StaticSubactivitiesFields isPdf={isPdf} />
-                                {getSubActivitiesCells(
-                                    campaign,
-                                    currentWeekIndex,
-                                    firstMonday,
-                                    lastSunday,
-                                    params.periodType || 'quarter',
-                                )}
-                            </TableRow>
-                        )}
+                        {campaign.subActivities.length > 0 &&
+                            campaign.rounds.map(
+                                round =>
+                                    round.subActivities.length > 0 && (
+                                        <TableRow
+                                            className={classes.tableRowSmall}
+                                            key={`round-${round.id}`}
+                                        >
+                                            <StaticSubactivitiesFields
+                                                isPdf={isPdf}
+                                                roundNumber={round.number}
+                                            />
+                                            {getSubActivitiesCells(
+                                                campaign,
+                                                round.subActivities,
+                                                currentWeekIndex,
+                                                firstMonday,
+                                                lastSunday,
+                                            )}
+                                        </TableRow>
+                                    ),
+                            )}
                     </Fragment>
                 ))}
             </TableBody>

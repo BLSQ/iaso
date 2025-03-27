@@ -8,7 +8,8 @@ import { RoundPopperContextProvider } from './contexts/RoundPopperContext';
 import { PlaceholderRow } from './PlaceholderRow';
 import { useStyles } from './Styles';
 import { CalendarData, CalendarParams, MappedCampaign } from './types';
-import { getCells, getSubActivitiesCells } from './utils';
+import { getRoundsCells } from './utils/rounds';
+import { getSubActivitiesCells } from './utils/subactivities';
 
 type BodyProps = {
     campaigns: MappedCampaign[];
@@ -46,7 +47,7 @@ export const Body: FunctionComponent<BodyProps> = ({
                                 campaign={campaign}
                                 isPdf={isPdf}
                             />
-                            {getCells(
+                            {getRoundsCells(
                                 campaign,
                                 currentWeekIndex,
                                 firstMonday,

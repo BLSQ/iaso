@@ -40,7 +40,7 @@ import {
     filterCampaigns,
     getCalendarData,
     mapCampaigns,
-} from './campaignCalendar/utils';
+} from './campaignCalendar/utils/campaigns';
 import { ExportCsvModal } from './ExportCsvModal';
 
 const useStyles = makeStyles(theme => ({

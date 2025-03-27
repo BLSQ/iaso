@@ -83,9 +83,15 @@ class AuditMethodsTestCase(TestCase):
 
     def test_log_modification_for_m2m_field_with_original_as_serialized_copy(self):
         """
-        This is how you should call `log_modification()` when there are m2m relations.
+        Test that calling `log_modification()` when there are foreign keys
+        or many-to-many relations works as expected.
 
-        The `past_value` should be serialized before performing any modification.
+        The right way to do this is to ensure that the instance has been
+        serialized before performing any modification on it.
+
+        This avoids issues related to the `call-by-sharing` evaluation
+        strategy of Python where two instances are sharing the same
+        complex objects.
         """
         original_copy = m.OrgUnitType.objects.get(pk=self.org_unit_type.pk)
         self.assertEqual(original_copy.reference_forms.count(), 0)

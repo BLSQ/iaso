@@ -21,6 +21,7 @@ export type ApproveOrgUnitParams = UrlParams & {
     potentialPaymentIds?: string; // comma separated ids
     source_version_id?: string;
     data_source_synchronization_id?: string;
+    ids?: string; // comma separated ids
 };
 
 export type OrgUnitChangeRequestDetailParams = UrlParams & {

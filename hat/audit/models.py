@@ -55,7 +55,8 @@ def dict_compare(d1, d2):
 
 
 def serialize_instance(instance: AnyModelInstance) -> list[dict[str, Any]]:
-    return json.loads(serializers.serialize("json", [instance]))
+    serialized_instance = serializers.serialize("json", [instance])
+    return json.loads(serialized_instance)
 
 
 class IasoJsonEncoder(json.JSONEncoder):
@@ -170,6 +171,8 @@ def log_modification(
             return None
 
         # Only `updated_at` was modified.
+        # This can happen when the only thing that was modified was a reverse relationship
+        # because Django's serializer doesn't support reverse relationships.
         if not any([added, removed]) and len(modified.keys()) == 1 and "updated_at" in modified:
             logger.error("log_modification() called with only `updated_at`.", extra={"modification": modification})
             return None

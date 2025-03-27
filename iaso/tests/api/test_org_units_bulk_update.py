@@ -377,7 +377,10 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             jedi_council.refresh_from_db()
             self.assertIn(self.another_group, jedi_council.groups.all())
 
-        self.assertEqual(5, am.Modification.objects.count())
+        # Django's serializer doesn't support reverse relationships.
+        # Because the only thing we have modified here is the `groups` (which is a reverse relationship),
+        # there will be no entry in the `Modification` history.
+        self.assertEqual(0, am.Modification.objects.count())
 
     def test_task_kill(self):
         """Launch the task and then kill it

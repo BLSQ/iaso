@@ -320,15 +320,6 @@ const getRoundRow = (
             currentWeekIndex,
         });
     }
-    if (cells.length === 0) {
-        const emptyCells = getEmptyCellBetweenTwoDates(
-            firstMonday,
-            lastSunday,
-            cells,
-            currentWeekIndex,
-        );
-        cells.push(...emptyCells);
-    }
     return cells;
 };
 
@@ -353,5 +344,15 @@ export const getRoundsCells = (
             campaign,
         );
     });
+
+    if (cells.length === 0) {
+        const emptyCells = getEmptyCellBetweenTwoDates(
+            firstMonday,
+            lastSunday,
+            cells,
+            currentWeekIndex,
+        );
+        cells.push(...emptyCells);
+    }
     return cells;
 };

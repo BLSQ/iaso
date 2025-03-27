@@ -79,13 +79,15 @@ const getSubActivitiesRow = (
     if (subActivities.length > 0) {
         // Draw cells before first subActivity
         const firstSubActivity = subActivities[0];
-        const emptyCells = drawEmptyFirstCells({
-            startDate: firstSubActivity.start_date.clone(),
-            firstMonday,
-            currentWeekIndex,
-            id: campaign.id,
-        });
-        cells.push(...emptyCells);
+        if (firstMonday.isBefore(firstSubActivity.start_date, 'day')) {
+            const emptyCells = drawEmptyFirstCells({
+                startDate: firstSubActivity.start_date.clone(),
+                firstMonday,
+                currentWeekIndex,
+                id: campaign.id,
+            });
+            cells.push(...emptyCells);
+        }
         // loop into subActivities
         subActivities.forEach((subActivity, index) => {
             const startInRange = subActivity.start_date

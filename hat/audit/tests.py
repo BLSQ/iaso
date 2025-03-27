@@ -73,35 +73,6 @@ class AuditMethodsTestCase(TestCase):
         self.assertIn("name", diffs["modified"].keys())
         self.assertIn("updated_at", diffs["modified"].keys())
 
-    def test_log_modification_for_m2m_field_with_original_as_shallow_copy(self):
-        """
-        This is how NOT to call `log_modification()` when there are m2m relations.
-
-        Because of the evaluation strategy of Python, two instances of a model
-        will reference the same m2m objects (call-by-sharing).
-        """
-        original_copy = m.OrgUnitType.objects.get(pk=self.org_unit_type.pk)
-        self.assertEqual(original_copy.reference_forms.count(), 0)
-
-        form_1 = m.Form.objects.create(name="Form 1")
-        form_2 = m.Form.objects.create(name="Form 2")
-        self.org_unit_type.reference_forms.add(form_1, form_2)
-        self.assertEqual(self.org_unit_type.reference_forms.count(), 2)
-
-        modification = audit_models.log_modification(
-            original_copy, self.org_unit_type, source=audit_models.ORG_UNIT_API, user=self.user
-        )
-
-        # This is the bug!
-        old_reference_forms = modification.past_value[0]["fields"]["reference_forms"]
-        new_reference_forms = modification.new_value[0]["fields"]["reference_forms"]
-        self.assertEqual(old_reference_forms, new_reference_forms)
-
-        diffs = modification.field_diffs()
-        self.assertEqual(len(diffs["added"].keys()), 0)
-        self.assertEqual(len(diffs["removed"].keys()), 0)
-        self.assertEqual(len(diffs["modified"].keys()), 0)
-
     def test_log_modification_for_m2m_field_with_original_as_serialized_copy(self):
         """
         This is how you should call `log_modification()` when there are m2m relations.

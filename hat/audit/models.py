@@ -141,8 +141,8 @@ def log_modification(
 
     if v1:
         # If `v1` is a list, it means it's already been serialized.
-        # This avoids issues related to the `call-by-sharing` evaluation strategy of Python.
-        # See unit tests to understand the issue.
+        # This avoids issues related to the `call-by-sharing` evaluation strategy of Python
+        # where two instances are sharing the same m2m objects.
         if isinstance(v1, list):
             modification.object_id = v1[0]["pk"]
             modification.past_value = v1

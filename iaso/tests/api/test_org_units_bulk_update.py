@@ -225,6 +225,8 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
     def test_org_unit_bulkupdate_select_all(self):
         """POST /orgunits/bulkupdate happy path (select all)"""
 
+        m.OrgUnit.objects.update(validation_status=m.OrgUnit.VALIDATION_NEW)
+
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             "/api/tasks/create/orgunitsbulkupdate/",

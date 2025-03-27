@@ -174,4 +174,5 @@ def log_modification(
             logger.error("log_modification() called with only `updated_at`.", extra={"modification": modification})
             return None
 
-    return modification.save()
+    modification.save()
+    return modification

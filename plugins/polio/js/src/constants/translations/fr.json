@@ -21,6 +21,8 @@
     "iaso.label.other": "Autre",
     "iaso.label.publicVaccineStock.outgoing_stock_movement": "Form A",
     "iaso.label.publicVaccineStock.PO": "PO",
+    "iaso.label.publicVaccineStock.totalEarmarkedDoses": "Doses réservées en stock",
+    "iaso.label.publicVaccineStock.totalEarmarkedVials": "Flacons réservés en stock",
     "iaso.label.publicVaccineStock.totalUnusableDoses": "Doses inutilisables en stock",
     "iaso.label.publicVaccineStock.totalUnusableVials": "Flacons inutilisables en stock",
     "iaso.label.publicVaccineStock.totalUsableDoses": "Doses utilisables en stock",

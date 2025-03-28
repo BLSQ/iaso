@@ -22,6 +22,8 @@
     "iaso.label.publicVaccineStock.\toutgoing_stock_movement": "Form A",
     "iaso.label.publicVaccineStock.outgoing_stock_movement": "Form A",
     "iaso.label.publicVaccineStock.PO": "PO",
+    "iaso.label.publicVaccineStock.totalEarmarkedDoses": "Stock of earmarked doses",
+    "iaso.label.publicVaccineStock.totalEarmarkedVials": "Stock of earmarked vials",
     "iaso.label.publicVaccineStock.totalUnusableDoses": "Stock unusable doses",
     "iaso.label.publicVaccineStock.totalUnusableVials": "Stock unusable vials",
     "iaso.label.publicVaccineStock.totalUsableDoses": "Stock usable doses",

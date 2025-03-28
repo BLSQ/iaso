@@ -356,6 +356,8 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
     @tag("iaso_only")
     def test_org_unit_bulkupdate_task_select_all_with_multiple_searches(self):
         """POST /orgunits/bulkupdate happy path (select all, but with multiple searches)"""
+        self.assertEqual(0, am.Modification.objects.count())
+
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             "/api/tasks/create/orgunitsbulkupdate/",
@@ -377,10 +379,21 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             jedi_council.refresh_from_db()
             self.assertIn(self.another_group, jedi_council.groups.all())
 
+        self.assertEqual(5, am.Modification.objects.count())
+
         # Django's serializer doesn't support reverse relationships.
         # Because the only thing we have modified here is the `groups` (which is a reverse relationship),
-        # there will be no entry in the `Modification` history.
-        self.assertEqual(0, am.Modification.objects.count())
+        # entries in the `Modification` history will only have an `updated_at` field.
+        for modification in am.Modification.objects.all():
+            diffs = modification.field_diffs()
+            added = diffs["added"]
+            removed = diffs["removed"]
+            modified = diffs["modified"]
+
+            self.assertEqual(added, {})
+            self.assertEqual(removed, {})
+            self.assertEqual(1, len(modified.keys()))
+            self.assertIn("updated_at", modified.keys())
 
     def test_task_kill(self):
         """Launch the task and then kill it

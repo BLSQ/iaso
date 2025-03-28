@@ -91,7 +91,7 @@ def create_or_update_group(group: Group, ref: str, name: str, version: SourceVer
     if not group:
         group = Group()
     group.name = name
-    group.source_ref =  ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
+    group.source_ref =  ref
     group.source_version = version
     group.save()
     return group
@@ -142,6 +142,8 @@ def create_or_update_orgunit(
         orgunit.validation_status = validation_status
     # Validate required ref
     ref = validate_required_property(props, "ref")
+    if ref and ref.startswith(OLD_INTERNAL_REF):
+        ref = ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
     orgunit.source_ref = ref
     orgunit.version = source_version
 
@@ -187,9 +189,12 @@ def get_ref(inst: Union[OrgUnit, Group]) -> str:
     they don't have a ref
     Before, we used the format "iaso#ID", but having a # creates some issues, so this will return "iaso:ID" instead
     """
-    if not inst.source_ref or inst.source_ref.startswith(OLD_INTERNAL_REF):
+    ref = inst.source_ref
+    if not ref:
         return f"{NEW_INTERNAL_REF}{inst.pk}"
-    return inst.source_ref
+    if ref.startswith(OLD_INTERNAL_REF):
+        return ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
+    return ref
 
 
 def validate_required_property(props: Dict[str, str], property_name: str, orgunit_name: str = "") -> str:
@@ -289,6 +294,8 @@ def import_gpkg_file2(
         cur = conn.cursor()
         rows = cur.execute("select ref, name from groups")
         for ref, name in rows:
+            if ref and ref.startswith(OLD_INTERNAL_REF):
+                ref = ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
             # Log modification done on group
             old_group = deepcopy(ref_group.get(ref))
             # TODO: investigate type error on next line?
@@ -332,6 +339,8 @@ def import_gpkg_file2(
             # Validate both required fields
             ref = validate_required_property(row["properties"], "ref")
             name = validate_required_property(row["properties"], "name")
+            if ref and ref.startswith(OLD_INTERNAL_REF):
+                ref = ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
 
             existing_ou = ref_ou.get(ref)
             orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group, task)
@@ -348,6 +357,8 @@ def import_gpkg_file2(
             if "parent_ref" in row["properties"]:
                 if row["properties"]["parent_ref"]:  # Only validate if it has a non-empty value
                     parent_ref = validate_property(row["properties"], "parent_ref", orgunit.name)
+                    if parent_ref and parent_ref.startswith(OLD_INTERNAL_REF):
+                        parent_ref = parent_ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
 
             to_update_with_parent.append((ref, parent_ref))
             # we will log the modification after we set the parent

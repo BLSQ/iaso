@@ -95,10 +95,18 @@ const getSubActivitiesRow = (
         // loop into subActivities
         subActivities.forEach((subActivity, index) => {
             const startInRange = subActivity.start_date
-                ? isDateInRange(subActivity.start_date, firstMonday, lastSunday)
+                ? isDateInRange(
+                      subActivity.start_date.clone(),
+                      firstMonday,
+                      lastSunday,
+                  )
                 : false;
             const endInRange = subActivity.end_date
-                ? isDateInRange(subActivity.end_date, firstMonday, lastSunday)
+                ? isDateInRange(
+                      subActivity.end_date.clone(),
+                      firstMonday,
+                      lastSunday,
+                  )
                 : false;
             // Draw subactivity
             cells = addSubactivityCell({
@@ -115,7 +123,7 @@ const getSubActivitiesRow = (
             if (nextSubActivity) {
                 const nextStartDate = nextSubActivity?.start_date.clone();
                 const emptyBetweenCells = getEmptyCellBetweenTwoDates(
-                    subActivity.end_date,
+                    subActivity.end_date.clone(),
                     nextStartDate,
                     cells,
                     currentWeekIndex,
@@ -128,7 +136,7 @@ const getSubActivitiesRow = (
         cells = addRemainingEmptyCells({
             cells,
             dateUntilNextRound:
-                subActivities[subActivities.length - 1].end_date,
+                subActivities[subActivities.length - 1].end_date.clone(),
             lastSunday,
             campaign,
             currentWeekIndex,

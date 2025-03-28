@@ -1,15 +1,12 @@
-import React, { Fragment, FunctionComponent } from 'react';
+import React, { FunctionComponent } from 'react';
 
-import { TableBody, TableRow } from '@mui/material';
+import { TableBody } from '@mui/material';
 
-import { StaticFieldsCells } from './cells/StaticFields';
-import { StaticSubactivitiesFields } from './cells/StaticSubactivitiesFields';
+import { CampaignRows } from './CampaignRows';
 import { RoundPopperContextProvider } from './contexts/RoundPopperContext';
 import { PlaceholderRow } from './PlaceholderRow';
-import { useStyles } from './Styles';
+
 import { CalendarData, CalendarParams, MappedCampaign } from './types';
-import { getRoundsCells } from './utils/rounds';
-import { getSubActivitiesCells } from './utils/subactivities';
 
 type BodyProps = {
     campaigns: MappedCampaign[];
@@ -30,7 +27,6 @@ export const Body: FunctionComponent<BodyProps> = ({
     isPdf,
     params,
 }) => {
-    const classes = useStyles();
     return (
         <RoundPopperContextProvider>
             <TableBody>
@@ -41,43 +37,15 @@ export const Body: FunctionComponent<BodyProps> = ({
                     />
                 )}
                 {campaigns.map((campaign: MappedCampaign) => (
-                    <Fragment key={`row-${campaign.id}`}>
-                        <TableRow className={classes.tableRow}>
-                            <StaticFieldsCells
-                                campaign={campaign}
-                                isPdf={isPdf}
-                            />
-                            {getRoundsCells(
-                                campaign,
-                                currentWeekIndex,
-                                firstMonday,
-                                lastSunday,
-                                params.periodType || 'quarter',
-                            )}
-                        </TableRow>
-                        {campaign.subActivities.length > 0 &&
-                            campaign.rounds.map(
-                                round =>
-                                    round.subActivities.length > 0 && (
-                                        <TableRow
-                                            className={classes.tableRowSmall}
-                                            key={`round-${round.id}`}
-                                        >
-                                            <StaticSubactivitiesFields
-                                                isPdf={isPdf}
-                                                roundNumber={round.number}
-                                            />
-                                            {getSubActivitiesCells(
-                                                campaign,
-                                                round.subActivities,
-                                                currentWeekIndex,
-                                                firstMonday,
-                                                lastSunday,
-                                            )}
-                                        </TableRow>
-                                    ),
-                            )}
-                    </Fragment>
+                    <CampaignRows
+                        key={`campaign-${campaign.id}`}
+                        campaign={campaign}
+                        currentWeekIndex={currentWeekIndex}
+                        firstMonday={firstMonday}
+                        lastSunday={lastSunday}
+                        isPdf={isPdf}
+                        params={params}
+                    />
                 ))}
             </TableBody>
         </RoundPopperContextProvider>

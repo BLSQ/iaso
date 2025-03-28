@@ -32,10 +32,11 @@ export const useStyles = makeStyles(theme => {
             '& th:last-child, & td:last-child': {
                 // @ts-ignore
                 borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+                // @ts-ignore
+                borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
             },
         },
         tableCell: {
-            // height: cellHeight,
             padding: '0 !important',
             margin: '0 !important',
             position: 'relative',

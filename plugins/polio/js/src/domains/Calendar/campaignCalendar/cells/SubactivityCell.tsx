@@ -12,7 +12,7 @@ import { isEqual } from 'lodash';
 import { SUBACTIVITY_CELL_COLOR } from '../constants';
 import { RoundPopperContext } from '../contexts/RoundPopperContext';
 import { SubactivityPopper } from '../popper/SubactivityPopper';
-import { smallCellHeight, useStyles } from '../Styles';
+import { useStyles } from '../Styles';
 import { SubActivity, MappedCampaign } from '../types';
 
 type Props = {

@@ -2469,6 +2469,14 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'This data is confidential. Please do not share externally without RRT team approval.',
     },
+    showSubactivities: {
+        id: 'iaso.polio.label.showSubactivities',
+        defaultMessage: 'Show sub-activities',
+    },
+    hideSubactivities: {
+        id: 'iaso.polio.label.hideSubactivities',
+        defaultMessage: 'Hide sub-activities',
+    },
 });
 
 export default MESSAGES;

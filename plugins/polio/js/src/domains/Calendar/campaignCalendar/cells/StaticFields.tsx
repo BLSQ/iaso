@@ -11,11 +11,15 @@ import { MappedCampaign } from '../types';
 type Props = {
     campaign: MappedCampaign;
     isPdf: boolean;
+    subActivitiesExpanded: boolean;
+    setSubActivitiesExpanded: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const StaticFieldsCells: FunctionComponent<Props> = ({
     campaign,
     isPdf,
+    subActivitiesExpanded,
+    setSubActivitiesExpanded,
 }) => {
     const classes = useStyles();
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
@@ -36,7 +40,13 @@ export const StaticFieldsCells: FunctionComponent<Props> = ({
                         sx={{ px: field.key === 'edit' ? 0 : 1 }}
                     >
                         {!field.render && campaign[field.key]}
-                        {field.render && field.render(campaign)}
+                        {field.render &&
+                            field.render(
+                                campaign,
+                                subActivitiesExpanded,
+                                setSubActivitiesExpanded,
+                                campaign.subActivities.length > 0,
+                            )}
                     </Box>
                 </TableCell>
             ))}

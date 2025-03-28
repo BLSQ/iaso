@@ -30,8 +30,18 @@ export type CalendarRound = {
     scopes: Scope[];
     target_population: number;
     hasSubActivities: boolean;
+    subActivities: SubActivity[];
 };
 
+export type SubActivity = {
+    id: number;
+    name: string;
+    scopes: Scope[];
+    start_date: Moment;
+    end_date: Moment;
+    vaccine_names: string;
+    round_number: number;
+};
 export type MappedCampaign = {
     original: CalendarCampaign;
     name: string;
@@ -46,6 +56,8 @@ export type MappedCampaign = {
     isPreventive: boolean;
     isTest: boolean;
     onHold: boolean;
+    subActivities: SubActivity[];
+    hasSubActivities: boolean;
 };
 
 export type ShapeForCalendarMap = {

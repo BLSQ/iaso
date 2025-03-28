@@ -2,7 +2,7 @@ import { red } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 
 export const cellHeight = 50;
-const smallCellHeight = 20;
+export const smallCellHeight = 25;
 export const vaccineOpacity = 0.7;
 export const useStyles = makeStyles(theme => {
     return {
@@ -29,9 +29,14 @@ export const useStyles = makeStyles(theme => {
         },
         tableRowSmall: {
             height: smallCellHeight,
+            '& th:last-child, & td:last-child': {
+                // @ts-ignore
+                borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+                // @ts-ignore
+                borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
+            },
         },
         tableCell: {
-            height: cellHeight,
             padding: '0 !important',
             margin: '0 !important',
             position: 'relative',

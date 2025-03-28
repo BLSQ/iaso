@@ -1,13 +1,12 @@
 import React, { FunctionComponent } from 'react';
 
-import { TableBody, TableRow } from '@mui/material';
+import { TableBody } from '@mui/material';
 
-import { StaticFieldsCells } from './cells/StaticFields';
+import { CampaignRows } from './CampaignRows';
 import { RoundPopperContextProvider } from './contexts/RoundPopperContext';
 import { PlaceholderRow } from './PlaceholderRow';
-import { useStyles } from './Styles';
+
 import { CalendarData, CalendarParams, MappedCampaign } from './types';
-import { getCells } from './utils';
 
 type BodyProps = {
     campaigns: MappedCampaign[];
@@ -28,7 +27,6 @@ export const Body: FunctionComponent<BodyProps> = ({
     isPdf,
     params,
 }) => {
-    const classes = useStyles();
     return (
         <RoundPopperContextProvider>
             <TableBody>
@@ -39,19 +37,15 @@ export const Body: FunctionComponent<BodyProps> = ({
                     />
                 )}
                 {campaigns.map((campaign: MappedCampaign) => (
-                    <TableRow
-                        className={classes.tableRow}
-                        key={`row-${campaign.id}`}
-                    >
-                        <StaticFieldsCells campaign={campaign} isPdf={isPdf} />
-                        {getCells(
-                            campaign,
-                            currentWeekIndex,
-                            firstMonday,
-                            lastSunday,
-                            params.periodType || 'quarter',
-                        )}
-                    </TableRow>
+                    <CampaignRows
+                        key={`campaign-${campaign.id}`}
+                        campaign={campaign}
+                        currentWeekIndex={currentWeekIndex}
+                        firstMonday={firstMonday}
+                        lastSunday={lastSunday}
+                        isPdf={isPdf}
+                        params={params}
+                    />
                 ))}
             </TableBody>
         </RoundPopperContextProvider>

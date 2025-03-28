@@ -81,11 +81,11 @@ def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
     df["parent"] = df["parent__name"] + " (" + df["parent__org_unit_type__name"] + ")"
     # Calculate alternative parent ref if we have a parent
     df.loc[df["parent__id"].notnull(), "alt_parent_ref"] = df["parent__id"].apply(
-        lambda x: f"iaso#{x:.0f}" if x else None
+        lambda x: f"iaso:{x:.0f}" if x else None
     )
     # fill parent ref with alternative if we don't have one.
     df["parent_ref"] = df["parent__source_ref"].fillna(df["alt_parent_ref"])
-    df["ref"] = df["source_ref"].fillna("iaso#" + df["id"].astype(str))
+    df["ref"] = df["source_ref"].fillna("iaso:" + df["id"].astype(str))
     df["geography"] = df["geom"].fillna(df["simplified_geom"].fillna(df["location"]))
     df["depth"] = df["depth"].fillna(999)
     df["depth"] = df["depth"].astype(int)
@@ -105,7 +105,7 @@ def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
     dg = dg.dropna(subset=["groups__id"])  # drop orgunit that have no groups
     dg = dg.set_index("id")
     # same as OrgUnit fill missing ref with artificial ref based on id
-    dg["ref"] = dg["groups__source_ref"].fillna(dg["groups__id"].apply("iaso#{:.0f}".format))
+    dg["ref"] = dg["groups__source_ref"].fillna(dg["groups__id"].apply("iaso:{:.0f}".format))
     # drop the other columns
     dg = dg[["ref", "groups__name"]]
     # Aggregate so there is one line per orgunit, and value are in a nice str

@@ -82,7 +82,7 @@ export const CountryStaticFields: FunctionComponent<Props> = ({
                 <Tooltip
                     arrow
                     placement="top"
-                    TransitionProps={{ style: { marginBottom: '-10px' } }}
+                    TransitionProps={{ style: { marginBottom: '-3px' } }}
                     title={
                         !subActivitiesExpanded
                             ? formatMessage(MESSAGES.showSubactivities)

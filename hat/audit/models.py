@@ -55,6 +55,11 @@ def dict_compare(d1, d2):
 
 
 def serialize_instance(instance: AnyModelInstance) -> list[dict[str, Any]]:
+    """
+    Django's serializer doesn't support reverse relationships.
+
+    It means we're not able to track changes made to e.g. `org_unit.groups`.
+    """
     serialized_instance = serializers.serialize("json", [instance])
     return json.loads(serialized_instance)
 
@@ -134,7 +139,7 @@ def log_modification(
     v2: Optional[AnyModelInstance],
     source: Optional[str],
     user: User = None,
-) -> Union[Modification, None]:
+) -> Modification:
     modification = Modification()
     modification.past_value = []
     modification.new_value = []
@@ -168,15 +173,13 @@ def log_modification(
 
         # Nothing to log.
         if not any([added, removed, modified]):
-            logger.error("log_modification() called with nothing to log.", extra={"modification": modification})
-            return None
+            logger.warning("log_modification() is empty.", extra={"modification": modification})
 
         # Only `updated_at` was modified.
-        # This can happen when the only thing that was modified was a reverse relationship
-        # because Django's serializer doesn't support reverse relationships.
+        # This can happen in e.g. the org unit bulk update when someone updates the status to VALID
+        # for all the org units but some of them are already in the VALID status.
         if not any([added, removed]) and len(modified.keys()) == 1 and "updated_at" in modified:
-            logger.error("log_modification() called with only `updated_at`.", extra={"modification": modification})
-            return None
+            logger.warning("log_modification() called with only `updated_at`.", extra={"modification": modification})
 
     modification.save()
     return modification

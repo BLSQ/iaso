@@ -39,20 +39,27 @@ class AuditMethodsTestCase(TestCase):
         self.assertIsInstance(json_instance["fields"], dict)
 
     def test_log_modification_with_nothing(self):
-        with self.assertLogs(logger=audit_models.logger, level="ERROR") as caught_msg:
+        with self.assertLogs(logger=audit_models.logger, level="WARNING") as caught_msg:
             audit_models.log_modification(
                 self.org_unit, self.org_unit, source=audit_models.ORG_UNIT_API, user=self.user
             )
         self.assertEqual(len(caught_msg.output), 1)
-        self.assertIn("log_modification() called with nothing to log.", caught_msg.output[0])
+        self.assertIn("log_modification() is empty.", caught_msg.output[0])
 
     def test_log_modification_with_only_updated_at(self):
+        """
+        This can happen in e.g. the org unit bulk update and results
+        in an empty `Modification`.
+        """
         original_copy = m.OrgUnit.objects.get(pk=self.org_unit.pk)
+        serialized_original_copy = audit_models.serialize_instance(original_copy)
+
+        self.org_unit.validation_status = self.org_unit.validation_status
         self.org_unit.save()
 
-        with self.assertLogs(logger=audit_models.logger, level="ERROR") as caught_msg:
+        with self.assertLogs(logger=audit_models.logger, level="WARNING") as caught_msg:
             audit_models.log_modification(
-                original_copy, self.org_unit, source=audit_models.ORG_UNIT_API, user=self.user
+                serialized_original_copy, self.org_unit, source=audit_models.ORG_UNIT_API, user=self.user
             )
         self.assertEqual(len(caught_msg.output), 1)
         self.assertIn("log_modification() called with only `updated_at`.", caught_msg.output[0])
@@ -87,7 +94,7 @@ class AuditMethodsTestCase(TestCase):
         or many-to-many relations works as expected.
 
         The right way to do this is to ensure that the instance has been
-        serialized before performing any modification on it.
+        deep copied or serialized before doing any modification on it.
 
         This avoids issues related to the `call-by-sharing` evaluation
         strategy of Python where two instances are sharing the same

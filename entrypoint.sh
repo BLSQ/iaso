@@ -68,7 +68,7 @@ case "$1" in
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate --noinput
     ./manage.py createcachetable
-    ./manage.py compilemessages
+    ./manage.py compile_translations
     ./manage.py runserver 0.0.0.0:8081
   ;;
   "start_celery_beat" )

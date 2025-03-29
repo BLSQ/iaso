@@ -224,6 +224,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "uuid",
+            "kind",
             "status",
             "created_by",
             "created_at",

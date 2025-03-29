@@ -214,6 +214,10 @@ module.exports = {
             /^__intl\/messages\/fr$/,
             '../translations/fr.json',
         ),
+        new webpack.NormalModuleReplacementPlugin(
+            /^__intl\/messages\/et$/,
+            '../translations/et.json',
+        ),
         new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
         new BundleTracker({
             filename: `${WEBPACK_PATH}/webpack-stats.json`,

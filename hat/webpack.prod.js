@@ -38,6 +38,10 @@ module.exports = {
             /^__intl\/messages\/fr$/,
             '../translations/fr.json',
         ),
+        new webpack.NormalModuleReplacementPlugin(
+            /^__intl\/messages\/et$/,
+            '../translations/et.json',
+        ),
         new BundleTracker({
             filename: path.resolve(
                 __dirname,

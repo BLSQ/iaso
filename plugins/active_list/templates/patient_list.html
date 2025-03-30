@@ -5,26 +5,38 @@
 <h2>Listing des patients</h2>
 
 <br/>
-<div>
-    <div>Période de rapportage</div>
-    <select id="monthSelect"></select><br/><br/>
-    <div>Choisissez votre établissement:</div>
-    <select id="countrySelect"></select><br/><br/>
-    <select id="regionSelect"></select><br/><br/>
-    <select id="districtSelect"></select><br/><br/>
-    <select id="facilitySelect"></select><br/><br/>
+<div class="controls-container">
+    <div>
+        <label for="monthSelect">Période de rapportage:</label>
+        <select id="monthSelect">
+            <option value="2025-03">Mars 2025</option> <option value="2025-02">Février 2025</option> </select>
+    </div>
+
+    <div>
+        <label>Choisissez votre établissement:</label>
+        <div id="orgUnitContainer">
+            </div>
+    </div>
+
+    <div>
     <select id="modeSelect">
       <option value="default" selected=>Dernier import pour le mois</option>
       <option value="expected">Patients attendus durant le mois</option>
       <option value="lost">Patients perdus (date de rupture dépassée aujourd'hui)</option>
       <option value="active">File active</option>
     </select><br/><br/>
+    </div>
 </div>
 <div id="dataContainer">
     <a href="" id="excel_link">Télécharger en Excel</a>
-    <div id="nodata"><strong>Pas de données pour ce mois et cette structure</strong></div>
+    <div id="nodata"><strong>Pas de données pour cette sélection</strong></div>
     <div id="table-container"></div>
 </div>
-<script src="{% static 'patient_list.js' %}">
+    <script>
+  // It's often better to get URLs via a dedicated API endpoint
+  // But for simplicity, we can define them here or pass from Django context
+
 </script>
+    <script src="{% static 'utils.js' %}"></script>
+    <script src="{% static 'patient_list_dynamic.js' %}"></script>
 {% endblock %}

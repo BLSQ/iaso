@@ -116,3 +116,126 @@ function generateTable (data) {
   table.append(tbody)
   return table
 }
+
+ async function fetchData (url) {
+    try {
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return await response.json()
+    } catch (error) {
+      throw error // Re-throw to stop subsequent actions
+    }
+  }
+
+  /**
+   * Populates a select element with options.
+   * @param {HTMLSelectElement} selectElement - The select element to populate.
+   * @param {Array<object>} data - Array of objects, each with 'id' and 'name'.
+   * @param {string} placeholder - Text for the default disabled option.
+   */
+  function populateSelect (selectElement, data, placeholder) {
+    selectElement.innerHTML = '' // Clear existing options
+    const placeholderOption = document.createElement('option')
+    placeholderOption.value = ''
+    placeholderOption.textContent = placeholder
+    placeholderOption.disabled = true
+    placeholderOption.selected = true
+    selectElement.appendChild(placeholderOption)
+
+    data.forEach(item => {
+      const option = document.createElement('option')
+      option.value = item.id
+      option.textContent = item.name // Assuming API returns {id: '...', name: '...'}
+      option.dataset.orgUnitTypeId = item.org_unit_type_id,
+        selectElement.appendChild(option)
+    })
+    selectElement.disabled = false
+  }
+
+  /**
+   * Creates and adds the next level select element.
+   * @param {number} levelIndex - The index of the level to create (from config.levels).
+   * @param {string|null} parentId - The ID of the selected item in the parent level, or null for the first level.
+   */
+  async function addOrgUnitSelect (config, levelIndex, parentId = null) {
+    const selectId = `Select${levelIndex}`
+
+    const select = document.createElement('select')
+    select.id = selectId
+    select.name = selectId
+    select.disabled = true // Disable until populated
+    select.dataset.levelIndex = levelIndex // Store level index for the event handler
+
+    // Add placeholder option immediately
+    const placeholderOption = document.createElement('option')
+    placeholderOption.value = ''
+    placeholderOption.textContent = `Sélectionnez...`
+    placeholderOption.disabled = true
+    placeholderOption.selected = true
+    select.appendChild(placeholderOption)
+
+    // Append to container
+    const orgUnitContainer = config.orgUnitContainer;
+    orgUnitContainer.appendChild(select)
+
+    // --- Fetch Data and Populate ---
+    let apiUrl = `/api/orgunits/tree/?validation_status=VALID&ignoreEmptyNames=true` // e.g., /api/orgunits/country/
+    if (parentId) {
+      apiUrl += `&parent_id=${parentId}` // e.g., /api/orgunits/region/?country_id=123
+    }
+
+    try {
+      const data = await fetchData(apiUrl)
+      if (data && data.length > 0) {
+        populateSelect(select, data, `Sélectionnez ...`)
+        select.addEventListener('change', handleOrgUnitChangeGenerator(config))
+      } else {
+        select.innerHTML = '<option value="">Pas de résultats</option>'
+        select.disabled = true;
+      }
+    } catch (error) {
+      // Error handled in fetchData, but ensure select stays disabled/informative
+      select.innerHTML = `<option value="">Erreur chargement</option>`
+      select.disabled = true
+    }
+  }
+
+  /**
+   * Handles changes in any org unit select.
+   * @param {Event} event - The change event object.
+   */
+  function handleOrgUnitChangeGenerator (config) {
+    return function handleOrgUnitChange (event) {
+    const selectElement = event.target
+    const selectedOption = selectElement.options[selectElement.selectedIndex]
+    const selectedValue = selectElement.value
+    const orgUnitContainer = config.orgUnitContainer;
+    const selectedOrgUnitTypeId = selectedOption.dataset.orgUnitTypeId
+    const currentLevelIndex = parseInt(selectElement.dataset.levelIndex, 10)
+
+    // Remove all subsequent select elements
+    let nextElement = selectElement.nextElementSibling // Start checking after the current select
+    while (nextElement) {
+      const elementToRemove = nextElement
+      nextElement = nextElement.nextElementSibling // Move to the next before removing
+      // Only remove elements created by this script (labels and selects)
+      if (elementToRemove.tagName === 'LABEL' || elementToRemove.tagName === 'SELECT') {
+        orgUnitContainer.removeChild(elementToRemove)
+      }
+    }
+
+    if (selectedValue) {
+      // Add the next level select
+
+      if (selectedOrgUnitTypeId == config.targetOrgUnitTypeId) {
+        config.callback(selectedValue);
+      } else {
+        addOrgUnitSelect(config,currentLevelIndex + 1, selectedValue)
+      }
+    } else {
+      // If user deselects (e.g. back to placeholder), ensure data is fetched if needed (or cleared)
+      config.callback()
+    }}
+  }

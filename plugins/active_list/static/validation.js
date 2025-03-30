@@ -1,55 +1,17 @@
 var monthSelect = $('#monthSelect');
-var countrySelect = $('#countrySelect');
-var regionSelect = $('#regionSelect');
-var districtSelect = $('#districtSelect');
 
-var districtSelectBox = $('#districtSelectBox');
-var regionSelectBox = $('#regionSelectBox');
+const orgUnitContainer = document.getElementById('orgUnitContainer')
 
 var dataContainer = $('#dataContainer');
-countrySelect.hide()
-regionSelectBox.hide();
-districtSelectBox.hide();
-regionSelectBox.hide();
+
 dataContainer.hide();
 monthSelect.on('change', function () {
   $('#period').val(this.value);
 });
 
-$.getJSON('/api/orgunits/tree/?validation_status=VALID&ignoreEmptyNames=true', function (data) {
 
-  fillSelect('#countrySelect', data);
-  countrySelect.show();
-});
-
-countrySelect.on('change', function () {
-  regionSelectBox.hide();
-  districtSelectBox.hide();
-
-  $.getJSON('/api/orgunits/tree/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
-    fillSelect('#regionSelect', data);
-
-    regionSelectBox.show();
-    dataContainer.hide();
-  });
-});
-
-regionSelect.on('change', function () {
-  districtSelectBox.hide();
-
-  $.getJSON('/api/orgunits/tree/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
-    fillSelect('#districtSelect', data);
-
-    districtSelectBox.show();
-    dataContainer.hide();
-  });
-});
-
-districtSelect.on('change', function () {
-  $.getJSON('/api/orgunits/tree/?&parent_id=' + this.value + '&validation_status=VALID&ignoreEmptyNames=true', function (data) {
-    var orgUnitId = districtSelect.val();
-    var period = monthSelect.val();
-    console.log(orgUnitId, period);
+var callback = function (orgUnitId) {
+    var period = $('#monthSelect').val();
     $.getJSON('/active_list/validation_api/' + orgUnitId + '/' + period, function (data) {
       console.log(data);
       data.table_content.forEach(item => {
@@ -66,10 +28,16 @@ districtSelect.on('change', function () {
       dataContainer.show();
     });
 
-  });
-});
+  }
 
 
+  const config = {
+    targetOrgUnitTypeId: 349,
+    callback: callback,
+    orgUnitContainer: orgUnitContainer
+  }
+
+  addOrgUnitSelect(config, 0) // Start by adding the first level (e.g., country)
 $(document).ready(function () {
   fillSelectWithMonths();
 });

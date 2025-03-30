@@ -31,12 +31,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const excelUrl = dataUrl + '&xls=true' // Assuming separate excel endpoint
     console.log(`fetching patient data from: ${dataUrl}`)
 
-    try {
       const result = await fetchData(dataUrl) // Expects { data: [], count: N } or similar
-
-      if (result && result.data && result.data.length > 0) {
+      console.log("result", result)
+      if (result && result.table_content && result.table_content.length > 0) {
         // TODO: Render the data into a table in tableContainer
-        renderTable(result.data) // Implement this function based on your data structure
+        renderTable(result.table_content, dataUrl) // Implement this function based on your data structure
         excelLink.href = excelUrl
         excelLink.style.display = 'inline-block'
         tableContainer.style.display = 'block'
@@ -45,11 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
         noDataMessage.textContent = 'Pas de données pour cette sélection.'
         noDataMessage.style.display = 'block'
       }
-    } catch (error) {
-      // Error handled in fetchData
-      console.error('Failed to fetch or render patient data.')
-      // No data message should already be visible from fetchData error handling
-    }
+
   }
 
   /** Hides data display elements */
@@ -65,34 +60,22 @@ document.addEventListener('DOMContentLoaded', function () {
    * Renders the patient data into a table (Example Implementation).
    * @param {Array<object>} data - Array of patient objects.
    */
-  function renderTable (data) {
+  function renderTable (data, url) {
     // Basic example: create a simple table
-    const table = document.createElement('table')
-    table.className = 'patient-table' // Add a class for styling
-    const thead = table.createTHead()
-    const tbody = table.createTBody()
-    const headerRow = thead.insertRow()
+    var table = generateTable(data)
+    console.log(table);
+    $('#table-container').html(table)
 
-    // Create headers based on the first data object's keys
-    if (data.length > 0) {
-      Object.keys(data[0]).forEach(key => {
-        const th = document.createElement('th')
-        th.textContent = key.charAt(0).toUpperCase() + key.slice(1) // Capitalize
-        headerRow.appendChild(th)
-      })
+    var excel_link = $('#excel_link')
+    if (data.length === 0) {
+      excel_link.hide()
+      $('#nodata').show()
+    } else {
+      excel_link.attr('href', url + '&xls=true')
+      excel_link.show()
+      $('#nodata').hide()
     }
-
-    // Create data rows
-    data.forEach(item => {
-      const row = tbody.insertRow()
-      Object.values(item).forEach(value => {
-        const cell = row.insertCell()
-        cell.textContent = value
-      })
-    })
-
-    tableContainer.innerHTML = '' // Clear previous table
-    tableContainer.appendChild(table)
+    $('#generatedTable').tablesorter()
   }
 
   function callback (selectedOrgUnitId) {

@@ -125,6 +125,7 @@ function generateTable (data) {
       }
       return await response.json()
     } catch (error) {
+      console.log(error)
       throw error // Re-throw to stop subsequent actions
     }
   }

@@ -148,8 +148,8 @@ function generateTable (data) {
       const option = document.createElement('option')
       option.value = item.id
       option.textContent = item.name // Assuming API returns {id: '...', name: '...'}
-      option.dataset.orgUnitTypeId = item.org_unit_type_id,
-        selectElement.appendChild(option)
+      option.dataset.orgUnitTypeId = item.org_unit_type_id
+      selectElement.appendChild(option)
     })
     selectElement.disabled = false
   }
@@ -164,6 +164,7 @@ function generateTable (data) {
 
     const select = document.createElement('select')
     select.id = selectId
+    select.className = "orgUnitSelect"
     select.name = selectId
     select.disabled = true // Disable until populated
     select.dataset.levelIndex = levelIndex // Store level index for the event handler
@@ -179,7 +180,6 @@ function generateTable (data) {
     // Append to container
     const orgUnitContainer = config.orgUnitContainer;
     orgUnitContainer.appendChild(select)
-
     // --- Fetch Data and Populate ---
     let apiUrl = `/api/orgunits/tree/?validation_status=VALID&ignoreEmptyNames=true` // e.g., /api/orgunits/country/
     if (parentId) {

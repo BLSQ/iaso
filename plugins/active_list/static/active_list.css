@@ -145,6 +145,10 @@ select {
     background-size: 16px 12px;
 }
 
+.orgUnitSelect {
+    display: block;
+    margin-bottom:10px;
+}
 /* Hover effect */
 select:hover {
     border-color: #bbb;

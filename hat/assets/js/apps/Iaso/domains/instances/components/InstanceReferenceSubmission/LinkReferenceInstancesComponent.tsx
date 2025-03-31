@@ -19,11 +19,11 @@ import { useCurrentUser } from '../../../../utils/usersUtils';
 import { Selection } from '../../../orgUnits/types/selection';
 import { userHasPermission } from '../../../users/utils';
 import { useGetCheckBulkGpsPush } from '../../hooks/useGetCheckBulkGpsPush';
+import { useGetCheckBulkReferenceInstanceLink } from '../../hooks/useGetCheckBulkReferenceInstanceLink';
 import { useInstanceBulkgpspush } from '../../hooks/useInstanceBulkgpspush';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
-import PushBulkGpsWarning from '../PushInstanceGps/PushBulkGpsWarning';
-import PushGpsWarningMessage from '../PushInstanceGps/PushGpsWarningMessage';
+import BulkLinkPushWarningMessage from '../PushInstanceGps/BulkLinkPushWarningMessage';
 import { LinkReferenceInstancesButton } from './LinkReferenceInstancesButton';
 
 type Props = {
@@ -37,19 +37,42 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const select_all = selection.selectAll;
     const selected_ids = selection.selectedItems;
     const unselected_ids = selection.unSelectedItems;
 
+    const {
+        data: checkReferenceInstanceLink,
+        isError,
+        isLoading: isLoadingCheckResult,
+    } = useGetCheckBulkReferenceInstanceLink({
+        selected_ids: selected_ids.map(item => item.id).join(','),
+        select_all,
+        unselected_ids: unselected_ids.map(item => item.id).join(','),
+    });
+
     const onConfirm = useCallback(async () => {
-        console.log('hello, teest');
         closeDialog();
     }, [closeDialog]);
+    const noLoadingAndNoError = useMemo(
+        () => !isLoadingCheckResult && !isError,
+        [isError, isLoadingCheckResult],
+    );
 
+    const getWarningMessage = () => {
+        if (isError) {
+            return MESSAGES.multipleReferenceInstancesOneOrgUnitWarningMessage;
+        }
+        if (checkReferenceInstanceLink?.warning) {
+            return MESSAGES.noReferenceSubmissionsWarningMessage;
+        }
+        return '';
+    };
     return (
         <ConfirmCancelModal
-            allowConfirm
-            titleMessage={MESSAGES.pushGpsToOrgUnits}
+            allowConfirm={noLoadingAndNoError}
+            titleMessage={MESSAGES.linkUnlinkReferenceSubmissionsToOrgUnits}
             onConfirm={onConfirm}
             onCancel={() => {
                 closeDialog();
@@ -63,7 +86,52 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
             onClose={() => null}
             dataTestId="bulk-push-gps"
         >
-            <p>Hello bro</p>
+            {isLoadingCheckResult ? (
+                <LoadingSpinner absolute />
+            ) : (
+                <Grid container spacing={4} alignItems="center">
+                    <Grid item xs={12}>
+                        <Typography variant="subtitle1">
+                            <BulkLinkPushWarningMessage
+                                message={formatMessage(getWarningMessage(), {
+                                    selectedSubmissionsCount:
+                                        checkReferenceInstanceLink?.warning
+                                            .length,
+                                })}
+                                paddingLeft="15px"
+                                paddingTop="20px"
+                                marginRight="100px"
+                            />
+                        </Typography>
+                    </Grid>
+
+                    {/* <PushBulkGpsWarning
+                        condition={displayWarningSubmissionsNoGps}
+                        message={MESSAGES.noGpsForSomeInstaces}
+                        approveCondition={approveSubmissionNoHasGps}
+                        onApproveClick={() => onApprove(INSTANCE_HAS_NO_GPS)}
+                    />
+                    <PushBulkGpsWarning
+                        condition={displayWarningOverWriteGps}
+                        message={MESSAGES.someOrgUnitsHasAlreadyGps}
+                        approveCondition={approveOrgUnitHasGps}
+                        onApproveClick={() =>
+                            onApprove(ORG_UNIT_HAS_ALREADY_GPS)
+                        }
+                    />
+                    {!approved && (
+                        <Grid item xs={12}>
+                            <Typography variant="subtitle1">
+                                <PushGpsWarningMessage
+                                    message={formatMessage(
+                                        MESSAGES.approveAllWarningsMessage,
+                                    )}
+                                />
+                            </Typography>
+                        </Grid>
+                    )} */}
+                </Grid>
+            )}
         </ConfirmCancelModal>
     );
 };

@@ -389,6 +389,7 @@
     "iaso.instance.missingFile": "Aucun fichier trouvé",
     "iaso.instance.missingGeolocation": "Aucune soumission trouvée avec une localisation",
     "iaso.instance.multipleInstancesOneOrgUnitWarningMessage": "Plusieurs soumissions utilisent la même unité d'org.",
+    "iaso.instance.multipleReferenceInstancesOneOrgUnitWarningMessage": "Plusieurs soumissions de référence utilisent les mêmes unités d'org. et les mêmes formulaires",
     "iaso.instance.noGpsForSomeInstaces": "Certaines soumissions n'ont pas de GPS. Rien ne sera appliqué pour ces unités d'organisation.",
     "iaso.instance.NoLocksHistory": "Il n'y a pas d'historique",
     "iaso.instance.org_unit": "Unités d'organisation",

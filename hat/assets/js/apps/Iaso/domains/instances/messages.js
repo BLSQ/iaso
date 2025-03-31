@@ -240,6 +240,16 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Multiple submissions are using the same org unit',
         id: 'iaso.instance.multipleInstancesOneOrgUnitWarningMessage',
     },
+    multipleReferenceInstancesOneOrgUnitWarningMessage: {
+        defaultMessage:
+            'Multiple reference submissions are using the same org units and same forms',
+        id: 'iaso.instance.multipleReferenceInstancesOneOrgUnitWarningMessage',
+    },
+    noReferenceSubmissionsWarningMessage: {
+        defaultMessage:
+            'About {selectedSubmissionsCount} selected submissions are not reference ones',
+        id: 'iaso.instance.noReferenceSubmissionsWarningMessage',
+    },
     approveAllWarningsMessage: {
         defaultMessage:
             'All warnings must be approved before launching the locations push.',

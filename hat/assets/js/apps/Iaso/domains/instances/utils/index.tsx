@@ -496,7 +496,6 @@ export const useSelectionActions = (
     return useMemo(() => {
         const assignReferenceSubmissions: SelectionAction = {
             icon: newSelection => {
-                console.log(newSelection);
                 return (
                     <LinkReferenceInstancesModalComponent
                         selection={newSelection}
@@ -507,7 +506,9 @@ export const useSelectionActions = (
                 );
             },
 
-            label: formatMessage(MESSAGES.pushGpsToOrgUnits),
+            label: formatMessage(
+                MESSAGES.linkUnlinkReferenceSubmissionsToOrgUnits,
+            ),
             disabled: false,
         };
         const pushGpsAction: SelectionAction = {

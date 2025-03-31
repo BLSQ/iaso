@@ -389,6 +389,7 @@
     "iaso.instance.missingFile": "Cannot find an instance with a file",
     "iaso.instance.missingGeolocation": "Cannot find an instance with geolocation",
     "iaso.instance.multipleInstancesOneOrgUnitWarningMessage": "Multiple submissions are using the same org unit",
+    "iaso.instance.multipleReferenceInstancesOneOrgUnitWarningMessage": "Multiple reference submissions are using the same org units and same forms",
     "iaso.instance.noGpsForSomeInstaces": "Some instances don't have locations. Nothing will be applied for those OrgUnits.",
     "iaso.instance.NoLocksHistory": "There's no history",
     "iaso.instance.org_unit": "Org unit",

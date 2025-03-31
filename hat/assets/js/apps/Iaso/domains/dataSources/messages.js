@@ -256,7 +256,7 @@ const MESSAGES = defineMessages({
     },
     compare: {
         id: 'iaso.datasources.tooltip.compare',
-        defaultMessage: 'Compare data sources',
+        defaultMessage: 'Compare/Synchronize data sources',
     },
     credentialsForExport: {
         id: 'iaso.datasources.credentialsForExport',

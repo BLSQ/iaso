@@ -156,6 +156,8 @@ export const PublicVaccineStock: FunctionComponent = () => {
                         <VialsSummary
                             totalVials={data.results.total_vials}
                             totalDoses={data.results.total_doses}
+                            earmarkedVials={data.results.earmarked_vials}
+                            earmarkedDoses={data.results.earmarked_doses}
                             tab={tab}
                         />
                     )}

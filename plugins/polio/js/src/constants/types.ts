@@ -313,7 +313,7 @@ type CalendarRound = {
     scopes: Scope[];
 };
 
-type CalendarSubActivity = {
+export type CalendarSubActivity = {
     id: number;
     name: string;
     scopes: Scope[];

@@ -607,7 +607,7 @@ APP_TITLE = os.environ.get("APP_TITLE", "Iaso")
 FAVICON_PATH = os.environ.get("FAVICON_PATH", "images/iaso-favicon.png")
 LOGO_PATH = os.environ.get("LOGO_PATH", "images/logo.png")
 THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
-THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#0066CC")
+THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#ff7961")
 THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
 

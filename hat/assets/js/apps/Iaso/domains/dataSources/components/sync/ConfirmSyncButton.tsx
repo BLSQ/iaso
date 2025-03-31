@@ -25,12 +25,16 @@ import { useLaunchDiff } from '../../hooks/useLaunchDiff';
 import MESSAGES from '../../messages';
 import { SyncResponse } from '../../types/sync';
 import { ConfirmSyncPreview } from './ConfirmSyncPreview';
+import { VersionFields } from '../VersionPicker';
 
 type Props = {
     closeMainDialog: () => void;
     allowConfirm: boolean;
     refSourceVersionId: number;
     targetSourceVersionId: number;
+    sourceFields: VersionFields;
+    targetFields: VersionFields;
+    fieldsToExport: string[];
 };
 
 //  Steps to sync:
@@ -43,6 +47,9 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
     allowConfirm,
     refSourceVersionId,
     targetSourceVersionId,
+    sourceFields,
+    targetFields,
+    fieldsToExport,
 }) => {
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
@@ -68,6 +75,9 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
             });
             const diffResult = await createJsonDiffAsync({
                 id: result.id,
+                sourceFields,
+                targetFields,
+                fieldsToExport,
             });
             setIsPreviewDone(true);
             setJsonDiffResult(diffResult);

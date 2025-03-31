@@ -253,6 +253,9 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                         allowConfirm={allowSync}
                         refSourceVersionId={refDataVersionId}
                         targetSourceVersionId={sourceDataVersionId}
+                        sourceFields={sourceFields}
+                        targetFields={targetFields}
+                        fieldsToExport={exportData.fields_to_export.value}
                     />
                     <ConfirmExportButton
                         onConfirm={onConfirmExport}

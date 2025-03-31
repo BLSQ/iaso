@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { FormatListBulleted, History } from '@mui/icons-material';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -6,7 +7,6 @@ import {
     LinkWithLocation,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
@@ -55,12 +55,14 @@ type FormFormProps = {
     currentForm: FormDataType;
     setFieldValue: (key: string, value: any) => void;
     originalSinglePerPeriod?: boolean;
+    formIsSet: boolean;
 };
 
 const FormForm: FunctionComponent<FormFormProps> = ({
     currentForm,
     setFieldValue,
     originalSinglePerPeriod,
+    formIsSet,
 }) => {
     const classes = useStyles();
     const [displayPeriods, setDisplayPeriods] = useState<boolean>();
@@ -68,8 +70,6 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
-    const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
-        useGetOrgUnitTypesDropdownOptions();
     const setPeriodType = value => {
         let periodTypeValue = value;
         if (value === null || value === NO_PERIOD) {
@@ -99,11 +99,15 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     if (currentForm.org_unit_type_ids.value.length > 0) {
         orgUnitTypes = currentForm.org_unit_type_ids.value.join(',');
     }
-    let projects;
+    let projects: number[] = [];
     if (currentForm.project_ids.value.length > 0) {
-        projects = currentForm.project_ids.value.join(',');
+        projects = currentForm.project_ids.value;
     }
-
+    const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
+        useGetOrgUnitTypesDropdownOptions({
+            projectIds: currentForm.project_ids.value,
+            enabled: formIsSet,
+        });
     useEffect(() => {
         if (
             currentForm.period_type.value === NO_PERIOD ||
@@ -257,7 +261,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         onChange={(key, value) =>
                             setFieldValue(key, commaSeparatedIdsToArray(value))
                         }
-                        value={projects}
+                        value={projects.join(',')}
                         errors={currentForm.project_ids.errors}
                         type="select"
                         options={allProjects || []}

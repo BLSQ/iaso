@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { Typography } from '@mui/material';
 import {
     ConfirmCancelModal,
@@ -7,7 +8,6 @@ import {
 } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../../libs/validation';
@@ -83,7 +83,9 @@ const OrgUnitChangeRequestConfigDialog: FunctionComponent<Props> = ({
     const {
         data: orgUnitTypeOptions,
         isFetching: isFetchingOrgUnitTypeOptions,
-    } = useGetOrgUnitTypesDropdownOptions(config.project.id);
+    } = useGetOrgUnitTypesDropdownOptions({
+        projectId: config.project.id,
+    });
     const { data: groupOptions, isFetching: isFetchingGroupOptions } =
         useGetGroupDropdown({
             projectIds: `${config.project.id}`,

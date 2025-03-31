@@ -1,3 +1,10 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -11,13 +18,6 @@ import {
 import isEqual from 'lodash/isEqual';
 import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
 import { useQueryClient } from 'react-query';
 import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
@@ -108,7 +108,7 @@ const FormDetail: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const [currentForm, setFieldValue, setFieldErrors, setFormState] =
         useFormState(formatFormData(form));
-
+    const [formIsSet, setFormisSet] = useState(false);
     const isFormModified = useMemo(() => {
         return (
             !isEqual(
@@ -215,6 +215,7 @@ const FormDetail: FunctionComponent = () => {
     };
     useEffect(() => {
         if (form) {
+            setFormisSet(true);
             setFormState(formatFormData(form));
         }
     }, [form, setFormState]);
@@ -244,6 +245,7 @@ const FormDetail: FunctionComponent = () => {
                     currentForm={currentForm}
                     setFieldValue={onChange}
                     originalSinglePerPeriod={originalSinglePerPeriod}
+                    formIsSet={formIsSet}
                 />
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {currentForm.id.value !== '' && (

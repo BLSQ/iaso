@@ -1,3 +1,4 @@
+from collections import Counter
 from typing import Dict, List
 
 from django.db.models import Count, Exists, OuterRef, QuerySet
@@ -92,36 +93,46 @@ def check_instance_bulk_gps_push(queryset: QuerySet) -> (bool, Dict[str, List[in
 
     return success, errors, warnings
 
-def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, Dict[str, List[int]], Dict[str, List[int]]):
-    from iaso.models.org_unit import OrgUnitType
+def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, Dict[str, List[int]], Dict[str, List[int]]): # type: ignore
+    from iaso.models.org_unit import OrgUnitType, OrgUnitReferenceInstance
     queryset = queryset.annotate(
-        has_reference_forms=Exists(
+        has_matching_reference_form=Exists(
             OrgUnitType.reference_forms.through.objects.filter(
-                orgunittype_id=OuterRef("org_unit__org_unit_type__id")
-                )
+                orgunittype_id=OuterRef("org_unit__org_unit_type"),  
+                form_id=OuterRef("form_id") 
             )
-            )
+        )
+    )
     
-    not_reference_instances = queryset.filter(has_reference_forms=False)
-    reference_instances = queryset.filter(has_reference_forms=True)
+    not_reference_instances = queryset.filter(has_matching_reference_form=False)
+    reference_instances = queryset.filter(has_matching_reference_form=True)
 
-    org_units_with_multiple_instances = reference_instances.values("org_unit", "form_id").annotate(
-    instance_count=Count("id")).filter(instance_count__gt=1).values_list('org_unit_id', flat=True)
+    linked_and_unlinked = reference_instances.annotate(
+        is_linked=Exists(
+            OrgUnitReferenceInstance.objects.filter(instance_id=OuterRef("id"))
+        )
+    )
 
+    orgunit_form_pairs = list(linked_and_unlinked.values_list("org_unit_id", "form_id"))
+    duplicates_count = Counter(orgunit_form_pairs)
+    duplicate_org_unit_form_id_pairs = [pair for pair, count in duplicates_count.items() if count > 1]
+
+  
     warnings = {}
     errors = {}
     infos = {}
-    success: bool = not org_units_with_multiple_instances
-
-    if org_units_with_multiple_instances:
-        errors["error_multiple_instances_same_org_unit"] = org_units_with_multiple_instances
+    success: bool = not duplicate_org_unit_form_id_pairs
+    if duplicate_org_unit_form_id_pairs:
+        errors["error_multiple_instances_same_org_unit"] = duplicate_org_unit_form_id_pairs
         return success, infos, errors, warnings
     
+    linked_instances = linked_and_unlinked.filter(is_linked=True)
+    unlinked_instances = linked_and_unlinked.filter(is_linked=False)   
+
     if not_reference_instances:
-        warnings["no_reference_instances"] = not_reference_instances
-    infos['linked'] = []
-    infos['not_linked'] = []
-    
-    # already_linked_org_units = 
+        warnings["no_reference_instances"] = [instance.id for instance in not_reference_instances]
+    infos['linked'] = [instance.id for instance in linked_instances]
+    infos['not_linked'] = [instance.id for instance in unlinked_instances]
+
     return success, infos, errors, warnings
 

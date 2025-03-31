@@ -658,7 +658,7 @@ class InstancesViewSet(viewsets.ViewSet):
         instances_query = self._filter_selected_instances(request)
 
         success, infos, errors, warnings = check_instance_reference_bulk_link(instances_query)
-
+        
         if not success:
             errors["result"] = "errors"
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
@@ -669,7 +669,7 @@ class InstancesViewSet(viewsets.ViewSet):
         informations["not_linked"] = infos["not_linked"]
 
         if warnings:
-            informations["warning"] = [instance.id for instance in warnings["no_reference_instances"]]
+            informations["warning"] = warnings["no_reference_instances"]
  
         return Response(informations, status=status.HTTP_200_OK)
     

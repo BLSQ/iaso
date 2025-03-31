@@ -13,18 +13,18 @@ import {
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import MESSAGES from '../../messages';
-import { Instance } from '../../types/instance';
-import { Selection } from '../../../orgUnits/types/selection';
-import { useGetCheckBulkGpsPush } from '../../hooks/useGetCheckBulkGpsPush';
-import PushBulkGpsWarning from './PushBulkGpsWarning';
-import { useInstanceBulkgpspush } from '../../hooks/useInstanceBulkgpspush';
 import { baseUrls } from '../../../../constants/urls';
-import { userHasPermission } from '../../../users/utils';
 import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
-import PushGpsWarningMessage from './PushGpsWarningMessage';
+import { Selection } from '../../../orgUnits/types/selection';
+import { userHasPermission } from '../../../users/utils';
+import { useGetCheckBulkGpsPush } from '../../hooks/useGetCheckBulkGpsPush';
+import { useInstanceBulkgpspush } from '../../hooks/useInstanceBulkgpspush';
+import MESSAGES from '../../messages';
+import { Instance } from '../../types/instance';
+import PushBulkGpsWarning from './PushBulkGpsWarning';
 import { PushGpsModalButton } from './PushGpsModalButton';
+import PushGpsWarningMessage from './PushGpsWarningMessage';
 
 type Props = {
     selection: Selection<Instance>;

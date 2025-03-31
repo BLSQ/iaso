@@ -43,7 +43,7 @@ from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.file_utils import get_file_type
 
 from ..models.forms import CR_MODE_IF_REFERENCE_FORM
-from ..utils.models.common import check_instance_bulk_gps_push, get_creator_name
+from ..utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
 from . import common
 from .comment import UserSerializerForComment
 from .common import (
@@ -630,8 +630,53 @@ class InstancesViewSet(viewsets.ViewSet):
         permission_classes=[permissions.IsAuthenticated, HasInstanceBulkPermission, HasCreateOrgUnitPermission],
     )
     def check_bulk_gps_push(self, request):
+        instances_query = self._filter_selected_instances(request)
+
+        success, errors, warnings = check_instance_bulk_gps_push(instances_query)
+
+        if not success:
+            errors["result"] = "errors"
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if warnings:
+            warnings["result"] = "warnings"
+            return Response(warnings, status=status.HTTP_200_OK)
+
+        return Response(
+            {
+                "result": "success",
+            },
+            status=status.HTTP_200_OK,
+        )
+    
+    @action(
+        detail=False,
+        methods=["GET"],
+        permission_classes=[permissions.IsAuthenticated, HasInstanceBulkPermission, HasCreateOrgUnitPermission],
+    )
+    def check_bulk_reference_instance_link(self, request):
+        instances_query = self._filter_selected_instances(request)
+
+        success, infos, errors, warnings = check_instance_reference_bulk_link(instances_query)
+
+        if not success:
+            errors["result"] = "errors"
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+        informations = {}
+        informations["result"] = "success"
+        informations["linked"] = infos["linked"]
+        informations["not_linked"] = infos["not_linked"]
+
+        if warnings:
+            informations["warning"] = [instance.id for instance in warnings["no_reference_instances"]]
+ 
+        return Response(informations, status=status.HTTP_200_OK)
+    
+        
+    def _filter_selected_instances(self, request):
         # first, let's parse all parameters received from the URL
-        select_all, selected_ids, unselected_ids = self._parse_check_bulk_gps_push_parameters(request.GET)
+        select_all, selected_ids, unselected_ids = self._parse_check_bulk_action_parameters(request.GET)
 
         # then, let's make sure that each ID actually exists and that the user has access to it
         instances_query = self.get_queryset()
@@ -650,25 +695,9 @@ class InstancesViewSet(viewsets.ViewSet):
             instances_query = instances_query.filter(pk__in=selected_ids)
         else:
             instances_query = instances_query.exclude(pk__in=unselected_ids)
+        return instances_query
 
-        success, errors, warnings = check_instance_bulk_gps_push(instances_query)
-
-        if not success:
-            errors["result"] = "errors"
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-
-        if warnings:
-            warnings["result"] = "warnings"
-            return Response(warnings, status=status.HTTP_200_OK)
-
-        return Response(
-            {
-                "result": "success",
-            },
-            status=status.HTTP_200_OK,
-        )
-
-    def _parse_check_bulk_gps_push_parameters(self, query_parameters):
+    def _parse_check_bulk_action_parameters(self, query_parameters):
         raw_select_all = query_parameters.get("select_all", True)
         select_all = raw_select_all not in ["false", "False", "0", 0, False]
 

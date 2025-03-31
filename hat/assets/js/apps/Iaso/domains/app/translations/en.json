@@ -590,6 +590,7 @@
     "iaso.label.linkOrgUnitReferenceSubmission": "Link OrgUnit to reference submission",
     "iaso.label.links": "Links",
     "iaso.label.linksList": "Links List",
+    "iaso.label.linkUnlinkReferenceSubmissionsToOrgUnits": "Link or unlink reference submissions to/from org units",
     "iaso.label.list": "List",
     "iaso.label.loading": "Loading",
     "iaso.label.location": "Location",

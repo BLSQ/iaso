@@ -590,6 +590,7 @@
     "iaso.label.linkOrgUnitReferenceSubmission": "Lier l'unité d'organisation à sa soumission de definition",
     "iaso.label.links": "Liens",
     "iaso.label.linksList": "Liste correspondances",
+    "iaso.label.linkUnlinkReferenceSubmissionsToOrgUnits": "Lier ou dissocier les soumissions de référence des unités d'org",
     "iaso.label.list": "Liste",
     "iaso.label.loading": "Chargement en cours",
     "iaso.label.location": "Localisation",

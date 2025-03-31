@@ -69,6 +69,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.linkOffOrgUnitReferenceSubmission',
         defaultMessage: 'Unlink reference submission from orgUnit',
     },
+    linkUnlinkReferenceSubmissionsToOrgUnits: {
+        defaultMessage:
+            'link or unlink reference submissions to/from org units',
+        id: 'iaso.label.linkUnlinkReferenceSubmissionsToOrgUnits',
+    },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS mappings',

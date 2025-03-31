@@ -1,8 +1,10 @@
 from typing import Dict, List
 
-from django.db.models import QuerySet
+from django.db.models import Count, Exists, OuterRef, QuerySet
 
 from iaso.models.base import User
+
+
 
 
 def get_creator_name(creator: User = None, username: str = "", first_name: str = "", last_name: str = "") -> str:
@@ -89,3 +91,37 @@ def check_instance_bulk_gps_push(queryset: QuerySet) -> (bool, Dict[str, List[in
         warnings["warning_overwrite"] = overwrite_ids
 
     return success, errors, warnings
+
+def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, Dict[str, List[int]], Dict[str, List[int]]):
+    from iaso.models.org_unit import OrgUnitType
+    queryset = queryset.annotate(
+        has_reference_forms=Exists(
+            OrgUnitType.reference_forms.through.objects.filter(
+                orgunittype_id=OuterRef("org_unit__org_unit_type__id")
+                )
+            )
+            )
+    
+    not_reference_instances = queryset.filter(has_reference_forms=False)
+    reference_instances = queryset.filter(has_reference_forms=True)
+
+    org_units_with_multiple_instances = reference_instances.values("org_unit", "form_id").annotate(
+    instance_count=Count("id")).filter(instance_count__gt=1).values_list('org_unit_id', flat=True)
+
+    warnings = {}
+    errors = {}
+    infos = {}
+    success: bool = not org_units_with_multiple_instances
+
+    if org_units_with_multiple_instances:
+        errors["error_multiple_instances_same_org_unit"] = org_units_with_multiple_instances
+        return success, infos, errors, warnings
+    
+    if not_reference_instances:
+        warnings["no_reference_instances"] = not_reference_instances
+    infos['linked'] = []
+    infos['not_linked'] = []
+    
+    # already_linked_org_units = 
+    return success, infos, errors, warnings
+

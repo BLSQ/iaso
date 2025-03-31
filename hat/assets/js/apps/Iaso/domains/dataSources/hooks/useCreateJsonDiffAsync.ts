@@ -16,9 +16,6 @@ const createJsonDiffAsync = async ({
     targetFields,
     fieldsToExport,
 }: SyncParams): Promise<SyncResponse> => {
-    console.log('sourceFields', sourceFields);
-    console.log('targetFields', targetFields);
-    console.log('fieldsToExport', fieldsToExport);
     const params = {
         // Version to update.
         source_version_to_update_validation_status:
@@ -43,7 +40,7 @@ const createJsonDiffAsync = async ({
         source_version_to_compare_with_org_unit_types:
             targetFields.orgUnitTypes.value.map(outId => parseInt(outId, 10)),
         // Options.
-        field_names: fieldsToExport,
+        field_names: fieldsToExport.filter(field => field !== 'geometry'),
         ignore_groups: true,
         show_deleted_org_units: false,
     };

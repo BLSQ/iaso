@@ -67,12 +67,12 @@ export const ConfirmSyncPreview: FunctionComponent<Props> = ({
             {!jsonDiffResult && (
                 <Typography
                     variant="body2"
-                    color="error"
                     component="span"
                     sx={{
                         display: 'flex',
                         justifyContent: 'center',
                         width: '100%',
+                        color: 'warning.main',
                     }}
                 >
                     {formatMessage(MESSAGES.syncMessage)}

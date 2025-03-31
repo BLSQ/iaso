@@ -108,7 +108,6 @@ const FormDetail: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const [currentForm, setFieldValue, setFieldErrors, setFormState] =
         useFormState(formatFormData(form));
-    const [formIsSet, setFormisSet] = useState(false);
     const isFormModified = useMemo(() => {
         return (
             !isEqual(
@@ -215,7 +214,6 @@ const FormDetail: FunctionComponent = () => {
     };
     useEffect(() => {
         if (form) {
-            setFormisSet(true);
             setFormState(formatFormData(form));
         }
     }, [form, setFormState]);
@@ -245,7 +243,6 @@ const FormDetail: FunctionComponent = () => {
                     currentForm={currentForm}
                     setFieldValue={onChange}
                     originalSinglePerPeriod={originalSinglePerPeriod}
-                    formIsSet={formIsSet}
                 />
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {currentForm.id.value !== '' && (

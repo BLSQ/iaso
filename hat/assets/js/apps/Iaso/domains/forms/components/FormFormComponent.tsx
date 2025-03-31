@@ -4,6 +4,7 @@ import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ExternalLink,
+    InputWithInfos,
     LinkWithLocation,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -55,14 +56,12 @@ type FormFormProps = {
     currentForm: FormDataType;
     setFieldValue: (key: string, value: any) => void;
     originalSinglePerPeriod?: boolean;
-    formIsSet: boolean;
 };
 
 const FormForm: FunctionComponent<FormFormProps> = ({
     currentForm,
     setFieldValue,
     originalSinglePerPeriod,
-    formIsSet,
 }) => {
     const classes = useStyles();
     const [displayPeriods, setDisplayPeriods] = useState<boolean>();
@@ -106,7 +105,10 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
         useGetOrgUnitTypesDropdownOptions({
             projectIds: currentForm.project_ids.value,
-            enabled: formIsSet,
+            // we only want to fetch the org unit types if the project ids are set, project ids is a required field
+            enabled:
+                currentForm.project_ids.value &&
+                currentForm.project_ids.value.length > 0,
         });
     useEffect(() => {
         if (
@@ -269,20 +271,31 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         required
                         loading={isFetchingProjects}
                     />
-                    <InputComponent
-                        multi
-                        clearable
-                        keyValue="org_unit_type_ids"
-                        onChange={(key, value) =>
-                            setFieldValue(key, commaSeparatedIdsToArray(value))
-                        }
-                        value={orgUnitTypes}
-                        errors={currentForm.org_unit_type_ids.errors}
-                        type="select"
-                        options={allOrgUnitTypes || []}
-                        label={MESSAGES.orgUnitsTypes}
-                        loading={isOuTypeLoading}
-                    />
+                    <InputWithInfos
+                        infos={formatMessage(MESSAGES.projectsInfo)}
+                    >
+                        <InputComponent
+                            multi
+                            clearable
+                            keyValue="org_unit_type_ids"
+                            onChange={(key, value) =>
+                                setFieldValue(
+                                    key,
+                                    commaSeparatedIdsToArray(value),
+                                )
+                            }
+                            value={orgUnitTypes}
+                            errors={currentForm.org_unit_type_ids.errors}
+                            type="select"
+                            options={allOrgUnitTypes || []}
+                            label={MESSAGES.orgUnitsTypes}
+                            loading={isOuTypeLoading}
+                            disabled={
+                                !currentForm.project_ids.value ||
+                                currentForm.project_ids.value.length === 0
+                            }
+                        />
+                    </InputWithInfos>
                     {showAdvancedSettings && (
                         <>
                             <InputComponent

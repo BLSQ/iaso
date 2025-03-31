@@ -35,9 +35,7 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
         return obj.file_scan_status
 
     def get_scan_timestamp(self, obj: FormAttachment):
-        if obj.file_last_scan:
-            return obj.file_last_scan.timestamp()
-        return obj.file_last_scan
+        return obj.file_last_scan.timestamp() if obj.file_last_scan else None
 
     def validate(self, data: typing.MutableMapping):
         form: Form = data["form"]

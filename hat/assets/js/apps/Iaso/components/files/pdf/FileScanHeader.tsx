@@ -1,16 +1,14 @@
-import React, { FunctionComponent, useMemo } from 'react';
-import { CheckCircleOutline } from '@mui/icons-material';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import React, { FunctionComponent } from 'react';
 import { Box, Typography } from '@mui/material';
 import { useSafeIntl, displayDateFromTimestamp } from 'bluesquare-components';
 import {
-    fileScanResultError,
     fileScanResultInfected,
     fileScanResultClean,
 } from '../../../constants/fileScanResults';
 import { SxStyles } from '../../../types/general';
+import { FileScanHeaderIcon } from './FileScanHeaderIcon';
 import MESSAGES from './messages';
+import { useFileScanHeaderText } from './useFileScanHeaderText';
 
 const styles: SxStyles = {
     baseHeader: {
@@ -24,22 +22,13 @@ const styles: SxStyles = {
         backgroundColor: '#E6F4EA',
         color: '#1E4620',
     },
-    colorCleanFile: {
-        color: '#137333',
-    },
     headerPendingFile: {
         backgroundColor: '#FEF7E0',
         color: '#8A5700',
     },
-    colorPendingFile: {
-        color: '#B06D00',
-    },
     headerInfectedFile: {
         backgroundColor: '#FDEDED',
         color: '#8B1A1A',
-    },
-    colorInfectedFile: {
-        color: '#B3261E',
     },
 };
 
@@ -53,8 +42,9 @@ export const FileScanHeader: FunctionComponent<FileScanHeaderProps> = ({
     scanTimestamp,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const headerText = useFileScanHeaderText(scanResult);
 
-    const headerStyle = useMemo(() => {
+    const headerStyle = () => {
         if (scanResult === fileScanResultClean) {
             return [styles.baseHeader, styles.headerCleanFile];
         }
@@ -62,34 +52,11 @@ export const FileScanHeader: FunctionComponent<FileScanHeaderProps> = ({
             return [styles.baseHeader, styles.headerInfectedFile];
         }
         return [styles.baseHeader, styles.headerPendingFile];
-    }, [scanResult]);
-
-    const headerIcon = useMemo(() => {
-        if (scanResult === fileScanResultClean) {
-            return <CheckCircleOutline sx={styles.colorCleanFile} />;
-        }
-        if (scanResult === fileScanResultInfected) {
-            return <ErrorOutlineIcon sx={styles.colorInfectedFile} />;
-        }
-        return <WarningAmberIcon sx={styles.colorPendingFile} />;
-    }, [scanResult]);
-
-    const headerText = useMemo(() => {
-        if (scanResult === fileScanResultInfected) {
-            return formatMessage(MESSAGES.fileScanResultInfected);
-        }
-        if (scanResult === fileScanResultClean) {
-            return formatMessage(MESSAGES.fileScanResultSafe);
-        }
-        if (scanResult === fileScanResultError) {
-            return formatMessage(MESSAGES.fileScanResultError);
-        }
-        return formatMessage(MESSAGES.fileScanResultPending);
-    }, [scanResult, formatMessage]);
+    };
 
     return (
-        <Box sx={headerStyle}>
-            {headerIcon}
+        <Box sx={headerStyle()}>
+            <FileScanHeaderIcon scanResult={scanResult} />
             <Box>
                 <Typography fontWeight="bold">{headerText}</Typography>
                 {scanTimestamp && (

@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
         paddingRight: theme.spacing(3),
     },
     languageSwithActive: {
-        color: theme.palette.warning.light,
+        color: theme.palette.secondary.main,
         cursor: 'text',
     },
 }));

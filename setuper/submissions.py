@@ -191,22 +191,20 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
                 "father_name": child["lastname"],
                 "age_type": 1,
                 "age": child["age_in_months"],
-                "child_details": {
-                    "gender": child["gender"],
-                    "caretaker_name": child["lastname"],
-                    "caretaker_rs": random.choice(
-                        [
-                            "mother",
-                            "father",
-                            "sister",
-                            "brother",
-                            "grandfather",
-                            "grandmother",
-                            "other",
-                        ]
-                    ),
-                    "hc": random.choice(["hc_A", "hc_B", "hc_C", "hc_D", "hc_E"]),
-                },
+                "gender": child["gender"],
+                "caretaker_name": child["lastname"],
+                "caretaker_rs": random.choice(
+                    [
+                        "mother",
+                        "father",
+                        "sister",
+                        "brother",
+                        "grandfather",
+                        "grandmother",
+                        "other",
+                    ]
+                ),
+                "hc": random.choice(["hc_A", "hc_B", "hc_C", "hc_D", "hc_E"]),
                 "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
             },
         }

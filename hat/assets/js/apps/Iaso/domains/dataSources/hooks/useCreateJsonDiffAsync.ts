@@ -5,53 +5,55 @@ import { SyncResponse } from '../types/sync';
 
 type SyncParams = {
     id: number;
-    sourceFields: VersionFields;
-    targetFields: VersionFields;
+    toUpdateFields: VersionFields;
+    toCompareWithFields: VersionFields;
     fieldsToExport: string[];
 };
 
 const createJsonDiffAsync = async ({
     id,
-    sourceFields,
-    targetFields,
+    toUpdateFields,
+    toCompareWithFields,
     fieldsToExport,
 }: SyncParams): Promise<SyncResponse> => {
     const params: Record<string, any> = {};
 
     // Version to update
-    if (targetFields.status.value !== 'all') {
+    if (toUpdateFields.status.value !== 'all') {
         params.source_version_to_update_validation_status =
-            targetFields.status.value;
+            toUpdateFields.status.value;
     }
 
-    if (targetFields.orgUnit.value) {
+    if (toUpdateFields.orgUnit.value) {
         params.source_version_to_update_top_org_unit = parseInt(
-            targetFields.orgUnit.value,
+            toUpdateFields.orgUnit.value,
             10,
         );
     }
 
-    if (targetFields.orgUnitTypes.value.length > 0) {
+    if (toUpdateFields.orgUnitTypes.value.length > 0) {
         params.source_version_to_update_org_unit_types =
-            targetFields.orgUnitTypes.value.map(outId => parseInt(outId, 10));
+            toUpdateFields.orgUnitTypes.value.map(outId => parseInt(outId, 10));
     }
 
     // Version to compare with
-    if (sourceFields.status.value !== 'all') {
+    if (toCompareWithFields.status.value !== 'all') {
         params.source_version_to_compare_with_validation_status =
-            sourceFields.status.value;
+            toCompareWithFields.status.value;
     }
 
-    if (sourceFields.orgUnit.value) {
+    if (toCompareWithFields.orgUnit.value) {
         params.source_version_to_compare_with_top_org_unit = parseInt(
-            sourceFields.orgUnit.value,
+            toCompareWithFields.orgUnit.value,
             10,
         );
     }
 
-    if (sourceFields.orgUnitTypes.value.length > 0) {
+    if (toCompareWithFields.orgUnitTypes.value.length > 0) {
         params.source_version_to_compare_with_org_unit_types =
-            sourceFields.orgUnitTypes.value.map(outId => parseInt(outId, 10));
+            toCompareWithFields.orgUnitTypes.value.map(outId =>
+                parseInt(outId, 10),
+            );
     }
 
     // Options
@@ -71,11 +73,16 @@ const createJsonDiffAsync = async ({
 
 export const useCreateJsonDiffAsync = () => {
     return useSnackMutation<SyncResponse, Error, SyncParams>({
-        mutationFn: ({ id, sourceFields, targetFields, fieldsToExport }) =>
+        mutationFn: ({
+            id,
+            toUpdateFields,
+            toCompareWithFields,
+            fieldsToExport,
+        }) =>
             createJsonDiffAsync({
                 id,
-                sourceFields,
-                targetFields,
+                toUpdateFields,
+                toCompareWithFields,
                 fieldsToExport,
             }),
         showSucessSnackBar: false,

@@ -82,7 +82,10 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
     );
 
     const sourceVersion = sourceVersions?.find(
-        v => v.id.toString() === exportData.source_version_id.value,
+        v => `${v.id}` === `${exportData.source_version_id.value}`,
+    );
+    const refVersion = sourceVersions?.find(
+        v => `${v.id}` === `${exportData.ref_version_id.value}`,
     );
     const { data: source } = useDataSourceForVersion(sourceVersion);
     const credentials = source?.credentials;
@@ -148,7 +151,7 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
         }
     }, [refDataVersionId]);
 
-    const { sourceFields, targetFields } = useExportFields({
+    const { toUpdateFields, toCompareWithFields } = useExportFields({
         exportData,
         versions: dataSource.versions,
         sourceVersions,
@@ -185,7 +188,7 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                         </Grid>
                         <Grid container item spacing={2}>
                             <VersionPicker
-                                fields={sourceFields}
+                                fields={toCompareWithFields}
                                 onChange={setExportDataField}
                                 resetTrigger={
                                     refTreeviewResetControl.current !==
@@ -230,7 +233,7 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                         </Grid>
                         <Grid container item spacing={2}>
                             <VersionPicker
-                                fields={targetFields}
+                                fields={toUpdateFields}
                                 onChange={setExportDataField}
                                 resetTrigger={
                                     sourceTreeviewResetControl.current !==
@@ -251,10 +254,10 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                     <ConfirmSyncButton
                         closeMainDialog={handleClose}
                         allowConfirm={allowSync}
-                        refSourceVersionId={refDataVersionId}
-                        targetSourceVersionId={sourceDataVersionId}
-                        sourceFields={sourceFields}
-                        targetFields={targetFields}
+                        toUpdateSourceVersion={sourceVersion}
+                        toCompareWithSourceVersion={refVersion}
+                        toUpdateFields={toUpdateFields}
+                        toCompareWithFields={toCompareWithFields}
                         fieldsToExport={exportData.fields_to_export.value}
                     />
                     <ConfirmExportButton

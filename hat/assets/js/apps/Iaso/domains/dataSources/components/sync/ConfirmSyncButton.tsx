@@ -24,6 +24,7 @@ import { useCreateDataSourceVersionsSync } from '../../hooks/useCreateDataSource
 import { useCreateJsonDiffAsync } from '../../hooks/useCreateJsonDiffAsync';
 import { useLaunchDiff } from '../../hooks/useLaunchDiff';
 import MESSAGES from '../../messages';
+import { Version } from '../../types/dataSources';
 import { SyncResponse } from '../../types/sync';
 import { VersionFields } from '../VersionPicker';
 import { ConfirmSyncPreview } from './ConfirmSyncPreview';
@@ -31,10 +32,10 @@ import { ConfirmSyncPreview } from './ConfirmSyncPreview';
 type Props = {
     closeMainDialog: () => void;
     allowConfirm: boolean;
-    refSourceVersionId: number;
-    targetSourceVersionId: number;
-    sourceFields: VersionFields;
-    targetFields: VersionFields;
+    toUpdateSourceVersion: Version;
+    toCompareWithSourceVersion?: Version;
+    toUpdateFields: VersionFields;
+    toCompareWithFields: VersionFields;
     fieldsToExport: string[];
 };
 
@@ -46,10 +47,10 @@ type Props = {
 export const ConfirmSyncButton: FunctionComponent<Props> = ({
     closeMainDialog,
     allowConfirm,
-    refSourceVersionId,
-    targetSourceVersionId,
-    sourceFields,
-    targetFields,
+    toUpdateSourceVersion,
+    toCompareWithSourceVersion,
+    toUpdateFields,
+    toCompareWithFields,
     fieldsToExport,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -76,15 +77,16 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
             if (!syncId) {
                 result = await createDataSourceVersionsSync({
                     name: syncName,
-                    refSourceVersionId,
-                    targetSourceVersionId,
+                    toUpdateSourceVersionId: toUpdateSourceVersion.id,
+                    toCompareWithSourceVersionId:
+                        toCompareWithSourceVersion?.id,
                 });
                 setSyncId(result.id);
             }
             const diffResult = await createJsonDiffAsync({
                 id: syncId || result.id,
-                sourceFields,
-                targetFields,
+                toUpdateFields,
+                toCompareWithFields,
                 fieldsToExport,
             });
             setIsPreviewDone(true);
@@ -102,11 +104,11 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
         createDataSourceVersionsSync,
         createJsonDiffAsync,
         fieldsToExport,
-        refSourceVersionId,
-        sourceFields,
+        toUpdateSourceVersion,
+        toUpdateFields,
         syncName,
-        targetFields,
-        targetSourceVersionId,
+        toCompareWithFields,
+        toCompareWithSourceVersion,
         syncId,
     ]);
     const handleClose = useCallback(() => {
@@ -177,6 +179,9 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
                     <ConfirmDialogWarningTitle
                         title={formatMessage(MESSAGES.syncTitle)}
                     />
+                    <Box sx={{ fontSize: '14px', textAlign: 'center' }}>
+                        {`${toCompareWithSourceVersion?.data_source_name}: ${toCompareWithSourceVersion?.number} --> ${toUpdateSourceVersion?.number}`}
+                    </Box>
                 </DialogTitle>
                 <Divider />
                 <DialogContent>

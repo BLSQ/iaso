@@ -23,7 +23,7 @@ export const useExportFields = ({
     const { data: orgUnitTypes, isLoading: areOrgUnitTypesLoading } =
         useOrgUnitTypes();
 
-    const sourceFields: VersionFields = useMemo(
+    const toCompareWithFields: VersionFields = useMemo(
         () => ({
             version: {
                 key: 'ref_version_id',
@@ -70,7 +70,7 @@ export const useExportFields = ({
         ],
     );
 
-    const targetFields: VersionFields = useMemo(
+    const toUpdateFields: VersionFields = useMemo(
         () => ({
             version: {
                 key: 'source_version_id',
@@ -116,8 +116,8 @@ export const useExportFields = ({
     );
 
     return {
-        sourceFields,
-        targetFields,
+        toUpdateFields,
+        toCompareWithFields,
         isLoadingOrgUnitStatusAsOptions,
         areOrgUnitTypesLoading,
     };

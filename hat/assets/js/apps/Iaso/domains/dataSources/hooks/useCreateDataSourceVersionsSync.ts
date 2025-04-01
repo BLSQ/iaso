@@ -3,30 +3,34 @@ import { useSnackMutation } from '../../../libs/apiHooks';
 import { SyncResponse } from '../types/sync';
 
 type SyncParams = {
-    name: string | undefined;
-    refSourceVersionId: number;
-    targetSourceVersionId: number;
+    name?: string;
+    toUpdateSourceVersionId?: number;
+    toCompareWithSourceVersionId?: number;
 };
 
 const createDataSourceVersionsSync = async ({
     name,
-    refSourceVersionId,
-    targetSourceVersionId,
+    toUpdateSourceVersionId,
+    toCompareWithSourceVersionId,
 }: SyncParams): Promise<SyncResponse> => {
     return postRequest('/api/datasources/sync/', {
         name,
-        source_version_to_update: targetSourceVersionId,
-        source_version_to_compare_with: refSourceVersionId,
+        source_version_to_update: toUpdateSourceVersionId,
+        source_version_to_compare_with: toCompareWithSourceVersionId,
     });
 };
 
 export const useCreateDataSourceVersionsSync = () => {
     return useSnackMutation<SyncResponse, Error, SyncParams>({
-        mutationFn: ({ name, refSourceVersionId, targetSourceVersionId }) =>
+        mutationFn: ({
+            name,
+            toUpdateSourceVersionId,
+            toCompareWithSourceVersionId,
+        }) =>
             createDataSourceVersionsSync({
                 name,
-                refSourceVersionId,
-                targetSourceVersionId,
+                toUpdateSourceVersionId,
+                toCompareWithSourceVersionId,
             }),
         showSucessSnackBar: false,
     });

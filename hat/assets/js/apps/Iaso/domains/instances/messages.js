@@ -250,6 +250,16 @@ const MESSAGES = defineMessages({
             'About {selectedSubmissionsCount} selected submissions are not reference ones',
         id: 'iaso.instance.noReferenceSubmissionsWarningMessage',
     },
+    linkReferenceSubmissionsConfirmMessage: {
+        defaultMessage:
+            'There are {unLinkedCount} not linked reference submission. To link them you have to check the checkbox.',
+        id: 'iaso.instance.linkReferenceSubmissionsConfirmMessage',
+    },
+    unLinkReferenceSubmissionsConfirmMessage: {
+        defaultMessage:
+            'There are {linkedCount} linked reference submission. To unlink them you have to check the checkbox.',
+        id: 'iaso.instance.unLinkReferenceSubmissionsConfirmMessage',
+    },
     approveAllWarningsMessage: {
         defaultMessage:
             'All warnings must be approved before launching the locations push.',

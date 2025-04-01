@@ -1,7 +1,6 @@
 import React, {
     FunctionComponent,
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -10,21 +9,15 @@ import {
     ConfirmCancelModal,
     LoadingSpinner,
     makeFullModal,
-    useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import { baseUrls } from '../../../../constants/urls';
-import * as Permission from '../../../../utils/permissions';
-import { useCurrentUser } from '../../../../utils/usersUtils';
 import { Selection } from '../../../orgUnits/types/selection';
-import { userHasPermission } from '../../../users/utils';
-import { useGetCheckBulkGpsPush } from '../../hooks/useGetCheckBulkGpsPush';
 import { useGetCheckBulkReferenceInstanceLink } from '../../hooks/useGetCheckBulkReferenceInstanceLink';
-import { useInstanceBulkgpspush } from '../../hooks/useInstanceBulkgpspush';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
 import BulkLinkPushWarningMessage from '../PushInstanceGps/BulkLinkPushWarningMessage';
 import { LinkReferenceInstancesButton } from './LinkReferenceInstancesButton';
+import { LinkReferenceInstancesCheckBox } from './LinkReferenceInstancesCheckBox';
 
 type Props = {
     selection: Selection<Instance>;
@@ -38,6 +31,8 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
     closeDialog,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const [toLinkIds, setToLinkIds] = useState<number[] | undefined>([]);
+    const [toUnLinkIds, setToUnLinkIds] = useState<number[] | undefined>([]);
     const select_all = selection.selectAll;
     const selected_ids = selection.selectedItems;
     const unselected_ids = selection.unSelectedItems;
@@ -55,12 +50,38 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
     const onConfirm = useCallback(async () => {
         closeDialog();
     }, [closeDialog]);
-    const noLoadingAndNoError = useMemo(
-        () => !isLoadingCheckResult && !isError,
-        [isError, isLoadingCheckResult],
+    const onCheck = useCallback(
+        type => {
+            if (type === 'link') {
+                setToLinkIds(prev =>
+                    (prev?.length || 0) > 0
+                        ? []
+                        : checkReferenceInstanceLink?.not_linked || [],
+                );
+                return;
+            }
+            setToUnLinkIds(prev =>
+                (prev?.length || 0) > 0
+                    ? []
+                    : checkReferenceInstanceLink?.linked || [],
+            );
+        },
+        [
+            checkReferenceInstanceLink?.linked,
+            checkReferenceInstanceLink?.not_linked,
+            setToLinkIds,
+            setToUnLinkIds,
+        ],
+    );
+    const allowConfirm = useMemo(
+        () =>
+            !isLoadingCheckResult &&
+            !isError &&
+            ((toLinkIds?.length || 0) > 0 || (toUnLinkIds?.length || 0) > 0),
+        [isError, isLoadingCheckResult, toLinkIds?.length, toUnLinkIds?.length],
     );
 
-    const getWarningMessage = () => {
+    const warningMessage = useMemo(() => {
         if (isError) {
             return MESSAGES.multipleReferenceInstancesOneOrgUnitWarningMessage;
         }
@@ -68,10 +89,11 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
             return MESSAGES.noReferenceSubmissionsWarningMessage;
         }
         return '';
-    };
+    }, [checkReferenceInstanceLink?.warning, isError]);
+
     return (
         <ConfirmCancelModal
-            allowConfirm={noLoadingAndNoError}
+            allowConfirm={allowConfirm}
             titleMessage={MESSAGES.linkUnlinkReferenceSubmissionsToOrgUnits}
             onConfirm={onConfirm}
             onCancel={() => {
@@ -89,47 +111,50 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
             {isLoadingCheckResult ? (
                 <LoadingSpinner absolute />
             ) : (
-                <Grid container spacing={4} alignItems="center">
+                <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12}>
                         <Typography variant="subtitle1">
-                            <BulkLinkPushWarningMessage
-                                message={formatMessage(getWarningMessage(), {
-                                    selectedSubmissionsCount:
-                                        checkReferenceInstanceLink?.warning
-                                            .length,
-                                })}
-                                paddingLeft="15px"
-                                paddingTop="20px"
-                                marginRight="100px"
-                            />
+                            {(warningMessage || isError) && (
+                                <BulkLinkPushWarningMessage
+                                    message={formatMessage(warningMessage, {
+                                        selectedSubmissionsCount:
+                                            checkReferenceInstanceLink?.warning
+                                                ?.length,
+                                    })}
+                                    paddingLeft="15px"
+                                    paddingTop="20px"
+                                    marginRight="100px"
+                                />
+                            )}
                         </Typography>
                     </Grid>
-
-                    {/* <PushBulkGpsWarning
-                        condition={displayWarningSubmissionsNoGps}
-                        message={MESSAGES.noGpsForSomeInstaces}
-                        approveCondition={approveSubmissionNoHasGps}
-                        onApproveClick={() => onApprove(INSTANCE_HAS_NO_GPS)}
-                    />
-                    <PushBulkGpsWarning
-                        condition={displayWarningOverWriteGps}
-                        message={MESSAGES.someOrgUnitsHasAlreadyGps}
-                        approveCondition={approveOrgUnitHasGps}
-                        onApproveClick={() =>
-                            onApprove(ORG_UNIT_HAS_ALREADY_GPS)
-                        }
-                    />
-                    {!approved && (
-                        <Grid item xs={12}>
-                            <Typography variant="subtitle1">
-                                <PushGpsWarningMessage
-                                    message={formatMessage(
-                                        MESSAGES.approveAllWarningsMessage,
-                                    )}
+                    {!isError && (
+                        <>
+                            {(checkReferenceInstanceLink?.not_linked?.length ||
+                                0) > 0 && (
+                                <LinkReferenceInstancesCheckBox
+                                    ids={toLinkIds}
+                                    idsCound={
+                                        checkReferenceInstanceLink?.not_linked
+                                            ?.length
+                                    }
+                                    onCheck={() => onCheck('link')}
                                 />
-                            </Typography>
-                        </Grid>
-                    )} */}
+                            )}
+
+                            {(checkReferenceInstanceLink?.linked?.length || 0) >
+                                0 && (
+                                <LinkReferenceInstancesCheckBox
+                                    ids={toUnLinkIds}
+                                    idsCound={
+                                        checkReferenceInstanceLink?.linked
+                                            ?.length
+                                    }
+                                    onCheck={() => onCheck('unlink')}
+                                />
+                            )}
+                        </>
+                    )}
                 </Grid>
             )}
         </ConfirmCancelModal>

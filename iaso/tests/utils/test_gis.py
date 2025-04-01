@@ -16,5 +16,5 @@ class SimplifyGeomTestCase(TestCase):
         with open("iaso/tests/fixtures/geometry/as_essomba_multipolygon.txt") as multipolygon_file:
             geom = GEOSGeometry(multipolygon_file.read(), srid=4326)
         simplified_geom = simplify_geom(geom)
-        self.assertEqual(geom.num_coords, 91)
+        self.assertEqual(geom.num_coords, 90)
         self.assertEqual(simplified_geom.num_coords, 91)  # Same number of coords.

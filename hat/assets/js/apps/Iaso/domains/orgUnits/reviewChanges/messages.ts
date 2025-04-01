@@ -285,6 +285,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.bulkChangeCount',
         defaultMessage: 'You are about to change {count} Org units',
     },
+    searchByIds: {
+        id: 'iaso.orgUnits.searchByIds',
+        defaultMessage: 'Search by multiple IDs',
+    },
+    searchByIdsInfo: {
+        id: 'iaso.orgUnits.searchByIdsInfo',
+        defaultMessage:
+            'Search by ID or multiple IDs at once, separated by a comma or a space. E.g. “132,654”',
+    },
 });
 
 export default MESSAGES;

@@ -29,6 +29,8 @@ OUT_COLUMNS = [
     "group_names",
     # "id", # it's present as  an index, so it bug GeoPandas but it's exported
     "uuid",
+    "opening_date",
+    "closed_date",
 ]
 
 
@@ -54,6 +56,8 @@ ORG_UNIT_COLUMNS = [
     "location",
     "geom",
     "simplified_geom",
+    "opening_date",
+    "closed_date",
 ]
 
 
@@ -86,6 +90,10 @@ def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
     df["depth"] = df["depth"].fillna(999)
     df["depth"] = df["depth"].astype(int)
     df["type"] = df["type"].fillna("Unknown")
+
+    # Convert dates to string format
+    df["opening_date"] = df["opening_date"].astype(str).replace("None", None)
+    df["closed_date"] = df["closed_date"].astype(str).replace("None", None)
 
     # Convert django geometry values (GEOS) to shapely models
     df["geography"] = df["geography"].map(geos_to_shapely)

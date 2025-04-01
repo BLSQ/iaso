@@ -291,7 +291,7 @@ export const Calendar: FunctionComponent = () => {
                                     orders={orders}
                                     campaigns={filteredCampaigns}
                                     calendarData={calendarData}
-                                    loadingCampaigns={isLoading}
+                                    loadingCampaigns={isFetching}
                                     isPdf={isPdf}
                                     url={currentUrl}
                                     isLogged={isLogged}

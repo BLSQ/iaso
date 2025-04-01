@@ -80,7 +80,6 @@ const save = (body: CampaignFormValues) => {
                     dispatchError(MESSAGES.subActivitySaveError, error);
                 })
                 .finally(() => {
-                    dispatchSuccess(MESSAGES.campaignSaved);
                     return campaign;
                 });
         })

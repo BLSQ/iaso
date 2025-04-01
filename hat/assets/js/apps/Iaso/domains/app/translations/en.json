@@ -168,7 +168,7 @@
     "iaso.datasources.title.export": "Org units to export",
     "iaso.datasources.title.exportTitle": "Are you sure?",
     "iaso.datasources.title.origin": "Origin",
-    "iaso.datasources.title.syncMessage": "This might create a lot of changes requests to align the two versions. This dialog will stay frozen until the preview is done.",
+    "iaso.datasources.title.syncMessage": "This might create a lot of changes requests to align the two versions. This dialog will stay frozen until the preview is done. Geometry will not be synchronized.",
     "iaso.datasources.title.syncTitle": "Synchronize data sources",
     "iaso.datasources.title.target": "Target",
     "iaso.datasources.tooltip.compare": "Compare/Synchronize data sources",

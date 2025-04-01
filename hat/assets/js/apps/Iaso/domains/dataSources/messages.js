@@ -204,7 +204,7 @@ const MESSAGES = defineMessages({
     syncMessage: {
         id: 'iaso.datasources.title.syncMessage',
         defaultMessage:
-            'This might create a lot of changes requests to align the two versions. This dialog will stay frozen until the preview is done.',
+            'This might create a lot of changes requests to align the two versions. This dialog will stay frozen until the preview is done. Geometry will not be synchronized.',
     },
     default: {
         id: 'iaso.datasources.options.label.default',

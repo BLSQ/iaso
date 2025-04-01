@@ -8,6 +8,7 @@ import {
     DialogContent,
     DialogActions,
     Divider,
+    Alert,
 } from '@mui/material';
 import {
     InputWithInfos,
@@ -24,8 +25,8 @@ import { useCreateJsonDiffAsync } from '../../hooks/useCreateJsonDiffAsync';
 import { useLaunchDiff } from '../../hooks/useLaunchDiff';
 import MESSAGES from '../../messages';
 import { SyncResponse } from '../../types/sync';
-import { ConfirmSyncPreview } from './ConfirmSyncPreview';
 import { VersionFields } from '../VersionPicker';
+import { ConfirmSyncPreview } from './ConfirmSyncPreview';
 
 type Props = {
     closeMainDialog: () => void;
@@ -56,6 +57,7 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
 
     const [open, setOpen] = useState<boolean>(false);
     const [isPreviewDone, setIsPreviewDone] = useState<boolean>(false);
+    const [errors, setErrors] = useState<string[]>([]);
     const [jsonDiffResult, setJsonDiffResult] = useState<
         SyncResponse | undefined
     >(undefined);
@@ -82,20 +84,26 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
             setIsPreviewDone(true);
             setJsonDiffResult(diffResult);
         } catch (error) {
-            setIsLoading(false);
             setIsPreviewDone(false);
-            console.error(
-                'Error creating data source versions synchronization',
-                error,
-            );
+            Object.entries(error.details).forEach(([_key, value]) => {
+                setErrors(prev => [...prev, `${value}`]);
+            });
+
+            // console.error(
+            //     'Error creating data source versions synchronization',
+            //     error,
+            // );
         } finally {
             setIsLoading(false);
         }
     }, [
         createDataSourceVersionsSync,
         createJsonDiffAsync,
+        fieldsToExport,
         refSourceVersionId,
+        sourceFields,
         syncName,
+        targetFields,
         targetSourceVersionId,
     ]);
     const handleClose = useCallback(() => {
@@ -191,6 +199,13 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
                         isDisabled={isDisabled}
                         handleSeePreview={handleSeePreview}
                     />
+                    {errors.length > 0 && (
+                        <Alert severity="error" sx={{ mt: 2 }}>
+                            {errors.map(error => (
+                                <Box key={error}>{error}</Box>
+                            ))}
+                        </Alert>
+                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">

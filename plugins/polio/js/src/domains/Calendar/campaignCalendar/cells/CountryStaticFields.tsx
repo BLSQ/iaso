@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Box, Tooltip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 
@@ -95,7 +95,7 @@ export const CountryStaticFields: FunctionComponent<Props> = ({
                         </Box>
                         <Box sx={styles.expandIconContainer}>
                             {subActivitiesExpanded ? (
-                                <ExpandLessIcon sx={{ fontSize: 16 }} />
+                                <ExpandMoreIcon sx={{ fontSize: 16 }} />
                             ) : (
                                 <ChevronRightIcon sx={{ fontSize: 16 }} />
                             )}

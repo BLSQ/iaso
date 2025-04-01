@@ -61,6 +61,8 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
     const [jsonDiffResult, setJsonDiffResult] = useState<
         SyncResponse | undefined
     >(undefined);
+
+    const [syncId, setSyncId] = useState<number | undefined>(undefined);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [syncName, setSyncName] = useState<string | undefined>(undefined);
     const { mutateAsync: createDataSourceVersionsSync } =
@@ -70,13 +72,17 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
     const handleSeePreview = useCallback(async () => {
         setIsLoading(true);
         try {
-            const result = await createDataSourceVersionsSync({
-                name: syncName,
-                refSourceVersionId,
-                targetSourceVersionId,
-            });
+            let result;
+            if (!syncId) {
+                result = await createDataSourceVersionsSync({
+                    name: syncName,
+                    refSourceVersionId,
+                    targetSourceVersionId,
+                });
+                setSyncId(result.id);
+            }
             const diffResult = await createJsonDiffAsync({
-                id: result.id,
+                id: syncId || result.id,
                 sourceFields,
                 targetFields,
                 fieldsToExport,
@@ -85,14 +91,10 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
             setJsonDiffResult(diffResult);
         } catch (error) {
             setIsPreviewDone(false);
+            setSyncId(undefined);
             Object.entries(error.details).forEach(([_key, value]) => {
                 setErrors(prev => [...prev, `${value}`]);
             });
-
-            // console.error(
-            //     'Error creating data source versions synchronization',
-            //     error,
-            // );
         } finally {
             setIsLoading(false);
         }
@@ -105,6 +107,7 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
         syncName,
         targetFields,
         targetSourceVersionId,
+        syncId,
     ]);
     const handleClose = useCallback(() => {
         setOpen(false);

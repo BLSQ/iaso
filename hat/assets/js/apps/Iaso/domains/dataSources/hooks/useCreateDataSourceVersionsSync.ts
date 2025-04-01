@@ -15,8 +15,8 @@ const createDataSourceVersionsSync = async ({
 }: SyncParams): Promise<SyncResponse> => {
     return postRequest('/api/datasources/sync/', {
         name,
-        source_version_to_update: refSourceVersionId,
-        source_version_to_compare_with: targetSourceVersionId,
+        source_version_to_update: targetSourceVersionId,
+        source_version_to_compare_with: refSourceVersionId,
     });
 };
 

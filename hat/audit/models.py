@@ -83,6 +83,10 @@ class Modification(models.Model):
     new_value = models.JSONField(encoder=IasoJsonEncoder)
     source = models.TextField()
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    # Enables  to go back to the original change request when `source == ORG_UNIT_CHANGE_REQUEST`.
+    org_unit_change_request = models.ForeignKey(
+        "iaso.OrgUnitChangeRequest", null=True, blank=True, on_delete=models.CASCADE
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -139,12 +143,16 @@ def log_modification(
     v2: Optional[AnyModelInstance],
     source: Optional[str],
     user: User = None,
+    org_unit_change_request_id: int = None,
 ) -> Modification:
     modification = Modification()
     modification.past_value = []
     modification.new_value = []
     modification.source = source
     modification.user = user
+
+    if source == ORG_UNIT_CHANGE_REQUEST:
+        modification.org_unit_change_request_id = org_unit_change_request_id
 
     if v1:
         # If `v1` is a list, it means it's already been serialized.

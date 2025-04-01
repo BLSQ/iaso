@@ -1,8 +1,68 @@
+import datetime
 import logging
+
+import time_machine
+
+from django.contrib.contenttypes.models import ContentType
 
 from hat.audit import models as audit_models
 from iaso import models as m
 from iaso.test import TestCase
+
+
+class ModelTestCase(TestCase):
+    """
+    Test the `Modification` model.
+    """
+
+    DT = datetime.datetime(2025, 4, 1, 15, 0, 0, 0, tzinfo=datetime.timezone.utc)
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        cls.org_unit = m.OrgUnit.objects.create(
+            org_unit_type=cls.org_unit_type,
+            name="Hôpital Général",
+        )
+        cls.account = m.Account.objects.create(name="Account")
+        cls.user = cls.create_user_with_profile(username="user", account=cls.account)
+
+    @time_machine.travel(DT, tick=False)
+    def test_create(self):
+        org_unit_content_type = ContentType.objects.get(
+            app_label=self.org_unit._meta.app_label, model=self.org_unit._meta.model_name
+        )
+
+        past_value = audit_models.serialize_instance(self.org_unit)
+        self.org_unit.name = "New name"
+        self.org_unit.save()
+
+        new_value = audit_models.serialize_instance(self.org_unit)
+
+        modification = audit_models.Modification.objects.create(
+            content_type=org_unit_content_type,
+            object_id=self.org_unit.pk,
+            past_value=past_value,
+            new_value=new_value,
+            source=audit_models.ORG_UNIT_CHANGE_REQUEST,
+            user=self.user,
+        )
+
+        self.assertEqual(modification.content_type, org_unit_content_type)
+        self.assertEqual(modification.object_id, self.org_unit.pk)
+        self.assertEqual(modification.past_value, past_value)
+        self.assertEqual(modification.new_value, new_value)
+        self.assertEqual(modification.source, audit_models.ORG_UNIT_CHANGE_REQUEST)
+        self.assertEqual(modification.user, self.user)
+        self.assertEqual(modification.org_unit_change_request, None)
+        self.assertEqual(modification.created_at, self.DT)
+
+        diffs = modification.field_diffs()
+        self.assertEqual(len(diffs["added"].keys()), 0)
+        self.assertEqual(len(diffs["removed"].keys()), 0)
+        self.assertEqual(len(diffs["modified"].keys()), 2)
+        self.assertIn("name", diffs["modified"].keys())
+        self.assertIn("updated_at", diffs["modified"].keys())
 
 
 class AuditMethodsTestCase(TestCase):
@@ -77,6 +137,7 @@ class AuditMethodsTestCase(TestCase):
         self.assertIsInstance(modification, audit_models.Modification)
         self.assertEqual(modification.source, audit_models.ORG_UNIT_API)
         self.assertEqual(modification.user, self.user)
+        self.assertEqual(modification.org_unit_change_request, None)
 
         diffs = modification.field_diffs()
 

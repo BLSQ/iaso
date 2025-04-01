@@ -200,6 +200,8 @@ export const ConfirmSyncButton: FunctionComponent<Props> = ({
                             type="text"
                             label={MESSAGES.syncName}
                             required
+                            // Disable the input if the sync is already created (update of the name is not working)
+                            disabled={Boolean(syncId)}
                         />
                     </InputWithInfos>
                     <ConfirmSyncPreview

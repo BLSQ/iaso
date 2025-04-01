@@ -80,7 +80,6 @@ const save = (body: CampaignFormValues) => {
                     dispatchError(MESSAGES.subActivitySaveError, error);
                 })
                 .finally(() => {
-                    dispatchSuccess(MESSAGES.campaignSaved);
                     return campaign;
                 });
         })
@@ -93,7 +92,10 @@ export const useSaveCampaign = (): UseMutationResult<any, any, any> => {
     const queryClient = useQueryClient();
     return useMutation('save-campaigns', save, {
         onSuccess: () => {
-            queryClient.invalidateQueries(['subActivities']);
+            queryClient.invalidateQueries([
+                'subActivities',
+                'calendar-campaigns',
+            ]);
         },
     });
 };

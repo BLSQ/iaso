@@ -163,6 +163,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         queryset = queryset.order_by(*order)
 
+        distinct_fields = [item.replace("-", "") for item in order]
+
         if not is_export:
             if limit and not as_location:
                 limit = int(limit)
@@ -171,7 +173,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
                 # because `build_org_units_queryset()` can set `.distinct()` clauses.
                 if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
-                    queryset = queryset.distinct(*order)
+                    queryset = queryset.distinct(*distinct_fields)
 
                 paginator = Paginator(queryset, limit)
 
@@ -211,7 +213,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
                 # because `build_org_units_queryset()` can set `.distinct()` clauses.
                 if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
-                    queryset = queryset.distinct(*order)
+                    queryset = queryset.distinct(*distinct_fields)
 
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
@@ -323,7 +325,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 org_unit.get("creator__first_name", None),
                 org_unit.get("creator__last_name", None),
             )
-            source_ref = org_unit.get("source_ref") if org_unit.get("source_ref") else f"iaso#{org_unit.get('id')}"
+            source_ref = org_unit.get("source_ref") if org_unit.get("source_ref") else f"iaso:{org_unit.get('id')}"
 
             parents_source_ref = [
                 get_org_unit_parents_ref(field_name, org_unit, parent_source_ref_name, parent_field_ids)

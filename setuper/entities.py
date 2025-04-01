@@ -107,19 +107,43 @@ def create_additional_entities(account_name, iaso_client, orgunit, entity_type):
     instance_json = instance_by_LLIN_campaign_form(
         reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit
     )
-    iaso_client.post(
-        "/sync/form_upload/",
-        files={
-            "xml_submission_file": (
-                local_path,
-                submission2xml(
-                    instance_json,
-                    form_version_id=reference_form["latest_form_version"]["version_id"],
-                    form_id=reference_form["form_id"],
-                ),
+    if instance_json.get("consent_given") is not None:
+        with open(
+            f"./data/women-pictures/{instance_json['consent_given']['beneficiary']['picture']}",
+            "rb",
+        ) as fp_image:
+            iaso_client.post(
+                "/sync/form_upload/",
+                files={
+                    "xml_submission_file": (
+                        local_path,
+                        submission2xml(
+                            instance_json,
+                            form_version_id=reference_form["latest_form_version"][
+                                "version_id"
+                            ],
+                            form_id=reference_form["form_id"],
+                        ),
+                    ),
+                    "picture": fp_image,
+                },
             )
-        },
-    )
+    else:
+        iaso_client.post(
+            "/sync/form_upload/",
+            files={
+                "xml_submission_file": (
+                    local_path,
+                    submission2xml(
+                        instance_json,
+                        form_version_id=reference_form["latest_form_version"][
+                            "version_id"
+                        ],
+                        form_id=reference_form["form_id"],
+                    ),
+                )
+            },
+        )
 
 
 def create_child_entities(account_name, iaso_client, orgunit, entity_type):
@@ -143,27 +167,35 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
         "entityUuid": entity_uuid,
         "entityTypeId": entity_type["id"],
         "accuracy": 0,
-        "imgUrl": "imgUrl",
+        "imgUrl": "picture",
         "file": local_path,
         "name": file_name,
     }
     iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
+
     instance_json = instance_by_LLIN_campaign_form(
         reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit
     )
-    iaso_client.post(
-        "/sync/form_upload/",
-        files={
-            "xml_submission_file": (
-                local_path,
-                submission2xml(
-                    instance_json,
-                    form_version_id=reference_form["latest_form_version"]["version_id"],
-                    form_id=reference_form["form_id"],
+    image = f"{int(randint(1, 13))}.png"
+    instance_json["register"]["picture"] = image
+
+    with open(f"./data/children-pictures/{image}", "rb") as fp_image:
+        iaso_client.post(
+            "/sync/form_upload/",
+            files={
+                "xml_submission_file": (
+                    local_path,
+                    submission2xml(
+                        instance_json,
+                        form_version_id=reference_form["latest_form_version"][
+                            "version_id"
+                        ],
+                        form_id=reference_form["form_id"],
+                    ),
                 ),
-            )
-        },
-    )
+                "picture": fp_image,
+            },
+        )
 
     current_datetime = int(datetime.now().timestamp())
     for i in range(randint(0, 5)):

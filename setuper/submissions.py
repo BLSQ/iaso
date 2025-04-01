@@ -88,6 +88,7 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
         age_entry = random.choice(["years", "birthdate"])
         name = beneficiary_name.split(" ")
         age_years = random.randint(10, 50)
+        image = f"{int(random.randint(1, 5))}.webp"
         birth_date = (datetime.now() - timedelta(days=(age_years * 365.25))).date()
         food_assistance = random.choice(["yes", "no"])
         assistance_type = None
@@ -107,6 +108,7 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
                     "first_name": name[0],
                     "last_name": name[1],
                     "gender": "female",
+                    "picture": image,
                 },
                 "age_group": {
                     "age_entry": age_entry,
@@ -204,7 +206,6 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
                         "other",
                     ]
                 ),
-                "hc": random.choice(["hc_A", "hc_B", "hc_C", "hc_D", "hc_E"]),
                 "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
             },
         }

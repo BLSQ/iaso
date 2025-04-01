@@ -64,6 +64,31 @@ class ModelTestCase(TestCase):
         self.assertIn("name", diffs["modified"].keys())
         self.assertIn("updated_at", diffs["modified"].keys())
 
+        modification_as_list = modification.as_list([])
+        expected_modification_as_list = {
+            "id": modification.pk,
+            "content_type": "iaso",
+            "object_id": self.org_unit.pk,
+            "source": "org_unit_change_request",
+            "user": {
+                "id": self.user.pk,
+                "first_name": "",
+                "user_name": "user",
+                "last_name": "",
+                "email": "",
+                "language": None,
+                "user_id": self.user.pk,
+                "phone_number": None,
+                "country_code": None,
+                "editable_org_unit_type_ids": [],
+                "user_roles_editable_org_unit_type_ids": [],
+            },
+            "created_at": self.DT,
+            "org_unit_change_request_id": None,
+        }
+
+        self.assertEqual(modification_as_list, expected_modification_as_list)
+
 
 class AuditMethodsTestCase(TestCase):
     """

@@ -423,3 +423,188 @@ class GPKGImportSimplifiedGroup(TestCase):
                 validation_status="new",
                 description="",
             )
+
+
+class GPKGImportInternalRefs(TestCase):
+    """Tests case around multiple-internal-ref-formats.gpkg
+
+    to check if we can use old (iaso#...) & new (iaso:...) internal references in gpkg imports"""
+
+    GPKG_FILEPATH = "iaso/tests/fixtures/gpkg/multiple-internal-ref-formats.gpkg"
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = Account.objects.create(name="a")
+        cls.project = Project.objects.create(name="Project 1", account=cls.account, app_id="test_app_id")
+        cls.source_name = "test source"
+        cls.source = DataSource.objects.create(name=cls.source_name)
+        cls.version = SourceVersion.objects.create(number=1, data_source=cls.source)
+
+        # Reproducing the content of the geopackage - Groups
+        cls.group_1 = Group.objects.create(
+            name="Public hospitals/Hôpitaux publics",
+            source_ref="FnGKoaZpj4u",
+            source_version=cls.version,
+        )
+        cls.group_old_ref = Group.objects.create(
+            name="group - old internal ref",
+            source_ref="iaso#49591",
+            source_version=cls.version,
+        )
+        cls.group_new_ref = Group.objects.create(
+            name="group - new internal ref",
+            source_ref="iaso:49592",
+            source_version=cls.version,
+        )
+
+        # Reproducing the content of the geopackage - OrgUnitTypes
+        cls.org_unit_type_country = OrgUnitType.objects.create(
+            name="Country/Pays - COUN",
+            short_name="COUN",
+            depth=1,
+        )
+        cls.org_unit_type_country.projects.add(cls.project)
+        cls.org_unit_type_region = OrgUnitType.objects.create(
+            name="Region/Région - REG",
+            short_name="REG",
+            depth=2,
+        )
+        cls.org_unit_type_region.projects.add(cls.project)
+        cls.org_unit_type_district = OrgUnitType.objects.create(
+            name="District/Zone de santé - DIST",
+            short_name="DIST",
+            depth=3,
+        )
+        cls.org_unit_type_district.projects.add(cls.project)
+        cls.org_unit_type_area = OrgUnitType.objects.create(
+            name="Health area/Aire de santé - AREA",
+            short_name="AREA",
+            depth=4,
+        )
+        cls.org_unit_type_area.projects.add(cls.project)
+        cls.org_unit_type_hf = OrgUnitType.objects.create(
+            name="Health facility/Formation sanitaire - HF",
+            short_name="HF",
+            depth=5,
+        )
+        cls.org_unit_type_hf.projects.add(cls.project)
+
+        # Reproducing the content of the geopackage - OrgUnits
+        cls.country = OrgUnit.objects.create(
+            name="Burkina Faso",
+            source_ref="iaso#6688",
+            parent=None,
+            version=cls.version,
+            org_unit_type=cls.org_unit_type_country,
+        )
+        cls.region = OrgUnit.objects.create(
+            name="Boucle du Mouhoun",
+            source_ref="awG7snlrjVy",
+            parent=cls.country,
+            version=cls.version,
+            org_unit_type=cls.org_unit_type_region,
+        )
+        cls.district = OrgUnit.objects.create(
+            name="DS Nouna",
+            source_ref="B4Ra7K6HuCE",
+            parent=cls.region,
+            version=cls.version,
+            org_unit_type=cls.org_unit_type_district,
+        )
+        cls.area = OrgUnit.objects.create(
+            name="Madouba",
+            source_ref="cfke3S7Q8Vo",
+            parent=cls.district,
+            version=cls.version,
+            org_unit_type=cls.org_unit_type_area,
+        )
+        cls.hf_1 = OrgUnit.objects.create(
+            name="CSPS Madouba",
+            source_ref="O8KHatHm4dw",
+            parent=cls.area,
+            version=cls.version,
+            org_unit_type=cls.org_unit_type_hf,
+        )
+        cls.hf_old_ref = OrgUnit.objects.create(
+            name="org unit - old internal ref",
+            source_ref="iaso#178465",
+            parent=cls.area,
+            version=cls.version,
+            org_unit_type=cls.org_unit_type_hf,
+        )
+        cls.hf_old_ref.groups.set([cls.group_1, cls. group_old_ref, cls.group_new_ref])
+        cls.hf_new_ref = OrgUnit.objects.create(
+            name="org unit - new internal ref",
+            source_ref="iaso:178466",
+            parent=cls.area,
+            version=cls.version,
+            org_unit_type=cls.org_unit_type_hf,
+        )
+        cls.hf_new_ref.groups.set([cls.group_1, cls. group_old_ref, cls.group_new_ref])
+
+    def test_import_in_new_source_version(self):
+        count_groups_before = Group.objects.count()
+        count_org_unit_types_before = OrgUnitType.objects.count()
+        count_org_units_before = OrgUnit.objects.count()
+
+        import_gpkg_file(
+            self.GPKG_FILEPATH,
+            project_id=self.project.id,
+            source_name=self.source_name,
+            version_number=2,
+            validation_status="new",
+            description="Creating a new version",
+        )
+
+        count_groups_after = Group.objects.count()
+        count_org_unit_types_after = OrgUnitType.objects.count()
+        count_org_units_after = OrgUnit.objects.count()
+
+        self.assertEqual(count_groups_after, count_groups_before * 2)
+        self.assertEqual(count_org_unit_types_after, count_org_unit_types_before)
+        self.assertEqual(count_org_units_after, count_org_units_before * 2)
+        self.assertEqual(SourceVersion.objects.count(), 2)
+
+        new_version = SourceVersion.objects.order_by("-id").first()
+        new_org_units = OrgUnit.objects.filter(version=new_version)
+        for org_unit in new_org_units:
+            self.assertNotIn("iaso#", org_unit.source_ref)  # there were 2 old refs, but they were replaced
+
+        new_groups = Group.objects.filter(source_version=new_version)
+        for group in new_groups:
+            self.assertNotIn("iaso#", group.source_ref) # there was 1 old ref, but it was replaced
+
+        # TODO: check pyramid structure?
+
+    def test_import_update_existing_source_version(self):
+        count_groups_before = Group.objects.count()
+        count_org_unit_types_before = OrgUnitType.objects.count()
+        count_org_units_before = OrgUnit.objects.count()
+
+        import_gpkg_file(
+            self.GPKG_FILEPATH,
+            project_id=self.project.id,
+            source_name=self.source_name,
+            version_number=1,
+            validation_status="new",
+            description="Updating an existing version",
+        )
+
+        count_groups_after = Group.objects.count()
+        count_org_unit_types_after = OrgUnitType.objects.count()
+        count_org_units_after = OrgUnit.objects.count()
+
+        self.assertEqual(count_groups_after, count_groups_before)
+        self.assertEqual(count_org_unit_types_after, count_org_unit_types_before)
+        self.assertEqual(count_org_units_after, count_org_units_before)
+        self.assertEqual(SourceVersion.objects.count(), 1)
+
+        org_units = OrgUnit.objects.filter(version=self.version)
+        for org_unit in org_units:
+            self.assertNotIn("iaso#", org_unit.source_ref)  # there were 2 old refs, but they were replaced
+
+        groups = Group.objects.filter(source_version=self.version)
+        for group in groups:
+            self.assertNotIn("iaso#", group.source_ref) # there was 1 old ref, but it was replaced
+
+        # TODO: check pyramid structure?

@@ -43,7 +43,7 @@ Required columns (must exist and cannot be null/empty/blank):
 Optional non-nullable columns (can be missing, but if present cannot be empty):
 * `parent_ref` The reference of the parent OrgUnit. If present, must contain either:
   - A valid `ref` of another OrgUnit
-  - The format `iaso#{db_id}` to reference an existing OrgUnit by its database ID
+  - The format `iaso:{db_id}` to reference an existing OrgUnit by its database ID
 
 Optional nullable columns (can be missing or empty):
 * `group_refs` A comma-separated list of group references (e.g., "group_a,group_b"). If the column:

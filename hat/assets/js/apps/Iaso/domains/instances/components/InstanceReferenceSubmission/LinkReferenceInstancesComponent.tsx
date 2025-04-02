@@ -13,6 +13,7 @@ import {
 } from 'bluesquare-components';
 import { Selection } from '../../../orgUnits/types/selection';
 import { useGetCheckBulkReferenceInstanceLink } from '../../hooks/useGetCheckBulkReferenceInstanceLink';
+import { useReferenceInstanceBulkLinkpush } from '../../hooks/useReferenceInstanceBulkLinkpush';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
 import BulkLinkPushWarningMessage from '../PushInstanceGps/BulkLinkPushWarningMessage';
@@ -31,8 +32,7 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
     closeDialog,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [toLinkIds, setToLinkIds] = useState<number[] | undefined>([]);
-    const [toUnLinkIds, setToUnLinkIds] = useState<number[] | undefined>([]);
+    const [actions, setActions] = useState<string[]>([]);
     const select_all = selection.selectAll;
     const selected_ids = selection.selectedItems;
     const unselected_ids = selection.unSelectedItems;
@@ -46,39 +46,37 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
         select_all,
         unselected_ids: unselected_ids.map(item => item.id).join(','),
     });
+    const { mutateAsync: bulkLinkReferenceInstancespush } =
+        useReferenceInstanceBulkLinkpush();
 
     const onConfirm = useCallback(async () => {
+        await bulkLinkReferenceInstancespush({
+            actions,
+            select_all,
+            selected_ids: selected_ids.map(item => item.id),
+            unselected_ids: unselected_ids.map(item => item.id),
+        });
         closeDialog();
-    }, [closeDialog]);
-    const onCheck = useCallback(
-        type => {
-            if (type === 'link') {
-                setToLinkIds(prev =>
-                    (prev?.length || 0) > 0
-                        ? []
-                        : checkReferenceInstanceLink?.not_linked || [],
-                );
-                return;
+    }, [
+        actions,
+        bulkLinkReferenceInstancespush,
+        closeDialog,
+        select_all,
+        selected_ids,
+        unselected_ids,
+    ]);
+
+    const onCheck = useCallback(type => {
+        setActions(prev => {
+            if (prev?.includes(type)) {
+                return prev.filter(action => action !== type);
             }
-            setToUnLinkIds(prev =>
-                (prev?.length || 0) > 0
-                    ? []
-                    : checkReferenceInstanceLink?.linked || [],
-            );
-        },
-        [
-            checkReferenceInstanceLink?.linked,
-            checkReferenceInstanceLink?.not_linked,
-            setToLinkIds,
-            setToUnLinkIds,
-        ],
-    );
+            return [...(prev || []), type];
+        });
+    }, []);
     const allowConfirm = useMemo(
-        () =>
-            !isLoadingCheckResult &&
-            !isError &&
-            ((toLinkIds?.length || 0) > 0 || (toUnLinkIds?.length || 0) > 0),
-        [isError, isLoadingCheckResult, toLinkIds?.length, toUnLinkIds?.length],
+        () => !isLoadingCheckResult && !isError && actions?.length > 0,
+        [actions?.length, isError, isLoadingCheckResult],
     );
 
     const warningMessage = useMemo(() => {
@@ -133,24 +131,34 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
                             {(checkReferenceInstanceLink?.not_linked?.length ||
                                 0) > 0 && (
                                 <LinkReferenceInstancesCheckBox
-                                    ids={toLinkIds}
-                                    idsCound={
-                                        checkReferenceInstanceLink?.not_linked
-                                            ?.length
-                                    }
-                                    onCheck={() => onCheck('link')}
+                                    actions={actions}
+                                    action="link"
+                                    message={formatMessage(
+                                        MESSAGES.unLinkReferenceSubmissionsConfirmMessage,
+                                        {
+                                            linkedCount:
+                                                checkReferenceInstanceLink
+                                                    ?.not_linked?.length,
+                                        },
+                                    )}
+                                    onCheck={onCheck}
                                 />
                             )}
 
                             {(checkReferenceInstanceLink?.linked?.length || 0) >
                                 0 && (
                                 <LinkReferenceInstancesCheckBox
-                                    ids={toUnLinkIds}
-                                    idsCound={
-                                        checkReferenceInstanceLink?.linked
-                                            ?.length
-                                    }
-                                    onCheck={() => onCheck('unlink')}
+                                    actions={actions}
+                                    action="unlink"
+                                    onCheck={onCheck}
+                                    message={formatMessage(
+                                        MESSAGES.linkReferenceSubmissionsConfirmMessage,
+                                        {
+                                            unLinkedCount:
+                                                checkReferenceInstanceLink
+                                                    ?.linked?.length,
+                                        },
+                                    )}
                                 />
                             )}
                         </>

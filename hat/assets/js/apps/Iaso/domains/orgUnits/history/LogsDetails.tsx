@@ -20,6 +20,12 @@ const useStyles = makeStyles(theme => ({
         paddingBottom: theme.spacing(4),
         paddingTop: theme.spacing(4),
     },
+    link: {
+        textDecoration: 'underline',
+        '&:hover': {
+            textDecoration: 'none',
+        },
+    },
 }));
 
 type Props = {
@@ -46,10 +52,17 @@ export const LogsDetails: FunctionComponent<Props> = ({
                             <Grid item xs={12}>
                                 <Alert severity="info">
                                     <LinkWithLocation
+                                        className={classes.link}
                                         target="_blank"
                                         to={`/${baseUrls.orgUnitsChangeRequestDetail}/changeRequestId/${log.org_unit_change_request_id}`}
                                     >
-                                        "Change request"
+                                        {formatMessage(
+                                            MESSAGES.goToChangeRequest,
+                                            {
+                                                change_request_id:
+                                                    log.org_unit_change_request_id,
+                                            },
+                                        )}
                                     </LinkWithLocation>
                                 </Alert>
                             </Grid>

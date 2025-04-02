@@ -236,6 +236,16 @@ const MESSAGES = defineMessages({
             'An error occurred while pushing GPS from submissions to Org units',
         id: 'iaso.snackBar.pushGpsTaskError',
     },
+    referenceInstanceLinkTaskPlanned: {
+        defaultMessage:
+            'Bulk reference submissions link or unlink to/from Org units was planned with success.',
+        id: 'iaso.snackBar.referenceInstanceLinkTaskPlanned',
+    },
+    referenceInstanceLinkTaskError: {
+        defaultMessage:
+            'An error occurred while linking or unlinking to/from Org units.',
+        id: 'iaso.snackBar.referenceInstanceLinkTaskError',
+    },
     multipleInstancesOneOrgUnitWarningMessage: {
         defaultMessage: 'Multiple submissions are using the same org unit',
         id: 'iaso.instance.multipleInstancesOneOrgUnitWarningMessage',

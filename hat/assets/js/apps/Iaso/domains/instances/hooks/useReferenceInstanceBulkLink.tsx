@@ -9,7 +9,7 @@ type BulkInstanceReferenceLinkParams = {
     selected_ids: string[];
     unselected_ids: string[];
 };
-export const useReferenceInstanceBulkLinkpush = (): UseMutationResult => {
+export const useReferenceInstanceBulkLink = (): UseMutationResult => {
     return useSnackMutation(
         ({
             actions,
@@ -24,7 +24,7 @@ export const useReferenceInstanceBulkLinkpush = (): UseMutationResult => {
                 unselected_ids,
             });
         },
-        MESSAGES.pushGpsTaskPlanned,
-        MESSAGES.pushGpsTaskError,
+        MESSAGES.referenceInstanceLinkTaskPlanned,
+        MESSAGES.referenceInstanceLinkTaskError,
     );
 };

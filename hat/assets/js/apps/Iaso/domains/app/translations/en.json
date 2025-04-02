@@ -1331,6 +1331,8 @@
     "iaso.snackBar.permissionError": "You don't have permission to perform this action",
     "iaso.snackBar.pushGpsTaskError": "An error occurred while pushing GPS from submissions to Org units",
     "iaso.snackBar.pushGpsTaskPlanned": "Push GPS from submissions to Org units was planned with success",
+    "iaso.snackBar.referenceInstanceLinkTaskError": "An error occurred while linking or unlinking to/from Org units.",
+    "iaso.snackBar.referenceInstanceLinkTaskPlanned": "Bulk reference submissions link or unlink to/from Org units was planned with success.",
     "iaso.snackBar.reload": "Reload",
     "iaso.snackBar.reloadPage": "A new version is available! Refresh the page.",
     "iaso.snackBar.restoreInstanceError": "An error occured while restoring the instance",

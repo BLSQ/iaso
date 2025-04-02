@@ -1331,6 +1331,8 @@
     "iaso.snackBar.permissionError": "Vous n'avez pas la permission d'effectuer cette action",
     "iaso.snackBar.pushGpsTaskError": "Une erreur s'est produite lors de l'envoi des GPS des soumissions aux unités d'org.",
     "iaso.snackBar.pushGpsTaskPlanned": "Le transfert des GPS des soumissions aux unités d'org. a été planifié avec succès.",
+    "iaso.snackBar.referenceInstanceLinkTaskError": "Une erreur s'est produite lors de la liaison ou de la dissociation vers/depuis les unités d'org.",
+    "iaso.snackBar.referenceInstanceLinkTaskPlanned": "Le lien ou la dissociation des soumissions de référence en masse vers/depuis les unités d'org. a été planifié avec succès",
     "iaso.snackBar.reload": "Recharger",
     "iaso.snackBar.reloadPage": "Une nouvelle version est disponible! Rafraichissez la page.",
     "iaso.snackBar.restoreInstanceError": "Une erreur s'est produite lors de la récupération de l'instance",

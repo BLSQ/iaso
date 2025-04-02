@@ -10,10 +10,15 @@ import {
     LoadingSpinner,
     makeFullModal,
     useSafeIntl,
+    useRedirectTo,
 } from 'bluesquare-components';
+import { baseUrls } from '../../../../constants/urls';
+import * as Permission from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 import { Selection } from '../../../orgUnits/types/selection';
+import { userHasPermission } from '../../../users/utils';
 import { useGetCheckBulkReferenceInstanceLink } from '../../hooks/useGetCheckBulkReferenceInstanceLink';
-import { useReferenceInstanceBulkLinkpush } from '../../hooks/useReferenceInstanceBulkLinkpush';
+import { useReferenceInstanceBulkLink } from '../../hooks/useReferenceInstanceBulkLink';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
 import BulkLinkPushWarningMessage from '../PushInstanceGps/BulkLinkPushWarningMessage';
@@ -32,7 +37,12 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
     closeDialog,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
+
+    const redirectTo = useRedirectTo();
+
     const [actions, setActions] = useState<string[]>([]);
+
     const select_all = selection.selectAll;
     const selected_ids = selection.selectedItems;
     const unselected_ids = selection.unSelectedItems;
@@ -46,25 +56,36 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
         select_all,
         unselected_ids: unselected_ids.map(item => item.id).join(','),
     });
-    const { mutateAsync: bulkLinkReferenceInstancespush } =
-        useReferenceInstanceBulkLinkpush();
+    const { mutateAsync: bulkLinkReferenceInstances } =
+        useReferenceInstanceBulkLink();
 
-    const onConfirm = useCallback(async () => {
-        await bulkLinkReferenceInstancespush({
+    const instanceReferencebulkLink = useCallback(async () => {
+        await bulkLinkReferenceInstances({
             actions,
             select_all,
             selected_ids: selected_ids.map(item => item.id),
             unselected_ids: unselected_ids.map(item => item.id),
         });
-        closeDialog();
     }, [
         actions,
-        bulkLinkReferenceInstancespush,
-        closeDialog,
+        bulkLinkReferenceInstances,
         select_all,
         selected_ids,
         unselected_ids,
     ]);
+
+    const onConfirm = useCallback(async () => {
+        instanceReferencebulkLink();
+        closeDialog();
+    }, [closeDialog, instanceReferencebulkLink]);
+
+    const onConfirmAndSeeTask = useCallback(async () => {
+        instanceReferencebulkLink();
+        closeDialog();
+        redirectTo(baseUrls.tasks, {
+            order: '-created_at',
+        });
+    }, [closeDialog, instanceReferencebulkLink, redirectTo]);
 
     const onCheck = useCallback(type => {
         setActions(prev => {
@@ -89,6 +110,11 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
         return '';
     }, [checkReferenceInstanceLink?.warning, isError]);
 
+    const hasTaskPermission = userHasPermission(
+        Permission.DATA_TASKS,
+        currentUser,
+    );
+
     return (
         <ConfirmCancelModal
             allowConfirm={allowConfirm}
@@ -105,6 +131,10 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
             id="bulk-push-gps"
             onClose={() => null}
             dataTestId="bulk-push-gps"
+            allowConfirmAdditionalButton={hasTaskPermission && allowConfirm}
+            additionalButton
+            additionalMessage={MESSAGES.goToCurrentTask}
+            onAdditionalButtonClick={onConfirmAndSeeTask}
         >
             {isLoadingCheckResult ? (
                 <LoadingSpinner absolute />

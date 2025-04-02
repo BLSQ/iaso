@@ -598,7 +598,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if "closed_date" in request.data:
             closed_date = request.data.get("closed_date", None)
             org_unit.closed_date = None if not closed_date else self.get_date(closed_date)
-
+        closed_date = request.data.get("closed_date")
+        if closed_date:
+            org_unit.closed_date = self.get_date(closed_date)
         if not errors:
             org_unit.save()
             if new_groups is not None:

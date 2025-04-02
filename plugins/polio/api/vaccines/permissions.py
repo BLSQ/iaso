@@ -6,7 +6,14 @@ from rest_framework import permissions
 from plugins.polio.models import VaccineStock
 
 
-def can_edit_helper(user, the_date, admin_perm, non_admin_perm, days_open=VaccineStock.MANAGEMENT_DAYS_OPEN):
+def can_edit_helper(
+    user,
+    the_date,
+    admin_perm,
+    non_admin_perm,
+    read_only_perm,
+    days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
+):
     if the_date is None:
         return False
 
@@ -17,6 +24,9 @@ def can_edit_helper(user, the_date, admin_perm, non_admin_perm, days_open=Vaccin
         end_of_open_time = timezone.now() - datetime.timedelta(days=days_open)
         return the_date >= end_of_open_time
 
+    if user.has_perm(read_only_perm):
+        return False
+
     return False
 
 
@@ -25,6 +35,7 @@ class VaccineStockManagementPermission(permissions.BasePermission):
         self,
         admin_perm,
         non_admin_perm,
+        read_only_perm,
         days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
         datetime_field="created_at",
         datetime_now_today=timezone.now,
@@ -34,11 +45,20 @@ class VaccineStockManagementPermission(permissions.BasePermission):
         super().__init__(*args, **kwargs)
         self.non_admin_perm = non_admin_perm
         self.admin_perm = admin_perm
+        self.read_only_perm = read_only_perm
         self.days_open = days_open
         self.datetime_field = datetime_field
         self.datetime_now_today = datetime_now_today
 
     def has_permission(self, request, view):
+        # For read operations, allow access to anyone with any of the permissions
+        if request.method in ["GET", "HEAD", "OPTIONS"]:
+            return (
+                request.user.has_perm(self.admin_perm)
+                or request.user.has_perm(self.non_admin_perm)
+                or request.user.has_perm(self.read_only_perm)
+            )
+
         # For write operations, require appropriate permissions
         if request.user.has_perm(self.admin_perm) or request.user.has_perm(self.non_admin_perm):
             return True
@@ -49,6 +69,10 @@ class VaccineStockManagementPermission(permissions.BasePermission):
         # Users with write permission can do anything
         if request.user.has_perm(self.admin_perm):
             return True
+
+        # Users with read-only permission can only read
+        if request.user.has_perm(self.read_only_perm):
+            return request.method in ["GET", "HEAD", "OPTIONS"]
 
         if request.user.has_perm(self.non_admin_perm):
             # Users with non-admin permission can add entries
@@ -77,6 +101,7 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
         self,
         admin_perm,
         non_admin_perm,
+        read_only_perm,
         days_open=VaccineStock.MANAGEMENT_DAYS_OPEN,
         datetime_field="created_at",
         datetime_now_today=timezone.now,
@@ -86,14 +111,19 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
         super().__init__(*args, **kwargs)
         self.non_admin_perm = non_admin_perm
         self.admin_perm = admin_perm
+        self.read_only_perm = read_only_perm
         self.days_open = days_open
         self.datetime_field = datetime_field
         self.datetime_now_today = datetime_now_today
 
     def has_permission(self, request, view):
-        # For read-only methods, allow access to anyone
+        # For read operations, allow access to anyone with any of the permissions
         if request.method in ["GET", "HEAD", "OPTIONS"]:
-            return True
+            return (
+                request.user.has_perm(self.admin_perm)
+                or request.user.has_perm(self.non_admin_perm)
+                or request.user.has_perm(self.read_only_perm)
+            )
 
         # For write operations, require appropriate permissions
         if request.user.has_perm(self.admin_perm) or request.user.has_perm(self.non_admin_perm):
@@ -105,6 +135,10 @@ class VaccineStockEarmarkPermission(permissions.BasePermission):
         # Users with write permission can do anything
         if request.user.has_perm(self.admin_perm):
             return True
+
+        # Users with read-only permission can only read
+        if request.user.has_perm(self.read_only_perm):
+            return request.method in ["GET", "HEAD", "OPTIONS"]
 
         # Users without any permission can read anything
         if request.method in ["GET", "HEAD", "OPTIONS"]:

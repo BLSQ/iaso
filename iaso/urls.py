@@ -16,10 +16,10 @@ from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from iaso.api.profiles.profile_logs import ProfileLogsViewset
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
+from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReferenceBulkLinkViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
-from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReferenceBulkLinkViewSet
 from iaso.models import MatchingAlgorithm
 from plugins.router import router as plugins_router
 

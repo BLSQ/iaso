@@ -107,6 +107,7 @@ class Modification(models.Model):
             "source": self.source,
             "user": self.user.iaso_profile.as_dict() if self.user else None,
             "created_at": self.created_at,
+            "org_unit_change_request_id": self.org_unit_change_request.id if self.org_unit_change_request else None,
         }
 
     def as_list(self, fields):

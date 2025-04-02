@@ -83,10 +83,9 @@ class Modification(models.Model):
     new_value = models.JSONField(encoder=IasoJsonEncoder)
     source = models.TextField()
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    # Enables to go back to the original change request when `source == ORG_UNIT_CHANGE_REQUEST`.
-    org_unit_change_request = models.ForeignKey(
-        "iaso.OrgUnitChangeRequest", null=True, blank=True, on_delete=models.CASCADE
-    )
+    # ID of the original change request.
+    # This is an IntegerField and not a ForeignKey to avoid migrations order issues between iaso and hat.
+    org_unit_change_request_id = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -107,7 +106,7 @@ class Modification(models.Model):
             "source": self.source,
             "user": self.user.iaso_profile.as_dict() if self.user else None,
             "created_at": self.created_at,
-            "org_unit_change_request_id": self.org_unit_change_request.id if self.org_unit_change_request else None,
+            "org_unit_change_request_id": self.org_unit_change_request_id,
         }
 
     def as_list(self, fields):
@@ -118,7 +117,7 @@ class Modification(models.Model):
             "source": self.source,
             "user": self.user.iaso_profile.as_short_dict() if self.user else None,
             "created_at": self.created_at,
-            "org_unit_change_request_id": self.org_unit_change_request.id if self.org_unit_change_request else None,
+            "org_unit_change_request_id": self.org_unit_change_request_id,
         }
         if "past_value" in fields:
             dict_list["past_value"] = self.past_value

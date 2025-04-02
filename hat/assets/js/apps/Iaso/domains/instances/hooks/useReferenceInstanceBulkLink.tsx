@@ -24,7 +24,8 @@ export const useReferenceInstanceBulkLink = (): UseMutationResult => {
                 unselected_ids,
             });
         },
-        MESSAGES.referenceInstanceLinkTaskPlanned,
-        MESSAGES.referenceInstanceLinkTaskError,
+        MESSAGES.pushGpsTaskPlanned,
+        MESSAGES.pushGpsTaskError,
+        'instances',
     );
 };

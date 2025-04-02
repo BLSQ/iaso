@@ -1,4 +1,3 @@
-from copy import deepcopy
 from logging import getLogger
 from time import time
 from typing import List, Optional
@@ -10,8 +9,7 @@ from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from iaso.models import Instance, Task
 from iaso.models.org_unit import OrgUnitReferenceInstance
-from iaso.utils.gis import convert_2d_point_to_3d
-from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link
+from iaso.utils.models.common import check_instance_reference_bulk_link
 
 
 logger = getLogger(__name__)
@@ -45,36 +43,30 @@ def instance_reference_bulk_link(
     """
     Background task to bulk link or unlink instance reference to/from org units.
     """
-    print("hello bro")
     start = time()
     task.report_progress_and_stop_if_killed(progress_message="Searching for Instances for pushing gps data")
     
     user = task.launcher
-    print(actions)
+
     queryset = Instance.non_deleted_objects.get_queryset().filter_for_user(user)
     queryset = queryset.select_related("org_unit")
-    print(select_all)
-    print(selected_ids)
-    print(unselected_ids)
+
     if not select_all:
         queryset = queryset.filter(pk__in=selected_ids)
     else:
         queryset = queryset.exclude(pk__in=unselected_ids)
-    print("avant")
+
     if not queryset:
         raise Exception("No matching instances found")
     
     # Checking if any gps push can be performed with what was requested
     success, infos, errors, _ = check_instance_reference_bulk_link(queryset)
-    print("Apres test")
-    print(infos)
     if not success:
-        raise Exception("Cannot proceed with the gps push due to errors: %s" % errors)
+        raise Exception("Cannot proceed with the bulk reference submission link or unlink due to errors: %s" % errors)
 
     total = queryset.count()
     with transaction.atomic():
-        if 'link' in actions:
-            print("how to link")
+        if "link" in actions:
             instances_to_link = queryset.filter(id__in=infos["not_linked"])
             for index, instance in enumerate(instances_to_link):
                 res_string = "%.2f sec, processed %i instances" % (time() - start, index)
@@ -83,8 +75,7 @@ def instance_reference_bulk_link(
                         user,
                         instance,
                     )
-        if 'unlink' in actions:
-            print("how to unlink")
+        if "unlink" in actions:
             instances_to_unlink = queryset.filter(id__in=infos["linked"])
             for index, instance in enumerate(instances_to_unlink):
                 res_string = "%.2f sec, processed %i instances" % (time() - start, index)

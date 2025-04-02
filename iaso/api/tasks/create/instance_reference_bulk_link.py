@@ -10,7 +10,7 @@ from iaso.tasks.instance_reference_bulk_link import instance_reference_bulk_link
 class InstanceReferenceBulkLinkViewSet(viewsets.ViewSet):
     """Bulk link or unlink reference Instances to/from their related OrgUnit."""
 
-    permission_classes = [permissions.IsAuthenticated, HasCreateOrgUnitPermission]
+    permission_classes = [permissions.IsAuthenticated, HasInstanceBulkPermission, HasCreateOrgUnitPermission]
 
     def create(self, request):
         raw_select_all = request.data.get("select_all", True)

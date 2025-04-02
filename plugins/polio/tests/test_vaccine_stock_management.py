@@ -51,6 +51,11 @@ class VaccineStockManagementAPITestCase(APITestCase):
             account=cls.account,
             permissions=[permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ],
         )
+        cls.user_read_only_perms = cls.create_user_with_profile(
+            username="user_read_only_perms",
+            account=cls.account,
+            permissions=[permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY],
+        )
         cls.user_no_perms = cls.create_user_with_profile(username="user_no_perms", account=cls.account, permissions=[])
 
         cls.country = m.OrgUnit.objects.create(
@@ -988,6 +993,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             self.assertEqual(response.status_code, 201)
             self.assertIn("document_path_6", response.data["document"])
 
+
     def test_check_duplicate_destruction_report(self):
         self.client.force_authenticate(self.user_rw_perms)
 
@@ -1123,3 +1129,160 @@ class VaccineStockManagementAPITestCase(APITestCase):
             },
         )
         self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_cannot_create(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        data = {
+            "country": self.country.id,
+            "vaccine": pm.VACCINES[0][0],
+        }
+        response = self.client.post(BASE_URL, data, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_cannot_delete(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        response = self.client.delete(f"{BASE_URL}{self.vaccine_stock.pk}/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_can_see_list(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, 200)
+        results = response.json()["results"]
+        self.assertEqual(len(results), 1)
+        stock = results[0]
+        self.assertEqual(stock["country_name"], "Testland")
+        self.assertEqual(stock["vaccine_type"], pm.VACCINES[0][0])
+        self.assertEqual(stock["vials_received"], 20)
+        self.assertEqual(stock["vials_used"], 10)
+        self.assertEqual(stock["stock_of_usable_vials"], 21)
+        self.assertEqual(stock["stock_of_unusable_vials"], 27)
+        self.assertEqual(stock["vials_destroyed"], 3)
+
+    def test_user_with_read_only_cannot_create_outgoing_stock_movement(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        osm_data = {
+            "campaign": self.campaign.obr_name,
+            "vaccine_stock": self.vaccine_stock.id,
+            "report_date": "2024-01-01",
+            "form_a_reception_date": "2024-01-02",
+            "usable_vials_used": 50,
+            "lot_numbers": ["LOT1", "LOT2"],
+            "missing_vials": 2,
+            "round": self.campaign_round_1.id,
+            "comment": "Test OSM",
+        }
+        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", osm_data, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_cannot_create_incident_report(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        incident_data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "stock_correction": "broken",
+            "date_of_incident_report": "2024-01-01",
+            "incident_report_received_by_rrt": "2024-01-02",
+            "unusable_vials": 5,
+            "usable_vials": 0,
+            "comment": "Test incident",
+        }
+        response = self.client.post(f"{BASE_URL_SUB_RESOURCES}incident_report/", incident_data, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_cannot_create_destruction_report(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        destruction_data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "stock_correction": "destroyed",
+            "destruction_report_date": "2024-01-01",
+            "rrt_destruction_report_reception_date": "2024-01-02",
+            "unusable_vials_destroyed": 5,
+            "action": "Destroyed due to expiration",
+            "comment": "Test destruction",
+        }
+        response = self.client.post(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/",
+            destruction_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_cannot_edit_outgoing_stock_movement(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        update_data = {"comment": "Updated comment"}
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{self.outgoing_stock_movement.id}/",
+            update_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_cannot_edit_incident_report(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        update_data = {"comment": "Updated comment"}
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}incident_report/{self.incident_report.id}/",
+            update_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_cannot_edit_destruction_report(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        update_data = {"comment": "Updated comment"}
+        response = self.client.patch(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/{self.destruction_report.id}/",
+            update_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_cannot_delete_outgoing_stock_movement(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        response = self.client.delete(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{self.outgoing_stock_movement.id}/"
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_cannot_delete_incident_report(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        response = self.client.delete(f"{BASE_URL_SUB_RESOURCES}incident_report/{self.incident_report.id}/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_cannot_delete_destruction_report(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        response = self.client.delete(f"{BASE_URL_SUB_RESOURCES}destruction_report/{self.destruction_report.id}/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_read_only_can_see_summary(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/summary/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
+        self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
+        self.assertEqual(data["total_usable_vials"], 21)
+        self.assertEqual(data["total_unusable_vials"], 27)
+        self.assertEqual(data["total_usable_doses"], 420)
+        self.assertEqual(data["total_unusable_doses"], 540)
+
+    def test_user_with_read_only_can_see_usable_vials(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["results"]), 7)
+
+    def test_user_with_read_only_can_see_unusable_vials(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/get_unusable_vials/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data["results"]), 5)
+
+    def test_user_with_read_only_can_see_earmarked_stock(self):
+        self.client.force_authenticate(user=self.user_read_only_perms)
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/get_earmarked_stock/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("results", data)

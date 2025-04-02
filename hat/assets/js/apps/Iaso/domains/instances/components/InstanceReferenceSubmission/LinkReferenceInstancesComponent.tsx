@@ -134,9 +134,9 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
                                     actions={actions}
                                     action="link"
                                     message={formatMessage(
-                                        MESSAGES.unLinkReferenceSubmissionsConfirmMessage,
+                                        MESSAGES.linkReferenceSubmissionsConfirmMessage,
                                         {
-                                            linkedCount:
+                                            unLinkedCount:
                                                 checkReferenceInstanceLink
                                                     ?.not_linked?.length,
                                         },
@@ -152,9 +152,9 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
                                     action="unlink"
                                     onCheck={onCheck}
                                     message={formatMessage(
-                                        MESSAGES.linkReferenceSubmissionsConfirmMessage,
+                                        MESSAGES.unLinkReferenceSubmissionsConfirmMessage,
                                         {
-                                            unLinkedCount:
+                                            linkedCount:
                                                 checkReferenceInstanceLink
                                                     ?.linked?.length,
                                         },

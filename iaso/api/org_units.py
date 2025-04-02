@@ -591,9 +591,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             else:
                 org_unit.default_image = None
 
-        if "opening_date" in request.data:
-            opening_date = request.data.get("opening_date", None)
-            org_unit.opening_date = None if not opening_date else self.get_date(opening_date)
+        opening_date = request.data.get("opening_date")
+        if opening_date:
+            org_unit.opening_date = self.get_date(opening_date)
 
         if "closed_date" in request.data:
             closed_date = request.data.get("closed_date", None)

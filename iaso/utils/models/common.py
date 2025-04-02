@@ -1,11 +1,9 @@
 from collections import Counter
 from typing import Dict, List
 
-from django.db.models import Count, Exists, OuterRef, QuerySet
+from django.db.models import Exists, OuterRef, QuerySet
 
 from iaso.models.base import User
-
-
 
 
 def get_creator_name(creator: User = None, username: str = "", first_name: str = "", last_name: str = "") -> str:
@@ -94,7 +92,7 @@ def check_instance_bulk_gps_push(queryset: QuerySet) -> (bool, Dict[str, List[in
     return success, errors, warnings
 
 def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, Dict[str, List[int]], Dict[str, List[int]]): # type: ignore
-    from iaso.models.org_unit import OrgUnitType, OrgUnitReferenceInstance
+    from iaso.models.org_unit import OrgUnitReferenceInstance, OrgUnitType
     queryset = queryset.annotate(
         has_matching_reference_form=Exists(
             OrgUnitType.reference_forms.through.objects.filter(
@@ -131,8 +129,8 @@ def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, Dict[str, L
 
     if not_reference_instances:
         warnings["no_reference_instances"] = [instance.id for instance in not_reference_instances]
-    infos['linked'] = [instance.id for instance in linked_instances]
-    infos['not_linked'] = [instance.id for instance in unlinked_instances]
+    infos["linked"] = [instance.id for instance in linked_instances]
+    infos["not_linked"] = [instance.id for instance in unlinked_instances]
 
     return success, infos, errors, warnings
 

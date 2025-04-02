@@ -394,6 +394,7 @@
     "iaso.instance.multipleReferenceInstancesOneOrgUnitWarningMessage": "Plusieurs soumissions de référence utilisent les mêmes unités d'org. et les mêmes formulaires",
     "iaso.instance.noGpsForSomeInstaces": "Certaines soumissions n'ont pas de GPS. Rien ne sera appliqué pour ces unités d'organisation.",
     "iaso.instance.NoLocksHistory": "Il n'y a pas d'historique",
+    "iaso.instance.noReferenceSubmissionsWarningMessage": "Environ {selectedSubmissionsCount} soumissions sélectionnées ne sont pas des soumissions de référence",
     "iaso.instance.org_unit": "Unités d'organisation",
     "iaso.instance.org_unit_type_name": "Type d'unité d'org.",
     "iaso.instance.patchInstanceError": "Une erreur est survenue lors de la sauvegarde de la soumission",

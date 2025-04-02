@@ -394,6 +394,7 @@
     "iaso.instance.multipleReferenceInstancesOneOrgUnitWarningMessage": "Multiple reference submissions are using the same org units and same forms",
     "iaso.instance.noGpsForSomeInstaces": "Some instances don't have locations. Nothing will be applied for those OrgUnits.",
     "iaso.instance.NoLocksHistory": "There's no history",
+    "iaso.instance.noReferenceSubmissionsWarningMessage": "About {selectedSubmissionsCount} selected submissions are not reference ones",
     "iaso.instance.org_unit": "Org unit",
     "iaso.instance.org_unit_type_name": "Org unit type",
     "iaso.instance.patchInstanceError": "An error occurred while saving submission",

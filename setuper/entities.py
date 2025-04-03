@@ -176,7 +176,7 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
     instance_json = instance_by_LLIN_campaign_form(
         reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit
     )
-    image = f"{int(randint(1, 13))}.png"
+    image = f"{int(randint(1, 13))}.jpg"
     instance_json["register"]["picture"] = image
 
     with open(f"./data/children-pictures/{image}", "rb") as fp_image:

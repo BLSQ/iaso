@@ -36,13 +36,13 @@ def submission_org_unit_gps_point(org_unit):
 def picture_by_org_unit_type_name(org_unit_type_name):
     picture_name = ""
     if org_unit_type_name == "Country/Pays - COUN":
-        picture_name = "Ministry of health.webp"
+        picture_name = "Ministry-of-health.jpg"
     elif org_unit_type_name == "Region/Région - REG":
-        picture_name = "Regional health authority.webp"
+        picture_name = "Regional-health-authority.jpg"
     elif org_unit_type_name == "District/Zone de santé - DIST":
-        picture_name = "health district.webp"
+        picture_name = "health-district.jpg"
     elif org_unit_type_name == "Health area/Aire de santé - AREA":
-        picture_name = "health area.webp"
+        picture_name = "health-area.jpg"
     return picture_name
 
 
@@ -88,7 +88,7 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
         age_entry = random.choice(["years", "birthdate"])
         name = beneficiary_name.split(" ")
         age_years = random.randint(10, 50)
-        image = f"{int(random.randint(1, 5))}.webp"
+        image = f"{int(random.randint(1, 5))}.jpg"
         birth_date = (datetime.now() - timedelta(days=(age_years * 365.25))).date()
         food_assistance = random.choice(["yes", "no"])
         assistance_type = None

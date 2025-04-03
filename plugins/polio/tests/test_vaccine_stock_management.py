@@ -106,7 +106,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
             form_a_reception_date=cls.now - datetime.timedelta(days=2),
             usable_vials_used=10,
             lot_numbers=["LOT123"],
-            missing_vials=2,
             comment="Hello world",
         )
         cls.destruction_report = pm.DestructionReport.objects.create(
@@ -192,7 +191,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(stock["vials_received"], 20)  # 400 doses / 20 doses per vial
         self.assertEqual(stock["vials_used"], 10)
         self.assertEqual(
-            stock["stock_of_usable_vials"], 21
+            stock["stock_of_usable_vials"], 23
         )  # 20 received - 13 used + 15 found in inventory -1 removed from inventory
         self.assertEqual(stock["stock_of_unusable_vials"], 27)
         # self.assertEqual(stock["stock_of_earmarked_vials"], 0)
@@ -210,7 +209,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "form_a_reception_date": "2024-01-02",
             "usable_vials_used": 50,
             "lot_numbers": ["LOT1", "LOT2"],
-            "missing_vials": 2,
             "round": self.campaign_round_1.id,
             "comment": "Test OSM",
         }
@@ -416,7 +414,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         }
 
         # Check that we have 6 entries in the results array
-        self.assertEqual(len(data["results"]), 7)
+        self.assertEqual(len(data["results"]), 6)
 
         # Validate the response data against the schema
         try:
@@ -456,17 +454,12 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(data["results"][5]["doses_out"], 200)
         self.assertEqual(data["results"][5]["type"], "outgoing_stock_movement")  # Outgoing movement (form A)
 
-        self.assertEqual(data["results"][6]["date"], "2024-10-26")
-        self.assertEqual(data["results"][6]["vials_out"], 2)
-        self.assertEqual(data["results"][6]["doses_out"], 40)
-        self.assertEqual(data["results"][6]["type"], "outgoing_stock_movement")  # missing vials (form A)
-
         # Order by `vials_in DESC`.
 
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/?order=-vials_in")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["results"]), 7)
+        self.assertEqual(len(data["results"]), 6)
 
         self.assertEqual(data["results"][0]["vials_in"], 20)
         self.assertEqual(data["results"][1]["vials_in"], 16)
@@ -474,22 +467,20 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(data["results"][3]["vials_in"], None)
         self.assertEqual(data["results"][4]["vials_in"], None)
         self.assertEqual(data["results"][5]["vials_in"], None)
-        self.assertEqual(data["results"][6]["vials_in"], None)
 
         # Order by `vials_in ASC`.
 
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/?order=vials_in")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["results"]), 7)
+        self.assertEqual(len(data["results"]), 6)
 
         self.assertEqual(data["results"][0]["vials_in"], None)
         self.assertEqual(data["results"][1]["vials_in"], None)
         self.assertEqual(data["results"][2]["vials_in"], None)
         self.assertEqual(data["results"][3]["vials_in"], None)
-        self.assertEqual(data["results"][4]["vials_in"], None)
-        self.assertEqual(data["results"][5]["vials_in"], 16)
-        self.assertEqual(data["results"][6]["vials_in"], 20)
+        self.assertEqual(data["results"][4]["vials_in"], 16)
+        self.assertEqual(data["results"][5]["vials_in"], 20)
 
     def test_unusable_vials_endpoint(self):
         # Authenticate and make request to the API
@@ -638,9 +629,9 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # Check that the values match what is expected
         self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
-        self.assertEqual(data["total_usable_vials"], 21)
+        self.assertEqual(data["total_usable_vials"], 23)
         self.assertEqual(data["total_unusable_vials"], 27)
-        self.assertEqual(data["total_usable_doses"], 420)
+        self.assertEqual(data["total_usable_doses"], 460)
         self.assertEqual(data["total_unusable_doses"], 540)
 
     def test_delete(self):
@@ -804,7 +795,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "form_a_reception_date",
             "usable_vials_used",
             "lot_numbers",
-            "missing_vials",
             "round",
         }
         self.assertTrue(expected_keys.issubset(first_result.keys()))
@@ -856,7 +846,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 report_date=self.now,
                 form_a_reception_date="2023-10-01",
                 usable_vials_used=999,
-                missing_vials=111,
                 document=SimpleUploadedFile("document_path_1.pdf", pdf_file_content),
             )
 
@@ -865,14 +854,12 @@ class VaccineStockManagementAPITestCase(APITestCase):
             # Query the newly created OutgoingStockMovement via ORM
             queried_movement = pm.OutgoingStockMovement.objects.get(pk=outgoing_stock_movement.pk)
             self.assertEqual(queried_movement.usable_vials_used, 999)
-            self.assertEqual(queried_movement.missing_vials, 111)
             self.assertIn("document_path_1", queried_movement.document.name)
 
             # Query the newly created OutgoingStockMovement via API
             response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{outgoing_stock_movement.pk}/")
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data["usable_vials_used"], 999)
-            self.assertEqual(response.data["missing_vials"], 111)
             self.assertIn("document_path_1", response.data["document"])
 
             # Test creation and retrieval of IncidentReport with document via ORM
@@ -937,7 +924,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 "form_a_reception_date": "2023-10-03",
                 "report_date": "2023-10-04",
                 "usable_vials_used": 999,
-                "missing_vials": 111,
                 "document": SimpleUploadedFile(
                     "document_path_4.pdf",
                     pdf_file_content,

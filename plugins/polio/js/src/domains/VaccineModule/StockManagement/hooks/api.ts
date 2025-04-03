@@ -677,3 +677,45 @@ export const useDeleteEarmarked = (): UseMutationResult => {
         ],
     });
 };
+
+const checkDestructionDuplicate = (
+    vaccineStockId: string,
+    destructionReportDate: string,
+    unusableVialsDestroyed: number,
+) => {
+    return getRequest(
+        `${modalUrl}destruction_report/check_duplicate/?vaccine_stock=${vaccineStockId}&destruction_report_date=${destructionReportDate}&unusable_vials_destroyed=${unusableVialsDestroyed}`,
+    );
+};
+
+export const useCheckDestructionDuplicate = ({
+    vaccineStockId,
+    destructionReportDate,
+    unusableVialsDestroyed,
+}: {
+    vaccineStockId: string;
+    destructionReportDate: string;
+    unusableVialsDestroyed: number;
+}) => {
+    return useSnackQuery({
+        queryKey: [
+            'destruction-duplicate',
+            vaccineStockId,
+            destructionReportDate,
+            unusableVialsDestroyed,
+        ],
+        queryFn: () =>
+            checkDestructionDuplicate(
+                vaccineStockId,
+                destructionReportDate,
+                unusableVialsDestroyed,
+            ),
+        options: {
+            enabled: Boolean(
+                vaccineStockId &&
+                    destructionReportDate &&
+                    unusableVialsDestroyed,
+            ),
+        },
+    });
+};

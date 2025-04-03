@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box } from '@mui/material';
 import {
     AddButton,
@@ -7,7 +8,6 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useMemo } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
@@ -17,7 +17,10 @@ import {
     TextInput,
 } from '../../../../../components/Inputs';
 import { Vaccine } from '../../../../../constants/types';
-import { useSaveDestruction } from '../../hooks/api';
+import {
+    useCheckDestructionDuplicate,
+    useSaveDestruction,
+} from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useDestructionValidation } from './validation';
 
@@ -41,6 +44,12 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveDestruction();
+    const { data: hasDuplicatesData } = useCheckDestructionDuplicate({
+        vaccineStockId,
+        destructionReportDate: destruction?.destruction_report_date,
+        unusableVialsDestroyed: destruction?.unusable_vials_destroyed,
+    });
+    console.log('hasDuplicatesData', hasDuplicatesData);
     const validationSchema = useDestructionValidation();
     const formik = useFormik<any>({
         initialValues: {

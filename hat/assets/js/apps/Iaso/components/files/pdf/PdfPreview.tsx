@@ -99,9 +99,8 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
         setOpen(false);
     };
 
-    const isFileSafeToDisplayAndDownload = () => {
-        return !scanResult || scanResult !== fileScanResultInfected;
-    };
+    const isFileSafeToDisplayAndDownload =
+        !scanResult || scanResult !== fileScanResultInfected;
 
     const handleDownload = useCallback(() => {
         if (pdfUrl && isFileSafeToDisplayAndDownload) {

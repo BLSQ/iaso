@@ -1651,7 +1651,7 @@ class IncidentReport(models.Model):
     class StockCorrectionChoices(models.TextChoices):
         VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
         VACCINE_EXPIRED = "vaccine_expired", _("Vaccine expired")
-        MISSING = "missing", _("missing")
+        MISSING = "missing", _("Missing")
         RETURN = "return", _("Return")
         STEALING = "stealing", _("Stealing")
         PHYSICAL_INVENTORY_ADD = "physical_inventory_add", _("Add to Physical Inventory")

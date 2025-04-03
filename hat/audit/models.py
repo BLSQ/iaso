@@ -85,7 +85,7 @@ class Modification(models.Model):
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     # Enables to go back to the original change request when `source == ORG_UNIT_CHANGE_REQUEST`.
     org_unit_change_request = models.ForeignKey(
-        "iaso.OrgUnitChangeRequest", null=True, blank=True, on_delete=models.CASCADE
+        "iaso.OrgUnitChangeRequest", null=True, blank=True, on_delete=models.SET_NULL
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

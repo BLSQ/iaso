@@ -7,6 +7,8 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
+        # We need this `django_ltree` migration here to avoid migrations order issues between iaso and hat.
+        ("django_ltree", "0001_create_extension"),
         ("iaso", "0318_add_data_validation_module_to_accounts"),
         ("audit", "0005_alter_modification_user"),
     ]
@@ -16,7 +18,7 @@ class Migration(migrations.Migration):
             model_name="modification",
             name="org_unit_change_request",
             field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunitchangerequest"
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.orgunitchangerequest"
             ),
         ),
     ]

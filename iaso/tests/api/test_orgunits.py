@@ -1,16 +1,32 @@
 import csv
+import datetime
 import io
 import json
 import typing
 
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.db import connection
+from django.test import SimpleTestCase
 
 from hat.audit.models import Modification
 from iaso import models as m
+from iaso.api.org_units import OrgUnitViewSet
 from iaso.models import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
 from iaso.utils.gis import simplify_geom
+
+
+class OrgUnitAPIUtilsTestCase(SimpleTestCase):
+    def test_get_date(self):
+        """
+        Test OrgUnitViewSet.get_date()
+        """
+        self.assertEqual(OrgUnitViewSet().get_date(None), None)
+        self.assertEqual(OrgUnitViewSet().get_date(""), None)
+        self.assertEqual(OrgUnitViewSet().get_date("03-04-2025"), datetime.date(2025, 4, 3))
+        self.assertEqual(OrgUnitViewSet().get_date("03/04/2025"), datetime.date(2025, 4, 3))
+        self.assertEqual(OrgUnitViewSet().get_date("2025-04-03"), datetime.date(2025, 4, 3))
+        self.assertEqual(OrgUnitViewSet().get_date("2025/04/03"), datetime.date(2025, 4, 3))
 
 
 class OrgUnitAPITestCase(APITestCase):
@@ -245,7 +261,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["count"], 2)
 
     def test_org_unit_search_with_external_refs(self):
-        """GET /orgunits/ with a search based on refs - real external & fake external (internal) """
+        """GET /orgunits/ with a search based on refs - real external & fake external (internal)"""
         # First, let's set a source ref on this orgunit, because there is none in the setup
         jedi_counsil_endor_source_ref = "sOuRcErEf"
         self.jedi_council_endor.source_ref = jedi_counsil_endor_source_ref
@@ -264,7 +280,9 @@ class OrgUnitAPITestCase(APITestCase):
         search_criteria_str = json.dumps(search_criteria)
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{search_criteria_str}]&limit=50")
+        response = self.client.get(
+            f"/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{search_criteria_str}]&limit=50"
+        )
         self.assertJSONResponse(response, 200)
 
         response_json = response.json()
@@ -275,7 +293,6 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(org_units[1]["id"], self.jedi_council_endor.id)
         self.assertEqual(org_units[1]["source_ref"], jedi_counsil_endor_source_ref)
         self.assertEqual(org_units[2]["id"], self.jedi_squad_endor.id)
-
 
     def test_org_unit_search(self):
         """GET /orgunits/ with a search based on name"""
@@ -1140,6 +1157,47 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
         self.assertEqual(response.data["reference_instances"], [])
 
+    def test_edit_org_unit_partial_update_for_opening_and_closed_dates(self):
+        """
+        Test the various date formats used by API clients.
+        """
+        self.client.force_authenticate(self.yoda)
+
+        ou = m.OrgUnit(version=self.sw_version_1)
+        ou.name = "test ou"
+        ou.source_ref = "b"
+        ou.opening_date = None
+        ou.closed_date = None
+        ou.save()
+
+        data = {"opening_date": "01-01-2024", "closed_date": "01-01-2025"}
+        response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
+        self.assertJSONResponse(response, 200)
+        ou.refresh_from_db()
+        self.assertEqual(ou.opening_date, datetime.date(2024, 1, 1))
+        self.assertEqual(ou.closed_date, datetime.date(2025, 1, 1))
+
+        data = {"opening_date": "01/01/2024", "closed_date": "01/01/2025"}
+        response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
+        self.assertJSONResponse(response, 200)
+        ou.refresh_from_db()
+        self.assertEqual(ou.opening_date, datetime.date(2024, 1, 1))
+        self.assertEqual(ou.closed_date, datetime.date(2025, 1, 1))
+
+        data = {"opening_date": "2024-01-01", "closed_date": "2025-01-01"}
+        response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
+        self.assertJSONResponse(response, 200)
+        ou.refresh_from_db()
+        self.assertEqual(ou.opening_date, datetime.date(2024, 1, 1))
+        self.assertEqual(ou.closed_date, datetime.date(2025, 1, 1))
+
+        data = {"opening_date": None, "closed_date": ""}
+        response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
+        self.assertJSONResponse(response, 200)
+        ou.refresh_from_db()
+        self.assertEqual(ou.opening_date, None)
+        self.assertEqual(ou.closed_date, None)
+
     def test_edit_org_unit_partial_update_remove_geojson_geom_simplified_geom_should_be_consistent(
         self,
     ):
@@ -1537,18 +1595,13 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(org_units["page"], 1)
         first_org_unit = org_units["orgunits"][0]
         self.assertEqual(first_org_unit["id"], self.jedi_council_corruscant.pk)
-    
+
     def test_descending_order_without_as_location(self):
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(
-            "/api/orgunits/?limit=20&order=-name&page=1"
-        )
-        self.assertEqual(response.status_code, 200)
-    
-    def test_descending_order_with_as_location(self):
-        self.client.force_authenticate(self.yoda)
-        response = self.client.get(
-            "/api/orgunits/?limit=20&order=-name&page=1&asLocation=true"
-        )
+        response = self.client.get("/api/orgunits/?limit=20&order=-name&page=1")
         self.assertEqual(response.status_code, 200)
 
+    def test_descending_order_with_as_location(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?limit=20&order=-name&page=1&asLocation=true")
+        self.assertEqual(response.status_code, 200)

@@ -54,8 +54,10 @@ class OrgUnitData(TypedDict):
     properties: PropertyDict
     type: Optional[OrgUnitType]
 
+
 OLD_INTERNAL_REF = "iaso#"
 NEW_INTERNAL_REF = "iaso:"
+
 
 def convert_to_geography(geom_type: str, coordinates: list):
     """Convert a geography dict from gpkg/fiona to a geodjango.Geom
@@ -91,7 +93,7 @@ def create_or_update_group(group: Group, ref: str, name: str, version: SourceVer
     if not group:
         group = Group()
     group.name = name
-    group.source_ref =  ref
+    group.source_ref = ref
     group.source_version = version
     group.save()
     return group

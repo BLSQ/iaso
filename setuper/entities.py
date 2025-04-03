@@ -15,11 +15,7 @@ def create_forms_and_entities(iaso_client):
 
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
-    hf_out = [
-        out
-        for out in org_unit_types
-        if out["name"] == "Health facility/Formation sanitaire - HF"
-    ][0]
+    hf_out = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][0]
 
     # create registration form form
     reg_form_data = {
@@ -46,9 +42,7 @@ def create_forms_and_entities(iaso_client):
     reg_form_version_data = {"form_id": reg_form_id, "xls_file": reg_test_file}
     reg_form_files = {"xls_file": open(reg_test_file, "rb")}
 
-    iaso_client.post(
-        "/api/formversions/", files=reg_form_files, data=reg_form_version_data
-    )
+    iaso_client.post("/api/formversions/", files=reg_form_files, data=reg_form_version_data)
 
     # create followup form
     followUp_form_data = {
@@ -74,9 +68,7 @@ def create_forms_and_entities(iaso_client):
     follow_form_version_data = {"form_id": follow_form_id, "xls_file": follow_test_file}
     follow_form_files = {"xls_file": open(follow_test_file, "rb")}
 
-    iaso_client.post(
-        "/api/formversions/", files=follow_form_files, data=follow_form_version_data
-    )
+    iaso_client.post("/api/formversions/", files=follow_form_files, data=follow_form_version_data)
 
 
 def create_additional_entities(account_name, iaso_client, orgunit, entity_type):
@@ -104,9 +96,7 @@ def create_additional_entities(account_name, iaso_client, orgunit, entity_type):
     }
 
     iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
-    instance_json = instance_by_LLIN_campaign_form(
-        reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit
-    )
+    instance_json = instance_by_LLIN_campaign_form(reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit)
     iaso_client.post(
         "/sync/form_upload/",
         files={
@@ -148,9 +138,7 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
         "name": file_name,
     }
     iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
-    instance_json = instance_by_LLIN_campaign_form(
-        reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit
-    )
+    instance_json = instance_by_LLIN_campaign_form(reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit)
     iaso_client.post(
         "/sync/form_upload/",
         files={
@@ -194,9 +182,7 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
                 }
             ],
         )
-        instance_json = instance_by_LLIN_campaign_form(
-            followup_form, {"instanceID": "uuid:" + the_uuid}, orgunit
-        )
+        instance_json = instance_by_LLIN_campaign_form(followup_form, {"instanceID": "uuid:" + the_uuid}, orgunit)
         iaso_client.post(
             "/sync/form_upload/",
             files={
@@ -204,9 +190,7 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
                     local_path,
                     submission2xml(
                         instance_json,
-                        form_version_id=followup_form["latest_form_version"][
-                            "version_id"
-                        ],
+                        form_version_id=followup_form["latest_form_version"]["version_id"],
                         form_id=followup_form["form_id"],
                     ),
                 )
@@ -217,17 +201,11 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
 def setup_entities(account_name, iaso_client, entity_type, new_entity_type):
     print("-- Setting up entity")
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
-    hf_out = [
-        out
-        for out in org_unit_types
-        if out["name"] == "Health facility/Formation sanitaire - HF"
-    ][0]
+    hf_out = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][0]
 
     # fetch orgunit ids
     limit = 20
-    orgunits = iaso_client.get(
-        "/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]}
-    )["orgunits"]
+    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]})["orgunits"]
 
     print("-- Submitting %d submissions" % limit)
     count = 0
@@ -301,11 +279,7 @@ def create_entity_types(iaso_client):
     ]
     print("-- Creating entity types --")
     for entity_type in entity_types:
-        form = [
-            form["id"]
-            for form in existing_forms
-            if form["name"] == entity_type["reference_form"]
-        ]
+        form = [form["id"] for form in existing_forms if form["name"] == entity_type["reference_form"]]
         entity_type["reference_form"] = form[0]
         new_entity_type = iaso_client.post("/api/entitytypes/", json=entity_type)
         last_new_entity_type = iaso_client.get("/api/entitytypes/?order=-id")[0]
@@ -318,11 +292,7 @@ def create_entity_types(iaso_client):
             },
         )
 
-        followup_form = [
-            form
-            for form in existing_forms
-            if form["name"] == entity_type["followup_form"]
-        ]
+        followup_form = [form for form in existing_forms if form["name"] == entity_type["followup_form"]]
         new_entity_type["followup_form"] = followup_form[0]
         iaso_client.post(
             "/api/workflowfollowups/?version_id=" + str(wfw_version["version_id"]),

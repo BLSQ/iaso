@@ -51,13 +51,9 @@ class PublicVaccineStockViewset(ViewSet):
         if action_type and "forma" not in action_type:
             data_list = [el for el in data_list if el["type"] == action_type]
         if action_type and action_type == "forma_used_vials":
-            data_list = [
-                el for el in data_list if "Form A - Vials Used" in el["action"]
-            ]
+            data_list = [el for el in data_list if "Form A - Vials Used" in el["action"]]
         if action_type and action_type == "forma_missing_vials":
-            data_list = [
-                el for el in data_list if "Form A - Missing Vials" in el["action"]
-            ]
+            data_list = [el for el in data_list if "Form A - Missing Vials" in el["action"]]
         return data_list
 
     def sort_results(self, data_list, request):
@@ -68,10 +64,7 @@ class PublicVaccineStockViewset(ViewSet):
         return sorted(data_list, key=lambda x: x[order], reverse=reverse)
 
     def _get_json_data(self, queryset, usable):
-        all_entries = [
-            stock.usable_vials() if usable else stock.unusable_vials()
-            for stock in queryset
-        ]
+        all_entries = [stock.usable_vials() if usable else stock.unusable_vials() for stock in queryset]
         all_entries = sum(all_entries, [])
         return all_entries
 
@@ -120,9 +113,7 @@ class PublicVaccineStockViewset(ViewSet):
                 total_out += entry["doses_out"]
         return total_in, total_out
 
-    def _paginate_response(
-        self, request, json_data, earmarked_vials=None, earmarked_doses=None
-    ):
+    def _paginate_response(self, request, json_data, earmarked_vials=None, earmarked_doses=None):
         total_vials, total_doses = self._compute_totals(json_data)
         # Adding some pagination to avoid crashing the front-end
         page = int(request.query_params.get("page", "1"))  # validate
@@ -168,9 +159,7 @@ class PublicVaccineStockViewset(ViewSet):
         all_usable = self._get_json_data(queryset, usable=True)
         sorted_usable = self._apply_filter_and_sort(all_usable, request)
 
-        return self._paginate_response(
-            request, sorted_usable, earmarked_vials, earmarked_doses
-        )
+        return self._paginate_response(request, sorted_usable, earmarked_vials, earmarked_doses)
 
     @action(
         detail=False,

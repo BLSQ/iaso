@@ -78,9 +78,7 @@ def validate_account_name(name: str) -> str:
     # However, the setuper can create multiple accounts with a '.xx' suffix, so we need to keep some space
     NAME_MAX_LENGTH = 147
     if len(name) > NAME_MAX_LENGTH:
-        raise Exception(
-            f"Account name is too long - {NAME_MAX_LENGTH} characters maximum"
-        )
+        raise Exception(f"Account name is too long - {NAME_MAX_LENGTH} characters maximum")
 
     # I wanted to include "-" in the pattern, but the API converts them to "." and then it breaks stuff later on
     # Not sure how accents in app_id will be handled, so let's avoid them out of caution
@@ -130,10 +128,7 @@ def create_account(
 
     print("-----------------------------------------------")
     print("Account created:", account_name)
-    print(
-        "Login at %s with\n\tlogin: %s \n\tpassword: %s"
-        % (server_url, account_name, account_name)
-    )
+    print("Login at %s with\n\tlogin: %s \n\tpassword: %s" % (server_url, account_name, account_name))
     print("-----------------------------------------------")
     return account_name
 
@@ -143,9 +138,7 @@ if __name__ == "__main__":
     parser.add_argument("-u", "--username", type=str, help="User name")
     parser.add_argument("-p", "--password", type=str, help="Password")
     parser.add_argument("-s", "--server_url", type=str, help="Server URL")
-    parser.add_argument(
-        "-n", "--name", help="Account name (max 147 characters; a-z, A-Z, 0-9)"
-    )
+    parser.add_argument("-n", "--name", help="Account name (max 147 characters; a-z, A-Z, 0-9)")
     parser.add_argument("-a", "--additional_projects", action="store_true")
 
     args = parser.parse_args()
@@ -163,9 +156,7 @@ if __name__ == "__main__":
         except ModuleNotFoundError:
             pass
         try:
-            password = (
-                ADMIN_PASSWORD if (username is None and password is None) else password
-            )
+            password = ADMIN_PASSWORD if (username is None and password is None) else password
         except ModuleNotFoundError:
             pass
         try:
@@ -174,8 +165,6 @@ if __name__ == "__main__":
             pass
 
     if not server_url or not username or not password:
-        sys.exit(
-            "ERROR: Values for server url, user name and password are all required"
-        )
+        sys.exit("ERROR: Values for server url, user name and password are all required")
 
     create_account(server_url, username, password, account_name, additional_projects)

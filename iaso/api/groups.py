@@ -59,16 +59,31 @@ class GroupSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
+    def validate(self, attrs):
+        default_version = self._fetch_user_default_source_version()
+        if "source_ref" in attrs:
+            # Check if the source_ref is already used by another group
+            existing_group = Group.objects.filter(
+                source_ref=attrs["source_ref"], source_version=default_version
+            ).first()
+            if existing_group:
+                raise serializers.ValidationError(
+                    {"source_ref": "This source ref is already used by another group in your default version"}
+                )
+
+        return super().validate(attrs)
+
     def create(self, validated_data):
+        default_version = self._fetch_user_default_source_version()
+        validated_data["source_version"] = default_version
+        return super().create(validated_data)
+
+    def _fetch_user_default_source_version(self):
         profile = self.context["request"].user.iaso_profile
         version = profile.account.default_version
-
         if version is None:
             raise serializers.ValidationError("This account has no default version")
-
-        validated_data["source_version"] = version
-
-        return super().create(validated_data)
+        return version
 
 
 class GroupDropdownSerializer(serializers.ModelSerializer):

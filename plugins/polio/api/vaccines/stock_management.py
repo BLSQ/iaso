@@ -6,7 +6,7 @@ from django.utils.dateparse import parse_date
 from django_filters.rest_framework import FilterSet, NumberFilter
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import filters, permissions, serializers, status
+from rest_framework import filters, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
@@ -371,15 +371,46 @@ class DestructionReportSerializer(serializers.ModelSerializer):
         )
 
 
-class DestructionReportViewSet(VaccineStockSubitemBase):
+class DestructionReportViewSet(viewsets.ModelViewSet):
+    queryset = DestructionReport.objects.all()
     serializer_class = DestructionReportSerializer
-    model_class = DestructionReport
     permission_classes = [
         lambda: VaccineStockManagementPermission(
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
         )
     ]
+
+    @action(detail=False, methods=['GET'])
+    def check_duplicate(self, request):
+        vaccine_stock_id = request.query_params.get('vaccine_stock')
+        destruction_report_date = request.query_params.get('destruction_report_date')
+        unusable_vials_destroyed = request.query_params.get('unusable_vials_destroyed')
+
+        if not all([vaccine_stock_id, destruction_report_date, unusable_vials_destroyed]):
+            return Response(
+                {"error": "Missing required parameters"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check if vaccine stock exists
+        try:
+            vaccine_stock = VaccineStock.objects.get(id=vaccine_stock_id)
+        except VaccineStock.DoesNotExist:
+            return Response(
+                {"error": "Vaccine stock not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        existing_destruction = self.queryset.filter(
+            vaccine_stock_id=vaccine_stock_id,
+            destruction_report_date=destruction_report_date,
+            unusable_vials_destroyed=unusable_vials_destroyed
+        ).exists()
+
+        return Response({
+            "duplicate_exists": existing_destruction
+        })
 
 
 class EarmarkedStockSerializer(serializers.ModelSerializer):

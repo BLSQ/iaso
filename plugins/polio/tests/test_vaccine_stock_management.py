@@ -1000,3 +1000,104 @@ class VaccineStockManagementAPITestCase(APITestCase):
 
             self.assertEqual(response.status_code, 201)
             self.assertIn("document_path_6", response.data["document"])
+
+    def test_check_duplicate_destruction_report(self):
+        self.client.force_authenticate(self.user_rw_perms)
+
+        # Create a destruction report
+        destruction_data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "destruction_report_date": "2024-01-01",
+            "rrt_destruction_report_reception_date": "2024-01-02",
+            "unusable_vials_destroyed": 5,
+            "action": "Destroyed due to expiration",
+        }
+
+        response = self.client.post(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/",
+            destruction_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+
+        # Test checking for duplicate with same details
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/check_duplicate/",
+            {
+                "vaccine_stock": self.vaccine_stock.id,
+                "destruction_report_date": "2024-01-01",
+                "unusable_vials_destroyed": 5,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["duplicate_exists"])
+
+        # Test checking with different date
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/check_duplicate/",
+            {
+                "vaccine_stock": self.vaccine_stock.id,
+                "destruction_report_date": "2024-01-02",
+                "unusable_vials_destroyed": 5,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["duplicate_exists"])
+
+        # Test checking with different vials count
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/check_duplicate/",
+            {
+                "vaccine_stock": self.vaccine_stock.id,
+                "destruction_report_date": "2024-01-01",
+                "unusable_vials_destroyed": 6,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["duplicate_exists"])
+
+        # Test with missing parameters
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/check_duplicate/",
+            {
+                "vaccine_stock": self.vaccine_stock.id,
+                "destruction_report_date": "2024-01-01",
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.json())
+
+        # Test with invalid vaccine stock ID
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/check_duplicate/",
+            {
+                "vaccine_stock": 99999,
+                "destruction_report_date": "2024-01-01",
+                "unusable_vials_destroyed": 5,
+            },
+        )
+        self.assertEqual(response.status_code, 404)
+
+        # Test permissions - anonymous user
+        self.client.force_authenticate(user=self.anon)
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/check_duplicate/",
+            {
+                "vaccine_stock": self.vaccine_stock.id,
+                "destruction_report_date": "2024-01-01",
+                "unusable_vials_destroyed": 5,
+            },
+        )
+        self.assertEqual(response.status_code, 403)
+
+        # Test permissions - user without read rights
+        self.client.force_authenticate(user=self.user_no_perms)
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/check_duplicate/",
+            {
+                "vaccine_stock": self.vaccine_stock.id,
+                "destruction_report_date": "2024-01-01",
+                "unusable_vials_destroyed": 5,
+            },
+        )
+        self.assertEqual(response.status_code, 403)

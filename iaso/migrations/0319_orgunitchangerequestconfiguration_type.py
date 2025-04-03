@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0316_merge_20250121_1321"),
+        ("iaso", "0318_add_data_validation_module_to_accounts"),
     ]
 
     operations = [

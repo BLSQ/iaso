@@ -7,9 +7,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        # We need this `django_ltree` migration here to avoid migrations order issues between iaso and hat.
-        ("django_ltree", "0001_create_extension"),
-        ("iaso", "0318_add_data_validation_module_to_accounts"),
+        ("iaso", "0236_auto_20231012_0955"),
         ("audit", "0005_alter_modification_user"),
     ]
 

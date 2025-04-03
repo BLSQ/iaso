@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { UrlParams, useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import {
     FormattedApiParams,
@@ -682,20 +683,27 @@ const checkDestructionDuplicate = (
     vaccineStockId: string,
     destructionReportDate: string,
     unusableVialsDestroyed: number,
+    destructionReportId?: string,
 ) => {
-    return getRequest(
-        `${modalUrl}destruction_report/check_duplicate/?vaccine_stock=${vaccineStockId}&destruction_report_date=${destructionReportDate}&unusable_vials_destroyed=${unusableVialsDestroyed}`,
-    );
+    const baseUrl = `${modalUrl}destruction_report/check_duplicate/?vaccine_stock=${vaccineStockId}&destruction_report_date=${destructionReportDate}&unusable_vials_destroyed=${unusableVialsDestroyed}`;
+
+    const url = destructionReportId
+        ? `${baseUrl}&destruction_report_id=${destructionReportId}`
+        : baseUrl;
+
+    return getRequest(url);
 };
 
 export const useCheckDestructionDuplicate = ({
     vaccineStockId,
     destructionReportDate,
     unusableVialsDestroyed,
+    destructionReportId,
 }: {
     vaccineStockId: string;
     destructionReportDate: string;
     unusableVialsDestroyed: number;
+    destructionReportId?: string;
 }) => {
     return useSnackQuery({
         queryKey: [
@@ -703,19 +711,24 @@ export const useCheckDestructionDuplicate = ({
             vaccineStockId,
             destructionReportDate,
             unusableVialsDestroyed,
+            destructionReportId,
         ],
         queryFn: () =>
             checkDestructionDuplicate(
                 vaccineStockId,
                 destructionReportDate,
                 unusableVialsDestroyed,
+                destructionReportId,
             ),
         options: {
             enabled: Boolean(
                 vaccineStockId &&
                     destructionReportDate &&
-                    unusableVialsDestroyed,
+                    unusableVialsDestroyed &&
+                    moment(destructionReportDate, 'YYYY-MM-DD', true).isValid(),
             ),
+            staleTime: 1000 * 60 * 15, // in MS
+            keepPreviousData: false,
         },
     });
 };

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@mui/material';
+import { Alert, Box } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -44,12 +44,6 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveDestruction();
-    const { data: hasDuplicatesData } = useCheckDestructionDuplicate({
-        vaccineStockId,
-        destructionReportDate: destruction?.destruction_report_date,
-        unusableVialsDestroyed: destruction?.unusable_vials_destroyed,
-    });
-    console.log('hasDuplicatesData', hasDuplicatesData);
     const validationSchema = useDestructionValidation();
     const formik = useFormik<any>({
         initialValues: {
@@ -68,6 +62,12 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
         validationSchema,
     });
 
+    const { data: hasDuplicatesData } = useCheckDestructionDuplicate({
+        vaccineStockId,
+        destructionReportDate: formik.values.destruction_report_date,
+        unusableVialsDestroyed: formik.values.unusable_vials_destroyed,
+        destructionReportId: destruction?.id,
+    });
     const titleMessage = destruction?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
@@ -154,6 +154,13 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         document={formik.values.document}
                     />
                 </Box>
+                {hasDuplicatesData?.duplicate_exists && (
+                    <Box mb={2}>
+                        <Alert severity="warning">
+                            {formatMessage(MESSAGES.duplicate_destruction)}
+                        </Alert>
+                    </Box>
+                )}
             </ConfirmCancelModal>
         </FormikProvider>
     );

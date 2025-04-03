@@ -370,22 +370,21 @@ class DestructionReportSerializer(serializers.ModelSerializer):
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
         )
 
-
-class DestructionReportViewSet(viewsets.ModelViewSet):
-    queryset = DestructionReport.objects.all()
+class DestructionReportViewSet(VaccineStockSubitemBase):
     serializer_class = DestructionReportSerializer
+    model_class = DestructionReport
     permission_classes = [
         lambda: VaccineStockManagementPermission(
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
         )
     ]
-
     @action(detail=False, methods=['GET'])
     def check_duplicate(self, request):
         vaccine_stock_id = request.query_params.get('vaccine_stock')
         destruction_report_date = request.query_params.get('destruction_report_date')
         unusable_vials_destroyed = request.query_params.get('unusable_vials_destroyed')
+        destruction_report_id = request.query_params.get('destruction_report_id')
 
         if not all([vaccine_stock_id, destruction_report_date, unusable_vials_destroyed]):
             return Response(
@@ -402,11 +401,18 @@ class DestructionReportViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        existing_destruction = self.queryset.filter(
-            vaccine_stock_id=vaccine_stock_id,
-            destruction_report_date=destruction_report_date,
-            unusable_vials_destroyed=unusable_vials_destroyed
-        ).exists()
+        # Build the filter query
+        filter_query = {
+            'vaccine_stock_id': vaccine_stock_id,
+            'destruction_report_date': destruction_report_date,
+            'unusable_vials_destroyed': unusable_vials_destroyed
+        }
+
+        # If editing an existing report, exclude it from the duplicate check
+        if destruction_report_id:
+            existing_destruction = DestructionReport.objects.exclude(id=destruction_report_id).filter(**filter_query).exists()
+        else:
+            existing_destruction = DestructionReport.objects.filter(**filter_query).exists()
 
         return Response({
             "duplicate_exists": existing_destruction

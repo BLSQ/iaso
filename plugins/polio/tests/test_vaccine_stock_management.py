@@ -1019,14 +1019,50 @@ class VaccineStockManagementAPITestCase(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 201)
+        destruction_report_id = response.json()["id"]
 
-        # Test checking for duplicate with same details
+        # Test checking for duplicate with same details (without destruction_report_id)
         response = self.client.get(
             f"{BASE_URL_SUB_RESOURCES}destruction_report/check_duplicate/",
             {
                 "vaccine_stock": self.vaccine_stock.id,
                 "destruction_report_date": "2024-01-01",
                 "unusable_vials_destroyed": 5,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["duplicate_exists"])
+
+        # Test checking for duplicate with same details but excluding current report
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/check_duplicate/",
+            {
+                "vaccine_stock": self.vaccine_stock.id,
+                "destruction_report_date": "2024-01-01",
+                "unusable_vials_destroyed": 5,
+                "destruction_report_id": destruction_report_id,
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["duplicate_exists"])
+
+        # Create a second destruction report with same details
+        response = self.client.post(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/",
+            destruction_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        second_report_id = response.json()["id"]
+
+        # Test checking for duplicate while editing first report (should find second report)
+        response = self.client.get(
+            f"{BASE_URL_SUB_RESOURCES}destruction_report/check_duplicate/",
+            {
+                "vaccine_stock": self.vaccine_stock.id,
+                "destruction_report_date": "2024-01-01",
+                "unusable_vials_destroyed": 5,
+                "destruction_report_id": destruction_report_id,
             },
         )
         self.assertEqual(response.status_code, 200)

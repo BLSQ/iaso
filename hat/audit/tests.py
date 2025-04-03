@@ -54,7 +54,7 @@ class ModelTestCase(TestCase):
         self.assertEqual(modification.new_value, new_value)
         self.assertEqual(modification.source, audit_models.ORG_UNIT_CHANGE_REQUEST)
         self.assertEqual(modification.user, self.user)
-        self.assertEqual(modification.org_unit_change_request_id, None)
+        self.assertEqual(modification.org_unit_change_request, None)
         self.assertEqual(modification.created_at, self.DT)
 
         diffs = modification.field_diffs()
@@ -162,7 +162,7 @@ class AuditMethodsTestCase(TestCase):
         self.assertIsInstance(modification, audit_models.Modification)
         self.assertEqual(modification.source, audit_models.ORG_UNIT_API)
         self.assertEqual(modification.user, self.user)
-        self.assertEqual(modification.org_unit_change_request_id, None)
+        self.assertEqual(modification.org_unit_change_request, None)
 
         diffs = modification.field_diffs()
 

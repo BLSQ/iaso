@@ -598,7 +598,7 @@
     "iaso.polio.label.pv_notified_at": "Date de Notification PV",
     "iaso.polio.label.quantities_approved_by_dg_in_doses": "Quantité approvée par DG (doses)",
     "iaso.polio.label.quantities_approved_by_orpg_in_doses": "Quantité approvée par ORPG (doses)",
-    "iaso.polio.label.quantities_ordered_in_doses": "Quantité commandée (doses)",
+    "iaso.polio.label.quantities_ordered_in_doses": "Quantité nécessaire (doses)",
     "iaso.polio.label.quantity": "Quantité",
     "iaso.polio.label.Radio": "Radio",
     "iaso.polio.label.ratioCaregiversInformed": "Ratio parents informés",

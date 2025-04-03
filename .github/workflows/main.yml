@@ -127,7 +127,7 @@ jobs:
             - name: Check formatting with ruff
               # https://docs.astral.sh/ruff/integrations/#github-actions
               run: |
-                  . ./venv/bin/activate && ruff check --output-format=github .
+                  . ./venv/bin/activate && ruff check --output-format=github . && ruff format --check
             - name: Check Backend (Django) translations
               run: |
                   . ./venv/bin/activate

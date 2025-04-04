@@ -1,6 +1,7 @@
+import os
 import random
 import uuid
-import os
+
 from datetime import datetime, timedelta
 
 from dict2xml import dict2xml

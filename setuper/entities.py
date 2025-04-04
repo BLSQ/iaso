@@ -1,13 +1,13 @@
 import uuid
-import os
+
 from datetime import datetime, timedelta
 from random import randint
 
 from submissions import (
     instance_by_LLIN_campaign_form,
     org_unit_gps_point,
-    submission2xml,
     rename_entity_submission_picture,
+    submission2xml,
 )
 
 

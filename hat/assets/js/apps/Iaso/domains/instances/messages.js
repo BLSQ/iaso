@@ -69,6 +69,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.linkOffOrgUnitReferenceSubmission',
         defaultMessage: 'Unlink reference submission from orgUnit',
     },
+    linkUnlinkReferenceSubmissionsToOrgUnits: {
+        defaultMessage:
+            'link or unlink reference submissions to/from org units',
+        id: 'iaso.label.linkUnlinkReferenceSubmissionsToOrgUnits',
+    },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS mappings',
@@ -231,9 +236,39 @@ const MESSAGES = defineMessages({
             'An error occurred while pushing GPS from submissions to Org units',
         id: 'iaso.snackBar.pushGpsTaskError',
     },
+    referenceInstanceLinkTaskPlanned: {
+        defaultMessage:
+            'Bulk reference submissions link or unlink to/from Org units was planned with success.',
+        id: 'iaso.snackBar.referenceInstanceLinkTaskPlanned',
+    },
+    referenceInstanceLinkTaskError: {
+        defaultMessage:
+            'An error occurred while linking or unlinking to/from Org units.',
+        id: 'iaso.snackBar.referenceInstanceLinkTaskError',
+    },
     multipleInstancesOneOrgUnitWarningMessage: {
         defaultMessage: 'Multiple submissions are using the same org unit',
         id: 'iaso.instance.multipleInstancesOneOrgUnitWarningMessage',
+    },
+    multipleReferenceInstancesOneOrgUnitWarningMessage: {
+        defaultMessage:
+            'Multiple reference submissions are using the same org units and same forms',
+        id: 'iaso.instance.multipleReferenceInstancesOneOrgUnitWarningMessage',
+    },
+    noReferenceSubmissionsWarningMessage: {
+        defaultMessage:
+            'About {selectedSubmissionsCount} selected submissions are not reference ones',
+        id: 'iaso.instance.noReferenceSubmissionsWarningMessage',
+    },
+    linkReferenceSubmissionsConfirmMessage: {
+        defaultMessage:
+            'There are {unLinkedCount} not linked reference submission. To link them you have to check the checkbox.',
+        id: 'iaso.instance.linkReferenceSubmissionsConfirmMessage',
+    },
+    unLinkReferenceSubmissionsConfirmMessage: {
+        defaultMessage:
+            'There are {linkedCount} linked reference submission. To unlink them you have to check the checkbox.',
+        id: 'iaso.instance.unLinkReferenceSubmissionsConfirmMessage',
     },
     approveAllWarningsMessage: {
         defaultMessage:

@@ -591,6 +591,7 @@
     "iaso.polio.label.preparednessSomeWarningsDuringTheParsing": "Avertissement : l'application a rencontré des problèmes lors de l'analyse de la feuille de préparation.",
     "iaso.polio.label.preparednesSyncStatus": "Status de la préparation",
     "iaso.polio.label.preparing": "En préparation",
+    "iaso.polio.label.duplicate_destruction": "Un rapport de destruction avec la même date et le même nombre de flacons inutilisables existe déjà",
     "iaso.polio.label.previousEndDate": "Date de fin précédente",
     "iaso.polio.label.previousStartDate": "Date de début précédente",
     "iaso.polio.label.provinceOption": "PROVINCE",

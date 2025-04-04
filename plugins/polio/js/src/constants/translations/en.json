@@ -428,6 +428,7 @@
     "iaso.polio.label.dosesShipped": "Doses shipped",
     "iaso.polio.label.download": "Download",
     "iaso.polio.label.downloadScopesToCsv": "Download scopes",
+    "iaso.polio.label.duplicate_destruction": "A destruction report with the same date and unusable vials destroyed already exists",
     "iaso.polio.label.earmarked": "Earmarked",
     "iaso.polio.label.earmarked_doses": "Earmarked doses",
     "iaso.polio.label.earmarked_stock__created": "Earmarked stock - Created",

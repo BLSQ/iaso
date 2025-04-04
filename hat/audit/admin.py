@@ -8,9 +8,10 @@ from .models import Modification
 
 @admin.register(Modification)
 class ModificationAdmin(admin.ModelAdmin):
-    date_hierarchy = "created_at"
-    list_filter = ("content_type", "source")
-    list_display = ("object_id", "source", "created_at")
     autocomplete_fields = ("user",)
-    search_fields = ("user",)
+    date_hierarchy = "created_at"
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    list_display = ("object_id", "source", "created_at")
+    list_filter = ("content_type",)
+    raw_id_fields = ("org_unit_change_request",)
+    search_fields = ("id", "source")

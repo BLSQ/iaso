@@ -243,6 +243,8 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         # Logs.
         modification = Modification.objects.get(object_id=self.org_unit.pk)
+        self.assertEqual(modification.org_unit_change_request, change_request)
+
         diff = modification.field_diffs()
         self.assertIn("name", diff["modified"])
         self.assertIn("parent", diff["modified"])

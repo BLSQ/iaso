@@ -827,7 +827,13 @@ class OrgUnitChangeRequest(models.Model):
 
         self.org_unit.save()
 
-        log_modification(initial_org_unit, self.org_unit, source=ORG_UNIT_CHANGE_REQUEST, user=user)
+        log_modification(
+            initial_org_unit,
+            self.org_unit,
+            source=ORG_UNIT_CHANGE_REQUEST,
+            user=user,
+            org_unit_change_request_id=self.pk,
+        )
 
     @classmethod
     def get_new_fields(cls) -> typing.List[str]:

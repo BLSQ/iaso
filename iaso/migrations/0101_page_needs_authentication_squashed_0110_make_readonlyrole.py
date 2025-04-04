@@ -127,6 +127,8 @@ class Migration(migrations.Migration):
     ]
 
     dependencies = [
+        ("django_comments", "0004_add_object_pk_is_removed_index"),
+        ("audit", "0001_squashed_0002_auto_20210611_0951"),
         ("iaso", "0100_auto_20210702_0835"),
     ]
 

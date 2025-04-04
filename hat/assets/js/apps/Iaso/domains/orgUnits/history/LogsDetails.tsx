@@ -1,14 +1,17 @@
 import React, { FunctionComponent } from 'react';
 import {
     LoadingSpinner,
+    LinkWithLocation,
     commonStyles,
     useSafeIntl,
 } from 'bluesquare-components';
 import { Container, Grid } from '@mui/material';
+import Alert from '@mui/lab/Alert';
 import { makeStyles } from '@mui/styles';
 import LogCompareComponent from './LogCompareComponent';
 import MESSAGES from './messages';
 import { useGetLogDetails } from '../../../hooks/useGetLogDetails';
+import { baseUrls } from '../../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -16,6 +19,12 @@ const useStyles = makeStyles(theme => ({
         cursor: 'default',
         paddingBottom: theme.spacing(4),
         paddingTop: theme.spacing(4),
+    },
+    link: {
+        textDecoration: 'underline',
+        '&:hover': {
+            textDecoration: 'none',
+        },
     },
 }));
 
@@ -38,6 +47,27 @@ export const LogsDetails: FunctionComponent<Props> = ({
             {loading && <LoadingSpinner />}
             {log && (
                 <>
+                    {log.org_unit_change_request_id && (
+                        <Grid container spacing={2} mb={2}>
+                            <Grid item xs={12}>
+                                <Alert severity="info">
+                                    <LinkWithLocation
+                                        className={classes.link}
+                                        target="_blank"
+                                        to={`/${baseUrls.orgUnitsChangeRequestDetail}/changeRequestId/${log.org_unit_change_request_id}`}
+                                    >
+                                        {formatMessage(
+                                            MESSAGES.goToChangeRequest,
+                                            {
+                                                change_request_id:
+                                                    log.org_unit_change_request_id,
+                                            },
+                                        )}
+                                    </LinkWithLocation>
+                                </Alert>
+                            </Grid>
+                        </Grid>
+                    )}
                     {log.past_value.length > 0 && log.new_value.length > 0 && (
                         <Grid container spacing={2}>
                             <Grid item xs={6}>

@@ -165,6 +165,7 @@ class Migration(migrations.Migration):
     ]
 
     dependencies = [
+        ("django_ltree", "0001_create_extension"),
         ("iaso", "0001_squashed_0026_adding_indexes_on_org_unit"),
         ("sites", "0002_alter_domain_unique"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

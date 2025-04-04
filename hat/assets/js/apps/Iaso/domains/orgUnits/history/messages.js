@@ -69,6 +69,10 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Valid',
         id: 'iaso.forms.valid',
     },
+    goToChangeRequest: {
+        id: 'iaso.logs.goToChangeRequest',
+        defaultMessage: `These changes originated from Change Request #{change_request_id}`,
+    },
 });
 
 export default MESSAGES;

@@ -245,7 +245,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["count"], 2)
 
     def test_org_unit_search_with_external_refs(self):
-        """GET /orgunits/ with a search based on refs - real external & fake external (internal) """
+        """GET /orgunits/ with a search based on refs - real external & fake external (internal)"""
         # First, let's set a source ref on this orgunit, because there is none in the setup
         jedi_counsil_endor_source_ref = "sOuRcErEf"
         self.jedi_council_endor.source_ref = jedi_counsil_endor_source_ref
@@ -264,7 +264,9 @@ class OrgUnitAPITestCase(APITestCase):
         search_criteria_str = json.dumps(search_criteria)
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{search_criteria_str}]&limit=50")
+        response = self.client.get(
+            f"/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{search_criteria_str}]&limit=50"
+        )
         self.assertJSONResponse(response, 200)
 
         response_json = response.json()
@@ -275,7 +277,6 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(org_units[1]["id"], self.jedi_council_endor.id)
         self.assertEqual(org_units[1]["source_ref"], jedi_counsil_endor_source_ref)
         self.assertEqual(org_units[2]["id"], self.jedi_squad_endor.id)
-
 
     def test_org_unit_search(self):
         """GET /orgunits/ with a search based on name"""
@@ -1537,18 +1538,13 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(org_units["page"], 1)
         first_org_unit = org_units["orgunits"][0]
         self.assertEqual(first_org_unit["id"], self.jedi_council_corruscant.pk)
-    
+
     def test_descending_order_without_as_location(self):
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(
-            "/api/orgunits/?limit=20&order=-name&page=1"
-        )
-        self.assertEqual(response.status_code, 200)
-    
-    def test_descending_order_with_as_location(self):
-        self.client.force_authenticate(self.yoda)
-        response = self.client.get(
-            "/api/orgunits/?limit=20&order=-name&page=1&asLocation=true"
-        )
+        response = self.client.get("/api/orgunits/?limit=20&order=-name&page=1")
         self.assertEqual(response.status_code, 200)
 
+    def test_descending_order_with_as_location(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?limit=20&order=-name&page=1&asLocation=true")
+        self.assertEqual(response.status_code, 200)

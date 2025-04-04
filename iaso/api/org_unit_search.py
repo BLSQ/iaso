@@ -69,7 +69,9 @@ def build_org_units_queryset(queryset, params, profile):
                 if internal_refs:
                     iaso_ids = [int(i.split(":")[1]) for i in internal_refs]  # Split and parse ID
                     internal_refs_filter = Q(id__in=iaso_ids)
-                    s = re.sub(r"iaso:\d+", "", s)  # Remove internal refs to prevent them from breaking the other search
+                    s = re.sub(
+                        r"iaso:\d+", "", s
+                    )  # Remove internal refs to prevent them from breaking the other search
 
                 # Then we can check real external refs
                 refs = re.findall("[A-Za-z0-9_-]+", s)

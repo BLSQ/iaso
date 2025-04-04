@@ -95,6 +95,7 @@ class WorkflowVersion(SoftDeletableModel):
         changes -> WorkflowChange
         follow_ups -> WorkflowFollowup
     """
+
     NAME_MAX_LENGTH = 50
 
     workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE, related_name="workflow_versions")

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-03 10:30+0000\n"
+"POT-Creation-Date: 2025-03-24 14:18+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -378,11 +378,11 @@ msgstr "Éditer les zones"
 msgid "Edit zones shapes"
 msgstr "Éditer les formes des zones"
 
-#: hat/settings.py:353
+#: hat/settings.py:356
 msgid "French"
 msgstr "Français"
 
-#: hat/settings.py:354
+#: hat/settings.py:357
 msgid "English"
 msgstr "Anglais"
 

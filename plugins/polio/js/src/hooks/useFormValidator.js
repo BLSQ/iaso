@@ -519,6 +519,7 @@ export const useFormValidator = () => {
         gpei_coordinator: yup.string().nullable(),
         is_preventive: yup.bool(),
         is_test: yup.bool(),
+        on_hold: yup.bool(),
         rounds: yup.array(round_shape).nullable(),
     };
     return {

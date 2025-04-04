@@ -1,5 +1,6 @@
 import os
 
+
 # Get the setuper directory path
 SETUPER_DIR = os.path.dirname(os.path.abspath(__file__))
 # Change the working directory to the setuper directory

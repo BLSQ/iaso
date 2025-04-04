@@ -1,3 +1,4 @@
+import os
 import random
 import uuid
 
@@ -36,13 +37,13 @@ def submission_org_unit_gps_point(org_unit):
 def picture_by_org_unit_type_name(org_unit_type_name):
     picture_name = ""
     if org_unit_type_name == "Country/Pays - COUN":
-        picture_name = "Ministry of health.webp"
+        picture_name = "Ministry-of-health.jpg"
     elif org_unit_type_name == "Region/Région - REG":
-        picture_name = "Regional health authority.webp"
+        picture_name = "Regional-health-authority.jpg"
     elif org_unit_type_name == "District/Zone de santé - DIST":
-        picture_name = "health district.webp"
+        picture_name = "health-district.jpg"
     elif org_unit_type_name == "Health area/Aire de santé - AREA":
-        picture_name = "health area.webp"
+        picture_name = "health-area.jpg"
     return picture_name
 
 
@@ -82,6 +83,7 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
         age_entry = random.choice(["years", "birthdate"])
         name = beneficiary_name.split(" ")
         age_years = random.randint(10, 50)
+        image = f"{int(random.randint(1, 5))}.jpg"
         birth_date = (datetime.now() - timedelta(days=(age_years * 365.25))).date()
         food_assistance = random.choice(["yes", "no"])
         assistance_type = None
@@ -101,6 +103,7 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
                     "first_name": name[0],
                     "last_name": name[1],
                     "gender": "female",
+                    "picture": image,
                 },
                 "age_group": {
                     "age_entry": age_entry,
@@ -183,25 +186,35 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
                 "father_name": child["lastname"],
                 "age_type": 1,
                 "age": child["age_in_months"],
-                "child_details": {
-                    "gender": child["gender"],
-                    "caretaker_name": child["lastname"],
-                    "caretaker_rs": random.choice(
-                        [
-                            "mother",
-                            "father",
-                            "sister",
-                            "brother",
-                            "grandfather",
-                            "grandmother",
-                            "other",
-                        ]
-                    ),
-                    "hc": random.choice(["hc_A", "hc_B", "hc_C", "hc_D", "hc_E"]),
-                },
+                "gender": child["gender"],
+                "caretaker_name": child["lastname"],
+                "caretaker_rs": random.choice(
+                    [
+                        "mother",
+                        "father",
+                        "sister",
+                        "brother",
+                        "grandfather",
+                        "grandmother",
+                        "other",
+                    ]
+                ),
                 "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
             },
         }
 
     instance_json["meta"] = instance_id
     return instance_json
+
+
+def rename_entity_submission_picture(path, picture, files):
+    current_datetime = int(datetime.now().timestamp())
+    old_name = f"{path}/{picture}"
+    new_name = f"{path}/{current_datetime}_{picture}"
+    os.rename(old_name, new_name)
+
+    file = open(f"{new_name}", "rb")
+    files["picture"] = file
+    # After uploaded the picture, put back the original name
+    os.rename(new_name, old_name)
+    return files

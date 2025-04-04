@@ -54,7 +54,7 @@ def create_submission_with_picture(account_name, iaso_client):
     current_datetime = int(datetime.now().timestamp())
 
     # Creating submissions with picture by org unit for first 10 Health facilities and setting up reference instance
-    picture = "health facility.png"
+    picture = "health-facility.jpg"
     # for picture in pictures:
     for orgunit in orgunits:
         org_unit_id = orgunit["id"]

@@ -113,7 +113,7 @@ bin/
 include/python3.6m
 
 pip-selfcheck.json
-data
+# data
 
 # dev environment
 .env*

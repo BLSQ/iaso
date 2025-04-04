@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-05 16:28+0000\n"
+"POT-Creation-Date: 2025-04-02 08:35+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -18,11 +18,11 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugins/wfp_auth/templates/wfp_auth/login_subtemplate.html:4
+#: plugins/wfp_auth/templates/wfp_auth/login_subtemplate.html
 msgid "Login via WFP CIAM"
 msgstr "Connexion via WFP CIAM"
 
-#: plugins/wfp_auth/templates/wfp_auth/new_account_email.html:2
+#: plugins/wfp_auth/templates/wfp_auth/new_account_email.html
 #, python-format
 msgid ""
 "\n"
@@ -58,8 +58,8 @@ msgstr ""
 "Ceci est un message automatique généré par le système d'authentification "
 "%(site_name)s.\n"
 "\n"
-"Un nouveau compte utilisateur, %(first_name)s %(last_name)s `%(username)s`, a "
-"été créé avec succès via le serveur d'authentification WFP.\n"
+"Un nouveau compte utilisateur, %(first_name)s %(last_name)s `%(username)s`, "
+"a été créé avec succès via le serveur d'authentification WFP.\n"
 "Cependant, le compte ne dispose actuellement d'aucune permission attribuée. "
 "Cette absence de permissions empêche l'utilisateur d'utiliser pleinement nos "
 "services.\n"
@@ -81,7 +81,8 @@ msgstr ""
 "Cordialement,\n"
 "L'équipe %(site_name)s.\n"
 
-#: plugins/wfp_auth/templates/wfp_auth/new_account_subject.txt:2
+#: plugins/wfp_auth/templates/wfp_auth/new_account_subject.txt
 #, python-format
 msgid "New User Account %(username)s Awaiting Access Permissions"
-msgstr "Nouveau compte utilisateur %(username)s en attente de permissions d'accès"
+msgstr ""
+"Nouveau compte utilisateur %(username)s en attente de permissions d'accès"

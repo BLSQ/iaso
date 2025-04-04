@@ -591,12 +591,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
             else:
                 org_unit.default_image = None
 
-        opening_date = request.data.get("opening_date", None)
-        org_unit.opening_date = None if not opening_date else self.get_date(opening_date)
+        opening_date = request.data.get("opening_date")
+        if opening_date:
+            org_unit.opening_date = self.get_date(opening_date)
 
-        closed_date = request.data.get("closed_date", None)
-        org_unit.closed_date = None if not closed_date else self.get_date(closed_date)
-
+        if "closed_date" in request.data:
+            closed_date = request.data.get("closed_date", None)
+            org_unit.closed_date = None if not closed_date else self.get_date(closed_date)
+        closed_date = request.data.get("closed_date")
+        if closed_date:
+            org_unit.closed_date = self.get_date(closed_date)
         if not errors:
             org_unit.save()
             if new_groups is not None:

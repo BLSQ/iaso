@@ -1,5 +1,5 @@
 import uuid
-
+import os
 from datetime import datetime, timedelta
 from random import randint
 
@@ -7,6 +7,7 @@ from submissions import (
     instance_by_LLIN_campaign_form,
     org_unit_gps_point,
     submission2xml,
+    rename_entity_submission_picture,
 )
 
 
@@ -108,8 +109,8 @@ def create_additional_entities(account_name, iaso_client, orgunit, entity_type):
     }
     if instance_json.get("consent_given") is not None:
         picture = instance_json["consent_given"]["beneficiary"]["picture"]
-        file = open(f"./data/women-pictures/{picture}", "rb")
-        files["picture"] = file
+        path = "./data/women-pictures"
+        files = rename_entity_submission_picture(path, picture, files)
 
     iaso_client.post(
         "/sync/form_upload/",
@@ -147,24 +148,23 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
     instance_json = instance_by_LLIN_campaign_form(reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit)
     image = f"{int(randint(1, 13))}.jpg"
     instance_json["register"]["picture"] = image
+    path = "./data/children-pictures"
 
-    with open(f"./data/children-pictures/{image}", "rb") as fp_image:
-        iaso_client.post(
-            "/sync/form_upload/",
-            files={
-                "xml_submission_file": (
-                    local_path,
-                    submission2xml(
-                        instance_json,
-                        form_version_id=reference_form["latest_form_version"]["version_id"],
-                        form_id=reference_form["form_id"],
-                    ),
-                ),
-                "picture": fp_image,
-            },
+    files = {
+        "xml_submission_file": (
+            local_path,
+            submission2xml(
+                instance_json,
+                form_version_id=reference_form["latest_form_version"]["version_id"],
+                form_id=reference_form["form_id"],
+            ),
         )
-
-    current_datetime = int(datetime.now().timestamp())
+    }
+    files = rename_entity_submission_picture(path, image, files)
+    iaso_client.post(
+        "/sync/form_upload/",
+        files=files,
+    )
     for i in range(randint(0, 5)):
         the_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid

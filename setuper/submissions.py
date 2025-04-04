@@ -1,6 +1,6 @@
 import random
 import uuid
-
+import os
 from datetime import datetime, timedelta
 
 from dict2xml import dict2xml
@@ -204,3 +204,16 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
 
     instance_json["meta"] = instance_id
     return instance_json
+
+
+def rename_entity_submission_picture(path, picture, files):
+    current_datetime = int(datetime.now().timestamp())
+    old_name = f"{path}/{picture}"
+    new_name = f"{path}/{current_datetime}_{picture}"
+    os.rename(old_name, new_name)
+
+    file = open(f"{new_name}", "rb")
+    files["picture"] = file
+    # After uploaded the picture, put back the original name
+    os.rename(new_name, old_name)
+    return files

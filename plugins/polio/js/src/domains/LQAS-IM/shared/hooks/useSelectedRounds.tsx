@@ -10,13 +10,24 @@ export const useSelectedRounds = ({ baseUrl, campaigns, params }) => {
     const { campaign, country, rounds } = params;
     const redirectToReplace = useRedirectToReplace();
     const [selectedRounds, setSelectedRounds] = useState(
-        rounds ? commaSeparatedIdsToArray(rounds) : [undefined, undefined],
+        rounds
+            .spit(',')
+            .filter(r => r in campaign.rounds.filter(rc => !rc.is_test))
+            ? commaSeparatedIdsToArray(
+                  rounds
+                      .spit(',')
+                      .filter(
+                          r => r in campaign.rounds.filter(rc => !rc.is_test),
+                      ),
+              )
+            : [undefined, undefined],
     );
 
     const dropDownOptions = useMemo(() => {
         return campaigns
             ?.filter(c => c.obr_name === campaign)[0]
-            ?.rounds.sort((a, b) => a.number - b.number)
+            ?.rounds.filter(r => !r.is_test)
+            .sort((a, b) => a.number - b.number)
             .map(r => {
                 return {
                     label: `Round ${r.number}`,

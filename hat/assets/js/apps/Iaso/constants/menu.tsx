@@ -36,7 +36,7 @@ import BeneficiarySvg from '../components/svg/Beneficiary';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 
-import { MenuItem, MenuItems, Plugins } from '../domains/app/types';
+import { MenuItem, MenuItems } from '../domains/app/types';
 import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
 import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
@@ -44,8 +44,9 @@ import {
     listMenuPermission,
     userHasOneOfPermissions,
 } from '../domains/users/utils';
+import { PluginsContext } from '../plugins/context';
+import { Plugins } from '../plugins/types';
 import { DropdownOptions } from '../types/utils';
-import { PluginsContext } from '../utils';
 import {
     hasFeatureFlag,
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,

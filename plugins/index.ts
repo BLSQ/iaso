@@ -1,6 +1,6 @@
 import polioConfig from './polio/js/config';
 import registryConfig from './registry/js/config';
-import sntMalariaConfig from './snt_malaria/js/config';
+import sntMalariaConfig from './snt-malaria/js/config';
 import testAppConfig from './test/js/config';
 
 export default {

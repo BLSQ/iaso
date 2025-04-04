@@ -299,6 +299,7 @@
     "iaso.forms.org_unit_type": "Type d'unité d'organisation",
     "iaso.forms.org_unit_type_id": "Type d'unité d’organisation",
     "iaso.forms.path": "Chemin",
+    "iaso.forms.projectsInfo": "Vous devez sélectionner au moins un projet pour voir la liste des types d'unités d'org.",
     "iaso.forms.records": "Soumission(s)",
     "iaso.forms.rejected": "rejeté",
     "iaso.forms.rejectedCap": "Rejeté",

@@ -299,6 +299,7 @@
     "iaso.forms.org_unit_type": "Organisation unit type",
     "iaso.forms.org_unit_type_id": "Org unit type",
     "iaso.forms.path": "Path",
+    "iaso.forms.projectsInfo": "You need to select at least one project to see the list of available org unit types",
     "iaso.forms.records": "Submission(s)",
     "iaso.forms.rejected": "rejected",
     "iaso.forms.rejectedCap": "Rejected",

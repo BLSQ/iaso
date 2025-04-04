@@ -7,25 +7,38 @@ import { DropdownOptions } from '../../../../types/utils';
 import { useCheckUserHasWriteTypePermission } from '../../../../utils/usersUtils';
 import { OrgunitTypes } from '../../types/orgunitTypes';
 
-const getOrgunitTypes = (projectId?: number): Promise<OrgunitTypes> => {
-    return getRequest(
-        projectId
-            ? `/api/v2/orgunittypes/dropdown/?project=${projectId}`
-            : '/api/v2/orgunittypes/dropdown/',
-    );
+const getOrgunitTypes = (
+    projectId?: number,
+    projectIds?: number[],
+): Promise<OrgunitTypes> => {
+    let url = '/api/v2/orgunittypes/dropdown/';
+    if (projectId) {
+        url += `?project=${projectId}`;
+    } else if (projectIds && projectIds.length > 0) {
+        url += `?project_ids=${projectIds.join(',')}`;
+    }
+    return getRequest(url);
 };
 
-export const useGetOrgUnitTypesDropdownOptions = (
-    projectId?: number,
+export const useGetOrgUnitTypesDropdownOptions = ({
+    projectId,
+    projectIds,
     onlyWriteAccess = false,
-): UseQueryResult<DropdownOptions<string>[], Error> => {
-    const queryKey: any[] = ['orgunittypes-dropdown', projectId];
+    enabled = true,
+}: {
+    projectId?: number | undefined;
+    projectIds?: number[] | undefined;
+    onlyWriteAccess?: boolean | undefined;
+    enabled?: boolean | undefined;
+} = {}): UseQueryResult<DropdownOptions<string>[], Error> => {
+    const queryKey: any[] = ['orgunittypes-dropdown', projectId, projectIds];
     const checkUserHasWriteTypePermission =
         useCheckUserHasWriteTypePermission();
     return useSnackQuery({
         queryKey,
-        queryFn: () => getOrgunitTypes(projectId),
+        queryFn: () => getOrgunitTypes(projectId, projectIds),
         options: {
+            enabled,
             keepPreviousData: true,
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,

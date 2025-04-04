@@ -64,11 +64,10 @@ class PagesViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         order = self.request.query_params.get("order", "created_at").split(",")
-        
+
         users = User.objects.filter(iaso_profile__account=user.iaso_profile.account)
         queryset = Page.objects.filter(users__in=users)
         if user.has_perm(permission.PAGES) and not user.has_perm(permission.PAGE_WRITE):
             queryset = queryset.filter(users=user)
 
         return queryset.order_by(*order).distinct()
-    

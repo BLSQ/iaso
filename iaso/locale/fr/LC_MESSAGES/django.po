@@ -571,6 +571,14 @@ msgstr "Approuvé"
 msgid "Org unit change request"
 msgstr "Demande de modification d'unité organisationnelle"
 
+#: iaso/models/org_unit_change_request_configuration.py:42
+msgid "Creation"
+msgstr "Création"
+
+#: iaso/models/org_unit_change_request_configuration.py:43
+msgid "Edition"
+msgstr "Édition"
+
 #: iaso/models/org_unit_change_request_configuration.py:103
 msgid "Org unit change request configuration"
 msgstr "Configuration de demande de modification d'unité organisationnelle"

@@ -8,6 +8,7 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
+import { useDebounce } from 'use-debounce';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
@@ -62,10 +63,19 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
         validationSchema,
     });
 
+    const [debouncedDate] = useDebounce(
+        formik.values.destruction_report_date,
+        500,
+    );
+    const [debouncedVials] = useDebounce(
+        formik.values.unusable_vials_destroyed,
+        500,
+    );
+
     const { data: hasDuplicatesData } = useCheckDestructionDuplicate({
         vaccineStockId,
-        destructionReportDate: formik.values.destruction_report_date,
-        unusableVialsDestroyed: formik.values.unusable_vials_destroyed,
+        destructionReportDate: debouncedDate,
+        unusableVialsDestroyed: debouncedVials,
         destructionReportId: destruction?.id,
     });
     const titleMessage = destruction?.id ? MESSAGES.edit : MESSAGES.create;

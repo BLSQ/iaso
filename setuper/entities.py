@@ -94,42 +94,27 @@ def create_additional_entities(account_name, iaso_client, orgunit, entity_type):
         "file": local_path,
         "name": file_name,
     }
-
     iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
     instance_json = instance_by_LLIN_campaign_form(reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit)
-    if instance_json.get("consent_given") is not None:
-        with open(
-            f"./data/women-pictures/{instance_json['consent_given']['beneficiary']['picture']}",
-            "rb",
-        ) as fp_image:
-            iaso_client.post(
-                "/sync/form_upload/",
-                files={
-                    "xml_submission_file": (
-                        local_path,
-                        submission2xml(
-                            instance_json,
-                            form_version_id=reference_form["latest_form_version"]["version_id"],
-                            form_id=reference_form["form_id"],
-                        ),
-                    ),
-                    "picture": fp_image,
-                },
-            )
-    else:
-        iaso_client.post(
-            "/sync/form_upload/",
-            files={
-                "xml_submission_file": (
-                    local_path,
-                    submission2xml(
-                        instance_json,
-                        form_version_id=reference_form["latest_form_version"]["version_id"],
-                        form_id=reference_form["form_id"],
-                    ),
-                )
-            },
+    files = {
+        "xml_submission_file": (
+            local_path,
+            submission2xml(
+                instance_json,
+                form_version_id=reference_form["latest_form_version"]["version_id"],
+                form_id=reference_form["form_id"],
+            ),
         )
+    }
+    if instance_json.get("consent_given") is not None:
+        picture = instance_json["consent_given"]["beneficiary"]["picture"]
+        file = open(f"./data/women-pictures/{picture}", "rb")
+        files["picture"] = file
+
+    iaso_client.post(
+        "/sync/form_upload/",
+        files=files,
+    )
 
 
 def create_child_entities(account_name, iaso_client, orgunit, entity_type):

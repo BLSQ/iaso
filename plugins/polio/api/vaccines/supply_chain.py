@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
+from iaso.utils.clamav import scan_uploaded_file_for_virus
 from plugins.polio.api.vaccines.permissions import VaccineStockManagementPermission, can_edit_helper
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
@@ -131,10 +132,12 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     doses_per_vial = serializers.IntegerField(required=False, read_only=True)
     vials_shipped = serializers.IntegerField(required=False, read_only=True)
     document = serializers.FileField(required=False)
+    scan_result = serializers.SerializerMethodField()
+    scan_timestamp = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
-        fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id", "can_edit"]
+        fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id", "can_edit", "scan_result", "scan_timestamp"]
 
     def validate(self, attrs: Any) -> Any:
         # at least one of the other fields must be present
@@ -170,6 +173,14 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
         )
+
+    def get_scan_result(self, obj):
+        return obj.document_scan_status
+
+    def get_scan_timestamp(self, obj):
+        if obj.document_last_scan:
+            return obj.document_last_scan.timestamp()
+        return obj.document_last_scan
 
 
 class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
@@ -253,6 +264,10 @@ class PostPreAlertSerializer(serializers.Serializer):
         for item in self.validated_data["pre_alerts"]:
             pre_alert = NestedVaccinePreAlertSerializerForPost(data=item, context=self.context)
             if pre_alert.is_valid():
+                if "document" in pre_alert.validated_data:
+                    result, timestamp = scan_uploaded_file_for_virus(pre_alert.validated_data["document"])
+                    pre_alert.validated_data["document_scan_status"] = result
+                    pre_alert.validated_data["document_last_scan"] = timestamp
                 pre_alert.save()
                 pre_alerts.append(pre_alert.instance)
 
@@ -276,6 +291,10 @@ class PatchPreAlertSerializer(serializers.Serializer):
                     if hasattr(ar, key) and getattr(ar, key) != item[key]:
                         is_different = True
                         setattr(ar, key, item[key])
+                        if key == "document":
+                            result, timestamp = scan_uploaded_file_for_virus(item[key])
+                            ar.document_scan_status = result
+                            ar.document_last_scan = timestamp
 
                 if is_different:
                     if can_edit_helper(

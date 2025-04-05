@@ -30,7 +30,7 @@ def can_edit_helper(
     return False
 
 
-class VaccineStockManagementPermission(permissions.BasePermission):
+class VaccineStockPermission(permissions.BasePermission):
     def __init__(
         self,
         admin_perm,

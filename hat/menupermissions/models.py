@@ -80,12 +80,13 @@ _POLIO_VACCINE_AUTHORIZATIONS_ADMIN = "iaso_polio_vaccine_authorizations_admin"
 _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = "iaso_polio_vaccine_authorizations_read_only"
 _POLIO_VACCINE_SUPPLY_CHAIN_READ = "iaso_polio_vaccine_supply_chain_read"
 _POLIO_VACCINE_SUPPLY_CHAIN_WRITE = "iaso_polio_vaccine_supply_chain_write"
+_POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY = "iaso_polio_vaccine_supply_chain_read_only"
 _POLIO_VACCINE_STOCK_MANAGEMENT_READ = "iaso_polio_vaccine_stock_management_read"
 _POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = "iaso_polio_vaccine_stock_management_write"
 _POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY = "iaso_polio_vaccine_stock_management_read_only"
 _POLIO_VACCINE_STOCK_EARMARKS_NONADMIN = "iaso_polio_vaccine_stock_earmarks_nonadmin"
 _POLIO_VACCINE_STOCK_EARMARKS_ADMIN = "iaso_polio_vaccine_stock_earmarks_admin"
-
+_POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY = "iaso_polio_vaccine_stock_earmarks_read_only"
 # Trypelim
 _ANONYMOUS_VIEW = "iaso_trypelim_anonymous"
 _AREAS = "iaso_trypelim_management_areas"
@@ -162,11 +163,15 @@ POLIO_CONFIG = _PREFIX + _POLIO_CONFIG
 POLIO_NOTIFICATIONS = _PREFIX + _POLIO_NOTIFICATIONS
 POLIO_VACCINE_AUTHORIZATIONS_ADMIN = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_ADMIN
 POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
+POLIO_VACCINE_SUPPLY_CHAIN_READ = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_READ
+POLIO_VACCINE_SUPPLY_CHAIN_WRITE = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_WRITE
+POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY
 POLIO_VACCINE_STOCK_MANAGEMENT_READ = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_READ
 POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_WRITE
 POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY
 POLIO_VACCINE_STOCK_EARMARKS_NONADMIN = _PREFIX + _POLIO_VACCINE_STOCK_EARMARKS_NONADMIN
 POLIO_VACCINE_STOCK_EARMARKS_ADMIN = _PREFIX + _POLIO_VACCINE_STOCK_EARMARKS_ADMIN
+POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY = _PREFIX + _POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY
 PROJECTS = _PREFIX + _PROJECTS
 REGISTRY_WRITE = _PREFIX + _REGISTRY_WRITE
 REGISTRY_READ = _PREFIX + _REGISTRY_READ
@@ -320,6 +325,10 @@ class CustomPermissionSupport(models.Model):
             (_POLIO_VACCINE_SUPPLY_CHAIN_READ, _("Polio Vaccine Supply Chain Read")),
             (_POLIO_VACCINE_SUPPLY_CHAIN_WRITE, _("Polio Vaccine Supply Chain Write")),
             (
+                _POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
+                _("Polio Vaccine Supply Chain Read Only"),
+            ),
+            (
                 _POLIO_VACCINE_STOCK_MANAGEMENT_READ,
                 _("Polio Vaccine Stock Management Read"),
             ),
@@ -338,6 +347,10 @@ class CustomPermissionSupport(models.Model):
             (
                 _POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
                 _("Polio Vaccine Stock Earmarks Admin"),
+            ),
+            (
+                _POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
+                _("Polio Vaccine Stock Earmarks Read Only"),
             ),
             # Trypelim
             (_ANONYMOUS_VIEW, "Anonymisation des patients"),

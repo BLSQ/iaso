@@ -205,9 +205,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.return_to_supplier',
         defaultMessage: 'Return to supplier',
     },
-    losses: {
-        id: 'iaso.polio.label.losses',
-        defaultMessage: 'Losses',
+    missing: {
+        id: 'iaso.polio.label.missing',
+        defaultMessage: 'Missing',
     },
     vaccine_expired: {
         id: 'iaso.polio.label.vaccine_expired',

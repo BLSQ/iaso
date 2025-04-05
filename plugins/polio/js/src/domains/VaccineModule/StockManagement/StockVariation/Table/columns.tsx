@@ -1,9 +1,11 @@
+import React, { useMemo } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import React, { useMemo } from 'react';
+import { BreakWordCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/BreakWordCell';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
+import { DisplayIfUserHasPerm } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { PdfPreview } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/PdfPreview';
 import {
     STOCK_MANAGEMENT_WRITE,
@@ -12,13 +14,6 @@ import {
     STOCK_EARMARKS_ADMIN,
 } from '../../../../../constants/permissions';
 import { VaccineForStock } from '../../../../../constants/types';
-import MESSAGES from '../../messages';
-import { EditDestruction } from '../Modals/CreateEditDestruction';
-import { EditFormA } from '../Modals/CreateEditFormA';
-import { EditIncident } from '../Modals/CreateEditIncident';
-
-import { BreakWordCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/BreakWordCell';
-import { DisplayIfUserHasPerm } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { USED } from '../../constants';
 import {
     useDeleteDestruction,
@@ -26,7 +21,11 @@ import {
     useDeleteFormA,
     useDeleteIncident,
 } from '../../hooks/api';
+import MESSAGES from '../../messages';
+import { EditDestruction } from '../Modals/CreateEditDestruction';
 import { EditEarmarked } from '../Modals/CreateEditEarmarked';
+import { EditFormA } from '../Modals/CreateEditFormA';
+import { EditIncident } from '../Modals/CreateEditIncident';
 
 export const useFormATableColumns = (
     countryName: string,
@@ -77,22 +76,6 @@ export const useFormATableColumns = (
                         value={settings.row.original.usable_vials_used}
                     />
                 ),
-            },
-            {
-                Header: formatMessage(MESSAGES.forma_vials_missing),
-                accessor: 'missing_vials',
-                id: 'missing_vials',
-                sortable: true,
-                Cell: settings => {
-                    if (settings.row.original.missing_vials) {
-                        return (
-                            <NumberCell
-                                value={settings.row.original.missing_vials}
-                            />
-                        );
-                    }
-                    return textPlaceholder;
-                },
             },
             {
                 Header: formatMessage(MESSAGES.actions),

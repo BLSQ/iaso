@@ -30,8 +30,18 @@ export type CalendarRound = {
     scopes: Scope[];
     target_population: number;
     hasSubActivities: boolean;
+    subActivities: SubActivity[];
 };
 
+export type SubActivity = {
+    id: number;
+    name: string;
+    scopes: Scope[];
+    start_date: Moment;
+    end_date: Moment;
+    vaccine_names: string;
+    round_number: number;
+};
 export type MappedCampaign = {
     original: CalendarCampaign;
     name: string;
@@ -45,6 +55,9 @@ export type MappedCampaign = {
     id: string;
     isPreventive: boolean;
     isTest: boolean;
+    onHold: boolean;
+    subActivities: SubActivity[];
+    hasSubActivities: boolean;
 };
 
 export type ShapeForCalendarMap = {
@@ -61,7 +74,8 @@ export type CalendarParams = {
     roundStartTo?: string;
     showOnlyDeleted?: string;
     // eslint-disable-next-line camelcase
-    show_test?: string;
+    show_test?: string; // boolean in string form
+    on_hold?: string; // boolean in string form
     filterLaunched?: string;
     order?: string;
     countries?: string;
@@ -72,7 +86,6 @@ export type CalendarParams = {
     orgUnitGroups?: string;
     currentDate?: string;
     periodType?: PeriodType;
-    notShowTest?: string;
 };
 
 export type CalendarData = {

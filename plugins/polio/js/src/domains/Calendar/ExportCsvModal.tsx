@@ -1,13 +1,13 @@
+import React, { FunctionComponent, useState } from 'react';
 import {
     ConfirmCancelModal,
     getTableUrl,
     makeFullModal,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useState } from 'react';
 import DatesRange from '../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import MESSAGES from '../../constants/messages';
-import { ExportCsvModalButton } from './ExportCsvModalButton';
 import { CalendarParams } from './campaignCalendar/types';
+import { ExportCsvModalButton } from './ExportCsvModalButton';
 
 type Props = {
     params: CalendarParams;

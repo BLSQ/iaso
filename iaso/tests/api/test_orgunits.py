@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 import typing
 
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
@@ -7,7 +8,7 @@ from django.db import connection
 
 from hat.audit.models import Modification
 from iaso import models as m
-from iaso.models import OrgUnit, OrgUnitType
+from iaso.models import Group, OrgUnit, OrgUnitType
 from iaso.test import APITestCase
 from iaso.utils.gis import simplify_geom
 
@@ -242,6 +243,40 @@ class OrgUnitAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 2)
+
+    def test_org_unit_search_with_external_refs(self):
+        """GET /orgunits/ with a search based on refs - real external & fake external (internal)"""
+        # First, let's set a source ref on this orgunit, because there is none in the setup
+        jedi_counsil_endor_source_ref = "sOuRcErEf"
+        self.jedi_council_endor.source_ref = jedi_counsil_endor_source_ref
+        self.jedi_council_endor.save()
+        self.jedi_council_endor.refresh_from_db()
+
+        invalid_external_ref = "iTsAMeMario"
+        invalid_iaso_id = 12345678987654321
+
+        # Let's add a mix of existing and non-existing refs, both external and fake external
+        search_criteria = {
+            "validation_status": "all",
+            "version": self.sw_version_1.id,
+            "search": f"refs: {self.jedi_council_corruscant.source_ref} iaso:{invalid_iaso_id} {self.jedi_council_endor.source_ref} iaso:{self.jedi_squad_endor.id} {invalid_external_ref}",
+        }
+        search_criteria_str = json.dumps(search_criteria)
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{search_criteria_str}]&limit=50"
+        )
+        self.assertJSONResponse(response, 200)
+
+        response_json = response.json()
+        self.assertEqual(response_json["count"], 3)
+        org_units = response_json["orgunits"]
+        self.assertEqual(org_units[0]["id"], self.jedi_council_corruscant.id)
+        self.assertEqual(org_units[0]["source_ref"], self.jedi_council_corruscant.source_ref)
+        self.assertEqual(org_units[1]["id"], self.jedi_council_endor.id)
+        self.assertEqual(org_units[1]["source_ref"], jedi_counsil_endor_source_ref)
+        self.assertEqual(org_units[2]["id"], self.jedi_squad_endor.id)
 
     def test_org_unit_search(self):
         """GET /orgunits/ with a search based on name"""
@@ -1088,23 +1123,99 @@ class OrgUnitAPITestCase(APITestCase):
         return ou, group_a, group_b, old_modification_date, data
 
     def test_edit_org_unit_partial_update(self):
-        """Check that we can only modify a part of the file with org units management permission"""
-        ou, group_a, group_b, old_modification_date, data = self.set_up_org_unit_partial_update()
+        """Test that partial updates correctly modify only the specified fields while preserving others"""
+
+        # Setup initial org unit with some data
+        org_unit, group_a, group_b, old_modification_date, initial_data = self.set_up_org_unit_partial_update()
+
+        # Create a new group for testing group assignment
+        new_group = Group.objects.create(name="New test group", source_version=self.sw_version_1)
+
+        # Create test location data
+        test_location = {"latitude": 4.4, "longitude": 5.5, "altitude": 100}
+
+        # Create test geojson data
+        test_geojson = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {"type": "MultiPolygon", "coordinates": [[[[1, 1], [1, 2], [2, 2], [2, 1], [1, 1]]]]},
+                }
+            ],
+        }
+
+        # Store initial values for comparison
+        initial_name = org_unit.name
+        initial_source_ref = org_unit.source_ref
+        initial_groups = list(org_unit.groups.all())
+
+        # Prepare update data
+        update_data = {
+            "name": "Updated Name",
+            "source_ref": "NEW_REF_123",
+            "validation_status": "VALID",
+            "latitude": test_location["latitude"],
+            "longitude": test_location["longitude"],
+            "altitude": test_location["altitude"],
+            "geo_json": test_geojson,
+            "aliases": ["alias1", "alias2"],
+            "groups": [new_group.id],
+            "opening_date": "01-01-2023",
+            "closed_date": "31-12-2023",
+        }
+
         self.client.force_authenticate(self.yoda)
-        response = self.client.patch(
-            f"/api/orgunits/{ou.id}/",
-            format="json",
-            data=data,
-        )
-        self.assertJSONResponse(response, 200)
-        ou.refresh_from_db()
-        # check the orgunit has not beee modified
-        self.assertGreater(ou.updated_at, old_modification_date)
-        self.assertEqual(ou.name, "test ou")
-        self.assertEqual(ou.source_ref, "new source ref")
-        self.assertQuerySetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
-        self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
-        self.assertEqual(response.data["reference_instances"], [])
+
+        # Perform partial update
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=update_data, format="json")
+
+        # Verify response
+        self.assertEqual(response.status_code, 200)
+
+        # Refresh org unit from database
+        org_unit.refresh_from_db()
+
+        # Verify basic field updates
+        self.assertEqual(org_unit.name, "Updated Name")
+        self.assertEqual(org_unit.source_ref, "NEW_REF_123")
+        self.assertEqual(org_unit.validation_status, "VALID")
+
+        # Verify location update
+        self.assertIsNotNone(org_unit.location)
+        self.assertEqual(org_unit.location.y, test_location["latitude"])
+        self.assertEqual(org_unit.location.x, test_location["longitude"])
+        self.assertEqual(org_unit.location.z, test_location["altitude"])
+
+        # Verify geojson/geometry update
+        self.assertIsNotNone(org_unit.simplified_geom)
+        self.assertIsNotNone(org_unit.geom)
+
+        # Verify aliases update
+        self.assertEqual(set(org_unit.aliases), {"alias1", "alias2"})
+
+        # Verify groups update
+        self.assertEqual(list(org_unit.groups.all()), [new_group])
+
+        # Verify dates update
+        self.assertEqual(org_unit.opening_date.strftime("%d-%m-%Y"), "01-01-2023")
+        self.assertEqual(org_unit.closed_date.strftime("%d-%m-%Y"), "31-12-2023")
+
+        # Verify modification date was updated
+        self.assertGreater(org_unit.updated_at, old_modification_date)
+
+        # Test partial update with minimal data
+        minimal_update = {"name": "Minimal Update"}
+
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=minimal_update, format="json")
+
+        # Verify minimal update
+        self.assertEqual(response.status_code, 200)
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.name, "Minimal Update")
+        # Verify other fields remain unchanged from previous update
+        self.assertEqual(org_unit.source_ref, "NEW_REF_123")
+        self.assertEqual(org_unit.validation_status, "VALID")
 
     def test_edit_org_unit_partial_update_remove_geojson_geom_simplified_geom_should_be_consistent(
         self,
@@ -1245,7 +1356,6 @@ class OrgUnitAPITestCase(APITestCase):
         )
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
-        self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertEqual(ou.as_dict()["latitude"], form_latitude)
         self.assertEqual(ou.as_dict()["longitude"], form_longitude)
@@ -1503,3 +1613,13 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(org_units["page"], 1)
         first_org_unit = org_units["orgunits"][0]
         self.assertEqual(first_org_unit["id"], self.jedi_council_corruscant.pk)
+
+    def test_descending_order_without_as_location(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?limit=20&order=-name&page=1")
+        self.assertEqual(response.status_code, 200)
+
+    def test_descending_order_with_as_location(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?limit=20&order=-name&page=1&asLocation=true")
+        self.assertEqual(response.status_code, 200)

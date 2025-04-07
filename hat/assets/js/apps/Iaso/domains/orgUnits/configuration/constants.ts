@@ -29,3 +29,6 @@ export const editableFieldsManyToManyFields = [
     'editableReferenceFormIds',
     'otherGroupIds',
 ];
+
+export const orgUnitChangeRequestConfigTypeCreation = 'creation';
+export const orgUnitChangeRequestConfigTypeEdition = 'edition';

@@ -63,10 +63,8 @@ class GroupSerializer(serializers.ModelSerializer):
         default_version = self._fetch_user_default_source_version()
         if "source_ref" in attrs:
             # Check if the source_ref is already used by another group
-            existing_group = Group.objects.filter(
-                source_ref=attrs["source_ref"], source_version=default_version
-            ).first()
-            if existing_group:
+            potential_group = Group.objects.filter(source_ref=attrs["source_ref"], source_version=default_version)
+            if potential_group.exists():
                 raise serializers.ValidationError(
                     {"source_ref": "This source ref is already used by another group in your default version"}
                 )

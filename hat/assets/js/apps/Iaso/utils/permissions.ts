@@ -15,7 +15,6 @@ const ORG_UNIT_GROUPS = 'iaso_org_unit_groups';
 const ORG_UNIT_TYPES = 'iaso_org_unit_types';
 const ORG_UNITS = 'iaso_org_units';
 const ORG_UNITS_READ = 'iaso_org_units_read';
-const ORG_UNITS_HISTORY = 'iaso_org_units_history';
 const PAGES = 'iaso_pages';
 const PAGE_WRITE = 'iaso_page_write';
 const PLANNING_READ = 'iaso_planning_read';
@@ -74,7 +73,6 @@ export {
     ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION,
     ORG_UNITS_CHANGE_REQUEST_REVIEW,
     ORG_UNITS_READ,
-    ORG_UNITS_HISTORY,
     ORG_UNIT_GROUPS,
     ORG_UNIT_TYPES,
     PAGES,

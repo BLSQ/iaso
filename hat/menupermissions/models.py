@@ -41,7 +41,6 @@ _MAPPINGS = "iaso_mappings"
 _MOBILE_APP_OFFLINE_SETUP = "iaso_mobile_app_offline_setup"
 _MODULES = "iaso_modules"
 _ORG_UNITS = "iaso_org_units"
-_ORG_UNITS_HISTORY = "iaso_org_units_history"
 _ORG_UNITS_READ = "iaso_org_units_read"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
 _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
@@ -141,7 +140,6 @@ MAPPINGS = _PREFIX + _MAPPINGS
 MOBILE_APP_OFFLINE_SETUP = _PREFIX + _MOBILE_APP_OFFLINE_SETUP
 MODULES = _PREFIX + _MODULES
 ORG_UNITS = _PREFIX + _ORG_UNITS
-ORG_UNITS_HISTORY = _PREFIX + _ORG_UNITS_HISTORY
 ORG_UNITS_READ = _PREFIX + _ORG_UNITS_READ
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
@@ -255,7 +253,6 @@ class CustomPermissionSupport(models.Model):
             (_MODULES, _("modules")),
             (_COMPLETENESS, _("Complétude des données")),
             (_ORG_UNITS, _("Unités d'organisations")),
-            (_ORG_UNITS_HISTORY, _("Historique des unités d'organisation")),
             (_ORG_UNITS_READ, _("Lire les unités d'organisations")),
             (_REGISTRY_WRITE, _("Editer le Registre")),
             (_REGISTRY_READ, _("Lire le Registre")),

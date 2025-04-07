@@ -19,10 +19,7 @@ import {
     baseUrls,
 } from '../../constants/urls.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import {
-    useCheckUserHasWritePermissionOnOrgunit,
-    useCurrentUser,
-} from '../../utils/usersUtils.ts';
+import { useCheckUserHasWritePermissionOnOrgunit } from '../../utils/usersUtils.ts';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitImages } from './components/OrgUnitImages.tsx';
@@ -45,8 +42,6 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
-import { userHasPermission } from '../users/utils';
-import * as Permission from '../../utils/permissions';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -113,11 +108,6 @@ const OrgUnitDetail = () => {
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
     const redirectToReplace = useRedirectToReplace();
-    const currentUser = useCurrentUser();
-    const hasOrgUnitsHistoryPermission = userHasPermission(
-        Permission.ORG_UNITS_HISTORY,
-        currentUser,
-    );
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
@@ -126,10 +116,9 @@ const OrgUnitDetail = () => {
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
         useState(false);
 
-    const showLogButtons =
-        useCheckUserHasWritePermissionOnOrgunit(
-            currentOrgUnit?.org_unit_type_id,
-        ) && hasOrgUnitsHistoryPermission;
+    const showLogButtons = useCheckUserHasWritePermissionOnOrgunit(
+        currentOrgUnit?.org_unit_type_id,
+    );
     const formParams = useOrgUnitTabParams(params, FORMS_PREFIX);
     const linksParams = useOrgUnitTabParams(params, LINKS_PREFIX);
     const childrenParams = useOrgUnitTabParams(params, OU_CHILDREN_PREFIX);

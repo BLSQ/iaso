@@ -15,13 +15,9 @@ from submissions import (
 def setup_instances(account_name, iaso_client):
     print("-- Setting up a form")
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?with_units_count=true")[
-        "orgUnitTypes"
-    ]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?with_units_count=true")["orgUnitTypes"]
     org_unit_type_ids = [
-        out["id"]
-        for out in org_unit_types
-        if out["name"] != "Health facility/Formation sanitaire - HF"
+        out["id"] for out in org_unit_types if out["name"] != "Health facility/Formation sanitaire - HF"
     ]
 
     # create a form
@@ -56,23 +52,18 @@ def setup_instances(account_name, iaso_client):
     for org_unit_type_id in org_unit_type_ids:
         org_unit_type = iaso_client.get(f"/api/v2/orgunittypes/{org_unit_type_id}")
         org_unit_type["reference_forms_ids"] = [form_id]
-        org_unit_type["project_ids"] = [
-            project["id"] for project in org_unit_type["projects"]
-        ]
-        org_unit_type["sub_unit_type_ids"] = [
-            sub_unit["id"] for sub_unit in org_unit_type["sub_unit_types"]
-        ]
+        org_unit_type["project_ids"] = [project["id"] for project in org_unit_type["projects"]]
+        org_unit_type["sub_unit_type_ids"] = [sub_unit["id"] for sub_unit in org_unit_type["sub_unit_types"]]
         org_unit_type["allow_creating_sub_unit_type_ids"] = [
-            sub_unit_type["id"]
-            for sub_unit_type in org_unit_type["allow_creating_sub_unit_types"]
+            sub_unit_type["id"] for sub_unit_type in org_unit_type["allow_creating_sub_unit_types"]
         ]
         # Update the org unit type with reference form
         iaso_client.put(f"/api/v2/orgunittypes/{org_unit_type_id}/", json=org_unit_type)
 
         limit = org_unit_type["units_count"]
-        orgunits = iaso_client.get(
-            "/api/orgunits/", params={"limit": limit, "orgUnitTypeId": org_unit_type_id}
-        )["orgunits"]
+        orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": org_unit_type_id})[
+            "orgunits"
+        ]
         print("-- Submitting %d submissions" % limit)
         count = 0
         for orgunit in orgunits:
@@ -96,9 +87,7 @@ def setup_instances(account_name, iaso_client):
                 }
             ]
             image = picture_by_org_unit_type_name(orgunit["org_unit_type_name"])
-            iaso_client.post(
-                f"/api/instances/?app_id={account_name}", json=instance_body
-            )
+            iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
 
             bool_choice = random.choice(["yes", "no"])
             current_datetime = datetime.now()
@@ -109,9 +98,7 @@ def setup_instances(account_name, iaso_client):
                 "note_intro": {
                     "presence_cdf": bool_choice,
                     "type_equipement": (
-                        random.choice(
-                            ["refrigerateur", "congelateur", "chambre_froide", "aucun"]
-                        )
+                        random.choice(["refrigerateur", "congelateur", "chambre_froide", "aucun"])
                         if bool_choice == "yes"
                         else None
                     ),
@@ -123,33 +110,21 @@ def setup_instances(account_name, iaso_client):
                             "Fabriquant ...",
                         ]
                     ),
-                    "modele": random.choice(
-                        ["Modele 1", "Modele 2", "Modele 3", "Modele ..."]
-                    ),
+                    "modele": random.choice(["Modele 1", "Modele 2", "Modele 3", "Modele ..."]),
                     "num_serie": f"S{random.randint(1045, 304552)}NG",
                     "longueur": random.randint(5, 20),
                     "largeur": random.randint(2, 25),
                     "hauteur": random.randint(10, 25),
                     "stokage": random.randint(15, 20),
-                    "source_energie": random.choice(
-                        ["Electricite", "Solaire", "Petrol", "Gaz", "Gasoil"]
-                    ),
+                    "source_energie": random.choice(["Electricite", "Solaire", "Petrol", "Gaz", "Gasoil"]),
                     "etat_fonctionnement": random.choice(["FB", "FR", "NF", "NI"]),
-                    "cause_panne": random.choice(
-                        ["RAS", "Manque de stabilisateur de tension"]
-                    ),
+                    "cause_panne": random.choice(["RAS", "Manque de stabilisateur de tension"]),
                 },
                 "population": {
-                    "target_population_9_59_easily_accessible": random.randint(
-                        100, 2500
-                    ),
-                    "target_population_9_59_accessible_by_advanced_team": random.randint(
-                        89, 2412
-                    ),
+                    "target_population_9_59_easily_accessible": random.randint(100, 2500),
+                    "target_population_9_59_accessible_by_advanced_team": random.randint(89, 2412),
                     "target_population_9_59_hard_to_access": random.randint(51, 1212),
-                    "target_population_9_59_humanitarian_target_mobile": random.randint(
-                        50, 100
-                    ),
+                    "target_population_9_59_humanitarian_target_mobile": random.randint(50, 100),
                     "target_population_9_59_total": random.randint(100, 1200),
                     "population_2023": random.randint(10200, 24500),
                     "children_0_11_month": random.randint(1200, 4500),
@@ -192,17 +167,13 @@ def setup_instances(account_name, iaso_client):
                             "logistique_de_poste_de_vaccination__tent moyen_de_d_placement__moto__v_lo__pirogu carburant rafra_chissement__eau__nourriture__banan autre_engagement_materiel",
                         ]
                     ),
-                    "lieu_rdv": random.choice(
-                        ["chefferies", "lieux_de_culte", "march_s", "ecoles", "autres"]
-                    ),
+                    "lieu_rdv": random.choice(["chefferies", "lieux_de_culte", "march_s", "ecoles", "autres"]),
                     "date_rdv": date_rdv.date(),
                 },
                 "Photo": {"imgUrl": image},
                 "microplan": {
                     "Population_estimee_du_village": estimated_pop_village,
-                    "strategie": random.choice(
-                        ["1 2 3 4", "1 2", "3 4", "1 3", "1 4", "2 3", "2 4"]
-                    ),
+                    "strategie": random.choice(["1 2 3 4", "1 2", "3 4", "1 3", "1 4", "2 3", "2 4"]),
                 },
                 "meta": {"instanceID": "uuid:" + the_uuid},
             }
@@ -220,9 +191,7 @@ def setup_instances(account_name, iaso_client):
             if instance_json.get("Photo") is not None:
                 picture = instance_json["Photo"]["imgUrl"]
                 path = "./data"
-                files = rename_entity_submission_picture(
-                    path, picture, files, "imgUrl", the_uuid
-                )
+                files = rename_entity_submission_picture(path, picture, files, "imgUrl", the_uuid)
 
             iaso_client.post(
                 "/sync/form_upload/",
@@ -238,9 +207,7 @@ def setup_instances(account_name, iaso_client):
                 print("\t%d submissions done" % count)
 
             # Creating default reference submission for the org unit
-            create_default_reference_submission(
-                account_name, iaso_client, orgunit["id"], form_id, the_uuid
-            )
+            create_default_reference_submission(account_name, iaso_client, orgunit["id"], form_id, the_uuid)
 
     print(
         iaso_client.get("/api/instances", params={"limit": 1})["count"],

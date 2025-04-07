@@ -1,7 +1,7 @@
 declare module 'iaso_plugins/configs' {
     import { Plugin } from '../types';
 
-    const config: Plugin;
+    const config: { [key: string]: { default: Plugin } };
     export default config;
 }
 

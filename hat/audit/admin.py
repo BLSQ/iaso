@@ -11,7 +11,8 @@ class ModificationAdmin(admin.ModelAdmin):
     autocomplete_fields = ("user",)
     date_hierarchy = "created_at"
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
-    list_display = ("object_id", "source", "created_at")
+    list_display = ("id", "object_id", "source", "created_at")
+    list_display_links = ("id", "object_id")
     list_filter = ("content_type",)
     raw_id_fields = ("org_unit_change_request",)
     search_fields = ("id", "source")

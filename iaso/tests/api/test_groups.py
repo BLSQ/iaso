@@ -1,6 +1,7 @@
 import typing
 
 from django.utils.timezone import now
+from rest_framework import status
 
 from hat.menupermissions import models as permission
 from iaso import models as m
@@ -143,6 +144,24 @@ class GroupsAPITestCase(APITestCase):
 
         response_data = response.json()
         self.assertHasError(response_data, "name")
+
+    def test_groups_create_error_same_source_ref(self):
+        """POST /groups/ with an already existing source ref"""
+        shared_source_ref = "sOuRcErEf"
+        self.group_2.source_ref = shared_source_ref
+        self.group_2.save()
+
+        self.client.force_authenticate(self.yoda)
+        data = {
+            "name": "Is this going to trigger an error?",
+            "source_ref": shared_source_ref,
+        }
+        response = self.client.post("/api/groups/", data=data, format="json")
+        self.assertContains(
+            response,
+            "This source ref is already used by another group in your default version",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
 
     def test_groups_partial_update_ok(self):
         """PATCH /groups/<group_id>: happy path (validation is already covered by create tests)"""

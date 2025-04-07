@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-02 08:35+0000\n"
+"POT-Creation-Date: 2025-04-07 12:59+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -41,6 +41,10 @@ msgstr "Complétude des données"
 #: hat/menupermissions/models.py
 msgid "Unités d'organisations"
 msgstr "Unités d'organisations"
+
+#: hat/menupermissions/models.py
+msgid "Historique des unités d'organisation"
+msgstr "Historique des unités d'organisation"
 
 #: hat/menupermissions/models.py
 msgid "Lire les unités d'organisations"

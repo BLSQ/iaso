@@ -11,6 +11,7 @@ MODULE_PERMISSIONS = {
         "iaso_org_units_read",
         "iaso_org_unit_types",
         "iaso_org_unit_groups",
+        "iaso_org_units_history",
         "iaso_sources",
         "iaso_sources_can_change_default_version",
         "iaso_write_sources",
@@ -149,6 +150,7 @@ PERMISSIONS_PRESENTATION = {
         "iaso_org_units_read",
         "iaso_org_unit_types",
         "iaso_org_unit_groups",
+        "iaso_org_units_history",
     ],
     "data_validation": [
         "iaso_org_unit_change_request_review",

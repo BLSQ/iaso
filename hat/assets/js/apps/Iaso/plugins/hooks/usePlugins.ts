@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { Theme } from '@mui/material';
-import registryConfig from 'iaso_host/registryConfig';
+import configs from 'iaso_plugins/configs';
+
 import { last } from 'lodash';
-import pluginsConfigs from '../../../../../../../plugins';
 import { Plugin } from '../types';
 
 export const usePlugins = (
@@ -12,11 +12,11 @@ export const usePlugins = (
     pluginHomePage: string | undefined;
     pluginTheme: Theme | undefined;
 } => {
-    console.log('registryConfig', registryConfig);
     return useMemo(() => {
         const plugins: Plugin[] = pluginsKeys
             .map(pluginsKey => {
-                const pluginConfig: Plugin = pluginsConfigs[pluginsKey];
+                const pluginConfig: Plugin = configs[pluginsKey]?.default;
+                console.log('pluginConfig', pluginConfig);
                 return pluginConfig
                     ? { ...pluginConfig, key: pluginsKey }
                     : null;

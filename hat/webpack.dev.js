@@ -1,4 +1,5 @@
 require('dotenv').config();
+const fs = require('fs');
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { ModuleFederationPlugin } = require('webpack').container;
@@ -133,6 +134,96 @@ const newBrowsersConfig = [
     },
 ];
 
+// Function to get plugin folders
+const getPluginFolders = () => {
+    const pluginsPath = path.resolve(__dirname, '../plugins');
+    return fs.readdirSync(pluginsPath).filter(file => {
+        const fullPath = path.join(pluginsPath, file);
+        // Only return directories and skip special directories
+        return (
+            fs.statSync(fullPath).isDirectory() &&
+            !file.startsWith('.') &&
+            !file.startsWith('__') &&
+            // Check if the directory contains a js/config.tsx file
+            fs.existsSync(path.join(fullPath, 'js', 'config.tsx'))
+        );
+    });
+};
+
+// Function to generate a combined config file
+const generateCombinedConfig = () => {
+    const pluginFolders = getPluginFolders();
+    const combinedConfigPath = path.resolve(
+        __dirname,
+        './assets/js/combinedPluginConfigs.js',
+    );
+
+    // Create a combined config object
+    const combinedConfig = {};
+
+    pluginFolders.forEach(plugin => {
+        const configPath = path.resolve(
+            __dirname,
+            `../plugins/${plugin}/js/config.tsx`,
+        );
+        // Use require to get the config
+        try {
+            // We need to use a dynamic require to avoid webpack bundling issues
+            // This will be replaced at runtime
+            combinedConfig[plugin] = `require('${configPath}')`;
+        } catch (error) {
+            console.error(`Error loading config for plugin ${plugin}:`, error);
+        }
+    });
+
+    // Create the file content
+    const fileContent = `
+// This file is auto-generated. Do not edit directly.
+// It combines all plugin configs into a single file.
+
+const combinedConfigs = {
+    ${Object.entries(combinedConfig)
+        .map(([key, value]) => `    ${key}: ${value}`)
+        .join(',\n')}
+};
+
+export default combinedConfigs;
+`;
+
+    // Write the file
+    fs.writeFileSync(combinedConfigPath, fileContent);
+    return combinedConfigPath;
+};
+
+// Function to generate a plugin keys file
+const generatePluginKeysFile = () => {
+    const pluginFolders = getPluginFolders();
+    const pluginKeysPath = path.resolve(__dirname, './assets/js/pluginKeys.js');
+
+    // Create the file content
+    const fileContent = `
+// This file is auto-generated. Do not edit directly.
+// It contains the list of available plugin keys.
+
+const pluginKeys = ${JSON.stringify(pluginFolders, null, 2)};
+
+export default pluginKeys;
+`;
+
+    // Write the file
+    fs.writeFileSync(pluginKeysPath, fileContent);
+    return pluginKeysPath;
+};
+
+const pluginFolders = getPluginFolders();
+console.log('Found plugins:', pluginFolders);
+
+// Generate the combined config file
+const combinedConfigPath = generateCombinedConfig();
+
+// Generate the plugin keys file
+const pluginKeysPath = generatePluginKeysFile();
+
 module.exports = {
     context: __dirname,
     mode: 'development',
@@ -229,14 +320,12 @@ module.exports = {
             resourceRegExp: /^perf_hooks$/,
         }),
         new ModuleFederationPlugin({
-            name: 'iaso_host',
+            name: 'iaso_plugins',
             filename: 'remoteEntry.js',
-            library: { type: 'self', name: 'iaso_host' },
+            library: { type: 'self', name: 'iaso_plugins' },
             exposes: {
-                './registryConfig': path.resolve(
-                    __dirname,
-                    '../plugins/registry/js/config.tsx',
-                ),
+                './configs': combinedConfigPath,
+                './keys': pluginKeysPath,
             },
             shared: {
                 react: {
@@ -335,10 +424,9 @@ module.exports = {
     resolve: {
         alias: {
             'react/jsx-runtime': 'react/jsx-runtime.js',
-            'iaso_host/registryConfig': path.resolve(
-                __dirname,
-                '../plugins/registry/js/config.tsx',
-            ),
+            // Add alias for the combined config
+            'iaso_plugins/configs': combinedConfigPath,
+            'iaso_plugins/keys': pluginKeysPath,
             ...(process.env.LIVE_COMPONENTS === 'true' && {
                 'bluesquare-components': path.resolve(
                     __dirname,

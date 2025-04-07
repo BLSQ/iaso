@@ -348,7 +348,7 @@
         "import/no-unresolved": [
             "warn",
             {
-                "ignore": ["iaso_host/registryConfig"]
+                "ignore": ["iaso_plugins/configsg"]
             }
         ]
     },

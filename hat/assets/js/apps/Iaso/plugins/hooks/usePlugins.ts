@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { Theme } from '@mui/material';
+import { last } from 'lodash';
 import configs from 'iaso_plugins/configs';
 
-import { last } from 'lodash';
 import { Plugin } from '../types';
 
 export const usePlugins = (
@@ -16,7 +16,6 @@ export const usePlugins = (
         const plugins: Plugin[] = pluginsKeys
             .map(pluginsKey => {
                 const pluginConfig: Plugin = configs[pluginsKey]?.default;
-                console.log('pluginConfig', pluginConfig);
                 return pluginConfig
                     ? { ...pluginConfig, key: pluginsKey }
                     : null;

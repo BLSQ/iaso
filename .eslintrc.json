@@ -344,12 +344,6 @@
                     "caseInsensitive": true
                 }
             }
-        ],
-        "import/no-unresolved": [
-            "warn",
-            {
-                "ignore": ["iaso_plugins/configsg"]
-            }
         ]
     },
     "settings": {
@@ -364,8 +358,7 @@
             },
             "webpack": {
                 "config": "hat/webpack.dev.js"
-            },
-            "typescript": {}
+            }
         }
     }
 }

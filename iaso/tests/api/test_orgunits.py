@@ -1253,19 +1253,19 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.opening_date, datetime.date(2024, 1, 1))
         self.assertEqual(ou.closed_date, datetime.date(2025, 1, 1))
 
-        data = {"opening_date": "01/01/2024", "closed_date": "01/01/2025"}
+        data = {"opening_date": "10/02/2024", "closed_date": "12/12/2025"}
         response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
         self.assertJSONResponse(response, 200)
         ou.refresh_from_db()
-        self.assertEqual(ou.opening_date, datetime.date(2024, 1, 1))
-        self.assertEqual(ou.closed_date, datetime.date(2025, 1, 1))
+        self.assertEqual(ou.opening_date, datetime.date(2024, 2, 10))
+        self.assertEqual(ou.closed_date, datetime.date(2025, 12, 12))
 
-        data = {"opening_date": "2024-01-01", "closed_date": "2025-01-01"}
+        data = {"opening_date": "2024-06-22", "closed_date": "2025-10-30"}
         response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
         self.assertJSONResponse(response, 200)
         ou.refresh_from_db()
-        self.assertEqual(ou.opening_date, datetime.date(2024, 1, 1))
-        self.assertEqual(ou.closed_date, datetime.date(2025, 1, 1))
+        self.assertEqual(ou.opening_date, datetime.date(2024, 6, 22))
+        self.assertEqual(ou.closed_date, datetime.date(2025, 10, 30))
 
         data = {"opening_date": None, "closed_date": ""}
         response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)

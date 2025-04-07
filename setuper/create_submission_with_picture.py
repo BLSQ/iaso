@@ -7,27 +7,40 @@ from names_generator import generate_name
 from submissions import (
     create_default_reference_submission,
     org_unit_gps_point,
+    picture_by_org_unit_type_name,
+    rename_entity_submission_picture,
     submission2xml,
     submission_org_unit_gps_point,
 )
 
 
 def define_health_facility_reference_form(iaso_client):
-    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?with_units_count=true")["orgUnitTypes"]
-    health_facility_type = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][
-        0
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/?with_units_count=true")[
+        "orgUnitTypes"
     ]
+    health_facility_type = [
+        out
+        for out in org_unit_types
+        if out["name"] == "Health facility/Formation sanitaire - HF"
+    ][0]
     forms = iaso_client.get("/api/forms/")["forms"]
-    reference_form = [form for form in forms if form["name"] == "Data for Health facility/Données Formation sanitaire"][
-        0
-    ]
+    reference_form = [
+        form
+        for form in forms
+        if form["name"] == "Data for Health facility/Données Formation sanitaire"
+    ][0]
 
     # Add this form as reference form for the org unit type
     health_facility_type["reference_forms_ids"] = [reference_form["id"]]
-    health_facility_type["project_ids"] = [project["id"] for project in health_facility_type["projects"]]
-    health_facility_type["sub_unit_type_ids"] = [sub_unit["id"] for sub_unit in health_facility_type["sub_unit_types"]]
+    health_facility_type["project_ids"] = [
+        project["id"] for project in health_facility_type["projects"]
+    ]
+    health_facility_type["sub_unit_type_ids"] = [
+        sub_unit["id"] for sub_unit in health_facility_type["sub_unit_types"]
+    ]
     health_facility_type["allow_creating_sub_unit_type_ids"] = [
-        sub_unit_type["id"] for sub_unit_type in health_facility_type["allow_creating_sub_unit_types"]
+        sub_unit_type["id"]
+        for sub_unit_type in health_facility_type["allow_creating_sub_unit_types"]
     ]
     update_reference_forms = iaso_client.put(
         f"/api/v2/orgunittypes/{health_facility_type['id']}/", json=health_facility_type
@@ -54,9 +67,8 @@ def create_submission_with_picture(account_name, iaso_client):
     current_datetime = int(datetime.now().timestamp())
 
     # Creating submissions with picture by org unit for first 10 Health facilities and setting up reference instance
-    picture = "health-facility.jpg"
-    # for picture in pictures:
     for orgunit in orgunits:
+        picture = picture_by_org_unit_type_name(orgunit["org_unit_type_name"])
         org_unit_id = orgunit["id"]
         the_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid
@@ -72,7 +84,7 @@ def create_submission_with_picture(account_name, iaso_client):
                 "orgUnitId": org_unit_id,
                 "formId": form_id,
                 "accuracy": 0,
-                "imgUrl": "imgUrl",
+                "imgUrl": "photo_fosa",
                 "file": local_path,
                 "name": file_name,
                 "is_reference_instance": True,
@@ -81,7 +93,11 @@ def create_submission_with_picture(account_name, iaso_client):
         ]
         iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
         form_versions = iaso_client.get("/api/formversions/")["form_versions"]
-        form_version = [form_version for form_version in form_versions if form_version["form_id"] == form_id]
+        form_version = [
+            form_version
+            for form_version in form_versions
+            if form_version["form_id"] == form_id
+        ]
 
         instance_json = {
             "start": "2022-09-07T17:54:55.805+02:00",
@@ -99,11 +115,14 @@ def create_submission_with_picture(account_name, iaso_client):
                     ]
                 ),
                 "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
+                "photo_fosa": picture,
             },
             "equipment_group": {
                 "HFR_CS_16": random.choice(["yes", "no"]),
                 "HFR_CS_17": random.choice(["pub", "gr_elect", "syst_sol", "autre"]),
-                "HFR_CS_18": random.choice(["res_pub", "forage", "puit", "puit_non_prot"]),
+                "HFR_CS_18": random.choice(
+                    ["res_pub", "forage", "puit", "puit_non_prot"]
+                ),
             },
             "services_group": {
                 "HFR_CS_26": random.choice(["yes", "no"]),
@@ -115,21 +134,29 @@ def create_submission_with_picture(account_name, iaso_client):
             },
             "meta": {"instanceID": "uuid:" + the_uuid},
         }
-
-        with open(f"./data/{picture}", "rb") as fp_image:
-            iaso_client.post(
-                "/sync/form_upload/",
-                files={
-                    "xml_submission_file": (
-                        local_path,
-                        submission2xml(
-                            instance_json,
-                            form_version_id=form_version[0]["version_id"],
-                            form_id="SAMPLE_FORM_new6",
-                        ),
-                    ),
-                    "photo_fosa": fp_image,
-                },
+        files = {
+            "xml_submission_file": (
+                local_path,
+                submission2xml(
+                    instance_json,
+                    form_version_id=form_version[0]["version_id"],
+                    form_id="SAMPLE_FORM_new6",
+                ),
             )
-            # Creating default reference submission for the org unit
-            create_default_reference_submission(account_name, iaso_client, org_unit_id, form_id, the_uuid)
+        }
+
+        if instance_json.get("geo_group") is not None:
+            picture = instance_json["geo_group"]["photo_fosa"]
+            path = "./data"
+            files = rename_entity_submission_picture(
+                path, picture, files, "photo_fosa", the_uuid
+            )
+
+        iaso_client.post(
+            "/sync/form_upload/",
+            files=files,
+        )
+        # Creating default reference submission for the org unit
+        create_default_reference_submission(
+            account_name, iaso_client, org_unit_id, form_id, the_uuid
+        )

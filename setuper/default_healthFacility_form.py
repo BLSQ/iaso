@@ -15,12 +15,16 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
     print("-- Setting up a default form for Health Facility level")
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
-    health_facility_type = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][
-        0
-    ]
+    health_facility_type = [
+        out
+        for out in org_unit_types
+        if out["name"] == "Health facility/Formation sanitaire - HF"
+    ][0]
 
     org_unit_type_id = [
-        out["id"] for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"
+        out["id"]
+        for out in org_unit_types
+        if out["name"] == "Health facility/Formation sanitaire - HF"
     ]
 
     sample_data = {
@@ -72,7 +76,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                 "orgUnitId": orgunit["id"],
                 "formId": sample_form_id,
                 "accuracy": 0,
-                "imgUrl": "imgUrl",
+                "imgUrl": "photo_fosa",
                 "file": local_path,
                 "name": file_name,
             }
@@ -105,12 +109,18 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                                         "autre",
                                     ]
                                 ),
-                                "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
+                                "coordonnees_gps_fosa": submission_org_unit_gps_point(
+                                    orgunit
+                                ),
                             },
                             "equipment_group": {
                                 "HFR_CS_16": random.choice(["yes", "no"]),
-                                "HFR_CS_17": random.choice(["pub", "gr_elect", "syst_sol", "autre"]),
-                                "HFR_CS_18": random.choice(["res_pub", "forage", "puit", "puit_non_prot"]),
+                                "HFR_CS_17": random.choice(
+                                    ["pub", "gr_elect", "syst_sol", "autre"]
+                                ),
+                                "HFR_CS_18": random.choice(
+                                    ["res_pub", "forage", "puit", "puit_non_prot"]
+                                ),
                             },
                             "services_group": {
                                 "HFR_CS_26": random.choice(["yes", "no"]),

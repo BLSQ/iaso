@@ -44,23 +44,33 @@ def picture_by_org_unit_type_name(org_unit_type_name):
         picture_name = "health-district.jpg"
     elif org_unit_type_name == "Health area/Aire de santé - AREA":
         picture_name = "health-area.jpg"
+    elif org_unit_type_name == "Health facility/Formation sanitaire - HF":
+        picture_name = "health-facility.jpg"
     return picture_name
 
 
-def create_default_reference_submission(account_name, iaso_client, org_unit_id, form_id, uuid):
+def create_default_reference_submission(
+    account_name, iaso_client, org_unit_id, form_id, uuid
+):
     submissions_linked_to_org_unit = iaso_client.get(
         f"/api/instances/?app_id={account_name}",
         params={"orgUnitId": org_unit_id, "form_ids": form_id},
     )["instances"]
+
+    print("SUMISSION LINKED TO ORG UNIT ...:", submissions_linked_to_org_unit)
     reference_submission = [
-        submission["id"] for submission in submissions_linked_to_org_unit if submission["uuid"] == uuid
+        submission["id"]
+        for submission in submissions_linked_to_org_unit
+        if submission["uuid"] == uuid
     ]
     org_unit_reference_submission = {
         "id": org_unit_id,
         "reference_instance_id": random.choice(reference_submission),
         "reference_instance_action": "flag",
     }
-    iaso_client.patch(f"/api/orgunits/{org_unit_id}/", json=org_unit_reference_submission)
+    iaso_client.patch(
+        f"/api/orgunits/{org_unit_id}/", json=org_unit_reference_submission
+    )
 
 
 def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
@@ -114,7 +124,9 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
                     "actual_birthday__date__": birth_date,
                 },
                 "card": {
-                    "record_book_or_vaccination_card": random.choice(["vaccination_book", "antenatal_record_book"]),
+                    "record_book_or_vaccination_card": random.choice(
+                        ["vaccination_book", "antenatal_record_book"]
+                    ),
                     "card_number": ticket_number,
                 },
                 "food_assistance": {
@@ -177,7 +189,7 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
         }
     elif form["form_id"] == "entity-child_registration":
         child = fake_person()
-
+        image = f"{int(random.randint(1, 13))}.jpg"
         instance_json = {
             "start": f"{random_date.strftime('%Y-%m-%d')}T17:54:55.805+02:00",
             "end": f"{random_date.strftime('%Y-%m-%d')}T17:55:31.192+02:00",
@@ -200,6 +212,7 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
                     ]
                 ),
                 "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
+                "picture": image,
             },
         }
 
@@ -207,14 +220,14 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
     return instance_json
 
 
-def rename_entity_submission_picture(path, picture, files):
+def rename_entity_submission_picture(path, picture, files, field, uuid):
     current_datetime = int(datetime.now().timestamp())
     old_name = f"{path}/{picture}"
-    new_name = f"{path}/{current_datetime}_{picture}"
+    new_name = f"{path}/{current_datetime}_{uuid}_{picture}"
     os.rename(old_name, new_name)
 
     file = open(f"{new_name}", "rb")
-    files["picture"] = file
+    files[field] = file
     # After uploaded the picture, put back the original name
     os.rename(new_name, old_name)
     return files

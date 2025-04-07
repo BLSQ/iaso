@@ -1,7 +1,8 @@
 require('dotenv').config();
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-
 const path = require('path');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { ModuleFederationPlugin } = require('webpack').container;
+
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
 // Switch here for French. This is set to 'en' in dev to not get react-intl warnings
@@ -170,8 +171,9 @@ module.exports = {
         path: WEBPACK_PATH,
         filename: '[name].js',
         sourceMapFilename: '[name].[contenthash].js.map',
-        publicPath: ``, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+        publicPath: `${WEBPACK_URL}/`,
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
+        scriptType: 'text/javascript',
     },
     devtool: 'source-map',
 
@@ -196,7 +198,7 @@ module.exports = {
             progress: true,
         },
         watchFiles: {
-            paths: ['src/**/*', 'assets/**/*'],
+            paths: ['src/**/*', 'assets/**/*', '../plugins/**/*'],
             options: {
                 usePolling: true,
             },
@@ -225,6 +227,44 @@ module.exports = {
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
         new webpack.IgnorePlugin({
             resourceRegExp: /^perf_hooks$/,
+        }),
+        new ModuleFederationPlugin({
+            name: 'iaso_host',
+            filename: 'remoteEntry.js',
+            library: { type: 'self', name: 'iaso_host' },
+            exposes: {
+                './registryConfig': path.resolve(
+                    __dirname,
+                    '../plugins/registry/js/config.tsx',
+                ),
+            },
+            shared: {
+                react: {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'react-dom': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'react-intl': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                '@mui/material': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'bluesquare-components': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+            },
         }),
     ],
 
@@ -295,7 +335,10 @@ module.exports = {
     resolve: {
         alias: {
             'react/jsx-runtime': 'react/jsx-runtime.js',
-            // see LIVE_COMPONENTS feature in doc
+            'iaso_host/registryConfig': path.resolve(
+                __dirname,
+                '../plugins/registry/js/config.tsx',
+            ),
             ...(process.env.LIVE_COMPONENTS === 'true' && {
                 'bluesquare-components': path.resolve(
                     __dirname,
@@ -306,16 +349,14 @@ module.exports = {
         fallback: {
             fs: false,
         },
-        modules:
-            process.env.LIVE_COMPONENTS === 'true'
-                ? [
-                      'node_modules',
-                      '../../bluesquare-components/node_modules/',
-                      path.resolve(__dirname, 'assets/js/apps/'),
-                  ]
-                : /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
-                  ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
-
+        modules: [
+            'node_modules',
+            path.resolve(__dirname, '../plugins'),
+            path.resolve(__dirname, 'assets/js/apps/'),
+            ...(process.env.LIVE_COMPONENTS === 'true'
+                ? ['../../bluesquare-components/node_modules/']
+                : []),
+        ],
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
     stats: {

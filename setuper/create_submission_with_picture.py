@@ -7,6 +7,8 @@ from names_generator import generate_name
 from submissions import (
     create_default_reference_submission,
     org_unit_gps_point,
+    picture_by_org_unit_type_name,
+    rename_entity_submission_picture,
     submission2xml,
     submission_org_unit_gps_point,
 )
@@ -54,9 +56,8 @@ def create_submission_with_picture(account_name, iaso_client):
     current_datetime = int(datetime.now().timestamp())
 
     # Creating submissions with picture by org unit for first 10 Health facilities and setting up reference instance
-    picture = "health facility.png"
-    # for picture in pictures:
     for orgunit in orgunits:
+        picture = picture_by_org_unit_type_name(orgunit["org_unit_type_name"])
         org_unit_id = orgunit["id"]
         the_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid
@@ -72,7 +73,7 @@ def create_submission_with_picture(account_name, iaso_client):
                 "orgUnitId": org_unit_id,
                 "formId": form_id,
                 "accuracy": 0,
-                "imgUrl": "imgUrl",
+                "imgUrl": "photo_fosa",
                 "file": local_path,
                 "name": file_name,
                 "is_reference_instance": True,
@@ -99,6 +100,7 @@ def create_submission_with_picture(account_name, iaso_client):
                     ]
                 ),
                 "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
+                "photo_fosa": picture,
             },
             "equipment_group": {
                 "HFR_CS_16": random.choice(["yes", "no"]),
@@ -115,21 +117,25 @@ def create_submission_with_picture(account_name, iaso_client):
             },
             "meta": {"instanceID": "uuid:" + the_uuid},
         }
-
-        with open(f"./data/{picture}", "rb") as fp_image:
-            iaso_client.post(
-                "/sync/form_upload/",
-                files={
-                    "xml_submission_file": (
-                        local_path,
-                        submission2xml(
-                            instance_json,
-                            form_version_id=form_version[0]["version_id"],
-                            form_id="SAMPLE_FORM_new6",
-                        ),
-                    ),
-                    "photo_fosa": fp_image,
-                },
+        files = {
+            "xml_submission_file": (
+                local_path,
+                submission2xml(
+                    instance_json,
+                    form_version_id=form_version[0]["version_id"],
+                    form_id="SAMPLE_FORM_new6",
+                ),
             )
-            # Creating default reference submission for the org unit
-            create_default_reference_submission(account_name, iaso_client, org_unit_id, form_id, the_uuid)
+        }
+
+        if instance_json.get("geo_group") is not None:
+            picture = instance_json["geo_group"]["photo_fosa"]
+            path = "./data"
+            files = rename_entity_submission_picture(path, picture, files, "photo_fosa", the_uuid)
+
+        iaso_client.post(
+            "/sync/form_upload/",
+            files=files,
+        )
+        # Creating default reference submission for the org unit
+        create_default_reference_submission(account_name, iaso_client, org_unit_id, form_id, the_uuid)

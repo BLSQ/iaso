@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
 import { Typography, Box, Chip } from '@mui/material';
-import { LqasImData } from '../../../../constants/types';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
+import { LqasImData } from '../../../../constants/types';
 
 type Props = {
     // eslint-disable-next-line react/require-default-props
@@ -19,7 +19,7 @@ export const DatesIgnored: FunctionComponent<Props> = ({ data, campaign }) => {
             : null;
 
     const datesIgnored = currentCountryName
-        ? data?.day_country_not_found[currentCountryName] ?? {}
+        ? (data?.day_country_not_found[currentCountryName] ?? {})
         : {};
     const datesArray = Object.keys(datesIgnored);
     return campaign && datesArray.length !== 0 ? (

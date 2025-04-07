@@ -8,18 +8,20 @@ import { LIST } from '../constants';
 
 export const useSelectedRounds = ({ baseUrl, campaigns, params }) => {
     const { campaign, country, rounds } = params;
-    const redirectToReplace = useRedirectToReplace();
-    const [selectedRounds, setSelectedRounds] = useState(
-        rounds
-            .spit(',')
-            .filter(r => r in campaign.rounds.filter(rc => !rc.is_test))
-            ? commaSeparatedIdsToArray(
-                  rounds
-                      .spit(',')
-                      .filter(
-                          r => r in campaign.rounds.filter(rc => !rc.is_test),
-                      ),
+    const round_values = rounds
+        ? rounds
+              ?.split(',')
+              ?.filter(
+                  r => r in (campaign?.rounds?.filter(rc => !rc.is_test) || []),
               )
+              .join(',')
+        : rounds;
+
+    const redirectToReplace = useRedirectToReplace();
+
+    const [selectedRounds, setSelectedRounds] = useState(
+        round_values
+            ? commaSeparatedIdsToArray(round_values)
             : [undefined, undefined],
     );
 
@@ -55,6 +57,9 @@ export const useSelectedRounds = ({ baseUrl, campaigns, params }) => {
 
     useEffect(() => {
         if (dropDownOptions && !rounds) {
+            if (dropDownOptions.length === 0) {
+                setSelectedRounds([undefined, undefined]);
+            }
             if (dropDownOptions.length === 1) {
                 setSelectedRounds([
                     dropDownOptions[0].value,
@@ -73,7 +78,15 @@ export const useSelectedRounds = ({ baseUrl, campaigns, params }) => {
                 ]);
             }
         }
-    }, [dropDownOptions, campaign, rounds, redirectToReplace, params, baseUrl]);
+    }, [
+        dropDownOptions,
+        campaign,
+        rounds,
+        redirectToReplace,
+        params,
+        baseUrl,
+        round_values,
+    ]);
 
     return useMemo(() => {
         return {

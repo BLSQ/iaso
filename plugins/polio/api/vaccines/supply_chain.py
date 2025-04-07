@@ -38,9 +38,7 @@ PA_SET = "vaccineprealert_set"
 AR_SET = "vaccinearrivalreport_set"
 
 
-def validate_rounds_and_campaign(
-    data, current_user=None, force_rounds=True, force_campaign=True
-):
+def validate_rounds_and_campaign(data, current_user=None, force_rounds=True, force_campaign=True):
     rounds_data = data.get("rounds")
     campaign_obr_name = data.get("campaign")
     new_campaign = None
@@ -59,40 +57,28 @@ def validate_rounds_and_campaign(
             data["campaign"] = new_campaign
     except Campaign.DoesNotExist:
         if force_campaign:
-            raise forms.ValidationError(
-                f"No campaign with obr_name {campaign_obr_name} found."
-            )
+            raise forms.ValidationError(f"No campaign with obr_name {campaign_obr_name} found.")
 
     if isinstance(rounds_data, list):
         new_rounds = []
         for round in rounds_data:
             if isinstance(round, dict) and "number" in round:
                 try:
-                    round_obj = Round.objects.get(
-                        number=round["number"], campaign=new_campaign
-                    )
+                    round_obj = Round.objects.get(number=round["number"], campaign=new_campaign)
                     new_rounds.append(round_obj)
                 except Round.MultipleObjectsReturned:
-                    raise forms.ValidationError(
-                        f"Multiple rounds with number {round['number']} found in the campaign."
-                    )
+                    raise forms.ValidationError(f"Multiple rounds with number {round['number']} found in the campaign.")
                 except Round.DoesNotExist:
-                    raise forms.ValidationError(
-                        f"No round with number {round['number']} found in the campaign."
-                    )
+                    raise forms.ValidationError(f"No round with number {round['number']} found in the campaign.")
             elif hasattr(round, "campaign") and round.campaign != new_campaign:
-                raise forms.ValidationError(
-                    "Each round's campaign must be the same as the form's campaign."
-                )
+                raise forms.ValidationError("Each round's campaign must be the same as the form's campaign.")
         data["rounds"] = new_rounds
     else:
         try:
             new_rounds = []
             for round in rounds_data.all():
                 if round.campaign != new_campaign:
-                    raise forms.ValidationError(
-                        "Each round's campaign must be the same as the form's campaign."
-                    )
+                    raise forms.ValidationError("Each round's campaign must be the same as the form's campaign.")
                 new_rounds.append(round)
             data["rounds"] = new_rounds
         except AttributeError:
@@ -101,9 +87,7 @@ def validate_rounds_and_campaign(
 
     if current_user and new_campaign:
         if not current_user.iaso_profile.account == new_campaign.account:
-            raise forms.ValidationError(
-                "The selected account must be the same as the user's account."
-            )
+            raise forms.ValidationError("The selected account must be the same as the user's account.")
 
     return data
 
@@ -143,9 +127,7 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
 
     def validate(self, attrs: Any) -> Any:
         validated_data = super().validate(attrs)
-        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get(
-            "po_number", ""
-        ):
+        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
             raise serializers.ValidationError("PO number should not be prefixed")
 
         return validated_data
@@ -167,18 +149,11 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
 
     def validate(self, attrs: Any) -> Any:
         # at least one of the other fields must be present
-        if not any(
-            key in attrs.keys()
-            for key in NestedVaccinePreAlertSerializerForPost.Meta.fields
-        ):
-            raise serializers.ValidationError(
-                "At least one of the fields must be present."
-            )
+        if not any(key in attrs.keys() for key in NestedVaccinePreAlertSerializerForPost.Meta.fields):
+            raise serializers.ValidationError("At least one of the fields must be present.")
 
         validated_data = super().validate(attrs)
-        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get(
-            "po_number", ""
-        ):
+        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
             raise serializers.ValidationError("PO number should not be prefixed")
 
         # Get current object
@@ -192,21 +167,19 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
                 if not attrs[key]:
                     continue
 
+                new_file = attrs[key]
+                old_file = current_obj.document
+
                 # If there's no existing document but we're uploading one
-                if not getattr(current_obj, key):
+                if not old_file:
                     is_different = True
-                    setattr(current_obj, key, attrs[key])
+                    current_obj.document = new_file
                     continue
 
                 # Compare file names and sizes
-                old_file = getattr(current_obj, key)
-                new_file = attrs[key]
-                if (
-                    os.path.basename(old_file.name) != os.path.basename(new_file.name)
-                    or old_file.size != new_file.size
-                ):
+                if os.path.basename(old_file.name) != os.path.basename(new_file.name) or old_file.size != new_file.size:
                     is_different = True
-                    setattr(current_obj, key, attrs[key])
+                    current_obj.document = new_file
             elif hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
                 is_different = True
                 break
@@ -244,16 +217,12 @@ class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
 
     def validate(self, attrs: Any) -> Any:
         validated_data = super().validate(attrs)
-        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get(
-            "po_number", ""
-        ):
+        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
             raise serializers.ValidationError("PO number should not be prefixed")
         return validated_data
 
 
-class NestedVaccineArrivalReportSerializerForPatch(
-    NestedVaccineArrivalReportSerializerForPost
-):
+class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSerializerForPost):
     id = serializers.IntegerField(required=True, read_only=False)
     arrival_report_date = serializers.DateField(required=False)
     po_number = serializers.CharField(required=False)
@@ -272,18 +241,11 @@ class NestedVaccineArrivalReportSerializerForPatch(
 
     def validate(self, attrs: Any) -> Any:
         # at least one of the other fields must be present
-        if not any(
-            key in attrs.keys()
-            for key in NestedVaccineArrivalReportSerializerForPost.Meta.fields
-        ):
-            raise serializers.ValidationError(
-                "At least one of the fields must be present."
-            )
+        if not any(key in attrs.keys() for key in NestedVaccineArrivalReportSerializerForPost.Meta.fields):
+            raise serializers.ValidationError("At least one of the fields must be present.")
 
         validated_data = super().validate(attrs)
-        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get(
-            "po_number", ""
-        ):
+        if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
             raise serializers.ValidationError("PO number should not be prefixed")
 
         # Get current object
@@ -297,21 +259,18 @@ class NestedVaccineArrivalReportSerializerForPatch(
                 if not attrs[key]:
                     continue
 
+                new_file = attrs[key]
+                old_file = current_obj.document
+
                 # If there's no existing document but we're uploading one
-                if not getattr(current_obj, key):
+                if not old_file:
                     is_different = True
-                    setattr(current_obj, key, attrs[key])
+                    current_obj.document = new_file
                     continue
 
-                # Compare file names and sizes
-                old_file = getattr(current_obj, key)
-                new_file = attrs[key]
-                if (
-                    os.path.basename(old_file.name) != os.path.basename(new_file.name)
-                    or old_file.size != new_file.size
-                ):
+                if os.path.basename(old_file.name) != os.path.basename(new_file.name) or old_file.size != new_file.size:
                     is_different = True
-                    setattr(current_obj, key, attrs[key])
+                    current_obj.document = new_file
             elif hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
                 is_different = True
                 break
@@ -343,9 +302,7 @@ class PostPreAlertSerializer(serializers.Serializer):
         pre_alerts = []
 
         for item in self.validated_data["pre_alerts"]:
-            pre_alert = NestedVaccinePreAlertSerializerForPost(
-                data=item, context=self.context
-            )
+            pre_alert = NestedVaccinePreAlertSerializerForPost(data=item, context=self.context)
             if pre_alert.is_valid():
                 pre_alert.save()
                 pre_alerts.append(pre_alert.instance)
@@ -361,31 +318,31 @@ class PatchPreAlertSerializer(serializers.Serializer):
         pre_alerts = []
 
         for item in self.validated_data["pre_alerts"]:
-            pre_alert = NestedVaccinePreAlertSerializerForPatch(
-                data=item, context=self.context
-            )
+            pre_alert = NestedVaccinePreAlertSerializerForPatch(data=item, context=self.context)
 
             if pre_alert.is_valid():
                 ar = vaccine_request_form.vaccineprealert_set.get(id=item.get("id"))
                 is_different = False
                 for key in item.keys():
                     if key == "document":
-                        # If there's no existing document but we're uploading one
-                        if not getattr(ar, key):
-                            is_different = True
-                            setattr(ar, key, item[key])
+                        if not item[key]:
                             continue
 
-                        # Compare file names and sizes
-                        old_file = getattr(ar, key)
                         new_file = item[key]
+                        old_file = ar.document
+
+                        # If there's no existing document but we're uploading one
+                        if not old_file:
+                            is_different = True
+                            ar.document = new_file
+                            continue
+
                         if (
-                            os.path.basename(old_file.name)
-                            != os.path.basename(new_file.name)
+                            os.path.basename(old_file.name) != os.path.basename(new_file.name)
                             or old_file.size != new_file.size
                         ):
                             is_different = True
-                            setattr(ar, key, item[key])
+                            ar.document = new_file
                     elif hasattr(ar, key) and getattr(ar, key) != item[key]:
                         is_different = True
                         setattr(ar, key, item[key])
@@ -403,9 +360,7 @@ class PatchPreAlertSerializer(serializers.Serializer):
                         except IntegrityError as e:
                             raise serializers.ValidationError(str(e))
                     else:
-                        raise serializers.ValidationError(
-                            f"You are not allowed to edit the pre-alert with id {ar.id}"
-                        )
+                        raise serializers.ValidationError(f"You are not allowed to edit the pre-alert with id {ar.id}")
 
                 pre_alerts.append(ar)
 
@@ -422,9 +377,7 @@ class PostArrivalReportSerializer(serializers.Serializer):
         arrival_reports = []
 
         for item in self.validated_data["arrival_reports"]:
-            arrival_report = NestedVaccineArrivalReportSerializerForPost(
-                data=item, context=self.context
-            )
+            arrival_report = NestedVaccineArrivalReportSerializerForPost(data=item, context=self.context)
             if arrival_report.is_valid():
                 arrival_report.save()
                 arrival_reports.append(arrival_report.instance)
@@ -440,14 +393,10 @@ class PatchArrivalReportSerializer(serializers.Serializer):
         arrival_reports = []
 
         for item in self.validated_data["arrival_reports"]:
-            arrival_report = NestedVaccineArrivalReportSerializerForPatch(
-                data=item, context=self.context
-            )
+            arrival_report = NestedVaccineArrivalReportSerializerForPatch(data=item, context=self.context)
 
             if arrival_report.is_valid():
-                ar = vaccine_request_form.vaccinearrivalreport_set.get(
-                    id=item.get("id")
-                )
+                ar = vaccine_request_form.vaccinearrivalreport_set.get(id=item.get("id"))
                 is_different = False
                 for key in item.keys():
                     if key == "document":
@@ -455,22 +404,22 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                         if not item[key]:
                             continue
 
+                        old_file = ar.document
+                        new_file = item[key]
+
                         # If there's no existing document but we're uploading one
-                        if not getattr(ar, key):
+                        if not old_file:
                             is_different = True
-                            setattr(ar, key, item[key])
+                            ar.document = new_file
                             continue
 
                         # Compare file names and sizes
-                        old_file = getattr(ar, key)
-                        new_file = item[key]
                         if (
-                            os.path.basename(old_file.name)
-                            != os.path.basename(new_file.name)
+                            os.path.basename(old_file.name) != os.path.basename(new_file.name)
                             or old_file.size != new_file.size
                         ):
                             is_different = True
-                            setattr(ar, key, item[key])
+                            ar.document = new_file
                     elif hasattr(ar, key) and getattr(ar, key) != item[key]:
                         is_different = True
                         setattr(ar, key, item[key])
@@ -560,9 +509,7 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
 
         rounds = validated_data.pop("rounds")
         campaign = validated_data.pop("campaign")
-        request_form = VaccineRequestForm.objects.create(
-            **validated_data, campaign=campaign
-        )
+        request_form = VaccineRequestForm.objects.create(**validated_data, campaign=campaign)
         request_form.rounds.set(rounds)
         return request_form
 
@@ -690,9 +637,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     def get_prefetched_data(self, obj):
         # Prefetch vaccine pre_alert and vaccinearrival_report to reduce the number of queries in the DB
         pre_alerts = obj.vaccineprealert_set.all().order_by("-estimated_arrival_time")
-        arrival_reports = obj.vaccinearrivalreport_set.all().order_by(
-            "-arrival_report_date"
-        )
+        arrival_reports = obj.vaccinearrivalreport_set.all().order_by("-arrival_report_date")
 
         # Get arrival reports matching by po_number
         arrival_report_matching = {}
@@ -705,9 +650,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
 
     # Comma separated list of all
     def get_po_numbers(self, obj):
-        pre_alerts, arrival_report_matching, arrival_reports = self.get_prefetched_data(
-            obj
-        )
+        pre_alerts, arrival_report_matching, arrival_reports = self.get_prefetched_data(obj)
 
         po_numbers = []
         for pre_alert in pre_alerts:
@@ -749,9 +692,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
         estimated_arrival_dates = {}
         for pre_alert in pre_alerts:
             if pre_alert.po_number not in estimated_arrival_dates:
-                estimated_arrival_dates[pre_alert.po_number] = str(
-                    pre_alert.estimated_arrival_time
-                )
+                estimated_arrival_dates[pre_alert.po_number] = str(pre_alert.estimated_arrival_time)
 
         # Add missing arrival report po numbers from pre_alerts
         for arrival_report in arrival_reports:
@@ -762,9 +703,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
 
     # Comma Separated List of all arrival report dates
     def get_var(self, obj):
-        pre_alerts, arrival_report_matching, arrival_reports = self.get_prefetched_data(
-            obj
-        )
+        pre_alerts, arrival_report_matching, arrival_reports = self.get_prefetched_data(obj)
 
         arrival_report_dates = []
         for pre_alert in pre_alerts:
@@ -787,13 +726,13 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
         current_order = request.GET.get("order")
 
         if current_order == "doses_shipped":
-            queryset = queryset.annotate(
-                doses_shipped=Coalesce(Sum("vaccineprealert__doses_shipped"), 0)
-            ).order_by("doses_shipped")
+            queryset = queryset.annotate(doses_shipped=Coalesce(Sum("vaccineprealert__doses_shipped"), 0)).order_by(
+                "doses_shipped"
+            )
         elif current_order == "-doses_shipped":
-            queryset = queryset.annotate(
-                doses_shipped=Coalesce(Sum("vaccineprealert__doses_shipped"), 0)
-            ).order_by("-doses_shipped")
+            queryset = queryset.annotate(doses_shipped=Coalesce(Sum("vaccineprealert__doses_shipped"), 0)).order_by(
+                "-doses_shipped"
+            )
         elif current_order == "doses_received":
             queryset = queryset.annotate(
                 doses_received=Coalesce(Sum("vaccinearrivalreport__doses_received"), 0)
@@ -829,13 +768,13 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
                 start_date=Coalesce(Min("rounds__started_at"), timezone.now().date())
             ).order_by("-start_date")
         elif current_order == "end_date":
-            queryset = queryset.annotate(
-                end_date=Coalesce(Max("rounds__ended_at"), timezone.now().date())
-            ).order_by("end_date")
+            queryset = queryset.annotate(end_date=Coalesce(Max("rounds__ended_at"), timezone.now().date())).order_by(
+                "end_date"
+            )
         elif current_order == "-end_date":
-            queryset = queryset.annotate(
-                end_date=Coalesce(Max("rounds__ended_at"), timezone.now().date())
-            ).order_by("-end_date")
+            queryset = queryset.annotate(end_date=Coalesce(Max("rounds__ended_at"), timezone.now().date())).order_by(
+                "-end_date"
+            )
 
         return queryset
 
@@ -846,9 +785,7 @@ class VRFCustomFilter(filters.BaseFilterBackend):
         if country_blocks is None:
             return queryset
         try:
-            return queryset.filter(
-                campaign__country__groups__in=country_blocks.split(",")
-            )
+            return queryset.filter(campaign__country__groups__in=country_blocks.split(","))
         except:
             return queryset
 
@@ -951,9 +888,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
                 campaign__account=self.request.user.iaso_profile.account,
                 campaign__country__id__in=accessible_org_units_ids,
             )
-            .prefetch_related(
-                "vaccineprealert_set", "vaccinearrivalreport_set", "rounds"
-            )
+            .prefetch_related("vaccineprealert_set", "vaccinearrivalreport_set", "rounds")
             .distinct()
             .order_by("id")
         )
@@ -1009,15 +944,11 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def add_pre_alerts(self, request, pk=None):
-        return self._do_generic_add(
-            request, PostPreAlertSerializer, PA_SET, "pre_alerts"
-        )
+        return self._do_generic_add(request, PostPreAlertSerializer, PA_SET, "pre_alerts")
 
     @action(detail=True, methods=["get"])
     def get_pre_alerts(self, request, pk=None):
-        return self._do_generic_get(
-            request, NestedVaccinePreAlertSerializerForPatch, PA_SET, "pre_alerts"
-        )
+        return self._do_generic_get(request, NestedVaccinePreAlertSerializerForPatch, PA_SET, "pre_alerts")
 
     @action(detail=True, methods=["patch"])
     def update_pre_alerts(self, request, pk=None):
@@ -1025,9 +956,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def add_arrival_reports(self, request, pk=None):
-        return self._do_generic_add(
-            request, PostArrivalReportSerializer, AR_SET, "arrival_reports"
-        )
+        return self._do_generic_add(request, PostArrivalReportSerializer, AR_SET, "arrival_reports")
 
     @action(detail=True, methods=["get"])
     def get_arrival_reports(self, request, pk=None):

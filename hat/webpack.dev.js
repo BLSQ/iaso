@@ -215,9 +215,6 @@ export default pluginKeys;
     return pluginKeysPath;
 };
 
-const pluginFolders = getPluginFolders();
-console.log('Found plugins:', pluginFolders);
-
 // Generate the combined config file
 const combinedConfigPath = generateCombinedConfig();
 

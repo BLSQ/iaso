@@ -532,7 +532,7 @@ class GPKGImportInternalRefs(TestCase):
             version=cls.version,
             org_unit_type=cls.org_unit_type_hf,
         )
-        cls.hf_old_ref.groups.set([cls.group_1, cls. group_old_ref, cls.group_new_ref])
+        cls.hf_old_ref.groups.set([cls.group_1, cls.group_old_ref, cls.group_new_ref])
         cls.hf_new_ref = OrgUnit.objects.create(
             name="org unit - new internal ref",
             source_ref="iaso:178466",
@@ -540,7 +540,7 @@ class GPKGImportInternalRefs(TestCase):
             version=cls.version,
             org_unit_type=cls.org_unit_type_hf,
         )
-        cls.hf_new_ref.groups.set([cls.group_1, cls. group_old_ref, cls.group_new_ref])
+        cls.hf_new_ref.groups.set([cls.group_1, cls.group_old_ref, cls.group_new_ref])
 
     def test_import_in_new_source_version(self):
         count_groups_before = Group.objects.count()
@@ -572,7 +572,7 @@ class GPKGImportInternalRefs(TestCase):
 
         new_groups = Group.objects.filter(source_version=new_version)
         for group in new_groups:
-            self.assertNotIn("iaso#", group.source_ref) # there was 1 old ref, but it was replaced
+            self.assertNotIn("iaso#", group.source_ref)  # there was 1 old ref, but it was replaced
 
         # TODO: check pyramid structure?
 
@@ -605,6 +605,6 @@ class GPKGImportInternalRefs(TestCase):
 
         groups = Group.objects.filter(source_version=self.version)
         for group in groups:
-            self.assertNotIn("iaso#", group.source_ref) # there was 1 old ref, but it was replaced
+            self.assertNotIn("iaso#", group.source_ref)  # there was 1 old ref, but it was replaced
 
         # TODO: check pyramid structure?

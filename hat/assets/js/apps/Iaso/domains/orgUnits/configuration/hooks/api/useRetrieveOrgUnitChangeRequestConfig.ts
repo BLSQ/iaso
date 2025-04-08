@@ -46,6 +46,7 @@ export const useRetrieveOrgUnitChangeRequestConfig = (
             select: (data: OrgUnitChangeRequestConfigurationFull) => {
                 return {
                     projectId: data.project.id,
+                    type: data.type,
                     orgUnitTypeId: data.org_unit_type.id,
                     orgUnitsEditable: data.org_units_editable,
                     editableFields: computeEditableFields(data).join(','),

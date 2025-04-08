@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib.auth.models import AnonymousUser
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from django.utils.timezone import now
 
@@ -763,3 +764,56 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         # Verify that the "var" field is a comma-separated list of dates in reverse order
         expected_var = ",".join(dates)
         self.assertEqual(response.data["results"][1]["var"], expected_var)
+
+    def test_pre_alert_document_not_modified_when_not_changed(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        # Create a pre-alert with a document
+        # Create a test document file
+        test_document = SimpleUploadedFile(
+            "test_document.pdf", b"Test document content", content_type="application/pdf"
+        )
+
+        pre_alert = pm.VaccinePreAlert.objects.create(
+            request_form=request_form,
+            date_pre_alert_reception="2021-01-01",
+            estimated_arrival_time="2021-01-02",
+            doses_shipped=1000,
+            po_number="DOC-TEST-123",
+            lot_numbers=["LOT-1234", "LOT-5678"],
+            document=test_document,
+        )
+
+        # Get the pre-alert ID
+        pre_alert_id = pre_alert.id
+
+        # Store the original document name and size for comparison
+        original_document_name = pre_alert.document.name if pre_alert.document else None
+        original_document_size = pre_alert.document.size if pre_alert.document else None
+
+        # Update the pre-alert with a different field but not the document
+        update_data = {
+            "pre_alerts": [
+                {
+                    "id": pre_alert_id,
+                    "doses_shipped": 2000,  # Change this field
+                }
+            ]
+        }
+
+        # Make the update request
+        response = self.client.patch(BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json")
+
+        self.assertEqual(response.status_code, 200)
+
+        # Verify that the pre-alert was updated
+        updated_pre_alert = pm.VaccinePreAlert.objects.get(id=pre_alert_id)
+        self.assertEqual(updated_pre_alert.doses_shipped, 2000)
+
+        # Verify that the document field was not modified
+        # Check that the document name and size are the same as before
+        self.assertEqual(updated_pre_alert.document.name, original_document_name)
+        self.assertEqual(updated_pre_alert.document.size, original_document_size)

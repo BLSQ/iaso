@@ -1,3 +1,5 @@
+import os
+
 from logging import getLogger
 from typing import Any
 
@@ -17,8 +19,17 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
-from plugins.polio.api.vaccines.permissions import VaccineStockManagementPermission, can_edit_helper
-from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
+from plugins.polio.api.vaccines.permissions import (
+    VaccineStockManagementPermission,
+    can_edit_helper,
+)
+from plugins.polio.models import (
+    Campaign,
+    Round,
+    VaccineArrivalReport,
+    VaccinePreAlert,
+    VaccineRequestForm,
+)
 
 
 logger = getLogger(__name__)
@@ -149,16 +160,35 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         current_obj = VaccinePreAlert.objects.get(id=attrs["id"])
 
         # Check if any values are actually different
-        has_changes = False
+        is_different = False
         for key in attrs.keys():
-            if hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
-                has_changes = True
+            if key == "document":
+                # Skip if no new document is being uploaded
+                if not attrs[key]:
+                    continue
+
+                new_file = attrs[key]
+                old_file = current_obj.document
+
+                # If there's no existing document but we're uploading one
+                if not old_file:
+                    is_different = True
+                    current_obj.document = new_file
+                    continue
+
+                # Compare file names and sizes
+                if os.path.basename(old_file.name) != os.path.basename(new_file.name) or old_file.size != new_file.size:
+                    is_different = True
+                    current_obj.document = new_file
+            elif hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
+                is_different = True
                 break
 
         # Only check edit permission if there are actual changes
-        if has_changes and not self.get_can_edit(current_obj):
+        if is_different and not self.get_can_edit(current_obj):
             raise serializers.ValidationError(
-                {"detail": "You do not have permission to edit this pre-alert"}, code="permission_denied"
+                {"detail": "You do not have permission to edit this pre-alert"},
+                code="permission_denied",
             )
 
         return validated_data
@@ -204,7 +234,10 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
     can_edit = serializers.SerializerMethodField()
 
     class Meta(NestedVaccineArrivalReportSerializerForPost.Meta):
-        fields = NestedVaccineArrivalReportSerializerForPost.Meta.fields + ["id", "can_edit"]
+        fields = NestedVaccineArrivalReportSerializerForPost.Meta.fields + [
+            "id",
+            "can_edit",
+        ]
 
     def validate(self, attrs: Any) -> Any:
         # at least one of the other fields must be present
@@ -219,16 +252,34 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         current_obj = VaccineArrivalReport.objects.get(id=attrs["id"])
 
         # Check if any values are actually different
-        has_changes = False
+        is_different = False
         for key in attrs.keys():
-            if hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
-                has_changes = True
+            if key == "document":
+                # Skip if no new document is being uploaded
+                if not attrs[key]:
+                    continue
+
+                new_file = attrs[key]
+                old_file = current_obj.document
+
+                # If there's no existing document but we're uploading one
+                if not old_file:
+                    is_different = True
+                    current_obj.document = new_file
+                    continue
+
+                if os.path.basename(old_file.name) != os.path.basename(new_file.name) or old_file.size != new_file.size:
+                    is_different = True
+                    current_obj.document = new_file
+            elif hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
+                is_different = True
                 break
 
         # Only check edit permission if there are actual changes
-        if has_changes and not self.get_can_edit(current_obj):
+        if is_different and not self.get_can_edit(current_obj):
             raise serializers.ValidationError(
-                {"detail": "You do not have permission to edit this arrival report"}, code="permission_denied"
+                {"detail": "You do not have permission to edit this arrival report"},
+                code="permission_denied",
             )
 
         return validated_data
@@ -273,11 +324,31 @@ class PatchPreAlertSerializer(serializers.Serializer):
                 ar = vaccine_request_form.vaccineprealert_set.get(id=item.get("id"))
                 is_different = False
                 for key in item.keys():
-                    if hasattr(ar, key) and getattr(ar, key) != item[key]:
+                    if key == "document":
+                        if not item[key]:
+                            continue
+
+                        new_file = item[key]
+                        old_file = ar.document
+
+                        # If there's no existing document but we're uploading one
+                        if not old_file:
+                            is_different = True
+                            ar.document = new_file
+                            continue
+
+                        if (
+                            os.path.basename(old_file.name) != os.path.basename(new_file.name)
+                            or old_file.size != new_file.size
+                        ):
+                            is_different = True
+                            ar.document = new_file
+                    elif hasattr(ar, key) and getattr(ar, key) != item[key]:
                         is_different = True
                         setattr(ar, key, item[key])
 
                 if is_different:
+                    print(ar, "is different")
                     if can_edit_helper(
                         self.context["request"].user,
                         ar.created_at,
@@ -328,7 +399,28 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                 ar = vaccine_request_form.vaccinearrivalreport_set.get(id=item.get("id"))
                 is_different = False
                 for key in item.keys():
-                    if hasattr(ar, key) and getattr(ar, key) != item[key]:
+                    if key == "document":
+                        # Skip if no new document is being uploaded
+                        if not item[key]:
+                            continue
+
+                        old_file = ar.document
+                        new_file = item[key]
+
+                        # If there's no existing document but we're uploading one
+                        if not old_file:
+                            is_different = True
+                            ar.document = new_file
+                            continue
+
+                        # Compare file names and sizes
+                        if (
+                            os.path.basename(old_file.name) != os.path.basename(new_file.name)
+                            or old_file.size != new_file.size
+                        ):
+                            is_different = True
+                            ar.document = new_file
+                    elif hasattr(ar, key) and getattr(ar, key) != item[key]:
                         is_different = True
                         setattr(ar, key, item[key])
 
@@ -423,7 +515,10 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         validate_rounds_and_campaign(
-            validated_data, self.context["request"].user, force_rounds=False, force_campaign=False
+            validated_data,
+            self.context["request"].user,
+            force_rounds=False,
+            force_campaign=False,
         )
         rounds = validated_data.pop("rounds", None)
         campaign = validated_data.pop("campaign", None)
@@ -774,7 +869,12 @@ class VaccineRequestFormViewSet(ModelViewSet):
         "rounds__ended_at": ["exact", "gte", "lte", "range"],
     }
     ordering_fields = ["created_at", "updated_at"]
-    search_fields = ["campaign__obr_name", "vaccine_type", "campaign__country__name", "vaccineprealert__po_number"]
+    search_fields = [
+        "campaign__obr_name",
+        "vaccine_type",
+        "campaign__country__name",
+        "vaccineprealert__po_number",
+    ]
 
     model = VaccineRequestForm
 
@@ -812,7 +912,10 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     def _do_generic_add(self, request, serializer_class, set_attr_name, res_name):
         instance = self.get_object()
-        serializer = serializer_class(data=request.data, context={"vaccine_request_form": instance, "request": request})
+        serializer = serializer_class(
+            data=request.data,
+            context={"vaccine_request_form": instance, "request": request},
+        )
         if serializer.is_valid():
             rel_objs = serializer.save()
             the_set = getattr(instance, set_attr_name)
@@ -822,7 +925,10 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     def _do_generic_update(self, request, serializer_class, set_attr_name):
         instance = self.get_object()
-        serializer = serializer_class(data=request.data, context={"vaccine_request_form": instance, "request": request})
+        serializer = serializer_class(
+            data=request.data,
+            context={"vaccine_request_form": instance, "request": request},
+        )
         if serializer.is_valid():
             rel_objs = serializer.save()
             return Response(status=status.HTTP_200_OK, data=serializer.data)
@@ -854,7 +960,12 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def get_arrival_reports(self, request, pk=None):
-        return self._do_generic_get(request, NestedVaccineArrivalReportSerializerForPatch, AR_SET, "arrival_reports")
+        return self._do_generic_get(
+            request,
+            NestedVaccineArrivalReportSerializerForPatch,
+            AR_SET,
+            "arrival_reports",
+        )
 
     @action(detail=True, methods=["patch"])
     def update_arrival_reports(self, request, pk=None):
@@ -881,7 +992,12 @@ class VaccineRequestFormViewSet(ModelViewSet):
             return PostArrivalReportSerializer
         if self.action == "update_arrival_reports":
             return PatchArrivalReportSerializer
-        if self.action in ["get_pre_alerts", "get_arrival_reports", "delete_pre_alerts", "delete_arrival_reports"]:
+        if self.action in [
+            "get_pre_alerts",
+            "get_arrival_reports",
+            "delete_pre_alerts",
+            "delete_arrival_reports",
+        ]:
             return None
 
         return VaccineRequestFormPostSerializer

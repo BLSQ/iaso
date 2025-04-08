@@ -63,8 +63,14 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
             previous_attachment.save()
             return previous_attachment
         except FormAttachment.DoesNotExist:
-            return FormAttachment.objects.create(form=form, name=file.name, file=file, md5=self.md5sum(file),
-                                                 file_last_scan=scan_timestamp, file_scan_status=scan_result)
+            return FormAttachment.objects.create(
+                form=form,
+                name=file.name,
+                file=file,
+                md5=self.md5sum(file),
+                file_last_scan=scan_timestamp,
+                file_scan_status=scan_result,
+            )
         except Exception as e:
             # putting the error in an array to prevent front-end crash
             raise serializers.ValidationError({"file": [e]})

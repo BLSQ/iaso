@@ -28,7 +28,6 @@ class FormAttachmentsAPITestCase(APITestCase):
     project_1: m.Project
     DT = datetime.datetime(2024, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc)
 
-
     @classmethod
     def setUpTestData(cls):
         time = cls.now = now()

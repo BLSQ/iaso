@@ -52,7 +52,7 @@ jobs:
 
             - name: Mark comment as seen
               if: github.event_name != 'workflow_dispatch'
-              uses: dkershner6/reaction-action@v1
+              uses: dkershner6/reaction-action@v2
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   reaction: 'eyes'

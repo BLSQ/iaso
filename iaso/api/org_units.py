@@ -1,4 +1,5 @@
 import json
+import logging
 
 from copy import deepcopy
 from datetime import datetime
@@ -30,6 +31,8 @@ from iaso.utils.gis import simplify_geom
 
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 
+
+logger = logging.getLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 
@@ -474,21 +477,28 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         "errorMessage": _(f"Invalid validation status : {validation_status}"),
                     }
                 )
-        if "geo_json" in request.data:
-            geo_json = request.data["geo_json"]
-            geometry = geo_json["features"][0]["geometry"] if geo_json else None
-            coordinates = geometry["coordinates"] if geometry else None
-            if coordinates:
-                multi_polygon = MultiPolygon(*[Polygon(*coord) for coord in coordinates])
-                # keep geom and simplified geom consistent
-                org_unit.geom = multi_polygon
-                org_unit.simplified_geom = simplify_geom(multi_polygon)
+
+        if "geom" in request.data:
+            geom = request.data["geom"]
+            if geom:
+                try:
+                    # Keep geom and simplified geom consistent.
+                    org_unit.geom = GEOSGeometry(geom)
+                    org_unit.simplified_geom = simplify_geom(org_unit.geom)
+                except Exception:
+                    errors.append({"errorKey": "geom", "errorMessage": _("Can't parse geom")})
             else:
-                # keep geom and simplified geom consistent
+                # Keep geom and simplified geom consistent.
                 org_unit.simplified_geom = None
                 org_unit.geom = None
         elif "simplified_geom" in request.data:
             org_unit.simplified_geom = request.data["simplified_geom"]
+
+        if "geo_json" in request.data and request.data["geo_json"]:
+            logger.warning(
+                "The `geo_json` field is deprecated. Use the `geom` field to modify the geometry.",
+                extra={"request_data": request.data},
+            )
 
         if "catchment" in request.data:
             catchment = request.data["catchment"]
@@ -591,16 +601,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             else:
                 org_unit.default_image = None
 
-        opening_date = request.data.get("opening_date")
-        if opening_date:
-            org_unit.opening_date = self.get_date(opening_date)
+        org_unit.opening_date = self.get_date(request.data.get("opening_date"))
+        org_unit.closed_date = self.get_date(request.data.get("closed_date"))
 
-        if "closed_date" in request.data:
-            closed_date = request.data.get("closed_date", None)
-            org_unit.closed_date = None if not closed_date else self.get_date(closed_date)
-        closed_date = request.data.get("closed_date")
-        if closed_date:
-            org_unit.closed_date = self.get_date(closed_date)
         if not errors:
             org_unit.save()
             if new_groups is not None:
@@ -623,11 +626,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(errors, status=400)
 
     def get_date(self, date: str) -> Union[datetime.date, None]:
-        date_input_formats = ["%d-%m-%Y", "%d/%m/%Y"]
+        date_input_formats = ["%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d", "%Y/%m/%d"]
         for date_input_format in date_input_formats:
             try:
                 return datetime.strptime(date, date_input_format).date()
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
         return None
 

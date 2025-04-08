@@ -143,7 +143,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         useGetGroupedCampaigns();
     // Pass the appId to have it works in the embedded calendar where the user is not connected
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
-        useGetGroupDropdown({ blockOfCountries: 'True', appId });
+        useGetGroupDropdown({ blockOfCountries: 'true', appId });
     const groupedCampaignsOptions = useMemo(
         () =>
             groupedCampaigns?.results.map(result => ({

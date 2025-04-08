@@ -401,6 +401,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.temporary_campaign_name',
         defaultMessage: 'Temporary campaign name',
     },
+    duplicate_destruction: {
+        id: 'iaso.polio.label.duplicate_destruction',
+        defaultMessage:
+            'A destruction report with the same date and unusable vials destroyed already exists',
+    },
 });
 
 export default MESSAGES;

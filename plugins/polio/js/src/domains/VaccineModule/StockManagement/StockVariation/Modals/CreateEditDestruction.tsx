@@ -1,4 +1,5 @@
-import { Box } from '@mui/material';
+import React, { FunctionComponent, useMemo } from 'react';
+import { Alert, Box } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -7,7 +8,7 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useMemo } from 'react';
+import { useDebounce } from 'use-debounce';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
@@ -17,7 +18,10 @@ import {
     TextInput,
 } from '../../../../../components/Inputs';
 import { Vaccine } from '../../../../../constants/types';
-import { useSaveDestruction } from '../../hooks/api';
+import {
+    useCheckDestructionDuplicate,
+    useSaveDestruction,
+} from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useDestructionValidation } from './validation';
 
@@ -59,6 +63,21 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
         validationSchema,
     });
 
+    const [debouncedDate] = useDebounce(
+        formik.values.destruction_report_date,
+        500,
+    );
+    const [debouncedVials] = useDebounce(
+        formik.values.unusable_vials_destroyed,
+        500,
+    );
+
+    const { data: hasDuplicatesData } = useCheckDestructionDuplicate({
+        vaccineStockId,
+        destructionReportDate: debouncedDate,
+        unusableVialsDestroyed: debouncedVials,
+        destructionReportId: destruction?.id,
+    });
     const titleMessage = destruction?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
@@ -145,6 +164,13 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         document={formik.values.document}
                     />
                 </Box>
+                {hasDuplicatesData?.duplicate_exists && (
+                    <Box mb={2}>
+                        <Alert severity="warning">
+                            {formatMessage(MESSAGES.duplicate_destruction)}
+                        </Alert>
+                    </Box>
+                )}
             </ConfirmCancelModal>
         </FormikProvider>
     );

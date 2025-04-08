@@ -109,6 +109,7 @@ def create_projects(account_name, iaso_client):
     project_ids = get_project_ids(created_projects, iaso_client)
     update_org_unit_types_with_new_projects(iaso_client, project_ids)
     link_created_projects_to_main_data_source(account_name, iaso_client, project_ids)
+    add_new_dhis2_data_source(account_name, iaso_client)
 
 
 def link_forms_to_new_projects(projects, forms, iaso_client):
@@ -143,3 +144,36 @@ def link_new_projects_to_main_data_source(account_name, iaso_client):
             project["id"] = current_project[0]["id"]
         all_projects.append(project)
     forms_mapper(all_projects, iaso_client, account_name)
+
+
+def add_new_dhis2_data_source(account_name, iaso_client):
+    create_data_source = None
+    data_source = {
+        "name": f"Dhis2 Sierra Leone {account_name}",
+        "description": "via setup_account",
+        "project_ids": [],
+        "credentials": {
+            "dhis_name": "Dhis2 Sierra Leone Play",
+            "dhis_url": "https://play.im.dhis2.org/stable-2-40-7/",
+            "dhis_login": "admin",
+            "dhis_password": "district",
+        },
+    }
+    projects = iaso_client.get(f"/api/projects/?app_id={account_name}.children")["projects"]
+    project = [project for project in projects if project["name"] == "Vaccination"]
+    if len(project) > 0:
+        data_source["project_ids"] = [project[0]["id"]]
+        create_data_source = iaso_client.post("/api/datasources/", json=data_source)
+        default_version = iaso_client.post(
+            "/api/sourceversions/",
+            json={
+                "data_source_id": create_data_source["id"],
+                "description": data_source["description"],
+            },
+        )
+        default = {
+            "name": create_data_source["name"],
+            "default_version_id": default_version["id"],
+        }
+        iaso_client.put(f"/api/datasources/{create_data_source['id']}/", json=default)
+    return create_data_source

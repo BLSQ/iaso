@@ -465,6 +465,7 @@ class ChronogramViewSetTestCase(APITestCase):
                 {
                     "value": self.round_1.id,
                     "label": 1,
+                    "is_test": False,
                     "campaign_id": str(self.campaign.id),
                     "target_population": None,
                 },

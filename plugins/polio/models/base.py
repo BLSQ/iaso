@@ -273,6 +273,7 @@ class RoundQuerySet(models.QuerySet):
                 {
                     "value": rnd.id,
                     "label": rnd.number,
+                    "is_test": rnd.is_test,
                     "campaign_id": campaign_uuid,
                     "target_population": rnd.target_population,
                 }

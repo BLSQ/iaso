@@ -1,6 +1,7 @@
 from datetime import date
 from tempfile import NamedTemporaryFile
 
+from django.db.models import Q
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
 from django_filters.rest_framework import FilterSet, NumberFilter
@@ -298,6 +299,11 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         )
     ]
 
+    def get_queryset(self):
+        return OutgoingStockMovement.objects.filter(
+            Q(round__isnull=True) | Q(round__isnull=False, round__is_test=False)
+        )
+
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
 
@@ -482,7 +488,10 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     def get_queryset(self):
         return EarmarkedStock.objects.filter(
             vaccine_stock__account=self.request.user.iaso_profile.account
-        ).select_related("vaccine_stock", "campaign", "round")
+        ).select_related("vaccine_stock", "campaign", "round").filter(
+        Q(temporary_campaign_name="") & Q(round__is_test=False) |
+        ~Q(temporary_campaign_name="")
+    )
 
 
 class VaccineStockManagementViewSet(ModelViewSet):

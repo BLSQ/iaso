@@ -224,6 +224,7 @@ class InstancesViewSet(viewsets.ViewSet):
         """WIP: Helper function to divide the huge list method"""
         columns = [
             {"title": "ID du formulaire", "width": 20},
+            {"title": "Soumission de référence", "width": 20},
             {"title": "Version du formulaire", "width": 20},
             {"title": "Export id", "width": 20},
             {"title": "Latitude", "width": 40},
@@ -234,8 +235,10 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Date de création", "width": 20},
             {"title": "Date de modification", "width": 20},
             {"title": "Créé par", "width": 20},
+            {"title": "Créé par id", "width": 20},
             {"title": "Status", "width": 20},
             {"title": "Entité", "width": 20},
+            {"title": "Entité id", "width": 20},
             {"title": "Org unit", "width": 20},
             {"title": "Org unit id", "width": 20},
             {"title": "Référence externe", "width": 20},
@@ -285,6 +288,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
             instance_values = [
                 instance.id,
+                str(instance.is_reference_instance),
                 file_content.get("_version") if file_content else None,
                 instance.export_id,
                 instance.location.y if instance.location else None,
@@ -295,9 +299,11 @@ class InstancesViewSet(viewsets.ViewSet):
                 timestamp_to_datetime(created_at_timestamp),
                 timestamp_to_datetime(updated_at_timestamp),
                 get_creator_name(instance.created_by) if instance.created_by else None,
+                instance.created_by_id,
                 instance.status,
                 # Special format for UUID to stay consistent with other UUIDs coming from file_content_template
                 f"uuid:{instance.entity.uuid}" if instance.entity else None,
+                instance.entity_id,
                 instance.org_unit.name,
                 instance.org_unit.id,
                 instance.org_unit.source_ref,
@@ -391,8 +397,11 @@ class InstancesViewSet(viewsets.ViewSet):
         # 2. Prepare queryset (common part between searches and exports)
         queryset = self.get_queryset()
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
-        queryset = queryset.prefetch_related("form")
-        queryset = queryset.prefetch_related("created_by")
+        queryset = queryset.select_related("org_unit__version__data_source", "project")
+        queryset = queryset.prefetch_related(
+            "created_by", "form", "org_unit__reference_instances", "org_unit__org_unit_type__reference_forms"
+        )
+
         queryset = queryset.for_filters(**filters)
         queryset = queryset.order_by(*orders)
         # IA-1023 = allow to sort instances by form version
@@ -408,10 +417,6 @@ class InstancesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(org_unit__validation_status=org_unit_status)
 
         if not file_export:
-            queryset = queryset.prefetch_related("org_unit__reference_instances")
-            queryset = queryset.prefetch_related("org_unit__org_unit_type__reference_forms")
-            queryset = queryset.prefetch_related("org_unit__version__data_source")
-            queryset = queryset.prefetch_related("project")
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)

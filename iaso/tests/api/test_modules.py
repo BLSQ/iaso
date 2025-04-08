@@ -67,4 +67,4 @@ class ModuleAPITestCase(APITestCase):
 
         r = self.assertJSONResponse(response, 200)
 
-        self.assertEqual(len(r["results"]), 1)
+        self.assertEqual(len(r["results"]), 2)

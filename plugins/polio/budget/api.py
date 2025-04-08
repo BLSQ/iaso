@@ -136,7 +136,9 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
         """
         Returns all available rounds that can be used to create a new `BudgetProcess`.
         """
-        user_campaigns = Campaign.polio_objects.filter_for_user(request.user).filter(country__isnull=False)
+        user_campaigns = Campaign.polio_objects.filter_for_user(request.user).filter(
+            country__isnull=False, is_test=False, on_hold=False
+        )
 
         available_rounds = (
             Round.objects.filter(

@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from dict2xml import dict2xml
+from fake import fake_person
 from names_generator import generate_name
 
 
@@ -67,12 +68,15 @@ def create_default_reference_submission(
     )
 
 
-def instance_by_LLIN_campaign_form(form, instance_id):
+def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
+    random_year = random.randint(1, 5)
+    random_date = (datetime.now() - timedelta(days=(random_year * 365.25))).date()
     beneficiary_name = generate_name(style="capital")
     registration_date = datetime.now()
     code = random.randint(1000000000, 9999999999)
     ticket_number = random.randint(10000, 99999)
     instance_json = None
+
     if form["form_id"] == "pregnant_women_followup":
         instance_json = {
             "visit": {
@@ -165,5 +169,47 @@ def instance_by_LLIN_campaign_form(form, instance_id):
                 "milda_recu_note": "",
             }
         }
+
+    elif form["form_id"] == "entity-child_followup":
+        instance_json = {
+            "start": f"{random_date.strftime('%Y-%m-%d')}T17:54:55.805+02:00",
+            "end": f"{random_date.strftime('%Y-%m-%d')}T17:55:31.192+02:00",
+            "visit": {
+                "oedema": 1,
+                "need_followup": 0,
+                "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
+            },
+        }
+    elif form["form_id"] == "entity-child_registration":
+        child = fake_person()
+
+        instance_json = {
+            "start": f"{random_date.strftime('%Y-%m-%d')}T17:54:55.805+02:00",
+            "end": f"{random_date.strftime('%Y-%m-%d')}T17:55:31.192+02:00",
+            "register": {
+                "name": child["firstname"],
+                "father_name": child["lastname"],
+                "age_type": 1,
+                "age": child["age_in_months"],
+                "child_details": {
+                    "gender": child["gender"],
+                    "caretaker_name": child["lastname"],
+                    "caretaker_rs": random.choice(
+                        [
+                            "mother",
+                            "father",
+                            "sister",
+                            "brother",
+                            "grandfather",
+                            "grandmother",
+                            "other",
+                        ]
+                    ),
+                    "hc": random.choice(["hc_A", "hc_B", "hc_C", "hc_D", "hc_E"]),
+                },
+                "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
+            },
+        }
+
     instance_json["meta"] = instance_id
     return instance_json

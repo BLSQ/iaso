@@ -30,7 +30,7 @@ jobs:
         runs-on: ubuntu-24.04
         steps:
             - name: Checkout repository (dispatch)
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               if: github.event_name == 'workflow_dispatch'
               with:
                   ref: ${{ github.event.inputs.ref }}
@@ -45,7 +45,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Checkout repository (comment)
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               if: github.event_name != 'workflow_dispatch'
               with:
                   ref: ${{ steps.get-branch.outputs.branch }}
@@ -132,7 +132,7 @@ jobs:
                     - 8081:8081
         steps:
             - name: Checkout repository (dispatch)
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               if: github.event_name == 'workflow_dispatch'
               with:
                   ref: ${{ github.event.inputs.ref }}
@@ -147,7 +147,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Checkout repository (comment)
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               if: github.event_name != 'workflow_dispatch'
               with:
                   ref: ${{ steps.get-branch.outputs.branch }}

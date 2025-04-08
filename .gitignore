@@ -191,3 +191,9 @@ originals
 /setuper/generated/
 plugins/trypelim
 plugins/snt_malaria
+
+plugins/snt-malaria
+
+# Auto-generated plugin config files
+hat/assets/js/combinedPluginConfigs.js
+hat/assets/js/pluginKeys.js

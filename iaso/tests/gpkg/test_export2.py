@@ -26,6 +26,8 @@ class GPKGExport(TestCase):
             version=cls.version,
             org_unit_type=out,
             location=p,
+            opening_date="2020-01-01",
+            closed_date="2021-12-31",
         )
         polygon = MultiPolygon([Polygon([(0, 0), (0, 1), (2, 1), (1, 0), (0, 0)])])
         cls.polygon = polygon
@@ -72,6 +74,8 @@ class GPKGExport(TestCase):
         self.assertEqual(root.name, "ou1")
         self.assertEqual(root.org_unit_type.name, "type1")
         self.assertEqual(root.orgunit_set.count(), 1)
+        self.assertEqual(root.opening_date.strftime("%Y-%m-%d"), "2020-01-01")
+        self.assertEqual(root.closed_date.strftime("%Y-%m-%d"), "2021-12-31")
 
         self.assertEqual(root.groups.count(), 1)
         first_group = root.groups.first()

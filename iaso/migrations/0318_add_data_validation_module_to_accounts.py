@@ -18,8 +18,8 @@ def reverse_add_data_validation_to_accounts(apps, schema_editor):
         account.modules.remove("DATA_VALIDATION")
         account.save()
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     dependencies = [
         ("iaso", "0317_alter_account_modules"),
     ]

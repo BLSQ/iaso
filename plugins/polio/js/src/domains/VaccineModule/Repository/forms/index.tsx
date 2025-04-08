@@ -1,9 +1,16 @@
-import { Column, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import { useLocation } from 'react-router-dom';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { getNonPrefixedParams } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/common';
 import { baseUrls } from '../../../../constants/urls';
+import ColorLegend from '../components/ColorLegend';
+import {
+    FORM_A_IS_LATE_COLOR,
+    NO_PDF_COLOR,
+    WITH_PDF_COLOR,
+} from '../constants';
+import { MESSAGES as REPOSITORY_MESSAGES } from '../messages';
 import { VaccineRepositoryParams } from '../types';
 import { Filters } from './Filters';
 import {
@@ -11,13 +18,6 @@ import {
     useGetVaccineReporting,
 } from './hooks/useGetVaccineReporting';
 import { useVaccineRepositoryColumns } from './hooks/useVaccineRepositoryColumns';
-import ColorLegend from '../components/ColorLegend';
-import { MESSAGES as REPOSITORY_MESSAGES } from '../messages';
-import {
-    FORM_A_IS_LATE_COLOR,
-    NO_PDF_COLOR,
-    WITH_PDF_COLOR,
-} from '../constants';
 
 type Props = {
     params: VaccineRepositoryParams;

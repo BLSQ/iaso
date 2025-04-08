@@ -101,3 +101,41 @@ class RoundModelTestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(
             round_4.chronograms.valid().count(), 0, "No chronogram should be created for non-Polio campaigns."
         )
+
+        test_campaign, _, _, _, _, _ = self.create_campaign(
+            "TEST_CAMPAIGN",
+            self.account,
+            self.source_version,
+            self.ou_type_country,
+            self.ou_type_district,
+            "TEST_COUNTRY",
+            "TEST_DISTRICT",
+        )
+        test_campaign.is_test = True
+        test_campaign.campaign_types.add(polio_type)
+        test_campaign.save()
+        test_campaign.refresh_from_db()
+
+        round_5 = pm.Round.objects.create(number=1, campaign=test_campaign, started_at=now.date())
+        round_5.add_chronogram()
+        self.assertEqual(round_5.chronograms.valid().count(), 0, "No chronogram should be created for test campaigns.")
+
+        campaign_on_hold, _, _, _, _, _ = self.create_campaign(
+            "CAMPAIGN_ON_HOLD",
+            self.account,
+            self.source_version,
+            self.ou_type_country,
+            self.ou_type_district,
+            "COUNTRY_ON_HOLD",
+            "DISTRICT_ON_HOLD",
+        )
+        campaign_on_hold.on_hold = True
+        campaign_on_hold.campaign_types.add(polio_type)
+        campaign_on_hold.save()
+        campaign_on_hold.refresh_from_db()
+
+        round_6 = pm.Round.objects.create(number=1, campaign=campaign_on_hold, started_at=now.date())
+        round_6.add_chronogram()
+        self.assertEqual(
+            round_6.chronograms.valid().count(), 1, "A new chronogram should be created for a campaign on hold."
+        )

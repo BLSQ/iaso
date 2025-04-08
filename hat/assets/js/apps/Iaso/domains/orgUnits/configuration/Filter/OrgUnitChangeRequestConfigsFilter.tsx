@@ -1,12 +1,13 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { FilterButton } from '../../../../components/FilterButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
 import { useFilterState } from '../../../../hooks/useFilterState';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { useOrgUnitConfigurationTypes } from '../hooks/useOrgUnitConfigurationTypes';
 import MESSAGES from '../messages';
 import { OrgUnitChangeRequestConfigsParams } from '../types';
 
@@ -23,6 +24,7 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
         useGetOrgUnitTypesDropdownOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
+    const types = useOrgUnitConfigurationTypes();
 
     return (
         <Grid container spacing={2}>
@@ -43,6 +45,17 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                 <InputComponent
                     type="select"
                     clearable
+                    keyValue="type"
+                    value={filters.type}
+                    onChange={handleChange}
+                    options={types}
+                    labelString={formatMessage(MESSAGES.type)}
+                />
+            </Grid>
+            <Grid item xs={12} md={4} lg={3}>
+                <InputComponent
+                    type="select"
+                    clearable
                     keyValue="org_unit_type_id"
                     value={filters.org_unit_type_id}
                     onChange={handleChange}
@@ -55,7 +68,7 @@ export const OrgUnitChangeRequestConfigsFilter: FunctionComponent<Props> = ({
                 item
                 xs={12}
                 md={4}
-                lg={6}
+                lg={3}
                 container
                 justifyContent="flex-end"
                 alignItems="center"

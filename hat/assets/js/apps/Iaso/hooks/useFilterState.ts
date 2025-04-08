@@ -1,6 +1,6 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRedirectTo, useRedirectToReplace } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     useGetMultipleOrgUnits,
     useGetOrgUnit,
@@ -11,6 +11,7 @@ export type FilterState = {
     filters: Record<string, any>;
     handleSearch: () => void;
     handleChange: (keyValue: string, value: unknown) => void;
+    changeAndSearch: (keyValue: string, value: unknown) => void;
     filtersUpdated: boolean;
     setFiltersUpdated: (updated: boolean) => void;
     setFilters: React.Dispatch<Record<string, any>>;
@@ -109,6 +110,37 @@ export const useFilterState = ({
         [filters, updateFilters],
     );
 
+    const changeAndSearch = useCallback(
+        (key, value) => {
+            const newFilters = {
+                ...filters,
+                [key]: value !== null ? value : undefined,
+            };
+            const tempParams = { ...params, ...newFilters };
+            if (withPagination) {
+                tempParams.page = '1';
+            }
+            if (searchActive && Object.keys(params).includes(searchActive)) {
+                tempParams[searchActive] = 'true';
+            }
+            if (saveSearchInHistory) {
+                redirectTo(baseUrl, tempParams);
+            } else {
+                redirectToReplace(baseUrl, tempParams);
+            }
+        },
+        [
+            baseUrl,
+            filters,
+            params,
+            redirectTo,
+            redirectToReplace,
+            saveSearchInHistory,
+            searchActive,
+            withPagination,
+        ],
+    );
+
     useEffect(() => {
         setFilters(removePaginationParams(params));
     }, [params]);
@@ -120,9 +152,17 @@ export const useFilterState = ({
             handleSearch,
             filtersUpdated,
             setFiltersUpdated,
+            changeAndSearch,
             setFilters: updateFilters,
         };
-    }, [filters, handleChange, handleSearch, filtersUpdated, updateFilters]);
+    }, [
+        filters,
+        handleChange,
+        handleSearch,
+        filtersUpdated,
+        changeAndSearch,
+        updateFilters,
+    ]);
 };
 
 type MultiTreeviewArgs = {

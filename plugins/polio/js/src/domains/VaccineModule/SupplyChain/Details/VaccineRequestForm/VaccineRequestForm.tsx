@@ -197,73 +197,64 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 renderTags={renderRoundTag}
                             />
                         </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Field
+                                label={formatMessage(
+                                    MESSAGES.quantities_ordered_in_doses,
+                                )}
+                                name="vrf.quantities_ordered_in_doses"
+                                component={NumberInput}
+                                disabled={isFieldDisabledEdit(vrfData)}
+                            />
+                        </Grid>
+
+                        <Grid item xs={6} md={3}>
+                            <Field
+                                label={formatMessage(MESSAGES.wastageRatio)}
+                                name="vrf.wastage_rate_used_on_vrf"
+                                component={NumberInput}
+                                disabled={isFieldDisabledEdit(vrfData)}
+                                numberInputOptions={{
+                                    suffix: '%',
+                                    max: 100,
+                                }}
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Field
+                                label={formatMessage(MESSAGES.targetPopulation)}
+                                name="vrf.target_population"
+                                component={NumberInput}
+                                disabled={isFieldDisabledEdit(vrfData)}
+                            />
+                        </Grid>
+
+                        {isNormalType && (
+                            <Grid item xs={6} md={3}>
+                                <Field
+                                    label={formatMessage(
+                                        MESSAGES.date_vrf_signature,
+                                    )}
+                                    name="vrf.date_vrf_signature"
+                                    component={DateInput}
+                                    disabled={isFieldDisabledEdit(vrfData)}
+                                />
+                            </Grid>
+                        )}
                     </Grid>
                     {isNormalType && (
                         <>
                             <Grid container item xs={12} spacing={2}>
                                 <Grid item xs={6} md={3}>
-                                    <Box mt={2}>
-                                        <Field
-                                            label={formatMessage(
-                                                MESSAGES.date_vrf_signature,
-                                            )}
-                                            name="vrf.date_vrf_signature"
-                                            component={DateInput}
-                                            disabled={isFieldDisabledEdit(
-                                                vrfData,
-                                            )}
-                                        />
-                                    </Box>
+                                    <Field
+                                        label={formatMessage(
+                                            MESSAGES.date_vrf_reception,
+                                        )}
+                                        name="vrf.date_vrf_reception"
+                                        component={DateInput}
+                                        disabled={isFieldDisabledEdit(vrfData)}
+                                    />
                                 </Grid>
-                                <Grid item xs={6} md={3}>
-                                    <Box mt={2}>
-                                        <Field
-                                            label={formatMessage(
-                                                MESSAGES.quantities_ordered_in_doses,
-                                            )}
-                                            name="vrf.quantities_ordered_in_doses"
-                                            component={NumberInput}
-                                            disabled={isFieldDisabledEdit(
-                                                vrfData,
-                                            )}
-                                        />
-                                    </Box>
-                                </Grid>
-
-                                <Grid item xs={6} md={3}>
-                                    <Box mt={2}>
-                                        <Field
-                                            label={formatMessage(
-                                                MESSAGES.wastageRatio,
-                                            )}
-                                            name="vrf.wastage_rate_used_on_vrf"
-                                            component={NumberInput}
-                                            disabled={isFieldDisabledEdit(
-                                                vrfData,
-                                            )}
-                                            numberInputOptions={{
-                                                suffix: '%',
-                                                max: 100,
-                                            }}
-                                        />
-                                    </Box>
-                                </Grid>
-                                <Grid item xs={6} md={3}>
-                                    <Box mt={2}>
-                                        <Field
-                                            label={formatMessage(
-                                                MESSAGES.date_vrf_reception,
-                                            )}
-                                            name="vrf.date_vrf_reception"
-                                            component={DateInput}
-                                            disabled={isFieldDisabledEdit(
-                                                vrfData,
-                                            )}
-                                        />
-                                    </Box>
-                                </Grid>
-                            </Grid>
-                            <Grid container item xs={12} spacing={2}>
                                 <Grid item xs={6} md={3}>
                                     <Field
                                         label={formatMessage(
@@ -291,16 +282,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                         )}
                                         name="vrf.date_rrt_orpg_approval"
                                         component={DateInput}
-                                        disabled={isFieldDisabledEdit(vrfData)}
-                                    />
-                                </Grid>
-                                <Grid item xs={6} md={3}>
-                                    <Field
-                                        label={formatMessage(
-                                            MESSAGES.targetPopulation,
-                                        )}
-                                        name="vrf.target_population"
-                                        component={NumberInput}
                                         disabled={isFieldDisabledEdit(vrfData)}
                                     />
                                 </Grid>

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
@@ -11,7 +13,7 @@ from iaso.api.org_unit_change_request_configurations.validation import (
     validate_groups,
     validate_org_unit_types,
 )
-from iaso.api.query_params import PROJECT_ID
+from iaso.api.query_params import INCLUDE_CREATION, PROJECT_ID, TYPE
 from iaso.models import Form, Group, GroupSet, OrgUnitChangeRequestConfiguration, OrgUnitType, Project
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 
@@ -83,6 +85,7 @@ class MobileOrgUnitChangeRequestConfigurationListSerializer(serializers.ModelSer
     class Meta:
         model = OrgUnitChangeRequestConfiguration
         fields = [
+            "type",
             "org_unit_type_id",
             "org_units_editable",
             "editable_fields",
@@ -112,6 +115,7 @@ class OrgUnitChangeRequestConfigurationListSerializer(serializers.ModelSerialize
         model = OrgUnitChangeRequestConfiguration
         fields = [
             "id",
+            "type",
             "project",
             "org_unit_type",
             "created_by",
@@ -150,6 +154,7 @@ class OrgUnitChangeRequestConfigurationRetrieveSerializer(serializers.ModelSeria
         fields = [
             "id",
             "project",
+            "type",
             "org_unit_type",
             "org_units_editable",
             "editable_fields",
@@ -194,7 +199,8 @@ class BaseOrgUnitChangeRequestConfigurationWriteUpdateSerializer(serializers.Mod
             "other_group_ids",
         ]
 
-    def validate_editable_fields(self, value):
+    @staticmethod
+    def validate_editable_fields(value):
         fields_set = set()
         for field in value:
             if field not in OrgUnitChangeRequestConfiguration.LIST_OF_POSSIBLE_EDITABLE_FIELDS:
@@ -241,6 +247,7 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(BaseOrgUnitChangeRequestC
         fields = [
             "id",
             "project_id",
+            "type",
             "org_unit_type_id",
             *BaseOrgUnitChangeRequestConfigurationWriteUpdateSerializer.Meta.fields,
         ]
@@ -258,11 +265,12 @@ class OrgUnitChangeRequestConfigurationWriteSerializer(BaseOrgUnitChangeRequestC
         # Making sure that there is no soft-deleted OUCRC with the same project_id and org_unit_type_id
         project_id = validated_data["project"].id
         org_unit_type_id = validated_data["org_unit_type"].id
+        oucrc_type = validated_data["type"]
         if OrgUnitChangeRequestConfiguration.objects.filter(
-            project_id=project_id, org_unit_type_id=org_unit_type_id
+            project_id=project_id, org_unit_type_id=org_unit_type_id, type=oucrc_type
         ).exists():
             raise serializers.ValidationError(
-                f"There is already a configuration for this project_id ({project_id}) and org_unit_type_id ({org_unit_type_id}).)"
+                f"There is already a configuration for this project_id ({project_id}), org_unit_type_id ({org_unit_type_id}) and type ({oucrc_type}).)"
             )
 
         validated_data["created_by"] = user
@@ -376,7 +384,11 @@ class ProjectIdSerializer(serializers.Serializer):
 
         serializer = ProjectIdSerializer(data=self.request.query_params)
         serializer.is_valid(raise_exception=True)
-        project_id = serializer.validated_data["project_id"]
+        project_id = serializer.data["project_id"]
+
+        OR
+
+        project_id = ProjectIdSerializer(data=self.request.query_params).get_project_id(raise_exception=True)
     """
 
     project_id = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all(), allow_null=False)
@@ -385,3 +397,49 @@ class ProjectIdSerializer(serializers.Serializer):
         if not self.is_valid(raise_exception=raise_exception):
             return None
         return self.data[PROJECT_ID]
+
+
+class OrgUnitChangeRequestConfigurationTypeSerializer(serializers.Serializer):
+    """
+    Serializer for `type` when passed in query_params.
+
+    Used to handle parsing and errors:
+
+        serializer = OrgUnitChangeRequestConfigurationTypeSerializer(data=self.request.query_params)
+        serializer.is_valid(raise_exception=True)
+        type = serializer.data["type"]
+
+        OR
+
+        oucrc_type = OrgUnitChangeRequestConfigurationTypeSerializer(data=self.request.query_params).get_type(raise_exception=True)
+    """
+
+    type = serializers.ChoiceField(choices=OrgUnitChangeRequestConfiguration.Type.choices, allow_null=False)
+
+    def get_type(self, raise_exception: bool) -> Optional[OrgUnitChangeRequestConfiguration.Type]:
+        if not self.is_valid(raise_exception=raise_exception):
+            return None
+        return self.validated_data[TYPE]
+
+
+class IncludeCreationSerializer(serializers.Serializer):
+    """
+    Serializer for `include_creation` when passed in query_params.
+
+    Used to handle parsing and errors:
+
+        serializer = IncludeCreationSerializer(data=self.request.query_params)
+        serializer.is_valid(raise_exception=True)
+        include_creation = serializer.data["include_creation"]
+
+        OR
+
+        include_creation = IncludeCreationSerializer(data=self.request.query_params).get_include_creation(raise_exception=True)
+    """
+
+    include_creation = serializers.BooleanField(allow_null=True, default=False)
+
+    def get_include_creation(self, raise_exception: bool) -> Optional[bool]:
+        if not self.is_valid(raise_exception=raise_exception):
+            return None
+        return self.validated_data[INCLUDE_CREATION]

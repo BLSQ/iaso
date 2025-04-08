@@ -57,6 +57,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',
     },
+    confirm: {
+        id: 'iaso.label.confirm',
+        defaultMessage: 'Confirm',
+    },
     defaultSource: {
         id: 'iaso.dataSources.default',
         defaultMessage: 'Default source',
@@ -161,9 +165,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.version',
         defaultMessage: 'Versions',
     },
-    exportDataSource: {
-        id: 'iaso.datasources.exportDataSource',
-        defaultMessage: 'Export data source: {dataSourceName}',
+    compareDataSource: {
+        id: 'iaso.datasources.compareDataSource',
+        defaultMessage: 'Compare data source: {dataSourceName}',
     },
     name: {
         id: 'iaso.datasources.options.label.name',
@@ -185,11 +189,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.options.label.version',
         defaultMessage: 'Version',
     },
-    dhis2ExportSure: {
-        id: 'iaso.datasources.title.dhis2ExportSure',
+    exportTitle: {
+        id: 'iaso.datasources.title.exportTitle',
+        defaultMessage: 'Are you sure?',
+    },
+    syncTitle: {
+        id: 'iaso.datasources.title.syncTitle',
+        defaultMessage: 'Synchronize data sources',
+    },
+    dhis2ExportMessage: {
+        id: 'iaso.datasources.title.dhis2ExportMessage',
+        defaultMessage: 'This might make a lot of changes in DHIS2.',
+    },
+    syncMessage: {
+        id: 'iaso.datasources.title.syncMessage',
         defaultMessage:
-            // eslint-disable-next-line no-useless-concat
-            'Are you sure? \n' + 'This might make a lot of changes in DHIS2.',
+            'This might create a lot of changes requests to align the two versions. This dialog will stay frozen until the preview is done. Geometry will not be synchronized.',
     },
     default: {
         id: 'iaso.datasources.options.label.default',
@@ -206,6 +221,10 @@ const MESSAGES = defineMessages({
     csvPreview: {
         id: 'iaso.datasources.button.label.csvPreview',
         defaultMessage: 'Preview',
+    },
+    syncPreview: {
+        id: 'iaso.datasources.button.label.syncPreview',
+        defaultMessage: 'Preview change request(s)',
     },
     orgUnitTypes: {
         id: 'iaso.datasources.label.orgUnitTypes',
@@ -227,17 +246,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.credentials',
         defaultMessage: 'Credentials',
     },
-    exportTitle: {
-        id: 'iaso.datasources.title.export',
-        defaultMessage: 'Org units to export',
+    origin: {
+        id: 'iaso.datasources.title.origin',
+        defaultMessage: 'Origin',
     },
-    sourceDataSource: {
-        id: 'iaso.datasources.title.sourceDataSource',
-        defaultMessage: 'Version to compare with to generate export',
+    target: {
+        id: 'iaso.datasources.title.target',
+        defaultMessage: 'Target',
     },
-    compareAndExport: {
-        id: 'iaso.datasources.tooltip.compareAndExport',
-        defaultMessage: 'Compare data sources and export to DHIS2',
+    compare: {
+        id: 'iaso.datasources.tooltip.compare',
+        defaultMessage: 'Compare/Synchronize data sources',
     },
     credentialsForExport: {
         id: 'iaso.datasources.credentialsForExport',
@@ -410,6 +429,45 @@ const MESSAGES = defineMessages({
     readOnly: {
         id: 'iaso.dataSources.dataSourceReadOnly',
         defaultMessage: 'Read Only',
+    },
+    validate: {
+        defaultMessage: 'Validate',
+        id: 'iaso.label.validate',
+    },
+    sync: {
+        id: 'iaso.datasources.label.sync',
+        defaultMessage: 'Synchronize',
+    },
+    syncMessageDisabled: {
+        id: 'iaso.datasources.syncMessageDisabled',
+        defaultMessage:
+            'Please select a version of same data source to enable sync',
+    },
+    exportMessageDisabled: {
+        id: 'iaso.datasources.exportMessageDisabled',
+        defaultMessage:
+            'Please select a data source with DHIS2 credentials to enable export',
+    },
+    syncName: {
+        id: 'iaso.datasources.syncName',
+        defaultMessage: 'Synchronization name',
+    },
+    syncTooltip: {
+        id: 'iaso.datasources.syncTooltip',
+        defaultMessage:
+            'You need to give a name and see the preview to launch the synchronization.',
+    },
+    count_create: {
+        id: 'iaso.datasources.count_create',
+        defaultMessage: 'Org unit(s) to create',
+    },
+    count_update: {
+        id: 'iaso.datasources.count_update',
+        defaultMessage: 'Org unit(s) to update',
+    },
+    syncNameInfos: {
+        id: 'iaso.datasources.syncNameInfos',
+        defaultMessage: 'Used to find linked changed requests',
     },
 });
 

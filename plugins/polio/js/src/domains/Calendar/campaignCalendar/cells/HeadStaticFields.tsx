@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useCallback } from 'react';
 
-import classnames from 'classnames';
-
+import { Box, TableCell, TableSortLabel } from '@mui/material';
 import {
     getOrderArray,
     getSort,
@@ -9,13 +8,13 @@ import {
     useSafeIntl,
     useRedirectToReplace,
 } from 'bluesquare-components';
+import classnames from 'classnames';
 
-import { Box, TableCell, TableSortLabel } from '@mui/material';
+import MESSAGES from '../../../../constants/messages';
 import { useStaticFields } from '../../hooks/useStaticFields';
 import { Field } from '../../types';
-import { useStyles } from '../Styles';
 import { colSpanTitle } from '../constants';
-import MESSAGES from '../../../../constants/messages';
+import { useStyles } from '../Styles';
 
 type Props = {
     orders: string;
@@ -66,16 +65,8 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
         });
     };
     const fields = useStaticFields(isPdf);
+    const defaultWidth = !isLogged || isPdf ? '85px' : '70px';
 
-    const getWidth = useCallback(
-        (f: Field) => {
-            if (f.key === 'edit') {
-                return '30px';
-            }
-            return !isLogged || isPdf ? '85px' : '70px';
-        },
-        [isLogged, isPdf],
-    );
     return (
         <>
             {fields.map(f => {
@@ -95,8 +86,8 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
                         colSpan={colSpanTitle}
                         sx={{
                             top: 100,
-                            width: getWidth(f),
-                            minWidth: getWidth(f),
+                            width: f.width || defaultWidth,
+                            minWidth: f.width || defaultWidth,
                         }}
                     >
                         <Box position="relative" width="100%" height="100%">

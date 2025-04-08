@@ -40,7 +40,7 @@ import {
     filterCampaigns,
     getCalendarData,
     mapCampaigns,
-} from './campaignCalendar/utils';
+} from './campaignCalendar/utils/campaigns';
 import { ExportCsvModal } from './ExportCsvModal';
 
 const useStyles = makeStyles(theme => ({
@@ -129,8 +129,13 @@ export const Calendar: FunctionComponent = () => {
     );
 
     const mappedCampaigns: MappedCampaign[] = useMemo(
-        () => mapCampaigns(campaigns),
-        [campaigns],
+        () =>
+            mapCampaigns(
+                campaigns,
+                calendarData.firstMonday,
+                calendarData.lastSunday,
+            ),
+        [campaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
     const filteredCampaigns = useMemo(
         () =>
@@ -267,12 +272,9 @@ export const Calendar: FunctionComponent = () => {
                         )}
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>
                             <Box display="flex" justifyContent="flex-end">
-                                {(params.campaignCategory === 'on_hold' ||
-                                    params.campaignCategory === 'all') && (
-                                    <Box mr={2}>
-                                        <IsOnHoldLegend />
-                                    </Box>
-                                )}
+                                <Box mr={2}>
+                                    <IsOnHoldLegend />
+                                </Box>
                                 <Box mr={2}>
                                     <HasSubActivityLegend />
                                 </Box>
@@ -289,7 +291,7 @@ export const Calendar: FunctionComponent = () => {
                                     orders={orders}
                                     campaigns={filteredCampaigns}
                                     calendarData={calendarData}
-                                    loadingCampaigns={isLoading}
+                                    loadingCampaigns={isFetching}
                                     isPdf={isPdf}
                                     url={currentUrl}
                                     isLogged={isLogged}

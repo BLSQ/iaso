@@ -17,7 +17,7 @@ env:
 
 jobs:
     test_js:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-24.04
         steps:
             - uses: actions/checkout@v4
             - name: Use node.js 20
@@ -52,7 +52,7 @@ jobs:
                   MSG_MINIMAL: true
               if: failure()
     build-and-push-image:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-24.04
         permissions:
             contents: read
             packages: write
@@ -88,7 +88,7 @@ jobs:
                   cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
                   cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
     test_python:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-24.04
         services:
             postgres:
                 image: postgis/postgis:16-3.5
@@ -127,7 +127,7 @@ jobs:
             - name: Check formatting with ruff
               # https://docs.astral.sh/ruff/integrations/#github-actions
               run: |
-                  . ./venv/bin/activate && ruff check --output-format=github .
+                  . ./venv/bin/activate && ruff check --output-format=github . && ruff format --check
             - name: Check Backend (Django) translations
               run: |
                   . ./venv/bin/activate

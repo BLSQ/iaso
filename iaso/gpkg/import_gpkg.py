@@ -2,6 +2,7 @@ import math
 import sqlite3
 
 from copy import deepcopy
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 
 import fiona  # type: ignore
@@ -37,6 +38,8 @@ class PropertyDict(TypedDict):
     parent_ref: str
     ref: str
     group_refs: str
+    opening_date: Optional[str]
+    closed_date: Optional[str]
 
 
 class GeomDict(TypedDict):
@@ -50,6 +53,10 @@ class OrgUnitData(TypedDict):
     geometry: GeomDict
     properties: PropertyDict
     type: Optional[OrgUnitType]
+
+
+OLD_INTERNAL_REF = "iaso#"
+NEW_INTERNAL_REF = "iaso:"
 
 
 def convert_to_geography(geom_type: str, coordinates: list):
@@ -92,12 +99,33 @@ def create_or_update_group(group: Group, ref: str, name: str, version: SourceVer
     return group
 
 
+def apply_date_field(field_name: str, props: Dict[str, str], orgunit: OrgUnit, task):
+    # if the field is not the geopackage don't touch the orgunit
+    if field_name not in props.keys():
+        return
+
+    new_date = props.get(field_name)
+
+    if new_date:
+        try:
+            setattr(orgunit, field_name, datetime.strptime(new_date, "%Y-%m-%d").date())
+        except (ValueError, TypeError) as e:
+            message = f"Error parsing {field_name} for {orgunit.name}: {e}"
+            if task:
+                task.report_progress_and_stop_if_killed(progress_message=message)
+            raise Exception(message)
+    else:
+        # the attribute was in the geopackge but "empty" so we delete the value in the orgunit
+        setattr(orgunit, field_name, None)
+
+
 def create_or_update_orgunit(
     orgunit: Optional[OrgUnit],
     data: OrgUnitData,
     source_version: SourceVersion,
     validation_status: str,
     ref_group: Dict[str, Group],
+    task=None,
 ) -> OrgUnit:
     props = data["properties"]
     geometry = data["geometry"]
@@ -108,12 +136,23 @@ def create_or_update_orgunit(
         # Make a copy, so we can do the audit log, otherwise we would edit in place
         orgunit = deepcopy(orgunit)
 
-    orgunit.name = props["name"]
+    # Validate required name
+    name = validate_required_property(props, "name")
+    orgunit.name = name
     orgunit.org_unit_type = data["type"]
     if orgunit.validation_status is None:
         orgunit.validation_status = validation_status
-    orgunit.source_ref = props["ref"]
+    # Validate required ref
+    ref = validate_required_property(props, "ref")
+    if ref and ref.startswith(OLD_INTERNAL_REF):
+        ref = ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
+    orgunit.source_ref = ref
     orgunit.version = source_version
+
+    # Import dates if they exist in properties
+
+    apply_date_field("closed_date", props, orgunit, task)
+    apply_date_field("opening_date", props, orgunit, task)
 
     if geometry:
         geom = convert_to_geography(geometry["type"], geometry["coordinates"])
@@ -136,7 +175,7 @@ def create_or_update_orgunit(
             orgunit.groups.clear()
     elif props["group_refs"]:
         group_refs = props["group_refs"].split(",")
-        group_refs = [ref.strip() for ref in group_refs]
+        group_refs = [ref.strip().replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF) for ref in group_refs]
 
         try:
             groups = [ref_group[ref] for ref in group_refs if ref]
@@ -149,8 +188,64 @@ def create_or_update_orgunit(
 
 def get_ref(inst: Union[OrgUnit, Group]) -> str:
     """We make an artificial ref in case there is none so the gpkg can still refer existing record in iaso, even if
-    they don't have a ref"""
-    return inst.source_ref if inst.source_ref else f"iaso#{inst.pk}"
+    they don't have a ref
+    Before, we used the format "iaso#ID", but having a # creates some issues, so this will return "iaso:ID" instead
+    """
+    ref = inst.source_ref
+    if not ref:
+        return f"{NEW_INTERNAL_REF}{inst.pk}"
+    if ref.startswith(OLD_INTERNAL_REF):
+        return ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
+    return ref
+
+
+def validate_required_property(props: Dict[str, str], property_name: str, orgunit_name: str = "") -> str:
+    """Check if a required property exists and is not empty
+    Args:
+        props: Dictionary of properties
+        property_name: Name of the property to check
+        orgunit_name: Name of orgunit for error message (optional)
+    Returns:
+        The property value
+    Raises:
+        ValueError if:
+        - property column doesn't exist in props
+        - property value is None
+        - property value is empty string
+        - property value is only whitespace
+    """
+    if property_name not in props:
+        raise ValueError(f"Column '{property_name}' is required but missing from GPKG")
+
+    value = props[property_name]
+    if value is None:
+        raise ValueError(f"Column '{property_name}' cannot be null")
+
+    if not isinstance(value, str):
+        raise ValueError(f"Column '{property_name}' must be a string, got {type(value)}")
+
+    if value.strip() == "":
+        raise ValueError(f"Column '{property_name}' cannot be empty or blank")
+
+    return value.strip()
+
+
+def validate_property(props: Dict[str, str], property_name: str, orgunit_name: str = "") -> Optional[str]:
+    """Check if a property exists and validate it's not empty if present
+    Args:
+        props: Dictionary of properties
+        property_name: Name of the property to check
+        orgunit_name: Name of orgunit for error message (optional)
+    Returns:
+        The property value if present and non-empty, None if property doesn't exist or is empty
+    """
+    if property_name not in props:
+        return None
+
+    value = props[property_name]
+    if value and value.strip() != "":  # Only return non-empty values
+        return value
+    return None
 
 
 @transaction.atomic
@@ -201,6 +296,8 @@ def import_gpkg_file2(
         cur = conn.cursor()
         rows = cur.execute("select ref, name from groups")
         for ref, name in rows:
+            if ref and ref.startswith(OLD_INTERNAL_REF):
+                ref = ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
             # Log modification done on group
             old_group = deepcopy(ref_group.get(ref))
             # TODO: investigate type error on next line?
@@ -240,10 +337,15 @@ def import_gpkg_file2(
         row: OrgUnitData
         for row in iter(colx):
             row["type"] = org_unit_type
-            ref = row["properties"]["ref"]
+
+            # Validate both required fields
+            ref = validate_required_property(row["properties"], "ref")
+            name = validate_required_property(row["properties"], "name")
+            if ref and ref.startswith(OLD_INTERNAL_REF):
+                ref = ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
 
             existing_ou = ref_ou.get(ref)
-            orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group)
+            orgunit = create_or_update_orgunit(existing_ou, row, version, validation_status, ref_group, task)
 
             if task and total_org_unit % 500 == 0:
                 task.report_progress_and_stop_if_killed(
@@ -253,7 +355,13 @@ def import_gpkg_file2(
             ref = get_ref(orgunit)  # if ref was null in gpkg
             ref_ou[ref] = orgunit
 
-            parent_ref = row["properties"]["parent_ref"]
+            parent_ref = None
+            if "parent_ref" in row["properties"]:
+                if row["properties"]["parent_ref"]:  # Only validate if it has a non-empty value
+                    parent_ref = validate_property(row["properties"], "parent_ref", orgunit.name)
+                    if parent_ref and parent_ref.startswith(OLD_INTERNAL_REF):
+                        parent_ref = parent_ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
+
             to_update_with_parent.append((ref, parent_ref))
             # we will log the modification after we set the parent
             if orgunit.location is not None or orgunit.geom is not None:
@@ -277,6 +385,7 @@ def import_gpkg_file2(
             )
         parent_ou = ref_ou[parent_ref] if parent_ref else None
         ou.parent = parent_ou
+        ou.source_ref = ou.source_ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
         ou.save()
     if task:
         task.report_progress_and_stop_if_killed(

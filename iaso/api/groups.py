@@ -140,7 +140,7 @@ class GroupsViewSet(ModelViewSet):
                 versions = SourceVersion.objects.filter(data_source__projects__in=project_ids.split(","))
                 queryset = queryset.filter(source_version__in=versions)
 
-        block_of_countries = self.request.GET.get("blockOfCountries", None)
+        block_of_countries = self.request.GET.get("blockOfCountries", None) == "true"
         if block_of_countries:  # Filter only org unit groups containing only countries as orgUnits
             queryset = queryset.filter(block_of_countries=block_of_countries)
 

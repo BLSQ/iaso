@@ -6,7 +6,6 @@ from rest_framework import serializers
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet
 from plugins.polio.api.vaccines.permissions import VaccineStockManagementPermission
-from plugins.polio.api.vaccines.stock_management import VaccineStockCalculator
 from plugins.polio.models import (
     DestructionReport,
     OutgoingStockMovement,
@@ -15,7 +14,7 @@ from plugins.polio.models import (
     VaccineRequestForm,
     VaccineStock,
 )
-from plugins.polio.models.base import Campaign, Round
+from plugins.polio.models.base import Campaign, Round, VaccineStockCalculator
 
 
 class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):

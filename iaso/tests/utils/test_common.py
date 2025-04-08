@@ -56,4 +56,4 @@ class CommonTestCase(TestCase):
             get_org_unit_parents_ref(field_name, org_unit, parent_source_ref_field_names, parent_field_ids)
             for field_name in parent_source_ref_field_names
         ]
-        self.assertEqual(parents_source_ref, ["iaso#7513", "fdc6uOvgoji", "ImspTQPwCqd", None])
+        self.assertEqual(parents_source_ref, ["iaso:7513", "fdc6uOvgoji", "ImspTQPwCqd", None])

@@ -1,7 +1,7 @@
 import { UseQueryResult } from 'react-query';
-import { makeUrlWithParams } from '../../../../../libs/utils';
 import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
+import { makeUrlWithParams } from '../../../../../libs/utils';
 
 import { useLocale } from '../../../../app/contexts/LocaleContext';
 import { apiUrlOUCRC } from '../../constants';
@@ -21,6 +21,7 @@ export const useGetOrgUnitChangeRequestConfigs = (
     const apiParams = {
         org_unit_type_id: params.org_unit_type_id,
         project_id: params.project_id,
+        type: params.type,
         order: params.order || '-updated_at',
         limit: params.pageSize || 10,
         page: params.page,

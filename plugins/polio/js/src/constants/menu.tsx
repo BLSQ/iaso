@@ -1,3 +1,4 @@
+import React from 'react';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import CalendarToday from '@mui/icons-material/CalendarToday';
@@ -7,8 +8,8 @@ import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import GroupWork from '@mui/icons-material/GroupWork';
 import HomeIcon from '@mui/icons-material/Home';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
-import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import InventoryIcon from '@mui/icons-material/Inventory';
+import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
@@ -19,7 +20,6 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
-import React from 'react';
 import { MenuItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/types';
 import MESSAGES from './messages';
 import {

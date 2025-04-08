@@ -100,7 +100,7 @@ MODULE_PERMISSIONS = {
     "DATA_VALIDATION": [
         "iaso_org_unit_change_request_review",
         "iaso_org_unit_change_request_configurations",
-    ]
+    ],
 }
 
 MODULES = [
@@ -120,7 +120,7 @@ MODULES = [
     {"name": "Payments", "codename": "PAYMENTS", "fr_name": "Paiements"},
     {"name": "Completeness per Period", "codename": "COMPLETENESS_PER_PERIOD", "fr_name": "Complétude par période"},
     {"name": "Trypelim project", "codename": "TRYPELIM_PROJECT", "fr_name": "Projet Trypelim"},
-    {"name": "Data validation", "codename": "DATA_VALIDATION", "fr_name": "Validation des données"}
+    {"name": "Data validation", "codename": "DATA_VALIDATION", "fr_name": "Validation des données"},
 ]
 
 FEATUREFLAGES_TO_EXCLUDE = {

@@ -486,12 +486,11 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     ]
 
     def get_queryset(self):
-        return EarmarkedStock.objects.filter(
-            vaccine_stock__account=self.request.user.iaso_profile.account
-        ).select_related("vaccine_stock", "campaign", "round").filter(
-        Q(temporary_campaign_name="") & Q(round__is_test=False) |
-        ~Q(temporary_campaign_name="")
-    )
+        return (
+            EarmarkedStock.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
+            .select_related("vaccine_stock", "campaign", "round")
+            .filter(Q(temporary_campaign_name="") & Q(round__is_test=False) | ~Q(temporary_campaign_name=""))
+        )
 
 
 class VaccineStockManagementViewSet(ModelViewSet):

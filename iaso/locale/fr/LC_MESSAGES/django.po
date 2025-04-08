@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-02 08:35+0000\n"
+"POT-Creation-Date: 2025-04-08 08:42+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -165,6 +165,14 @@ msgid "Invalid validation status : {validation_status}"
 msgstr "Statut de validation invalide : {validation_status}"
 
 #: iaso/api/org_units.py
+msgid "Can't parse geom"
+msgstr "Impossible d'analyser la géométrie"
+
+#: iaso/api/org_units.py
+msgid "This field is deprecated. Use the `geom` field to modify the geometry."
+msgstr "Ce champ est obsolète. Utilisez le champ `geom` pour modifier la géométrie."
+
+#: iaso/api/org_units.py
 msgid "You cannot create an Org Unit without a parent"
 msgstr "Vous ne pouvez pas créer une unité organisationnelle sans parent"
 
@@ -187,10 +195,6 @@ msgstr "Le nom de l'unité organisationnelle est requis"
 #: iaso/api/org_units.py
 msgid "Opening date must be anterior to closed date"
 msgstr "La date d'ouverture doit être antérieure à la date de fermeture"
-
-#: iaso/api/org_units.py
-msgid "Can't parse geom"
-msgstr "Impossible d'analyser la géométrie"
 
 #: iaso/api/org_units.py
 msgid "Org unit type is required"

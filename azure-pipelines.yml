@@ -36,8 +36,14 @@ steps:
     node -v
     npm -v
     npm ci
-    npm test
+    npm test -- --reporter xunit --reporter-option output=npm-test.xml
   displayName: 'npm install and run test'
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFiles: "**/npm-test.xml"
+    testRunTitle: 'Npm test results'
 
 - task: UsePythonVersion@0
   inputs:

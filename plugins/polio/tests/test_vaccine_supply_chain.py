@@ -1,9 +1,9 @@
 import datetime
 
 from django.contrib.auth.models import AnonymousUser
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from django.utils.timezone import now
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 import hat.menupermissions.models as permissions
 

@@ -108,7 +108,7 @@ class WFP2Adapter(Auth0OAuth2Adapter):
         # if not create one and connect it to an existing user if there is already one with this email
         # contrary to the all auth version it return a SocialAccount
         # Call the userinfo url with the identifying token to get more data on the user
-        extra_data_get = requests.get(self.profile_url, headers={'Authorization': f'Bearer {token}'})
+        extra_data_get = requests.get(self.profile_url, headers={"Authorization": f"Bearer {token}"})
         extra_data_get.raise_for_status()
         extra_data: ExtraData = extra_data_get.json()
         try:

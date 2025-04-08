@@ -67,7 +67,6 @@ describe('Log in page', () => {
         it('missing password should not submit login', () => {
             cy.get('#id_username').should('exist');
             cy.get('#id_username').should('be.visible');
-            cy.get('#id_username').clear({ force: true });
             cy.get('#id_username').type('Link', { force: true });
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);

@@ -163,7 +163,7 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
     return (
         <>
             <IconButton
-                dataTestId={`open-versions-dialog-button-${dataSource.id}`}
+                dataTestId={`sync-dialog-button-${dataSource.id}`}
                 onClick={() => setOpen(true)}
                 overrideIcon={SyncIcon}
                 tooltipMessage={MESSAGES.compare}

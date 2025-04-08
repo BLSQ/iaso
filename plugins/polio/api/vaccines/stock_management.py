@@ -381,6 +381,37 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
         )
     ]
 
+    @action(detail=False, methods=["GET"])
+    def check_duplicate(self, request):
+        vaccine_stock_id = request.query_params.get("vaccine_stock")
+        destruction_report_date = request.query_params.get("destruction_report_date")
+        unusable_vials_destroyed = request.query_params.get("unusable_vials_destroyed")
+        destruction_report_id = request.query_params.get("destruction_report_id")
+
+        if not all([vaccine_stock_id, destruction_report_date, unusable_vials_destroyed]):
+            return Response({"error": "Missing required parameters"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if vaccine stock exists
+        if not VaccineStock.objects.filter(id=vaccine_stock_id).exists():
+            return Response({"error": "Vaccine stock not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Build the filter query
+        filter_query = {
+            "vaccine_stock_id": vaccine_stock_id,
+            "destruction_report_date": destruction_report_date,
+            "unusable_vials_destroyed": unusable_vials_destroyed,
+        }
+
+        # If editing an existing report, exclude it from the duplicate check
+        if destruction_report_id:
+            existing_destruction = (
+                DestructionReport.objects.exclude(id=destruction_report_id).filter(**filter_query).exists()
+            )
+        else:
+            existing_destruction = DestructionReport.objects.filter(**filter_query).exists()
+
+        return Response({"duplicate_exists": existing_destruction})
+
 
 class EarmarkedStockSerializer(serializers.ModelSerializer):
     campaign = serializers.SerializerMethodField()

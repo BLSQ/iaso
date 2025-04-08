@@ -392,9 +392,7 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
             return Response({"error": "Missing required parameters"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if vaccine stock exists
-        try:
-            vaccine_stock = VaccineStock.objects.get(id=vaccine_stock_id)
-        except VaccineStock.DoesNotExist:
+        if not VaccineStock.objects.filter(id=vaccine_stock_id).exists():
             return Response({"error": "Vaccine stock not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # Build the filter query

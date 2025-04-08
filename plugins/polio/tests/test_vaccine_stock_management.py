@@ -1053,7 +1053,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 201)
-        second_report_id = response.json()["id"]
 
         # Test checking for duplicate while editing first report (should find second report)
         response = self.client.get(

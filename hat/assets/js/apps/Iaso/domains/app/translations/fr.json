@@ -809,6 +809,7 @@
     "iaso.labels.modifiedBy": "Modifié par",
     "iaso.links.title": "Validation correspondances",
     "iaso.logout": "Se déconnecter",
+    "iaso.logs.goToChangeRequest": "Ces modifications découlent de la demande de changement #{change_request_id}",
     "iaso.logs.goToRevision": "Rétablir tous les champs",
     "iaso.logs.goToRevisionChanges": "Rétablir uniquement les champs mis à jour par cette version",
     "iaso.logs.goToRevisionQuestion": "Voulez-vous retourner à cette révision ?",

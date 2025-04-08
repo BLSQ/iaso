@@ -809,6 +809,7 @@
     "iaso.labels.modifiedBy": "Modified by",
     "iaso.links.title": "Links validation",
     "iaso.logout": "Logout",
+    "iaso.logs.goToChangeRequest": "These changes originated from Change Request #{change_request_id}",
     "iaso.logs.goToRevision": "Restore all fields",
     "iaso.logs.goToRevisionChanges": "Restore only fields updated by this version",
     "iaso.logs.goToRevisionQuestion": "Do you confirm the roll back to this revision ?",

@@ -1151,15 +1151,7 @@ class OrgUnitAPITestCase(APITestCase):
         test_location = {"latitude": 4.4, "longitude": 5.5, "altitude": 100}
 
         # Create test geojson data
-        test_geojson = {
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "geometry": {"type": "MultiPolygon", "coordinates": [[[[1, 1], [1, 2], [2, 2], [2, 1], [1, 1]]]]},
-                }
-            ],
-        }
+        geom = str(MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])))
 
         # Store initial values for comparison
         initial_name = org_unit.name
@@ -1174,7 +1166,7 @@ class OrgUnitAPITestCase(APITestCase):
             "latitude": test_location["latitude"],
             "longitude": test_location["longitude"],
             "altitude": test_location["altitude"],
-            "geo_json": test_geojson,
+            "geom": geom,
             "aliases": ["alias1", "alias2"],
             "groups": [new_group.id],
             "opening_date": "01-01-2023",
@@ -1203,9 +1195,11 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(org_unit.location.x, test_location["longitude"])
         self.assertEqual(org_unit.location.z, test_location["altitude"])
 
-        # Verify geojson/geometry update
-        self.assertIsNotNone(org_unit.simplified_geom)
-        self.assertIsNotNone(org_unit.geom)
+        # Verify geometry update.
+        # `geom` and `simplified_geom` should have the same value here, because geom is too small to be simplified.
+        expected_geom = "SRID=4326;MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))"
+        self.assertEqual(org_unit.geom, expected_geom)
+        self.assertEqual(org_unit.simplified_geom, expected_geom)
 
         # Verify aliases update
         self.assertEqual(set(org_unit.aliases), {"alias1", "alias2"})
@@ -1277,27 +1271,50 @@ class OrgUnitAPITestCase(APITestCase):
     def test_edit_org_unit_partial_update_remove_geojson_geom_simplified_geom_should_be_consistent(
         self,
     ):
-        """Check that if we remove the geojson both simplified_geom and geom are empty"""
+        """
+        Check that if we remove the `geom`, both `simplified_geom` and `geom` are empty.
+        """
+        polygon = Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])
+
         ou = m.OrgUnit(version=self.sw_version_1)
         ou.name = "test ou"
         ou.source_ref = "b"
-        ou.geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
-        ou.simplified_geom = simplify_geom(MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])))
+        ou.geom = MultiPolygon(polygon)
+        ou.simplified_geom = simplify_geom(MultiPolygon(polygon))
         ou.save()
+
         old_modification_date = ou.updated_at
+
         self.client.force_authenticate(self.yoda)
-        data = {"geo_json": None}
+
+        data = {"geom": None}
         response = self.client.patch(
             f"/api/orgunits/{ou.id}/",
             format="json",
             data=data,
         )
         self.assertJSONResponse(response, 200)
+
         ou.refresh_from_db()
         self.assertGreater(ou.updated_at, old_modification_date)
         self.assertEqual(ou.name, "test ou")
         self.assertIsNone(ou.geom)
         self.assertIsNone(ou.simplified_geom)
+
+    def test_deprecated_geo_json_field(self):
+        org_unit = m.OrgUnit.objects.create(version=self.sw_version_1)
+
+        self.client.force_authenticate(self.yoda)
+
+        data = {"geo_json": str(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))}
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", format="json", data=data)
+        json_response = self.assertJSONResponse(response, 400)
+
+        self.assertEqual(json_response[0]["errorKey"], "geo_json")
+        self.assertEqual(
+            json_response[0]["errorMessage"],
+            "This field is deprecated. Use the `geom` field to modify the geometry.",
+        )
 
     def test_edit_org_unit_partial_update_read_permission(self):
         """Check that we can only modify a part of the file with org units read only permission"""

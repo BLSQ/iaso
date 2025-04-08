@@ -28,7 +28,7 @@ services:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '20.x'
+    versionSpec: '20.18.3'
   displayName: 'Install Node.js'
 
 - script: |
@@ -36,7 +36,7 @@ steps:
     node -v
     npm -v
     npm ci
-  # npm test
+    npm test
   displayName: 'npm install and run test'
 
 - task: UsePythonVersion@0

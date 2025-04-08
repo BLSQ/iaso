@@ -36,14 +36,8 @@ steps:
     node -v
     npm -v
     npm ci
-    npm test -- --reporter xunit --reporter-option output=npm-test.xml
+    npm test
   displayName: 'npm install and run test'
-
-- task: PublishTestResults@2
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFiles: "**/npm-test.xml"
-    testRunTitle: 'Npm test results'
 
 - task: UsePythonVersion@0
   inputs:
@@ -64,7 +58,6 @@ steps:
 
 - script: |
     . ./venv/bin/activate && pip install -r requirements.txt  && pip install -r requirements-dev.txt
-    pip install unittest-xml-reporting
   displayName: 'install requirements'
 
 - script: pip list
@@ -92,7 +85,7 @@ steps:
     export DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
     . ./venv/bin/activate &&  python manage.py migrate
     . ./venv/bin/activate &&  python manage.py createcachetable
-    . ./venv/bin/activate &&  python manage.py test --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
+    . ./venv/bin/activate &&  python manage.py test
     . ./venv/bin/activate &&  python manage.py makemigrations --check
     . ./venv/bin/activate &&  python manage.py createsuperuser --noinput
   displayName: 'Django tests'
@@ -116,11 +109,6 @@ steps:
     DJANGO_SUPERUSER_PASSWORD: $(DJANGO_SUPERUSER_PASSWORD)
     DISABLE_PASSWORD_LOGINS: true
     USE_CELERY: true
-- task: PublishTestResults@2
-  condition: succeededOrFailed()
-  inputs:
-    testResultsFiles: "**/TEST-*.xml"
-    testRunTitle: 'Python $(PYTHON_VERSION)'
 
 - script: docker build -t dev-coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
   env:

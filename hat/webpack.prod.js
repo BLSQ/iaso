@@ -25,6 +25,97 @@ const getPluginFolders = () => {
     });
 };
 
+// Function to get available languages from translations folder
+const getAvailableLanguages = () => {
+    const translationsPath = path.resolve(
+        __dirname,
+        './assets/js/apps/Iaso/domains/app/translations',
+    );
+    if (!fs.existsSync(translationsPath)) {
+        console.warn(
+            'Translations directory not found, using default languages',
+            translationsPath,
+        );
+        return ['en', 'fr'];
+    }
+
+    return fs
+        .readdirSync(translationsPath)
+        .filter(file => file.endsWith('.json'))
+        .map(file => file.replace('.json', ''));
+};
+
+// Function to generate a combined translations file
+const generateCombinedTranslations = () => {
+    const languages = getAvailableLanguages();
+    const combinedTranslationsPath = path.resolve(
+        __dirname,
+        './assets/js/combinedTranslations.js',
+    );
+
+    // Create a combined translations object
+    const combinedTranslations = {};
+
+    languages.forEach(lang => {
+        const translationPath = path.resolve(
+            __dirname,
+            `./assets/js/apps/Iaso/domains/app/translations/${lang}.json`,
+        );
+        // Use require to get the translations
+        try {
+            // We need to use a dynamic require to avoid webpack bundling issues
+            // This will be replaced at runtime
+            combinedTranslations[lang] = `require('${translationPath}')`;
+        } catch (error) {
+            console.error(
+                `Error loading translations for language ${lang}:`,
+                error,
+            );
+        }
+    });
+
+    // Create the file content
+    const fileContent = `
+// This file is auto-generated. Do not edit directly.
+// It combines all translations into a single file.
+
+const combinedTranslations = {
+    ${Object.entries(combinedTranslations)
+        .map(([key, value]) => `    ${key}: ${value}`)
+        .join(',\n')}
+};
+
+export default combinedTranslations;
+`;
+
+    // Write the file
+    fs.writeFileSync(combinedTranslationsPath, fileContent);
+    return combinedTranslationsPath;
+};
+
+// Function to generate a language keys file
+const generateLanguageKeysFile = () => {
+    const languages = getAvailableLanguages();
+    const languageKeysPath = path.resolve(
+        __dirname,
+        './assets/js/languageKeys.js',
+    );
+
+    // Create the file content
+    const fileContent = `
+// This file is auto-generated. Do not edit directly.
+// It contains the list of available language keys.
+
+const languageKeys = ${JSON.stringify(languages, null, 2)};
+
+export default languageKeys;
+`;
+
+    // Write the file
+    fs.writeFileSync(languageKeysPath, fileContent);
+    return languageKeysPath;
+};
+
 // Function to generate a combined config file
 const generateCombinedConfig = () => {
     const pluginFolders = getPluginFolders();
@@ -96,6 +187,12 @@ const combinedConfigPath = generateCombinedConfig();
 // Generate the plugin keys file
 const pluginKeysPath = generatePluginKeysFile();
 
+// Generate the combined translations file
+const combinedTranslationsPath = generateCombinedTranslations();
+
+// Generate the language keys file
+const languageKeysPath = generateLanguageKeysFile();
+
 module.exports = {
     // fail the entire build on 'module not found'
     bail: true,
@@ -120,14 +217,6 @@ module.exports = {
     devtool: 'source-map',
 
     plugins: [
-        new webpack.NormalModuleReplacementPlugin(
-            /^__intl\/messages\/en$/,
-            '../translations/en.json',
-        ),
-        new webpack.NormalModuleReplacementPlugin(
-            /^__intl\/messages\/fr$/,
-            '../translations/fr.json',
-        ),
         new BundleTracker({
             filename: path.resolve(
                 __dirname,
@@ -151,12 +240,14 @@ module.exports = {
         }),
         // Module Federation for plugins
         new ModuleFederationPlugin({
-            name: 'iaso_plugins',
+            name: 'IasoModules',
             filename: 'remoteEntry.js',
-            library: { type: 'self', name: 'iaso_plugins' },
+            library: { type: 'self', name: 'IasoModules' },
             exposes: {
-                './configs': combinedConfigPath,
-                './keys': pluginKeysPath,
+                './plugins/configs': combinedConfigPath,
+                './plugins/keys': pluginKeysPath,
+                './translations/configs': combinedTranslationsPath,
+                './translations/keys': languageKeysPath,
             },
             shared: {
                 react: {
@@ -360,8 +451,16 @@ module.exports = {
         alias: {
             'react/jsx-runtime': 'react/jsx-runtime.js',
             // Add alias for the combined config
-            'iaso_plugins/configs': combinedConfigPath,
-            'iaso_plugins/keys': pluginKeysPath,
+            'IasoModules/plugins/configs': combinedConfigPath,
+            'IasoModules/plugins/keys': pluginKeysPath,
+            'IasoModules/translations/configs': combinedTranslationsPath,
+            'IasoModules/translations/keys': languageKeysPath,
+            ...(process.env.LIVE_COMPONENTS === 'true' && {
+                'bluesquare-components': path.resolve(
+                    __dirname,
+                    '../../bluesquare-components/src/',
+                ),
+            }),
         },
         fallback: {
             fs: false,

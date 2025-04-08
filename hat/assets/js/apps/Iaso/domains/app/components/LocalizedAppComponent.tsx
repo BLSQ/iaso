@@ -1,34 +1,40 @@
 /* eslint-disable import/no-relative-packages */
-import React, { useContext } from 'react';
+import React, { FunctionComponent, useContext, ReactNode } from 'react';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import PropTypes from 'prop-types';
+
+import enLibrary from 'bluesquare-components/dist/locale/en.json';
+import frLibrary from 'bluesquare-components/dist/locale/fr.json';
 import { IntlProvider } from 'react-intl';
-
-// the intl paths get rewritten by webpack depending on the locale
-import en from '__intl/messages/en'; // eslint-disable-line
-import fr from '__intl/messages/fr'; // eslint-disable-line
-
-import enLibrary from '../../../../../../../../node_modules/bluesquare-components/dist/locale/en.json';
-import frLibrary from '../../../../../../../../node_modules/bluesquare-components/dist/locale/fr.json';
+import translations from 'IasoModules/translations/configs';
 import { PluginsContext } from '../../../plugins/context';
-import { useLocale } from '../contexts/LocaleContext.tsx';
+import { Plugin } from '../../../plugins/types';
+import { useLocale } from '../contexts/LocaleContext';
 
-const extractTranslations = (plugins, key) => {
+type Props = {
+    children: ReactNode;
+};
+
+const extractTranslations = (
+    plugins: Plugin[],
+    key: string,
+): Record<string, string> => {
     return plugins
         .map(plugin => plugin.translations[key])
         .reduce((v1, v2) => ({ ...v1, ...v2 }), {});
 };
-export default function LocalizedAppComponent({ children }) {
+
+const LocalizedAppComponent: FunctionComponent<Props> = ({ children }) => {
     const { plugins } = useContext(PluginsContext);
     const frPlugins = extractTranslations(plugins, 'fr');
     const enPlugins = extractTranslations(plugins, 'en');
     const messages = {
-        fr: { ...fr, ...frLibrary, ...frPlugins },
-        en: { ...en, ...enLibrary, ...enPlugins },
+        fr: { ...translations.fr, ...frLibrary, ...frPlugins },
+        en: { ...translations.en, ...enLibrary, ...enPlugins },
     };
     const { locale } = useLocale();
-    const onError = msg => console.warn(msg);
+    const onError = (msg: string): void => console.warn(msg);
+
     return (
         <IntlProvider
             onError={onError}
@@ -44,7 +50,6 @@ export default function LocalizedAppComponent({ children }) {
             </LocalizationProvider>
         </IntlProvider>
     );
-}
-LocalizedAppComponent.propTypes = {
-    children: PropTypes.any.isRequired,
 };
+
+export default LocalizedAppComponent;

@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
 
+import { LoadingSpinner } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
-import MESSAGES from '../messages';
 import { useGetProjectQRCode } from '../hooks/requests/useGetProjectQRCode';
-import { LoadingSpinner } from 'bluesquare-components';
+import MESSAGES from '../messages';
 
 type Form = {
     value: string | undefined;
@@ -27,7 +27,7 @@ const ProjectInfos: FunctionComponent<Props> = ({
     currentProject,
 }) => {
     const { data: qrCode, isFetching: fetchingProjectQRCode } =
-        useGetProjectQRCode(currentProject?.id.value);
+        useGetProjectQRCode(currentProject?.id?.value);
 
     return (
         <>
@@ -50,18 +50,13 @@ const ProjectInfos: FunctionComponent<Props> = ({
                 required
             />
             {fetchingProjectQRCode && <LoadingSpinner />}
-            {!fetchingProjectQRCode &&
+            {!fetchingProjectQRCode && qrCode && (
                 <div style={{ textAlign: 'center' }}>
-                    <img
-                        width={200}
-                        height={200}
-                        alt="QRCode"
-                        src={qrCode}
-                    />
+                    <img width={200} height={200} alt="QRCode" src={qrCode} />
                 </div>
-            }
+            )}
         </>
     );
-}
+};
 
 export { ProjectInfos };

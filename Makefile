@@ -7,7 +7,7 @@
 # make test TARGET=iaso.tests.api.test_profiles.ProfileAPITestCase
 test:
 	docker compose exec iaso ./manage.py test \
-	--noinput --keepdb --failfast --settings=hat.settings_test \
+	--noinput --keepdb --failfast --settings=hat.settings_test --verbosity 3 \
 	$(TARGET)
 
 # When the migration history is changed, we need to drop the DB before running the tests suite with `--keepdb`.

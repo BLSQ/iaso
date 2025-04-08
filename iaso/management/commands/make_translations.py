@@ -21,6 +21,7 @@ class Command(BaseCommand):
             "--extension=py",
             "--extension=html",
             "--verbosity=0",  # Ensure detailed output
+            "--add-location=file",
         ] + IGNORE_ARGS
 
         try:

@@ -72,7 +72,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                 "orgUnitId": orgunit["id"],
                 "formId": sample_form_id,
                 "accuracy": 0,
-                "imgUrl": "imgUrl",
+                "imgUrl": "photo_fosa",
                 "file": local_path,
                 "name": file_name,
             }

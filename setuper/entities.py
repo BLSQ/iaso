@@ -6,6 +6,7 @@ from random import randint
 from submissions import (
     instance_by_LLIN_campaign_form,
     org_unit_gps_point,
+    rename_entity_submission_picture,
     submission2xml,
 )
 
@@ -94,21 +95,26 @@ def create_additional_entities(account_name, iaso_client, orgunit, entity_type):
         "file": local_path,
         "name": file_name,
     }
-
     iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
     instance_json = instance_by_LLIN_campaign_form(reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit)
+    files = {
+        "xml_submission_file": (
+            local_path,
+            submission2xml(
+                instance_json,
+                form_version_id=reference_form["latest_form_version"]["version_id"],
+                form_id=reference_form["form_id"],
+            ),
+        )
+    }
+    if instance_json.get("consent_given") is not None:
+        picture = instance_json["consent_given"]["beneficiary"]["picture"]
+        path = "./data/women-pictures"
+        files = rename_entity_submission_picture(path, picture, files, "picture", the_uuid)
+
     iaso_client.post(
         "/sync/form_upload/",
-        files={
-            "xml_submission_file": (
-                local_path,
-                submission2xml(
-                    instance_json,
-                    form_version_id=reference_form["latest_form_version"]["version_id"],
-                    form_id=reference_form["form_id"],
-                ),
-            )
-        },
+        files=files,
     )
 
 
@@ -133,27 +139,32 @@ def create_child_entities(account_name, iaso_client, orgunit, entity_type):
         "entityUuid": entity_uuid,
         "entityTypeId": entity_type["id"],
         "accuracy": 0,
-        "imgUrl": "imgUrl",
+        "imgUrl": "picture",
         "file": local_path,
         "name": file_name,
     }
     iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
+
     instance_json = instance_by_LLIN_campaign_form(reference_form, {"instanceID": "uuid:" + the_uuid}, orgunit)
+    image = f"{int(randint(1, 13))}.jpg"
+    instance_json["register"]["picture"] = image
+    path = "./data/children-pictures"
+
+    files = {
+        "xml_submission_file": (
+            local_path,
+            submission2xml(
+                instance_json,
+                form_version_id=reference_form["latest_form_version"]["version_id"],
+                form_id=reference_form["form_id"],
+            ),
+        )
+    }
+    files = rename_entity_submission_picture(path, image, files, "picture", the_uuid)
     iaso_client.post(
         "/sync/form_upload/",
-        files={
-            "xml_submission_file": (
-                local_path,
-                submission2xml(
-                    instance_json,
-                    form_version_id=reference_form["latest_form_version"]["version_id"],
-                    form_id=reference_form["form_id"],
-                ),
-            )
-        },
+        files=files,
     )
-
-    current_datetime = int(datetime.now().timestamp())
     for i in range(randint(0, 5)):
         the_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid

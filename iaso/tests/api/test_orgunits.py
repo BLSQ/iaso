@@ -1301,21 +1301,6 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertIsNone(ou.geom)
         self.assertIsNone(ou.simplified_geom)
 
-    def test_deprecated_geo_json_field(self):
-        org_unit = m.OrgUnit.objects.create(version=self.sw_version_1)
-
-        self.client.force_authenticate(self.yoda)
-
-        data = {"geo_json": str(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))}
-        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", format="json", data=data)
-        json_response = self.assertJSONResponse(response, 400)
-
-        self.assertEqual(json_response[0]["errorKey"], "geo_json")
-        self.assertEqual(
-            json_response[0]["errorMessage"],
-            "This field is deprecated. Use the `geom` field to modify the geometry.",
-        )
-
     def test_edit_org_unit_partial_update_read_permission(self):
         """Check that we can only modify a part of the file with org units read only permission"""
         ou, _, _, _, data = self.set_up_org_unit_partial_update()

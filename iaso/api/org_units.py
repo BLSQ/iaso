@@ -1,4 +1,5 @@
 import json
+import logging
 
 from copy import deepcopy
 from datetime import datetime
@@ -30,6 +31,8 @@ from iaso.utils.gis import simplify_geom
 
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 
+
+logger = logging.getLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 
@@ -492,11 +495,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.simplified_geom = request.data["simplified_geom"]
 
         if "geo_json" in request.data and request.data["geo_json"]:
-            errors.append(
-                {
-                    "errorKey": "geo_json",
-                    "errorMessage": _("This field is deprecated. Use the `geom` field to modify the geometry."),
-                }
+            logger.warning(
+                "The `geo_json` field is deprecated. Use the `geom` field to modify the geometry.",
+                extra={"request_data": request.data},
             )
 
         if "catchment" in request.data:

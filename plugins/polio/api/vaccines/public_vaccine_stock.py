@@ -87,9 +87,9 @@ class PublicVaccineStockViewset(ViewSet):
             if entry["doses_in"]:
                 total_doses += entry["doses_in"]
             if entry["vials_out"]:
-                total_vials += entry["vials_out"]
+                total_vials -= entry["vials_out"]
             if entry["doses_out"]:
-                total_doses += entry["doses_out"]
+                total_doses -= entry["doses_out"]
 
         return total_vials, total_doses
 
@@ -133,7 +133,10 @@ class PublicVaccineStockViewset(ViewSet):
             "movements": unusable_to_display,
         }
         if pages > 0 and page > pages:
-            return Response({"result": f"Maximum page is {pages}, entered {page}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"result": f"Maximum page is {pages}, entered {page}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(
             {
                 "count": count,
@@ -199,10 +202,14 @@ class PublicVaccineStockViewset(ViewSet):
                 country_name = OrgUnit.objects.get(id=int(country)).name
                 filename_details = f"{filename_details}-{country_name}"
             except Model.DoesNotExist:
-                return Response({"results": f"Country with id {country} not found"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"results": f"Country with id {country} not found"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             except Model.MultipleObjectsReturned:
                 return Response(
-                    {"results": f"Country id {country} returned multiple objects"}, status=status.HTTP_400_BAD_REQUEST
+                    {"results": f"Country id {country} returned multiple objects"},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
         if vaccine is not None:

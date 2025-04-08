@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-24 14:18+0000\n"
+"POT-Creation-Date: 2025-04-02 08:35+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -18,385 +18,385 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
 
-#: hat/menupermissions/models.py:250
+#: hat/menupermissions/models.py
 msgid "Formulaires"
 msgstr "Formulaires"
 
-#: hat/menupermissions/models.py:251
+#: hat/menupermissions/models.py
 msgid "Statistiques pour les formulaires"
 msgstr "Statistiques pour les formulaires"
 
-#: hat/menupermissions/models.py:252
+#: hat/menupermissions/models.py
 msgid "Correspondances avec DHIS2"
 msgstr "Correspondances avec DHIS2"
 
-#: hat/menupermissions/models.py:253
+#: hat/menupermissions/models.py
 msgid "modules"
 msgstr "modules"
 
-#: hat/menupermissions/models.py:254
+#: hat/menupermissions/models.py
 msgid "Complétude des données"
 msgstr "Complétude des données"
 
-#: hat/menupermissions/models.py:255
+#: hat/menupermissions/models.py
 msgid "Unités d'organisations"
 msgstr "Unités d'organisations"
 
-#: hat/menupermissions/models.py:256
+#: hat/menupermissions/models.py
 msgid "Lire les unités d'organisations"
 msgstr "Lire les unités d'organisations"
 
-#: hat/menupermissions/models.py:257
+#: hat/menupermissions/models.py
 msgid "Editer le Registre"
 msgstr "Editer le Registre"
 
-#: hat/menupermissions/models.py:258
+#: hat/menupermissions/models.py
 msgid "Lire le Registre"
 msgstr "Lire le Registre"
 
-#: hat/menupermissions/models.py:259
+#: hat/menupermissions/models.py
 msgid "Correspondances sources"
 msgstr "Correspondances sources"
 
-#: hat/menupermissions/models.py:260 hat/menupermissions/models.py:337
+#: hat/menupermissions/models.py
 msgid "Users"
 msgstr "Utilisateurs"
 
-#: hat/menupermissions/models.py:261
+#: hat/menupermissions/models.py
 msgid "Users managed"
 msgstr "Utilisateurs gérés"
 
-#: hat/menupermissions/models.py:262
+#: hat/menupermissions/models.py
 msgid "Pages"
 msgstr "Pages"
 
-#: hat/menupermissions/models.py:263
+#: hat/menupermissions/models.py
 msgid "Projets"
 msgstr "Projets"
 
-#: hat/menupermissions/models.py:264
+#: hat/menupermissions/models.py
 msgid "Sources"
 msgstr "Sources"
 
-#: hat/menupermissions/models.py:265
+#: hat/menupermissions/models.py
 msgid "Can change the default version of a data source"
 msgstr "Peut modifier la version par défaut d'une source de données"
 
-#: hat/menupermissions/models.py:266
+#: hat/menupermissions/models.py
 msgid "Tâches"
 msgstr "Tâches"
 
-#: hat/menupermissions/models.py:267
+#: hat/menupermissions/models.py
 msgid "Soumissions"
 msgstr "Soumissions"
 
-#: hat/menupermissions/models.py:268
+#: hat/menupermissions/models.py
 msgid "Editer soumissions"
 msgstr "Editer soumissions"
 
-#: hat/menupermissions/models.py:269
+#: hat/menupermissions/models.py
 msgid "Editer le planning"
 msgstr "Editer le planning"
 
-#: hat/menupermissions/models.py:270
+#: hat/menupermissions/models.py
 msgid "Lire le planning"
 msgstr "Lire le planning"
 
-#: hat/menupermissions/models.py:271 hat/menupermissions/models.py:333
+#: hat/menupermissions/models.py
 msgid "Reports"
 msgstr "Rapports"
 
-#: hat/menupermissions/models.py:272
+#: hat/menupermissions/models.py
 msgid "Equipes"
 msgstr "Equipes"
 
-#: hat/menupermissions/models.py:273
+#: hat/menupermissions/models.py
 msgid "Attributions"
 msgstr "Attributions"
 
-#: hat/menupermissions/models.py:274
+#: hat/menupermissions/models.py
 msgid "Budget Polio"
 msgstr "Budget Polio"
 
-#: hat/menupermissions/models.py:275
+#: hat/menupermissions/models.py
 msgid "Entities"
 msgstr "Entités"
 
-#: hat/menupermissions/models.py:276
+#: hat/menupermissions/models.py
 msgid "Write entity type"
 msgstr "Écrire type d'entité"
 
-#: hat/menupermissions/models.py:277
+#: hat/menupermissions/models.py
 msgid "Storages"
 msgstr "Stockages"
 
-#: hat/menupermissions/models.py:278
+#: hat/menupermissions/models.py
 msgid "Completeness stats"
 msgstr "Statistiques de complétude"
 
-#: hat/menupermissions/models.py:279
+#: hat/menupermissions/models.py
 msgid "Workflows"
 msgstr "Flux de travail"
 
-#: hat/menupermissions/models.py:280
+#: hat/menupermissions/models.py
 msgid "Budget Polio Admin"
 msgstr "Administration Budget Polio"
 
-#: hat/menupermissions/models.py:281
+#: hat/menupermissions/models.py
 msgid "Read Entity duplicates"
 msgstr "Lire les doublons d'entités"
 
-#: hat/menupermissions/models.py:282
+#: hat/menupermissions/models.py
 msgid "Write Entity duplicates"
 msgstr "Écrire les doublons d'entités"
 
-#: hat/menupermissions/models.py:283
+#: hat/menupermissions/models.py
 msgid "Manage user roles"
 msgstr "Gérer les rôles utilisateurs"
 
-#: hat/menupermissions/models.py:284
+#: hat/menupermissions/models.py
 msgid "Read data store"
 msgstr "Lire le stockage de données"
 
-#: hat/menupermissions/models.py:285
+#: hat/menupermissions/models.py
 msgid "Write data store"
 msgstr "Écrire dans le stockage de données"
 
-#: hat/menupermissions/models.py:286
+#: hat/menupermissions/models.py
 msgid "Org unit types"
 msgstr "Types d'unités d'organisation"
 
-#: hat/menupermissions/models.py:287
+#: hat/menupermissions/models.py
 msgid "Org unit groups"
 msgstr "Groupes d'unités d'organisation"
 
-#: hat/menupermissions/models.py:288
+#: hat/menupermissions/models.py
 msgid "Org unit change request review"
 msgstr "Révision des demandes de modification d'unités d'organisation"
 
-#: hat/menupermissions/models.py:289
+#: hat/menupermissions/models.py
 msgid "Org unit change request configurations"
 msgstr "Configurations des demandes de modification d'unités d'organisation"
 
-#: hat/menupermissions/models.py:290
+#: hat/menupermissions/models.py
 msgid "Write data source"
 msgstr "Écrire source de données"
 
-#: hat/menupermissions/models.py:291
+#: hat/menupermissions/models.py
 msgid "Write page"
 msgstr "Écrire page"
 
-#: hat/menupermissions/models.py:292
+#: hat/menupermissions/models.py
 msgid "Payments page"
 msgstr "Page des paiements"
 
-#: hat/menupermissions/models.py:295
+#: hat/menupermissions/models.py
 msgid "Polio"
 msgstr "Polio"
 
-#: hat/menupermissions/models.py:296
+#: hat/menupermissions/models.py
 msgid "Polio config"
 msgstr "Configuration Polio"
 
-#: hat/menupermissions/models.py:297
+#: hat/menupermissions/models.py
 msgid "Polio chronogram"
 msgstr "Chronogramme Polio"
 
-#: hat/menupermissions/models.py:298
+#: hat/menupermissions/models.py
 msgid "Polio chronogram user (restricted write)"
 msgstr "Utilisateur chronogramme Polio (écriture restreinte)"
 
-#: hat/menupermissions/models.py:299
+#: hat/menupermissions/models.py
 msgid "Polio notifications"
 msgstr "Notifications Polio"
 
-#: hat/menupermissions/models.py:300
+#: hat/menupermissions/models.py
 msgid "Polio Vaccine Authorizations Read Only"
 msgstr "Autorisations vaccin Polio (lecture seule)"
 
-#: hat/menupermissions/models.py:301
+#: hat/menupermissions/models.py
 msgid "Polio Vaccine Authorizations Admin"
 msgstr "Administration des autorisations vaccin Polio"
 
-#: hat/menupermissions/models.py:302
+#: hat/menupermissions/models.py
 msgid "Polio Vaccine Supply Chain Read"
 msgstr "Lecture chaîne d'approvisionnement vaccin Polio"
 
-#: hat/menupermissions/models.py:303
+#: hat/menupermissions/models.py
 msgid "Polio Vaccine Supply Chain Write"
 msgstr "Écriture chaîne d'approvisionnement vaccin Polio"
 
-#: hat/menupermissions/models.py:304
+#: hat/menupermissions/models.py
 msgid "Polio Vaccine Stock Management Read"
 msgstr "Lecture gestion des stocks vaccin Polio"
 
-#: hat/menupermissions/models.py:305
+#: hat/menupermissions/models.py
 msgid "Polio Vaccine Stock Management Write"
 msgstr "Écriture gestion des stocks vaccin Polio"
 
-#: hat/menupermissions/models.py:306
+#: hat/menupermissions/models.py
 #, fuzzy
 #| msgid "Polio Vaccine Authorizations Admin"
 msgid "Polio Vaccine Stock Earmarks Non Admin"
 msgstr "Administration des autorisations vaccin Polio"
 
-#: hat/menupermissions/models.py:307
+#: hat/menupermissions/models.py
 #, fuzzy
 #| msgid "Polio Vaccine Authorizations Admin"
 msgid "Polio Vaccine Stock Earmarks Admin"
 msgstr "Administration des autorisations vaccin Polio"
 
-#: hat/menupermissions/models.py:310
+#: hat/menupermissions/models.py
 msgid "Areas"
 msgstr "Zones"
 
-#: hat/menupermissions/models.py:311
+#: hat/menupermissions/models.py
 msgid "Edit areas"
 msgstr "Éditer les zones"
 
-#: hat/menupermissions/models.py:312
+#: hat/menupermissions/models.py
 msgid "Edit areas shapes"
 msgstr "Éditer les formes des zones"
 
-#: hat/menupermissions/models.py:313
+#: hat/menupermissions/models.py
 msgid "Cases"
 msgstr "Cas"
 
-#: hat/menupermissions/models.py:314
+#: hat/menupermissions/models.py
 msgid "Cases analysis"
 msgstr "Analyse des cas"
 
-#: hat/menupermissions/models.py:315
+#: hat/menupermissions/models.py
 msgid "Coordinations"
 msgstr "Coordinations"
 
-#: hat/menupermissions/models.py:316
+#: hat/menupermissions/models.py
 msgid "Devices"
 msgstr "Appareils"
 
-#: hat/menupermissions/models.py:317
+#: hat/menupermissions/models.py
 msgid "Téléchargement de données"
 msgstr "Téléchargement de données"
 
-#: hat/menupermissions/models.py:318
+#: hat/menupermissions/models.py
 msgid "Doublons"
 msgstr "Doublons"
 
-#: hat/menupermissions/models.py:319
+#: hat/menupermissions/models.py
 msgid "Edition d'un patient"
 msgstr "Edition d'un patient"
 
-#: hat/menupermissions/models.py:320
+#: hat/menupermissions/models.py
 msgid "Health facilities"
 msgstr "Établissements de santé"
 
-#: hat/menupermissions/models.py:321
+#: hat/menupermissions/models.py
 msgid "Labo"
 msgstr "Labo"
 
-#: hat/menupermissions/models.py:322
+#: hat/menupermissions/models.py
 msgid "Labo import"
 msgstr "Import labo"
 
-#: hat/menupermissions/models.py:323
+#: hat/menupermissions/models.py
 msgid "Locator"
 msgstr "Localisateur"
 
-#: hat/menupermissions/models.py:324
+#: hat/menupermissions/models.py
 msgid "Macroplanning"
 msgstr "Macroplanification"
 
-#: hat/menupermissions/models.py:325
+#: hat/menupermissions/models.py
 msgid "Microplanning"
 msgstr "Microplanification"
 
-#: hat/menupermissions/models.py:326
+#: hat/menupermissions/models.py
 msgid "Modifications"
 msgstr "Modifications"
 
-#: hat/menupermissions/models.py:327
+#: hat/menupermissions/models.py
 msgid "Plannings"
 msgstr "Planifications"
 
-#: hat/menupermissions/models.py:328
+#: hat/menupermissions/models.py
 msgid "Plannings template"
 msgstr "Modèle de planifications"
 
-#: hat/menupermissions/models.py:329
+#: hat/menupermissions/models.py
 msgid "Quality control"
 msgstr "Contrôle qualité"
 
-#: hat/menupermissions/models.py:330
+#: hat/menupermissions/models.py
 msgid "Reconciliation"
 msgstr "Réconciliation"
 
-#: hat/menupermissions/models.py:331
+#: hat/menupermissions/models.py
 msgid "Routes"
 msgstr "Routes"
 
-#: hat/menupermissions/models.py:332
+#: hat/menupermissions/models.py
 msgid "Graphs"
 msgstr "Graphiques"
 
-#: hat/menupermissions/models.py:334
+#: hat/menupermissions/models.py
 msgid "Upload of cases files"
 msgstr "Téléversement des fichiers de cas"
 
-#: hat/menupermissions/models.py:335
+#: hat/menupermissions/models.py
 msgid "Upload of villages files"
 msgstr "Téléversement des fichiers de villages"
 
-#: hat/menupermissions/models.py:336
+#: hat/menupermissions/models.py
 msgid "Teams"
 msgstr "Équipes"
 
-#: hat/menupermissions/models.py:338
+#: hat/menupermissions/models.py
 msgid "Vector control"
 msgstr "Contrôle vectoriel"
 
-#: hat/menupermissions/models.py:339
+#: hat/menupermissions/models.py
 msgid "Vector control import Gpx"
 msgstr "Import GPX contrôle vectoriel"
 
-#: hat/menupermissions/models.py:340
+#: hat/menupermissions/models.py
 msgid "Villages"
 msgstr "Villages"
 
-#: hat/menupermissions/models.py:341
+#: hat/menupermissions/models.py
 msgid "Work zones"
 msgstr "Zones de travail"
 
-#: hat/menupermissions/models.py:342
+#: hat/menupermissions/models.py
 msgid "Zones"
 msgstr "Zones"
 
-#: hat/menupermissions/models.py:343
+#: hat/menupermissions/models.py
 msgid "Edit zones"
 msgstr "Éditer les zones"
 
-#: hat/menupermissions/models.py:344
+#: hat/menupermissions/models.py
 msgid "Edit zones shapes"
 msgstr "Éditer les formes des zones"
 
-#: hat/settings.py:356
+#: hat/settings.py
 msgid "French"
 msgstr "Français"
 
-#: hat/settings.py:357
+#: hat/settings.py
 msgid "English"
 msgstr "Anglais"
 
-#: hat/templates/iaso/forgot_password.html:13
-#: hat/templates/iaso/reset_password_confirmation.html:15
+#: hat/templates/iaso/forgot_password.html
+#: hat/templates/iaso/reset_password_confirmation.html
 msgid "Submit"
 msgstr "Envoyer"
 
-#: hat/templates/iaso/forgot_password.html:14
-#: hat/templates/iaso/forgot_password_confirmation.html:13
+#: hat/templates/iaso/forgot_password.html
+#: hat/templates/iaso/forgot_password_confirmation.html
 msgid "Go back to login"
 msgstr "Retour à la connexion"
 
-#: hat/templates/iaso/forgot_password_confirmation.html:11
+#: hat/templates/iaso/forgot_password_confirmation.html
 msgid ""
 "We've emailed you instructions for setting your password, if an account "
 "exists with the email you entered. You should receive them shortly."
@@ -404,7 +404,7 @@ msgstr ""
 "Un courriel avec les instructions pour enregistrer un nouveau mot de passe "
 "vous a été envoyé. Vous devriez le recevoir sous peu."
 
-#: hat/templates/iaso/forgot_password_confirmation.html:12
+#: hat/templates/iaso/forgot_password_confirmation.html
 msgid ""
 "If you don't receive an email, please make sure you've entered the address "
 "you registered with, and check your spam folder."
@@ -412,7 +412,7 @@ msgstr ""
 "Si vous ne recevez pas de courriel, vérifiez que vous avez bien entré votre "
 "adresse d'enregistrement et vérifiez votre dossier spam."
 
-#: hat/templates/iaso/login.html:30
+#: hat/templates/iaso/login.html
 msgid ""
 "Your account doesn't have access to this page. To proceed, please login with "
 "an account that has access.\n"
@@ -422,27 +422,27 @@ msgstr ""
 "avec un autre utilisateur.\n"
 "          "
 
-#: hat/templates/iaso/login.html:35
+#: hat/templates/iaso/login.html
 msgid "Please login to see this page."
 msgstr "Veuillez vous connecter pour voir cette page."
 
-#: hat/templates/iaso/login.html:41
+#: hat/templates/iaso/login.html
 msgid "Your username and password didn't match. Please try again."
 msgstr "Nom d'utilisateur ou mot de passe incorrect."
 
-#: hat/templates/iaso/login.html:47
+#: hat/templates/iaso/login.html
 msgid "Login"
 msgstr "Connexion"
 
-#: hat/templates/iaso/login.html:54
+#: hat/templates/iaso/login.html
 msgid "Learn more"
 msgstr "En savoir plus"
 
-#: hat/templates/iaso/login.html:56
+#: hat/templates/iaso/login.html
 msgid "Forgot password"
 msgstr "Mot de passe oublié ?"
 
-#: hat/templates/iaso/reset_password_complete.html:13
+#: hat/templates/iaso/reset_password_complete.html
 #, python-format
 msgid ""
 "\n"
@@ -455,7 +455,7 @@ msgstr ""
 "href=\"%(login_url)s\">connecter</a>.\n"
 "        "
 
-#: hat/templates/iaso/reset_password_confirmation.html:21
+#: hat/templates/iaso/reset_password_confirmation.html
 msgid ""
 "The password reset link is invalid, possibly because it has already been "
 "used or expired. Please request a new password reset by clicking on this "
@@ -464,15 +464,15 @@ msgstr ""
 "parce qu'il a déjà été utilisé ou a expiré. Veuillez demander une nouvelle "
 "réinitialisation de mot de passe en cliquant sur ce "
 
-#: hat/templates/iaso/reset_password_confirmation.html:21
+#: hat/templates/iaso/reset_password_confirmation.html
 msgid "link."
 msgstr "lien."
 
-#: hat/templates/iaso/reset_password_email.html:3
+#: hat/templates/iaso/reset_password_email.html
 msgid "Hello,"
 msgstr "Bonjour,"
 
-#: hat/templates/iaso/reset_password_email.html:5
+#: hat/templates/iaso/reset_password_email.html
 #, python-format
 msgid ""
 "A password reset has been request for your account \"%(username)s\" on "
@@ -481,11 +481,11 @@ msgstr ""
 "Une demande de réinitialisation de mot de passe a été effectuée pour votre "
 "compte \"%(username)s\" sur %(site_name)s,"
 
-#: hat/templates/iaso/reset_password_email.html:6
+#: hat/templates/iaso/reset_password_email.html
 msgid "to proceed please click the link below:"
 msgstr "pour continuer, veuillez cliquer sur le lien suivant :"
 
-#: hat/templates/iaso/reset_password_email.html:10
+#: hat/templates/iaso/reset_password_email.html
 msgid ""
 "If clicking the link above doesn't work, please copy and paste the URL in a "
 "new browser window instead."
@@ -493,7 +493,7 @@ msgstr ""
 "Si cliquer sur le lien ne fonctionne pas, veuillez copier coller l'url dans "
 "une fenêtre de votre navigateur à la place."
 
-#: hat/templates/iaso/reset_password_email.html:12
+#: hat/templates/iaso/reset_password_email.html
 msgid ""
 "If you did not request a password reset, you can ignore this e-mail - no "
 "passwords will be changed."
@@ -501,16 +501,16 @@ msgstr ""
 "Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer ce "
 "courriel, aucun mot de passe ne sera modifié."
 
-#: hat/templates/iaso/reset_password_email.html:14
+#: hat/templates/iaso/reset_password_email.html
 msgid "Sincerely,"
 msgstr "Sincèrement,"
 
-#: hat/templates/iaso/reset_password_email.html:15
+#: hat/templates/iaso/reset_password_email.html
 #, python-format
 msgid "The %(site_name)s Team."
 msgstr "L'équipe %(site_name)s."
 
-#: hat/templates/iaso/reset_password_subject.txt:2
+#: hat/templates/iaso/reset_password_subject.txt
 #, python-format
 msgid "Password reset on %(site_name)s"
 msgstr "Réinitialisation du mot de passe sur %(site_name)s"

@@ -325,7 +325,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 org_unit.get("creator__first_name", None),
                 org_unit.get("creator__last_name", None),
             )
-            source_ref = org_unit.get("source_ref") if org_unit.get("source_ref") else f"iaso#{org_unit.get('id')}"
+            source_ref = org_unit.get("source_ref") if org_unit.get("source_ref") else f"iaso:{org_unit.get('id')}"
 
             parents_source_ref = [
                 get_org_unit_parents_ref(field_name, org_unit, parent_source_ref_name, parent_field_ids)
@@ -591,11 +591,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
             else:
                 org_unit.default_image = None
 
-        opening_date = request.data.get("opening_date", None)
-        org_unit.opening_date = None if not opening_date else self.get_date(opening_date)
-
-        closed_date = request.data.get("closed_date", None)
-        org_unit.closed_date = None if not closed_date else self.get_date(closed_date)
+        org_unit.opening_date = self.get_date(request.data.get("opening_date"))
+        org_unit.closed_date = self.get_date(request.data.get("closed_date"))
 
         if not errors:
             org_unit.save()
@@ -619,11 +616,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(errors, status=400)
 
     def get_date(self, date: str) -> Union[datetime.date, None]:
-        date_input_formats = ["%d-%m-%Y", "%d/%m/%Y"]
+        date_input_formats = ["%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d", "%Y/%m/%d"]
         for date_input_format in date_input_formats:
             try:
                 return datetime.strptime(date, date_input_format).date()
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
         return None
 

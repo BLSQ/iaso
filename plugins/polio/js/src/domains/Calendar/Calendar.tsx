@@ -40,7 +40,7 @@ import {
     filterCampaigns,
     getCalendarData,
     mapCampaigns,
-} from './campaignCalendar/utils';
+} from './campaignCalendar/utils/campaigns';
 import { ExportCsvModal } from './ExportCsvModal';
 
 const useStyles = makeStyles(theme => ({
@@ -129,8 +129,13 @@ export const Calendar: FunctionComponent = () => {
     );
 
     const mappedCampaigns: MappedCampaign[] = useMemo(
-        () => mapCampaigns(campaigns),
-        [campaigns],
+        () =>
+            mapCampaigns(
+                campaigns,
+                calendarData.firstMonday,
+                calendarData.lastSunday,
+            ),
+        [campaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
     const filteredCampaigns = useMemo(
         () =>
@@ -286,7 +291,7 @@ export const Calendar: FunctionComponent = () => {
                                     orders={orders}
                                     campaigns={filteredCampaigns}
                                     calendarData={calendarData}
-                                    loadingCampaigns={isLoading}
+                                    loadingCampaigns={isFetching}
                                     isPdf={isPdf}
                                     url={currentUrl}
                                     isLogged={isLogged}

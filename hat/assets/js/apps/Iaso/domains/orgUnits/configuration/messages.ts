@@ -17,6 +17,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.created_by',
         defaultMessage: 'Created by',
     },
+    creation: {
+        id: 'iaso.label.creation',
+        defaultMessage: 'Creation',
+    },
     confirm: {
         id: 'iaso.label.confirm',
         defaultMessage: 'Confirm',
@@ -41,6 +45,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Editable fields',
         id: 'iaso.label.editableFields',
     },
+    edition: {
+        id: 'iaso.label.edition',
+        defaultMessage: 'Edition',
+    },
     orgUnitChangeRequestConfigurations: {
         id: 'iaso.label.orgUnitChangeRequestConfigurations',
         defaultMessage: 'Change Requests Configuration',
@@ -52,6 +60,10 @@ const MESSAGES = defineMessages({
     project: {
         id: 'iaso.label.project',
         defaultMessage: 'Project',
+    },
+    type: {
+        id: 'iaso.label.type',
+        defaultMessage: 'Type',
     },
     updated_at: {
         id: 'iaso.forms.updated_at',

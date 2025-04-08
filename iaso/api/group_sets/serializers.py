@@ -168,6 +168,7 @@ class GroupSetSerializer(DynamicFieldsModelSerializer):
 
     def update(self, instance, validated_data):
         original_copy = GroupSet.objects.get(pk=instance.id)
+        original_copy = audit_models.serialize_instance(original_copy)
 
         self.ensure_clean_validated_data(validated_data)
         # patch behaviour

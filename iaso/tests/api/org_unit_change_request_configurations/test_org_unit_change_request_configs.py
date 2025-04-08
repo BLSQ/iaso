@@ -75,7 +75,7 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
             #  7. PREFETCH OrgUnitChangeRequestConfiguration.other_groups
             response = self.client.get(self.OUCRC_API_URL)
             self.assertJSONResponse(response, status.HTTP_200_OK)
-            self.assertEqual(3, len(response.data["results"]))
+            self.assertEqual(6, len(response.data["results"]))
 
     def test_list_without_auth(self):
         response = self.client.get(self.OUCRC_API_URL)
@@ -144,6 +144,7 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         new_ou_type = self.create_new_org_unit_type(name="new ou type", project=self.project_johto)
         data = {
             "project_id": self.project_johto.id,
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
             "org_unit_type_id": new_ou_type.id,
             "org_units_editable": False,
             "editable_fields": m.OrgUnitChangeRequestConfiguration.LIST_OF_POSSIBLE_EDITABLE_FIELDS,
@@ -200,13 +201,14 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         self.client.force_authenticate(self.user_ash_ketchum)
         data = {
             "project_id": self.project_johto.id,
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
             "org_unit_type_id": self.ou_type_fire_pokemons.id,
             "org_units_editable": False,
         }
         response = self.client.post(self.OUCRC_API_URL, data=data, format="json")
         self.assertContains(
             response,
-            f"There is already a configuration for this project_id ({self.project_johto.id}) and org_unit_type_id ({self.ou_type_fire_pokemons.id}).",
+            f"There is already a configuration for this project_id ({self.project_johto.id}), org_unit_type_id ({self.ou_type_fire_pokemons.id}) and type ({m.OrgUnitChangeRequestConfiguration.Type.EDITION}).",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -692,6 +694,7 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         # We don't care about the other parameters
         data = {
             "project_id": self.project_johto.id,
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
             "org_unit_type_id": self.ou_type_fire_pokemons.id,
             "org_units_editable": False,
             "editable_fields": ["name", "opening_date"],
@@ -723,7 +726,12 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
 
         self.client.force_authenticate(self.user_ash_ketchum)
         response = self.client.get(
-            f"{self.OUCRC_API_URL}check_availability/?project_id={self.project_johto.id}", format="json"
+            f"{self.OUCRC_API_URL}check_availability/",
+            {
+                "project_id": self.project_johto.id,
+                "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            },
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -737,7 +745,12 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         # All the OUCRCs have already been made for this project
         self.client.force_authenticate(self.user_ash_ketchum)
         response = self.client.get(
-            f"{self.OUCRC_API_URL}check_availability/?project_id={self.project_johto.id}", format="json"
+            f"{self.OUCRC_API_URL}check_availability/",
+            {
+                "project_id": self.project_johto.id,
+                "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            },
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), [])
@@ -760,7 +773,12 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
 
         self.client.force_authenticate(new_user)
         response = self.client.get(
-            f"{self.OUCRC_API_URL}check_availability/?project_id={new_project.id}", format="json"
+            f"{self.OUCRC_API_URL}check_availability/",
+            {
+                "project_id": new_project.id,
+                "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            },
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -778,18 +796,28 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
 
     def test_check_availability_without_auth(self):
         response = self.client.get(
-            f"{self.OUCRC_API_URL}check_availability/?project_id={self.project_johto.id}", format="json"
+            f"{self.OUCRC_API_URL}check_availability/",
+            {
+                "project_id": self.project_johto.id,
+                "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            },
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_check_availability_without_perm(self):
         self.client.force_authenticate(self.user_without_perms_giovanni)
         response = self.client.get(
-            f"{self.OUCRC_API_URL}check_availability/?project_id={self.project_johto.id}", format="json"
+            f"{self.OUCRC_API_URL}check_availability/",
+            {
+                "project_id": self.project_johto.id,
+                "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            },
+            format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_check_availability_error_missing_parameter(self):
+    def test_check_availability_error_missing_parameter_project(self):
         self.client.force_authenticate(self.user_ash_ketchum)
         response = self.client.get(f"{self.OUCRC_API_URL}check_availability/", format="json")
         self.assertContains(
@@ -799,11 +827,32 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
         )
         self.assertIn("project_id", response.json())
 
+    def test_check_availability_error_missing_parameter_type(self):
+        self.client.force_authenticate(self.user_ash_ketchum)
+        response = self.client.get(
+            f"{self.OUCRC_API_URL}check_availability/",
+            {
+                "project_id": self.project_johto.id,
+            },
+            format="json",
+        )
+        self.assertContains(
+            response,
+            "This field is required",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn("type", response.json())
+
     def test_check_availability_invalid_project_id(self):
         probably_not_a_valid_id = 1234567890
         self.client.force_authenticate(self.user_ash_ketchum)
         response = self.client.get(
-            f"{self.OUCRC_API_URL}check_availability/?project_id={probably_not_a_valid_id}", format="json"
+            f"{self.OUCRC_API_URL}check_availability/",
+            {
+                "project_id": probably_not_a_valid_id,
+                "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            },
+            format="json",
         )
         self.assertContains(
             response,
@@ -824,7 +873,12 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
             "org_units_editable": False,
         }
         response = self.client.get(
-            f"{self.OUCRC_API_URL}check_availability/?project_id={new_project.id}", format="json"
+            f"{self.OUCRC_API_URL}check_availability/",
+            {
+                "project_id": new_project.id,
+                "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            },
+            format="json",
         )
         self.assertContains(
             response,

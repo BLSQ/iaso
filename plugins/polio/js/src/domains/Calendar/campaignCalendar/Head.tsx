@@ -3,10 +3,10 @@ import React, { FunctionComponent } from 'react';
 import { Box, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import classnames from 'classnames';
 
-import { useStyles } from './Styles';
 import { useStaticFields } from '../hooks/useStaticFields';
 import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
 import { colSpanTitle } from './constants';
+import { useStyles } from './Styles';
 import { CalendarData } from './types';
 
 type Props = {

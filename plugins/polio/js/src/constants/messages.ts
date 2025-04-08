@@ -1226,6 +1226,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.hasSubActivities',
         defaultMessage: 'Round with sub-activities',
     },
+    subactivities: {
+        id: 'iaso.polio.label.subactivities',
+        defaultMessage: 'Sub-activities',
+    },
+    subactivityName: {
+        id: 'iaso.polio.label.subactivityName',
+        defaultMessage: 'Sub-activity name',
+    },
     round: {
         id: 'iaso.polio.label.round',
         defaultMessage: 'Round',
@@ -2460,6 +2468,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.disclaimer',
         defaultMessage:
             'This data is confidential. Please do not share externally without RRT team approval.',
+    },
+    showSubactivities: {
+        id: 'iaso.polio.label.showSubactivities',
+        defaultMessage: 'Show sub-activities',
+    },
+    hideSubactivities: {
+        id: 'iaso.polio.label.hideSubactivities',
+        defaultMessage: 'Hide sub-activities',
     },
 });
 

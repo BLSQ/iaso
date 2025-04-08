@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -6,12 +7,12 @@ import {
 } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback } from 'react';
 import * as Yup from 'yup';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../../libs/validation';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
 import { useGetOUCRCCheckAvailabilityDropdownOptions } from '../hooks/api/useGetOUCRCCheckAvailabilityDropdownOptions';
+import { useOrgUnitConfigurationTypes } from '../hooks/useOrgUnitConfigurationTypes';
 import MESSAGES from '../messages';
 
 type Props = {
@@ -24,6 +25,9 @@ const useCreationSchema = () => {
     const { formatMessage } = useSafeIntl();
     return Yup.object().shape({
         projectId: Yup.string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
+        type: Yup.string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
         orgUnitTypeId: Yup.string()
@@ -48,6 +52,7 @@ const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<
     } = useFormik({
         initialValues: {
             projectId: undefined,
+            type: undefined,
             orgUnitTypeId: undefined,
         },
         validationSchema: creationSchema,
@@ -66,6 +71,7 @@ const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<
                           name: projectOption.label,
                       }
                     : undefined,
+                type: values.type,
                 orgUnitType: orgUnitTypeOption
                     ? {
                           id: orgUnitTypeOption.value,
@@ -87,7 +93,11 @@ const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions(false);
     const { data: orgUnitTypeOptions, isFetching: isFetchingOrgUnitTypes } =
-        useGetOUCRCCheckAvailabilityDropdownOptions(values.projectId);
+        useGetOUCRCCheckAvailabilityDropdownOptions(
+            values.projectId,
+            values.type,
+        );
+    const types = useOrgUnitConfigurationTypes();
 
     const onChange = useCallback(
         (keyValue, value) => {
@@ -130,7 +140,19 @@ const OrgUnitChangeRequestConfigDialogCreateFirstStep: FunctionComponent<
             <InputComponent
                 type="select"
                 required
-                disabled={isFetchingOrgUnitTypes || !values.projectId}
+                keyValue="type"
+                onChange={onChange}
+                value={values.type}
+                label={MESSAGES.type}
+                options={types}
+                errors={getErrors('type')}
+            />
+            <InputComponent
+                type="select"
+                required
+                disabled={
+                    isFetchingOrgUnitTypes || !values.projectId || !values.type
+                }
                 keyValue="orgUnitTypeId"
                 onChange={onChange}
                 value={values.orgUnitTypeId}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-03-03 10:30+0000\n"
+"POT-Creation-Date: 2025-04-02 08:35+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -18,126 +18,126 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugins/wfp/models.py:8
+#: plugins/wfp/models.py
 msgid "Male"
 msgstr "Homme"
 
-#: plugins/wfp/models.py:8
+#: plugins/wfp/models.py
 msgid "Female"
 msgstr "Femme"
 
-#: plugins/wfp/models.py:11
+#: plugins/wfp/models.py
 msgid "Death"
 msgstr "Décès"
 
-#: plugins/wfp/models.py:12
+#: plugins/wfp/models.py
 msgid "Cured"
 msgstr "Guéri"
 
-#: plugins/wfp/models.py:13
+#: plugins/wfp/models.py
 msgid "Dismissal"
 msgstr "Renvoi"
 
-#: plugins/wfp/models.py:14
+#: plugins/wfp/models.py
 msgid "Voluntary Withdrawal"
 msgstr "Retrait volontaire"
 
-#: plugins/wfp/models.py:15
+#: plugins/wfp/models.py
 msgid "Transfer To OTP"
 msgstr "Transfert vers OTP"
 
-#: plugins/wfp/models.py:16
+#: plugins/wfp/models.py
 msgid "Transfer To TSFP"
 msgstr "Transfert vers TSFP"
 
-#: plugins/wfp/models.py:17
+#: plugins/wfp/models.py
 msgid "Non respondent"
 msgstr "Non répondant"
 
-#: plugins/wfp/models.py:18
+#: plugins/wfp/models.py
 msgid "Transferred out"
 msgstr "Transféré"
 
-#: plugins/wfp/models.py:19
+#: plugins/wfp/models.py
 msgid "Defaulter"
 msgstr "Défaillant"
 
-#: plugins/wfp/models.py:20
+#: plugins/wfp/models.py
 msgid "Other"
 msgstr "Autre"
 
-#: plugins/wfp/models.py:24
+#: plugins/wfp/models.py
 msgid "TSFP"
 msgstr "TSFP"
 
-#: plugins/wfp/models.py:25
+#: plugins/wfp/models.py
 msgid "OTP"
 msgstr "OTP"
 
-#: plugins/wfp/models.py:26
+#: plugins/wfp/models.py
 msgid "Breastfeeding"
 msgstr "Allaitement"
 
-#: plugins/wfp/models.py:27
+#: plugins/wfp/models.py
 msgid "Pregnant"
 msgstr "Enceinte"
 
-#: plugins/wfp/models.py:30
+#: plugins/wfp/models.py
 msgid "PLW"
 msgstr "FAP"
 
-#: plugins/wfp/models.py:30
+#: plugins/wfp/models.py
 msgid "U5"
 msgstr "M5"
 
-#: plugins/wfp/models.py:33
+#: plugins/wfp/models.py
 msgid "MUAC"
 msgstr "PB"
 
-#: plugins/wfp/models.py:34
+#: plugins/wfp/models.py
 msgid "WHZ"
 msgstr "PTZ"
 
-#: plugins/wfp/models.py:35
+#: plugins/wfp/models.py
 msgid "OEDEMA"
 msgstr "ŒDÈME"
 
-#: plugins/wfp/models.py:36
+#: plugins/wfp/models.py
 msgid "By wasted child"
 msgstr "Par enfant émacié"
 
-#: plugins/wfp/models.py:40
+#: plugins/wfp/models.py
 msgid "New case"
 msgstr "Nouveau cas"
 
-#: plugins/wfp/models.py:41
+#: plugins/wfp/models.py
 msgid "Readmission as non-respondent"
 msgstr "Réadmission comme non-répondant"
 
-#: plugins/wfp/models.py:42
+#: plugins/wfp/models.py
 msgid "Referred from OTP (SAM)"
 msgstr "Référé de l'OTP (MAS)"
 
-#: plugins/wfp/models.py:43
+#: plugins/wfp/models.py
 msgid "Referred from SC"
 msgstr "Référé du SC"
 
-#: plugins/wfp/models.py:44
+#: plugins/wfp/models.py
 msgid "Referred from TSFP (MAM)"
 msgstr "Référé du TSFP (MAM)"
 
-#: plugins/wfp/models.py:45
+#: plugins/wfp/models.py
 msgid "Relapse"
 msgstr "Rechute"
 
-#: plugins/wfp/models.py:46
+#: plugins/wfp/models.py
 msgid "Returned defaulter"
 msgstr "Défaillant de retour"
 
-#: plugins/wfp/models.py:47
+#: plugins/wfp/models.py
 msgid "Returned referral"
 msgstr "Référence retournée"
 
-#: plugins/wfp/models.py:48
+#: plugins/wfp/models.py
 msgid "Transfer from other TSFP"
 msgstr "Transfert d'un autre TSFP"

@@ -159,5 +159,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.publicVaccineStock.totalUsableVials',
         defaultMessage: 'Stock usable vials',
     },
+    totalEarmarkedDoses: {
+        id: 'iaso.label.publicVaccineStock.totalEarmarkedDoses',
+        defaultMessage: 'Stock of earmarked doses',
+    },
+    totalEarmarkedVials: {
+        id: 'iaso.label.publicVaccineStock.totalEarmarkedVials',
+        defaultMessage: 'Stock of earmarked vials',
+    },
 });
 export default MESSAGES;

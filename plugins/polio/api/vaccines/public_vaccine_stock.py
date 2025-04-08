@@ -3,6 +3,7 @@ import math
 from datetime import date
 from tempfile import NamedTemporaryFile
 
+from django.db.models import Model
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import action
@@ -12,6 +13,7 @@ from rest_framework.viewsets import ViewSet
 
 from iaso.api.common import CONTENT_TYPE_XLSX
 from iaso.models import Group
+from iaso.models.org_unit import OrgUnit
 from plugins.polio.api.vaccines.export_utils import download_xlsx_public_stock_variants
 from plugins.polio.models import VaccineStock
 
@@ -61,11 +63,15 @@ class PublicVaccineStockViewset(ViewSet):
             order = order[1:]
         return sorted(data_list, key=lambda x: x[order], reverse=reverse)
 
-    def _get_json_data(self, request, usable):
-        queryset = self.filter_queryset(request)
+    def _get_json_data(self, queryset, usable):
         all_entries = [stock.usable_vials() if usable else stock.unusable_vials() for stock in queryset]
         all_entries = sum(all_entries, [])
         return all_entries
+
+    def _get_earmarked_totals(self, queryset):
+        earmarked = [stock.earmarked_vials() for stock in queryset]
+        earmarked = sum(earmarked, [])
+        return self._compute_totals(earmarked)
 
     def _apply_filter_and_sort(self, json_data, request):
         filtered_data = self.filter_action_type(json_data, request)
@@ -87,7 +93,27 @@ class PublicVaccineStockViewset(ViewSet):
 
         return total_vials, total_doses
 
-    def _paginate_response(self, request, json_data):
+    def _compute_vials(self, json_data):
+        total_in = 0
+        total_out = 0
+        for entry in json_data:
+            if entry["vials_in"]:
+                total_in += entry["vials_in"]
+            if entry["vials_out"]:
+                total_out += entry["vials_out"]
+        return total_in, total_out
+
+    def _compute_doses(self, json_data):
+        total_in = 0
+        total_out = 0
+        for entry in json_data:
+            if entry["vials_in"]:
+                total_in += entry["doses_in"]
+            if entry["vials_out"]:
+                total_out += entry["doses_out"]
+        return total_in, total_out
+
+    def _paginate_response(self, request, json_data, earmarked_vials=None, earmarked_doses=None):
         total_vials, total_doses = self._compute_totals(json_data)
         # Adding some pagination to avoid crashing the front-end
         page = int(request.query_params.get("page", "1"))  # validate
@@ -99,9 +125,18 @@ class PublicVaccineStockViewset(ViewSet):
         unusable_to_display = json_data[start_index:end_index]
         has_previous = page > 1
         has_next = page < pages
-        data = {"total_vials": total_vials, "total_doses": total_doses, "movements": unusable_to_display}
+        data = {
+            "total_vials": total_vials,
+            "total_doses": total_doses,
+            "earmarked_vials": earmarked_vials,
+            "earmarked_doses": earmarked_doses,
+            "movements": unusable_to_display,
+        }
         if pages > 0 and page > pages:
-            return Response({"result": f"Maximum page is {pages}, entered {page}"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"result": f"Maximum page is {pages}, entered {page}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         return Response(
             {
                 "count": count,
@@ -118,8 +153,21 @@ class PublicVaccineStockViewset(ViewSet):
         detail=False,
         methods=["get"],
     )
+    def get_usable(self, request):
+        queryset = self.filter_queryset(request)
+        earmarked_vials, earmarked_doses = self._get_earmarked_totals(queryset)
+        all_usable = self._get_json_data(queryset, usable=True)
+        sorted_usable = self._apply_filter_and_sort(all_usable, request)
+
+        return self._paginate_response(request, sorted_usable, earmarked_vials, earmarked_doses)
+
+    @action(
+        detail=False,
+        methods=["get"],
+    )
     def get_unusable(self, request):
-        all_unusable = self._get_json_data(request, usable=False)
+        queryset = self.filter_queryset(request)
+        all_unusable = self._get_json_data(queryset, usable=False)
         sorted_unusable = self._apply_filter_and_sort(all_unusable, request)
 
         return self._paginate_response(request, sorted_unusable)
@@ -128,30 +176,61 @@ class PublicVaccineStockViewset(ViewSet):
         detail=False,
         methods=["get"],
     )
-    def get_usable(self, request):
-        all_usable = self._get_json_data(request, usable=True)
-        sorted_usable = self._apply_filter_and_sort(all_usable, request)
-
-        return self._paginate_response(request, sorted_usable)
-
-    @action(
-        detail=False,
-        methods=["get"],
-    )
     def export_xlsx(self, request):
+        queryset = self.filter_queryset(request)
         # Data to export for usable based on queryparams received from front-end
-        all_usable = self._get_json_data(request, usable=True)
+        all_usable = self._get_json_data(queryset, usable=True)
         sorted_usable = self._apply_filter_and_sort(all_usable, request)
         usable_totals = self._compute_totals(sorted_usable)
+        usable_vials_in, usable_vials_out = self._compute_vials(sorted_usable)
+        usable_doses_in, usable_doses_out = self._compute_doses(sorted_usable)
         # Data to export for unusable based on queryparams received from front-end
-        all_unusable = self._get_json_data(request, usable=False)
+        all_unusable = self._get_json_data(queryset, usable=False)
         sorted_unusable = self._apply_filter_and_sort(all_unusable, request)
         unusable_totals = self._compute_totals(sorted_unusable)
+        unusable_vials_in, unusable_vials_out = self._compute_vials(sorted_unusable)
+        unusable_doses_in, unusable_doses_out = self._compute_doses(sorted_unusable)
+
+        earmarked_totals = self._get_earmarked_totals(queryset)
 
         today = date.today().isoformat()
-        filename = f"{today}-stock-card-export"
+        filename_details = f"{today}"
+        country = request.query_params.get("country", None)
+        vaccine = request.query_params.get("vaccine", None)
+        if country is not None:
+            try:
+                country_name = OrgUnit.objects.get(id=int(country)).name
+                filename_details = f"{filename_details}-{country_name}"
+            except Model.DoesNotExist:
+                return Response(
+                    {"results": f"Country with id {country} not found"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            except Model.MultipleObjectsReturned:
+                return Response(
+                    {"results": f"Country id {country} returned multiple objects"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if vaccine is not None:
+            filename_details = f"{filename_details}-{vaccine}"
+        filename = f"{filename_details}-stock-card-export"
+
         workbook = download_xlsx_public_stock_variants(
-            filename, sorted_usable, sorted_unusable, usable_totals, unusable_totals
+            filename=filename,
+            usable_results=sorted_usable,
+            unusable_results=sorted_unusable,
+            usable_totals=usable_totals,
+            unusable_totals=unusable_totals,
+            earmarked_totals=earmarked_totals,
+            usable_vials_in=usable_vials_in,
+            usable_vials_out=usable_vials_out,
+            usable_doses_in=usable_doses_in,
+            usable_doses_out=usable_doses_out,
+            unusable_vials_in=unusable_vials_in,
+            unusable_vials_out=unusable_vials_out,
+            unusable_doses_in=unusable_doses_in,
+            unusable_doses_out=unusable_doses_out,
         )
 
         with NamedTemporaryFile() as tmp:

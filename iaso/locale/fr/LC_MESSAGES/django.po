@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-08 08:42+0000\n"
+"POT-Creation-Date: 2025-04-08 09:16+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -167,10 +167,6 @@ msgstr "Statut de validation invalide : {validation_status}"
 #: iaso/api/org_units.py
 msgid "Can't parse geom"
 msgstr "Impossible d'analyser la géométrie"
-
-#: iaso/api/org_units.py
-msgid "This field is deprecated. Use the `geom` field to modify the geometry."
-msgstr "Ce champ est obsolète. Utilisez le champ `geom` pour modifier la géométrie."
 
 #: iaso/api/org_units.py
 msgid "You cannot create an Org Unit without a parent"
@@ -651,3 +647,9 @@ msgstr ""
 #: iaso/utils/serializer/three_dim_point_field.py
 msgid "Enter a valid location."
 msgstr "Entrez une localisation valide."
+
+#~ msgid ""
+#~ "This field is deprecated. Use the `geom` field to modify the geometry."
+#~ msgstr ""
+#~ "Ce champ est obsolète. Utilisez le champ `geom` pour modifier la "
+#~ "géométrie."

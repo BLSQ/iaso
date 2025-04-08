@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-24.04
 #    container: cypress/browsers:node16.5.0-chrome94-ff93
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:

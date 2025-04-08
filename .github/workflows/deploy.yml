@@ -33,7 +33,7 @@ jobs:
             echo "::set-output name=GIT_REFERENCE::${{ github.ref_name || env.DEFAULT_GIT_REFERENCE }}"
             echo "::set-output name=ENVIRONMENT::${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}"
             echo "::set-output name=SLACK_CHANNEL::${{ github.event.inputs.slack_channel || env.DEFAULT_SLACK_CHANNEL }}"
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: ${{ steps.config.outputs.GIT_REFERENCE }}
           fetch-depth: 0

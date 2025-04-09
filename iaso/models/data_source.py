@@ -204,7 +204,8 @@ class DataSourceVersionsSynchronization(models.Model):
 
     """
 
-    SYNCHRONIZABLE_FIELDS = ["name", "parent", "opening_date", "closed_date", "groups"]
+    SYNCHRONIZABLE_FIELDS = ["name", "parent", "opening_date", "closed_date"]
+    # `groups` are synchronizable, but are handled via the `ignore_groups` param of the `Differ`.
 
     name = models.CharField(
         max_length=255,
@@ -307,6 +308,7 @@ class DataSourceVersionsSynchronization(models.Model):
             "show_deleted_org_units": show_deleted_org_units,
             "field_names": field_names,
         }
+
         diffs, _ = Differ(logger_to_use or logger).diff(**differ_params)
 
         # Reduce the size of the diff that will be stored in the DB.

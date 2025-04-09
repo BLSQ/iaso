@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 LOSSES = "losses"
 MISSING = "missing"
 

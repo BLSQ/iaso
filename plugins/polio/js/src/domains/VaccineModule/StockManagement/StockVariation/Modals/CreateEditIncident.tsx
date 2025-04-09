@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import {
     Box,
     FormControl,
@@ -15,7 +16,6 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';

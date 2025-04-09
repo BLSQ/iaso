@@ -1608,7 +1608,6 @@ class OutgoingStockMovement(models.Model):
     form_a_reception_date = models.DateField()
     usable_vials_used = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
-    missing_vials = models.PositiveIntegerField()
     comment = models.TextField(blank=True, null=True)
 
     document = models.FileField(
@@ -2297,21 +2296,6 @@ class VaccineStockCalculator:
                         "doses_in": None,
                         "vials_out": movement.usable_vials_used or 0,
                         "doses_out": (movement.usable_vials_used or 0) * self.get_doses_per_vial(),
-                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
-                    }
-                    if not expanded:
-                        results.append(base_result)
-                    else:
-                        results.append({**base_result, **additional_fields})
-
-                if movement.missing_vials > 0:
-                    base_result = {
-                        "date": movement.report_date,
-                        "action": "Form A - Missing Vials",
-                        "vials_in": None,
-                        "doses_in": None,
-                        "vials_out": movement.missing_vials or 0,
-                        "doses_out": (movement.missing_vials or 0) * self.get_doses_per_vial(),
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                     if not expanded:

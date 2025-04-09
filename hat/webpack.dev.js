@@ -182,21 +182,45 @@ const generateCombinedTranslations = () => {
     const combinedTranslations = {};
 
     languages.forEach(lang => {
+        // Main translations
         const translationPath = path.resolve(
             __dirname,
             `./assets/js/apps/Iaso/domains/app/translations/${lang}.json`,
         );
-        // Use require to get the translations
-        try {
-            // We need to use a dynamic require to avoid webpack bundling issues
-            // This will be replaced at runtime
-            combinedTranslations[lang] = `require('${translationPath}')`;
-        } catch (error) {
-            console.error(
-                `Error loading translations for language ${lang}:`,
-                error,
-            );
-        }
+
+        // Bluesquare-components translations
+        const bluesquareTranslationsPath = path.resolve(
+            __dirname,
+            `../node_modules/bluesquare-components/dist/locale/${lang}.json`,
+        );
+
+        // Plugin translations
+        const plugins = getPluginFolders();
+
+        const pluginTranslations = plugins
+            .map(plugin => {
+                const configPath = path.resolve(
+                    __dirname,
+                    `../plugins/${plugin}/js/config.tsx`,
+                );
+
+                if (fs.existsSync(configPath)) {
+                    return `...(() => {
+                        const config = require('${configPath}');
+                        const translations = (config.default || config).translations.${lang};
+                        return translations;
+                    })(),`;
+                }
+                return '';
+            })
+            .filter(Boolean);
+
+        // Start building the combined translations for this language
+        combinedTranslations[lang] = `{
+            ...require('${translationPath}'),
+            ${fs.existsSync(bluesquareTranslationsPath) ? `...require('${bluesquareTranslationsPath}'),` : ''}
+            ${pluginTranslations.join('\n            ')}
+        }`;
     });
 
     // Create the file content

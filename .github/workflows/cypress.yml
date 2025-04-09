@@ -30,7 +30,7 @@ jobs:
         runs-on: ubuntu-24.04
         steps:
             - name: Checkout repository (dispatch)
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               if: github.event_name == 'workflow_dispatch'
               with:
                   ref: ${{ github.event.inputs.ref }}
@@ -45,30 +45,30 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Checkout repository (comment)
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               if: github.event_name != 'workflow_dispatch'
               with:
                   ref: ${{ steps.get-branch.outputs.branch }}
 
             - name: Mark comment as seen
               if: github.event_name != 'workflow_dispatch'
-              uses: dkershner6/reaction-action@v1
+              uses: dkershner6/reaction-action@v2
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   reaction: 'eyes'
 
             - name: Set up Docker Buildx
-              uses: docker/setup-buildx-action@v2
+              uses: docker/setup-buildx-action@v3
 
             - name: Log in to the Container registry
-              uses: docker/login-action@v2
+              uses: docker/login-action@v3
               with:
                   registry: ${{ env.REGISTRY }}
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Build and push Docker image
-              uses: docker/build-push-action@v3
+              uses: docker/build-push-action@v6
               with:
                   push: true
                   tags: ghcr.io/blsq/iaso:${{ github.event.inputs.ref || github.sha }}
@@ -78,7 +78,7 @@ jobs:
                   cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
 
             - name: Comment PR with failure
-              uses: actions/github-script@v6
+              uses: actions/github-script@v7
               if: ((failure()) && (github.event_name != 'workflow_dispatch'))
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -132,7 +132,7 @@ jobs:
                     - 8081:8081
         steps:
             - name: Checkout repository (dispatch)
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               if: github.event_name == 'workflow_dispatch'
               with:
                   ref: ${{ github.event.inputs.ref }}
@@ -147,13 +147,13 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Checkout repository (comment)
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               if: github.event_name != 'workflow_dispatch'
               with:
                   ref: ${{ steps.get-branch.outputs.branch }}
 
             - name: Use node.js 20.13.1
-              uses: actions/setup-node@v2
+              uses: actions/setup-node@v4
               with:
                   node-version: '20.13.1'
                   cache: npm
@@ -192,14 +192,14 @@ jobs:
                   path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/videos/
 
             - name: Mark comment as success
-              uses: dkershner6/reaction-action@v1
+              uses: dkershner6/reaction-action@v2
               if: ((success()) && (github.event_name != 'workflow_dispatch'))
               with:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   reaction: 'hooray'
 
             - name: Comment PR with failure
-              uses: actions/github-script@v6
+              uses: actions/github-script@v7
               if: ((failure()) && (github.event_name != 'workflow_dispatch'))
               with:
                   github-token: ${{ secrets.GITHUB_TOKEN }}

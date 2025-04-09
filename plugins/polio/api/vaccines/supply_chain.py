@@ -351,28 +351,20 @@ class PatchPreAlertSerializer(serializers.Serializer):
                         new_file = item[key]
                         old_file = ar.document
 
-                        # If there's no existing document but we're uploading one
-                        if not old_file:
-                            is_different = True
-                            ar.document = new_file
-                            continue
-
-                        if (
+                        if not old_file or (
                             os.path.basename(old_file.name) != os.path.basename(new_file.name)
                             or old_file.size != new_file.size
                         ):
                             is_different = True
+                            result, timestamp = scan_uploaded_file_for_virus(new_file)
                             ar.document = new_file
+                            ar.document_scan_status = result
+                            ar.document_last_scan = timestamp
                     elif hasattr(ar, key) and getattr(ar, key) != item[key]:
                         is_different = True
                         setattr(ar, key, item[key])
-                        if key == "document":
-                            result, timestamp = scan_uploaded_file_for_virus(item[key])
-                            ar.document_scan_status = result
-                            ar.document_last_scan = timestamp
 
                 if is_different:
-                    print(ar, "is different")
                     if can_edit_helper(
                         self.context["request"].user,
                         ar.created_at,

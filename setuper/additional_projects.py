@@ -154,7 +154,7 @@ def add_new_dhis2_data_source(account_name, iaso_client):
         "project_ids": [],
         "credentials": {
             "dhis_name": "Dhis2 Sierra Leone Play",
-            "dhis_url": "https://play.im.dhis2.org/stable-2-40-7/",
+            "dhis_url": "https://play.im.dhis2.org/stable-2-41-3-1/",
             "dhis_login": "admin",
             "dhis_password": "district",
         },

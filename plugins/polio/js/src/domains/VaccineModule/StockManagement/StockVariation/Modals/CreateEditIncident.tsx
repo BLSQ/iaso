@@ -60,7 +60,7 @@ type Props = {
  *      * unusable_vials: +100
  *
  * 2. missingMovement:
- *    - Used for: broken, stealing, return, losses
+ *    - Used for: broken, stealing, return, missing
  *    - Behavior: Vials are no longer present in the inventory
  *    - Effect:
  *      * Decreases usable vials
@@ -106,7 +106,7 @@ const makeIncidentReportConfig = (
     broken: vaccineType === 'bOPV' ? 'plainMovement' : 'inOutMovement',
     stealing: 'missingMovement',
     return: 'missingMovement',
-    losses: 'missingMovement',
+    missing: 'missingMovement',
     vaccine_expired: 'plainMovement',
     unreadable_label: 'plainMovement',
     vvm_reached_discard_point: 'plainMovement',

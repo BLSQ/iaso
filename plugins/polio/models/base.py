@@ -1651,7 +1651,7 @@ class IncidentReport(models.Model):
     class StockCorrectionChoices(models.TextChoices):
         VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
         VACCINE_EXPIRED = "vaccine_expired", _("Vaccine expired")
-        LOSSES = "losses", _("Losses")
+        MISSING = "missing", _("Missing")
         RETURN = "return", _("Return")
         STEALING = "stealing", _("Stealing")
         PHYSICAL_INVENTORY_ADD = "physical_inventory_add", _("Add to Physical Inventory")
@@ -2346,7 +2346,7 @@ class VaccineStockCalculator:
                     results.append({**base_result, **additional_fields})
 
             if report.usable_vials > 0 and (
-                report.stock_correction == IncidentReport.StockCorrectionChoices.LOSSES
+                report.stock_correction == IncidentReport.StockCorrectionChoices.MISSING
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.RETURN
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.STEALING
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN

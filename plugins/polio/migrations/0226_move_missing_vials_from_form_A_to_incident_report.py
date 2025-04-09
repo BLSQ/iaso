@@ -13,7 +13,7 @@ def move_missing_vials_from_form_A_to_incident_report(apps, schema_editor):
         missing_vials = stock.missing_vials
         incident_report.objects.create(
             title=f"{stock.id}_missing_vials",
-            stock_correction=IR.StockCorrectionChoices.LOSSES,
+            stock_correction="losses",
             vaccine_stock=vaccine_stock,
             usable_vials=missing_vials,
             date_of_incident_report=stock.report_date,
@@ -25,7 +25,7 @@ def move_missing_vials_from_form_A_to_incident_report(apps, schema_editor):
 def reverse_move_missing_vials_from_form_A_to_incident_report(apps, schema_editor):
     incident_report = apps.get_model("polio", "IncidentReport")
     out_going_stock_movement = apps.get_model("polio", "OutgoingStockMovement")
-    losses_incident = incident_report.objects.filter(stock_correction=IR.StockCorrectionChoices.LOSSES)
+    losses_incident = incident_report.objects.filter(stock_correction="losses")
     for losses in losses_incident:
         if not losses.title:
             continue

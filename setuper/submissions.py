@@ -54,8 +54,6 @@ def create_default_reference_submission(account_name, iaso_client, org_unit_id, 
         f"/api/instances/?app_id={account_name}",
         params={"orgUnitId": org_unit_id, "form_ids": form_id},
     )["instances"]
-
-    print("SUMISSION LINKED TO ORG UNIT ...:", submissions_linked_to_org_unit)
     reference_submission = [
         submission["id"] for submission in submissions_linked_to_org_unit if submission["uuid"] == uuid
     ]

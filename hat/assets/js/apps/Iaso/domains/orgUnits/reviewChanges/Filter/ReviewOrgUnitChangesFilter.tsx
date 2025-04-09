@@ -7,7 +7,11 @@ import React, {
     useState,
 } from 'react';
 import { Box, Grid, Typography } from '@mui/material';
-import { useRedirectToReplace, useSafeIntl } from 'bluesquare-components';
+import {
+    InputWithInfos,
+    useRedirectToReplace,
+    useSafeIntl,
+} from 'bluesquare-components';
 
 import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';
 import { FilterButton } from '../../../../components/FilterButton';
@@ -248,6 +252,18 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         [dataSources, filters, handleChange],
     );
 
+    const handleChangeIds = useCallback(
+        (key, newValue) => {
+            const ids: string = newValue
+                .split(/[\s,]+/)
+                // Remove empty elements.
+                .filter(i => i)
+                .join(',');
+            handleChange(key, ids);
+        },
+        [handleChange],
+    );
+
     const getVersionLabel = useGetVersionLabel(dataSources);
     // Get the versions dropdown options based on the selected dataSource
     const versionsDropDown = useMemo(() => {
@@ -483,6 +499,16 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
             </Grid>
 
             <Grid item xs={12} md={4} lg={3}>
+                <InputWithInfos infos={formatMessage(MESSAGES.searchByIdsInfo)}>
+                    <InputComponent
+                        keyValue="ids"
+                        value={filters.ids}
+                        type="search"
+                        label={MESSAGES.searchByIds}
+                        blockForbiddenChars
+                        onChange={handleChangeIds}
+                    />
+                </InputWithInfos>
                 <DatesRange
                     xs={12}
                     sm={12}

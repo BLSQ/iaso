@@ -41,5 +41,5 @@ chai.use(require('sinon-chai'));
 // Don't load svg strings into tests
 require.extensions['.svg'] = obj => {
     // eslint-disable-next-line no-param-reassign
-    obj.exports = () => <svg>SVG_TEST_STUB</svg>;
+    obj.exports = () => 'SVG_TEST_STUB';
 };

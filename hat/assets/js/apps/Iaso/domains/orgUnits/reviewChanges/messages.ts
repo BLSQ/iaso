@@ -252,8 +252,8 @@ const MESSAGES = defineMessages({
     },
 
     multiSelectionAction: {
-        defaultMessage: 'Edit selected users',
-        id: 'iaso.users.multiSelectionAction',
+        defaultMessage: 'Edit selected change requests',
+        id: 'iaso.changeRequest.multiSelectionAction',
     },
 
     changeSelectedChangeRequests: {
@@ -284,6 +284,15 @@ const MESSAGES = defineMessages({
     bulkChangeCount: {
         id: 'iaso.orgUnits.bulkChangeCount',
         defaultMessage: 'You are about to change {count} Org units',
+    },
+    searchByIds: {
+        id: 'iaso.orgUnits.searchByIds',
+        defaultMessage: 'Search by multiple IDs',
+    },
+    searchByIdsInfo: {
+        id: 'iaso.orgUnits.searchByIdsInfo',
+        defaultMessage:
+            'Search by ID or multiple IDs at once, separated by a comma or a space. E.g. “132,654”',
     },
 });
 

@@ -1,9 +1,12 @@
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, useMemo, useState } from 'react';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { useActiveParams } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useActiveParams';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../../constants/messages';
+import { baseUrls } from '../../../constants/urls';
 import { useStyles } from '../../../styles/theme';
 import { CampaignsFilters } from '../../Calendar/campaignCalendar/CampaignsFilters';
 import {
@@ -16,9 +19,6 @@ import { useRemoveCampaign } from '../hooks/api/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/api/useRestoreCampaign';
 import { DashboardButtons } from './DashboardButtons';
 import { useCampaignsTableColumns } from './useCampaignsTableColumns';
-import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { baseUrls } from '../../../constants/urls';
-import { useActiveParams } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useActiveParams';
 
 const baseUrl = baseUrls.campaigns;
 

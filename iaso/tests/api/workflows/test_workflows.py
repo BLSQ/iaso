@@ -202,6 +202,38 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
         except WorkflowVersion.DoesNotExist as ex:
             self.fail(msg=str(ex))
 
+    def test_new_version_from_copy_with_name_too_long(self):
+        self.client.force_authenticate(self.blue_adult_1)
+
+        self.workflow_version_et_adults_blue_with_followups_and_changes.name = (
+            "this is going to be a 50-character name = max size"
+        )
+        self.workflow_version_et_adults_blue_with_followups_and_changes.save()
+        self.workflow_version_et_adults_blue_with_followups_and_changes.refresh_from_db()
+
+        response = self.client.post(
+            f"{BASE_API}{self.workflow_version_et_adults_blue_with_followups_and_changes.pk}/copy/"
+        )
+
+        self.assertJSONResponse(response, 200)
+
+        try:
+            jsonschema.validate(instance=response.data, schema=post_answer_schema)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        try:
+            w_version = WorkflowVersion.objects.get(pk=response.data["version_id"])
+
+            assert w_version.pk == response.data["version_id"]
+            assert (
+                w_version.name
+                == f"Copy of version {self.workflow_version_et_adults_blue_with_followups_and_changes.id}"
+            )
+
+        except WorkflowVersion.DoesNotExist as ex:
+            self.fail(msg=str(ex))
+
     def test_version_search_by_name(self):
         self.client.force_authenticate(self.blue_adult_1)
 

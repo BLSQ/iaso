@@ -1,5 +1,6 @@
-import { UrlParams, useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { UrlParams, useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import {
     FormattedApiParams,
@@ -15,11 +16,6 @@ import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import {
-    StockManagementDetailsParams,
-    StockManagementListParams,
-    StockVariationParams,
-} from '../types';
 
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { commaSeparatedIdsToStringArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
@@ -29,6 +25,11 @@ import {
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
 import { patchRequest2, postRequest2 } from '../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
+import {
+    StockManagementDetailsParams,
+    StockManagementListParams,
+    StockVariationParams,
+} from '../types';
 
 const defaults = {
     order: 'country',
@@ -338,7 +339,7 @@ export const useCampaignOptions = (
         cacheTime: 1000 * 60 * 5,
     };
     const { data, isFetching } = useGetCampaigns(
-        {},
+        { show_test: false, on_hold: true },
         CAMPAIGNS_ENDPOINT,
         undefined,
         queryOptions,
@@ -675,5 +676,59 @@ export const useDeleteEarmarked = (): UseMutationResult => {
             'earmarked',
             'earmarked-list',
         ],
+    });
+};
+
+const checkDestructionDuplicate = (
+    vaccineStockId: string,
+    destructionReportDate: string,
+    unusableVialsDestroyed: number,
+    destructionReportId?: string,
+) => {
+    const baseUrl = `${modalUrl}destruction_report/check_duplicate/?vaccine_stock=${vaccineStockId}&destruction_report_date=${destructionReportDate}&unusable_vials_destroyed=${unusableVialsDestroyed}`;
+
+    const url = destructionReportId
+        ? `${baseUrl}&destruction_report_id=${destructionReportId}`
+        : baseUrl;
+
+    return getRequest(url);
+};
+
+export const useCheckDestructionDuplicate = ({
+    vaccineStockId,
+    destructionReportDate,
+    unusableVialsDestroyed,
+    destructionReportId,
+}: {
+    vaccineStockId: string;
+    destructionReportDate: string;
+    unusableVialsDestroyed: number;
+    destructionReportId?: string;
+}) => {
+    return useSnackQuery({
+        queryKey: [
+            'destruction-duplicate',
+            vaccineStockId,
+            destructionReportDate,
+            unusableVialsDestroyed,
+            destructionReportId,
+        ],
+        queryFn: () =>
+            checkDestructionDuplicate(
+                vaccineStockId,
+                destructionReportDate,
+                unusableVialsDestroyed,
+                destructionReportId,
+            ),
+        options: {
+            enabled: Boolean(
+                vaccineStockId &&
+                    destructionReportDate &&
+                    unusableVialsDestroyed &&
+                    moment(destructionReportDate, 'YYYY-MM-DD', true).isValid(),
+            ),
+            staleTime: 1000 * 60 * 15, // in MS
+            keepPreviousData: false,
+        },
     });
 };

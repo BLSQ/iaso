@@ -5,7 +5,12 @@ export type Field = {
     width?: number;
     key: string;
     hideHeadTitle?: boolean;
-    render?: (campaign: MappedCampaign) => ReactElement | string;
+    render?: (
+        campaign: MappedCampaign,
+        subActivitiesExpanded?: boolean,
+        setSubActivitiesExpanded?: (newSubActivitiesExpanded: boolean) => void,
+        hasSubActivities?: boolean,
+    ) => ReactElement | string;
     exportHide?: boolean;
     sortKey?: string;
 };

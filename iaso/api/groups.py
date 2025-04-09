@@ -59,16 +59,29 @@ class GroupSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
+    def validate(self, attrs):
+        default_version = self._fetch_user_default_source_version()
+        if "source_ref" in attrs:
+            # Check if the source_ref is already used by another group
+            potential_group = Group.objects.filter(source_ref=attrs["source_ref"], source_version=default_version)
+            if potential_group.exists():
+                raise serializers.ValidationError(
+                    {"source_ref": "This source ref is already used by another group in your default version"}
+                )
+
+        return super().validate(attrs)
+
     def create(self, validated_data):
+        default_version = self._fetch_user_default_source_version()
+        validated_data["source_version"] = default_version
+        return super().create(validated_data)
+
+    def _fetch_user_default_source_version(self):
         profile = self.context["request"].user.iaso_profile
         version = profile.account.default_version
-
         if version is None:
             raise serializers.ValidationError("This account has no default version")
-
-        validated_data["source_version"] = version
-
-        return super().create(validated_data)
+        return version
 
 
 class GroupDropdownSerializer(serializers.ModelSerializer):
@@ -140,7 +153,7 @@ class GroupsViewSet(ModelViewSet):
                 versions = SourceVersion.objects.filter(data_source__projects__in=project_ids.split(","))
                 queryset = queryset.filter(source_version__in=versions)
 
-        block_of_countries = self.request.GET.get("blockOfCountries", None)
+        block_of_countries = self.request.GET.get("blockOfCountries", None) == "true"
         if block_of_countries:  # Filter only org unit groups containing only countries as orgUnits
             queryset = queryset.filter(block_of_countries=block_of_countries)
 

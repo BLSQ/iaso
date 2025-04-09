@@ -480,7 +480,7 @@ class OrgUnit(TreeModel):
             "creator": get_creator_name(self.creator),
             "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
             "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
-            "default_image": self.default_image.as_dict() if self.default_image else None,
+            "default_image_id": self.default_image.id if self.default_image else None,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]

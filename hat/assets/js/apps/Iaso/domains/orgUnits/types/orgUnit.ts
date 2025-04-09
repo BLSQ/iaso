@@ -87,7 +87,7 @@ export type OrgUnit = {
     reference_instance_action?: string;
     opening_date?: Date;
     closed_date?: Date;
-    default_image?: File;
+    default_image_id?: number;
 };
 export interface PaginatedOrgUnits extends Pagination {
     orgunits: OrgUnit[];

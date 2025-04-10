@@ -9,6 +9,7 @@ The translation system allows you to:
 - Share translations between the main app, plugins, and shared components
 - Add new languages without modifying the core codebase
 - Use translations in both development and production environments
+- Configure language-specific settings like date formats and number formatting
 
 ## How It Works
 
@@ -28,6 +29,7 @@ The system generates several files in the `hat/assets/js/apps/Iaso/bundle/genera
 
 - `combinedTranslations.js` - Combined translations from all sources
 - `languageKeys.js` - List of available language codes (automatically generated from translation files)
+- `languageConfigs.js` - Language-specific configuration including date formats and number formatting
 
 ### Module Federation
 
@@ -40,6 +42,7 @@ new ModuleFederationPlugin({
     exposes: {
         './translations/configs': combinedTranslationsPath,
         './translations/keys': languageKeysPath,
+        './language/configs': languageConfigsPath,
     },
     shared: {
         // Shared dependencies between plugins and main app
@@ -61,6 +64,8 @@ hat/
 │               └── translations/
 │                   ├── en.json
 │                   ├── fr.json
+│                   ├── en.config.js
+│                   ├── fr.config.js
 │                   └── ...
 plugins/
 └── your_plugin/
@@ -99,6 +104,31 @@ Translation files are JSON files with a flat structure of key-value pairs:
 }
 ```
 
+### Language Configuration Files
+
+Each language can have a configuration file (e.g., `en.config.js`, `fr.config.js`) that contains language-specific settings:
+
+```javascript
+// en.config.js
+export default {
+    label: 'English',
+    dateFormats: {
+        LT: 'h:mm A',
+        LTS: 'DD/MM/YYYY HH:mm',
+        L: 'DD/MM/YYYY',
+        LL: 'Do MMMM YYYY',
+        LLL: 'Do MMMM YYYY LT',
+        LLLL: 'dddd, MMMM Do YYYY LT',
+    },
+    thousandGroupStyle: 'thousand',
+};
+```
+
+These configuration files are used to:
+- Set the display name of the language in the UI
+- Configure date and time formats
+- Set number formatting preferences (thousand, lakh, wan)
+
 ## Development vs Production
 
 ### Development Mode
@@ -120,8 +150,9 @@ In production (`webpack.prod.js`):
 The main application:
 1. Loads the language keys from `IasoModules/translations/keys`
 2. Loads translations from `IasoModules/translations/configs`
-3. Initializes the React-Intl provider with the loaded translations
-4. Makes translations available to all components through the React-Intl context
+3. Loads language configurations from `IasoModules/language/configs`
+4. Initializes the React-Intl provider with the loaded translations
+5. Makes translations available to all components through the React-Intl context
 
 ## Adding a New Language
 
@@ -162,7 +193,34 @@ Then edit each file to translate the values while keeping the keys the same:
 }
 ```
 
-### 2. Rebuild the Application
+### 2. Create a Language Configuration File (Optional)
+
+If you need custom date formats or number formatting for your language, create a configuration file:
+
+```bash
+# Main application
+cp hat/assets/js/apps/Iaso/translations/en.config.js hat/assets/js/apps/Iaso/translations/es.config.js
+```
+
+Then edit the file to customize the settings:
+
+```javascript
+// es.config.js
+export default {
+    label: 'Español',
+    dateFormats: {
+        LT: 'H:mm',
+        LTS: 'DD/MM/YYYY H:mm',
+        L: 'DD/MM/YYYY',
+        LL: 'D [de] MMMM [de] YYYY',
+        LLL: 'D [de] MMMM [de] YYYY H:mm',
+        LLLL: 'dddd, D [de] MMMM [de] YYYY H:mm',
+    },
+    thousandGroupStyle: 'thousand',
+};
+```
+
+### 3. Rebuild the Application
 
 Rebuild the application to generate the new translation files:
 

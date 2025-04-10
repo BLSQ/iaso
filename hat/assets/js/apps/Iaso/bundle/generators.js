@@ -190,9 +190,57 @@ export default pluginKeys;
     return pluginKeysPath;
 };
 
+/** @param {string} rootDir */
+const generateLanguageConfigs = rootDir => {
+    const languages = getAvailableLanguages(rootDir);
+    const languageConfigsPath = path.resolve(
+        rootDir,
+        './assets/js/apps/Iaso/bundle/generated/languageConfigs.js',
+    );
+
+    // Create the file content
+    const fileContent = `
+// This file is auto-generated. Do not edit directly.
+// It combines all language configs into a single file.
+
+import enConfig from '../domains/app/translations/en.config.js';
+import frConfig from '../domains/app/translations/fr.config.js';
+
+// Default config for languages without a specific config
+const defaultConfig = {
+    label: 'English version',
+    dateFormats: enConfig.dateFormats,
+    thousandGroupStyle: 'thousand',
+};
+
+// Combine all language configs
+export const LANGUAGE_CONFIGS = {
+    en: enConfig,
+    fr: frConfig,
+    ${languages
+        .filter(lang => lang !== 'en' && lang !== 'fr')
+        .map(lang => `${lang}: defaultConfig`)
+        .join(',\n    ')}
+};
+
+export default LANGUAGE_CONFIGS;
+`;
+
+    // Create the generated directory if it doesn't exist
+    const generatedDir = path.dirname(languageConfigsPath);
+    if (!fs.existsSync(generatedDir)) {
+        fs.mkdirSync(generatedDir, { recursive: true });
+    }
+
+    // Write the file
+    fs.writeFileSync(languageConfigsPath, fileContent);
+    return languageConfigsPath;
+};
+
 module.exports = {
     generateCombinedTranslations,
     generateLanguageKeysFile,
     generateCombinedConfig,
     generatePluginKeysFile,
+    generateLanguageConfigs,
 };

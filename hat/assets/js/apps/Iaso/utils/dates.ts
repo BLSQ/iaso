@@ -1,4 +1,6 @@
+import LANGUAGE_CONFIGS from 'IasoModules/language/configs';
 import moment from 'moment';
+
 // this is the date format used in url params
 export const dateFormat = 'DD-MM-YYYY';
 /**
@@ -78,6 +80,7 @@ export const getToDateString = (
     return null;
 };
 
+// Keep the existing longDateFormats for backward compatibility
 export const longDateFormats = {
     fr: {
         LT: 'HH:mm',
@@ -103,7 +106,10 @@ export const longDateFormats = {
  */
 export const getLocaleDateFormat = longType => {
     const locale = moment.locale();
-    return longDateFormats[locale][longType];
+    return (
+        LANGUAGE_CONFIGS[locale]?.dateFormats[longType] ||
+        longDateFormats.en[longType]
+    );
 };
 
 // Convert from Api format to format expected by DateRange picker

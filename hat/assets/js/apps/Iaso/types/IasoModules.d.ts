@@ -18,3 +18,23 @@ declare module 'IasoModules/translations/keys' {
     const languages: string[];
     export default languages;
 }
+
+declare module 'IasoModules/language/configs' {
+    interface DateFormats {
+        LT: string;
+        LTS: string;
+        L: string;
+        LL: string;
+        LLL: string;
+        LLLL: string;
+    }
+
+    interface LanguageConfig {
+        label: string;
+        dateFormats: DateFormats;
+        thousandGroupStyle: 'thousand' | 'lakh' | 'wan';
+    }
+
+    const configs: { [key: string]: LanguageConfig };
+    export default configs;
+}

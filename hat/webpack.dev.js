@@ -16,6 +16,7 @@ const {
     generateLanguageKeysFile,
     generateCombinedConfig,
     generatePluginKeysFile,
+    generateLanguageConfigs,
 } = require('./assets/js/apps/Iaso/bundle/generators.js');
 
 // Switch here for French. This is set to 'en' in dev to not get react-intl warnings
@@ -32,8 +33,16 @@ const WEBPACK_URL = `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`;
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
+// Parse available languages from environment variable or default to "en,fr"
+const availableLanguages = (process.env.AVAILABLE_LANGUAGES || 'en,fr').split(
+    ',',
+);
+
 // Generate the combined translations file
-const combinedTranslationsPath = generateCombinedTranslations(__dirname);
+const combinedTranslationsPath = generateCombinedTranslations(
+    __dirname,
+    availableLanguages,
+);
 
 // Generate the language keys file
 const languageKeysPath = generateLanguageKeysFile(__dirname);
@@ -43,6 +52,9 @@ const combinedConfigPath = generateCombinedConfig(__dirname);
 
 // Generate the plugin keys file
 const pluginKeysPath = generatePluginKeysFile(__dirname);
+
+// Generate the language configs file
+const languageConfigsPath = generateLanguageConfigs(__dirname);
 
 module.exports = {
     context: __dirname,
@@ -125,6 +137,7 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),
+            AVAILABLE_LANGUAGES: JSON.stringify(availableLanguages),
         }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
@@ -140,6 +153,7 @@ module.exports = {
                 './plugins/keys': pluginKeysPath,
                 './translations/configs': combinedTranslationsPath,
                 './translations/keys': languageKeysPath,
+                './language/configs': languageConfigsPath,
             },
             shared: {
                 react: {
@@ -243,6 +257,7 @@ module.exports = {
             'IasoModules/plugins/keys': pluginKeysPath,
             'IasoModules/translations/configs': combinedTranslationsPath,
             'IasoModules/translations/keys': languageKeysPath,
+            'IasoModules/language/configs': languageConfigsPath,
             ...(process.env.LIVE_COMPONENTS === 'true' && {
                 'bluesquare-components': path.resolve(
                     __dirname,

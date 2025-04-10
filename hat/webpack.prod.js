@@ -9,12 +9,18 @@ const {
     generateLanguageKeysFile,
     generateCombinedConfig,
     generatePluginKeysFile,
+    generateLanguageConfigs,
 } = require('./assets/js/apps/Iaso/bundle/generators.js');
 
 // Switch here for french
 // remember to switch in webpack.dev.js and
 // django settings as well
 const LOCALE = 'fr';
+
+// Parse available languages from environment variable or default to "en,fr"
+const availableLanguages = (process.env.AVAILABLE_LANGUAGES || 'en,fr').split(
+    ',',
+);
 
 // Generate the combined config file
 const combinedConfigPath = generateCombinedConfig(__dirname);
@@ -23,10 +29,16 @@ const combinedConfigPath = generateCombinedConfig(__dirname);
 const pluginKeysPath = generatePluginKeysFile(__dirname);
 
 // Generate the combined translations file
-const combinedTranslationsPath = generateCombinedTranslations(__dirname);
+const combinedTranslationsPath = generateCombinedTranslations(
+    __dirname,
+    availableLanguages,
+);
 
 // Generate the language keys file
 const languageKeysPath = generateLanguageKeysFile(__dirname);
+
+// Generate the language configs file
+const languageConfigsPath = generateLanguageConfigs(__dirname);
 
 module.exports = {
     // fail the entire build on 'module not found'
@@ -67,6 +79,7 @@ module.exports = {
                 NODE_ENV: JSON.stringify('production'),
             },
             __LOCALE: JSON.stringify(LOCALE),
+            AVAILABLE_LANGUAGES: JSON.stringify(availableLanguages),
         }),
         // Minification
         new webpack.LoaderOptionsPlugin({ minimize: true }),
@@ -83,6 +96,7 @@ module.exports = {
                 './plugins/keys': pluginKeysPath,
                 './translations/configs': combinedTranslationsPath,
                 './translations/keys': languageKeysPath,
+                './language/configs': languageConfigsPath,
             },
             shared: {
                 react: {

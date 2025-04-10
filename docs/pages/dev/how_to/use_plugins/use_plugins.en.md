@@ -296,3 +296,44 @@ Quick start guide:
    ## Configuration
    Any specific configuration needed.
    ```
+
+## Translations
+
+The plugin system includes comprehensive support for translations across the main application, plugins, and shared components. Here's how translations work:
+
+### Translation Structure
+
+Translations are organized in three main categories:
+1. **Main Application**: Core translations from the Iaso application
+2. **Plugin Translations**: Each plugin can provide its own translations
+3. **Component Translations**: Shared translations from bluesquare-components
+
+### Translation Files
+
+- Translation files should be JSON files named with their language code (e.g., `en.json`, `fr.json`)
+- Expected locations:
+  - Main app: `assets/js/apps/Iaso/translations/{lang}.json`
+  - Plugins: `plugins/{pluginName}/translations/{lang}.json`
+  - Components: `bluesquare-components/src/translations/{lang}.json`
+
+### Build Process
+
+During the build process:
+1. Available languages are determined from the `AVAILABLE_LANGUAGES` environment variable (defaults to "en,fr")
+2. The system scans all translation directories for available languages
+3. Translations are combined into a single file for efficient loading
+4. Missing translations trigger warnings in the console
+5. The combined translations are exposed through Module Federation as `IasoModules/translations/configs`
+
+### Adding Translations to a Plugin
+
+To add translations to your plugin:
+1. Create a `translations` directory in your plugin
+2. Add language files (e.g., `en.json`, `fr.json`)
+3. Structure your translations as a flat object with dot-notation keys:
+```json
+{
+    "myPlugin.title": "My Plugin Title",
+    "myPlugin.description": "Plugin description"
+}
+```

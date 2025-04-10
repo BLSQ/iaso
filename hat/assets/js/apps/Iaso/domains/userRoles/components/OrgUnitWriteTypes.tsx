@@ -1,12 +1,12 @@
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Box } from '@mui/material';
 import { InputWithInfos, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, useEffect, useState } from 'react';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import * as Permissions from '../../../utils/permissions';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { SaveUserRoleQuery } from '../hooks/requests/useSaveUserRole';
 import MESSAGES from '../messages';
-import * as Permissions from '../../../utils/permissions';
 import { Permission } from '../types/userRoles';
 
 type Props = {
@@ -28,7 +28,9 @@ export const OrgUnitWriteTypes: FunctionComponent<Props> = ({
             ),
         );
     const { data: orgUnitTypes, isLoading: isLoadingOrgUitTypes } =
-        useGetOrgUnitTypesDropdownOptions(undefined, true);
+        useGetOrgUnitTypesDropdownOptions({
+            onlyWriteAccess: true,
+        });
 
     useEffect(() => {
         setHasNoOrgUnitManagementWrite(

@@ -202,6 +202,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'accountId',
             'org_unit_type_id',
             'project_id',
+            'type',
             ...paginationPathParams,
         ],
     },

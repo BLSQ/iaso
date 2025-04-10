@@ -62,7 +62,7 @@ class PagesAPITestCase(APITestCase):
 
         response = self.client.get("/api/pages/")
         self.assertJSONResponse(response, 403)
-    
+
     def test_pages_list_linked_to_current_user(self):
         """Get /pages/ only pages linked to the current user"""
         self.create_page(name="TEST1", slug="test_1", needs_authentication=False, users=[self.second_user.pk])
@@ -75,7 +75,9 @@ class PagesAPITestCase(APITestCase):
         self.assertEqual(len(response.json()["results"]), 0)
 
         # Check when the user has only read permission but has some embedded links linked to him
-        self.create_page(name="TEST3", slug="test_3", needs_authentication=True, users=[self.user_no_write_permission.pk])
+        self.create_page(
+            name="TEST3", slug="test_3", needs_authentication=True, users=[self.user_no_write_permission.pk]
+        )
         self.client.force_login(self.user_no_write_permission)
         response = self.client.get("/api/pages/")
         self.assertJSONResponse(response, 200)

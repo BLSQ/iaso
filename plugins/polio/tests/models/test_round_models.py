@@ -118,9 +118,7 @@ class RoundModelTestCase(APITestCase, PolioTestCaseMixin):
 
         round_5 = pm.Round.objects.create(number=1, campaign=test_campaign, started_at=now.date())
         round_5.add_chronogram()
-        self.assertEqual(
-            round_5.chronograms.valid().count(), 0, "No chronogram should be created for test campaigns."
-        )
+        self.assertEqual(round_5.chronograms.valid().count(), 0, "No chronogram should be created for test campaigns.")
 
         campaign_on_hold, _, _, _, _, _ = self.create_campaign(
             "CAMPAIGN_ON_HOLD",
@@ -141,5 +139,3 @@ class RoundModelTestCase(APITestCase, PolioTestCaseMixin):
         self.assertEqual(
             round_6.chronograms.valid().count(), 1, "A new chronogram should be created for a campaign on hold."
         )
-
-

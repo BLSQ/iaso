@@ -50,7 +50,10 @@ const combinedConfigPath = generateCombinedConfig(__dirname);
 const pluginKeysPath = generatePluginKeysFile(__dirname);
 
 // Generate the language configs file
-const languageConfigsPath = generateLanguageConfigs(__dirname);
+const languageConfigsPath = generateLanguageConfigs(
+    __dirname,
+    availableLanguages,
+);
 
 module.exports = {
     context: __dirname,

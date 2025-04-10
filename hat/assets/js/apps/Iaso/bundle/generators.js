@@ -4,8 +4,9 @@ const { getAvailableLanguages } = require('./languages.js');
 const { getPluginFolders } = require('./plugins.js');
 
 /** @param {string} rootDir */
-const generateCombinedTranslations = rootDir => {
-    const languages = getAvailableLanguages(rootDir);
+/** @param {string[]} availableLanguages */
+
+const generateCombinedTranslations = (rootDir, availableLanguages) => {
     const combinedTranslationsPath = path.resolve(
         rootDir,
         './assets/js/apps/Iaso/bundle/generated/combinedTranslations.js',
@@ -14,18 +15,36 @@ const generateCombinedTranslations = rootDir => {
     // Create a combined translations object
     const combinedTranslations = {};
 
-    languages.forEach(lang => {
+    availableLanguages.forEach(lang => {
         // Main translations
-        const translationPath = path.resolve(
+        let translationPath = path.resolve(
             rootDir,
             `./assets/js/apps/Iaso/domains/app/translations/${lang}.json`,
         );
+        if (!fs.existsSync(translationPath)) {
+            console.warn(
+                `Translation file not found for language ${lang} at ${translationPath}, using en.json instead`,
+            );
+            translationPath = path.resolve(
+                rootDir,
+                `./assets/js/apps/Iaso/domains/app/translations/en.json`,
+            );
+        }
 
         // Bluesquare-components translations
-        const bluesquareTranslationsPath = path.resolve(
+        let bluesquareTranslationsPath = path.resolve(
             rootDir,
             `../node_modules/bluesquare-components/dist/locale/${lang}.json`,
         );
+        if (!fs.existsSync(bluesquareTranslationsPath)) {
+            console.warn(
+                `Translation file not found for language ${lang} at ${bluesquareTranslationsPath}, using en.json instead`,
+            );
+            bluesquareTranslationsPath = path.resolve(
+                rootDir,
+                `../node_modules/bluesquare-components/dist/locale/en.json`,
+            );
+        }
 
         // Plugin translations
         const plugins = getPluginFolders(rootDir);

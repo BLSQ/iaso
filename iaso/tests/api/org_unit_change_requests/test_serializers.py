@@ -353,7 +353,7 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
         change_request.new_groups.set([new_group])
 
         serializer = OrgUnitChangeRequestRetrieveSerializer(change_request)
-        
+
         self.assertEqual(
             serializer.data,
             {

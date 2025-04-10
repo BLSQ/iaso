@@ -9,7 +9,9 @@ class EntityTypeModelTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.account, cls.data_source, cls.source_version, cls.project = cls.create_account_datasource_version_project("source", "account", "project")
+        cls.account, cls.data_source, cls.source_version, cls.project = cls.create_account_datasource_version_project(
+            "source", "account", "project"
+        )
 
     def test_entity_type_no_reference_form(self):
         """

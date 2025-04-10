@@ -16,9 +16,11 @@ export const DateTimeCell = (cellInfo: {
     // Get current locale
     const currentLocale = moment.locale();
 
-    // Get format from language config or fallback to default
+    // Get format from language config or fallback to English
     const format =
-        LANGUAGE_CONFIGS[currentLocale]?.dateFormats?.LTS || 'DD/MM/YYYY HH:mm';
+        LANGUAGE_CONFIGS[currentLocale]?.dateFormats?.LTS ||
+        LANGUAGE_CONFIGS.en?.dateFormats?.LTS ||
+        'DD/MM/YYYY HH:mm';
 
     return moment(cellInfo.value).format(format);
 };

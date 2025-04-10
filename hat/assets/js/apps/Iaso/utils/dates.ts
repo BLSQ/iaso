@@ -80,25 +80,14 @@ export const getToDateString = (
     return null;
 };
 
-// Keep the existing longDateFormats for backward compatibility
-export const longDateFormats = {
-    fr: {
-        LT: 'HH:mm',
-        LTS: 'DD/MM/YYYY HH:mm',
-        L: 'DD/MM/YYYY',
-        LL: 'Do MMMM YYYY',
-        LLL: 'Do MMMM YYYY LT',
-        LLLL: 'dddd, MMMM Do YYYY LT',
+// Create a dynamic mapping of language codes to their date formats
+export const longDateFormats = Object.keys(LANGUAGE_CONFIGS).reduce(
+    (acc, lang) => {
+        acc[lang] = LANGUAGE_CONFIGS[lang]?.dateFormats || {};
+        return acc;
     },
-    en: {
-        LT: 'h:mm A',
-        LTS: 'DD/MM/YYYY HH:mm',
-        L: 'DD/MM/YYYY',
-        LL: 'Do MMMM YYYY',
-        LLL: 'Do MMMM YYYY LT',
-        LLLL: 'dddd, MMMM Do YYYY LT',
-    },
-};
+    {},
+);
 
 /**
  * Configure the local for time displayed to the user.
@@ -107,8 +96,8 @@ export const longDateFormats = {
 export const getLocaleDateFormat = longType => {
     const locale = moment.locale();
     return (
-        LANGUAGE_CONFIGS[locale]?.dateFormats[longType] ||
-        longDateFormats.en[longType]
+        LANGUAGE_CONFIGS[locale]?.dateFormats?.[longType] ||
+        LANGUAGE_CONFIGS.en?.dateFormats?.[longType]
     );
 };
 

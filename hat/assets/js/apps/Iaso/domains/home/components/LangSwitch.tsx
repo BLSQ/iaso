@@ -42,11 +42,11 @@ export const LangSwitch: FunctionComponent<Props> = () => {
     const handleClick = useCallback(
         localeCode => {
             setLocale(localeCode);
-            if (!hasNoAccount) {
-                saveCurrentUser({
-                    language: localeCode,
-                });
-            }
+            // if (!hasNoAccount) {
+            //     saveCurrentUser({
+            //         language: localeCode,
+            //     });
+            // }
         },
         [hasNoAccount, setLocale, saveCurrentUser],
     );

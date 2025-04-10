@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { getAvailableLanguages } = require('./languages.js');
 const { getPluginFolders } = require('./plugins.js');
 
 /** @param {string} rootDir */
@@ -23,7 +22,7 @@ const generateCombinedTranslations = (rootDir, availableLanguages) => {
         );
         if (!fs.existsSync(translationPath)) {
             console.warn(
-                `Translation file not found for language ${lang} at ${translationPath}, using en.json instead`,
+                `Warning: No translation file found for language ${lang} in main app at ${translationPath}, will fall back to English`,
             );
             translationPath = path.resolve(
                 rootDir,
@@ -38,7 +37,7 @@ const generateCombinedTranslations = (rootDir, availableLanguages) => {
         );
         if (!fs.existsSync(bluesquareTranslationsPath)) {
             console.warn(
-                `Translation file not found for language ${lang} at ${bluesquareTranslationsPath}, using en.json instead`,
+                `Warning: No translation file found for language ${lang} in bluesquare-components at ${bluesquareTranslationsPath}, will fall back to English`,
             );
             bluesquareTranslationsPath = path.resolve(
                 rootDir,
@@ -55,13 +54,25 @@ const generateCombinedTranslations = (rootDir, availableLanguages) => {
                     rootDir,
                     `../plugins/${plugin}/js/config.tsx`,
                 );
-
                 if (fs.existsSync(configPath)) {
-                    return `...(() => {
-                        const config = require('${configPath}');
-                        const translations = (config.default || config).translations.${lang};
-                        return translations;
-                    })(),`;
+                    // Check for translations at build time using standard path
+                    const pluginTransPath = path.resolve(
+                        rootDir,
+                        `../plugins/${plugin}/js/src/constants/translations/${lang}.json`,
+                    );
+                    const enPluginTransPath = path.resolve(
+                        rootDir,
+                        `../plugins/${plugin}/js/src/constants/translations/en.json`,
+                    );
+
+                    if (!fs.existsSync(pluginTransPath) && lang !== 'en') {
+                        console.warn(
+                            `Warning: No translation file found for language ${lang} in plugin ${plugin} at ${pluginTransPath}, will fall back to English`,
+                        );
+                    }
+
+                    // Generate code that directly requires the translation file
+                    return `...require('${fs.existsSync(pluginTransPath) ? pluginTransPath : enPluginTransPath}'),`;
                 }
                 return '';
             })
@@ -181,35 +192,75 @@ export default pluginKeys;
 };
 
 /** @param {string} rootDir */
-const generateLanguageConfigs = rootDir => {
-    const languages = getAvailableLanguages(rootDir);
+/** @param {string[]} availableLanguages */
+const generateLanguageConfigs = (rootDir, availableLanguages) => {
     const languageConfigsPath = path.resolve(
         rootDir,
         './assets/js/apps/Iaso/bundle/generated/languageConfigs.js',
     );
+
+    // Build imports and configs map
+    const imports = ['enConfig'];
+    const configs = {
+        en: 'enConfig',
+    };
+
+    // Check each language config file
+    availableLanguages.forEach(lang => {
+        if (lang === 'en') return;
+
+        const configPath = path.resolve(
+            rootDir,
+            `./assets/js/apps/Iaso/domains/app/translations/${lang}.config.js`,
+        );
+
+        if (fs.existsSync(configPath)) {
+            const importName = `${lang}Config`;
+            imports.push(importName);
+            configs[lang] = importName;
+        } else {
+            console.warn(
+                `Warning: No config file found for language '${lang}', using English config as fallback`,
+            );
+            configs[lang] = 'enConfig';
+        }
+    });
 
     // Create the file content
     const fileContent = `
 // This file is auto-generated. Do not edit directly.
 // It combines all language configs into a single file.
 
-import enConfig from '../../domains/app/translations/en.config.js';
-import frConfig from '../../domains/app/translations/fr.config.js';
+${imports.map(imp => `import ${imp} from '../../domains/app/translations/${imp.replace('Config', '')}.config.js';`).join('\n')}
 
 // Default config for languages without a specific config
 const defaultConfig = {
     label: 'English version',
-    dateFormats: enConfig.dateFormats,
+    dateFormats: {
+        LT: 'h:mm A',
+        LTS: 'DD/MM/YYYY HH:mm',
+        L: 'DD/MM/YYYY',
+        LL: 'Do MMMM YYYY',
+        LLL: 'Do MMMM YYYY LT',
+        LLLL: 'dddd, MMMM Do YYYY LT',
+    },
     thousandGroupStyle: 'thousand',
 };
 
 // Combine all language configs
 export const LANGUAGE_CONFIGS = {
-    en: enConfig,
-    fr: frConfig,
-    ${languages
-        .filter(lang => lang !== 'en' && lang !== 'fr')
-        .map(lang => `${lang}: defaultConfig`)
+    ${Object.entries(configs)
+        .map(([lang, config]) => {
+            // Ensure each config has the required date formats
+            return `${lang}: {
+                ...defaultConfig,
+                ...${config},
+                dateFormats: {
+                    ...defaultConfig.dateFormats,
+                    ...(${config}.dateFormats || {}),
+                },
+            }`;
+        })
         .join(',\n    ')}
 };
 

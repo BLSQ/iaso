@@ -34,7 +34,10 @@ const combinedTranslationsPath = generateCombinedTranslations(
 );
 
 // Generate the language configs file
-const languageConfigsPath = generateLanguageConfigs(__dirname);
+const languageConfigsPath = generateLanguageConfigs(
+    __dirname,
+    availableLanguages,
+);
 
 module.exports = {
     // fail the entire build on 'module not found'

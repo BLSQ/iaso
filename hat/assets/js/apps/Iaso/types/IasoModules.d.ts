@@ -31,5 +31,6 @@ declare module 'IasoModules/language/configs' {
     }
 
     const configs: { [key: string]: LanguageConfig };
+    export const LANGUAGE_CONFIGS: { [key: string]: LanguageConfig };
     export default configs;
 }

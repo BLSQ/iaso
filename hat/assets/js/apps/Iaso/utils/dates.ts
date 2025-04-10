@@ -1,5 +1,5 @@
-import LANGUAGE_CONFIGS from 'IasoModules/language/configs';
 import moment from 'moment';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 
 // this is the date format used in url params
 export const dateFormat = 'DD-MM-YYYY';

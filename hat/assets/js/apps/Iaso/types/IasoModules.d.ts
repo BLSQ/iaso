@@ -30,7 +30,6 @@ declare module 'IasoModules/language/configs' {
         thousandGroupStyle: 'thousand' | 'lakh' | 'wan';
     }
 
-    const configs: { [key: string]: LanguageConfig };
-    export const LANGUAGE_CONFIGS: { [key: string]: LanguageConfig };
-    export default configs;
+    const LANGUAGE_CONFIGS: { [key: string]: LanguageConfig };
+    export { LANGUAGE_CONFIGS };
 }

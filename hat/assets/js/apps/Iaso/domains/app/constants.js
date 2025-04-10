@@ -1,4 +1,4 @@
-import LANGUAGE_CONFIGS from 'IasoModules/language/configs';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 
 // Get available locales from the generated config
 export const APP_LOCALES = Object.entries(LANGUAGE_CONFIGS).map(

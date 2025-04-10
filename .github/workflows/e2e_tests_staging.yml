@@ -7,11 +7,10 @@ jobs:
   e2etests:
     name: run end2end tests
     runs-on: ubuntu-24.04
-#    container: cypress/browsers:node16.5.0-chrome94-ff93
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           cache: "npm"
           node-version: "20.13.1"
@@ -19,7 +18,7 @@ jobs:
       - name: resolve dependencies
         run: npm ci
       - name: UI Tests
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
@@ -29,14 +28,3 @@ jobs:
           browser: chrome
           headless: true
           timeout: 180
-      # - uses: actions/upload-artifact@v2
-      #   if: failure()
-      #   with:
-      #     name: cypress-screenshots
-      #     path: cypress/screenshots
-      # Test run video was always captured, so this action uses "always()" condition
-      # - uses: actions/upload-artifact@v2
-      #   if: always()
-      #   with:
-      #     name: cypress-videos
-      #     path: cypress/videos

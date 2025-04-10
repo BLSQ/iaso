@@ -55,7 +55,6 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
     approvedFields,
     isNewOrgUnit,
 }) => {
-    console.log(isNewOrgUnit);
     const [comment, setComment] = useState<string | undefined>();
     const { formatMessage } = useSafeIntl();
     const titleMessage = useMemo(() => {

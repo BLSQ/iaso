@@ -1306,7 +1306,7 @@ submission</p>
             <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
             <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">created_at</span><span class="p">,</span>
             <span class="s2">&quot;updated_at&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">updated_at</span><span class="p">,</span>
-            <span class="s2">&quot;reference_form&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_form</span><span class="o">.</span><span class="n">as_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;reference_form&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_form</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_form</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
             <span class="s2">&quot;account&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">as_dict</span><span class="p">(),</span>
         <span class="p">}</span>
 </code></pre></div></td></tr></table></div>

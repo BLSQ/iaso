@@ -114,7 +114,6 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             .filter(org_unit__in=org_units)
             .filter_on_user_projects(self.request.user)
         )
-
         return org_units_change_requests
 
     def has_org_unit_permission(self, org_unit_to_change: OrgUnit) -> None:

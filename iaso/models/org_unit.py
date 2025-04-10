@@ -657,7 +657,7 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
     def filter_on_user_projects(self, user: User) -> models.QuerySet:
         if not hasattr(user, "iaso_profile"):
             return self
-        user_projects_ids = user.iaso_profile.get_projects_ids
+        user_projects_ids = user.iaso_profile.projects_ids
         if not user_projects_ids:
             return self
         return self.filter(org_unit__version__data_source__projects__in=user_projects_ids)

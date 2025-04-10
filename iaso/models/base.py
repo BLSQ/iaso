@@ -1578,7 +1578,7 @@ class Profile(models.Model):
         return False
 
     @cached_property
-    def get_projects_ids(self) -> set[int]:
+    def projects_ids(self) -> set[int]:
         return list(self.projects.values_list("pk", flat=True))
 
     def get_editable_org_unit_type_ids(self) -> set[int]:

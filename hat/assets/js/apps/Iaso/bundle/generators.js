@@ -203,8 +203,8 @@ const generateLanguageConfigs = rootDir => {
 // This file is auto-generated. Do not edit directly.
 // It combines all language configs into a single file.
 
-import enConfig from '../domains/app/translations/en.config.js';
-import frConfig from '../domains/app/translations/fr.config.js';
+import enConfig from '../../domains/app/translations/en.config.js';
+import frConfig from '../../domains/app/translations/fr.config.js';
 
 // Default config for languages without a specific config
 const defaultConfig = {

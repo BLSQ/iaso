@@ -158,7 +158,21 @@ The main application:
 
 To add a new language to the system, follow these steps:
 
-### 1. Copy and Translate Existing Language Files
+### 1. Add the Language to AVAILABLE_LANGUAGES Environment Variable
+
+First, you need to add the new language code to the `AVAILABLE_LANGUAGES` environment variable. This variable is used by the build process to determine which languages to include in the generated files.
+
+```bash
+# For development
+export AVAILABLE_LANGUAGES="en,fr,es"
+
+# For production, add to your .env file or deployment configuration
+AVAILABLE_LANGUAGES=en,fr,es
+```
+
+If you don't add the language to this environment variable, it won't be included in the build, even if you create the translation files.
+
+### 2. Copy and Translate Existing Language Files
 
 The simplest way to add a new language is to copy an existing language file (e.g., `en.json`) and translate all the keys:
 
@@ -193,7 +207,7 @@ Then edit each file to translate the values while keeping the keys the same:
 }
 ```
 
-### 2. Create a Language Configuration File (Optional)
+### 3. Create a Language Configuration File (Optional)
 
 If you need custom date formats or number formatting for your language, create a configuration file:
 
@@ -220,7 +234,7 @@ export default {
 };
 ```
 
-### 3. Rebuild the Application
+### 4. Rebuild the Application
 
 Rebuild the application to generate the new translation files:
 
@@ -232,9 +246,48 @@ npm run dev
 npm run build
 ```
 
-The system will automatically detect the new language file and include it in the generated files. No additional configuration is needed.
+The system will automatically detect the new language file and include it in the generated files.
 
+## Date Formatting in Components
 
+Several components can be enhanced to use language-specific date formats:
 
+1. **DateTimeCell Component** (`hat/assets/js/apps/Iaso/components/Cells/DateTimeCell.tsx`):
+   - Update to use language configs for consistent date formatting
+   - Replace hardcoded date formats with locale-specific formats
 
+2. **formatValue Function** (`hat/assets/js/apps/Iaso/domains/instances/utils/index.tsx`):
+   - Use language-specific formats for date and datetime values
+   - Ensure consistent date formatting across the application
 
+3. **convertDate Function** (`plugins/polio/js/src/domains/Campaigns/campaignHistory/config.tsx`):
+   - Update to use language configs for date formatting
+   - Ensure dates are displayed according to the user's locale
+
+## Number Formatting
+
+The application already has some components using language configs for number formatting, but this can be extended:
+
+1. **NumberCell Component**:
+   - Already uses language configs for thousand separators and decimal points
+   - Can be used as a reference for other number formatting components
+
+2. **formatThousand Function**:
+   - Extend to use language-specific formatting
+   - Ensure consistent number formatting across the application
+
+3. **formatRoundNumber Function** (`plugins/polio/js/src/domains/Budget/utils.tsx`):
+   - Update to use language-specific formatting
+   - Ensure numbers are displayed according to the user's locale
+
+## Form Inputs
+
+Form inputs can be enhanced to support language-specific formatting:
+
+1. **InputComponent**:
+   - Already has good support for language-specific number formatting
+   - Can be used as a reference for other input types
+
+2. **Other Input Types**:
+   - Extend language-specific formatting to other input types
+   - Ensure consistent input formatting across the application

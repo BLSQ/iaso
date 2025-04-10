@@ -13,7 +13,6 @@ const {
 
 const {
     generateCombinedTranslations,
-    generateLanguageKeysFile,
     generateCombinedConfig,
     generatePluginKeysFile,
     generateLanguageConfigs,
@@ -43,9 +42,6 @@ const combinedTranslationsPath = generateCombinedTranslations(
     __dirname,
     availableLanguages,
 );
-
-// Generate the language keys file
-const languageKeysPath = generateLanguageKeysFile(__dirname);
 
 // Generate the combined config file
 const combinedConfigPath = generateCombinedConfig(__dirname);
@@ -152,7 +148,6 @@ module.exports = {
                 './plugins/configs': combinedConfigPath,
                 './plugins/keys': pluginKeysPath,
                 './translations/configs': combinedTranslationsPath,
-                './translations/keys': languageKeysPath,
                 './language/configs': languageConfigsPath,
             },
             shared: {
@@ -256,7 +251,6 @@ module.exports = {
             'IasoModules/plugins/configs': combinedConfigPath,
             'IasoModules/plugins/keys': pluginKeysPath,
             'IasoModules/translations/configs': combinedTranslationsPath,
-            'IasoModules/translations/keys': languageKeysPath,
             'IasoModules/language/configs': languageConfigsPath,
             ...(process.env.LIVE_COMPONENTS === 'true' && {
                 'bluesquare-components': path.resolve(

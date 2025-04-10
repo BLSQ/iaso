@@ -82,35 +82,6 @@ export default translations;
 };
 
 /** @param {string} rootDir */
-const generateLanguageKeysFile = rootDir => {
-    const languages = getAvailableLanguages(rootDir);
-    const languageKeysPath = path.resolve(
-        rootDir,
-        './assets/js/apps/Iaso/bundle/generated/languageKeys.js',
-    );
-
-    // Create the file content
-    const fileContent = `
-// This file is auto-generated. Do not edit directly.
-// It contains the list of available language keys.
-
-export const languageKeys = ${JSON.stringify(languages, null, 2)};
-
-export default languageKeys;
-`;
-
-    // Create the generated directory if it doesn't exist
-    const generatedDir = path.dirname(languageKeysPath);
-    if (!fs.existsSync(generatedDir)) {
-        fs.mkdirSync(generatedDir, { recursive: true });
-    }
-
-    // Write the file
-    fs.writeFileSync(languageKeysPath, fileContent);
-    return languageKeysPath;
-};
-
-/** @param {string} rootDir */
 const generateCombinedConfig = rootDir => {
     const pluginFolders = getPluginFolders(rootDir);
     const combinedConfigPath = path.resolve(
@@ -239,7 +210,6 @@ export default LANGUAGE_CONFIGS;
 
 module.exports = {
     generateCombinedTranslations,
-    generateLanguageKeysFile,
     generateCombinedConfig,
     generatePluginKeysFile,
     generateLanguageConfigs,

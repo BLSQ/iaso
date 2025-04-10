@@ -14,11 +14,6 @@ declare module 'IasoModules/translations/configs' {
     export default translations;
 }
 
-declare module 'IasoModules/translations/keys' {
-    const languages: string[];
-    export default languages;
-}
-
 declare module 'IasoModules/language/configs' {
     interface DateFormats {
         LT: string;

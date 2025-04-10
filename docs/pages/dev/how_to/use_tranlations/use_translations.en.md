@@ -148,11 +148,10 @@ In production (`webpack.prod.js`):
 ## Loading Translations at Runtime
 
 The main application:
-1. Loads the language keys from `IasoModules/translations/keys`
-2. Loads translations from `IasoModules/translations/configs`
-3. Loads language configurations from `IasoModules/language/configs`
-4. Initializes the React-Intl provider with the loaded translations
-5. Makes translations available to all components through the React-Intl context
+1. Loads translations from `IasoModules/translations/configs`
+2. Loads language configurations from `IasoModules/language/configs`
+3. Initializes the React-Intl provider with the loaded translations
+4. Makes translations available to all components through the React-Intl context
 
 ## Adding a New Language
 

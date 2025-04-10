@@ -1,197 +1,32 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
-const BundleTracker = require('webpack-bundle-tracker');
 const { ModuleFederationPlugin } = require('webpack').container;
-const fs = require('fs');
+const BundleTracker = require('webpack-bundle-tracker');
+
+const {
+    generateCombinedTranslations,
+    generateLanguageKeysFile,
+    generateCombinedConfig,
+    generatePluginKeysFile,
+} = require('./assets/js/apps/Iaso/bundle/generators.js');
+
 // Switch here for french
 // remember to switch in webpack.dev.js and
 // django settings as well
 const LOCALE = 'fr';
 
-// Function to get plugin folders
-const getPluginFolders = () => {
-    const pluginsPath = path.resolve(__dirname, '../plugins');
-    return fs.readdirSync(pluginsPath).filter(file => {
-        const fullPath = path.join(pluginsPath, file);
-        // Only return directories and skip special directories
-        return (
-            fs.statSync(fullPath).isDirectory() &&
-            !file.startsWith('.') &&
-            !file.startsWith('__') &&
-            // Check if the directory contains a js/config.tsx file
-            fs.existsSync(path.join(fullPath, 'js', 'config.tsx'))
-        );
-    });
-};
-
-// Function to get available languages from translations folder
-const getAvailableLanguages = () => {
-    const translationsPath = path.resolve(
-        __dirname,
-        './assets/js/apps/Iaso/domains/app/translations',
-    );
-    if (!fs.existsSync(translationsPath)) {
-        console.warn(
-            'Translations directory not found, using default languages',
-            translationsPath,
-        );
-        return ['en', 'fr'];
-    }
-
-    return fs
-        .readdirSync(translationsPath)
-        .filter(file => file.endsWith('.json'))
-        .map(file => file.replace('.json', ''));
-};
-
-// Function to generate a combined translations file
-const generateCombinedTranslations = () => {
-    const languages = getAvailableLanguages();
-    const combinedTranslationsPath = path.resolve(
-        __dirname,
-        './assets/js/combinedTranslations.js',
-    );
-
-    // Create a combined translations object
-    const combinedTranslations = {};
-
-    languages.forEach(lang => {
-        const translationPath = path.resolve(
-            __dirname,
-            `./assets/js/apps/Iaso/domains/app/translations/${lang}.json`,
-        );
-        // Use require to get the translations
-        try {
-            // We need to use a dynamic require to avoid webpack bundling issues
-            // This will be replaced at runtime
-            combinedTranslations[lang] = `require('${translationPath}')`;
-        } catch (error) {
-            console.error(
-                `Error loading translations for language ${lang}:`,
-                error,
-            );
-        }
-    });
-
-    // Create the file content
-    const fileContent = `
-// This file is auto-generated. Do not edit directly.
-// It combines all translations into a single file.
-
-const combinedTranslations = {
-    ${Object.entries(combinedTranslations)
-        .map(([key, value]) => `    ${key}: ${value}`)
-        .join(',\n')}
-};
-
-export default combinedTranslations;
-`;
-
-    // Write the file
-    fs.writeFileSync(combinedTranslationsPath, fileContent);
-    return combinedTranslationsPath;
-};
-
-// Function to generate a language keys file
-const generateLanguageKeysFile = () => {
-    const languages = getAvailableLanguages();
-    const languageKeysPath = path.resolve(
-        __dirname,
-        './assets/js/languageKeys.js',
-    );
-
-    // Create the file content
-    const fileContent = `
-// This file is auto-generated. Do not edit directly.
-// It contains the list of available language keys.
-
-const languageKeys = ${JSON.stringify(languages, null, 2)};
-
-export default languageKeys;
-`;
-
-    // Write the file
-    fs.writeFileSync(languageKeysPath, fileContent);
-    return languageKeysPath;
-};
-
-// Function to generate a combined config file
-const generateCombinedConfig = () => {
-    const pluginFolders = getPluginFolders();
-    const combinedConfigPath = path.resolve(
-        __dirname,
-        './assets/js/combinedPluginConfigs.js',
-    );
-
-    // Create a combined config object
-    const combinedConfig = {};
-
-    pluginFolders.forEach(plugin => {
-        const configPath = path.resolve(
-            __dirname,
-            `../plugins/${plugin}/js/config.tsx`,
-        );
-        // Use require to get the config
-        try {
-            // We need to use a dynamic require to avoid webpack bundling issues
-            // This will be replaced at runtime
-            combinedConfig[plugin] = `require('${configPath}')`;
-        } catch (error) {
-            console.error(`Error loading config for plugin ${plugin}:`, error);
-        }
-    });
-
-    // Create the file content
-    const fileContent = `
-// This file is auto-generated. Do not edit directly.
-// It combines all plugin configs into a single file.
-
-const combinedConfigs = {
-    ${Object.entries(combinedConfig)
-        .map(([key, value]) => `    ${key}: ${value}`)
-        .join(',\n')}
-};
-
-export default combinedConfigs;
-`;
-
-    // Write the file
-    fs.writeFileSync(combinedConfigPath, fileContent);
-    return combinedConfigPath;
-};
-
-// Function to generate a plugin keys file
-const generatePluginKeysFile = () => {
-    const pluginFolders = getPluginFolders();
-    const pluginKeysPath = path.resolve(__dirname, './assets/js/pluginKeys.js');
-
-    // Create the file content
-    const fileContent = `
-// This file is auto-generated. Do not edit directly.
-// It contains the list of available plugin keys.
-
-const pluginKeys = ${JSON.stringify(pluginFolders, null, 2)};
-
-export default pluginKeys;
-`;
-
-    // Write the file
-    fs.writeFileSync(pluginKeysPath, fileContent);
-    return pluginKeysPath;
-};
-
 // Generate the combined config file
-const combinedConfigPath = generateCombinedConfig();
+const combinedConfigPath = generateCombinedConfig(__dirname);
 
 // Generate the plugin keys file
-const pluginKeysPath = generatePluginKeysFile();
+const pluginKeysPath = generatePluginKeysFile(__dirname);
 
 // Generate the combined translations file
-const combinedTranslationsPath = generateCombinedTranslations();
+const combinedTranslationsPath = generateCombinedTranslations(__dirname);
 
 // Generate the language keys file
-const languageKeysPath = generateLanguageKeysFile();
+const languageKeysPath = generateLanguageKeysFile(__dirname);
 
 module.exports = {
     // fail the entire build on 'module not found'

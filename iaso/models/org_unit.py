@@ -654,6 +654,37 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
             Q(requested_fields=["new_reference_instances"]) & Q(annotated_non_deleted_new_reference_instances_count=0)
         )
 
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile") or user.is_superuser:
+            return self
+        user_projects_ids = user.iaso_profile.projects.values_list("pk", flat=True)
+        if not user_projects_ids:
+            return self
+        return (
+            self.annotate(
+                annotated_authorized_new_reference_instances_count=Count(
+                    "new_reference_instances", filter=Q(new_reference_instances__project_id__in=user_projects_ids)
+                )
+            )
+            .annotate(
+                annotated_authorized_old_reference_instances_count=Count(
+                    "old_reference_instances", filter=Q(old_reference_instances__project_id__in=user_projects_ids)
+                )
+            )
+            .annotate(annotated_new_reference_instances_count=Count("new_reference_instances"))
+            .annotate(annotated_old_reference_instances_count=Count("old_reference_instances"))
+            .filter(
+                Q(
+                    annotated_new_reference_instances_count=0,
+                    annotated_old_reference_instances_count=0,
+                )
+                | Q(
+                    annotated_authorized_new_reference_instances_count__gt=0,
+                    annotated_authorized_old_reference_instances_count__gt=0,
+                )
+            )
+        )
+
 
 class OrgUnitChangeRequest(models.Model):
     """

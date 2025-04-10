@@ -113,7 +113,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             .exclude_soft_deleted_new_reference_instances()
         )
 
-        return org_units_change_requests.filter(org_unit__in=org_units)
+        return org_units_change_requests.filter(org_unit__in=org_units).filter_on_user_projects(self.request.user)
 
     def has_org_unit_permission(self, org_unit_to_change: OrgUnit) -> None:
         # The mobile adds `?app_id=.bar.baz` in the query params.

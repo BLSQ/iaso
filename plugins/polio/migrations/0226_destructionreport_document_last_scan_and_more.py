@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("polio", "0224_earmarkedstock_temporary_campaign_name_and_more"),
+        ("polio", "0225_campaign_on_hold"),
     ]
 
     operations = [

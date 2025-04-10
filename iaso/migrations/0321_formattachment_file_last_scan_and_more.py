@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0316_merge_20250121_1321"),
+        ("iaso", "0320_alter_orgunit_extra_fields"),
     ]
 
     operations = [

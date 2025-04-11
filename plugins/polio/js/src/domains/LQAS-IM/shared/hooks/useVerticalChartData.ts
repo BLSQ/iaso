@@ -1,5 +1,5 @@
-import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import {
     BarChartData,
     FormatForNFMArgs,

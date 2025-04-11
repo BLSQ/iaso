@@ -5,12 +5,12 @@ import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso
 import { ConvertedLqasImData, Side } from '../../../../constants/types';
 import { baseUrls } from '../../../../constants/urls';
 import { getLqasImMapLayer } from '../../IM/utils';
-import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
-import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
-import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
 import { LIST, LqasIMView, MAP } from '../../shared/constants';
 import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
 import { useLqasImMapHeaderData } from '../../shared/hooks/useLqasImMapHeaderData';
+import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
+import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
+import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
 import { LqasCountryListOverview } from './LqasCountryListOverview';
 import { LqasCountryMap } from './LqasCountryMap';
 import { LqasSummary } from './LqasSummary';

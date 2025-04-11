@@ -1,3 +1,4 @@
+import React, { useCallback, useMemo, useState } from 'react';
 import { Box, Grid, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -8,7 +9,6 @@ import {
     useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';

@@ -443,6 +443,7 @@ msgid "Data source synchronization"
 msgstr "Synchronisation de source de données"
 
 #: iaso/models/deduplication.py iaso/models/payments.py
+#: iaso/utils/models/virus_scan.py
 msgid "Pending"
 msgstr "En attente"
 
@@ -628,6 +629,18 @@ msgstr "Copie des unités organisationnelles"
 #: iaso/tasks/copy_version.py
 msgid "Fixing parents"
 msgstr "Correction des parents"
+
+#: iaso/utils/models/virus_scan.py
+msgid "Clean"
+msgstr "Aucun virus détecté"
+
+#: iaso/utils/models/virus_scan.py
+msgid "Infected"
+msgstr "Virus détecté"
+
+#: iaso/utils/models/virus_scan.py
+msgid "Error"
+msgstr "Erreur lors de l'analyse"
 
 #: iaso/utils/serializer/id_or_uuid_field.py
 msgid "This field is required."

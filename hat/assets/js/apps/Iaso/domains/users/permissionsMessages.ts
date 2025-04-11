@@ -131,6 +131,15 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.orgUnits_read',
         defaultMessage: 'Organisation units management - Read only',
     },
+    iaso_org_units_history: {
+        id: 'iaso.permissions.org_units_history',
+        defaultMessage: 'Organisation units history',
+    },
+    iaso_org_units_history_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_org_units_history',
+        defaultMessage:
+            'Allows the user to retrieve a former version of an Organisation Unit',
+    },
     iaso_org_units_read_tooltip: {
         id: 'iaso.permissions.tooltip.orgUnits_read',
         defaultMessage: 'See and read organisation units and pyramids',
@@ -160,7 +169,6 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.tooltip.update_submission',
         defaultMessage: 'View and edit the forms submissions',
     },
-
     iaso_users: {
         id: 'iaso.permissions.users',
         defaultMessage: 'User management - Admin',

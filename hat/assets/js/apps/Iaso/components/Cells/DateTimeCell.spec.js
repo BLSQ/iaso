@@ -33,11 +33,12 @@ describe('DateTimeCell', () => {
     });
 
     it('should return the formatted date if value is a timestamp', () => {
-        const timestampInSeconds = Math.floor(Date.now() / 1000);
-        const cellInfo = { value: timestampInSeconds };
-        const date = moment
-            .unix(timestampInSeconds)
-            .format(getLocaleDateFormat('LTS'));
+        // Use a fixed timestamp in milliseconds for consistent test results
+        const timestampInMilliseconds = 1743840000000; // 2025-04-11 09:24:00
+        const cellInfo = { value: timestampInMilliseconds };
+        const date = moment(timestampInMilliseconds).format(
+            getLocaleDateFormat('LTS'),
+        );
         expect(DateTimeCell(cellInfo)).to.equal(date);
     });
 });

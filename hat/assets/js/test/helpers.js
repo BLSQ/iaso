@@ -1,21 +1,34 @@
+// Mock the LANGUAGE_CONFIGS module
 import React from 'react';
 import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
 import { configure, mount, render, shallow } from 'enzyme';
 import nodeFetch from 'node-fetch';
 import sinon from 'sinon';
 import './utils/pdf';
-import { longDateFormats } from '../apps/Iaso/utils/dates';
 import { mockMessages } from './utils/intl';
 import { baseUrl as baseUrlConst } from './utils/requests';
 import { expect } from 'chai';
 
-// Mock the LANGUAGE_CONFIGS module
 const mockLANGUAGE_CONFIGS = {
     en: {
-        dateFormats: longDateFormats.en,
+        dateFormats: {
+            LT: 'h:mm A',
+            LTS: 'DD/MM/YYYY HH:mm',
+            L: 'DD/MM/YYYY',
+            LL: 'Do MMMM YYYY',
+            LLL: 'Do MMMM YYYY LT',
+            LLLL: 'dddd, MMMM Do YYYY LT',
+        },
     },
     fr: {
-        dateFormats: longDateFormats.fr,
+        dateFormats: {
+            LT: 'HH:mm',
+            LTS: 'DD/MM/YYYY HH:mm',
+            L: 'DD/MM/YYYY',
+            LL: 'Do MMMM YYYY',
+            LLL: 'Do MMMM YYYY LT',
+            LLLL: 'dddd, MMMM Do YYYY LT',
+        },
     },
 };
 

@@ -97,7 +97,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 "old_parent",
                 "new_org_unit_type",
                 "old_org_unit_type",
-                "org_unit__version",
+                "org_unit__version__data_source",
                 "data_source_synchronization",
             )
             .prefetch_related(
@@ -111,9 +111,10 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 "org_unit__org_unit_type__projects",
             )
             .exclude_soft_deleted_new_reference_instances()
+            .filter(org_unit__in=org_units)
+            .filter_on_user_projects(self.request.user)
         )
-
-        return org_units_change_requests.filter(org_unit__in=org_units)
+        return org_units_change_requests
 
     def has_org_unit_permission(self, org_unit_to_change: OrgUnit) -> None:
         # The mobile adds `?app_id=.bar.baz` in the query params.
